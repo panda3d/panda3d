@@ -1,16 +1,15 @@
-// Filename: tinyTextureContext.h
-// Created by:  drose (30Apr08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyTextureContext.h
+ * @author drose
+ * @date 2008-04-30
+ */
 
 #ifndef TINYTEXTURECONTEXT_H
 #define TINYTEXTURECONTEXT_H
@@ -20,10 +19,9 @@
 #include "deletedChain.h"
 #include "zgl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyTextureContext
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_TINYDISPLAY TinyTextureContext : public TextureContext {
 public:
   INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);

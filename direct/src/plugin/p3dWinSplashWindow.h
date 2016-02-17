@@ -1,16 +1,15 @@
-// Filename: p3dWinSplashWindow.h
-// Created by:  drose (17Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dWinSplashWindow.h
+ * @author drose
+ * @date 2009-06-17
+ */
 
 #ifndef P3DWINSPLASHWINDOW_H
 #define P3DWINSPLASHWINDOW_H
@@ -24,11 +23,9 @@
 
 #include <windows.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DWinSplashWindow
-// Description : This is the Windows implementation of the
-//               initial-download window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the Windows implementation of the initial-download window.
+ */
 class P3DWinSplashWindow : public P3DSplashWindow {
 public:
   P3DWinSplashWindow(P3DInstance *inst, bool make_visible);

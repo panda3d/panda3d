@@ -1,16 +1,15 @@
-// Filename: pipeline.cxx
-// Created by:  drose (21Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pipeline.cxx
+ * @author drose
+ * @date 2002-02-21
+ */
 
 #include "pipeline.h"
 #include "pipelineCyclerTrueImpl.h"
@@ -20,11 +19,9 @@
 
 Pipeline *Pipeline::_render_pipeline = (Pipeline *)NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Pipeline::
 Pipeline(const string &name, int num_stages) :
   Namable(name)
@@ -61,11 +58,9 @@ Pipeline(const string &name, int num_stages) :
   set_num_stages(num_stages);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Pipeline::
 ~Pipeline() {
 #ifdef THREADED_PIPELINE
@@ -77,11 +72,9 @@ Pipeline::
 #endif  // THREADED_PIPELINE
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::cycle
-//       Access: Public
-//  Description: Flows all the pipeline data down to the next stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flows all the pipeline data down to the next stage.
+ */
 void Pipeline::
 cycle() {
 #ifdef THREADED_PIPELINE
@@ -99,10 +92,10 @@ cycle() {
       nassertv(_dirty._next == &_dirty);
       return;
     }
-    
+
     nassertv(!_cycling);
     _cycling = true;
-    
+
     // Move the dirty list to prev_dirty, for processing.
     PipelineCyclerLinks prev_dirty;
     prev_dirty.make_head();
@@ -115,12 +108,12 @@ cycle() {
         PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)prev_dirty._next;
         cycler->remove_from_list();
         ReMutexHolder holder2(cycler->_lock);
-        
+
         // We save the result of cycle(), so that we can defer the
         // side-effects that might occur when CycleDatas destruct, at
         // least until the end of this loop.
         saved_cdatas.push_back(cycler->cycle_2());
-        
+
         if (cycler->_dirty) {
           // The cycler is still dirty after cycling.  Keep it on the
           // dirty list for next time.
@@ -141,9 +134,9 @@ cycle() {
         PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)prev_dirty._next;
         cycler->remove_from_list();
         ReMutexHolder holder2(cycler->_lock);
-        
+
         saved_cdatas.push_back(cycler->cycle_3());
-        
+
         if (cycler->_dirty) {
           cycler->insert_before(&_dirty);
           ++_num_dirty_cyclers;
@@ -161,9 +154,9 @@ cycle() {
         PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)prev_dirty._next;
         cycler->remove_from_list();
         ReMutexHolder holder2(cycler->_lock);
-        
+
         saved_cdatas.push_back(cycler->cycle());
-        
+
         if (cycler->_dirty) {
           cycler->insert_before(&_dirty);
           ++_num_dirty_cyclers;
@@ -176,7 +169,7 @@ cycle() {
       }
       break;
     }
-      
+
     // Now we're ready for the next frame.
     prev_dirty.clear_head();
     _cycling = false;
@@ -196,12 +189,9 @@ cycle() {
 #endif  // THREADED_PIPELINE
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::set_num_stages
-//       Access: Public
-//  Description: Specifies the number of stages required for the
-//               pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the number of stages required for the pipeline.
+ */
 void Pipeline::
 set_num_stages(int num_stages) {
   nassertv(num_stages >= 1);
@@ -258,13 +248,10 @@ set_num_stages(int num_stages) {
 }
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::add_cycler
-//       Access: Public
-//  Description: Adds the indicated cycler to the list of cyclers
-//               associated with the pipeline.  This method only
-//               exists when true pipelining is configured on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated cycler to the list of cyclers associated with the
+ * pipeline.  This method only exists when true pipelining is configured on.
+ */
 void Pipeline::
 add_cycler(PipelineCyclerTrueImpl *cycler) {
   ReMutexHolder holder(_lock);
@@ -273,7 +260,7 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
 
   cycler->insert_before(&_clean);
   ++_num_cyclers;
-  
+
 #ifdef DEBUG_THREADS
   inc_cycler_type(_all_cycler_types, cycler->get_parent_type(), 1);
 #endif
@@ -281,15 +268,12 @@ add_cycler(PipelineCyclerTrueImpl *cycler) {
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::add_dirty_cycler
-//       Access: Public
-//  Description: Marks the indicated cycler as "dirty", meaning it
-//               will need to be cycled next frame.  This both adds it
-//               to the "dirty" set and also sets the "dirty" flag
-//               within the cycler.  This method only exists when true
-//               pipelining is configured on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the indicated cycler as "dirty", meaning it will need to be cycled next
+ * frame.  This both adds it to the "dirty" set and also sets the "dirty" flag
+ * within the cycler.  This method only exists when true pipelining is
+ * configured on.
+ */
 void Pipeline::
 add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
   nassertv(cycler->_lock.debug_is_locked());
@@ -312,13 +296,10 @@ add_dirty_cycler(PipelineCyclerTrueImpl *cycler) {
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::remove_cycler
-//       Access: Public
-//  Description: Removes the indicated cycler from the list of cyclers
-//               associated with the pipeline.  This method only
-//               exists when true pipelining is configured on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated cycler from the list of cyclers associated with the
+ * pipeline.  This method only exists when true pipelining is configured on.
+ */
 void Pipeline::
 remove_cycler(PipelineCyclerTrueImpl *cycler) {
   nassertv(cycler->_lock.debug_is_locked());
@@ -343,18 +324,14 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
 }
 #endif  // THREADED_PIPELINE
 
-#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS) 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::iterate_all_cycler_types
-//       Access: Public
-//  Description: Walks through the list of all the different
-//               PipelineCycler types in the universe.  For each one,
-//               calls the indicated callback function with the
-//               TypeHandle of the respective type (actually, the
-//               result of cycler::get_parent_type()) and the count of
-//               pipeline cyclers of that type.  Mainly used for
-//               PStats reporting.
-////////////////////////////////////////////////////////////////////
+#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS)
+/**
+ * Walks through the list of all the different PipelineCycler types in the
+ * universe.  For each one, calls the indicated callback function with the
+ * TypeHandle of the respective type (actually, the result of
+ * cycler::get_parent_type()) and the count of pipeline cyclers of that type.
+ * Mainly used for PStats reporting.
+ */
 void Pipeline::
 iterate_all_cycler_types(CallbackFunc *func, void *data) const {
   ReMutexHolder holder(_lock);
@@ -365,15 +342,11 @@ iterate_all_cycler_types(CallbackFunc *func, void *data) const {
 }
 #endif  // THREADED_PIPELINE && DEBUG_THREADS
 
-#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS) 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::iterate_dirty_cycler_types
-//       Access: Public
-//  Description: Walks through the list of all the different
-//               PipelineCycler types, for only the dirty
-//               PipelineCyclers.  See also
-//               iterate_all_cycler_types().
-////////////////////////////////////////////////////////////////////
+#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS)
+/**
+ * Walks through the list of all the different PipelineCycler types, for only
+ * the dirty PipelineCyclers.  See also iterate_all_cycler_types().
+ */
 void Pipeline::
 iterate_dirty_cycler_types(CallbackFunc *func, void *data) const {
   ReMutexHolder holder(_lock);
@@ -384,11 +357,9 @@ iterate_dirty_cycler_types(CallbackFunc *func, void *data) const {
 }
 #endif  // THREADED_PIPELINE && DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::make_render_pipeline
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Pipeline::
 make_render_pipeline() {
   ConfigVariableInt pipeline_stages
@@ -405,18 +376,13 @@ make_render_pipeline() {
   _render_pipeline = new Pipeline("render", pipeline_stages);
 }
 
-#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS) 
-////////////////////////////////////////////////////////////////////
-//     Function: Pipeline::inc_cycler_type
-//       Access: Private, Static
-//  Description: Increments (or decrements, according to added) the
-//               value for TypeHandle in the indicated TypeCount map.
-//               This is used in DEBUG_THREADS mode to track the types
-//               of PipelineCyclers that are coming and going, mainly
-//               for PStats reporting.
-//
-//               It is assumed the lock is held during this call.
-////////////////////////////////////////////////////////////////////
+#if defined(THREADED_PIPELINE) && defined(DEBUG_THREADS)
+/**
+ * Increments (or decrements, according to added) the value for TypeHandle in
+ * the indicated TypeCount map.  This is used in DEBUG_THREADS mode to track the
+ * types of PipelineCyclers that are coming and going, mainly for PStats
+ * reporting.  It is assumed the lock is held during this call.
+ */
 void Pipeline::
 inc_cycler_type(TypeCount &count, TypeHandle type, int addend) {
   TypeCount::iterator ci = count.find(type);

@@ -1,16 +1,15 @@
-// Filename: conditionVarSimpleImpl.cxx
-// Created by:  drose (19Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file conditionVarSimpleImpl.cxx
+ * @author drose
+ * @date 2007-06-19
+ */
 
 #include "selectThreadImpl.h"
 
@@ -19,11 +18,9 @@
 #include "conditionVarSimpleImpl.h"
 #include "threadSimpleImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 wait() {
   _mutex.release_quietly();
@@ -36,11 +33,9 @@ wait() {
   _mutex.acquire();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 wait(double timeout) {
   _mutex.release_quietly();
@@ -57,11 +52,9 @@ wait(double timeout) {
   _mutex.acquire();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::do_notify
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 do_notify() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
@@ -74,11 +67,9 @@ do_notify() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::do_notify_all
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 do_notify_all() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();

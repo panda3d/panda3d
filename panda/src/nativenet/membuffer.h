@@ -1,20 +1,24 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file membuffer.h
+ */
+
 #ifndef __MEMBUFFER_GM_H__
 #define __MEMBUFFER_GM_H__
 
 // RHH
-////////////////////////////////////////////////////////////////////
-//       Class : GmMemBuf
-// Description : This a base class designed to be used to for items
-//               that will share portions of a memory buffer and
-//               want to avoid copying the data.
-//
-//               Use if the class wants to allow for reference in
-//               place of data arrays.
-//               ** be careful could be dangerous **
-//
-//               GmCoreMessage
-//               GmRingBuffer
-////////////////////////////////////////////////////////////////////
+/**
+ * This a base class designed to be used to for items that will share portions
+ * of a memory buffer and want to avoid copying the data.  Use if the class
+ * wants to allow for reference in place of data arrays.  ** be careful could be
+ * dangerous **  GmCoreMessage GmRingBuffer
+ */
 class EXPCL_PANDA_NATIVENET MemBuffer {
 public:
   inline      MemBuffer(void);

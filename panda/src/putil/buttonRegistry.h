@@ -1,16 +1,15 @@
-// Filename: buttonRegistry.h
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buttonRegistry.h
+ * @author drose
+ * @date 2000-03-01
+ */
 
 #ifndef BUTTONREGISTRY_H
 #define BUTTONREGISTRY_H
@@ -22,13 +21,11 @@
 #include "pvector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonRegistry
-// Description : The ButtonRegistry class maintains all the assigned
-//               ButtonHandles in a given system.  There should be only
-//               one ButtonRegistry class during the lifetime of the
-//               application.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ButtonRegistry class maintains all the assigned ButtonHandles in a given
+ * system.  There should be only one ButtonRegistry class during the lifetime of
+ * the application.
+ */
 class EXPCL_PANDA_PUTIL ButtonRegistry {
 protected:
   class EXPCL_PANDA_PUTIL RegistryNode {

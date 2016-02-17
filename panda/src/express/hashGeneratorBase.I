@@ -1,42 +1,34 @@
-// Filename: hashGeneratorBase.I
-// Created by:  drose (14May01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file hashGeneratorBase.I
+ * @author drose
+ * @date 2001-05-14
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: HashGeneratorBase::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE HashGeneratorBase::
 HashGeneratorBase() {
   _hash = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HashGeneratorBase::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE HashGeneratorBase::
 ~HashGeneratorBase() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HashGeneratorBase::get_hash
-//       Access: Public
-//  Description: Returns the hash number generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the hash number generated.
+ */
 INLINE size_t HashGeneratorBase::
 get_hash() const {
   return _hash;

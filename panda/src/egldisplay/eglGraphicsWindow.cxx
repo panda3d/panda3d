@@ -1,16 +1,15 @@
-// Filename: eglGraphicsWindow.cxx
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsWindow.cxx
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #include "eglGraphicsWindow.h"
 #include "eglGraphicsStateGuardian.h"
@@ -39,11 +38,9 @@ TypeHandle eglGraphicsWindow::_type_handle;
 
 #define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 eglGraphicsWindow::
 eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -79,25 +76,19 @@ eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 eglGraphicsWindow::
 ~eglGraphicsWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if possible.
+ * Returns true if successful, false on failure.  This may fail if the mouse is
+ * not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool eglGraphicsWindow::
 move_pointer(int device, int x, int y) {
   // Note: this is not thread-safe; it should be called only from App.
@@ -128,15 +119,12 @@ move_pointer(int device, int x, int y) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool eglGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -186,13 +174,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void eglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -211,16 +196,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.  This should cause the window to wait for the flip, if necessary.
+ */
 void eglGraphicsWindow::
 end_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
@@ -237,16 +217,11 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via request_properties()
+ * This function is called only within the window thread.
+ */
 void eglGraphicsWindow::
 process_events() {
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
@@ -432,23 +407,15 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.  The window
+ * properties are applied immediately, rather than waiting until the next frame.
+ * This implies that this method may *only* be called from within the window
+ * thread.  The return value is true if the properties are set, false if they
+ * are ignored.  This is mainly useful for derived classes to implement
+ * extensions to this function.
+ */
 void eglGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (_pipe == (GraphicsPipe *)NULL) {
@@ -571,12 +538,9 @@ set_properties_now(WindowProperties &properties) {
   set_wm_properties(wm_properties, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void eglGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -610,13 +574,10 @@ close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool eglGraphicsWindow::
 open_window() {
   eglGraphicsPipe *egl_pipe;
@@ -656,7 +617,7 @@ open_window() {
   if (!_properties.has_size()) {
     _properties.set_size(100, 100);
   }
-  
+
   X11_Window parent_window = egl_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
   if (window_handle != NULL) {
@@ -666,7 +627,7 @@ open_window() {
     if (os_handle != NULL) {
       egldisplay_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
-      
+
       if (os_handle->is_of_type(NativeWindowHandle::X11Handle::get_class_type())) {
         NativeWindowHandle::X11Handle *x11_handle = DCAST(NativeWindowHandle::X11Handle, os_handle);
         parent_window = x11_handle->get_handle();
@@ -777,19 +738,14 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::set_wm_properties
-//       Access: Private
-//  Description: Asks the window manager to set the appropriate
-//               properties.  In X, these properties cannot be
-//               specified directly by the application; they must be
-//               requested via the window manager, which may or may
-//               not choose to honor the request.
-//
-//               If already_mapped is true, the window has already
-//               been mapped (manifested) on the display.  This means
-//               we may need to use a different action in some cases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the window manager to set the appropriate properties.  In X, these
+ * properties cannot be specified directly by the application; they must be
+ * requested via the window manager, which may or may not choose to honor the
+ * request.  If already_mapped is true, the window has already been mapped
+ * (manifested) on the display.  This means we may need to use a different
+ * action in some cases.
+ */
 void eglGraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // Name the window if there is a name
@@ -981,12 +937,10 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   sizeof(protocols) / sizeof(Atom));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::setup_colormap
-//       Access: Private
-//  Description: Allocates a colormap appropriate to the visual and
-//               stores in in the _colormap method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a colormap appropriate to the visual and stores in in the _colormap
+ * method.
+ */
 void eglGraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   eglGraphicsPipe *egl_pipe;
@@ -1020,11 +974,9 @@ setup_colormap(XVisualInfo *visual) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::open_raw_mice
-//       Access: Private
-//  Description: Adds raw mice to the _input_devices list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds raw mice to the _input_devices list.
+ */
 void eglGraphicsWindow::
 open_raw_mice()
 {
@@ -1102,11 +1054,9 @@ open_raw_mice()
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::poll_raw_mice
-//       Access: Private
-//  Description: Reads events from the raw mouse device files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads events from the raw mouse device files.
+ */
 void eglGraphicsWindow::
 poll_raw_mice()
 {
@@ -1166,12 +1116,9 @@ poll_raw_mice()
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::handle_keystroke
-//       Access: Private
-//  Description: Generates a keystroke corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keystroke corresponding to the indicated X KeyPress event.
+ */
 void eglGraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
@@ -1203,12 +1150,9 @@ handle_keystroke(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::handle_keypress
-//       Access: Private
-//  Description: Generates a keypress corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keypress corresponding to the indicated X KeyPress event.
+ */
 void eglGraphicsWindow::
 handle_keypress(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
@@ -1232,12 +1176,9 @@ handle_keypress(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::handle_keyrelease
-//       Access: Private
-//  Description: Generates a keyrelease corresponding to the indicated
-//               X KeyRelease event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keyrelease corresponding to the indicated X KeyRelease event.
+ */
 void eglGraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
@@ -1261,12 +1202,10 @@ handle_keyrelease(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::get_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               keyboard button indicated by the given key event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the keyboard button indicated
+ * by the given key event.
+ */
 ButtonHandle eglGraphicsWindow::
 get_button(XKeyEvent &key_event, bool allow_shift) {
   KeySym key = XLookupKeysym(&key_event, 0);
@@ -1349,12 +1288,10 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
   return map_button(key);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::map_button
-//       Access: Private
-//  Description: Maps from a single X keysym to Panda's ButtonHandle.
-//               Called by get_button(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from a single X keysym to Panda's ButtonHandle.  Called by get_button(),
+ * above.
+ */
 ButtonHandle eglGraphicsWindow::
 map_button(KeySym key) {
   switch (key) {
@@ -1669,12 +1606,10 @@ map_button(KeySym key) {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::get_mouse_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               mouse button indicated by the given button event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the mouse button indicated by
+ * the given button event.
+ */
 ButtonHandle eglGraphicsWindow::
 get_mouse_button(XButtonEvent &button_event) {
   int index = button_event.button;
@@ -1690,14 +1625,10 @@ get_mouse_button(XButtonEvent &button_event) {
     return MouseButton::button(index - 1);
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::check_event
-//       Access: Private, Static
-//  Description: This function is used as a predicate to
-//               XCheckIfEvent() to determine if the indicated queued
-//               X event is relevant and should be returned to this
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used as a predicate to XCheckIfEvent() to determine if the
+ * indicated queued X event is relevant and should be returned to this window.
+ */
 Bool eglGraphicsWindow::
 check_event(X11_Display *display, XEvent *event, char *arg) {
   const eglGraphicsWindow *self = (eglGraphicsWindow *)arg;

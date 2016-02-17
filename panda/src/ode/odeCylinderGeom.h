@@ -1,16 +1,15 @@
-// Filename: odeCylinderGeom.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeCylinderGeom.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODECYLINDERGEOM_H
 #define ODECYLINDERGEOM_H
@@ -22,10 +21,9 @@
 #include "ode_includes.h"
 #include "odeGeom.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeCylinderGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeCylinderGeom : public OdeGeom {
   friend class OdeGeom;
 

@@ -1,58 +1,46 @@
-// Filename: glImmediateModeSender_src.I
-// Created by:  drose (15Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glImmediateModeSender_src.I
+ * @author drose
+ * @date 2005-08-15
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE CLP(ImmediateModeSender)::
 CLP(ImmediateModeSender)() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender::Constructor
-//       Access: Public
-//  Description: The ComponentSender becomes the owner of the
-//               GeomVertexReader pointer, and will delete it when it
-//               is done.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ComponentSender becomes the owner of the GeomVertexReader pointer, and
+ * will delete it when it is done.
+ */
 INLINE CLP(ImmediateModeSender)::ComponentSender::
 ComponentSender(GeomVertexReader *reader) :
   _reader(reader)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender::set_vertex
-//       Access: Public
-//  Description: Specifies the vertex index of the next vertex to
-//               send.  If this is not called, the next consecutive
-//               vertex will be sent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the vertex index of the next vertex to send.  If this is not
+ * called, the next consecutive vertex will be sent.
+ */
 INLINE void CLP(ImmediateModeSender)::ComponentSender::
 set_vertex(int vertex_index) {
   _reader->set_row(vertex_index);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender1f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::ComponentSender1f::
 ComponentSender1f(GeomVertexReader *reader, Func1f *func) :
   ComponentSender(reader),
@@ -60,11 +48,9 @@ ComponentSender1f(GeomVertexReader *reader, Func1f *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender2f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::ComponentSender2f::
 ComponentSender2f(GeomVertexReader *reader, Func2f *func) :
   ComponentSender(reader),
@@ -72,11 +58,9 @@ ComponentSender2f(GeomVertexReader *reader, Func2f *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender3f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::ComponentSender3f::
 ComponentSender3f(GeomVertexReader *reader, Func3f *func) :
   ComponentSender(reader),
@@ -84,11 +68,9 @@ ComponentSender3f(GeomVertexReader *reader, Func3f *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender4f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::ComponentSender4f::
 ComponentSender4f(GeomVertexReader *reader, Func4f *func) :
   ComponentSender(reader),
@@ -96,13 +78,11 @@ ComponentSender4f(GeomVertexReader *reader, Func4f *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender1f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::TexcoordSender1f::
-TexcoordSender1f(GeomVertexReader *reader, TexcoordFunc1f *func, 
+TexcoordSender1f(GeomVertexReader *reader, TexcoordFunc1f *func,
                  int stage_index) :
   ComponentSender(reader),
   _func(func),
@@ -110,13 +90,11 @@ TexcoordSender1f(GeomVertexReader *reader, TexcoordFunc1f *func,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender2f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::TexcoordSender2f::
-TexcoordSender2f(GeomVertexReader *reader, TexcoordFunc2f *func, 
+TexcoordSender2f(GeomVertexReader *reader, TexcoordFunc2f *func,
                  int stage_index) :
   ComponentSender(reader),
   _func(func),
@@ -124,13 +102,11 @@ TexcoordSender2f(GeomVertexReader *reader, TexcoordFunc2f *func,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender3f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::TexcoordSender3f::
-TexcoordSender3f(GeomVertexReader *reader, TexcoordFunc3f *func, 
+TexcoordSender3f(GeomVertexReader *reader, TexcoordFunc3f *func,
                  int stage_index) :
   ComponentSender(reader),
   _func(func),
@@ -138,13 +114,11 @@ TexcoordSender3f(GeomVertexReader *reader, TexcoordFunc3f *func,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender4f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::TexcoordSender4f::
-TexcoordSender4f(GeomVertexReader *reader, TexcoordFunc4f *func, 
+TexcoordSender4f(GeomVertexReader *reader, TexcoordFunc4f *func,
                  int stage_index) :
   ComponentSender(reader),
   _func(func),
@@ -152,11 +126,9 @@ TexcoordSender4f(GeomVertexReader *reader, TexcoordFunc4f *func,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender1f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender1f::
 VectorSender1f(GeomVertexReader *reader, VectorFunc *func) :
   ComponentSender(reader),
@@ -164,11 +136,9 @@ VectorSender1f(GeomVertexReader *reader, VectorFunc *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender2f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender2f::
 VectorSender2f(GeomVertexReader *reader, VectorFunc *func) :
   ComponentSender(reader),
@@ -176,11 +146,9 @@ VectorSender2f(GeomVertexReader *reader, VectorFunc *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender3f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender3f::
 VectorSender3f(GeomVertexReader *reader, VectorFunc *func) :
   ComponentSender(reader),
@@ -188,11 +156,9 @@ VectorSender3f(GeomVertexReader *reader, VectorFunc *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender4f::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender4f::
 VectorSender4f(GeomVertexReader *reader, VectorFunc *func) :
   ComponentSender(reader),
@@ -200,11 +166,9 @@ VectorSender4f(GeomVertexReader *reader, VectorFunc *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender1ui::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender1ui::
 VectorSender1ui(GeomVertexReader *reader, VectorUintFunc *func) :
   ComponentSender(reader),
@@ -212,11 +176,9 @@ VectorSender1ui(GeomVertexReader *reader, VectorUintFunc *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender2fui::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender2fui::
 VectorSender2fui(GeomVertexReader *reader, VectorUintFunc *func) :
   ComponentSender(reader),
@@ -224,11 +186,9 @@ VectorSender2fui(GeomVertexReader *reader, VectorUintFunc *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender3fui::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender3fui::
 VectorSender3fui(GeomVertexReader *reader, VectorUintFunc *func) :
   ComponentSender(reader),
@@ -236,11 +196,9 @@ VectorSender3fui(GeomVertexReader *reader, VectorUintFunc *func) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender4fui::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(ImmediateModeSender)::VectorSender4fui::
 VectorSender4fui(GeomVertexReader *reader, VectorUintFunc *func) :
   ComponentSender(reader),

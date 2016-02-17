@@ -1,16 +1,15 @@
-// Filename: lineSegs.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lineSegs.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef LINESEGS_H
 #define LINESEGS_H
@@ -25,14 +24,12 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LineSegs
-// Description : Encapsulates creation of a series of connected or
-//               disconnected line segments or points, for drawing
-//               paths or rays.  This class doesn't attempt to be the
-//               smartest it could possibly be; it's intended
-//               primarily as a visualization and editing tool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates creation of a series of connected or disconnected line segments
+ * or points, for drawing paths or rays.  This class doesn't attempt to be the
+ * smartest it could possibly be; it's intended primarily as a visualization and
+ * editing tool.
+ */
 class EXPCL_PANDA_GRUTIL LineSegs : public Namable {
 PUBLISHED:
   LineSegs(const string &name = "lines");

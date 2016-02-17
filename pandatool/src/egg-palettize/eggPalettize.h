@@ -1,16 +1,15 @@
-// Filename: eggPalettize.h
-// Created by:  drose (28Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPalettize.h
+ * @author drose
+ * @date 2000-11-28
+ */
 
 #ifndef EGGPALETTIZE_H
 #define EGGPALETTIZE_H
@@ -19,12 +18,10 @@
 
 #include "eggMultiFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPalettize
-// Description : This is the program wrapper for egg-palettize, but it
-//               mainly serves to read in all the command-line
-//               parameters and then invoke the Palettizer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the program wrapper for egg-palettize, but it mainly serves to read
+ * in all the command-line parameters and then invoke the Palettizer.
+ */
 class EggPalettize : public EggMultiFilter {
 public:
   EggPalettize();

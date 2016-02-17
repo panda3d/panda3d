@@ -1,26 +1,23 @@
-// Filename: pnmReader.cxx
-// Created by:  drose (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmReader.cxx
+ * @author drose
+ * @date 2000-06-14
+ */
 
 #include "pnmReader.h"
 #include "virtualFileSystem.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMReader::
 ~PNMReader() {
   if (_owns_file) {
@@ -36,18 +33,13 @@ PNMReader::
   _file = (istream *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::prepare_read
-//       Access: Public, Virtual
-//  Description: This method will be called before read_data() or
-//               read_row() is called.  It instructs the reader to
-//               initialize its data structures as necessary to
-//               actually perform the read operation.  
-//
-//               After this call, _x_size and _y_size should reflect
-//               the actual size that will be filled by read_data()
-//               (as possibly modified by set_read_size()).
-////////////////////////////////////////////////////////////////////
+/**
+ * This method will be called before read_data() or read_row() is called.  It
+ * instructs the reader to initialize its data structures as necessary to
+ * actually perform the read operation.  After this call, _x_size and _y_size
+ * should reflect the actual size that will be filled by read_data() (as
+ * possibly modified by set_read_size()).
+ */
 void PNMReader::
 prepare_read() {
   if (!_is_valid) {
@@ -70,43 +62,32 @@ prepare_read() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::is_floating_point
-//       Access: Public, Virtual
-//  Description: Returns true if this PNMFileType represents a
-//               floating-point image type, false if it is a normal,
-//               integer type.  If this returns true, read_pfm() is
-//               implemented instead of read_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this PNMFileType represents a floating-point image type,
+ * false if it is a normal, integer type.  If this returns true, read_pfm() is
+ * implemented instead of read_data().
+ */
 bool PNMReader::
 is_floating_point() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::read_pfm
-//       Access: Public, Virtual
-//  Description: Reads floating-point data directly into the indicated
-//               PfmFile.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads floating-point data directly into the indicated PfmFile.  Returns true
+ * on success, false on failure.
+ */
 bool PNMReader::
 read_pfm(PfmFile &pfm) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::read_data
-//       Access: Public, Virtual
-//  Description: Reads in an entire image all at once, storing it in
-//               the pre-allocated _x_size * _y_size array and alpha
-//               pointers.  (If the image type has no alpha channel,
-//               alpha is ignored.)  Returns the number of rows
-//               correctly read.
-//
-//               Derived classes need not override this if they
-//               instead provide supports_read_row() and read_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in an entire image all at once, storing it in the pre-allocated _x_size
+ * * _y_size array and alpha pointers.  (If the image type has no alpha channel,
+ * alpha is ignored.)  Returns the number of rows correctly read.  Derived
+ * classes need not override this if they instead provide supports_read_row()
+ * and read_row(), below.
+ */
 int PNMReader::
 read_data(xel *array, xelval *alpha) {
   if (!is_valid()) {
@@ -126,7 +107,7 @@ read_data(xel *array, xelval *alpha) {
   } else {
     int x_reduction = (1 << _x_shift);
     int y_reduction = (1 << _y_shift);
-    
+
     int shift = _x_shift + _y_shift;
 
     // We need a temporary buffer, at least one row wide, with
@@ -138,7 +119,7 @@ read_data(xel *array, xelval *alpha) {
     // here, before we filter it down into the above.
     xel *orig_row_array = (xel *)alloca(_orig_x_size * sizeof(xel));
     xelval *orig_row_alpha = (xelval *)alloca(_orig_x_size * sizeof(xelval));
-    
+
     int y;
     for (y = 0; y < _y_size; ++y) {
       // Zero out the accumulation data, in preparation for
@@ -210,74 +191,54 @@ read_data(xel *array, xelval *alpha) {
       }
     }
   }
-    
+
 
   return _y_size;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::supports_read_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMReader is capable
-//               of returning the data one row at a time, via repeated
-//               calls to read_row().  Returns false if the only way
-//               to read from this file is all at once, via
-//               read_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMReader is capable of returning the data
+ * one row at a time, via repeated calls to read_row().  Returns false if the
+ * only way to read from this file is all at once, via read_data().
+ */
 bool PNMReader::
 supports_read_row() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::read_row
-//       Access: Public, Virtual
-//  Description: If supports_read_row(), above, returns true, this
-//               function may be called repeatedly to read the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully read, false
-//               if there is an error or end of file.
-//
-//               The x_size and y_size parameters are the value of
-//               _x_size and _y_size as originally filled in by the
-//               constructor; it is the actual number of pixels in the
-//               image.  (The _x_size and _y_size members may have
-//               been automatically modified by the time this method
-//               is called if we are scaling on load, so should not be
-//               used.)
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_read_row(), above, returns true, this function may be called
+ * repeatedly to read the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully read, false if there is an
+ * error or end of file.  The x_size and y_size parameters are the value of
+ * _x_size and _y_size as originally filled in by the constructor; it is the
+ * actual number of pixels in the image.  (The _x_size and _y_size members may
+ * have been automatically modified by the time this method is called if we are
+ * scaling on load, so should not be used.)
+ */
 bool PNMReader::
 read_row(xel *, xelval *, int, int) {
   return false;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::supports_stream_read
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMReader can read
-//               from a general stream (including pipes, etc.), or
-//               false if the reader must occasionally fseek() on its
-//               input stream, and thus only disk streams are
-//               supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMReader can read from a general stream
+ * (including pipes, etc.), or false if the reader must occasionally fseek() on
+ * its input stream, and thus only disk streams are supported.
+ */
 bool PNMReader::
 supports_stream_read() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMReader::get_reduction_shift
-//       Access: Private
-//  Description: Determines the reduction factor between the original
-//               size and the requested size, returned as an exponent
-//               of power of 2 (that is, a bit shift).  
-//
-//               Only power-of-two reductions are supported, since
-//               those are common, easy, and fast.  Other reductions
-//               will be handled in the higher level code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the reduction factor between the original size and the requested
+ * size, returned as an exponent of power of 2 (that is, a bit shift).  Only
+ * power-of-two reductions are supported, since those are common, easy, and
+ * fast.  Other reductions will be handled in the higher level code.
+ */
 int PNMReader::
 get_reduction_shift(int orig_size, int new_size) {
   if (new_size == 0) {

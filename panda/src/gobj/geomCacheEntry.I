@@ -1,23 +1,19 @@
-// Filename: geomCacheEntry.I
-// Created by:  drose (21Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomCacheEntry.I
+ * @author drose
+ * @date 2005-03-21
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+ */
 INLINE GeomCacheEntry::
 GeomCacheEntry() {
 #ifndef NDEBUG
@@ -26,12 +22,9 @@ GeomCacheEntry() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::remove_from_list
-//       Access: Private
-//  Description: Removes a GeomCacheEntry record from the
-//               doubly-linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a GeomCacheEntry record from the doubly-linked list.
+ */
 INLINE void GeomCacheEntry::
 remove_from_list() {
   nassertv(_prev->_next == this && _next->_prev == this);
@@ -43,12 +36,10 @@ remove_from_list() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::insert_before
-//       Access: Private
-//  Description: Adds a GeomCacheEntry record before the indicated
-//               node in the doubly-linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a GeomCacheEntry record before the indicated node in the doubly-linked
+ * list.
+ */
 INLINE void GeomCacheEntry::
 insert_before(GeomCacheEntry *node) {
   nassertv(node->_prev->_next == node && node->_next->_prev == node);
@@ -65,4 +56,3 @@ operator << (ostream &out, const GeomCacheEntry &entry) {
   entry.output(out);
   return out;
 }
-

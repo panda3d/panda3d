@@ -1,16 +1,15 @@
-// Filename: freetypeFont.cxx
-// Created by:  drose (07Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file freetypeFont.cxx
+ * @author drose
+ * @date 2003-09-07
+ */
 
 #include "freetypeFont.h"
 
@@ -34,11 +33,9 @@ const PN_stdfloat FreetypeFont::_points_per_unit = 10.0f;
 // A universal typographic convention.
 const PN_stdfloat FreetypeFont::_points_per_inch = 72.0f;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FreetypeFont::
 FreetypeFont() {
   _face = NULL;
@@ -60,11 +57,9 @@ FreetypeFont() {
   _pixel_height = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FreetypeFont::
 FreetypeFont(const FreetypeFont &copy) :
   Namable(copy),
@@ -86,14 +81,10 @@ FreetypeFont(const FreetypeFont &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::load_font
-//       Access: Protected
-//  Description: This method accepts the name of some font file
-//               that FreeType can read, along with face_index,
-//               indicating which font within the file to load
-//               (usually 0).
-////////////////////////////////////////////////////////////////////
+/**
+ * This method accepts the name of some font file that FreeType can read, along
+ * with face_index, indicating which font within the file to load (usually 0).
+ */
 bool FreetypeFont::
 load_font(const Filename &font_filename, int face_index) {
   unload_font();
@@ -114,7 +105,7 @@ load_font(const Filename &font_filename, int face_index) {
   exists = vfs->read_file(path, _face->_font_data, true);
   if (exists) {
     FT_Face face;
-    error = FT_New_Memory_Face(_face->_ft_library, 
+    error = FT_New_Memory_Face(_face->_ft_library,
                                (const FT_Byte *)_face->_font_data.data(),
                                _face->_font_data.length(),
                                face_index, &face);
@@ -141,17 +132,14 @@ load_font(const Filename &font_filename, int face_index) {
   if (!okflag) {
     unload_font();
   }
-  
+
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::load_font
-//       Access: Protected
-//  Description: This method accepts a table of data representing
-//               the font file, loaded from some source other than a
-//               filename on disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method accepts a table of data representing the font file, loaded from
+ * some source other than a filename on disk.
+ */
 bool FreetypeFont::
 load_font(const char *font_data, int data_length, int face_index) {
   unload_font();
@@ -166,7 +154,7 @@ load_font(const char *font_data, int data_length, int face_index) {
 
   int error;
   FT_Face face;
-  error = FT_New_Memory_Face(_face->_ft_library, 
+  error = FT_New_Memory_Face(_face->_ft_library,
                              (const FT_Byte *)font_data, data_length,
                              face_index, &face);
   _face->set_face(face);
@@ -178,7 +166,7 @@ load_font(const char *font_data, int data_length, int face_index) {
   } else if (error) {
     pnmtext_cat.error()
       << "Unable to read font: invalid.\n";
-    
+
   } else {
     okflag = reset_scale();
   }
@@ -186,27 +174,23 @@ load_font(const char *font_data, int data_length, int face_index) {
   if (!okflag) {
     unload_font();
   }
-  
+
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::unload_font
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FreetypeFont::
 unload_font() {
   _face = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::string_winding_order
-//       Access: Public
-//  Description: Returns the WindingOrder value associated with the given
-//               string representation, or WO_invalid if the string
-//               does not match any known WindingOrder value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the WindingOrder value associated with the given string
+ * representation, or WO_invalid if the string does not match any known
+ * WindingOrder value.
+ */
 FreetypeFont::WindingOrder FreetypeFont::
 string_winding_order(const string &string) {
   if (cmp_nocase_uh(string, "default") == 0) {
@@ -220,17 +204,14 @@ string_winding_order(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::load_glyph
-//       Access: Protected
-//  Description: Invokes Freetype to load and render the indicated
-//               glyph into a bitmap.  Returns true if successful,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes Freetype to load and render the indicated glyph into a bitmap.
+ * Returns true if successful, false otherwise.
+ */
 bool FreetypeFont::
 load_glyph(FT_Face face, int glyph_index, bool prerender) {
   int flags = FT_LOAD_RENDER;
-  if (!_native_antialias) { 
+  if (!_native_antialias) {
     flags |= FT_LOAD_MONOCHROME;
   }
 
@@ -249,15 +230,13 @@ load_glyph(FT_Face face, int glyph_index, bool prerender) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::copy_bitmap_to_pnmimage
-//       Access: Protected
-//  Description: Copies a bitmap as rendered by FreeType into a
-//               PNMImage, so it can be rescaled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a bitmap as rendered by FreeType into a PNMImage, so it can be
+ * rescaled.
+ */
 void FreetypeFont::
 copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
-  if (bitmap.pixel_mode == ft_pixel_mode_grays && 
+  if (bitmap.pixel_mode == ft_pixel_mode_grays &&
       bitmap.num_grays == (int)image.get_maxval() + 1) {
     // This is the easy case: we can copy the rendered glyph
     // directly into our image, one pixel at a time.
@@ -268,7 +247,7 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
       }
       buffer_row += bitmap.pitch;
     }
-    
+
   } else if (bitmap.pixel_mode == ft_pixel_mode_mono) {
     // This is a little bit more work: we have to expand the
     // one-bit-per-pixel bitmap into a one-byte-per-pixel image.
@@ -289,11 +268,11 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
           bit = 0x80;
         }
       }
-      
+
       buffer_row += bitmap.pitch;
     }
-    
-    
+
+
   } else if (bitmap.pixel_mode == ft_pixel_mode_grays) {
     // Here we must expand a grayscale pixmap with n levels of gray
     // into our 256-level texture.
@@ -304,20 +283,18 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
       }
       buffer_row += bitmap.pitch;
     }
-    
+
   } else {
     pnmtext_cat.error()
       << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
   }
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::reset_scale
-//       Access: Private
-//  Description: Resets the font based on the current values for
-//               _point_size, _tex_pixels_per_unit, and _scale_factor.
-//               Returns true if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Resets the font based on the current values for _point_size,
+ * _tex_pixels_per_unit, and _scale_factor.  Returns true if successful, false
+ * otherwise.
+ */
 bool FreetypeFont::
 reset_scale() {
   if (_face == NULL) {
@@ -340,7 +317,7 @@ reset_scale() {
   PN_stdfloat units_per_inch = (_points_per_inch / _points_per_unit);
   _dpi = (int)(_font_pixels_per_unit * units_per_inch);
   _char_size = (int)(_point_size * 64);
-  
+
   int error = FT_Set_Char_Size(face, _char_size, _char_size, _dpi, _dpi);
   if (error) {
     // If we were unable to set a particular char size, perhaps we
@@ -387,7 +364,7 @@ reset_scale() {
 
   if (error) {
     pnmtext_cat.warning()
-      << "Unable to set " << get_name() 
+      << "Unable to set " << get_name()
       << " to " << _point_size << "pt at " << _dpi << " dpi.\n";
     _line_height = 1.0f;
     _face->release_face(face);
@@ -410,12 +387,9 @@ reset_scale() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::render_distance_field
-//       Access: Private
-//  Description: Renders a signed distance field to the PNMImage
-//               based on the contours.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renders a signed distance field to the PNMImage based on the contours.
+ */
 void FreetypeFont::
 render_distance_field(PNMImage &image, int outline, int min_x, int min_y) {
   Contours::const_iterator ci;
@@ -541,12 +515,9 @@ render_distance_field(PNMImage &image, int outline, int min_x, int min_y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::decompose_outline
-//       Access: Protected
-//  Description: Ask FreeType to extract the contours out of the
-//               outline description.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ask FreeType to extract the contours out of the outline description.
+ */
 void FreetypeFont::
 decompose_outline(FT_Outline &outline) {
   FT_Outline_Funcs funcs;
@@ -581,12 +552,10 @@ decompose_outline(FT_Outline &outline) {
   FT_Outline_Decompose(&outline, &funcs, (void *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::outline_move_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks the
-//               beginning of a new contour.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback from FT_Outline_Decompose().  It marks the beginning of a new
+ * contour.
+ */
 int FreetypeFont::
 outline_move_to(const FT_Vector *to, void *user) {
   FreetypeFont *self = (FreetypeFont *)user;
@@ -603,12 +572,10 @@ outline_move_to(const FT_Vector *to, void *user) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::outline_line_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks a
-//               straight line in the contour.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback from FT_Outline_Decompose().  It marks a straight line in the
+ * contour.
+ */
 int FreetypeFont::
 outline_line_to(const FT_Vector *to, void *user) {
   FreetypeFont *self = (FreetypeFont *)user;
@@ -633,12 +600,10 @@ outline_line_to(const FT_Vector *to, void *user) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::outline_conic_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks a
-//               parabolic (3rd-order) Bezier curve in the contour.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback from FT_Outline_Decompose().  It marks a parabolic (3rd-order)
+ * Bezier curve in the contour.
+ */
 int FreetypeFont::
 outline_conic_to(const FT_Vector *control,
                  const FT_Vector *to, void *user) {
@@ -666,12 +631,10 @@ outline_conic_to(const FT_Vector *control,
   return self->outline_nurbs(ncr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::outline_cubic_to
-//       Access: Private, Static
-//  Description: A callback from FT_Outline_Decompose().  It marks a
-//               cubic (4th-order) Bezier curve in the contour.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback from FT_Outline_Decompose().  It marks a cubic (4th-order) Bezier
+ * curve in the contour.
+ */
 int FreetypeFont::
 outline_cubic_to(const FT_Vector *control1, const FT_Vector *control2,
                  const FT_Vector *to, void *user) {
@@ -701,12 +664,9 @@ outline_cubic_to(const FT_Vector *control1, const FT_Vector *control2,
   return self->outline_nurbs(ncr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::outline_nurbs
-//       Access: Private
-//  Description: Called internally by outline_cubic_to() and
-//               outline_conic_to().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally by outline_cubic_to() and outline_conic_to().
+ */
 int FreetypeFont::
 outline_nurbs(NurbsCurveResult *ncr) {
   // Sample it down so that the lines approximate the curve to within
@@ -779,10 +739,9 @@ outline_nurbs(NurbsCurveResult *ncr) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::WindingOrder output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, FreetypeFont::WindingOrder wo) {
   switch (wo) {
@@ -800,10 +759,9 @@ operator << (ostream &out, FreetypeFont::WindingOrder wo) {
   return out << "(**invalid FreetypeFont::WindingOrder(" << (int)wo << ")**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFont::WindingOrder input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 istream &
 operator >> (istream &in, FreetypeFont::WindingOrder &wo) {
   string word;

@@ -1,16 +1,15 @@
-// Filename: eggMakeTube.cxx
-// Created by:  drose (01Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMakeTube.cxx
+ * @author drose
+ * @date 2003-10-01
+ */
 
 #include "eggMakeTube.h"
 #include "eggGroup.h"
@@ -21,11 +20,9 @@
 #include "look_at.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeTube::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMakeTube::
 EggMakeTube() {
 
@@ -38,33 +35,33 @@ EggMakeTube() {
      "case, you are generating a degenerate tube of length 0.");
 
   add_option
-    ("a", "x,y,z", 0, 
+    ("a", "x,y,z", 0,
      "Specify the first endpoint of the tube.",
      &EggWriter::dispatch_double_triple, NULL, _point_a);
 
   add_option
-    ("b", "x,y,z", 0, 
+    ("b", "x,y,z", 0,
      "Specify the second endpoint of the tube.",
      &EggWriter::dispatch_double_triple, &_got_point_b, _point_b);
 
   add_option
-    ("r", "radius", 0, 
+    ("r", "radius", 0,
      "Specify the radius of the tube.  The tube will extend beyond "
      "the endpoints in each direction by the amount of radius.",
      &EggWriter::dispatch_double, NULL, &_radius);
 
   add_option
-    ("slices", "count", 0, 
+    ("slices", "count", 0,
      "Specify the number of slices appearing radially around the tube.",
      &EggWriter::dispatch_int, NULL, &_num_slices);
 
   add_option
-    ("crings", "count", 0, 
+    ("crings", "count", 0,
      "Specify the number of rings appearing in each endcap of the tube.",
      &EggWriter::dispatch_int, NULL, &_num_crings);
 
   add_option
-    ("trings", "count", 0, 
+    ("trings", "count", 0,
      "Specify the number of rings appearing in the cylindrical body "
      "of the tube.",
      &EggWriter::dispatch_int, NULL, &_num_trings);
@@ -84,11 +81,9 @@ EggMakeTube() {
   _num_trings = 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeTube::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggMakeTube::
 run() {
   if (!_got_point_b) {
@@ -165,12 +160,9 @@ run() {
   write_egg_file();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeTube::calc_sphere1_vertex
-//       Access: Private
-//  Description: Calculates a particular vertex on the surface of the
-//               first endcap hemisphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates a particular vertex on the surface of the first endcap hemisphere.
+ */
 EggVertex *EggMakeTube::
 calc_sphere1_vertex(int ri, int si) {
   double r = (double)ri / (double)_num_crings;
@@ -195,12 +187,9 @@ calc_sphere1_vertex(int ri, int si) {
   return _vpool->create_unique_vertex(vert);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeTube::calc_tube_vertex
-//       Access: Private
-//  Description: Calculates a vertex on the side of the cylindrical
-//               body of the tube.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates a vertex on the side of the cylindrical body of the tube.
+ */
 EggVertex *EggMakeTube::
 calc_tube_vertex(int ri, int si) {
   double r = (double)ri / (double)_num_trings;
@@ -221,12 +210,10 @@ calc_tube_vertex(int ri, int si) {
   return _vpool->create_unique_vertex(vert);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeTube::calc_sphere2_vertex
-//       Access: Private
-//  Description: Calculates a particular vertex on the surface of the
-//               second endcap hemisphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates a particular vertex on the surface of the second endcap
+ * hemisphere.
+ */
 EggVertex *EggMakeTube::
 calc_sphere2_vertex(int ri, int si) {
   double r = (double)ri / (double)_num_crings;
@@ -251,13 +238,10 @@ calc_sphere2_vertex(int ri, int si) {
   return _vpool->create_unique_vertex(vert);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeTube::add_polygon
-//       Access: Private
-//  Description: Adds the polygon defined by the indicated four
-//               vertices to the group.  If the first vertex is
-//               NULL, does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the polygon defined by the indicated four vertices to the group.  If the
+ * first vertex is NULL, does nothing.
+ */
 void EggMakeTube::
 add_polygon(EggVertex *a, EggVertex *b, EggVertex *c, EggVertex *d) {
   if (a == (EggVertex *)NULL) {

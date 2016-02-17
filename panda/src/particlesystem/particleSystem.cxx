@@ -1,16 +1,15 @@
-// Filename: particleSystem.cxx
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file particleSystem.cxx
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #include <stdlib.h>
 
@@ -35,11 +34,9 @@ TypeHandle ParticleSystem::_type_handle;
 
 PStatCollector ParticleSystem::_update_collector("App:Particles:Update");
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParticleSystem
-//       Access: Public
-//  Description: Default Constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor.
+ */
 ParticleSystem::
 ParticleSystem(int pool_size) :
   Physical(pool_size, false)
@@ -80,11 +77,9 @@ ParticleSystem(int pool_size) :
   set_pool_size(pool_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParticleSystem
-//       Access: Public
-//  Description: Copy Constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy Constructor.
+ */
 ParticleSystem::
 ParticleSystem(const ParticleSystem& copy) :
   Physical(copy),
@@ -115,11 +110,9 @@ ParticleSystem(const ParticleSystem& copy) :
   set_pool_size(copy._particle_pool_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~ParticleSystem
-//       Access: Public
-//  Description: You get the ankles and I'll get the wrists.
-////////////////////////////////////////////////////////////////////
+/**
+ * You get the ankles and I'll get the wrists.
+ */
 ParticleSystem::
 ~ParticleSystem() {
   set_pool_size(0);
@@ -130,12 +123,10 @@ ParticleSystem::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: birth_particle
-//       Access: Private
-//  Description: A new particle is born.  This doesn't allocate,
-//               resets an element from the particle pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A new particle is born.  This doesn't allocate, resets an element from the
+ * particle pool.
+ */
 bool ParticleSystem::
 birth_particle() {
   int pool_index;
@@ -201,11 +192,9 @@ birth_particle() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: birth_litter
-//       Access: Private
-//  Description: spawns a new batch of particles
-////////////////////////////////////////////////////////////////////
+/**
+ * spawns a new batch of particles
+ */
 void ParticleSystem::
 birth_litter() {
   int litter_size, i;
@@ -221,13 +210,10 @@ birth_litter() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: spawn_child_system
-//       Access: Private
-//  Description: Creates a new particle system based on local
-//               template info and adds it to the ps and physics
-//               managers
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new particle system based on local template info and adds it to the
+ * ps and physics managers
+ */
 void ParticleSystem::
 spawn_child_system(BaseParticle *bp) {
   // first, make sure that the system exists in the graph via a
@@ -293,12 +279,9 @@ spawn_child_system(BaseParticle *bp) {
   get_physics_manager()->attach_physical(new_ps);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: kill_particle
-//       Access: Private
-//  Description: Kills a particle, returns its slot to the empty
-//               stack.
-////////////////////////////////////////////////////////////////////
+/**
+ * Kills a particle, returns its slot to the empty stack.
+ */
 void ParticleSystem::
 kill_particle(int pool_index) {
   // get a handle on our particle
@@ -322,11 +305,9 @@ kill_particle(int pool_index) {
   _living_particles--;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: resize_pool
-//       Access: Private
-//  Description: Resizes the particle pool
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes the particle pool
+ */
 #ifdef PSDEBUG
 #define PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
 #endif
@@ -462,11 +443,9 @@ resize_pool(int size) {
   #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//       Access: Public
-//  Description: Updates the particle system.  Call once per frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the particle system.  Call once per frame.
+ */
 #ifdef PSDEBUG
 //#define PARTICLE_SYSTEM_UPDATE_SENTRIES
 #endif
@@ -552,12 +531,10 @@ update(PN_stdfloat dt) {
 }
 
 #ifdef PSSANITYCHECK
-////////////////////////////////////////////////////////////////////
-//     Function: sanity_check
-//       Access: Private
-//  Description: Checks consistency of live particle count, free
-//               particle list, etc. returns 0 if everything is normal
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks consistency of live particle count, free particle list, etc.  returns
+ * 0 if everything is normal
+ */
 #ifndef NDEBUG
 #define PSSCVERBOSE
 #endif
@@ -690,12 +667,9 @@ sanity_check() {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ParticleSystem::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -703,12 +677,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_free_particle_fifo
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ParticleSystem::
 write_free_particle_fifo(ostream &out, int indent) const {
   #ifndef NDEBUG //[
@@ -722,12 +693,9 @@ write_free_particle_fifo(ostream &out, int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_spawn_templates
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ParticleSystem::
 write_spawn_templates(ostream &out, int indent) const {
   #ifndef NDEBUG //[
@@ -741,12 +709,9 @@ write_spawn_templates(ostream &out, int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ParticleSystem::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

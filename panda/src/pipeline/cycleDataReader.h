@@ -1,16 +1,15 @@
-// Filename: cycleDataReader.h
-// Created by:  drose (21Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cycleDataReader.h
+ * @author drose
+ * @date 2002-02-21
+ */
 
 #ifndef CYCLEDATAREADER_H
 #define CYCLEDATAREADER_H
@@ -21,22 +20,15 @@
 #include "pipelineCycler.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleDataReader
-// Description : This template class calls
-//               PipelineCycler::read_unlocked(), and then provides a
-//               transparent read-only access to the CycleData.  It is
-//               used to access the data quickly, without holding a
-//               lock, for a thread that does not intend to modify the
-//               data and write it back out.  For cases where the data
-//               might be subsequently modified, you should use
-//               CycleDataLockedReader.
-//
-//               It exists as a syntactic convenience to access the
-//               data in the CycleData.  It also allows the whole
-//               system to compile down to nothing if
-//               DO_PIPELINING is not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class calls PipelineCycler::read_unlocked(), and then provides
+ * a transparent read-only access to the CycleData.  It is used to access the
+ * data quickly, without holding a lock, for a thread that does not intend to
+ * modify the data and write it back out.  For cases where the data might be
+ * subsequently modified, you should use CycleDataLockedReader.  It exists as a
+ * syntactic convenience to access the data in the CycleData.  It also allows
+ * the whole system to compile down to nothing if DO_PIPELINING is not defined.
+ */
 template<class CycleDataType>
 class CycleDataReader {
 public:

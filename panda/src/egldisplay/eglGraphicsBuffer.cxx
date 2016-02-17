@@ -1,16 +1,15 @@
-// Filename: eglGraphicsBuffer.cxx
-// Created by:  rdb (13Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsBuffer.cxx
+ * @author rdb
+ * @date 2009-06-13
+ */
 
 #include "eglGraphicsBuffer.h"
 #include "eglGraphicsStateGuardian.h"
@@ -22,11 +21,9 @@
 
 TypeHandle eglGraphicsBuffer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 eglGraphicsBuffer::
 eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -46,25 +43,20 @@ eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   _screenshot_buffer_type = _draw_buffer_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsBuffer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 eglGraphicsBuffer::
 ~eglGraphicsBuffer() {
   nassertv(_pbuffer == EGL_NO_SURFACE);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsBuffer::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool eglGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -100,18 +92,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void eglGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -129,12 +118,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void eglGraphicsBuffer::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -145,7 +131,7 @@ close_buffer() {
         << get_egl_error_string(eglGetError()) << "\n";
     }
     _gsg.clear();
-    
+
     if (_pbuffer != EGL_NO_SURFACE) {
       if (!eglDestroySurface(_egl_display, _pbuffer)) {
         egldisplay_cat.error() << "Failed to destroy surface: "
@@ -158,13 +144,10 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the buffer right now.  Called from the window
-//               thread.  Returns true if the buffer is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the buffer right now.  Called from the window thread.  Returns true if
+ * the buffer is successfully opened, or false if there was a problem.
+ */
 bool eglGraphicsBuffer::
 open_buffer() {
   eglGraphicsPipe *egl_pipe;

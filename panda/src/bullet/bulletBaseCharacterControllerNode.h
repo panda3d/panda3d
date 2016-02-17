@@ -1,16 +1,15 @@
-// Filename: bulletBaseCharacterControllerNode.h
-// Created by:  enn0x (21Nov10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletBaseCharacterControllerNode.h
+ * @author enn0x
+ * @date 2010-11-21
+ */
 
 #ifndef __BULLET_BASE_CHARACTER_CONTROLLER_NODE_H__
 #define __BULLET_BASE_CHARACTER_CONTROLLER_NODE_H__
@@ -24,10 +23,9 @@
 #include "pandaNode.h"
 #include "collideMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletBaseCharacterControllerNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletBaseCharacterControllerNode : public PandaNode {
 
 PUBLISHED:
@@ -49,14 +47,13 @@ public:
   virtual void sync_p2b(PN_stdfloat dt, int num_substeps) = 0;
   virtual void sync_b2p() = 0;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PandaNode::init_type();
-    register_type(_type_handle, "BulletBaseCharacterControllerNode", 
+    register_type(_type_handle, "BulletBaseCharacterControllerNode",
                   PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -74,4 +71,3 @@ private:
 #include "bulletBaseCharacterControllerNode.I"
 
 #endif // __BULLET_BASE_CHARACTER_CONTROLLER_NODE_H__
-

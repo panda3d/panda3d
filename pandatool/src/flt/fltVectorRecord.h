@@ -1,16 +1,15 @@
-// Filename: fltVectorRecord.h
-// Created by:  drose (30Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltVectorRecord.h
+ * @author drose
+ * @date 2002-08-30
+ */
 
 #ifndef FLTVECTORRECORD_H
 #define FLTVECTORRECORD_H
@@ -21,13 +20,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltVectorRecord
-// Description : This is an ancillary record of the old (pre-15.4)
-//               face node.  Its only use is to provide the direction
-//               vector for unidirectional and bidirectional light
-//               point faces.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an ancillary record of the old (pre-15.4) face node.  Its only use is
+ * to provide the direction vector for unidirectional and bidirectional light
+ * point faces.
+ */
 class FltVectorRecord : public FltRecord {
 public:
   FltVectorRecord(FltHeader *header);
@@ -62,5 +59,3 @@ private:
 };
 
 #endif
-
-

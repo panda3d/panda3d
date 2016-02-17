@@ -1,16 +1,15 @@
-// Filename: virtualMouse.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualMouse.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef VIRTUALMOUSE_H
 #define VIRTUALMOUSE_H
@@ -24,15 +23,12 @@
 #include "linmath_events.h"
 #include "buttonEventList.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualMouse
-// Description : Poses as a MouseAndKeyboard object in the datagraph,
-//               but accepts input from user calls, rather than
-//               reading the actual mouse and keyboard from an input
-//               device.  The user can write high-level code to put
-//               the mouse wherever he/she wants, and to insert
-//               keypresses on demand.
-////////////////////////////////////////////////////////////////////
+/**
+ * Poses as a MouseAndKeyboard object in the datagraph, but accepts input from
+ * user calls, rather than reading the actual mouse and keyboard from an input
+ * device.  The user can write high-level code to put the mouse wherever he/she
+ * wants, and to insert keypresses on demand.
+ */
 class EXPCL_PANDA_DEVICE VirtualMouse : public DataNode {
 PUBLISHED:
   VirtualMouse(const string &name);
@@ -40,7 +36,7 @@ PUBLISHED:
   void set_mouse_pos(int x, int y);
   void set_window_size(int width, int height);
   void set_mouse_on(bool flag);
-  
+
   void press_button(ButtonHandle button);
   void release_button(ButtonHandle button);
 
@@ -87,4 +83,3 @@ private:
 };
 
 #endif
-

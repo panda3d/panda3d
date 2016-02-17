@@ -1,23 +1,19 @@
-// Filename: buttonEvent.I
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buttonEvent.I
+ * @author drose
+ * @date 2000-03-01
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE ButtonEvent::
 ButtonEvent() :
   _button(ButtonHandle::none()),
@@ -27,11 +23,9 @@ ButtonEvent() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ButtonEvent::
 ButtonEvent(ButtonHandle button, ButtonEvent::Type type, double time) :
   _button(button),
@@ -43,11 +37,9 @@ ButtonEvent(ButtonHandle button, ButtonEvent::Type type, double time) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ButtonEvent::
 ButtonEvent(short keycode, double time) :
   _button(ButtonHandle::none()),
@@ -59,13 +51,11 @@ ButtonEvent(short keycode, double time) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ButtonEvent::
-ButtonEvent(const wstring &candidate_string, size_t highlight_start, 
+ButtonEvent(const wstring &candidate_string, size_t highlight_start,
             size_t highlight_end, size_t cursor_pos) :
   _button(ButtonHandle::none()),
   _keycode(0),
@@ -78,11 +68,9 @@ ButtonEvent(const wstring &candidate_string, size_t highlight_start,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ButtonEvent::
 ButtonEvent(const ButtonEvent &copy) :
   _button(copy._button),
@@ -96,11 +84,9 @@ ButtonEvent(const ButtonEvent &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ButtonEvent::
 operator = (const ButtonEvent &copy) {
   _button = copy._button;
@@ -113,12 +99,9 @@ operator = (const ButtonEvent &copy) {
   _time = copy._time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Equality Operator
-//       Access: Public
-//  Description: The equality operator does not consider time
-//               significant.
-////////////////////////////////////////////////////////////////////
+/**
+ * The equality operator does not consider time significant.
+ */
 INLINE bool ButtonEvent::
 operator == (const ButtonEvent &other) const {
   return (_button == other._button &&
@@ -126,21 +109,17 @@ operator == (const ButtonEvent &other) const {
           _type == other._type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Inequality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ButtonEvent::
 operator != (const ButtonEvent &other) const {
   return !operator == (other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ButtonEvent::
 operator < (const ButtonEvent &other) const {
   if (_button != other._button) {
@@ -153,12 +132,10 @@ operator < (const ButtonEvent &other) const {
   return _type < other._type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::update_mods
-//       Access: Published
-//  Description: Calls button_down() or button_up(), as appropriate,
-//               according to the ButtonEvent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls button_down() or button_up(), as appropriate, according to the
+ * ButtonEvent.
+ */
 INLINE bool ButtonEvent::
 update_mods(ModifierButtons &mods) const {
   switch (_type) {

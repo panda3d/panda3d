@@ -1,16 +1,15 @@
-// Filename: test_lod.cxx
-// Created by:  drose (24Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_lod.cxx
+ * @author drose
+ * @date 2004-09-24
+ */
 
 #include "pandaFramework.h"
 #include "lodNode.h"
@@ -74,7 +73,7 @@ main(int argc, char *argv[]) {
       window2->enable_keyboard();
       window2->setup_trackball();
       framework.get_models().instance_to(window2->get_render());
-      
+
       window2->center_trackball(framework.get_models());
     }
 

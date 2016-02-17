@@ -1,16 +1,15 @@
-// Filename: characterMaker.cxx
-// Created by:  drose (06Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file characterMaker.cxx
+ * @author drose
+ * @date 2002-03-06
+ */
 
 #include "characterMaker.h"
 #include "eggLoader.h"
@@ -39,11 +38,9 @@
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::Construtor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CharacterMaker::
 CharacterMaker(EggGroup *root, EggLoader &loader, bool structured)
   : _loader(loader), _egg_root(root) {
@@ -56,35 +53,28 @@ CharacterMaker(EggGroup *root, EggLoader &loader, bool structured)
   _structured = structured;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::make_node
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Character *CharacterMaker::
 make_node() {
   make_bundle();
   return _character_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::get_name
-//       Access: Public
-//  Description: Returns the name of the character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the character.
+ */
 string CharacterMaker::
 get_name() const {
   return _egg_root->get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::egg_to_part
-//       Access: Public
-//  Description: Returns the PartGroup node associated with the given
-//               egg node.  If the egg node is not a node in the
-//               character's hierarchy, returns the top of the
-//               character's hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the PartGroup node associated with the given egg node.  If the egg
+ * node is not a node in the character's hierarchy, returns the top of the
+ * character's hierarchy.
+ */
 PartGroup *CharacterMaker::
 egg_to_part(EggNode *egg_node) const {
   int index = egg_to_index(egg_node);
@@ -97,15 +87,11 @@ egg_to_part(EggNode *egg_node) const {
   return _parts[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::egg_to_transform
-//       Access: Public
-//  Description: Returns a JointVertexTransform suitable for
-//               applying the animation associated with the given
-//               egg node (which should be a joint).  Returns an
-//               identity transform if the egg node is not a joint in
-//               the character's hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a JointVertexTransform suitable for applying the animation associated
+ * with the given egg node (which should be a joint).  Returns an identity
+ * transform if the egg node is not a joint in the character's hierarchy.
+ */
 VertexTransform *CharacterMaker::
 egg_to_transform(EggNode *egg_node) {
   int index = egg_to_index(egg_node);
@@ -129,12 +115,10 @@ egg_to_transform(EggNode *egg_node) {
   return vt;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::egg_to_index
-//       Access: Public
-//  Description: Returns the index number associated with the
-//               PartGroup node for the given egg node, or -1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number associated with the PartGroup node for the given egg
+ * node, or -1.
+ */
 int CharacterMaker::
 egg_to_index(EggNode *egg_node) const {
   NodeMap::const_iterator nmi = _node_map.find(egg_node);
@@ -144,14 +128,11 @@ egg_to_index(EggNode *egg_node) const {
   return (*nmi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::part_to_node
-//       Access: Public
-//  Description: Returns the scene graph node associated with the
-//               given PartGroup node, if there is one.  If the
-//               PartGroup does not have an associated node, returns
-//               the character's top node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scene graph node associated with the given PartGroup node, if
+ * there is one.  If the PartGroup does not have an associated node, returns the
+ * character's top node.
+ */
 PandaNode *CharacterMaker::
 part_to_node(PartGroup *part, const string &name) const {
   PandaNode *node = _character_node;
@@ -183,12 +164,9 @@ part_to_node(PartGroup *part, const string &name) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::create_slider
-//       Access: Public
-//  Description: Creates a new morph slider of the given name, and
-//               returns its index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new morph slider of the given name, and returns its index.
+ */
 int CharacterMaker::
 create_slider(const string &name) {
   if (_morph_root == (PartGroup *)NULL) {
@@ -200,12 +178,9 @@ create_slider(const string &name) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::egg_to_slider
-//       Access: Public
-//  Description: Returns the VertexSlider corresponding to the
-//               indicated egg slider name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the VertexSlider corresponding to the indicated egg slider name.
+ */
 VertexSlider *CharacterMaker::
 egg_to_slider(const string &name) {
   VertexSliders::iterator vi = _vertex_sliders.find(name);
@@ -214,18 +189,16 @@ egg_to_slider(const string &name) {
   }
 
   int index = create_slider(name);
-  PT(VertexSlider) slider = 
+  PT(VertexSlider) slider =
     new CharacterVertexSlider(DCAST(CharacterSlider, _parts[index]));
   _vertex_sliders[name] = slider;
   return slider;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::make_bundle
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CharacterJointBundle *CharacterMaker::
 make_bundle() {
   build_joint_hierarchy(_egg_root, _skeleton_root, -1);
@@ -245,11 +218,9 @@ make_bundle() {
   return _bundle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::build_joint_hierarchy
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CharacterMaker::
 build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
   if (egg_node->is_of_type(EggAnimPreload::get_class_type())) {
@@ -315,7 +286,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
         // it.
         PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
 
-        // To prevent flattening from messing with geometry on 
+        // To prevent flattening from messing with geometry on
         // exposed joints
         geom_node->set_preserve_transform(ModelNode::PT_net);
 
@@ -334,13 +305,10 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
   _node_map[egg_node] = index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::parent_joint_nodes
-//       Access: Private
-//  Description: Walks the joint hierarchy, and parents any explicit
-//               nodes created for the joints under the character
-//               node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the joint hierarchy, and parents any explicit nodes created for the
+ * joints under the character node.
+ */
 void CharacterMaker::
 parent_joint_nodes(PartGroup *part) {
   if (part->is_character_joint()) {
@@ -358,20 +326,17 @@ parent_joint_nodes(PartGroup *part) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::make_geometry
-//       Access: Private
-//  Description: Walks the hierarchy, looking for bins that represent
-//               polysets, which are to be animated with the
-//               character.  Invokes the egg loader to create the
-//               animated geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy, looking for bins that represent polysets, which are to
+ * be animated with the character.  Invokes the egg loader to create the
+ * animated geometry.
+ */
 void CharacterMaker::
 make_geometry(EggNode *egg_node) {
   if (egg_node->is_of_type(EggBin::get_class_type())) {
     EggBin *egg_bin = DCAST(EggBin, egg_node);
 
-    if (!egg_bin->empty() && 
+    if (!egg_bin->empty() &&
         (egg_bin->get_bin_number() == EggBinner::BN_polyset ||
          egg_bin->get_bin_number() == EggBinner::BN_patches)) {
       EggGroupNode *bin_home = determine_bin_home(egg_bin);
@@ -392,7 +357,7 @@ make_geometry(EggNode *egg_node) {
       LMatrix4d transform =
         egg_bin->get_vertex_frame() *
         bin_home->get_node_frame_inv();
-      
+
       _loader.make_polyset(egg_bin, parent, &transform, is_dynamic,
                            this);
     }
@@ -408,11 +373,9 @@ make_geometry(EggNode *egg_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::determine_primitive_home
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode *CharacterMaker::
 determine_primitive_home(EggPrimitive *egg_primitive) {
   // A primitive's vertices may be referenced by any joint in the
@@ -516,14 +479,11 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
   return home;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::determine_bin_home
-//       Access: Private
-//  Description: Examines the joint assignment of the vertices of all
-//               of the primitives within this bin to determine which
-//               parent node the bin's polyset should be created
-//               under.
-////////////////////////////////////////////////////////////////////
+/**
+ * Examines the joint assignment of the vertices of all of the primitives within
+ * this bin to determine which parent node the bin's polyset should be created
+ * under.
+ */
 EggGroupNode *CharacterMaker::
 determine_bin_home(EggBin *egg_bin) {
   // A primitive's vertices may be referenced by any joint in the
@@ -559,7 +519,7 @@ determine_bin_home(EggBin *egg_bin) {
         // is dynamic.
         return NULL;
       }
-      
+
       if (!vertex->_dxyzs.empty() ||
           !vertex->_dnormals.empty() ||
           !vertex->_drgbas.empty()) {
@@ -577,7 +537,7 @@ determine_bin_home(EggBin *egg_bin) {
       }
 
       EggGroupNode *vertex_home;
-      
+
       if (vertex->gref_size() == 0) {
         // This vertex is not referenced at all, which means it belongs
         // right where it is.
@@ -587,7 +547,7 @@ determine_bin_home(EggBin *egg_bin) {
         // This vertex is referenced exactly once.
         vertex_home = *vertex->gref_begin();
       }
-      
+
       if (home != NULL && home != vertex_home) {
         // Oops, two vertices are referenced by different joints!  The
         // primitive is dynamic.
@@ -656,12 +616,10 @@ determine_bin_home(EggBin *egg_bin) {
   return home;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::get_identity_transform
-//       Access: Private
-//  Description: Returns a VertexTransform that represents the root of
-//               the character--it never animates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a VertexTransform that represents the root of the character--it never
+ * animates.
+ */
 VertexTransform *CharacterMaker::
 get_identity_transform() {
   if (_identity_transform == (VertexTransform *)NULL) {

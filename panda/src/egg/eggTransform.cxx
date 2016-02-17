@@ -1,25 +1,22 @@
-// Filename: eggTransform.cxx
-// Created by:  drose (21Jun02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggTransform.cxx
+ * @author drose
+ * @date 2002-06-21
+ */
 
 #include "eggTransform.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggTransform::
 EggTransform() :
   _is_transform_2d(true),
@@ -27,11 +24,9 @@ EggTransform() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggTransform::
 EggTransform(const EggTransform &copy) :
   _is_transform_2d(copy._is_transform_2d),
@@ -40,11 +35,9 @@ EggTransform(const EggTransform &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggTransform &EggTransform::
 operator = (const EggTransform &copy) {
   _is_transform_2d = copy._is_transform_2d;
@@ -53,21 +46,16 @@ operator = (const EggTransform &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggTransform::
 ~EggTransform() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_translate2d
-//       Access: Public
-//  Description: Appends a 2-d translation operation to the current
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a 2-d translation operation to the current transform.
+ */
 void EggTransform::
 add_translate2d(const LVector2d &translate) {
   _components.push_back(Component(CT_translate2d));
@@ -76,12 +64,9 @@ add_translate2d(const LVector2d &translate) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_translate3d
-//       Access: Public
-//  Description: Appends a 3-d translation operation to the current
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a 3-d translation operation to the current transform.
+ */
 void EggTransform::
 add_translate3d(const LVector3d &translate) {
   _is_transform_2d = false;
@@ -91,13 +76,10 @@ add_translate3d(const LVector3d &translate) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_rotate2d
-//       Access: Public
-//  Description: Appends a 2-d rotation to the current transform.  The
-//               rotation angle is specified in degrees
-//               counterclockwise about the origin.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a 2-d rotation to the current transform.  The rotation angle is
+ * specified in degrees counterclockwise about the origin.
+ */
 void EggTransform::
 add_rotate2d(double angle) {
   _components.push_back(Component(CT_rotate2d, angle));
@@ -105,13 +87,10 @@ add_rotate2d(double angle) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_rotx
-//       Access: Public
-//  Description: Appends a rotation about the X axis to the current
-//               transform.  The rotation angle is specified in
-//               degrees counterclockwise about the axis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a rotation about the X axis to the current transform.  The rotation
+ * angle is specified in degrees counterclockwise about the axis.
+ */
 void EggTransform::
 add_rotx(double angle) {
   _is_transform_2d = false;
@@ -120,13 +99,10 @@ add_rotx(double angle) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_roty
-//       Access: Public
-//  Description: Appends a rotation about the Y axis to the current
-//               transform.  The rotation angle is specified in
-//               degrees counterclockwise about the axis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a rotation about the Y axis to the current transform.  The rotation
+ * angle is specified in degrees counterclockwise about the axis.
+ */
 void EggTransform::
 add_roty(double angle) {
   _is_transform_2d = false;
@@ -135,13 +111,10 @@ add_roty(double angle) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_rotz
-//       Access: Public
-//  Description: Appends a rotation about the Z axis to the current
-//               transform.  The rotation angle is specified in
-//               degrees counterclockwise about the axis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a rotation about the Z axis to the current transform.  The rotation
+ * angle is specified in degrees counterclockwise about the axis.
+ */
 void EggTransform::
 add_rotz(double angle) {
   _is_transform_2d = false;
@@ -150,13 +123,10 @@ add_rotz(double angle) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_rotate3d
-//       Access: Public
-//  Description: Appends a 3-d rotation about an arbitrary axis to the
-//               current transform.  The rotation angle is specified
-//               in degrees counterclockwise about the axis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a 3-d rotation about an arbitrary axis to the current transform.  The
+ * rotation angle is specified in degrees counterclockwise about the axis.
+ */
 void EggTransform::
 add_rotate3d(double angle, const LVector3d &axis) {
   _is_transform_2d = false;
@@ -167,13 +137,10 @@ add_rotate3d(double angle, const LVector3d &axis) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_rotate3d
-//       Access: Public
-//  Description: Appends an arbitrary 3-d rotation to the current
-//               transform, expressed as a quaternion.  This is
-//               converted to axis-angle notation for the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends an arbitrary 3-d rotation to the current transform, expressed as a
+ * quaternion.  This is converted to axis-angle notation for the egg file.
+ */
 void EggTransform::
 add_rotate3d(const LQuaterniond &quat) {
   _is_transform_2d = false;
@@ -181,12 +148,9 @@ add_rotate3d(const LQuaterniond &quat) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_scale2d
-//       Access: Public
-//  Description: Appends a possibly non-uniform scale to the current
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a possibly non-uniform scale to the current transform.
+ */
 void EggTransform::
 add_scale2d(const LVecBase2d &scale) {
   _is_transform_2d = false;
@@ -196,12 +160,9 @@ add_scale2d(const LVecBase2d &scale) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_scale3d
-//       Access: Public
-//  Description: Appends a possibly non-uniform scale to the current
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a possibly non-uniform scale to the current transform.
+ */
 void EggTransform::
 add_scale3d(const LVecBase3d &scale) {
   _is_transform_2d = false;
@@ -211,11 +172,9 @@ add_scale3d(const LVecBase3d &scale) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::add_uniform_scale
-//       Access: Public
-//  Description: Appends a uniform scale to the current transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a uniform scale to the current transform.
+ */
 void EggTransform::
 add_uniform_scale(double scale) {
   _components.push_back(Component(CT_uniform_scale, scale));
@@ -223,12 +182,9 @@ add_uniform_scale(double scale) {
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::write
-//       Access: Public
-//  Description: Writes the transform to the indicated stream in Egg
-//               format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the transform to the indicated stream in Egg format.
+ */
 void EggTransform::
 write(ostream &out, int indent_level, const string &label) const {
   indent(out, indent_level) << label << " {\n";
@@ -268,7 +224,7 @@ write(ostream &out, int indent_level, const string &label) const {
 
     case CT_rotate3d:
       indent(out, indent_level + 2)
-        << "<Rotate> { " << get_component_number(i) << " " 
+        << "<Rotate> { " << get_component_number(i) << " "
         << get_component_vec3(i) << " }\n";
       break;
 
@@ -308,12 +264,9 @@ write(ostream &out, int indent_level, const string &label) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::internal_clear_transform
-//       Access: Public
-//  Description: Resets the transform to empty without calling
-//               transform_changed().
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the transform to empty without calling transform_changed().
+ */
 void EggTransform::
 internal_clear_transform() {
   _is_transform_2d = true;
@@ -321,12 +274,10 @@ internal_clear_transform() {
   _transform = LMatrix4d::ident_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::internal_add_matrix
-//       Access: Public
-//  Description: Appends an arbitrary 4x4 matrix to the current
-//               transform, without calling transform_changed().
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends an arbitrary 4x4 matrix to the current transform, without calling
+ * transform_changed().
+ */
 void EggTransform::
 internal_add_matrix(const LMatrix3d &mat) {
   _components.push_back(Component(CT_matrix3));
@@ -338,12 +289,10 @@ internal_add_matrix(const LMatrix3d &mat) {
   _transform *= mat4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::internal_add_matrix
-//       Access: Public
-//  Description: Appends an arbitrary 4x4 matrix to the current
-//               transform, without calling transform_changed().
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends an arbitrary 4x4 matrix to the current transform, without calling
+ * transform_changed().
+ */
 void EggTransform::
 internal_add_matrix(const LMatrix4d &mat) {
   _is_transform_2d = false;
@@ -352,15 +301,11 @@ internal_add_matrix(const LMatrix4d &mat) {
   _transform *= mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform::transform_changed
-//       Access: Protected, Virtual
-//  Description: This virtual method is called whenever the transform
-//               is changed; it is intended to provide a hook for
-//               derived classes (e.g. EggGroup) to update their
-//               internal cache appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * This virtual method is called whenever the transform is changed; it is
+ * intended to provide a hook for derived classes (e.g.  EggGroup) to update
+ * their internal cache appropriately.
+ */
 void EggTransform::
 transform_changed() {
 }
-

@@ -1,38 +1,32 @@
-// Filename: primeNumberGenerator.cxx
-// Created by:  drose (22Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file primeNumberGenerator.cxx
+ * @author drose
+ * @date 2001-03-22
+ */
 
 #include "primeNumberGenerator.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PrimeNumberGenerator::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PrimeNumberGenerator::
 PrimeNumberGenerator() {
   _primes.push_back(2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PrimeNumberGenerator::Indexing operator
-//       Access: Public
-//  Description: Returns the nth prime number.  this[0] returns 2,
-//               this[1] returns 3; successively larger values of n
-//               return larger prime numbers, up to the largest prime
-//               number that can be represented in an int.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth prime number.  this[0] returns 2, this[1] returns 3;
+ * successively larger values of n return larger prime numbers, up to the
+ * largest prime number that can be represented in an int.
+ */
 int PrimeNumberGenerator::
 operator [] (int n) {
   nassertr(n >= 0, 0);

@@ -1,11 +1,21 @@
-////////////////////////////////////////////////////////////////////
-//
-// This is a little wrapper to make it easy to run a python
-// program from the command line. Basically, it just interfaces
-// to the Python API and imports the module that was specified
-// by the IMPORT_MODULE preprocessor definition when it was compiled.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ppython.cxx
+ */
+
+
+/*
+ * This is a little wrapper to make it easy to run a python
+ * program from the command line. Basically, it just interfaces
+ * to the Python API and imports the module that was specified
+ * by the IMPORT_MODULE preprocessor definition when it was compiled.
+ */
 
 #include "dtoolbase.h"
 

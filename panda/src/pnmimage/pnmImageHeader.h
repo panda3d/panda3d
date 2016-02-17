@@ -1,16 +1,15 @@
-// Filename: pnmImageHeader.h
-// Created by:  drose (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmImageHeader.h
+ * @author drose
+ * @date 2000-06-14
+ */
 
 #ifndef PNMIMAGEHEADER_H
 #define PNMIMAGEHEADER_H
@@ -31,16 +30,13 @@ class PNMFileType;
 class PNMReader;
 class PNMWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMImageHeader
-// Description : This is the base class of PNMImage, PNMReader, and
-//               PNMWriter.  It encapsulates all the information
-//               associated with an image that describes its size,
-//               number of channels, etc; that is, all the information
-//               about the image except the image data itself.  It's
-//               the sort of information you typically read from the
-//               image file's header.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class of PNMImage, PNMReader, and PNMWriter.  It
+ * encapsulates all the information associated with an image that describes its
+ * size, number of channels, etc; that is, all the information about the image
+ * except the image data itself.  It's the sort of information you typically
+ * read from the image file's header.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMImageHeader {
 PUBLISHED:
   INLINE PNMImageHeader();

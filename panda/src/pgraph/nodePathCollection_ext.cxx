@@ -1,16 +1,15 @@
-// Filename: nodePathCollection_ext.cxx
-// Created by:  rdb (09Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePathCollection_ext.cxx
+ * @author rdb
+ * @date 2013-12-09
+ */
 
 #include "nodePathCollection_ext.h"
 
@@ -25,14 +24,11 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 #endif
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::__init__
-//       Access: Published
-//  Description: This special constructor accepts a Python list of
-//               NodePaths.  Since this constructor accepts a generic
-//               PyObject *, it should be the last constructor listed
-//               in the class record.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special constructor accepts a Python list of NodePaths.  Since this
+ * constructor accepts a generic PyObject *, it should be the last constructor
+ * listed in the class record.
+ */
 void Extension<NodePathCollection>::
 __init__(PyObject *self, PyObject *sequence) {
   PyObject *fast = PySequence_Fast(sequence, "NodePathCollection constructor requires a sequence");
@@ -67,12 +63,10 @@ __init__(PyObject *self, PyObject *sequence) {
   Py_DECREF(fast);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special Python method is implement to provide support for the pickle
+ * module.
+ */
 PyObject *Extension<NodePathCollection>::
 __reduce__(PyObject *self) const {
   // Here we will return a 4-tuple: (Class, (args), None, iterator),
@@ -96,15 +90,12 @@ __reduce__(PyObject *self) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<NodePathCollection>::get_tight_bounds
-//       Access: Published
-//  Description: Returns the tight bounds as a 2-tuple of LPoint3
-//               objects.  This is a convenience function for Python
-//               users, among which the use of calc_tight_bounds
-//               may be confusing.
-//               Returns None if calc_tight_bounds returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the tight bounds as a 2-tuple of LPoint3 objects.  This is a
+ * convenience function for Python users, among which the use of
+ * calc_tight_bounds may be confusing.  Returns None if calc_tight_bounds
+ * returned false.
+ */
 PyObject *Extension<NodePathCollection>::
 get_tight_bounds() const {
   LPoint3 *min_point = new LPoint3;

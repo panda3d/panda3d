@@ -1,16 +1,15 @@
-// Filename: parse_vrml.cxx
-// Created by:  drose (01Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file parse_vrml.cxx
+ * @author drose
+ * @date 2004-10-01
+ */
 
 /**************************************************
  * VRML 2.0, Draft 2 Parser
@@ -38,11 +37,10 @@ extern int vrmlyy_flex_debug;
 
 extern VrmlScene *parsed_scene;
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_standard_nodes
-//  Description: Loads the set of standard VRML node definitions into
-//               the parser, if it has not already been loaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the set of standard VRML node definitions into the parser, if it has
+ * not already been loaded.
+ */
 static bool
 get_standard_nodes() {
   static bool got_standard_nodes = false;
@@ -60,7 +58,7 @@ get_standard_nodes() {
   // The data is stored compressed; decompress it on-the-fly.
   istringstream inz(data);
   IDecompressStream in(&inz, false);
-  
+
 #else
   // The data is stored uncompressed, so just load it.
   istringstream in(data);
@@ -76,11 +74,10 @@ get_standard_nodes() {
   return read_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: parse_vrml
-//  Description: Reads the named VRML file and returns a corresponding
-//               VrmlScene, or NULL if there is a parse error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the named VRML file and returns a corresponding VrmlScene, or NULL if
+ * there is a parse error.
+ */
 VrmlScene *
 parse_vrml(Filename filename) {
   filename.set_text();
@@ -95,11 +92,10 @@ parse_vrml(Filename filename) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: parse_vrml
-//  Description: Reads the indicated input stream and returns a corresponding
-//               VrmlScene, or NULL if there is a parse error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated input stream and returns a corresponding VrmlScene, or
+ * NULL if there is a parse error.
+ */
 VrmlScene *
 parse_vrml(istream &in, const string &filename) {
   if (!get_standard_nodes()) {

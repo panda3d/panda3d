@@ -1,16 +1,15 @@
-// Filename: webcamVideoCursorV4L.cxx
-// Created by: rdb (11Jun2010)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webcamVideoCursorV4L.cxx
+ * @author rdb
+ * @date 2010-06-11
+ */
 
 #include "webcamVideoV4L.h"
 
@@ -192,11 +191,9 @@ static JHUFF_TBL ac_chrominance_tbl = {
 
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorV4L::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorV4L::
 WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _size_x = src->_size_x;
@@ -354,11 +351,9 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _ready = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorV4L::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorV4L::
 ~WebcamVideoCursorV4L() {
 #ifdef HAVE_JPEG
@@ -382,11 +377,9 @@ WebcamVideoCursorV4L::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorV4L::fetch_buffer
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(MovieVideoCursor::Buffer) WebcamVideoCursorV4L::
 fetch_buffer() {
   if (!_ready) {

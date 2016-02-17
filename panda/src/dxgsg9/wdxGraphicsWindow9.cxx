@@ -1,16 +1,15 @@
-// Filename: wdxGraphicsWindow9.cxx
-// Created by:  mike (09Jan00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wdxGraphicsWindow9.cxx
+ * @author mike
+ * @date 2000-01-09
+ */
 
 #include "wdxGraphicsPipe9.h"
 #include "wdxGraphicsWindow9.h"
@@ -29,11 +28,9 @@
 
 TypeHandle wdxGraphicsWindow9::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 wdxGraphicsWindow9::
 wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,
                    const string &name,
@@ -54,20 +51,16 @@ wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,
   ZeroMemory(&_wcontext, sizeof(_wcontext));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 wdxGraphicsWindow9::
 ~wdxGraphicsWindow9() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::make_current
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void wdxGraphicsWindow9::
 make_current() {
   PStatTimer timer(_make_current_pcollector);
@@ -81,15 +74,12 @@ make_current() {
   _dxgsg->reset_if_new();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool wdxGraphicsWindow9::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
@@ -128,13 +118,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return return_val;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void wdxGraphicsWindow9::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -152,16 +139,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.  This should cause the window to wait for the flip, if necessary.
+ */
 void wdxGraphicsWindow9::
 end_flip() {
   if (_dxgsg != (DXGraphicsStateGuardian9 *)NULL && is_active()) {
@@ -170,19 +152,13 @@ end_flip() {
   WinGraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::verify_window_sizes
-//       Access: Public, Virtual
-//  Description: Determines which of the indicated window sizes are
-//               supported by available hardware (e.g. in fullscreen
-//               mode).
-//
-//               On entry, dimen is an array containing contiguous x, y
-//               pairs specifying possible display sizes; it is
-//               numsizes*2 words long.  The function will zero out
-//               any invalid x, y size pairs.  The return value is the
-//               number of valid sizes that were found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines which of the indicated window sizes are supported by available
+ * hardware (e.g.  in fullscreen mode).  On entry, dimen is an array containing
+ * contiguous x, y pairs specifying possible display sizes; it is numsizes*2
+ * words long.  The function will zero out any invalid x, y size pairs.  The
+ * return value is the number of valid sizes that were found.
+ */
 int wdxGraphicsWindow9::
 verify_window_sizes(int numsizes, int *dimen) {
   // unfortunately this only works AFTER you make the window
@@ -242,13 +218,10 @@ verify_window_sizes(int numsizes, int *dimen) {
   return num_valid_modes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow::close_window
-//       Access: Public
-//  Description: Some cleanup is necessary for directx closeup of window.
-//               Handle close window events for this particular
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Some cleanup is necessary for directx closeup of window.  Handle close window
+ * events for this particular window.
+ */
 void wdxGraphicsWindow9::
 close_window() {
   if (wdxdisplay9_cat.is_debug()) {
@@ -266,13 +239,10 @@ close_window() {
   WinGraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool wdxGraphicsWindow9::
 open_window() {
   PT(DXGraphicsDevice9) dxdev;
@@ -363,15 +333,12 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::reset_window
-//       Access: Public, Virtual
-//  Description: Resets the window framebuffer right now.  Called
-//               from graphicsEngine. It releases the current swap
-//               chain / creates a new one. If this is the initial
-//               window and swapchain is false, then it calls reset_
-//               main_device to Reset the device.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the window framebuffer right now.  Called from graphicsEngine.  It
+ * releases the current swap chain / creates a new one.  If this is the initial
+ * window and swapchain is false, then it calls reset_ main_device to Reset the
+ * device.
+ */
 void wdxGraphicsWindow9::
 reset_window(bool swapchain) {
   if (swapchain) {
@@ -388,15 +355,12 @@ reset_window(bool swapchain) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::fullscreen_restored
-//       Access: Protected, Virtual
-//  Description: This is a hook for derived classes to do something
-//               special, if necessary, when a fullscreen window has
-//               been restored after being minimized.  The given
-//               WindowProperties struct will be applied to this
-//               window's properties after this function returns.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a hook for derived classes to do something special, if necessary,
+ * when a fullscreen window has been restored after being minimized.  The given
+ * WindowProperties struct will be applied to this window's properties after
+ * this function returns.
+ */
 void wdxGraphicsWindow9::
 fullscreen_restored(WindowProperties &properties) {
   // In DX8, unlike DX7, for some reason we can't immediately start
@@ -409,13 +373,10 @@ fullscreen_restored(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::handle_reshape
-//       Access: Protected, Virtual
-//  Description: Called in the window thread when the window size or
-//               location is changed, this updates the properties
-//               structure accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called in the window thread when the window size or location is changed, this
+ * updates the properties structure accordingly.
+ */
 void wdxGraphicsWindow9::
 handle_reshape() {
   GdiFlush();
@@ -449,12 +410,9 @@ handle_reshape() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::do_fullscreen_resize
-//       Access: Protected, Virtual
-//  Description: Called in the window thread to resize a fullscreen
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called in the window thread to resize a fullscreen window.
+ */
 bool wdxGraphicsWindow9::
 do_fullscreen_resize(int x_size, int y_size) {
   if (!WinGraphicsWindow::do_fullscreen_resize(x_size, y_size)) {
@@ -525,14 +483,10 @@ do_fullscreen_resize(int x_size, int y_size) {
   return bResizeSucceeded;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::create_screen_buffers_and_device
-//       Access: Private
-//  Description: Called whenever the window is resized, this recreates
-//               the necessary buffers for rendering.
-//
-//               Sets _depth_buffer_bpp appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the window is resized, this recreates the necessary buffers
+ * for rendering.  Sets _depth_buffer_bpp appropriately.
+ */
 bool wdxGraphicsWindow9::
 create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer) {
   wdxGraphicsPipe9 *dxpipe;
@@ -889,14 +843,10 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::choose_device
-//       Access: Private
-//  Description: Looks at the list of available graphics adapters and
-//               chooses a suitable one for the window.
-//
-//               Returns true if successful, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks at the list of available graphics adapters and chooses a suitable one
+ * for the window.  Returns true if successful, false on failure.
+ */
 bool wdxGraphicsWindow9::
 choose_device() {
   HRESULT hr;
@@ -1007,13 +957,10 @@ choose_device() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::consider_device
-//       Access: Private
-//  Description: If the specified device is acceptable, sets it as the
-//               current device and returns true; otherwise, returns
-//               false.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the specified device is acceptable, sets it as the current device and
+ * returns true; otherwise, returns false.
+ */
 bool wdxGraphicsWindow9::
 consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
@@ -1166,13 +1113,10 @@ consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::reset_device_resize_window
-//       Access: Private
-//  Description: Called after a window (either fullscreen or windowed)
-//               has been resized, this recreates the D3D structures
-//               to match the new size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a window (either fullscreen or windowed) has been resized, this
+ * recreates the D3D structures to match the new size.
+ */
 bool wdxGraphicsWindow9::
 reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   bool retval = true;
@@ -1222,16 +1166,11 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   return retval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::init_resized_window
-//       Access: Private
-//  Description: Reinitializes the window after it has been resized,
-//               or after it is first created.
-//
-//               Assumes CreateDevice or Device->Reset() has just been
-//               called, and the new size is specified in
-//               _wcontext._presentation_params.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reinitializes the window after it has been resized, or after it is first
+ * created.  Assumes CreateDevice or Device->Reset() has just been called, and
+ * the new size is specified in _wcontext._presentation_params.
+ */
 void wdxGraphicsWindow9::
 init_resized_window() {
   HRESULT hr;
@@ -1305,12 +1244,10 @@ init_resized_window() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::D3DFMT_to_DepthBits
-//       Access: Private, Static
-//  Description: Returns the number of depth bits represented by the
-//               indicated D3DFORMAT value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of depth bits represented by the indicated D3DFORMAT
+ * value.
+ */
 int wdxGraphicsWindow9::
 D3DFMT_to_DepthBits(D3DFORMAT fmt) {
   switch(fmt) {
@@ -1335,13 +1272,10 @@ D3DFMT_to_DepthBits(D3DFORMAT fmt) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::is_badvidmem_card
-//       Access: Private, Static
-//  Description: Returns true if the indicated video adapter card is
-//               known to report an inaccurate figure for available
-//               video memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated video adapter card is known to report an
+ * inaccurate figure for available video memory.
+ */
 bool wdxGraphicsWindow9::
 is_badvidmem_card(D3DADAPTER_IDENTIFIER9 *pDevID) {
   // don't trust Intel cards since they often use regular memory as vidmem
@@ -1351,4 +1285,3 @@ is_badvidmem_card(D3DADAPTER_IDENTIFIER9 *pDevID) {
 
   return false;
 }
-

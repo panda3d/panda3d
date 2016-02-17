@@ -1,18 +1,18 @@
-// Filename: graphicsStateGuardian.h
-// Created by:  drose (02eb99)
-// Updated by: fperazzi, PandaSE (05May10) (added fetch_ptr_parameter,
-//  _max_2d_texture_array_layers on z axis, get_supports_cg_profile)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsStateGuardian.h
+ * @author drose
+ * @date 1999-02-02
+ * @author fperazzi, PandaSE
+ * @date 2010-05-05
+ *  _max_2d_texture_array_layers on z axis, get_supports_cg_profile)
+ */
 
 #ifndef GRAPHICSSTATEGUARDIAN_H
 #define GRAPHICSSTATEGUARDIAN_H
@@ -54,16 +54,12 @@
 class DrawableRegion;
 class GraphicsEngine;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsStateGuardian
-// Description : Encapsulates all the communication with a particular
-//               instance of a given rendering backend.  Tries to
-//               guarantee that redundant state-change requests are
-//               not issued (hence "state guardian").
-//
-//               There will be one of these objects for each different
-//               graphics context active in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates all the communication with a particular instance of a given
+ * rendering backend.  Tries to guarantee that redundant state-change requests
+ * are not issued (hence "state guardian").  There will be one of these objects
+ * for each different graphics context active in the system.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsStateGuardian : public GraphicsStateGuardianBase {
   //
   // Interfaces all GSGs should have

@@ -1,16 +1,15 @@
-// Filename: simpleAllocator.h
-// Created by:  drose (12May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file simpleAllocator.h
+ * @author drose
+ * @date 2007-05-12
+ */
 
 #ifndef SIMPLEALLOCATOR_H
 #define SIMPLEALLOCATOR_H
@@ -22,14 +21,11 @@
 
 class SimpleAllocatorBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleAllocator
-// Description : An implementation of a very simple block allocator.
-//               This class can allocate ranges of nonnegative
-//               integers within a specified upper limit; it uses a
-//               simple first-fit algorithm to find the next available
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * An implementation of a very simple block allocator.  This class can allocate
+ * ranges of nonnegative integers within a specified upper limit; it uses a
+ * simple first-fit algorithm to find the next available space.
+ */
 class EXPCL_PANDA_GOBJ SimpleAllocator : public LinkedListNode {
 PUBLISHED:
   INLINE SimpleAllocator(size_t max_size, Mutex &lock);
@@ -87,11 +83,9 @@ protected:
   friend class SimpleAllocatorBlock;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleAllocatorBlock
-// Description : A single block as returned from
-//               SimpleAllocator::alloc().
-////////////////////////////////////////////////////////////////////
+/**
+ * A single block as returned from SimpleAllocator::alloc().
+ */
 class EXPCL_PANDA_GOBJ SimpleAllocatorBlock : public LinkedListNode {
 protected:
   INLINE SimpleAllocatorBlock(SimpleAllocator *alloc,

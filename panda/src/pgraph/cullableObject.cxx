@@ -1,16 +1,15 @@
-// Filename: cullableObject.cxx
-// Created by:  drose (04Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullableObject.cxx
+ * @author drose
+ * @date 2002-03-04
+ */
 
 #include "cullableObject.h"
 #include "lightAttrib.h"
@@ -43,17 +42,12 @@ PStatCollector CullableObject::_sw_sprites_pcollector("SW Sprites");
 
 TypeHandle CullableObject::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::munge_geom
-//       Access: Public
-//  Description: Uses the indicated GeomMunger to transform the geom
-//               and/or its vertices.
-//
-//               If force is false, this may do nothing and return
-//               false if the vertex data is nonresident.  If force is
-//               true, this will always return true, but it may have
-//               to block while the vertex data is paged in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the indicated GeomMunger to transform the geom and/or its vertices.  If
+ * force is false, this may do nothing and return false if the vertex data is
+ * nonresident.  If force is true, this will always return true, but it may have
+ * to block while the vertex data is paged in.
+ */
 bool CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
            GeomMunger *munger, const CullTraverser *traverser,
@@ -177,11 +171,9 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CullableObject::
 output(ostream &out) const {
   if (_geom != (Geom *)NULL) {
@@ -191,14 +183,10 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::munge_points_to_quads
-//       Access: Private
-//  Description: Converts a table of points to quads for rendering on
-//               systems that don't support fancy points.
-//
-//               This may replace _geom, _munged_data, and _state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a table of points to quads for rendering on systems that don't
+ * support fancy points.  This may replace _geom, _munged_data, and _state.
+ */
 bool CullableObject::
 munge_points_to_quads(const CullTraverser *traverser, bool force) {
   Thread *current_thread = traverser->get_current_thread();
@@ -595,13 +583,10 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::get_flash_cpu_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for flashing the object red, to
-//               show it is animated by the CPU when
-//               show-vertex-animation is on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for flashing the object red, to show it is animated by
+ * the CPU when show-vertex-animation is on.
+ */
 CPT(RenderState) CullableObject::
 get_flash_cpu_state() {
   static const LColor flash_cpu_color(0.8f, 0.2, 0.2, 1.0f);
@@ -619,13 +604,10 @@ get_flash_cpu_state() {
   return flash_cpu_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::get_flash_hardware_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for flashing the object blue,
-//               to show it is animated by the hardware when
-//               show-vertex-animation is on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for flashing the object blue, to show it is animated by
+ * the hardware when show-vertex-animation is on.
+ */
 CPT(RenderState) CullableObject::
 get_flash_hardware_state() {
   static const LColor flash_hardware_color(0.2, 0.2, 0.8, 1.0);
@@ -643,11 +625,9 @@ get_flash_hardware_state() {
   return flash_hardware_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::SourceFormat::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CullableObject::SourceFormat::
 SourceFormat(const GeomVertexFormat *format, bool sprite_texcoord) :
   _format(format),

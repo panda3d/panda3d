@@ -1,16 +1,15 @@
-// Filename: scissorEffect.cxx
-// Created by:  drose (30Jul08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file scissorEffect.cxx
+ * @author drose
+ * @date 2008-07-30
+ */
 
 #include "scissorEffect.h"
 #include "scissorAttrib.h"
@@ -26,16 +25,13 @@
 
 TypeHandle ScissorEffect::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::Constructor
-//       Access: Private
-//  Description: Use ScissorEffect::make() to construct a new
-//               ScissorEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use ScissorEffect::make() to construct a new ScissorEffect object.
+ */
 ScissorEffect::
 ScissorEffect(bool screen, const LVecBase4 &frame,
               const PointDef *points, int num_points, bool clip) :
-  _screen(screen), _frame(frame), _clip(clip) 
+  _screen(screen), _frame(frame), _clip(clip)
 {
   _points.reserve(num_points);
   for (int i = 0; i < num_points; ++i) {
@@ -43,57 +39,44 @@ ScissorEffect(bool screen, const LVecBase4 &frame,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::Copy Constructor
-//       Access: Private
-//  Description: Use ScissorEffect::make() to construct a new
-//               ScissorEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use ScissorEffect::make() to construct a new ScissorEffect object.
+ */
 ScissorEffect::
 ScissorEffect(const ScissorEffect &copy) :
-  _screen(copy._screen), 
+  _screen(copy._screen),
   _frame(copy._frame),
   _points(copy._points),
   _clip(copy._clip)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::make_screen
-//       Access: Published, Static
-//  Description: Constructs a new screen-relative ScissorEffect.  The
-//               frame defines a left, right, bottom, top region,
-//               relative to the DisplayRegion.  See ScissorAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new screen-relative ScissorEffect.  The frame defines a left,
+ * right, bottom, top region, relative to the DisplayRegion.  See ScissorAttrib.
+ */
 CPT(RenderEffect) ScissorEffect::
 make_screen(const LVecBase4 &frame, bool clip) {
   ScissorEffect *effect = new ScissorEffect(true, frame, NULL, 0, clip);
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::make_node
-//       Access: Published, Static
-//  Description: Constructs a new node-relative ScissorEffect, with no
-//               points.  This empty ScissorEffect does nothing.  You
-//               must then call add_point a number of times to add the
-//               points you require.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new node-relative ScissorEffect, with no points.  This empty
+ * ScissorEffect does nothing.  You must then call add_point a number of times
+ * to add the points you require.
+ */
 CPT(RenderEffect) ScissorEffect::
 make_node(bool clip) {
   ScissorEffect *effect = new ScissorEffect(false, LVecBase4::zero(), NULL, 0, clip);
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::make_node
-//       Access: Published, Static
-//  Description: Constructs a new node-relative ScissorEffect.  The
-//               two points are understood to be relative to the
-//               indicated node, or the current node if the NodePath
-//               is empty, and determine the diagonally opposite
-//               corners of the scissor region.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new node-relative ScissorEffect.  The two points are understood
+ * to be relative to the indicated node, or the current node if the NodePath is
+ * empty, and determine the diagonally opposite corners of the scissor region.
+ */
 CPT(RenderEffect) ScissorEffect::
 make_node(const LPoint3 &a, const LPoint3 &b, const NodePath &node) {
   PointDef points[2];
@@ -105,15 +88,11 @@ make_node(const LPoint3 &a, const LPoint3 &b, const NodePath &node) {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::make_node
-//       Access: Published, Static
-//  Description: Constructs a new node-relative ScissorEffect.  The
-//               four points are understood to be relative to the
-//               indicated node, or the current node if the indicated
-//               NodePath is empty, and determine four points
-//               surrounding the scissor region.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new node-relative ScissorEffect.  The four points are understood
+ * to be relative to the indicated node, or the current node if the indicated
+ * NodePath is empty, and determine four points surrounding the scissor region.
+ */
 CPT(RenderEffect) ScissorEffect::
 make_node(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c, const LPoint3 &d, const NodePath &node) {
   PointDef points[4];
@@ -129,18 +108,12 @@ make_node(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c, const LPoint3 &d
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::add_point
-//       Access: Published
-//  Description: Returns a new ScissorEffect with the indicated point
-//               added.  It is only valid to call this on a "node"
-//               type ScissorEffect.  The full set of points,
-//               projected into screen space, defines the bounding
-//               volume of the rectangular scissor region.
-//
-//               Each point may be relative to a different node, if
-//               desired.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ScissorEffect with the indicated point added.  It is only valid
+ * to call this on a "node" type ScissorEffect.  The full set of points,
+ * projected into screen space, defines the bounding volume of the rectangular
+ * scissor region.  Each point may be relative to a different node, if desired.
+ */
 CPT(RenderEffect) ScissorEffect::
 add_point(const LPoint3 &p, const NodePath &node) const {
   nassertr(!is_screen(), this);
@@ -152,12 +125,9 @@ add_point(const LPoint3 &p, const NodePath &node) const {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::xform
-//       Access: Public, Virtual
-//  Description: Returns a new RenderEffect transformed by the
-//               indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderEffect transformed by the indicated matrix.
+ */
 CPT(RenderEffect) ScissorEffect::
 xform(const LMatrix4 &mat) const {
   if (is_screen()) {
@@ -176,11 +146,9 @@ xform(const LMatrix4 &mat) const {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ScissorEffect::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -203,37 +171,26 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this effect during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if cull_callback() has
+ * been defined.  Otherwise, returns false to indicate cull_callback() does not
+ * need to be called for this effect during the cull traversal.
+ */
 bool ScissorEffect::
 has_cull_callback() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::cull_callback
-//       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
-//
-//               At the time this function is called, the current
-//               node's transform and state have not yet been applied
-//               to the net_transform and net_state.  This callback
-//               may modify the node_transform and node_state to apply
-//               an effective change to the render state at this
-//               level.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_cull_callback() returns true, this function will be called during the
+ * cull traversal to perform any additional operations that should be performed
+ * at cull time.  This may include additional manipulation of render state or
+ * additional visible/invisible decisions, or any other arbitrary operation.  At
+ * the time this function is called, the current node's transform and state have
+ * not yet been applied to the net_transform and net_state.  This callback may
+ * modify the node_transform and node_state to apply an effective change to the
+ * render state at this level.
+ */
 void ScissorEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
@@ -286,7 +243,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
         frame[3] = max(frame[3], pr[1]);
       }
     }
-    
+
     // Scale from -1..1 to 0..1.
     frame[0] = (frame[0] + 1.0f) * 0.5f;
     frame[1] = (frame[1] + 1.0f) * 0.5f;
@@ -303,7 +260,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   if (_clip) {
     CPT(RenderAttrib) scissor_attrib = ScissorAttrib::make(frame);
     CPT(RenderState) state = RenderState::make(scissor_attrib);
-    node_state = node_state->compose(state); 
+    node_state = node_state->compose(state);
   }
 
   // Set up the culling.  We do this by extruding the four corners of
@@ -315,21 +272,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ScissorEffect
-//               types to return a unique number indicating whether
-//               this ScissorEffect is equivalent to the other one.
-//
-//               This should return 0 if the two ScissorEffect objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two ScissorEffect
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived ScissorEffect types to return a unique
+ * number indicating whether this ScissorEffect is equivalent to the other one.
+ * This should return 0 if the two ScissorEffect objects are equivalent, a
+ * number less than zero if this one should be sorted before the other one, and
+ * a number greater than zero otherwise.  This will only be called with two
+ * ScissorEffect objects whose get_type() functions return the same.
+ */
 int ScissorEffect::
 compare_to_impl(const RenderEffect *other) const {
   const ScissorEffect *ta;
@@ -365,23 +315,18 @@ compare_to_impl(const RenderEffect *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               ScissorEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type ScissorEffect.
+ */
 void ScissorEffect::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void ScissorEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
@@ -399,14 +344,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_bool(_clip);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type ScissorEffect is encountered
-//               in the Bam file.  It should create the ScissorEffect
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * ScissorEffect is encountered in the Bam file.  It should create the
+ * ScissorEffect and extract its information from the file.
+ */
 TypedWritable *ScissorEffect::
 make_from_bam(const FactoryParams &params) {
   ScissorEffect *effect = new ScissorEffect(true, LVecBase4::zero(), NULL, 0, false);
@@ -419,13 +361,10 @@ make_from_bam(const FactoryParams &params) {
   return effect;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new ScissorEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new ScissorEffect.
+ */
 void ScissorEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);
@@ -445,12 +384,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _clip = scan.get_bool();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::make_frustum
-//       Access: Private
-//  Description: Constructs a new bounding frustum from the lens
-//               properties, given the indicated scissor frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new bounding frustum from the lens properties, given the
+ * indicated scissor frame.
+ */
 PT(GeometricBoundingVolume) ScissorEffect::
 make_frustum(const Lens *lens, const LVecBase4 &frame) const{
   // Scale the frame from 0 .. 1 into -1 .. 1.

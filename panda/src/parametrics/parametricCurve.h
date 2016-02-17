@@ -1,16 +1,15 @@
-// Filename: parametricCurve.h
-// Created by:  drose (04Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file parametricCurve.h
+ * @author drose
+ * @date 2001-03-04
+ */
 
 #ifndef PARAMETRICCURVE_H
 #define PARAMETRICCURVE_H
@@ -51,12 +50,10 @@ class NurbsCurve;
 class NurbsCurveInterface;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParametricCurve
-// Description : A virtual base class for parametric curves.
-//               This encapsulates all curves in 3-d space defined
-//               for a single parameter t in the range [0,get_max_t()].
-////////////////////////////////////////////////////////////////////
+/**
+ * A virtual base class for parametric curves.  This encapsulates all curves in
+ * 3-d space defined for a single parameter t in the range [0,get_max_t()].
+ */
 class EXPCL_PANDA_PARAMETRICS ParametricCurve : public PandaNode {
 PUBLISHED:
   ParametricCurve();

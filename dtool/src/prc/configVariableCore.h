@@ -1,16 +1,15 @@
-// Filename: configVariableCore.h
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableCore.h
+ * @author drose
+ * @date 2004-10-15
+ */
 
 #ifndef CONFIGVARIABLECORE_H
 #define CONFIGVARIABLECORE_H
@@ -24,17 +23,13 @@
 
 class ConfigDeclaration;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableCore
-// Description : The internal definition of a ConfigVariable.  This
-//               object is shared between all instances of a
-//               ConfigVariable that use the same variable name.
-//
-//               You cannot create a ConfigVariableCore instance
-//               directly; instead, use the make() method, which may
-//               return a shared instance.  Once created, these
-//               objects are never destructed.
-////////////////////////////////////////////////////////////////////
+/**
+ * The internal definition of a ConfigVariable.  This object is shared between
+ * all instances of a ConfigVariable that use the same variable name.  You
+ * cannot create a ConfigVariableCore instance directly; instead, use the make()
+ * method, which may return a shared instance.  Once created, these objects are
+ * never destructed.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableCore : public ConfigFlags {
 private:
   ConfigVariableCore(const string &name);

@@ -1,16 +1,15 @@
-// Filename: dcField.h
-// Created by:  drose (11Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcField.h
+ * @author drose
+ * @date 2000-10-11
+ */
 
 #ifndef DCFIELD_H
 #define DCFIELD_H
@@ -32,11 +31,9 @@ class DCSwitch;
 class DCClass;
 class HashGenerator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCField
-// Description : A single field of a Distributed Class, either atomic
-//               or molecular.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single field of a Distributed Class, either atomic or molecular.
+ */
 class EXPCL_DIRECT DCField : public DCPackerInterface, public DCKeywordList {
 public:
   DCField();
@@ -90,7 +87,7 @@ PUBLISHED:
                             PyObject *args) const;
   Datagram ai_format_update_msg_type(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
                             int msg_type, PyObject *args) const;
-#endif 
+#endif
 
 public:
   virtual void output(ostream &out, bool brief) const=0;

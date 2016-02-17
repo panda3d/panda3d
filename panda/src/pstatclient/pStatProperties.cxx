@@ -1,16 +1,15 @@
-// Filename: pStatProperties.cxx
-// Created by:  drose (17May01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatProperties.cxx
+ * @author drose
+ * @date 2001-05-17
+ */
 
 #include "pStatProperties.h"
 #include "pStatCollectorDef.h"
@@ -30,31 +29,23 @@ static const int current_pstat_minor_version = 0;
 // Incremented to 2.1 on 5/21/01 to add support for TCP frame data.
 // Incremented to 3.0 on 4/28/05 to bump TCP headers to 32 bits.
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_current_pstat_major_version
-//  Description: Returns the current major version number of the
-//               PStats protocol.  This is the version number that
-//               will be reported by clients running this code, and
-//               that will be expected by servers running this code.
-//
-//               The major version numbers must match exactly in order
-//               for a communication to be successful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current major version number of the PStats protocol.  This is the
+ * version number that will be reported by clients running this code, and that
+ * will be expected by servers running this code.  The major version numbers
+ * must match exactly in order for a communication to be successful.
+ */
 int
 get_current_pstat_major_version() {
   return current_pstat_major_version;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_current_pstat_minor_version
-//  Description: Returns the current minor version number of the
-//               PStats protocol.  This is the version number that
-//               will be reported by clients running this code, and
-//               that will be expected by servers running this code.
-//
-//               The minor version numbers need not match exactly, but
-//               the server must be >= the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current minor version number of the PStats protocol.  This is the
+ * version number that will be reported by clients running this code, and that
+ * will be expected by servers running this code.  The minor version numbers
+ * need not match exactly, but the server must be >= the client.
+ */
 int
 get_current_pstat_minor_version() {
   return current_pstat_minor_version;
@@ -63,27 +54,20 @@ get_current_pstat_minor_version() {
 
 #ifdef DO_PSTATS
 
-////////////////////////////////////////////////////////////////////
-//
-// The rest of this file defines the predefined properties (color,
-// sort, etc.) for the various PStatCollectors that may be defined
-// within Panda or even elsewhere.
-//
-// It is a little strange to defined these properties here instead of
-// where the collectors are actually declared, but it's handy to have
-// them all in one place, so we can easily see which colors are
-// available, etc.  It also makes the declarations a lot simpler,
-// since there are quite a few esoteric parameters to specify.
-//
-// We could define these in some external data file that is read in at
-// runtime, so that you could extend this list without having to
-// relink panda, but then there are the usual problems with ensuring
-// that the file is available to you at runtime.  The heck with it.
-//
-// At least, no other file depends on this file, so it may be modified
-// without forcing anything else to be recompiled.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * The rest of this file defines the predefined properties (color, sort, etc.)
+ * for the various PStatCollectors that may be defined within Panda or even
+ * elsewhere.  It is a little strange to defined these properties here instead
+ * of where the collectors are actually declared, but it's handy to have them
+ * all in one place, so we can easily see which colors are available, etc.  It
+ * also makes the declarations a lot simpler, since there are quite a few
+ * esoteric parameters to specify.  We could define these in some external data
+ * file that is read in at runtime, so that you could extend this list without
+ * having to relink panda, but then there are the usual problems with ensuring
+ * that the file is available to you at runtime.  The heck with it.  At least,
+ * no other file depends on this file, so it may be modified without forcing
+ * anything else to be recompiled.
+ */
 
 typedef PStatCollectorDef::ColorDef ColorDef;
 
@@ -234,12 +218,10 @@ static LevelCollectorProperties level_properties[] = {
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: initialize_collector_def_from_table
-//  Description: Looks up the collector in the compiled-in table
-//               defined above, and sets its properties appropriately
-//               if it is found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the collector in the compiled-in table defined above, and sets its
+ * properties appropriately if it is found.
+ */
 static void
 initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *def) {
   int i;
@@ -286,14 +268,12 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: initialize_collector_def
-//  Description: This is the only accessor function into this table.
-//               The PStatCollectorDef constructor calls it when a new
-//               PStatCollectorDef is created.  It should look up in
-//               the table and find a matching definition for this def
-//               by name; if one is found, the properties are applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the only accessor function into this table.  The PStatCollectorDef
+ * constructor calls it when a new PStatCollectorDef is created.  It should look
+ * up in the table and find a matching definition for this def by name; if one
+ * is found, the properties are applied.
+ */
 void
 initialize_collector_def(const PStatClient *client, PStatCollectorDef *def) {
   string fullname;

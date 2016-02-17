@@ -1,27 +1,24 @@
-// Filename: xFileVertex.cxx
-// Created by:  drose (19Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileVertex.cxx
+ * @author drose
+ * @date 2001-06-19
+ */
 
 #include "xFileVertex.h"
 #include "eggVertex.h"
 #include "eggPrimitive.h"
 #include "config_xfile.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileVertex::
 XFileVertex() {
   _has_color = false;
@@ -31,11 +28,9 @@ XFileVertex() {
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::set_from_egg
-//       Access: Public
-//  Description: Sets the structure up from the indicated egg data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the structure up from the indicated egg data.
+ */
 void XFileVertex::
 set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   LVertexd pos = egg_vertex->get_pos3();
@@ -76,11 +71,9 @@ set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::compare_to
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int XFileVertex::
 compare_to(const XFileVertex &other) const {
   int ct;

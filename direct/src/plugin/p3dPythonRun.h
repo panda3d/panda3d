@@ -1,16 +1,15 @@
-// Filename: p3dPythonRun.h
-// Created by:  drose (05Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPythonRun.h
+ * @author drose
+ * @date 2009-06-05
+ */
 
 #ifndef P3DPYTHONRUN_H
 #define P3DPYTHONRUN_H
@@ -44,30 +43,22 @@ typedef int Py_ssize_t;
 
 using namespace std;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DPythonRun
-// Description : This class is used to run, and communicate with,
-//               embedded Python in a sub-process.  It is compiled and
-//               launched as a separate executable from the p3d_plugin
-//               dll, because that's the only way Windows can launch a
-//               sub-process, and also because it makes it possible to
-//               compile-time link with Panda and Python, instead of
-//               having to go through the clumsy dynamic-loading
-//               interface.
-//
-//               Communication is via XML files exchanged via
-//               anonymous pipes from the parent process.  This isn't
-//               terribly eficient, of course, but it's easy; and it's
-//               a fairly low-bandwidth channel so efficiency is not
-//               paramount.
-//
-//               This executable is not designed to stand alone; it is
-//               designed to be invoked only by p3d_plugin.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to run, and communicate with, embedded Python in a sub-
+ * process.  It is compiled and launched as a separate executable from the
+ * p3d_plugin dll, because that's the only way Windows can launch a sub-process,
+ * and also because it makes it possible to compile-time link with Panda and
+ * Python, instead of having to go through the clumsy dynamic-loading interface.
+ * Communication is via XML files exchanged via anonymous pipes from the parent
+ * process.  This isn't terribly eficient, of course, but it's easy; and it's a
+ * fairly low-bandwidth channel so efficiency is not paramount.  This executable
+ * is not designed to stand alone; it is designed to be invoked only by
+ * p3d_plugin.
+ */
 class P3DPythonRun {
 public:
   P3DPythonRun(const char *program_name, const char *archive_file,
-               FHandle input_handle, FHandle output_handle, 
+               FHandle input_handle, FHandle output_handle,
                const char *log_pathname, bool interactive_console);
   ~P3DPythonRun();
 
@@ -102,7 +93,7 @@ private:
   void setup_window(P3DCInstance *inst, TiXmlElement *xwparams);
 
   void send_windows_message(int id, unsigned int msg, int wparam, int lparam);
-  
+
   void terminate_session();
 
 private:
@@ -143,7 +134,7 @@ private:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -194,7 +185,7 @@ private:
 
   // The remaining members are manipulated by the read thread.
   Commands _commands;
-  
+
   // This has to be an actual OS LOCK instead of Panda's Mutex,
   // because we have to use a true thread here, not one of Panda's
   // simple threads.
@@ -216,4 +207,3 @@ public:
 #include "p3dPythonRun.I"
 
 #endif
-

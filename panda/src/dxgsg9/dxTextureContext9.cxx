@@ -1,16 +1,15 @@
-// Filename: dxTextureContext9.cxx
-// Created by:  georges (02Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxTextureContext9.cxx
+ * @author georges
+ * @date 2002-02-02
+ */
 
 #include "config_dxgsg9.h"
 #include "dxGraphicsStateGuardian9.h"
@@ -29,11 +28,9 @@ TypeHandle DXTextureContext9::_type_handle;
 
 static const DWORD g_LowByteMask = 0x000000FF;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXTextureContext9::
 DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
   TextureContext(pgo, tex, view) {
@@ -52,31 +49,22 @@ DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
   _managed = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXTextureContext9::
 ~DXTextureContext9() {
   delete_texture();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::evict_lru
-//       Access: Public, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines that
+ * it is full.  May also be called externally when necessary to explicitly evict
+ * the page.  It is legal for this method to either evict the page as requested,
+ * do nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void DXTextureContext9::
 evict_lru() {
   if (get_texture()->get_render_to_texture()) {
@@ -96,16 +84,12 @@ evict_lru() {
   mark_unloaded();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::create_texture
-//       Access: Public
-//  Description: Use panda texture's pixelbuffer to create a texture
-//               for the specified device.  This code gets the
-//               attributes of the texture from the bitmap, creates
-//               the texture, and then copies the bitmap into the
-//               texture.  The return value is true if the texture is
-//               successfully created, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use panda texture's pixelbuffer to create a texture for the specified device.
+ * This code gets the attributes of the texture from the bitmap, creates the
+ * texture, and then copies the bitmap into the texture.  The return value is
+ * true if the texture is successfully created, false otherwise.
+ */
 bool DXTextureContext9::
 create_texture(DXScreenData &scrn) {
 
@@ -702,8 +686,6 @@ create_texture(DXScreenData &scrn) {
     << "; NeedLuminance: " << needs_luminance << endl;
   goto error_exit;
 
-////////////////////////////////////////////////////////////////////
-
  found_matching_format:
   // We found a suitable format that matches the texture's format.
 
@@ -1090,11 +1072,9 @@ create_texture(DXScreenData &scrn) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::create_simple_texture
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool DXTextureContext9::
 create_simple_texture(DXScreenData &scrn) {
   nassertr(IS_VALID_PTR(get_texture()), false);
@@ -1179,11 +1159,9 @@ create_simple_texture(DXScreenData &scrn) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::delete_texture
-//       Access: Public
-//  Description: Release the surface used to store the texture
-////////////////////////////////////////////////////////////////////
+/**
+ * Release the surface used to store the texture
+ */
 void DXTextureContext9::
 delete_texture() {
 
@@ -1198,14 +1176,11 @@ delete_texture() {
   _d3d_cube_texture = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::extract_texture_data
-//       Access: Public
-//  Description: This method will be called in the draw thread to
-//               download the texture memory's image into its
-//               ram_image value.  It returns true on success, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method will be called in the draw thread to download the texture
+ * memory's image into its ram_image value.  It returns true on success, false
+ * otherwise.
+ */
 bool DXTextureContext9::
 extract_texture_data(DXScreenData &screen) {
   bool state;
@@ -1442,12 +1417,9 @@ extract_texture_data(DXScreenData &screen) {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::d3d_surface_to_texture
-//       Access: Public, Static
-//  Description: copies source_rect in pD3DSurf to upper left of
-//               texture
-////////////////////////////////////////////////////////////////////
+/**
+ * copies source_rect in pD3DSurf to upper left of texture
+ */
 HRESULT DXTextureContext9::
 d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
            bool inverted, Texture *result, int view, int z) {
@@ -1704,14 +1676,11 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
   return S_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: calculate_row_byte_length
-//       Access: Private, Hidden
-//  Description: local helper function, which calculates the
-//               'row_byte_length' or 'pitch' needed for calling
-//               D3DXLoadSurfaceFromMemory.
-//               Takes compressed formats (DXTn) into account.
-////////////////////////////////////////////////////////////////////
+/**
+ * local helper function, which calculates the 'row_byte_length' or 'pitch'
+ * needed for calling D3DXLoadSurfaceFromMemory.  Takes compressed formats
+ * (DXTn) into account.
+ */
 static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFORMAT tex_format)
 {
     UINT source_row_byte_length = 0;
@@ -1740,14 +1709,10 @@ static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFOR
     return source_row_byte_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::fill_d3d_texture_mipmap_pixels
-//       Access: Private
-//  Description: Called from fill_d3d_texture_pixels, this function
-//               fills a single mipmap with texture data.
-//               Takes care of all necessary conversions and error
-//               handling.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from fill_d3d_texture_pixels, this function fills a single mipmap with
+ * texture data.  Takes care of all necessary conversions and error handling.
+ */
 HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format)
 {
   // This whole function was refactored out of fill_d3d_texture_pixels to make the code
@@ -1884,11 +1849,9 @@ exit_FillMipmapSurf:
   return hr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::fill_d3d_texture_pixels
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HRESULT DXTextureContext9::
 fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
   IDirect3DDevice9 *device = scrn._d3d_device;
@@ -2082,11 +2045,9 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::fill_d3d_volume_texture_pixels
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HRESULT DXTextureContext9::
 fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
   Texture *tex = get_texture();
@@ -2275,12 +2236,9 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::down_to_power_2
-//       Access: Private, Static
-//  Description: Returns the largest power of 2 less than or equal
-//               to value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the largest power of 2 less than or equal to value.
+ */
 int DXTextureContext9::
 down_to_power_2(int value) {
   int x = 1;
@@ -2290,14 +2248,11 @@ down_to_power_2(int value) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::get_bits_per_pixel
-//       Access: Private
-//  Description: Maps from the Texture's Format symbols to bpp.
-//               Returns # of alpha bits.  Note: Texture's format
-//               indicates REQUESTED final format, not the stored
-//               format, which is indicated by pixelbuffer type
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's Format symbols to bpp.  Returns # of alpha bits.
+ * Note: Texture's format indicates REQUESTED final format, not the stored
+ * format, which is indicated by pixelbuffer type
+ */
 unsigned int DXTextureContext9::
 get_bits_per_pixel(Texture::Format format, int *alphbits) {
   *alphbits = 0;      // assume no alpha bits
@@ -2370,11 +2325,9 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
   return 8;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXTextureContext9::d3d_format_to_bytes_per_pixel
-//       Access: Private
-//  Description: Determines bytes per pixel from D3DFORMAT.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines bytes per pixel from D3DFORMAT.
+ */
 PN_stdfloat DXTextureContext9::
 d3d_format_to_bytes_per_pixel (D3DFORMAT format)
 {

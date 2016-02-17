@@ -1,16 +1,15 @@
-// Filename: eggMakeTube.h
-// Created by:  drose (01Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMakeTube.h
+ * @author drose
+ * @date 2003-10-01
+ */
 
 #ifndef EGGMAKETUBE_H
 #define EGGMAKETUBE_H
@@ -23,11 +22,10 @@ class EggGroup;
 class EggVertexPool;
 class EggVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMakeTube
-// Description : A program to generate an egg file representing a tube
-//               model, similar in shape to a CollisionTube.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to generate an egg file representing a tube model, similar in shape
+ * to a CollisionTube.
+ */
 class EggMakeTube : public EggMakeSomething {
 public:
   EggMakeTube();
@@ -55,4 +53,3 @@ private:
 };
 
 #endif
-

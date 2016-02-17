@@ -1,16 +1,15 @@
-// Filename: recorderFrame.cxx
-// Created by:  drose (28Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file recorderFrame.cxx
+ * @author drose
+ * @date 2004-01-28
+ */
 
 #include "recorderFrame.h"
 #include "recorderTable.h"
@@ -20,13 +19,10 @@
 
 TypeHandle RecorderFrame::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::play_frame
-//       Access: Public
-//  Description: Once the raw data has been read in from the session
-//               file, and the table has been decoded, decode the raw
-//               data and call play_frame on each recorder.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the raw data has been read in from the session file, and the table has
+ * been decoded, decode the raw data and call play_frame on each recorder.
+ */
 void RecorderFrame::
 play_frame(BamReader *manager) {
   DatagramIterator scan(_data, _data_pos);
@@ -36,23 +32,18 @@ play_frame(BamReader *manager) {
   nassertv(scan.get_remaining_size() == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Lens.
+ */
 void RecorderFrame::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void RecorderFrame::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -74,28 +65,20 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   _table->record_frame(manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-//
-//               This is the callback function that is made by the
-//               BamReader at some later point, after all of the
-//               required pointers have been filled in.  It is
-//               necessary because there might be forward references
-//               in a bam file; when we call read_pointer() in
-//               fillin(), the object may not have been read from the
-//               file yet, so we do not have a pointer available at
-//               that time.  Thus, instead of returning a pointer,
-//               read_pointer() simply reserves a later callback.
-//               This function provides that callback.  The calling
-//               object is responsible for keeping track of the number
-//               of times it called read_pointer() and extracting the
-//               same number of pointers out of the supplied vector,
-//               and storing them appropriately within the object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.  This is the
+ * callback function that is made by the BamReader at some later point, after
+ * all of the required pointers have been filled in.  It is necessary because
+ * there might be forward references in a bam file; when we call read_pointer()
+ * in fillin(), the object may not have been read from the file yet, so we do
+ * not have a pointer available at that time.  Thus, instead of returning a
+ * pointer, read_pointer() simply reserves a later callback.  This function
+ * provides that callback.  The calling object is responsible for keeping track
+ * of the number of times it called read_pointer() and extracting the same
+ * number of pointers out of the supplied vector, and storing them appropriately
+ * within the object.
+ */
 int RecorderFrame::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
@@ -107,14 +90,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Lens is encountered
-//               in the Bam file.  It should create the Lens
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * Lens is encountered in the Bam file.  It should create the Lens and extract
+ * its information from the file.
+ */
 TypedWritable *RecorderFrame::
 make_from_bam(const FactoryParams &params) {
   RecorderFrame *frame = new RecorderFrame;
@@ -127,13 +107,10 @@ make_from_bam(const FactoryParams &params) {
   return frame;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new RecorderFrame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new RecorderFrame.
+ */
 void RecorderFrame::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

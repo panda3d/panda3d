@@ -1,16 +1,15 @@
-// Filename: eggData.h
-// Created by:  drose (20Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggData.h
+ * @author drose
+ * @date 1999-01-20
+ */
 
 #ifndef EGGDATA_H
 #define EGGDATA_H
@@ -25,19 +24,14 @@
 
 class BamCacheRecord;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggData
-// Description : This is the primary interface into all the egg data,
-//               and the root of the egg file structure.  An EggData
-//               structure corresponds exactly with an egg file on the
-//               disk.
-//
-//               The EggData class inherits from EggGroupNode its
-//               collection of children, which are accessed by using
-//               the EggData itself as an STL container with begin()
-//               and end() calls.  The children of the EggData class
-//               are the toplevel nodes in the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary interface into all the egg data, and the root of the egg
+ * file structure.  An EggData structure corresponds exactly with an egg file on
+ * the disk.  The EggData class inherits from EggGroupNode its collection of
+ * children, which are accessed by using the EggData itself as an STL container
+ * with begin() and end() calls.  The children of the EggData class are the
+ * toplevel nodes in the egg file.
+ */
 class EXPCL_PANDAEGG EggData : public EggGroupNode {
 PUBLISHED:
   INLINE EggData();

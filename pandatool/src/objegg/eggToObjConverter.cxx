@@ -1,16 +1,15 @@
-// Filename: eggToObjConverter.cxx
-// Created by:  drose (19Dec12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToObjConverter.cxx
+ * @author drose
+ * @date 2012-12-19
+ */
 
 #include "eggToObjConverter.h"
 #include "config_objegg.h"
@@ -24,87 +23,67 @@
 #include "eggLine.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToObjConverter::
 EggToObjConverter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToObjConverter::
 EggToObjConverter(const EggToObjConverter &copy) :
   EggToSomethingConverter(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToObjConverter::
 ~EggToObjConverter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 EggToSomethingConverter *EggToObjConverter::
 make_copy() {
   return new EggToObjConverter(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string EggToObjConverter::
 get_name() const {
   return "obj";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string EggToObjConverter::
 get_extension() const {
   return "obj";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently save
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently save compressed files (with
+ * a .pz extension), false otherwise.
+ */
 bool EggToObjConverter::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::write_file
-//       Access: Public, Virtual
-//  Description: Handles the conversion of the internal EggData to the
-//               target file format, written to the specified
-//               filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the conversion of the internal EggData to the target file format,
+ * written to the specified filename.
+ */
 bool EggToObjConverter::
 write_file(const Filename &filename) {
   clear_error();
@@ -119,11 +98,9 @@ write_file(const Filename &filename) {
   return !had_error();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::process
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggToObjConverter::
 process(const Filename &filename) {
   _egg_data->flatten_transforms();
@@ -163,14 +140,11 @@ process(const Filename &filename) {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::collect_vertices
-//       Access: Private
-//  Description: Recursively walks the egg structure, looking for
-//               vertices referenced by polygons or points.  Any such
-//               vertices are added to the vertex tables for writing
-//               to the obj file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the egg structure, looking for vertices referenced by
+ * polygons or points.  Any such vertices are added to the vertex tables for
+ * writing to the obj file.
+ */
 void EggToObjConverter::
 collect_vertices(EggNode *egg_node) {
   if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
@@ -190,13 +164,10 @@ collect_vertices(EggNode *egg_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::write_faces
-//       Access: Private
-//  Description: Recursively walks the egg structure again, this time
-//               writing out the face records for any polygons,
-//               points, or lines encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the egg structure again, this time writing out the face
+ * records for any polygons, points, or lines encountered.
+ */
 void EggToObjConverter::
 write_faces(ostream &out, EggNode *egg_node) {
   if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
@@ -266,12 +237,9 @@ write_faces(ostream &out, EggNode *egg_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::write_group_reference
-//       Access: Private
-//  Description: Writes the "g" tag to describe this polygon's group,
-//               if needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the "g" tag to describe this polygon's group, if needed.
+ */
 void EggToObjConverter::
 write_group_reference(ostream &out, EggNode *egg_node) {
   EggGroupNode *egg_group = egg_node->get_parent();
@@ -290,13 +258,10 @@ write_group_reference(ostream &out, EggNode *egg_node) {
   _current_group = egg_group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::get_group_name
-//       Access: Private
-//  Description: Recursively determines the appropriate string to
-//               write for the "g" tag to describe a particular
-//               EggGroupNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively determines the appropriate string to write for the "g" tag to
+ * describe a particular EggGroupNode.
+ */
 void EggToObjConverter::
 get_group_name(string &group_name, EggGroupNode *egg_group) {
   string name = trim(egg_group->get_name());
@@ -320,12 +285,10 @@ get_group_name(string &group_name, EggGroupNode *egg_group) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::record_vertex
-//       Access: Private
-//  Description: Adds the indicated EggVertex to the unique vertex
-//               tables, for writing later by write_vertices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated EggVertex to the unique vertex tables, for writing later
+ * by write_vertices().
+ */
 void EggToObjConverter::
 record_vertex(EggVertex *vertex) {
   VertexDef &vdef = _vmap[vertex];
@@ -356,14 +319,11 @@ record_vertex(EggVertex *vertex) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::record_unique
-//       Access: Private
-//  Description: Records the indicated vertex value, returning the
-//               shared index if this value already appears elsewhere
-//               in the table, or the new unique index if this is the
-//               first time this value appears.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated vertex value, returning the shared index if this value
+ * already appears elsewhere in the table, or the new unique index if this is
+ * the first time this value appears.
+ */
 int EggToObjConverter::
 record_unique(UniqueVertices &unique, const LVecBase4d &vec) {
   // We record a zero-based index.  Note that we will actually write
@@ -374,51 +334,40 @@ record_unique(UniqueVertices &unique, const LVecBase4d &vec) {
   return (*ui).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::record_unique
-//       Access: Private
-//  Description: Records the indicated vertex value, returning the
-//               shared index if this value already appears elsewhere
-//               in the table, or the new unique index if this is the
-//               first time this value appears.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated vertex value, returning the shared index if this value
+ * already appears elsewhere in the table, or the new unique index if this is
+ * the first time this value appears.
+ */
 int EggToObjConverter::
 record_unique(UniqueVertices &unique, const LVecBase3d &vec) {
   return record_unique(unique, LVecBase4d(vec[0], vec[1], vec[2], 0.0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::record_unique
-//       Access: Private
-//  Description: Records the indicated vertex value, returning the
-//               shared index if this value already appears elsewhere
-//               in the table, or the new unique index if this is the
-//               first time this value appears.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated vertex value, returning the shared index if this value
+ * already appears elsewhere in the table, or the new unique index if this is
+ * the first time this value appears.
+ */
 int EggToObjConverter::
 record_unique(UniqueVertices &unique, const LVecBase2d &vec) {
   return record_unique(unique, LVecBase4d(vec[0], vec[1], 0.0, 0.0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::record_unique
-//       Access: Private
-//  Description: Records the indicated vertex value, returning the
-//               shared index if this value already appears elsewhere
-//               in the table, or the new unique index if this is the
-//               first time this value appears.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated vertex value, returning the shared index if this value
+ * already appears elsewhere in the table, or the new unique index if this is
+ * the first time this value appears.
+ */
 int EggToObjConverter::
 record_unique(UniqueVertices &unique, double pos) {
   return record_unique(unique, LVecBase4d(pos, 0.0, 0.0, 0.0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::write_vertices
-//       Access: Private
-//  Description: Actually writes the vertex values recorded in the
-//               indicated table to the obj output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually writes the vertex values recorded in the indicated table to the obj
+ * output stream.
+ */
 void EggToObjConverter::
 write_vertices(ostream &out, const string &prefix, int num_components,
                const UniqueVertices &unique) {
@@ -446,11 +395,9 @@ write_vertices(ostream &out, const string &prefix, int num_components,
   PANDA_FREE_ARRAY(vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObjConverter::VertexDef::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToObjConverter::VertexDef::
 VertexDef() :
   _vert3_index(-1),

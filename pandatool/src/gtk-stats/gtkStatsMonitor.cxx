@@ -1,16 +1,15 @@
-// Filename: gtkStatsMonitor.cxx
-// Created by:  drose (16Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gtkStatsMonitor.cxx
+ * @author drose
+ * @date 2006-01-16
+ */
 
 #include "gtkStatsMonitor.h"
 #include "gtkStats.h"
@@ -42,11 +41,9 @@ GtkItemFactoryEntry GtkStatsMonitor::menu_entries[] = {
 
 int GtkStatsMonitor::num_menu_entries = sizeof(menu_entries) / sizeof(GtkItemFactoryEntry);
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsMonitor::
 GtkStatsMonitor(GtkStatsServer *server) : PStatMonitor(server) {
   _window = NULL;
@@ -58,66 +55,51 @@ GtkStatsMonitor(GtkStatsServer *server) : PStatMonitor(server) {
   _pause = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsMonitor::
 ~GtkStatsMonitor() {
   shutdown();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::get_monitor_name
-//       Access: Public, Virtual
-//  Description: Should be redefined to return a descriptive name for
-//               the type of PStatsMonitor this is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be redefined to return a descriptive name for the type of
+ * PStatsMonitor this is.
+ */
 string GtkStatsMonitor::
 get_monitor_name() {
   return "GtkStats";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::initialized
-//       Access: Public, Virtual
-//  Description: Called after the monitor has been fully set up.  At
-//               this time, it will have a valid _client_data pointer,
-//               and things like is_alive() and close() will be
-//               meaningful.  However, we may not yet know who we're
-//               connected to (is_client_known() may return false),
-//               and we may not know anything about the threads or
-//               collectors we're about to get data on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the monitor has been fully set up.  At this time, it will have a
+ * valid _client_data pointer, and things like is_alive() and close() will be
+ * meaningful.  However, we may not yet know who we're connected to
+ * (is_client_known() may return false), and we may not know anything about the
+ * threads or collectors we're about to get data on.
+ */
 void GtkStatsMonitor::
 initialized() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::got_hello
-//       Access: Public, Virtual
-//  Description: Called when the "hello" message has been received
-//               from the client.  At this time, the client's hostname
-//               and program name will be known.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the "hello" message has been received from the client.  At this
+ * time, the client's hostname and program name will be known.
+ */
 void GtkStatsMonitor::
 got_hello() {
   create_window();
   open_strip_chart(0, 0, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::got_bad_version
-//       Access: Public, Virtual
-//  Description: Like got_hello(), this is called when the "hello"
-//               message has been received from the client.  At this
-//               time, the client's hostname and program name will be
-//               known.  However, the client appears to be an
-//               incompatible version and the connection will be
-//               terminated; the monitor should issue a message to
-//               that effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Like got_hello(), this is called when the "hello" message has been received
+ * from the client.  At this time, the client's hostname and program name will
+ * be known.  However, the client appears to be an incompatible version and the
+ * connection will be terminated; the monitor should issue a message to that
+ * effect.
+ */
 void GtkStatsMonitor::
 got_bad_version(int client_major, int client_minor,
                 int server_major, int server_minor) {
@@ -146,17 +128,13 @@ got_bad_version(int client_major, int client_minor,
   gtk_widget_destroy(dialog);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::new_collector
-//       Access: Public, Virtual
-//  Description: Called whenever a new Collector definition is
-//               received from the client.  Generally, the client will
-//               send all of its collectors over shortly after
-//               connecting, but there's no guarantee that they will
-//               all be received before the first frames are received.
-//               The monitor should be prepared to accept new Collector
-//               definitions midstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a new Collector definition is received from the client.
+ * Generally, the client will send all of its collectors over shortly after
+ * connecting, but there's no guarantee that they will all be received before
+ * the first frames are received.  The monitor should be prepared to accept new
+ * Collector definitions midstream.
+ */
 void GtkStatsMonitor::
 new_collector(int collector_index) {
   Graphs::iterator gi;
@@ -172,17 +150,13 @@ new_collector(int collector_index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::new_thread
-//       Access: Public, Virtual
-//  Description: Called whenever a new Thread definition is
-//               received from the client.  Generally, the client will
-//               send all of its threads over shortly after
-//               connecting, but there's no guarantee that they will
-//               all be received before the first frames are received.
-//               The monitor should be prepared to accept new Thread
-//               definitions midstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a new Thread definition is received from the client.
+ * Generally, the client will send all of its threads over shortly after
+ * connecting, but there's no guarantee that they will all be received before
+ * the first frames are received.  The monitor should be prepared to accept new
+ * Thread definitions midstream.
+ */
 void GtkStatsMonitor::
 new_thread(int thread_index) {
   GtkStatsChartMenu *chart_menu = new GtkStatsChartMenu(this, thread_index);
@@ -192,15 +166,11 @@ new_thread(int thread_index) {
   _chart_menus.push_back(chart_menu);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::new_data
-//       Access: Public, Virtual
-//  Description: Called as each frame's data is made available.  There
-//               is no guarantee the frames will arrive in order, or
-//               that all of them will arrive at all.  The monitor
-//               should be prepared to accept frames received
-//               out-of-order or missing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as each frame's data is made available.  There is no guarantee the
+ * frames will arrive in order, or that all of them will arrive at all.  The
+ * monitor should be prepared to accept frames received out-of-order or missing.
+ */
 void GtkStatsMonitor::
 new_data(int thread_index, int frame_number) {
   Graphs::iterator gi;
@@ -211,14 +181,11 @@ new_data(int thread_index, int frame_number) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::lost_connection
-//       Access: Public, Virtual
-//  Description: Called whenever the connection to the client has been
-//               lost.  This is a permanent state change.  The monitor
-//               should update its display to represent this, and may
-//               choose to close down automatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the connection to the client has been lost.  This is a
+ * permanent state change.  The monitor should update its display to represent
+ * this, and may choose to close down automatically.
+ */
 void GtkStatsMonitor::
 lost_connection() {
   nout << "Lost connection to " << get_client_hostname() << "\n";
@@ -226,13 +193,10 @@ lost_connection() {
   shutdown();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::idle
-//       Access: Public, Virtual
-//  Description: If has_idle() returns true, this will be called
-//               periodically to allow the monitor to update its
-//               display or whatever it needs to do.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_idle() returns true, this will be called periodically to allow the
+ * monitor to update its display or whatever it needs to do.
+ */
 void GtkStatsMonitor::
 idle() {
   // Check if any of our chart menus need updating.
@@ -252,22 +216,18 @@ idle() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::has_idle
-//       Access: Public, Virtual
-//  Description: Should be redefined to return true if you want to
-//               redefine idle() and expect it to be called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be redefined to return true if you want to redefine idle() and expect
+ * it to be called.
+ */
 bool GtkStatsMonitor::
 has_idle() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::user_guide_bars_changed
-//       Access: Public, Virtual
-//  Description: Called when the user guide bars have been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user guide bars have been changed.
+ */
 void GtkStatsMonitor::
 user_guide_bars_changed() {
   Graphs::iterator gi;
@@ -277,24 +237,20 @@ user_guide_bars_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::get_window
-//       Access: Public
-//  Description: Returns the window handle to the monitor's window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the window handle to the monitor's window.
+ */
 GtkWidget *GtkStatsMonitor::
 get_window() const {
   return _window;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::open_strip_chart
-//       Access: Public
-//  Description: Opens a new strip chart showing the indicated data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a new strip chart showing the indicated data.
+ */
 void GtkStatsMonitor::
 open_strip_chart(int thread_index, int collector_index, bool show_level) {
-  GtkStatsStripChart *graph = 
+  GtkStatsStripChart *graph =
     new GtkStatsStripChart(this, thread_index, collector_index, show_level);
   add_graph(graph);
 
@@ -303,11 +259,9 @@ open_strip_chart(int thread_index, int collector_index, bool show_level) {
   graph->set_pause(_pause);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::open_piano_roll
-//       Access: Public
-//  Description: Opens a new piano roll showing the indicated data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a new piano roll showing the indicated data.
+ */
 void GtkStatsMonitor::
 open_piano_roll(int thread_index) {
   GtkStatsPianoRoll *graph = new GtkStatsPianoRoll(this, thread_index);
@@ -318,12 +272,10 @@ open_piano_roll(int thread_index) {
   graph->set_pause(_pause);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::add_menu
-//       Access: Public
-//  Description: Adds a new MenuDef to the monitor, or returns an
-//               existing one if there is already one just like it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new MenuDef to the monitor, or returns an existing one if there is
+ * already one just like it.
+ */
 const GtkStatsMonitor::MenuDef *GtkStatsMonitor::
 add_menu(const MenuDef &menu_def) {
   pair<Menus::iterator, bool> result = _menus.insert(menu_def);
@@ -336,14 +288,11 @@ add_menu(const MenuDef &menu_def) {
   return &new_menu_def;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::set_time_units
-//       Access: Public
-//  Description: Called when the user selects a new time units from
-//               the monitor pulldown menu, this should adjust the
-//               units for all graphs to the indicated mask if it is a
-//               time-based graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a new time units from the monitor pulldown menu,
+ * this should adjust the units for all graphs to the indicated mask if it is a
+ * time-based graph.
+ */
 void GtkStatsMonitor::
 set_time_units(int unit_mask) {
   _time_units = unit_mask;
@@ -356,13 +305,10 @@ set_time_units(int unit_mask) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::set_scroll_speed
-//       Access: Public
-//  Description: Called when the user selects a new scroll speed from
-//               the monitor pulldown menu, this should adjust the
-//               speeds for all graphs to the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a new scroll speed from the monitor pulldown
+ * menu, this should adjust the speeds for all graphs to the indicated value.
+ */
 void GtkStatsMonitor::
 set_scroll_speed(double scroll_speed) {
   _scroll_speed = scroll_speed;
@@ -375,12 +321,9 @@ set_scroll_speed(double scroll_speed) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::set_pause
-//       Access: Public
-//  Description: Called when the user selects a pause on or pause off
-//               option from the menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a pause on or pause off option from the menu.
+ */
 void GtkStatsMonitor::
 set_pause(bool pause) {
   _pause = pause;
@@ -393,22 +336,17 @@ set_pause(bool pause) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::add_graph
-//       Access: Private
-//  Description: Adds the newly-created graph to the list of managed
-//               graphs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the newly-created graph to the list of managed graphs.
+ */
 void GtkStatsMonitor::
 add_graph(GtkStatsGraph *graph) {
   _graphs.insert(graph);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::remove_graph
-//       Access: Private
-//  Description: Deletes the indicated graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes the indicated graph.
+ */
 void GtkStatsMonitor::
 remove_graph(GtkStatsGraph *graph) {
   Graphs::iterator gi = _graphs.find(graph);
@@ -418,11 +356,9 @@ remove_graph(GtkStatsGraph *graph) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::create_window
-//       Access: Private
-//  Description: Creates the window for this monitor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the window for this monitor.
+ */
 void GtkStatsMonitor::
 create_window() {
   if (_window != NULL) {
@@ -432,9 +368,9 @@ create_window() {
   _window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
   g_signal_connect(G_OBJECT(_window), "delete_event",
-		   G_CALLBACK(window_delete_event), this);
+       G_CALLBACK(window_delete_event), this);
   g_signal_connect(G_OBJECT(_window), "destroy",
-		   G_CALLBACK(window_destroy), this);
+       G_CALLBACK(window_destroy), this);
 
   _window_title = get_client_progname() + " on " + get_client_hostname();
   gtk_window_set_title(GTK_WINDOW(_window), _window_title.c_str());
@@ -443,10 +379,10 @@ create_window() {
 
   // Set up the menu.
   GtkAccelGroup *accel_group = gtk_accel_group_new();
-  _item_factory = 
+  _item_factory =
     gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<PStats>", accel_group);
   gtk_item_factory_create_items(_item_factory, num_menu_entries, menu_entries,
-				this);
+        this);
   gtk_window_add_accel_group(GTK_WINDOW(_window), accel_group);
   GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
   _next_chart_index = 2;
@@ -465,24 +401,22 @@ create_window() {
   gtk_box_pack_start(GTK_BOX(main_vbox), menu_bar, FALSE, TRUE, 0);
 
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gtk_item_factory_get_item(_item_factory, "/Speed/3")),
-				 TRUE);
+         TRUE);
   set_scroll_speed(3);
 
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gtk_item_factory_get_item(_item_factory, "/Options/Units/ms")),
-				 TRUE);
+         TRUE);
   set_time_units(PStatGraph::GBU_ms);
 
-  gtk_widget_show_all(_window);  
+  gtk_widget_show_all(_window);
   gtk_widget_show(_window);
 
   set_pause(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::shutdown
-//       Access: Private
-//  Description: Closes all the graphs associated with this monitor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes all the graphs associated with this monitor.
+ */
 void GtkStatsMonitor::
 shutdown() {
   Graphs::iterator gi;
@@ -508,11 +442,9 @@ shutdown() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::window_delete_event
-//       Access: Private, Static
-//  Description: Callback when the window is closed by the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * Callback when the window is closed by the user.
+ */
 gboolean GtkStatsMonitor::
 window_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
   // Returning FALSE to indicate we should destroy the window
@@ -520,27 +452,21 @@ window_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
   return FALSE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::window_destroy
-//       Access: Private, Static
-//  Description: Callback when the window is destroyed by the system
-//               (or by delete_event).
-////////////////////////////////////////////////////////////////////
+/**
+ * Callback when the window is destroyed by the system (or by delete_event).
+ */
 void GtkStatsMonitor::
 window_destroy(GtkWidget *widget, gpointer data) {
   GtkStatsMonitor *self = (GtkStatsMonitor *)data;
   self->close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::setup_frame_rate_label
-//       Access: Private
-//  Description: Creates the frame rate label on the right end of the
-//               menu bar.  This is used as a text label to display
-//               the main thread's frame rate to the user, although it
-//               is implemented as a right-justified toplevel menu
-//               item that doesn't open to anything.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the frame rate label on the right end of the menu bar.  This is used
+ * as a text label to display the main thread's frame rate to the user, although
+ * it is implemented as a right-justified toplevel menu item that doesn't open
+ * to anything.
+ */
 void GtkStatsMonitor::
 setup_frame_rate_label() {
   GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
@@ -556,11 +482,9 @@ setup_frame_rate_label() {
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), _frame_rate_menu_item);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::handle_menu_command
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GtkStatsMonitor::
 handle_menu_command(gpointer callback_data, guint menu_id, GtkWidget *widget) {
   GtkStatsMonitor *self = (GtkStatsMonitor *)callback_data;

@@ -1,16 +1,15 @@
-// Filename: cullResult.cxx
-// Created by:  drose (28Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullResult.cxx
+ * @author drose
+ * @date 2002-02-28
+ */
 
 #include "cullResult.h"
 #include "cullBinManager.h"
@@ -57,11 +56,9 @@ TypeHandle CullResult::_type_handle;
 static const PN_stdfloat dual_opaque_level = 252.0 / 256.0;
 static const double bin_color_flash_rate = 1.0;  // 1 state change per second
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CullResult::
 CullResult(GraphicsStateGuardianBase *gsg,
            const PStatCollector &draw_region_pcollector) :
@@ -77,14 +74,11 @@ CullResult(GraphicsStateGuardianBase *gsg,
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::make_next
-//       Access: Published
-//  Description: Returns a newly-allocated CullResult object that
-//               contains a copy of just the subset of the data from
-//               this CullResult object that is worth keeping around
-//               for next frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated CullResult object that contains a copy of just the
+ * subset of the data from this CullResult object that is worth keeping around
+ * for next frame.
+ */
 PT(CullResult) CullResult::
 make_next() const {
   PT(CullResult) new_result = new CullResult(_gsg, _draw_region_pcollector);
@@ -105,13 +99,10 @@ make_next() const {
   return new_result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::add_object
-//       Access: Published
-//  Description: Adds the indicated CullableObject to the appropriate
-//               bin.  The bin becomes the owner of the object
-//               pointer, and will eventually delete it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated CullableObject to the appropriate bin.  The bin becomes
+ * the owner of the object pointer, and will eventually delete it.
+ */
 void CullResult::
 add_object(CullableObject *object, const CullTraverser *traverser) {
   static const LColor flash_alpha_color(0.92, 0.96, 0.10, 1.0f);
@@ -270,15 +261,11 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::finish_cull
-//       Access: Published
-//  Description: Called after all the geoms have been added, this
-//               indicates that the cull process is finished for this
-//               frame and gives the bins a chance to do any
-//               post-processing (like sorting) before moving on to
-//               draw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after all the geoms have been added, this indicates that the cull
+ * process is finished for this frame and gives the bins a chance to do any
+ * post-processing (like sorting) before moving on to draw.
+ */
 void CullResult::
 finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
@@ -298,12 +285,9 @@ finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::draw
-//       Access: Published
-//  Description: Asks all the bins to draw themselves in the correct
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks all the bins to draw themselves in the correct order.
+ */
 void CullResult::
 draw(Thread *current_thread) {
   bool force = !_gsg->get_effective_incomplete_render();
@@ -321,22 +305,15 @@ draw(Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::make_result_graph
-//       Access: Published
-//  Description: Returns a special scene graph constructed to
-//               represent the results of the cull.  This will be a
-//               hierarchy of nodes, one node for each bin, each of
-//               which will in term be a parent of a number of
-//               GeomNodes, representing the geometry drawn in each
-//               bin.
-//
-//               This is useful mainly for high-level debugging and
-//               abstraction tools; it should not be mistaken for the
-//               low-level cull result itself.  For the low-level cull
-//               result, use draw() to efficiently draw the culled
-//               scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a special scene graph constructed to represent the results of the
+ * cull.  This will be a hierarchy of nodes, one node for each bin, each of
+ * which will in term be a parent of a number of GeomNodes, representing the
+ * geometry drawn in each bin.  This is useful mainly for high-level debugging
+ * and abstraction tools; it should not be mistaken for the low-level cull
+ * result itself.  For the low-level cull result, use draw() to efficiently draw
+ * the culled scene.
+ */
 PT(PandaNode) CullResult::
 make_result_graph() {
   PT(PandaNode) root_node = new PandaNode("cull_result");
@@ -356,26 +333,20 @@ make_result_graph() {
   return root_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::bin_removed
-//       Access: Public, Static
-//  Description: Intended to be called by
-//               CullBinManager::remove_bin(), this informs all the
-//               CullResults in the world to remove the indicated
-//               bin_index from their cache if it has been cached.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called by CullBinManager::remove_bin(), this informs all the
+ * CullResults in the world to remove the indicated bin_index from their cache
+ * if it has been cached.
+ */
 void CullResult::
 bin_removed(int bin_index) {
   // Do something here.
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::make_new_bin
-//       Access: Private
-//  Description: Allocates a new CullBin for the given bin_index and
-//               stores it for next time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a new CullBin for the given bin_index and stores it for next time.
+ */
 CullBin *CullResult::
 make_new_bin(int bin_index) {
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
@@ -397,12 +368,9 @@ make_new_bin(int bin_index) {
   return bin_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_rescale_normal_state
-//       Access: Private
-//  Description: Returns a RenderState containing the given rescale
-//               normal attribute.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState containing the given rescale normal attribute.
+ */
 const RenderState *CullResult::
 get_rescale_normal_state(RescaleNormalAttrib::Mode mode) {
   static CPT(RenderState) states[RescaleNormalAttrib::M_auto + 1];
@@ -413,12 +381,10 @@ get_rescale_normal_state(RescaleNormalAttrib::Mode mode) {
   return states[mode].p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_alpha_state
-//       Access: Private
-//  Description: Returns a RenderState that changes the alpha test to
-//               > 0, for implementing M_alpha.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState that changes the alpha test to > 0, for implementing
+ * M_alpha.
+ */
 const RenderState *CullResult::
 get_alpha_state() {
   static CPT(RenderState) state = NULL;
@@ -430,12 +396,9 @@ get_alpha_state() {
   return state.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_binary_state
-//       Access: Private
-//  Description: Returns a RenderState that applies the effects of
-//               M_binary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState that applies the effects of M_binary.
+ */
 const RenderState *CullResult::
 get_binary_state() {
   static CPT(RenderState) state = NULL;
@@ -448,12 +411,9 @@ get_binary_state() {
 }
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::apply_flash_color
-//       Access: Private
-//  Description: Update the object's state to flash the geometry
-//               with a solid color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Update the object's state to flash the geometry with a solid color.
+ */
 void CullResult::
 apply_flash_color(CPT(RenderState) &state, const LColor &flash_color) {
   int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
@@ -468,12 +428,10 @@ apply_flash_color(CPT(RenderState) &state, const LColor &flash_color) {
 }
 #endif  // NDEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_dual_transparent_state
-//       Access: Private
-//  Description: Returns a RenderState that renders only the
-//               transparent parts of an object, in support of M_dual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState that renders only the transparent parts of an object,
+ * in support of M_dual.
+ */
 const RenderState *CullResult::
 get_dual_transparent_state() {
   static CPT(RenderState) state = NULL;
@@ -512,12 +470,10 @@ get_dual_transparent_state() {
   return state.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_dual_opaque_state
-//       Access: Private
-//  Description: Returns a RenderState that renders only the
-//               opaque parts of an object, in support of M_dual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState that renders only the opaque parts of an object, in
+ * support of M_dual.
+ */
 const RenderState *CullResult::
 get_dual_opaque_state() {
   static CPT(RenderState) state = NULL;
@@ -547,12 +503,10 @@ get_dual_opaque_state() {
   return state.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_wireframe_filled_state
-//       Access: Private
-//  Description: Returns a RenderState that is composed with the
-//               filled part of an M_filled_wireframe model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState that is composed with the filled part of an
+ * M_filled_wireframe model.
+ */
 const RenderState *CullResult::
 get_wireframe_filled_state() {
   static CPT(RenderState) state = RenderState::make(
@@ -561,12 +515,10 @@ get_wireframe_filled_state() {
   return state.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullResult::get_wireframe_overlay_state
-//       Access: Private
-//  Description: Returns a RenderState that renders only the
-//               wireframe part of an M_filled_wireframe model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState that renders only the wireframe part of an
+ * M_filled_wireframe model.
+ */
 CPT(RenderState) CullResult::
 get_wireframe_overlay_state(const RenderModeAttrib *rmode) {
   return RenderState::make(
@@ -579,4 +531,3 @@ get_wireframe_overlay_state(const RenderModeAttrib *rmode) {
                            rmode->get_thickness(),
                            rmode->get_perspective()));
 }
-

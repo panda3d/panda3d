@@ -1,26 +1,23 @@
-// Filename: imageResize.cxx
-// Created by:  drose (13Mar03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file imageResize.cxx
+ * @author drose
+ * @date 2003-03-13
+ */
 
 #include "imageResize.h"
 #include "string_utils.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageResize::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ImageResize::
 ImageResize() : ImageFilter(true) {
   set_program_brief("resize an image file");
@@ -56,11 +53,9 @@ ImageResize() : ImageFilter(true) {
   _filter_radius = 1.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageResize::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ImageResize::
 run() {
   if (_x_size.get_type() == RT_none && _y_size.get_type() == RT_none) {
@@ -77,7 +72,7 @@ run() {
 
   nout << "Resizing to " << x_size << " x " << y_size << "\n";
   PNMImage new_image(x_size, y_size,
-                     _image.get_num_channels(), 
+                     _image.get_num_channels(),
                      _image.get_maxval(), _image.get_type());
 
   if (_use_gaussian_filter) {
@@ -89,11 +84,9 @@ run() {
   write_image(new_image);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageResize::dispatch_size_request
-//       Access: Private, Static
-//  Description: Interprets the -x or -y parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interprets the -x or -y parameters.
+ */
 bool ImageResize::
 dispatch_size_request(const string &opt, const string &arg, void *var) {
   SizeRequest *ip = (SizeRequest *)var;

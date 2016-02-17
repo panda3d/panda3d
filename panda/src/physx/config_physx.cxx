@@ -1,16 +1,15 @@
-// Filename: config_physx.cxx
-// Created by:  enn0x (01Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_physx.cxx
+ * @author enn0x
+ * @date 2009-09-01
+ */
 
 #include "config_physx.h"
 #include "pandaSystem.h"
@@ -104,14 +103,12 @@ PRC_DESC("Specified the number of internal threads to be created by the "
          "possible. Default value is '0'. PhysX then runs in an external "
          "thread, but no additional internal threads will be created."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libphysx
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libphysx() {
   static bool initialized = false;
@@ -175,4 +172,3 @@ init_libphysx() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("PhysX");
 }
-

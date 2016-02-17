@@ -1,16 +1,15 @@
-// Filename: eaglView.mm
-// Created by:  drose (10Apr09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eaglView.mm
+ * @author drose
+ * @date 2009-04-10
+ */
 
 #import "EAGLView.h"
 
@@ -49,13 +48,13 @@
   if ((self = [super initWithFrame:frame])) {
     // Get the layer
     CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
-    
+
     eaglLayer.opaque = YES;
     eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
                                                    [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
-    
+
     context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-    
+
     if (!context || ![EAGLContext setCurrentContext:context]) {
       [self release];
       return nil;
@@ -75,7 +74,7 @@
   [context presentRenderbuffer:GL_RENDERBUFFER_OES];
 }
 
-- (void)touchesBegan: (NSSet *)touches 
+- (void)touchesBegan: (NSSet *)touches
            withEvent: (UIEvent *)event
 {
   // Pass the multi-touch input to the _window for processing.
@@ -83,21 +82,21 @@
   [super touchesBegan: touches withEvent: event];
 }
 
-- (void)touchesMoved: (NSSet *)touches 
+- (void)touchesMoved: (NSSet *)touches
            withEvent: (UIEvent *)event
 {
   _window->touches_moved(touches, event);
   [super touchesMoved: touches withEvent: event];
 }
 
-- (void)touchesEnded: (NSSet *)touches 
+- (void)touchesEnded: (NSSet *)touches
            withEvent: (UIEvent *)event
 {
   _window->touches_ended(touches, event);
   [super touchesEnded: touches withEvent: event];
 }
 
-- (void)touchesCancelled: (NSSet *)touches 
+- (void)touchesCancelled: (NSSet *)touches
                withEvent: (UIEvent *)event
 {
   _window->touches_cancelled(touches, event);
@@ -105,9 +104,9 @@
 }
 
 /*
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event; 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event; 
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event; 
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
 */
 
 
@@ -125,15 +124,15 @@
 - (BOOL)createFramebuffer {
   glGenFramebuffersOES(1, &viewFramebuffer);
   glGenRenderbuffersOES(1, &viewRenderbuffer);
-  
+
   glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
   glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
   [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
   glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-  
+
   glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
   glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-  
+
   if (USE_DEPTH_BUFFER) {
     glGenRenderbuffersOES(1, &depthRenderbuffer);
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
@@ -141,18 +140,18 @@
     glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
   }
-  
+
   if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
     NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
     return NO;
   }
-  
+
   // Make sure the buffer is initially cleared, so we don't look at
   // whatever happened to be in the framebuffer.
   glClearColor(0, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
   [context presentRenderbuffer:GL_RENDERBUFFER_OES];
-  
+
   return YES;
 }
 
@@ -167,7 +166,7 @@
     glDeleteRenderbuffersOES(1, &viewRenderbuffer);
     viewRenderbuffer = 0;
   }
-    
+
   if (depthRenderbuffer) {
     glDeleteRenderbuffersOES(1, &depthRenderbuffer);
     depthRenderbuffer = 0;
@@ -175,12 +174,12 @@
 }
 
 - (void)dealloc {
-    
+
     if ([EAGLContext currentContext] == context) {
         [EAGLContext setCurrentContext:nil];
     }
-    
-    [context release];  
+
+    [context release];
     [super dealloc];
 }
 

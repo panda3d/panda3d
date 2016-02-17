@@ -1,16 +1,15 @@
-// Filename: nodePointerTo.h
-// Created by:  drose (07May05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePointerTo.h
+ * @author drose
+ * @date 2005-05-07
+ */
 
 #ifndef NODEPOINTERTO_H
 #define NODEPOINTERTO_H
@@ -18,13 +17,11 @@
 #include "pandabase.h"
 #include "nodePointerToBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodePointerTo
-// Description : This implements the special NodePointerTo template
-//               class, which works just like PointerTo except it
-//               manages the objects node_ref_count instead of the
-//               normal ref_count.
-////////////////////////////////////////////////////////////////////
+/**
+ * This implements the special NodePointerTo template class, which works just
+ * like PointerTo except it manages the objects node_ref_count instead of the
+ * normal ref_count.
+ */
 template <class T>
 class NodePointerTo : public NodePointerToBase<T> {
 public:
@@ -55,11 +52,10 @@ public:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodeConstPointerTo
-// Description : A NodeConstPointerTo is similar to a NodePointerTo,
-//               except it keeps a const pointer to the thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * A NodeConstPointerTo is similar to a NodePointerTo, except it keeps a const
+ * pointer to the thing.
+ */
 template <class T>
 class NodeConstPointerTo : public NodePointerToBase<T> {
 public:

@@ -1,32 +1,26 @@
-// Filename: boundingBox.I
-// Created by:  drose (31May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingBox.I
+ * @author drose
+ * @date 2007-05-31
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::Constructor
-//       Access: Published
-//  Description: Constructs an empty box object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an empty box object.
+ */
 INLINE_MATHUTIL BoundingBox::
 BoundingBox() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::Constructor
-//       Access: Published
-//  Description: Constructs a specific box object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a specific box object.
+ */
 INLINE_MATHUTIL BoundingBox::
 BoundingBox(const LPoint3 &min, const LPoint3 &max) :
   _min(min), _max(max)
@@ -39,13 +33,10 @@ BoundingBox(const LPoint3 &min, const LPoint3 &max) :
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::get_minq
-//       Access: Public
-//  Description: An inline accessor for the minimum value.  get_min()
-//               would also work, but it is a virtual non-inline
-//               method.
-////////////////////////////////////////////////////////////////////
+/**
+ * An inline accessor for the minimum value.  get_min() would also work, but it
+ * is a virtual non-inline method.
+ */
 INLINE_MATHUTIL const LPoint3 &BoundingBox::
 get_minq() const {
   nassertr(!is_empty(), _min);
@@ -53,13 +44,10 @@ get_minq() const {
   return _min;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::get_maxq
-//       Access: Public
-//  Description: An inline accessor for the maximum value.  get_max()
-//               would also work, but it is a virtual non-inline
-//               method.
-////////////////////////////////////////////////////////////////////
+/**
+ * An inline accessor for the maximum value.  get_max() would also work, but it
+ * is a virtual non-inline method.
+ */
 INLINE_MATHUTIL const LPoint3 &BoundingBox::
 get_maxq() const {
   nassertr(!is_empty(), _max);
@@ -67,46 +55,38 @@ get_maxq() const {
   return _max;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::get_num_points
-//       Access: Published
-//  Description: Returns 8: the number of vertices of a rectangular solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 8: the number of vertices of a rectangular solid.
+ */
 INLINE_MATHUTIL int BoundingBox::
 get_num_points() const {
   return 8;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::get_point
-//       Access: Published
-//  Description: Returns the nth vertex of the rectangular solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth vertex of the rectangular solid.
+ */
 INLINE_MATHUTIL LPoint3 BoundingBox::
 get_point(int n) const {
   nassertr(n >= 0 && n < 8, LPoint3::zero());
-  
+
   // We do some trickery assuming that _min and _max are consecutive
   // in memory.
   const LPoint3 *a = &_min;
   return LPoint3(a[(n>>2)&1][0], a[(n>>1)&1][1], a[(n)&1][2]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::get_num_planes
-//       Access: Published
-//  Description: Returns 6: the number of faces of a rectangular solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 6: the number of faces of a rectangular solid.
+ */
 INLINE_MATHUTIL int BoundingBox::
 get_num_planes() const {
   return 6;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::get_plane
-//       Access: Published
-//  Description: Returns the nth face of the rectangular solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth face of the rectangular solid.
+ */
 INLINE_MATHUTIL LPlane BoundingBox::
 get_plane(int n) const {
   nassertr(n >= 0 && n < 6, LPlane());
@@ -115,11 +95,9 @@ get_plane(int n) const {
                 get_point(plane_def[n][2]));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::set_min_max
-//       Access: Published
-//  Description: Sets the min and max point of the rectangular solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the min and max point of the rectangular solid.
+ */
 INLINE_MATHUTIL void BoundingBox::
 set_min_max(const LPoint3 &min, const LPoint3 &max) {
   nassertv(!min.is_nan() && !max.is_nan());

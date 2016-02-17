@@ -1,16 +1,15 @@
-// Filename: zStreamBuf.h
-// Created by:  drose (05Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file zStreamBuf.h
+ * @author drose
+ * @date 2002-08-05
+ */
 
 #ifndef ZSTREAMBUF_H
 #define ZSTREAMBUF_H
@@ -22,11 +21,9 @@
 
 #include <zlib.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : ZStreamBuf
-// Description : The streambuf object that implements
-//               IDecompressStream and OCompressStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements IDecompressStream and OCompressStream.
+ */
 class EXPCL_PANDAEXPRESS ZStreamBuf : public streambuf {
 public:
   ZStreamBuf();

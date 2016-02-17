@@ -1,16 +1,15 @@
-// Filename: eggPrimitive.cxx
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPrimitive.cxx
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #include "eggPrimitive.h"
 #include "eggVertexPool.h"
@@ -25,15 +24,12 @@
 TypeHandle EggPrimitive::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::determine_alpha_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this primitive that has an alpha_mode other than
-//               AM_unspecified.  Returns a valid EggRenderMode pointer
-//               if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this primitive that has an alpha_mode
+ * other than AM_unspecified.  Returns a valid EggRenderMode pointer if one is
+ * found, or NULL otherwise.
+ */
 EggRenderMode *EggPrimitive::
 determine_alpha_mode() {
   if (get_alpha_mode() != AM_unspecified) {
@@ -61,15 +57,12 @@ determine_alpha_mode() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::determine_depth_write_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this node that has a depth_write_mode other than
-//               DWM_unspecified.  Returns a valid EggRenderMode pointer
-//               if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this node that has a depth_write_mode
+ * other than DWM_unspecified.  Returns a valid EggRenderMode pointer if one is
+ * found, or NULL otherwise.
+ */
 EggRenderMode *EggPrimitive::
 determine_depth_write_mode() {
   if (get_depth_write_mode() != DWM_unspecified) {
@@ -88,15 +81,12 @@ determine_depth_write_mode() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::determine_depth_test_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this node that has a depth_test_mode other than
-//               DTM_unspecified.  Returns a valid EggRenderMode pointer
-//               if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this node that has a depth_test_mode other
+ * than DTM_unspecified.  Returns a valid EggRenderMode pointer if one is found,
+ * or NULL otherwise.
+ */
 EggRenderMode *EggPrimitive::
 determine_depth_test_mode() {
   if (get_depth_test_mode() != DTM_unspecified) {
@@ -115,15 +105,12 @@ determine_depth_test_mode() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::determine_visibility_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this node that has a visibility_mode other than
-//               VM_unspecified.  Returns a valid EggRenderMode pointer
-//               if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this node that has a visibility_mode other
+ * than VM_unspecified.  Returns a valid EggRenderMode pointer if one is found,
+ * or NULL otherwise.
+ */
 EggRenderMode *EggPrimitive::
 determine_visibility_mode() {
   if (get_visibility_mode() != VM_unspecified) {
@@ -142,15 +129,12 @@ determine_visibility_mode() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::determine_depth_offset
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this primitive that has a depth_offset specified.
-//               Returns a valid EggRenderMode pointer if one is found,
-//               or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this primitive that has a depth_offset
+ * specified.  Returns a valid EggRenderMode pointer if one is found, or NULL
+ * otherwise.
+ */
 EggRenderMode *EggPrimitive::
 determine_depth_offset() {
   if (has_depth_offset()) {
@@ -169,15 +153,12 @@ determine_depth_offset() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::determine_draw_order
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this primitive that has a draw_order specified.
-//               Returns a valid EggRenderMode pointer if one is found,
-//               or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this primitive that has a draw_order
+ * specified.  Returns a valid EggRenderMode pointer if one is found, or NULL
+ * otherwise.
+ */
 EggRenderMode *EggPrimitive::
 determine_draw_order() {
   if (has_draw_order()) {
@@ -196,15 +177,11 @@ determine_draw_order() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::determine_bin
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this primitive that has a bin specified.  Returns a
-//               valid EggRenderMode pointer if one is found, or NULL
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this primitive that has a bin specified.
+ * Returns a valid EggRenderMode pointer if one is found, or NULL otherwise.
+ */
 EggRenderMode *EggPrimitive::
 determine_bin() {
   if (has_bin()) {
@@ -224,25 +201,17 @@ determine_bin() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::get_shading
-//       Access: Published, Virtual
-//  Description: Returns the shading properties apparent on this
-//               particular primitive.  This returns S_per_vertex if
-//               the vertices have colors or normals (and they are not
-//               all the same values), or for a simple primitive,
-//               S_overall otherwise.  A composite primitive may also
-//               return S_per_face if the individual component
-//               primitives have colors or normals that are not all
-//               the same values.
-//
-//               To get the most accurate results, you should call
-//               clear_shading() on all connected primitives (or on
-//               all primitives in the egg file), followed by
-//               get_shading() on each primitive.  You may find it
-//               easiest to call these methods on the EggData root
-//               node (they are defined on EggGroupNode).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the shading properties apparent on this particular primitive.  This
+ * returns S_per_vertex if the vertices have colors or normals (and they are not
+ * all the same values), or for a simple primitive, S_overall otherwise.  A
+ * composite primitive may also return S_per_face if the individual component
+ * primitives have colors or normals that are not all the same values.  To get
+ * the most accurate results, you should call clear_shading() on all connected
+ * primitives (or on all primitives in the egg file), followed by get_shading()
+ * on each primitive.  You may find it easiest to call these methods on the
+ * EggData root node (they are defined on EggGroupNode).
+ */
 EggPrimitive::Shading EggPrimitive::
 get_shading() const {
   if (empty()) {
@@ -286,23 +255,17 @@ get_shading() const {
   return S_overall;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::copy_attributes
-//       Access: Published
-//  Description: Copies the rendering attributes from the indicated
-//               primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the rendering attributes from the indicated primitive.
+ */
 void EggPrimitive::
 copy_attributes(const EggAttributes &other) {
   EggAttributes::operator = (other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::copy_attributes
-//       Access: Published
-//  Description: Copies the rendering attributes from the indicated
-//               primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the rendering attributes from the indicated primitive.
+ */
 void EggPrimitive::
 copy_attributes(const EggPrimitive &other) {
   EggAttributes::operator = (other);
@@ -311,17 +274,12 @@ copy_attributes(const EggPrimitive &other) {
   set_bface_flag(other.get_bface_flag());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::has_vertex_normal
-//       Access: Published
-//  Description: Returns true if any vertex on the primitive has a
-//               specific normal set, false otherwise.
-//
-//               If you call unify_attributes() first, this will also
-//               return false even if all the vertices were set to the
-//               same value (since unify_attributes() removes
-//               redundant vertex properties).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any vertex on the primitive has a specific normal set, false
+ * otherwise.  If you call unify_attributes() first, this will also return false
+ * even if all the vertices were set to the same value (since unify_attributes()
+ * removes redundant vertex properties).
+ */
 bool EggPrimitive::
 has_vertex_normal() const {
   Vertices::const_iterator vi;
@@ -333,17 +291,12 @@ has_vertex_normal() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::has_vertex_color
-//       Access: Published
-//  Description: Returns true if any vertex on the primitive has a
-//               specific color set, false otherwise.
-//
-//               If you call unify_attributes() first, this will also
-//               return false even if all the vertices were set to the
-//               same value (since unify_attributes() removes
-//               redundant vertex properties).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any vertex on the primitive has a specific color set, false
+ * otherwise.  If you call unify_attributes() first, this will also return false
+ * even if all the vertices were set to the same value (since unify_attributes()
+ * removes redundant vertex properties).
+ */
 bool EggPrimitive::
 has_vertex_color() const {
   Vertices::const_iterator vi;
@@ -355,30 +308,18 @@ has_vertex_color() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::unify_attributes
-//       Access: Published, Virtual
-//  Description: If the shading property is S_per_vertex, ensures that
-//               all vertices have a normal and a color, and the
-//               overall primitive does not.
-//
-//               If the shading property is S_per_face, and this is a
-//               composite primitive, ensures that all components have
-//               a normal and a color, and the vertices and overall
-//               primitive do not.  (If this is a simple primitive,
-//               S_per_face works the same as S_overall, below).
-//
-//               If the shading property is S_overall, ensures that no
-//               vertices or components have a normal or a color, and
-//               the overall primitive does (if any exists at all).
-//
-//               After this call, either the primitive will have
-//               normals or its vertices will, but not both.  Ditto
-//               for colors.
-//
-//               This may create redundant vertices in the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the shading property is S_per_vertex, ensures that all vertices have a
+ * normal and a color, and the overall primitive does not.  If the shading
+ * property is S_per_face, and this is a composite primitive, ensures that all
+ * components have a normal and a color, and the vertices and overall primitive
+ * do not.  (If this is a simple primitive, S_per_face works the same as
+ * S_overall, below).  If the shading property is S_overall, ensures that no
+ * vertices or components have a normal or a color, and the overall primitive
+ * does (if any exists at all).  After this call, either the primitive will have
+ * normals or its vertices will, but not both.  Ditto for colors.  This may
+ * create redundant vertices in the vertex pool.
+ */
 void EggPrimitive::
 unify_attributes(EggPrimitive::Shading shading) {
   if (shading == S_unknown) {
@@ -469,19 +410,13 @@ unify_attributes(EggPrimitive::Shading shading) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::apply_last_attribute
-//       Access: Published, Virtual
-//  Description: Sets the last vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               OpenGL convention of storing flat-shaded properties on
-//               the last vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the last vertex of the triangle (or each component) to the primitive
+ * normal and/or color, if the primitive is flat-shaded.  This reflects the
+ * OpenGL convention of storing flat-shaded properties on the last vertex,
+ * although it is not usually a convention in Egg.  This may introduce redundant
+ * vertices to the vertex pool.
+ */
 void EggPrimitive::
 apply_last_attribute() {
   if (!empty()) {
@@ -489,19 +424,13 @@ apply_last_attribute() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::apply_first_attribute
-//       Access: Published, Virtual
-//  Description: Sets the first vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               DirectX convention of storing flat-shaded properties on
-//               the first vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the first vertex of the triangle (or each component) to the primitive
+ * normal and/or color, if the primitive is flat-shaded.  This reflects the
+ * DirectX convention of storing flat-shaded properties on the first vertex,
+ * although it is not usually a convention in Egg.  This may introduce redundant
+ * vertices to the vertex pool.
+ */
 void EggPrimitive::
 apply_first_attribute() {
   if (!empty()) {
@@ -509,14 +438,11 @@ apply_first_attribute() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::post_apply_flat_attribute
-//       Access: Published, Virtual
-//  Description: Intended as a followup to apply_last_attribute(),
-//               this also sets an attribute on the first vertices of
-//               the primitive, if they don't already have an
-//               attribute set, just so they end up with *something*.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended as a followup to apply_last_attribute(), this also sets an attribute
+ * on the first vertices of the primitive, if they don't already have an
+ * attribute set, just so they end up with *something*.
+ */
 void EggPrimitive::
 post_apply_flat_attribute() {
   if (!empty()) {
@@ -537,14 +463,11 @@ post_apply_flat_attribute() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::reverse_vertex_ordering
-//       Access: Published, Virtual
-//  Description: Reverses the ordering of the vertices in this
-//               primitive, if appropriate, in order to change the
-//               direction the polygon appears to be facing.  Does not
-//               adjust the surface normal, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the ordering of the vertices in this primitive, if appropriate, in
+ * order to change the direction the polygon appears to be facing.  Does not
+ * adjust the surface normal, if any.
+ */
 void EggPrimitive::
 reverse_vertex_ordering() {
   // This really only makes sense for polygons.  Lights don't care
@@ -553,38 +476,26 @@ reverse_vertex_ordering() {
   reverse(_vertices.begin(), _vertices.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::cleanup
-//       Access: Published, Virtual
-//  Description: Cleans up modeling errors in whatever context this
-//               makes sense.  For instance, for a polygon, this calls
-//               remove_doubled_verts(true).  For a point, it calls
-//               remove_nonunique_verts().  Returns true if the
-//               primitive is valid, or false if it is degenerate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Cleans up modeling errors in whatever context this makes sense.  For
+ * instance, for a polygon, this calls remove_doubled_verts(true).  For a point,
+ * it calls remove_nonunique_verts().  Returns true if the primitive is valid,
+ * or false if it is degenerate.
+ */
 bool EggPrimitive::
 cleanup() {
   return !empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::remove_doubled_verts
-//       Access: Published
-//  Description: Certain kinds of primitives, particularly polygons,
-//               don't like to have the same vertex repeated
-//               consecutively.  Unfortunately, some modeling programs
-//               (like MultiGen) make this an easy mistake to make.
-//
-//               It's handy to have a function to remove these
-//               redundant vertices.  If closed is true, it also
-//               checks that the first and last vertices are not the
-//               same.
-//
-//               This function identifies repeated vertices by
-//               position only; it does not consider any other
-//               properties, such as color or UV, significant in
-//               differentiating vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Certain kinds of primitives, particularly polygons, don't like to have the
+ * same vertex repeated consecutively.  Unfortunately, some modeling programs
+ * (like MultiGen) make this an easy mistake to make.  It's handy to have a
+ * function to remove these redundant vertices.  If closed is true, it also
+ * checks that the first and last vertices are not the same.  This function
+ * identifies repeated vertices by position only; it does not consider any other
+ * properties, such as color or UV, significant in differentiating vertices.
+ */
 void EggPrimitive::
 remove_doubled_verts(bool closed) {
   if (!_vertices.empty()) {
@@ -600,7 +511,7 @@ remove_doubled_verts(bool closed) {
       if ((*vi)->get_pos4() != (*vlast)->get_pos4()) {
         new_vertices.push_back(*vi);
       } else {
-        prepare_remove_vertex(*vi, vi - _vertices.begin() - num_removed, 
+        prepare_remove_vertex(*vi, vi - _vertices.begin() - num_removed,
                               _vertices.size() - num_removed);
         num_removed++;
       }
@@ -614,24 +525,21 @@ remove_doubled_verts(bool closed) {
     // Then, if this is a polygon (which will be closed anyway),
     // remove the vertex from the end if it's a repeat of the
     // beginning.
-    while (_vertices.size() > 1 && 
+    while (_vertices.size() > 1 &&
            _vertices.back()->get_pos4() == _vertices.front()->get_pos4()) {
-      prepare_remove_vertex(_vertices.back(), _vertices.size() - 1, 
+      prepare_remove_vertex(_vertices.back(), _vertices.size() - 1,
                             _vertices.size());
       _vertices.pop_back();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::remove_nonunique_verts
-//       Access: Published
-//  Description: Removes any multiple appearances of the same vertex
-//               from the primitive.  This primarily makes sense for a
-//               point primitive, which is really a collection of
-//               points and which doesn't make sense to include the
-//               same point twice, in any order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any multiple appearances of the same vertex from the primitive.  This
+ * primarily makes sense for a point primitive, which is really a collection of
+ * points and which doesn't make sense to include the same point twice, in any
+ * order.
+ */
 void EggPrimitive::
 remove_nonunique_verts() {
   Vertices::iterator vi, vj;
@@ -653,37 +561,28 @@ remove_nonunique_verts() {
   _vertices.swap(new_vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::has_primitives
-//       Access: Published, Virtual
-//  Description: Returns true if there are any primitives
-//               (e.g. polygons) defined within this group or below,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are any primitives (e.g.  polygons) defined within this
+ * group or below, false otherwise.
+ */
 bool EggPrimitive::
 has_primitives() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::joint_has_primitives
-//       Access: Published, Virtual
-//  Description: Returns true if there are any primitives
-//               (e.g. polygons) defined within this group or below,
-//               but the search does not include nested joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are any primitives (e.g.  polygons) defined within this
+ * group or below, but the search does not include nested joints.
+ */
 bool EggPrimitive::
 joint_has_primitives() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::has_normals
-//       Access: Published, Virtual
-//  Description: Returns true if any of the primitives (e.g. polygons)
-//               defined within this group or below have either face
-//               or vertex normals defined, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the primitives (e.g.  polygons) defined within this
+ * group or below have either face or vertex normals defined, false otherwise.
+ */
 bool EggPrimitive::
 has_normals() const {
   if (has_normal()) {
@@ -701,19 +600,16 @@ has_normals() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::erase
-//       Access: Public
-//  Description: Part of the implementaion of the EggPrimitive as an
-//               STL container.  Most of the rest of these functions
-//               are inline and declared in EggPrimitive.I.
-////////////////////////////////////////////////////////////////////
+/**
+ * Part of the implementaion of the EggPrimitive as an STL container.  Most of
+ * the rest of these functions are inline and declared in EggPrimitive.I.
+ */
 EggPrimitive::iterator EggPrimitive::
 erase(iterator first, iterator last) {
   iterator i;
   int num_removed = 0;
   for (i = first; i != last; ++i) {
-    prepare_remove_vertex(*i, first - _vertices.begin(), 
+    prepare_remove_vertex(*i, first - _vertices.begin(),
                           _vertices.size() - num_removed);
     num_removed++;
   }
@@ -723,13 +619,10 @@ erase(iterator first, iterator last) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::find
-//       Access: Public
-//  Description: Returns the iterator pointing to the indicated
-//               vertex, or end() if the vertex is not part of the
-//               primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the iterator pointing to the indicated vertex, or end() if the vertex
+ * is not part of the primitive.
+ */
 EggPrimitive::iterator EggPrimitive::
 find(EggVertex *vertex) {
   PT_EggVertex vpt = vertex;
@@ -737,12 +630,10 @@ find(EggVertex *vertex) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::add_vertex
-//       Access: Published
-//  Description: Adds the indicated vertex to the end of the
-//               primitive's list of vertices, and returns it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated vertex to the end of the primitive's list of vertices, and
+ * returns it.
+ */
 EggVertex *EggPrimitive::
 add_vertex(EggVertex *vertex) {
   prepare_add_vertex(vertex, _vertices.size(), _vertices.size() + 1);
@@ -754,14 +645,10 @@ add_vertex(EggVertex *vertex) {
   return vertex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::remove_vertex
-//       Access: Published
-//  Description: Removes the indicated vertex from the
-//               primitive and returns it.  If the vertex was not
-//               already in the primitive, does nothing and returns
-//               NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated vertex from the primitive and returns it.  If the
+ * vertex was not already in the primitive, does nothing and returns NULL.
+ */
 EggVertex *EggPrimitive::
 remove_vertex(EggVertex *vertex) {
   PT_EggVertex vpt = vertex;
@@ -780,13 +667,10 @@ remove_vertex(EggVertex *vertex) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::copy_vertices
-//       Access: Published
-//  Description: Replaces the current primitive's list of vertices
-//               with a copy of the list of vertices on the other
-//               primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the current primitive's list of vertices with a copy of the list of
+ * vertices on the other primitive.
+ */
 void EggPrimitive::
 copy_vertices(const EggPrimitive &other) {
   clear();
@@ -803,29 +687,27 @@ copy_vertices(const EggPrimitive &other) {
 
 #ifdef _DEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::test_vref_integrity
-//       Access: Published
-//  Description: Verifies that each vertex in the primitive exists and
-//               that it knows it is referenced by the primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that each vertex in the primitive exists and that it knows it is
+ * referenced by the primitive.
+ */
 void EggPrimitive::
 test_vref_integrity() const {
   test_ref_count_integrity();
-  
+
   if ((int)size() <= egg_test_vref_integrity) {
     // First, we need to know how many times each vertex appears.
     // Usually, this will be only one, but it's possible for a vertex to
     // appear more than once.
     typedef pmap<const EggVertex *, int> VertexCount;
     VertexCount _count;
-    
+
     // Now count up the vertices.
     iterator vi;
     for (vi = begin(); vi != end(); ++vi) {
       const EggVertex *vert = *vi;
       vert->test_ref_count_integrity();
-      
+
       VertexCount::iterator vci = _count.find(vert);
       if (vci == _count.end()) {
         _count[vert] = 1;
@@ -833,16 +715,16 @@ test_vref_integrity() const {
         (*vci).second++;
       }
     }
-    
+
     // Ok, now walk through the vertices found and make sure the vertex
     // has the proper number of entries of this primitive in its pref.
     VertexCount::iterator vci;
     for (vci = _count.begin(); vci != _count.end(); ++vci) {
       const EggVertex *vert = (*vci).first;
-      
+
       int count = (*vci).second;
       int vert_count = vert->has_pref(this);
-      
+
       nassertv(count == vert_count);
     }
   }
@@ -850,18 +732,13 @@ test_vref_integrity() const {
 
 #endif  // _DEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::prepare_add_vertex
-//       Access: Protected, Virtual
-//  Description: Marks the vertex as belonging to the primitive.  This
-//               is an internal function called by the STL-like
-//               functions push_back() and insert(), in preparation
-//               for actually adding the vertex.
-//
-//               i indicates the new position of the vertex in the
-//               list; n indicates the new number of vertices after
-//               the operation has completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the vertex as belonging to the primitive.  This is an internal function
+ * called by the STL-like functions push_back() and insert(), in preparation for
+ * actually adding the vertex.  i indicates the new position of the vertex in
+ * the list; n indicates the new number of vertices after the operation has
+ * completed.
+ */
 void EggPrimitive::
 prepare_add_vertex(EggVertex *vertex, int i, int n) {
   // We can't test integrity within this function, because it might be
@@ -880,21 +757,14 @@ prepare_add_vertex(EggVertex *vertex, int i, int n) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::prepare_remove_vertex
-//       Access: Protected, Virtual
-//  Description: Marks the vertex as removed from the primitive.  This
-//               is an internal function called by the STL-like
-//               functions pop_back() and erase(), in preparation for
-//               actually doing the removal.
-//
-//               i indicates the former position of the vertex in the
-//               list; n indicates the current number of vertices
-//               before the operation has completed.
-//
-//               It is an error to attempt to remove a vertex that is
-//               not already a vertex of this primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the vertex as removed from the primitive.  This is an internal function
+ * called by the STL-like functions pop_back() and erase(), in preparation for
+ * actually doing the removal.  i indicates the former position of the vertex in
+ * the list; n indicates the current number of vertices before the operation has
+ * completed.  It is an error to attempt to remove a vertex that is not already
+ * a vertex of this primitive.
+ */
 void EggPrimitive::
 prepare_remove_vertex(EggVertex *vertex, int i, int n) {
   // We can't test integrity within this function, because it might be
@@ -914,13 +784,10 @@ prepare_remove_vertex(EggVertex *vertex, int i, int n) {
   vertex->_pref.erase(pri);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::write_body
-//       Access: Protected
-//  Description: Writes the attributes and the vertices referenced by
-//               the primitive to the indicated output stream in Egg
-//               format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the attributes and the vertices referenced by the primitive to the
+ * indicated output stream in Egg format.
+ */
 void EggPrimitive::
 write_body(ostream &out, int indent_level) const {
   test_vref_integrity();
@@ -1001,44 +868,33 @@ write_body(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::egg_start_parse_body
-//       Access: Protected, Virtual
-//  Description: This function is called within parse_egg().  It
-//               should call the appropriate function on the lexer to
-//               initialize the parser into the state associated with
-//               this object.  If the object cannot be parsed into
-//               directly, it should return false.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called within parse_egg().  It should call the appropriate
+ * function on the lexer to initialize the parser into the state associated with
+ * this object.  If the object cannot be parsed into directly, it should return
+ * false.
+ */
 bool EggPrimitive::
 egg_start_parse_body() {
   egg_start_primitive_body();
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::r_transform
-//       Access: Protected, Virtual
-//  Description: This is called from within the egg code by
-//               transform().  It applies a transformation matrix
-//               to the current node in some sensible way, then
-//               continues down the tree.
-//
-//               The first matrix is the transformation to apply; the
-//               second is its inverse.  The third parameter is the
-//               coordinate system we are changing to, or CS_default
-//               if we are not changing coordinate systems.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called from within the egg code by transform().  It applies a
+ * transformation matrix to the current node in some sensible way, then
+ * continues down the tree.  The first matrix is the transformation to apply;
+ * the second is its inverse.  The third parameter is the coordinate system we
+ * are changing to, or CS_default if we are not changing coordinate systems.
+ */
 void EggPrimitive::
 r_transform(const LMatrix4d &mat, const LMatrix4d &, CoordinateSystem) {
   EggAttributes::transform(mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::r_flatten_transforms
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of flatten_transforms().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of flatten_transforms().
+ */
 void EggPrimitive::
 r_flatten_transforms() {
   if (is_local_coord()) {
@@ -1061,11 +917,9 @@ r_flatten_transforms() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::r_apply_texmats
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of apply_texmats().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of apply_texmats().
+ */
 void EggPrimitive::
 r_apply_texmats(EggTextureCollection &textures) {
   Textures new_textures;
@@ -1111,11 +965,11 @@ r_apply_texmats(EggTextureCollection &textures) {
             new_uv_obj->set_uv(LTexCoordd(uvw[0], uvw[1]));
           }
           new_vertex.set_uv_obj(new_uv_obj);
-          
+
           EggVertexPool *pool = vertex->get_pool();
           EggVertex *unique = pool->create_unique_vertex(new_vertex);
           unique->copy_grefs_from(*vertex);
-          
+
           set_vertex(i, unique);
         }
       }
@@ -1125,13 +979,10 @@ r_apply_texmats(EggTextureCollection &textures) {
   _textures.swap(new_textures);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::apply_attribute_to_vertex
-//       Access: Protected
-//  Description: This is used to implement apply_first_attribute() and
-//               apply_last_attribute().  It copies the indicated
-//               attributes to the specified vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement apply_first_attribute() and apply_last_attribute().
+ * It copies the indicated attributes to the specified vertex.
+ */
 void EggPrimitive::
 do_apply_flat_attribute(int vertex_index, EggAttributes *attrib) {
   // The significant_change flag is set if we have changed the
@@ -1147,15 +998,15 @@ do_apply_flat_attribute(int vertex_index, EggAttributes *attrib) {
 
   if (attrib->has_normal()) {
     new_vertex->copy_normal(*attrib);
-    
-    if (orig_vertex->has_normal() && 
+
+    if (orig_vertex->has_normal() &&
         !orig_vertex->matches_normal(*new_vertex)) {
       significant_change = true;
     }
   } else if (has_normal()) {
     new_vertex->copy_normal(*this);
-    
-    if (orig_vertex->has_normal() && 
+
+    if (orig_vertex->has_normal() &&
         !orig_vertex->matches_normal(*new_vertex)) {
       significant_change = true;
     }
@@ -1163,15 +1014,15 @@ do_apply_flat_attribute(int vertex_index, EggAttributes *attrib) {
 
   if (attrib->has_color()) {
     new_vertex->copy_color(*attrib);
-    
-    if (orig_vertex->has_color() && 
+
+    if (orig_vertex->has_color() &&
         !orig_vertex->matches_color(*new_vertex)) {
       significant_change = true;
     }
   } else if (has_color()) {
     new_vertex->copy_color(*this);
-    
-    if (orig_vertex->has_color() && 
+
+    if (orig_vertex->has_color() &&
         !orig_vertex->matches_color(*new_vertex)) {
       significant_change = true;
     }
@@ -1187,19 +1038,16 @@ do_apply_flat_attribute(int vertex_index, EggAttributes *attrib) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::set_connected_shading
-//       Access: Private
-//  Description: Recursively updates the connected_shading member in
-//               all connected primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively updates the connected_shading member in all connected primitives.
+ */
 void EggPrimitive::
-set_connected_shading(EggPrimitive::Shading shading, 
+set_connected_shading(EggPrimitive::Shading shading,
                       const EggAttributes *neighbor) {
   ConnectedShadingNodes connected_nodes;
 
   r_set_connected_shading(0, shading, neighbor, connected_nodes);
-  
+
   // Pick up any additional nodes we couldn't visit because of the
   // stack depth restrictions.
   while (!connected_nodes.empty()) {
@@ -1213,15 +1061,13 @@ set_connected_shading(EggPrimitive::Shading shading,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::r_set_connected_shading
-//       Access: Private
-//  Description: Implements set_connected_shading, with some
-//               restrictions to prevent stack overflow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements set_connected_shading, with some restrictions to prevent stack
+ * overflow.
+ */
 void EggPrimitive::
-r_set_connected_shading(int stack_depth, EggPrimitive::Shading shading, 
-                        const EggAttributes *neighbor, 
+r_set_connected_shading(int stack_depth, EggPrimitive::Shading shading,
+                        const EggAttributes *neighbor,
                         ConnectedShadingNodes &next_nodes) {
   if (stack_depth > egg_recursion_limit) {
     // Too deep.  Limit recursion.
@@ -1267,7 +1113,7 @@ r_set_connected_shading(int stack_depth, EggPrimitive::Shading shading,
     if (!matches_normal || !matches_color) {
       _connected_shading = S_per_face;
       propagate = true;
-    }      
+    }
   }
 
   if (propagate) {

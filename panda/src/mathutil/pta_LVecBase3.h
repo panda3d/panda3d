@@ -1,16 +1,15 @@
-// Filename: pta_LVecBase3.h
-// Created by:  drose (27Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pta_LVecBase3.h
+ * @author drose
+ * @date 2010-02-27
+ */
 
 #ifndef PTA_LVECBASE3_H
 #define PTA_LVECBASE3_H
@@ -19,14 +18,12 @@
 #include "luse.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_LVecBase3f
-// Description : A pta of LVecBase3fs.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of LVecBase3fs.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LVecBase3f> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LVecBase3f>)
@@ -36,14 +33,12 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerTo
 typedef PointerToArray<LVecBase3f> PTA_LVecBase3f;
 typedef ConstPointerToArray<LVecBase3f> CPTA_LVecBase3f;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_LVecBase3d
-// Description : A pta of LVecBase3ds.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of LVecBase3ds.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LVecBase3d> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LVecBase3d>)
@@ -53,14 +48,12 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerTo
 typedef PointerToArray<LVecBase3d> PTA_LVecBase3d;
 typedef ConstPointerToArray<LVecBase3d> CPTA_LVecBase3d;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_LVecBase3i
-// Description : A pta of LVecBase3is.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of LVecBase3is.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LVecBase3i> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LVecBase3i>)

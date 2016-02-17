@@ -1,16 +1,15 @@
-// Filename: speedTreeNode.h
-// Created by:  drose (30Sep10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file speedTreeNode.h
+ * @author drose
+ * @date 2010-09-30
+ */
 
 #ifndef SPEEDTREENODE_H
 #define SPEEDTREENODE_H
@@ -40,17 +39,12 @@ class Loader;
 #define ST_DELETE_FOREST_HACK
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : SpeedTreeNode
-// Description : Interfaces with the SpeedTree library to render
-//               SpeedTree objects, especially trees, within the
-//               Panda3D scene graph.  
-//
-//               SpeedTree also includes some support for a simple
-//               terrain system, which is available here as well.
-//               SpeedTree's rather lame grass system is not presently
-//               exposed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interfaces with the SpeedTree library to render SpeedTree objects, especially
+ * trees, within the Panda3D scene graph.  SpeedTree also includes some support
+ * for a simple terrain system, which is available here as well.  SpeedTree's
+ * rather lame grass system is not presently exposed.
+ */
 class EXPCL_PANDASPEEDTREE SpeedTreeNode : public PandaNode {
 private:
   // This definition is required by InstanceList, below.
@@ -116,17 +110,17 @@ PUBLISHED:
   void add_instances(const NodePath &root, const TransformState *transform = TransformState::make_identity());
   void add_instances_from(const SpeedTreeNode *other);
   void add_instances_from(const SpeedTreeNode *other, const TransformState *transform);
-  void add_random_instances(const STTree *tree, int quantity, 
-                            PN_stdfloat x_min, PN_stdfloat x_max, 
+  void add_random_instances(const STTree *tree, int quantity,
+                            PN_stdfloat x_min, PN_stdfloat x_max,
                             PN_stdfloat y_min, PN_stdfloat y_max,
                             PN_stdfloat scale_min, PN_stdfloat scale_max,
                             PN_stdfloat height_min, PN_stdfloat height_max,
                             PN_stdfloat slope_min, PN_stdfloat slope_max,
                             Randomizer &randomizer = Randomizer());
 
-  bool add_from_stf(const Filename &stf_filename, 
+  bool add_from_stf(const Filename &stf_filename,
                     const LoaderOptions &options = LoaderOptions());
-  bool add_from_stf(istream &in, const Filename &pathname, 
+  bool add_from_stf(istream &in, const Filename &pathname,
                     const LoaderOptions &options = LoaderOptions(),
                     Loader *loader = NULL);
 
@@ -153,7 +147,7 @@ public:
   SpeedTreeNode(const SpeedTreeNode &copy);
 
   virtual PandaNode *make_copy() const;
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
   virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
                                          int attrib_types,
                                          GeomTransformer &transformer);
@@ -222,7 +216,7 @@ private:
 
 private:
   string _os_shaders_dir;
-  
+
   // A list of instances per each unique tree.
   typedef ov_set<InstanceList *, IndirectLess<InstanceList> > Trees;
   Trees _trees;

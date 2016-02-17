@@ -1,17 +1,16 @@
-// Filename: awWebViewListener.h
-// Created by:  rurbino (12Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#ifndef AWWEBVIEWLISTENER_H
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file awWebViewListener.h
+ * @author rurbino
+ * @date 2009-10-12
+ */
+
 #define AWWEBVIEWLISTENER_H
 
 #include "pandabase.h"
@@ -20,19 +19,18 @@
 
 #include "awesomium_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AwWebViewListener
-// Description : Thin bindings, wraps a WebViewListener
-////////////////////////////////////////////////////////////////////
+/**
+ * Thin bindings, wraps a WebViewListener
+ */
 class EXPCL_PANDAAWESOMIUM AwWebViewListener : public TypedReferenceCount, public Awesomium::WebCore {
 PUBLISHED:
 
 
 PUBLISHED:
         AwWebViewListener();
-  
+
         virtual ~AwWebViewListener() {}
-   
+
     /**
     * This event is fired when a WebView begins navigating to a new URL.
     *
@@ -68,7 +66,7 @@ PUBLISHED:
     * @param    args    The arguments passed to the callback.
     */
   void onCallback(const std::string& name, const Awesomium::JSArguments& args);
-    
+
     /**
     * This event is fired when a page title is received.
     *
@@ -93,7 +91,7 @@ PUBLISHED:
     void onChangeKeyboardFocus(bool isFocused) ;
 
     /**
-    * This event is fired when the target URL has changed. This is usually the result of 
+    * This event is fired when the target URL has changed. This is usually the result of
     * hovering over a link on the page.
     *
     * @param    url The updated target URL (or empty if the target URL is cleared).

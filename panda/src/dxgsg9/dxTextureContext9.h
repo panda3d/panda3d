@@ -1,16 +1,15 @@
-// Filename: dxTextureContext9.h
-// Created by:  drose (07Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxTextureContext9.h
+ * @author drose
+ * @date 1999-10-07
+ */
 
 #ifndef DXTEXTURECONTEXT9_H
 #define DXTEXTURECONTEXT9_H
@@ -19,10 +18,9 @@
 #include "texture.h"
 #include "textureContext.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXTextureContext9
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDADX DXTextureContext9 : public TextureContext {
 public:
   DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view);
@@ -66,7 +64,7 @@ private:
 private:
   bool _has_mipmaps;
   bool _is_render_target;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

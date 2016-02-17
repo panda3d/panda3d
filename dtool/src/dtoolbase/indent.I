@@ -1,25 +1,22 @@
-// Filename: indent.I
-// Created by:  drose (15Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file indent.I
+ * @author drose
+ * @date 1999-02-15
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_long_list
-//  Description: Writes a list of things to the indicated output
-//               stream, with a space separating each item.  One or
-//               more lines will be written, and the lines will
-//               automatically be broken such that no line exceeds
-//               max_col columns if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of things to the indicated output stream, with a space
+ * separating each item.  One or more lines will be written, and the lines will
+ * automatically be broken such that no line exceeds max_col columns if
+ * possible.
+ */
 template<class InputIterator>
 void
 write_long_list(ostream &out, int indent_level,

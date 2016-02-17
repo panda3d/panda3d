@@ -1,26 +1,24 @@
-// Filename: geomEnums.cxx
-// Created by:  drose (14Apr05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomEnums.cxx
+ * @author drose
+ * @date 2005-04-14
+ */
 
 #include "geomEnums.h"
 #include "string_utils.h"
 #include "config_gobj.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomEnums::UsageHint output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, GeomEnums::UsageHint usage_hint) {
   switch (usage_hint) {
@@ -43,10 +41,9 @@ operator << (ostream &out, GeomEnums::UsageHint usage_hint) {
   return out << "**invalid usage hint (" << (int)usage_hint << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomEnums::UsageHint input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 istream &
 operator >> (istream &in, GeomEnums::UsageHint &usage_hint) {
   string word;
@@ -71,10 +68,9 @@ operator >> (istream &in, GeomEnums::UsageHint &usage_hint) {
   return in;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomEnums::NumericType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, GeomEnums::NumericType numeric_type) {
   switch (numeric_type) {
@@ -118,10 +114,9 @@ operator << (ostream &out, GeomEnums::NumericType numeric_type) {
   return out << "**invalid numeric type (" << (int)numeric_type << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomEnums::Contents output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, GeomEnums::Contents contents) {
   switch (contents) {

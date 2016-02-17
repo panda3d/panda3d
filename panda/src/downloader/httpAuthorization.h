@@ -1,16 +1,15 @@
-// Filename: httpAuthorization.h
-// Created by:  drose (22Oct02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpAuthorization.h
+ * @author drose
+ * @date 2002-10-22
+ */
 
 #ifndef HTTPAUTHORIZATION_H
 #define HTTPAUTHORIZATION_H
@@ -29,13 +28,11 @@
 
 class URLSpec;
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPAuthorization
-// Description : A base class for storing information used to fulfill
-//               authorization requests in the past, which can
-//               possibly be re-used for future requests to the same
-//               server.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for storing information used to fulfill authorization requests
+ * in the past, which can possibly be re-used for future requests to the same
+ * server.
+ */
 class EXPCL_PANDAEXPRESS HTTPAuthorization : public ReferenceCount {
 public:
   typedef pmap<string, string> Tokens;
@@ -63,8 +60,8 @@ public:
   static string base64_decode(const string &s);
 
 protected:
-  static size_t scan_quoted_or_unquoted_string(string &result, 
-                                               const string &source, 
+  static size_t scan_quoted_or_unquoted_string(string &result,
+                                               const string &source,
                                                size_t start);
 
 protected:
@@ -77,4 +74,3 @@ protected:
 #endif  // HAVE_OPENSSL
 
 #endif
-

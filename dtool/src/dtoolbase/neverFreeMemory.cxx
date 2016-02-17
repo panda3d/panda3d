@@ -1,16 +1,15 @@
-// Filename: neverFreeMemory.cxx
-// Created by:  drose (14Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file neverFreeMemory.cxx
+ * @author drose
+ * @date 2007-06-14
+ */
 
 #include "neverFreeMemory.h"
 #include "atomicAdjust.h"
@@ -25,22 +24,18 @@ static const size_t min_page_remaining_size = 16;
 // We always allocate at least this many bytes at a time.
 static const size_t min_page_size = 128 * 1024;  // 128K
 
-////////////////////////////////////////////////////////////////////
-//     Function: NeverFreeMemory::Constructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NeverFreeMemory::
 NeverFreeMemory() {
   _total_alloc = 0;
   _total_used = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NeverFreeMemory::ns_alloc
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void *NeverFreeMemory::
 ns_alloc(size_t size) {
   _lock.acquire();
@@ -53,7 +48,7 @@ ns_alloc(size_t size) {
   size = ((size + alignment_size - 1) / alignment_size) * alignment_size;
 
   _total_used += size;
-  
+
   // Look for a page that has sufficient space remaining.
 
   Pages::iterator pi = _pages.lower_bound(Page(NULL, size));
@@ -85,11 +80,9 @@ ns_alloc(size_t size) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NeverFreeMemory::make_global_ptr
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void NeverFreeMemory::
 make_global_ptr() {
   NeverFreeMemory *ptr = new NeverFreeMemory;
@@ -100,4 +93,3 @@ make_global_ptr() {
     delete ptr;
   }
 }
-

@@ -1,16 +1,15 @@
-// Filename: tinyGraphicsStateGuardian.h
-// Created by:  drose (24Apr08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyGraphicsStateGuardian.h
+ * @author drose
+ * @date 2008-04-24
+ */
 
 #ifndef TINYGRAPHICSSTATEGUARDIAN_H
 #define TINYGRAPHICSSTATEGUARDIAN_H
@@ -27,19 +26,14 @@
 
 class TinyTextureContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyGraphicsStateGuardian
-// Description : An interface to the TinyPanda software rendering code
-//               within this module.
-//
-//               TinyPanda takes its name from TinyGL, the
-//               public-domain software renderer (see
-//               http://fabrice.bellard.free.fr/TinyGL/ ) from which
-//               this code originated.  It has since been heavily
-//               modified, to integrate it closely with Panda, and to
-//               add additional features such as blending, filtering,
-//               and multitexturing.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the TinyPanda software rendering code within this module.
+ * TinyPanda takes its name from TinyGL, the public-domain software renderer
+ * (see http://fabrice.bellard.free.fr/TinyGL/ ) from which this code
+ * originated.  It has since been heavily modified, to integrate it closely with
+ * Panda, and to add additional features such as blending, filtering, and
+ * multitexturing.
+ */
 class EXPCL_TINYDISPLAY TinyGraphicsStateGuardian : public GraphicsStateGuardian {
 public:
   TinyGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,

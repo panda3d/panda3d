@@ -1,38 +1,35 @@
-// Filename: configurable.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#ifndef CONFIGURABLE_H
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configurable.h
+ * @author mike
+ * @date 1997-01-09
+ */
+
 #define CONFIGURABLE_H
 //
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+/*
+ * Includes
+ */
 
 #include "pandabase.h"
 
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+/*
+ * Defines
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : Configurable
-// Description : An object that has data or parameters that are set
-//               less frequently (at least occasionally) than every
-//               frame.  We can cache the configuration info by
-//               by using the "dirty" flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object that has data or parameters that are set less frequently (at least
+ * occasionally) than every frame.  We can cache the configuration info by by
+ * using the "dirty" flag.
+ */
 class EXPCL_PANDA_PUTIL Configurable : public TypedObject {
 public:
 

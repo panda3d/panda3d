@@ -1,25 +1,20 @@
-// Filename: perlinNoise2.I
-// Created by:  drose (05Oct05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file perlinNoise2.I
+ * @author drose
+ * @date 2005-10-05
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::Default Constructor
-//       Access: Published
-//  Description: Randomizes the tables to make a unique noise
-//               function.  Uses a default scale (noise frequency),
-//               table size, and seed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Randomizes the tables to make a unique noise function.  Uses a default scale
+ * (noise frequency), table size, and seed.
+ */
 INLINE PerlinNoise2::
 PerlinNoise2() :
   PerlinNoise(256, 0)
@@ -28,15 +23,10 @@ PerlinNoise2() :
   _input_xform = _unscaled_xform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::Constructor
-//       Access: Published
-//  Description: Randomizes the tables to make a unique noise
-//               function.
-//
-//               If seed is nonzero, it is used to define the tables;
-//               if it is zero a random seed is generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Randomizes the tables to make a unique noise function.  If seed is nonzero,
+ * it is used to define the tables; if it is zero a random seed is generated.
+ */
 INLINE PerlinNoise2::
 PerlinNoise2(double sx, double sy,
              int table_size, unsigned long seed) :
@@ -46,12 +36,10 @@ PerlinNoise2(double sx, double sy,
   set_scale(sx, sy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::Copy Constructor
-//       Access: Published
-//  Description: Makes an exact copy of the existing PerlinNoise
-//               object, including its random seed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes an exact copy of the existing PerlinNoise object, including its random
+ * seed.
+ */
 INLINE PerlinNoise2::
 PerlinNoise2(const PerlinNoise2 &copy) :
   PerlinNoise(copy),
@@ -60,12 +48,10 @@ PerlinNoise2(const PerlinNoise2 &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::Copy Assignment Operator
-//       Access: Published
-//  Description: Makes an exact copy of the existing PerlinNoise
-//               object, including its random seed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes an exact copy of the existing PerlinNoise object, including its random
+ * seed.
+ */
 INLINE void PerlinNoise2::
 operator = (const PerlinNoise2 &copy) {
   PerlinNoise::operator = (copy);
@@ -73,103 +59,82 @@ operator = (const PerlinNoise2 &copy) {
   _input_xform = copy._input_xform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::set_scale
-//       Access: Published
-//  Description: Changes the scale (frequency) of the noise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the scale (frequency) of the noise.
+ */
 INLINE void PerlinNoise2::
 set_scale(double scale) {
   set_scale(scale, scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::set_scale
-//       Access: Published
-//  Description: Changes the scale (frequency) of the noise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the scale (frequency) of the noise.
+ */
 INLINE void PerlinNoise2::
 set_scale(double x, double y) {
   set_scale(LVecBase2d(x, y));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::set_scale
-//       Access: Published
-//  Description: Changes the scale (frequency) of the noise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the scale (frequency) of the noise.
+ */
 INLINE void PerlinNoise2::
 set_scale(const LVecBase2f &value) {
   set_scale(value[0], value[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::set_scale
-//       Access: Published
-//  Description: Changes the scale (frequency) of the noise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the scale (frequency) of the noise.
+ */
 INLINE void PerlinNoise2::
 set_scale(const LVecBase2d &value) {
   _input_xform = LMatrix3d::scale_mat(1.0f / value[0], 1.0f / value[1]) * _unscaled_xform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::noise
-//       Access: Published
-//  Description: Returns the noise function of the three inputs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the noise function of the three inputs.
+ */
 INLINE double PerlinNoise2::
 noise(double x, double y) const {
   return noise(LVecBase2d(x, y));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::noise
-//       Access: Published
-//  Description: Returns the noise function of the three inputs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the noise function of the three inputs.
+ */
 INLINE float PerlinNoise2::
 noise(const LVecBase2f &value) const {
   return (float)noise(value[0], value[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::operator ()
-//       Access: Published
-//  Description: Returns the noise function of the two inputs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the noise function of the two inputs.
+ */
 INLINE double PerlinNoise2::
 operator ()(double x, double y) const {
   return noise(x, y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::noise
-//       Access: Published
-//  Description: Returns the noise function of the two inputs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the noise function of the two inputs.
+ */
 INLINE float PerlinNoise2::
 operator ()(const LVecBase2f &value) const {
   return noise(value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::noise
-//       Access: Published
-//  Description: Returns the noise function of the two inputs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the noise function of the two inputs.
+ */
 INLINE double PerlinNoise2::
 operator ()(const LVecBase2d &value) const {
   return noise(value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerlinNoise2::grad
-//       Access: Private, Static
-//  Description: Returns the dot product of a random gradient vector
-//               (determined by the hash code) with the indicated
-//               offset vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the dot product of a random gradient vector (determined by the hash
+ * code) with the indicated offset vector.
+ */
 INLINE double PerlinNoise2::
 grad(int hash, double x, double y) {
   // Convert low 3 bits of hash code into 8 gradient directions.

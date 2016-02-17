@@ -1,16 +1,15 @@
-// Filename: lwoDiscontinuousVertexMap.cxx
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoDiscontinuousVertexMap.cxx
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #include "lwoDiscontinuousVertexMap.h"
 #include "lwoInputFile.h"
@@ -23,12 +22,10 @@
 TypeHandle LwoDiscontinuousVertexMap::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoDiscontinuousVertexMap::has_value
-//       Access: Public
-//  Description: Returns true if the map has a value associated with
-//               the given index, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the map has a value associated with the given index, false
+ * otherwise.
+ */
 bool LwoDiscontinuousVertexMap::
 has_value(int polygon_index, int vertex_index) const {
   VMad::const_iterator di;
@@ -41,13 +38,10 @@ has_value(int polygon_index, int vertex_index) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoDiscontinuousVertexMap::get_value
-//       Access: Public
-//  Description: Returns the mapping value associated with the given
-//               index, or an empty PTA_stdfloat if there is no mapping
-//               value associated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the mapping value associated with the given index, or an empty
+ * PTA_stdfloat if there is no mapping value associated.
+ */
 PTA_stdfloat LwoDiscontinuousVertexMap::
 get_value(int polygon_index, int vertex_index) const {
   VMad::const_iterator di;
@@ -64,16 +58,12 @@ get_value(int polygon_index, int vertex_index) const {
   return PTA_stdfloat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoDiscontinuousVertexMap::read_iff
-//       Access: Public, Virtual
-//  Description: Reads the data of the chunk in from the given input
-//               file, if possible.  The ID and length of the chunk
-//               have already been read.  stop_at is the byte position
-//               of the file to stop at (based on the current position
-//               at in->get_bytes_read()).  Returns true on success,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data of the chunk in from the given input file, if possible.  The
+ * ID and length of the chunk have already been read.  stop_at is the byte
+ * position of the file to stop at (based on the current position at
+ * in->get_bytes_read()).  Returns true on success, false otherwise.
+ */
 bool LwoDiscontinuousVertexMap::
 read_iff(IffInputFile *in, size_t stop_at) {
   LwoInputFile *lin = DCAST(LwoInputFile, in);
@@ -121,11 +111,9 @@ read_iff(IffInputFile *in, size_t stop_at) {
   return (lin->get_bytes_read() == stop_at);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoDiscontinuousVertexMap::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void LwoDiscontinuousVertexMap::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

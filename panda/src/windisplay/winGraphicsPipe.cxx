@@ -1,16 +1,15 @@
-// Filename: winGraphicsPipe.cxx
-// Created by:  drose (20Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winGraphicsPipe.cxx
+ * @author drose
+ * @date 2002-12-20
+ */
 
 #include "winGraphicsPipe.h"
 #include "config_windisplay.h"
@@ -678,11 +677,9 @@ count_number_of_cpus(DisplayInformation *display_information) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsPipe::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinGraphicsPipe::
 WinGraphicsPipe() {
   char string [512];
@@ -796,13 +793,10 @@ WinGraphicsPipe() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsPipe::lookup_cpu_data
-//       Access: Public, Virtual
-//  Description: Looks up the detailed CPU information and stores it
-//               in _display_information, if supported by the OS.
-//               This may take a second or two.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the detailed CPU information and stores it in _display_information,
+ * if supported by the OS. This may take a second or two.
+ */
 void WinGraphicsPipe::
 lookup_cpu_data() {
   char string [512];
@@ -907,11 +901,9 @@ lookup_cpu_data() {
   count_number_of_cpus(_display_information);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinGraphicsPipe::
 ~WinGraphicsPipe() {
   if (_hUser32 != NULL) {

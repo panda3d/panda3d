@@ -1,23 +1,22 @@
-// Filename: timedCycle.h
-// Created by:  jason (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file timedCycle.h
+ * @author jason
+ * @date 2000-08-01
+ */
 
 #ifndef TIMED_CYCLE_H
 #define TIMED_CYCLE_H
 //
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+/*
+ * Includes
+ */
 #include "pandabase.h"
 
 #include "clockObject.h"
@@ -25,13 +24,11 @@
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TimedCycle
-// Description : A class for anything that needs to cycle over
-//               some finite list of elements in increments based on
-//               time.  All time variables are assumed to be set in
-//               seconds.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class for anything that needs to cycle over some finite list of elements in
+ * increments based on time.  All time variables are assumed to be set in
+ * seconds.
+ */
 
 class EXPCL_PANDA_PUTIL TimedCycle
 {

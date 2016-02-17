@@ -1,29 +1,26 @@
-// Filename: ppToplevelObject.h
-// Created by:  drose (21Aug09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ppToplevelObject.h
+ * @author drose
+ * @date 2009-08-21
+ */
 
 #ifndef PPTOPLEVELOBJECT_H
 #define PPTOPLEVELOBJECT_H
 
 #include "nppanda3d_common.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PPToplevelObject
-// Description : This is a special object fed to Mozilla as the
-//               toplevel scripting object for the instance.  It has
-//               only one property, "main", which corresponds to the
-//               appRunner.main object from Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special object fed to Mozilla as the toplevel scripting object for
+ * the instance.  It has only one property, "main", which corresponds to the
+ * appRunner.main object from Python.
+ */
 class PPToplevelObject : public NPObject {
 public:
   static PPToplevelObject *make_new(PPInstance *inst);
@@ -77,4 +74,3 @@ public:
 #include "ppToplevelObject.I"
 
 #endif
-

@@ -1,35 +1,28 @@
-// Filename: physxObject.I
-// Created by:  enn0x (11Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxObject.I
+ * @author enn0x
+ * @date 2009-09-11
+ */
 
+/**
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE PhysxObject::
 PhysxObject() {
 
   _error_type = ET_empty;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxObject::
 ~PhysxObject() {
 
@@ -45,22 +38,18 @@ INLINE PhysxObject::
 }
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::has_python_tags
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool PhysxObject::
 has_python_tags() const {
 
   return _python_tag_data.empty() ? false : true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::set_python_tag
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxObject::
 set_python_tag(const string &key, PyObject *value) {
 
@@ -81,11 +70,9 @@ set_python_tag(const string &key, PyObject *value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::get_python_tag
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PyObject *PhysxObject::
 get_python_tag(const string &key) const {
 
@@ -102,11 +89,9 @@ get_python_tag(const string &key) const {
   return Py_None;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::has_python_tag
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool PhysxObject::
 has_python_tag(const string &key) const {
 
@@ -115,11 +100,9 @@ has_python_tag(const string &key) const {
   return (ti != _python_tag_data.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObject::clear_python_tag
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxObject::
 clear_python_tag(const string &key) {
 
@@ -133,4 +116,3 @@ clear_python_tag(const string &key) {
   }
 }
 #endif // HAVE_PYTHON
-

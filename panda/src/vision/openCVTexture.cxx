@@ -1,16 +1,15 @@
-// Filename: openCVTexture.cxx
-// Created by:  zacpavlov (19Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file openCVTexture.cxx
+ * @author zacpavlov
+ * @date 2005-08-19
+ */
 
 #include "pandabase.h"
 
@@ -24,46 +23,37 @@
 
 TypeHandle OpenCVTexture::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::Constructor
-//       Access: Published
-//  Description: Sets up the texture to read frames from a camera
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the texture to read frames from a camera
+ */
 OpenCVTexture::
-OpenCVTexture(const string &name) : 
-  VideoTexture(name) 
+OpenCVTexture(const string &name) :
+  VideoTexture(name)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::Copy Constructor
-//       Access: Protected
-//  Description: Use OpenCVTexture::make_copy() to make a duplicate copy of
-//               an existing OpenCVTexture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use OpenCVTexture::make_copy() to make a duplicate copy of an existing
+ * OpenCVTexture.
+ */
 OpenCVTexture::
-OpenCVTexture(const OpenCVTexture &copy) : 
+OpenCVTexture(const OpenCVTexture &copy) :
   VideoTexture(copy),
   _pages(copy._pages)
 {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OpenCVTexture::
 ~OpenCVTexture() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::consider_update
-//       Access: Protected, Virtual
-//  Description: Calls update_frame() if the current frame has
-//               changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls update_frame() if the current frame has changed.
+ */
 void OpenCVTexture::
 consider_update() {
   int this_frame = ClockObject::get_global_clock()->get_frame_count();
@@ -88,19 +78,13 @@ consider_update() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::make_copy_impl
-//       Access: Protected, Virtual
-//  Description: Returns a new copy of the same Texture.  This copy,
-//               if applied to geometry, will be copied into texture
-//               as a separate texture from the original, so it will
-//               be duplicated in texture memory (and may be
-//               independently modified if desired).
-//               
-//               If the Texture is an OpenCVTexture, the resulting
-//               duplicate may be animated independently of the
-//               original.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new copy of the same Texture.  This copy, if applied to geometry,
+ * will be copied into texture as a separate texture from the original, so it
+ * will be duplicated in texture memory (and may be independently modified if
+ * desired).  If the Texture is an OpenCVTexture, the resulting duplicate may be
+ * animated independently of the original.
+ */
 PT(Texture) OpenCVTexture::
 make_copy_impl() {
   Texture::CDReader cdata_tex(Texture::_cycler);
@@ -111,31 +95,24 @@ make_copy_impl() {
   return copy.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_assign
-//       Access: Protected
-//  Description: Implements make_copy().
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements make_copy().
+ */
 void OpenCVTexture::
-do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy, 
+do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy,
           const Texture::CData *cdata_copy_tex) {
   VideoTexture::do_assign(cdata_tex, copy, cdata_copy_tex);
   _pages = copy->_pages;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::from_camera
-//       Access: Published
-//  Description: Sets up the OpenCVTexture (or the indicated page, if z
-//               is specified) to accept its input from the camera
-//               with the given index number, or the default camera if
-//               the index number is -1 or unspecified.
-//
-//               If alpha_file_channel is 0, then the camera image
-//               becomes a normal RGB texture.  If it is 1, 2, or 3,
-//               then the camera image becomes an alpha texture, using
-//               the indicated channel of the source.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the OpenCVTexture (or the indicated page, if z is specified) to
+ * accept its input from the camera with the given index number, or the default
+ * camera if the index number is -1 or unspecified.  If alpha_file_channel is 0,
+ * then the camera image becomes a normal RGB texture.  If it is 1, 2, or 3,
+ * then the camera image becomes an alpha texture, using the indicated channel
+ * of the source.
+ */
 bool OpenCVTexture::
 from_camera(int camera_index, int z, int alpha_file_channel,
             const LoaderOptions &options) {
@@ -179,14 +156,11 @@ from_camera(int camera_index, int z, int alpha_file_channel,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_modify_page
-//       Access: Private
-//  Description: Returns a reference to the zth VideoPage (level) of
-//               the texture.  In the case of a 2-d texture, there is
-//               only one page, level 0; but cube maps and 3-d
-//               textures have more.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a reference to the zth VideoPage (level) of the texture.  In the case
+ * of a 2-d texture, there is only one page, level 0; but cube maps and 3-d
+ * textures have more.
+ */
 OpenCVTexture::VideoPage &OpenCVTexture::
 do_modify_page(const Texture::CData *cdata, int z) {
   nassertr(z < cdata->_z_size, _pages[0]);
@@ -196,17 +170,14 @@ do_modify_page(const Texture::CData *cdata, int z) {
   return _pages[z];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_reconsider_video_properties
-//       Access: Private
-//  Description: Resets the internal Texture properties when a new
-//               video file is loaded.  Returns true if the new image
-//               is valid, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the internal Texture properties when a new video file is loaded.
+ * Returns true if the new image is valid, false otherwise.
+ */
 bool OpenCVTexture::
 do_reconsider_video_properties(Texture::CData *cdata,
-                               const OpenCVTexture::VideoStream &stream, 
-                               int num_components, int z, 
+                               const OpenCVTexture::VideoStream &stream,
+                               int num_components, int z,
                                const LoaderOptions &options) {
   double frame_rate = 0.0f;
   int num_frames = 0;
@@ -237,7 +208,7 @@ do_reconsider_video_properties(Texture::CData *cdata,
 
   if (vision_cat.is_debug()) {
     vision_cat.debug()
-      << "Video stream is " << width << " by " << height 
+      << "Video stream is " << width << " by " << height
       << " pixels; fitting in texture " << x_size << " by "
       << y_size << " texels.\n";
   }
@@ -247,7 +218,7 @@ do_reconsider_video_properties(Texture::CData *cdata,
     return false;
   }
 
-  if (cdata->_loaded_from_image && 
+  if (cdata->_loaded_from_image &&
       (get_video_width() != width || get_video_height() != height ||
        get_num_frames() != num_frames || get_frame_rate() != frame_rate)) {
     vision_cat.error()
@@ -267,23 +238,18 @@ do_reconsider_video_properties(Texture::CData *cdata,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::make_texture
-//       Access: Public, Static
-//  Description: A factory function to make a new OpenCVTexture, used
-//               to pass to the TexturePool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A factory function to make a new OpenCVTexture, used to pass to the
+ * TexturePool.
+ */
 PT(Texture) OpenCVTexture::
 make_texture() {
   return new OpenCVTexture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_update_frame
-//       Access: Protected, Virtual
-//  Description: Called once per frame, as needed, to load the new
-//               image contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per frame, as needed, to load the new image contents.
+ */
 void OpenCVTexture::
 do_update_frame(Texture::CData *cdata, int frame) {
   int max_z = max(cdata->_z_size, (int)_pages.size());
@@ -292,12 +258,9 @@ do_update_frame(Texture::CData *cdata, int frame) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_update_frame
-//       Access: Protected, Virtual
-//  Description: This variant of update_frame updates the
-//               indicated page only.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant of update_frame updates the indicated page only.
+ */
 void OpenCVTexture::
 do_update_frame(Texture::CData *cdata, int frame, int z) {
   if (vision_cat.is_spam()) {
@@ -374,11 +337,11 @@ do_update_frame(Texture::CData *cdata, int frame, int z) {
       if (cdata->_alpha_file_channel >= 1 && cdata->_alpha_file_channel <= 3) {
         sch = source[cdata->_alpha_file_channel - 1];
       }
-      
+
       for (int y = 0; y < get_video_height(); ++y) {
         // Start dx at _num_components - 1, which writes to the last
         // channel, i.e. the alpha channel.
-        int dx = (cdata->_num_components - 1) * cdata->_component_width; 
+        int dx = (cdata->_num_components - 1) * cdata->_component_width;
         int sx = 0;
         for (int x = 0; x < get_video_width(); ++x) {
           dest[dx] = sch[sx];
@@ -392,13 +355,10 @@ do_update_frame(Texture::CData *cdata, int frame, int z) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_read_one
-//       Access: Protected, Virtual
-//  Description: Combines a color and alpha video image from the two
-//               indicated filenames.  Both must be the same kind of
-//               video with similar properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Combines a color and alpha video image from the two indicated filenames.
+ * Both must be the same kind of video with similar properties.
+ */
 bool OpenCVTexture::
 do_read_one(Texture::CData *cdata,
             const Filename &fullpath, const Filename &alpha_fullpath,
@@ -460,7 +420,7 @@ do_read_one(Texture::CData *cdata,
       page._alpha.clear();
       return false;
     }
-    
+
     if (!do_reconsider_video_properties(cdata, page._alpha, 4, z, options)) {
       page._color.clear();
       page._alpha.clear();
@@ -474,12 +434,10 @@ do_read_one(Texture::CData *cdata,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::do_load_one
-//       Access: Protected, Virtual
-//  Description: Resets the texture (or the particular level of the
-//               texture) to the indicated static image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the texture (or the particular level of the texture) to the indicated
+ * static image.
+ */
 bool OpenCVTexture::
 do_load_one(Texture::CData *cdata,
             const PNMImage &pnmimage, const string &name,
@@ -493,11 +451,9 @@ do_load_one(Texture::CData *cdata,
   return Texture::do_load_one(cdata, pnmimage, name, z, n, options);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a Texture object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a Texture object
+ */
 void OpenCVTexture::
 register_with_read_factory() {
   // Since Texture is such a funny object that is reloaded from the
@@ -514,11 +470,9 @@ register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::VideoStream::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OpenCVTexture::VideoStream::
 VideoStream() :
   _capture(NULL),
@@ -527,11 +481,9 @@ VideoStream() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::VideoStream::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OpenCVTexture::VideoStream::
 VideoStream(const OpenCVTexture::VideoStream &copy) :
   _capture(NULL),
@@ -548,39 +500,27 @@ VideoStream(const OpenCVTexture::VideoStream &copy) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::VideoStream::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OpenCVTexture::VideoStream::
 ~VideoStream() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::VideoStream::get_frame_data
-//       Access: Public
-//  Description: Gets the data needed to traverse through the
-//               decompressed buffer for the indicated frame number.
-//               It is most efficient to call this in increasing order
-//               of frame number.  Returns true on success, false on
-//               failure.
-//
-//               In the case of a success indication (true return
-//               value), the three pointers r, g, b are loaded with
-//               the addresses of the three components of the
-//               bottom-left pixel of the image.  (They will be
-//               adjacent in memory in the case of an interleaved
-//               image, and separated in the case of a
-//               separate-channel image.)  The x_pitch value is filled
-//               with the amount to add to each pointer to advance to
-//               the pixel to the right; and the y_pitch value is
-//               filled with the amount to add to each pointer to
-//               advance to the pixel above.  Note that these values
-//               may be negative (particularly in the case of a
-//               top-down image).
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the data needed to traverse through the decompressed buffer for the
+ * indicated frame number.  It is most efficient to call this in increasing
+ * order of frame number.  Returns true on success, false on failure.  In the
+ * case of a success indication (true return value), the three pointers r, g, b
+ * are loaded with the addresses of the three components of the bottom-left
+ * pixel of the image.  (They will be adjacent in memory in the case of an
+ * interleaved image, and separated in the case of a separate-channel image.)
+ * The x_pitch value is filled with the amount to add to each pointer to advance
+ * to the pixel to the right; and the y_pitch value is filled with the amount to
+ * add to each pointer to advance to the pixel above.  Note that these values
+ * may be negative (particularly in the case of a top-down image).
+ */
 bool OpenCVTexture::VideoStream::
 get_frame_data(int frame,
                const unsigned char *&r,
@@ -627,12 +567,10 @@ get_frame_data(int frame,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::VideoStream::read
-//       Access: Public
-//  Description: Sets up the stream to read the indicated file.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the stream to read the indicated file.  Returns true on success,
+ * false on failure.
+ */
 bool OpenCVTexture::VideoStream::
 read(const Filename &filename) {
   clear();
@@ -646,12 +584,10 @@ read(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::VideoStream::from_camera
-//       Access: Public
-//  Description: Sets up the stream to display the indicated camera.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the stream to display the indicated camera.  Returns true on success,
+ * false on failure.
+ */
 bool OpenCVTexture::VideoStream::
 from_camera(int camera_index) {
   clear();
@@ -664,12 +600,9 @@ from_camera(int camera_index) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::VideoStream::clear
-//       Access: Public
-//  Description: Stops the video playback and frees the associated
-//               resources.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops the video playback and frees the associated resources.
+ */
 void OpenCVTexture::VideoStream::
 clear() {
   if (_capture != NULL) {
@@ -682,4 +615,3 @@ clear() {
 }
 
 #endif  // HAVE_OPENCV
-

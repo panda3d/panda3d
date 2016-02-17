@@ -1,16 +1,15 @@
-// Filename: bulletVehicle.h
-// Created by:  enn0x (16Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletVehicle.h
+ * @author enn0x
+ * @date 2010-02-16
+ */
 
 #ifndef __BULLET_VEHICLE_H__
 #define __BULLET_VEHICLE_H__
@@ -27,10 +26,9 @@ class BulletWorld;
 class BulletRigidBodyNode;
 class BulletWheel;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletVehicleTuning
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletVehicleTuning {
 
 PUBLISHED:
@@ -54,14 +52,12 @@ private:
   friend class BulletVehicle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletVehicle
-// Description : Simulates a raycast vehicle which casts a ray per
-//               wheel at the ground as a cheap replacement for
-//               complex suspension simulation. The suspension can
-//               be tuned in various ways. It is possible to add a
-//               (probably) arbitrary number of wheels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simulates a raycast vehicle which casts a ray per wheel at the ground as a
+ * cheap replacement for complex suspension simulation.  The suspension can be
+ * tuned in various ways.  It is possible to add a (probably) arbitrary number
+ * of wheels.
+ */
 class EXPCL_PANDABULLET BulletVehicle : public TypedReferenceCount {
 
 PUBLISHED:
@@ -104,14 +100,13 @@ private:
 
   static btVector3 get_axis(int idx);
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "BulletVehicle", 
+    register_type(_type_handle, "BulletVehicle",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

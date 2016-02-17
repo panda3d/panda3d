@@ -1,50 +1,40 @@
-// Filename: animControlCollection.cxx
-// Created by:  drose (22Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animControlCollection.cxx
+ * @author drose
+ * @date 2000-02-22
+ */
 
 #include "animControlCollection.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::Constructor
-//       Access: Published
-//  Description: Returns the AnimControl associated with the given
-//               name, or NULL if no such control has been associated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the AnimControl associated with the given name, or NULL if no such
+ * control has been associated.
+ */
 AnimControlCollection::
 AnimControlCollection() {
   _last_started_control = (AnimControl *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnimControlCollection::
 ~AnimControlCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::store_anim
-//       Access: Published
-//  Description: Associates the given AnimControl with this collection
-//               under the given name.  The AnimControl will remain
-//               associated until a new AnimControl is associated with
-//               the same name later, or until unbind_anim() is called
-//               with this name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the given AnimControl with this collection under the given name.
+ * The AnimControl will remain associated until a new AnimControl is associated
+ * with the same name later, or until unbind_anim() is called with this name.
+ */
 void AnimControlCollection::
 store_anim(AnimControl *control, const string &name) {
   ControlsByName::iterator ci = _controls_by_name.find(name);
@@ -70,12 +60,10 @@ store_anim(AnimControl *control, const string &name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::find_anim
-//       Access: Published
-//  Description: Returns the AnimControl associated with the given
-//               name, or NULL if no such control has been associated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the AnimControl associated with the given name, or NULL if no such
+ * control has been associated.
+ */
 AnimControl *AnimControlCollection::
 find_anim(const string &name) const {
   ControlsByName::const_iterator ci = _controls_by_name.find(name);
@@ -88,14 +76,11 @@ find_anim(const string &name) const {
   return _controls[index]._control;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::unbind_anim
-//       Access: Published
-//  Description: Removes the AnimControl associated with the given
-//               name, if any.  Returns true if an AnimControl was
-//               removed, false if there was no AnimControl with the
-//               indicated name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the AnimControl associated with the given name, if any.  Returns true
+ * if an AnimControl was removed, false if there was no AnimControl with the
+ * indicated name.
+ */
 bool AnimControlCollection::
 unbind_anim(const string &name) {
   ControlsByName::iterator ci = _controls_by_name.find(name);
@@ -125,57 +110,44 @@ unbind_anim(const string &name) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::get_num_anims
-//       Access: Published
-//  Description: Returns the number of AnimControls associated with
-//               this collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of AnimControls associated with this collection.
+ */
 int AnimControlCollection::
 get_num_anims() const {
   return _controls.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::get_anim
-//       Access: Published
-//  Description: Returns the nth AnimControl associated with
-//               this collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth AnimControl associated with this collection.
+ */
 AnimControl *AnimControlCollection::
 get_anim(int n) const {
   nassertr(n >= 0 && n < (int)_controls.size(), NULL);
   return _controls[n]._control;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::get_anim_name
-//       Access: Published
-//  Description: Returns the name of the nth AnimControl associated
-//               with this collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the nth AnimControl associated with this collection.
+ */
 string AnimControlCollection::
 get_anim_name(int n) const {
   nassertr(n >= 0 && n < (int)_controls.size(), string());
   return _controls[n]._name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::clear_anims
-//       Access: Published
-//  Description: Disassociates all anims from this collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disassociates all anims from this collection.
+ */
 void AnimControlCollection::
 clear_anims() {
   _controls.clear();
   _controls_by_name.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::play_all
-//       Access: Published
-//  Description: Starts all animations playing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts all animations playing.
+ */
 void AnimControlCollection::
 play_all() {
   Controls::const_iterator ci;
@@ -185,11 +157,9 @@ play_all() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::play_all
-//       Access: Published
-//  Description: Starts all animations playing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts all animations playing.
+ */
 void AnimControlCollection::
 play_all(double from, double to) {
   Controls::const_iterator ci;
@@ -199,11 +169,9 @@ play_all(double from, double to) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::loop_all
-//       Access: Published
-//  Description: Starts all animations looping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts all animations looping.
+ */
 void AnimControlCollection::
 loop_all(bool restart) {
   Controls::const_iterator ci;
@@ -213,11 +181,9 @@ loop_all(bool restart) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::loop_all
-//       Access: Published
-//  Description: Starts all animations looping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts all animations looping.
+ */
 void AnimControlCollection::
 loop_all(bool restart, double from, double to) {
   Controls::const_iterator ci;
@@ -227,13 +193,10 @@ loop_all(bool restart, double from, double to) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::stop_all
-//       Access: Published
-//  Description: Stops all currently playing animations.  Returns true
-//               if any animations were stopped, false if none were
-//               playing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops all currently playing animations.  Returns true if any animations were
+ * stopped, false if none were playing.
+ */
 bool AnimControlCollection::
 stop_all() {
   bool any = false;
@@ -248,11 +211,9 @@ stop_all() {
   return any;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::pose_all
-//       Access: Published
-//  Description: Sets all animations to the indicated frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets all animations to the indicated frame.
+ */
 void AnimControlCollection::
 pose_all(double frame) {
   Controls::const_iterator ci;
@@ -262,21 +223,18 @@ pose_all(double frame) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::which_anim_playing
-//       Access: Published
-//  Description: Returns the name of the bound AnimControl currently
-//               playing, if any.  If more than one AnimControl is
-//               currently playing, returns all of the names separated
-//               by spaces.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the bound AnimControl currently playing, if any.  If more
+ * than one AnimControl is currently playing, returns all of the names separated
+ * by spaces.
+ */
 string AnimControlCollection::
 which_anim_playing() const {
   string result;
 
   Controls::const_iterator ci;
-  for (ci = _controls.begin(); 
-       ci != _controls.end(); 
+  for (ci = _controls.begin();
+       ci != _controls.end();
        ++ci) {
     if ((*ci)._control->is_playing()) {
       if (!result.empty()) {
@@ -289,26 +247,22 @@ which_anim_playing() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void AnimControlCollection::
 output(ostream &out) const {
   out << _controls.size() << " anims.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControlCollection::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void AnimControlCollection::
 write(ostream &out) const {
   ControlsByName::const_iterator ci;
-  for (ci = _controls_by_name.begin(); 
-       ci != _controls_by_name.end(); 
+  for (ci = _controls_by_name.begin();
+       ci != _controls_by_name.end();
        ++ci) {
     out << (*ci).first << ": " << *_controls[(*ci).second]._control << "\n";
   }

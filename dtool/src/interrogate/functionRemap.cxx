@@ -1,16 +1,15 @@
-// Filename: functionRemap.cxx
-// Created by:  drose (19Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file functionRemap.cxx
+ * @author drose
+ * @date 2001-09-19
+ */
 
 #include "functionRemap.h"
 #include "typeManager.h"
@@ -33,11 +32,9 @@
 #include "interrogateType.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FunctionRemap::
 FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
               CPPInstance *cppfunc, int num_default_parameters,
@@ -68,23 +65,18 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _is_valid = setup_properties(ifunc, interface_maker);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FunctionRemap::
 ~FunctionRemap() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::get_parameter_name
-//       Access: Public
-//  Description: Returns a string that will be a suitable name for the
-//               nth parameter in the generated code.  This may not
-//               correspond to the name of the parameter in the
-//               original code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string that will be a suitable name for the nth parameter in the
+ * generated code.  This may not correspond to the name of the parameter in the
+ * original code.
+ */
 string FunctionRemap::
 get_parameter_name(int n) const {
   ostringstream str;
@@ -92,18 +84,12 @@ get_parameter_name(int n) const {
   return str.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::call_function
-//       Access: Public
-//  Description: Writes a sequence of commands to the given output
-//               stream to call the wrapped function.  The parameter
-//               values are assumed to be simply the names of the
-//               parameters.
-//
-//               The return value is the expression to return, if we
-//               are returning a value, or the empty string if we
-//               return nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a sequence of commands to the given output stream to call the wrapped
+ * function.  The parameter values are assumed to be simply the names of the
+ * parameters.  The return value is the expression to return, if we are
+ * returning a value, or the empty string if we return nothing.
+ */
 string FunctionRemap::
 call_function(ostream &out, int indent_level, bool convert_result,
               const string &container) const {
@@ -114,17 +100,12 @@ call_function(ostream &out, int indent_level, bool convert_result,
   return call_function(out, indent_level, convert_result, container, pexprs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::call_function
-//       Access: Public
-//  Description: Writes a sequence of commands to the given output
-//               stream to call the wrapped function.  The parameter
-//               values are taken from pexprs.
-//
-//               The return value is the expression to return, if we
-//               are returning a value, or the empty string if we
-//               return nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a sequence of commands to the given output stream to call the wrapped
+ * function.  The parameter values are taken from pexprs.  The return value is
+ * the expression to return, if we are returning a value, or the empty string if
+ * we return nothing.
+ */
 string FunctionRemap::
 call_function(ostream &out, int indent_level, bool convert_result,
               const string &container, const vector_string &pexprs) const {
@@ -289,13 +270,10 @@ call_function(ostream &out, int indent_level, bool convert_result,
   return return_expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::write_orig_prototype
-//       Access: Public
-//  Description: Writes a line describing the original C++ method or
-//               function.  This is generally useful only within a
-//               comment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a line describing the original C++ method or function.  This is
+ * generally useful only within a comment.
+ */
 void FunctionRemap::
 write_orig_prototype(ostream &out, int indent_level, bool local, int num_default_args) const {
   if (local) {
@@ -305,13 +283,10 @@ write_orig_prototype(ostream &out, int indent_level, bool local, int num_default
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::make_wrapper_entry
-//       Access: Public
-//  Description: Creates an InterrogateFunctionWrapper object
-//               corresponding to this callable instance and stores it
-//               in the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an InterrogateFunctionWrapper object corresponding to this callable
+ * instance and stores it in the database.
+ */
 FunctionWrapperIndex FunctionRemap::
 make_wrapper_entry(FunctionIndex function_index) {
   _wrapper_index =
@@ -392,14 +367,11 @@ make_wrapper_entry(FunctionIndex function_index) {
   return _wrapper_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::get_call_str
-//       Access: Public
-//  Description: Returns a string suitable for calling the wrapped
-//               function.  If pexprs is nonempty, it represents
-//               the list of expressions that will evaluate to each
-//               parameter value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string suitable for calling the wrapped function.  If pexprs is
+ * nonempty, it represents the list of expressions that will evaluate to each
+ * parameter value.
+ */
 string FunctionRemap::
 get_call_str(const string &container, const vector_string &pexprs) const {
   // Build up the call to the actual function.
@@ -504,12 +476,10 @@ get_call_str(const string &container, const vector_string &pexprs) const {
   return call.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::get_min_num_args
-//       Access: Private
-//  Description: Returns the minimum number of arguments that needs
-//               to be passed to this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minimum number of arguments that needs to be passed to this
+ * function.
+ */
 int FunctionRemap::
 get_min_num_args() const {
   int min_num_args = 0;
@@ -530,12 +500,9 @@ get_min_num_args() const {
   return min_num_args;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::get_max_num_args
-//       Access: Private
-//  Description: Returns the maximum number of arguments that can
-//               be passed to this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the maximum number of arguments that can be passed to this function.
+ */
 int FunctionRemap::
 get_max_num_args() const {
   int max_num_args = _parameters.size();
@@ -545,14 +512,11 @@ get_max_num_args() const {
   return max_num_args;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::get_parameter_expr
-//       Access: Private
-//  Description: Returns a string that represents the expression
-//               associated with the nth parameter.  This is just the
-//               nth element of pexprs if it is nonempty, or the name
-//               of the nth parameter is it is empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string that represents the expression associated with the nth
+ * parameter.  This is just the nth element of pexprs if it is nonempty, or the
+ * name of the nth parameter is it is empty.
+ */
 string FunctionRemap::
 get_parameter_expr(size_t n, const vector_string &pexprs) const {
   if (n < pexprs.size()) {
@@ -561,13 +525,10 @@ get_parameter_expr(size_t n, const vector_string &pexprs) const {
   return get_parameter_name(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionRemap::setup_properties
-//       Access: Private
-//  Description: Sets up the properties of the function appropriately.
-//               Returns true if successful, or false if there is
-//               something unacceptable about the function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the properties of the function appropriately.  Returns true if
+ * successful, or false if there is something unacceptable about the function.
+ */
 bool FunctionRemap::
 setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker) {
   _function_signature =

@@ -1,16 +1,15 @@
-// Filename: txaLine.cxx
-// Created by:  drose (30Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file txaLine.cxx
+ * @author drose
+ * @date 2000-11-30
+ */
 
 #include "txaLine.h"
 #include "pal_string_utils.h"
@@ -23,11 +22,9 @@
 #include "pnotify.h"
 #include "pnmFileType.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaLine::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TxaLine::
 TxaLine() {
   _size_type = ST_none;
@@ -52,13 +49,10 @@ TxaLine() {
   _alpha_type = (PNMFileType *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaLine::parse
-//       Access: Public
-//  Description: Accepts a string that defines a line of the .txa file
-//               and parses it into its constinuent parts.  Returns
-//               true if successful, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts a string that defines a line of the .txa file and parses it into its
+ * constinuent parts.  Returns true if successful, false on error.
+ */
 bool TxaLine::
 parse(const string &line) {
   size_t colon = line.find(':');
@@ -302,12 +296,12 @@ parse(const string &line) {
                 case 'u':
                   _wrap_u = wm;
                   break;
-                  
+
                 case 'v':
                   _wrap_v = wm;
                   break;
                 }
-                
+
               } else {
                 // Maybe it's an image file request.
                 if (!parse_image_type_request(word, _color_type, _alpha_type)) {
@@ -325,17 +319,13 @@ parse(const string &line) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaLine::match_egg
-//       Access: Public
-//  Description: Compares the patterns on the line to the indicated
-//               EggFile.  If they match, updates the egg with the
-//               appropriate information.  Returns true if a match is
-//               detected and the search for another line should stop,
-//               or false if a match is not detected (or if the
-//               keyword "cont" is present, which means the search
-//               should continue regardless).
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the patterns on the line to the indicated EggFile.  If they match,
+ * updates the egg with the appropriate information.  Returns true if a match is
+ * detected and the search for another line should stop, or false if a match is
+ * not detected (or if the keyword "cont" is present, which means the search
+ * should continue regardless).
+ */
 bool TxaLine::
 match_egg(EggFile *egg_file) const {
   string name = egg_file->get_name();
@@ -388,17 +378,13 @@ match_egg(EggFile *egg_file) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaLine::match_texture
-//       Access: Public
-//  Description: Compares the patterns on the line to the indicated
-//               TextureImage.  If they match, updates the texture
-//               with the appropriate information.  Returns true if a
-//               match is detected and the search for another line
-//               should stop, or false if a match is not detected (or
-//               if the keyword "cont" is present, which means the
-//               search should continue regardless).
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the patterns on the line to the indicated TextureImage.  If they
+ * match, updates the texture with the appropriate information.  Returns true if
+ * a match is detected and the search for another line should stop, or false if
+ * a match is not detected (or if the keyword "cont" is present, which means the
+ * search should continue regardless).
+ */
 bool TxaLine::
 match_texture(TextureImage *texture) const {
   string name = texture->get_name();
@@ -537,11 +523,9 @@ match_texture(TextureImage *texture) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaLine::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TxaLine::
 output(ostream &out) const {
   Patterns::const_iterator pi;

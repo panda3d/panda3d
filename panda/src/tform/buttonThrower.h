@@ -1,16 +1,15 @@
-// Filename: buttonThrower.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buttonThrower.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef BUTTONTHROWER_H
 #define BUTTONTHROWER_H
@@ -24,18 +23,13 @@
 #include "pmap.h"
 #include "eventParameter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonThrower
-// Description : Throws Panda Events for button down/up events
-//               generated within the data graph.
-//
-//               This is a DataNode which is intended to be parented
-//               to the data graph below a device which is generating
-//               a sequence of button events, like a MouseAndKeyboard
-//               device.  It simply takes each button it finds and
-//               throws a corresponding event based on the button name
-//               via the throw_event() call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws Panda Events for button down/up events generated within the data
+ * graph.  This is a DataNode which is intended to be parented to the data graph
+ * below a device which is generating a sequence of button events, like a
+ * MouseAndKeyboard device.  It simply takes each button it finds and throws a
+ * corresponding event based on the button name via the throw_event() call.
+ */
 class EXPCL_PANDA_TFORM ButtonThrower : public DataNode {
 PUBLISHED:
   ButtonThrower(const string &name);

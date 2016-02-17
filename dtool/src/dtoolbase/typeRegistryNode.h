@@ -1,16 +1,15 @@
-// Filename: typeRegistryNode.h
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeRegistryNode.h
+ * @author drose
+ * @date 2001-08-06
+ */
 
 #ifndef TYPEREGISTRYNODE_H
 #define TYPEREGISTRYNODE_H
@@ -23,13 +22,11 @@
 #include <assert.h>
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeRegistryNode
-// Description : This is a single entry in the TypeRegistry.
-//               Normally, user code will never directly access this
-//               class; this class is hidden within the TypeRegistry
-//               accessors.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single entry in the TypeRegistry.  Normally, user code will never
+ * directly access this class; this class is hidden within the TypeRegistry
+ * accessors.
+ */
 class EXPCL_DTOOL TypeRegistryNode {
 public:
   TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
@@ -65,11 +62,11 @@ private:
   class Inherit {
   public:
     INLINE Inherit();
-    INLINE Inherit(TypeRegistryNode *top, int bit_count, 
+    INLINE Inherit(TypeRegistryNode *top, int bit_count,
                    SubtreeMaskType bits);
     INLINE Inherit(const Inherit &copy);
     INLINE void operator = (const Inherit &copy);
-    
+
     INLINE bool operator < (const Inherit &other) const;
     INLINE static bool is_derived_from(const Inherit &child, const Inherit &base);
 
@@ -79,7 +76,7 @@ private:
   };
   typedef vector<Inherit> TopInheritance;
 
-  void r_build_subtrees(TypeRegistryNode *top, 
+  void r_build_subtrees(TypeRegistryNode *top,
                         int bit_count, SubtreeMaskType bits);
 
   static bool check_derived_from(const TypeRegistryNode *child,

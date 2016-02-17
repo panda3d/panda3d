@@ -1,43 +1,35 @@
-// Filename: eggComment.I
-// Created by:  drose (20Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggComment.I
+ * @author drose
+ * @date 1999-01-20
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE EggComment::
 EggComment(const string &node_name, const string &comment)
   : EggNode(node_name), _comment(comment) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggComment::
 EggComment(const EggComment &copy) : EggNode(copy), _comment(copy._comment) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggComment &EggComment::
 operator = (const string &comment) {
   _comment = comment;
@@ -45,11 +37,9 @@ operator = (const string &comment) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggComment &EggComment::
 operator = (const EggComment &copy) {
   _comment = copy._comment;
@@ -57,35 +47,28 @@ operator = (const EggComment &copy) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::String typecast operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggComment::
 operator const string & () const {
   return _comment;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::set_comment
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggComment::
 set_comment(const string &comment) {
   _comment = comment;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::set_comment
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE string EggComment::
 get_comment() const {
   return _comment;
 }
-

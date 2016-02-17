@@ -1,16 +1,15 @@
-// Filename: staticTextFont.h
-// Created by:  drose (03May01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file staticTextFont.h
+ * @author drose
+ * @date 2001-05-03
+ */
 
 #ifndef STATICTEXTFONT_H
 #define STATICTEXTFONT_H
@@ -30,14 +29,12 @@
 class Node;
 class GeomPoint;
 
-////////////////////////////////////////////////////////////////////
-//       Class : StaticTextFont
-// Description : A StaticTextFont is loaded up from a model that was
-//               previously generated via egg-mkfont, and contains all
-//               of its glyphs already generated and available for
-//               use.  It doesn't require linking with any external
-//               libraries like FreeType.
-////////////////////////////////////////////////////////////////////
+/**
+ * A StaticTextFont is loaded up from a model that was previously generated via
+ * egg-mkfont, and contains all of its glyphs already generated and available
+ * for use.  It doesn't require linking with any external libraries like
+ * FreeType.
+ */
 class EXPCL_PANDA_TEXT StaticTextFont : public TextFont {
 PUBLISHED:
   StaticTextFont(PandaNode *font_def, CoordinateSystem cs = CS_default);

@@ -1,16 +1,15 @@
-// Filename: eglGraphicsPipe.cxx
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsPipe.cxx
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #include "eglGraphicsBuffer.h"
 #include "eglGraphicsPipe.h"
@@ -28,11 +27,9 @@ eglGraphicsPipe::IOErrorHandlerFunc *eglGraphicsPipe::_prev_io_error_handler;
 
 LightReMutex eglGraphicsPipe::_x_mutex;
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 eglGraphicsPipe::
 eglGraphicsPipe(const string &display) {
   string display_spec = display;
@@ -132,11 +129,9 @@ eglGraphicsPipe(const string &display) {
   _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 eglGraphicsPipe::
 ~eglGraphicsPipe() {
   release_hidden_cursor();
@@ -154,41 +149,31 @@ eglGraphicsPipe::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to choose
+ * between several possible GraphicsPipes available on a particular platform, so
+ * the name should be meaningful and unique for a given platform.
+ */
 string eglGraphicsPipe::
 get_interface_name() const {
   return "OpenGL ES";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               eglGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the user
+ * to make a default eglGraphicsPipe.
+ */
 PT(GraphicsPipe) eglGraphicsPipe::
 pipe_constructor() {
   return new eglGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::get_preferred_window_thread
-//       Access: Public, Virtual
-//  Description: Returns an indication of the thread in which this
-//               GraphicsPipe requires its window processing to be
-//               performed: typically either the app thread (e.g. X)
-//               or the draw thread (Windows).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an indication of the thread in which this GraphicsPipe requires its
+ * window processing to be performed: typically either the app thread (e.g.  X)
+ * or the draw thread (Windows).
+ */
 GraphicsPipe::PreferredWindowThread
 eglGraphicsPipe::get_preferred_window_thread() const {
   // Actually, since we're creating the graphics context in
@@ -205,11 +190,9 @@ eglGraphicsPipe::get_preferred_window_thread() const {
   return PWT_draw;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) eglGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -338,12 +321,9 @@ make_output(const string &name,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::make_hidden_cursor
-//       Access: Private
-//  Description: Called once to make an invisible Cursor for return
-//               from get_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to make an invisible Cursor for return from get_hidden_cursor().
+ */
 void eglGraphicsPipe::
 make_hidden_cursor() {
   nassertv(_hidden_cursor == None);
@@ -361,12 +341,9 @@ make_hidden_cursor() {
   XFreePixmap(_display, empty);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::release_hidden_cursor
-//       Access: Private
-//  Description: Called once to release the invisible cursor created
-//               by make_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to release the invisible cursor created by make_hidden_cursor().
+ */
 void eglGraphicsPipe::
 release_hidden_cursor() {
   if (_hidden_cursor != None) {
@@ -375,17 +352,13 @@ release_hidden_cursor() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::install_error_handlers
-//       Access: Private, Static
-//  Description: Installs new Xlib error handler functions if this is
-//               the first time this function has been called.  These
-//               error handler functions will attempt to reduce Xlib's
-//               annoying tendency to shut down the client at the
-//               first error.  Unfortunately, it is difficult to play
-//               nice with the client if it has already installed its
-//               own error handlers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Installs new Xlib error handler functions if this is the first time this
+ * function has been called.  These error handler functions will attempt to
+ * reduce Xlib's annoying tendency to shut down the client at the first error.
+ * Unfortunately, it is difficult to play nice with the client if it has already
+ * installed its own error handlers.
+ */
 void eglGraphicsPipe::
 install_error_handlers() {
   if (_error_handlers_installed) {
@@ -397,12 +370,9 @@ install_error_handlers() {
   _error_handlers_installed = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               non-fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a non-fatal Xlib error.
+ */
 int eglGraphicsPipe::
 error_handler(X11_Display *display, XErrorEvent *error) {
   static const int msg_len = 80;
@@ -420,12 +390,9 @@ error_handler(X11_Display *display, XErrorEvent *error) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::io_error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a fatal Xlib error.
+ */
 int eglGraphicsPipe::
 io_error_handler(X11_Display *display) {
   egldisplay_cat.fatal()

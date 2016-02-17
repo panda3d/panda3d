@@ -1,16 +1,15 @@
-// Filename: sampleClass.h
-// Created by:  drose (10Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sampleClass.h
+ * @author drose
+ * @date 2000-06-10
+ */
 
 #ifndef SAMPLECLASS_H
 #define SAMPLECLASS_H
@@ -30,13 +29,11 @@
 
 #include <systemHeaderFile.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : SampleClass
-// Description : A basic description of the function and purpose of
-//               SampleClass.  Note that class names are generally
-//               mixed case, no underscore, beginning with a capital
-//               letter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A basic description of the function and purpose of SampleClass.  Note that
+ * class names are generally mixed case, no underscore, beginning with a capital
+ * letter.
+ */
 class EXPCL_PANDA SampleClass : public TypedObject {
 public:
   enum NestedEnum {

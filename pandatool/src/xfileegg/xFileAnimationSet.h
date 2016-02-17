@@ -1,16 +1,15 @@
-// Filename: xFileAnimationSet.h
-// Created by:  drose (02Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileAnimationSet.h
+ * @author drose
+ * @date 2004-10-02
+ */
 
 #ifndef XFILEANIMATIONSET_H
 #define XFILEANIMATIONSET_H
@@ -26,14 +25,11 @@ class EggGroup;
 class EggTable;
 class EggXfmSAnim;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileAnimationSet
-// Description : This represents a tree of EggTables, corresponding to
-//               Animation entries in the X file.  There is one
-//               EggTable for each joint in the character's joint
-//               set, and the whole tree is structured as a
-//               mirror of the joint set.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a tree of EggTables, corresponding to Animation entries in
+ * the X file.  There is one EggTable for each joint in the character's joint
+ * set, and the whole tree is structured as a mirror of the joint set.
+ */
 class XFileAnimationSet : public Namable {
 public:
   XFileAnimationSet();
@@ -68,7 +64,7 @@ public:
     FrameEntries _entries;
     int _flags;
   };
-  
+
   FrameData &create_frame_data(const string &joint_name);
 
 public:
@@ -94,4 +90,3 @@ private:
 #include "xFileAnimationSet.I"
 
 #endif
-

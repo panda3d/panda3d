@@ -1,24 +1,19 @@
-// Filename: colorBlendAttrib.I
-// Created by:  drose (29Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorBlendAttrib.I
+ * @author drose
+ * @date 2002-03-29
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::Constructor
-//       Access: Private
-//  Description: Use ColorBlendAttrib::make() to construct a new
-//               ColorBlendAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use ColorBlendAttrib::make() to construct a new ColorBlendAttrib object.
+ */
 INLINE ColorBlendAttrib::
 ColorBlendAttrib() :
   _mode(M_none),
@@ -30,12 +25,9 @@ ColorBlendAttrib() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::Constructor
-//       Access: Private
-//  Description: Use ColorBlendAttrib::make() to construct a new
-//               ColorBlendAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use ColorBlendAttrib::make() to construct a new ColorBlendAttrib object.
+ */
 INLINE ColorBlendAttrib::
 ColorBlendAttrib(ColorBlendAttrib::Mode mode,
                  ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
@@ -49,74 +41,58 @@ ColorBlendAttrib(ColorBlendAttrib::Mode mode,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::get_mode
-//       Access: Published
-//  Description: Returns the colorBlend mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the colorBlend mode.
+ */
 INLINE ColorBlendAttrib::Mode ColorBlendAttrib::
 get_mode() const {
   return _mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::get_operand_a
-//       Access: Published
-//  Description: Returns the multiplier for the first component.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the multiplier for the first component.
+ */
 INLINE ColorBlendAttrib::Operand ColorBlendAttrib::
 get_operand_a() const {
   return _a;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::get_operand_b
-//       Access: Published
-//  Description: Returns the multiplier for the second component.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the multiplier for the second component.
+ */
 INLINE ColorBlendAttrib::Operand ColorBlendAttrib::
 get_operand_b() const {
   return _b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::get_color
-//       Access: Published
-//  Description: Returns the constant color associated with the attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the constant color associated with the attrib.
+ */
 INLINE LColor ColorBlendAttrib::
 get_color() const {
   return _color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::involves_constant_color
-//       Access: Published
-//  Description: Returns true if the this attrib uses the
-//               constant color, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the this attrib uses the constant color, false otherwise.
+ */
 INLINE bool ColorBlendAttrib::
 involves_constant_color() const {
   return _involves_constant_color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::involves_color_scale
-//       Access: Published
-//  Description: Returns true if the this attrib uses the
-//               color scale attrib, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the this attrib uses the color scale attrib, false otherwise.
+ */
 INLINE bool ColorBlendAttrib::
 involves_color_scale() const {
   return _involves_color_scale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::involves_constant_color
-//       Access: Published, Static
-//  Description: Returns true if the indicated operand uses the
-//               constant color, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated operand uses the constant color, false
+ * otherwise.
+ */
 INLINE bool ColorBlendAttrib::
 involves_constant_color(ColorBlendAttrib::Operand operand) {
   switch (operand) {
@@ -131,12 +107,10 @@ involves_constant_color(ColorBlendAttrib::Operand operand) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::involves_color_scale
-//       Access: Published, Static
-//  Description: Returns true if the indicated operand uses the
-//               color scale attrib, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated operand uses the color scale attrib, false
+ * otherwise.
+ */
 INLINE bool ColorBlendAttrib::
 involves_color_scale(ColorBlendAttrib::Operand operand) {
   switch (operand) {

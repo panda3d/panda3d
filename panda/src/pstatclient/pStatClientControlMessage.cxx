@@ -1,16 +1,15 @@
-// Filename: pStatClientControlMessage.cxx
-// Created by:  drose (09Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatClientControlMessage.cxx
+ * @author drose
+ * @date 2000-07-09
+ */
 
 #include "config_pstats.h"
 #include "pStatClientControlMessage.h"
@@ -19,21 +18,17 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientControlMessage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatClientControlMessage::
 PStatClientControlMessage() {
   _type = T_invalid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientControlMessage::encode
-//       Access: Public
-//  Description: Writes the message into the indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the message into the indicated datagram.
+ */
 void PStatClientControlMessage::
 encode(Datagram &datagram) const {
   datagram.clear();
@@ -71,12 +66,10 @@ encode(Datagram &datagram) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientControlMessage::decode
-//       Access: Public
-//  Description: Extracts the message from the indicated datagram.
-//               Returns true on success, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the message from the indicated datagram.  Returns true on success,
+ * false on error.
+ */
 bool PStatClientControlMessage::
 decode(const Datagram &datagram, PStatClientVersion *version) {
   DatagramIterator source(datagram);

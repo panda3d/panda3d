@@ -1,16 +1,15 @@
-// Filename: stencilAttrib.cxx
-// Created by:  aignacio (18May06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stencilAttrib.cxx
+ * @author aignacio
+ * @date 2006-05-18
+ */
 
 #include "stencilAttrib.h"
 #include "graphicsStateGuardianBase.h"
@@ -44,12 +43,9 @@ stencil_render_state_name_array[StencilAttrib::SRS_total] =
   "SRS_clear_value",
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::Constructor
-//       Access: Private
-//  Description: Use StencilAttrib::make() to construct a new
-//               StencilAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use StencilAttrib::make() to construct a new StencilAttrib object.
+ */
 StencilAttrib::
 StencilAttrib() {
   _stencil_render_states [SRS_front_comparison_function] = M_none;
@@ -70,35 +66,27 @@ StencilAttrib() {
   _stencil_render_states [SRS_clear_value] = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make_off
-//       Access: Published, Static
-//  Description: Constructs a StencilAttrib that has stenciling
-//               turned off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a StencilAttrib that has stenciling turned off.
+ */
 CPT(RenderAttrib) StencilAttrib::
 make_off() {
   StencilAttrib *attrib = new StencilAttrib;
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) StencilAttrib::
 make_default() {
   return return_new(new StencilAttrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a front face StencilAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a front face StencilAttrib.
+ */
 CPT(RenderAttrib) StencilAttrib::
 make(
   bool front_enable,
@@ -133,11 +121,9 @@ make(
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make_2_sided
-//       Access: Published, Static
-//  Description: Constructs a two-sided StencilAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a two-sided StencilAttrib.
+ */
 CPT(RenderAttrib) StencilAttrib::
 make_2_sided(
   bool front_enable,
@@ -181,11 +167,9 @@ make_2_sided(
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a front face StencilAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a front face StencilAttrib.
+ */
 CPT(RenderAttrib) StencilAttrib::
 make_with_clear(
   bool front_enable,
@@ -225,11 +209,9 @@ make_with_clear(
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make_2_sided
-//       Access: Published, Static
-//  Description: Constructs a two-sided StencilAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a two-sided StencilAttrib.
+ */
 CPT(RenderAttrib) StencilAttrib::
 make_2_sided_with_clear(
   bool front_enable,
@@ -278,11 +260,9 @@ make_2_sided_with_clear(
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void StencilAttrib::
 output(ostream &out) const {
 
@@ -294,21 +274,14 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived StencilAttrib
-//               types to return a unique number indicating whether
-//               this StencilAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two StencilAttrib objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two StencilAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived StencilAttrib types to return a unique
+ * number indicating whether this StencilAttrib is equivalent to the other one.
+ * This should return 0 if the two StencilAttrib objects are equivalent, a
+ * number less than zero if this one should be sorted before the other one, and
+ * a number greater than zero otherwise.  This will only be called with two
+ * StencilAttrib objects whose get_type() functions return the same.
+ */
 int StencilAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const StencilAttrib *sa = (const StencilAttrib *)other;
@@ -330,16 +303,12 @@ compare_to_impl(const RenderAttrib *other) const {
   return compare_result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t StencilAttrib::
 get_hash_impl() const {
   size_t hash = 0;
@@ -349,23 +318,18 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               StencilAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type StencilAttrib.
+ */
 void StencilAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void StencilAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
@@ -375,14 +339,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type StencilAttrib is encountered
-//               in the Bam file.  It should create the StencilAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * StencilAttrib is encountered in the Bam file.  It should create the
+ * StencilAttrib and extract its information from the file.
+ */
 TypedWritable *StencilAttrib::
 make_from_bam(const FactoryParams &params) {
   StencilAttrib *attrib = new StencilAttrib;
@@ -395,13 +356,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new StencilAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new StencilAttrib.
+ */
 void StencilAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);

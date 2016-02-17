@@ -1,16 +1,15 @@
-// Filename: aiPathFinder.cxx
-// Created by: Deepak, John, Navin (10Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file aiPathFinder.cxx
+ * @author Deepak, John, Navin
+ * @date 2009-11-10
+ */
 
 #include "aiPathFinder.h"
 
@@ -21,11 +20,10 @@ PathFinder::PathFinder(NavMesh nav_mesh) {
 PathFinder::~PathFinder() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_path
-//  Description: This function initializes the pathfinding process by accepting the
-//               source and destination nodes. It then calls the generate_path().
-////////////////////////////////////////////////////////////////////
+/**
+ * This function initializes the pathfinding process by accepting the source and
+ * destination nodes.  It then calls the generate_path().
+ */
 void PathFinder::find_path(Node *src_node, Node *dest_node) {
   _src_node = src_node;
   _dest_node = dest_node;
@@ -44,11 +42,10 @@ void PathFinder::find_path(Node *src_node, Node *dest_node) {
   generate_path();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: generate_path
-//  Description: This function performs the pathfinding process using the A* algorithm.
-//               It updates the openlist and closelist.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function performs the pathfinding process using the A* algorithm.  It
+ * updates the openlist and closelist.
+ */
 void PathFinder::generate_path() {
   // All the A* algorithm is implemented here.
   // The check is > 1 due to the existence of the dummy node.
@@ -80,11 +77,10 @@ void PathFinder::generate_path() {
   _closed_list.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: identify_neighbors
-//  Description: This function traverses through the 8 neigbors of the parent node and
-//               then adds the neighbors to the _open_list based on A* criteria.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function traverses through the 8 neigbors of the parent node and then
+ * adds the neighbors to the _open_list based on A* criteria.
+ */
 void PathFinder::identify_neighbors(Node *parent_node) {
   // Remove the parent node from the open_list so that it is not considered
   // while adding new nodes to the open list heap.
@@ -104,25 +100,20 @@ void PathFinder::identify_neighbors(Node *parent_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: calc_node_score
-//  Description: This function calculates the score of each node.
-//               Score = Cost + Heuristics.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function calculates the score of each node.  Score = Cost + Heuristics.
+ */
 void PathFinder::calc_node_score(Node *nd) {
   nd->_cost = calc_cost_frm_src(nd);
   nd->_heuristic = calc_heuristic(nd);
   nd->_score = nd->_cost + nd->_heuristic;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: calc_cost_frm_src
-//  Description: This function calculates the cost of each node by
-//               finding out the number of node traversals required
-//               to reach the source node.  Diagonal traversals have
-//               cost = 14.  Horizontal and vertical traversals have
-//               cost = 10.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function calculates the cost of each node by finding out the number of
+ * node traversals required to reach the source node.  Diagonal traversals have
+ * cost = 14.  Horizontal and vertical traversals have cost = 10.
+ */
 int PathFinder::calc_cost_frm_src(Node *nd) {
   int cost = 0;
   Node *start_node = nd;
@@ -145,14 +136,11 @@ int PathFinder::calc_cost_frm_src(Node *nd) {
   return cost;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: calc_heuristic
-//  Description: This function calculates the heuristic of the nodes
-//               using Manhattan method.  All it does is predict the
-//               number of node traversals required to reach the
-//               target node.  No diagonal traversals are allowed in
-//               this technique.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function calculates the heuristic of the nodes using Manhattan method.
+ * All it does is predict the number of node traversals required to reach the
+ * target node.  No diagonal traversals are allowed in this technique.
+ */
 int PathFinder::calc_heuristic(Node *nd) {
   int row_diff = abs(_dest_node->_grid_x - nd->_grid_x);
   int col_diff = abs(_dest_node->_grid_y - nd->_grid_y);
@@ -161,10 +149,9 @@ int PathFinder::calc_heuristic(Node *nd) {
   return heuristic;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_diagonal_node
-//  Description: This function checks if the traversal from a node is diagonal.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function checks if the traversal from a node is diagonal.
+ */
 bool PathFinder::is_diagonal_node(Node *nd) {
   // Calculate the row and column differences between child and parent nodes.
   float row_diff = nd->_grid_x - nd->_prv_node->_grid_x;
@@ -179,11 +166,10 @@ bool PathFinder::is_diagonal_node(Node *nd) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_to_olist
-//  Description: This function adds a node to the open list heap.
-//               A binay heap is maintained to improve the search.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function adds a node to the open list heap.  A binay heap is maintained
+ * to improve the search.
+ */
 void PathFinder::add_to_olist(Node *nd) {
   // Variables required to search the binary heap.
   Node *child_node, *parent_node;
@@ -222,11 +208,10 @@ void PathFinder::add_to_olist(Node *nd) {
   // At this point the Node with the smallest score will be at the top of the heap.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_from_olist
-//  Description: This function removes a node from the open list.
-//               During the removal the binary heap is maintained.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function removes a node from the open list.  During the removal the
+ * binary heap is maintained.
+ */
 void PathFinder::remove_from_olist() {
   // Variables for maintaining the binary heap.
   Node *child_node, *child_node_1, *child_node_2;
@@ -314,10 +299,9 @@ void PathFinder::remove_from_olist() {
   // At this point the Node was succesfully removed and the binary heap re-arranged.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_to_clist
-//  Description: This function adds a node to the closed list.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function adds a node to the closed list.
+ */
 void PathFinder::add_to_clist(Node *nd) {
   // Set the status as closed.
   nd->_status = nd->close;
@@ -325,10 +309,9 @@ void PathFinder::add_to_clist(Node *nd) {
   _closed_list.push_back(nd);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_from_clist
-//  Description: This function removes a node from the closed list.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function removes a node from the closed list.
+ */
 void PathFinder::remove_from_clist(int r, int c) {
   for(unsigned int i = 0; i < _closed_list.size(); ++i) {
     if(_closed_list[i]->_grid_x == r && _closed_list[i]->_grid_y == c) {
@@ -338,12 +321,11 @@ void PathFinder::remove_from_clist(int r, int c) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_in_mesh
-//  Description: This function allows the user to pass a position and it returns the
-//               corresponding node on the navigation mesh. A very useful function as
-//               it allows for dynamic updation of the mesh based on position.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function allows the user to pass a position and it returns the
+ * corresponding node on the navigation mesh.  A very useful function as it
+ * allows for dynamic updation of the mesh based on position.
+ */
 Node* find_in_mesh(NavMesh nav_mesh, LVecBase3 pos, int grid_size) {
   int size = grid_size;
   float x = pos[0];

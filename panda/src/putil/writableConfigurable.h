@@ -1,45 +1,39 @@
-// Filename: writableConfigurable.h
-// Created by:  jason (19Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file writableConfigurable.h
+ * @author jason
+ * @date 2000-06-19
+ */
 
 //
 #ifndef WRITABLECONFIGURABLE_H
 #define WRITABLECONFIGURABLE_H
 //
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+/*
+ * Includes
+ */
 
 #include "pandabase.h"
 
 #include "typedWritable.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+/*
+ * Defines
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : WritableConfigurable
-// Description : Defined as a fix to allow creating Configurable and
-//               Writable objects.  Otherwise the compiler gets
-//               confused since both TypedWritable and Configurable
-//               inherit from TypedObject.
-//
-//               An object that has data or parameters that are set
-//               less frequently (at least occasionally) than every
-//               frame.  We can cache the configuration info by
-//               by using the "dirty" flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defined as a fix to allow creating Configurable and Writable objects.
+ * Otherwise the compiler gets confused since both TypedWritable and
+ * Configurable inherit from TypedObject.  An object that has data or parameters
+ * that are set less frequently (at least occasionally) than every frame.  We
+ * can cache the configuration info by by using the "dirty" flag.
+ */
 class EXPCL_PANDA_PUTIL WritableConfigurable : public TypedWritable {
 
 public:

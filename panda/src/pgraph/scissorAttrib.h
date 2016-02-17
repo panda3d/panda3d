@@ -1,16 +1,15 @@
-// Filename: scissorAttrib.h
-// Created by:  drose (29Jul08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file scissorAttrib.h
+ * @author drose
+ * @date 2008-07-29
+ */
 
 #ifndef SCISSORATTRIB_H
 #define SCISSORATTRIB_H
@@ -22,22 +21,15 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ScissorAttrib
-// Description : This restricts rendering to within a rectangular
-//               region of the scene, without otherwise affecting the
-//               viewport or lens properties.  Geometry that falls
-//               outside the scissor region is not rendered.  It is
-//               akin to the OpenGL glScissor() function.
-//
-//               The ScissorAttrib always specifies its region
-//               relative to its enclosing DisplayRegion, in screen
-//               space, and performs no culling.
-//
-//               See ScissorEffect if you wish to define a
-//               region relative to 2-D or 3-D coordinates in the
-//               scene graph, with culling.
-////////////////////////////////////////////////////////////////////
+/**
+ * This restricts rendering to within a rectangular region of the scene, without
+ * otherwise affecting the viewport or lens properties.  Geometry that falls
+ * outside the scissor region is not rendered.  It is akin to the OpenGL
+ * glScissor() function.  The ScissorAttrib always specifies its region relative
+ * to its enclosing DisplayRegion, in screen space, and performs no culling.
+ * See ScissorEffect if you wish to define a region relative to 2-D or 3-D
+ * coordinates in the scene graph, with culling.
+ */
 class EXPCL_PANDA_PGRAPH ScissorAttrib : public RenderAttrib {
 private:
   ScissorAttrib(const LVecBase4 &frame);
@@ -107,4 +99,3 @@ private:
 #include "scissorAttrib.I"
 
 #endif
-

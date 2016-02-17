@@ -1,16 +1,15 @@
-// Filename: physxTriggerReport.cxx
-// Created by:  enn0x (19Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxTriggerReport.cxx
+ * @author enn0x
+ * @date 2009-09-19
+ */
 
 #include "physxTriggerReport.h"
 
@@ -20,44 +19,36 @@
 
 PStatCollector PhysxTriggerReport::_pcollector("App:PhysX:Trigger Reporting");
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::enable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriggerReport::
 enable() {
 
   _enabled = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::disable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriggerReport::
 disable() {
 
   _enabled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::is_enabled
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxTriggerReport::
 is_enabled() const {
 
   return _enabled;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::onTrigger
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriggerReport::
 onTrigger(NxShape &triggerShape, NxShape &otherShape, NxTriggerFlag status) {
 
@@ -90,4 +81,3 @@ onTrigger(NxShape &triggerShape, NxShape &otherShape, NxTriggerFlag status) {
 
   _pcollector.stop();
 }
-

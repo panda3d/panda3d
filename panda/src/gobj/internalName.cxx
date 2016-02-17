@@ -1,16 +1,15 @@
-// Filename: internalName.cxx
-// Created by: masad (15Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file internalName.cxx
+ * @author masad
+ * @date 2004-07-15
+ */
 
 #include "pandabase.h"
 #include "internalName.h"
@@ -50,11 +49,9 @@ InternalName::PyInternTable InternalName::_py_intern_table;
 InternalName::LiteralTable InternalName::_literal_table;
 LightMutex InternalName::_literal_table_lock;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::Constructor
-//       Access: Private
-//  Description: Use make() to make a new InternalName instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use make() to make a new InternalName instance.
+ */
 InternalName::
 InternalName(InternalName *parent, const string &basename) :
   _parent(parent),
@@ -62,11 +59,9 @@ InternalName(InternalName *parent, const string &basename) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InternalName::
 ~InternalName() {
 #ifndef NDEBUG
@@ -79,13 +74,10 @@ InternalName::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::unref
-//       Access: Published, Virtual
-//  Description: This method overrides ReferenceCount::unref() to
-//               clear the pointer from its parent's table when
-//               its reference count goes to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method overrides ReferenceCount::unref() to clear the pointer from its
+ * parent's table when its reference count goes to zero.
+ */
 bool InternalName::
 unref() const {
   if (_parent == (const InternalName *)NULL) {
@@ -109,14 +101,11 @@ unref() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::append
-//       Access: Published
-//  Description: Constructs a new InternalName based on this name,
-//               with the indicated string following it.  This is a
-//               cheaper way to construct a hierarchical name than
-//               InternalName::make(parent->get_name() + ".basename").
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new InternalName based on this name, with the indicated string
+ * following it.  This is a cheaper way to construct a hierarchical name than
+ * InternalName::make(parent->get_name() + ".basename").
+ */
 PT(InternalName) InternalName::
 append(const string &name) {
   test_ref_count_integrity();
@@ -142,12 +131,10 @@ append(const string &name) {
   return internal_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::get_name
-//       Access: Published
-//  Description: Returns the complete name represented by the
-//               InternalName and all of its parents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the complete name represented by the InternalName and all of its
+ * parents.
+ */
 string InternalName::
 get_name() const {
   if (_parent == get_root()) {
@@ -161,12 +148,9 @@ get_name() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::join
-//       Access: Published
-//  Description: Like get_name, but uses a custom separator instead
-//               of ".".
-////////////////////////////////////////////////////////////////////
+/**
+ * Like get_name, but uses a custom separator instead of ".".
+ */
 string InternalName::
 join(const string &sep) const {
   if (_parent == get_root()) {
@@ -180,17 +164,12 @@ join(const string &sep) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::find_ancestor
-//       Access: Published
-//  Description: Returns the index of the ancestor with the indicated
-//               basename, or -1 if no ancestor has that basename.
-//               Returns 0 if this name has the basename.
-//
-//               This index value may be passed to get_ancestor() or
-//               get_net_basename() to retrieve more information about
-//               the indicated name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the ancestor with the indicated basename, or -1 if no
+ * ancestor has that basename.  Returns 0 if this name has the basename.  This
+ * index value may be passed to get_ancestor() or get_net_basename() to retrieve
+ * more information about the indicated name.
+ */
 int InternalName::
 find_ancestor(const string &basename) const {
   test_ref_count_integrity();
@@ -208,14 +187,11 @@ find_ancestor(const string &basename) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::get_ancestor
-//       Access: Published
-//  Description: Returns the ancestor with the indicated index number.
-//               0 is this name itself, 1 is the name's parent, 2 is
-//               the parent's parent, and so on.  If there are not
-//               enough ancestors, returns the root InternalName.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ancestor with the indicated index number.  0 is this name itself,
+ * 1 is the name's parent, 2 is the parent's parent, and so on.  If there are
+ * not enough ancestors, returns the root InternalName.
+ */
 const InternalName *InternalName::
 get_ancestor(int n) const {
   test_ref_count_integrity();
@@ -231,14 +207,11 @@ get_ancestor(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::get_top
-//       Access: Published
-//  Description: Returns the oldest ancestor in the InternalName's
-//               chain, not counting the root.  This will be the first
-//               name in the string, e.g. "texcoord.foo.bar" will
-//               return the InternalName "texcoord".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the oldest ancestor in the InternalName's chain, not counting the
+ * root.  This will be the first name in the string, e.g.  "texcoord.foo.bar"
+ * will return the InternalName "texcoord".
+ */
 const InternalName *InternalName::
 get_top() const {
   test_ref_count_integrity();
@@ -249,14 +222,11 @@ get_top() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::get_net_basename
-//       Access: Published
-//  Description: Returns the basename of this name prefixed by the
-//               indicated number of ancestors.  0 is this name's
-//               basename, 1 is parent.basename, 2 is
-//               grandparent.parent.basename, and so on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the basename of this name prefixed by the indicated number of
+ * ancestors.  0 is this name's basename, 1 is parent.basename, 2 is
+ * grandparent.parent.basename, and so on.
+ */
 string InternalName::
 get_net_basename(int n) const {
   if (n < 0) {
@@ -273,11 +243,9 @@ get_net_basename(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InternalName::
 output(ostream &out) const {
   if (_parent == get_root()) {
@@ -292,24 +260,20 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a InternalName object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a InternalName object
+ */
 void InternalName::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
   BamReader::get_factory()->register_factory(_texcoord_type_handle, make_texcoord_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void InternalName::
 finalize(BamReader *) {
   // Unref the pointer that we explicitly reffed in make_from_bam().
@@ -323,12 +287,9 @@ finalize(BamReader *) {
   nassertv(get_ref_count() != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::make
-//       Access: Published, Static
-//  Description: Make using a string and an integer.  Concatenates
-//               the two.
-////////////////////////////////////////////////////////////////////
+/**
+ * Make using a string and an integer.  Concatenates the two.
+ */
 PT(InternalName) InternalName::
 make(const string &name, int index) {
   std::ostringstream full;
@@ -336,14 +297,11 @@ make(const string &name, int index) {
   return make(full.str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type InternalName is encountered
-//               in the Bam file.  It should create the InternalName
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * InternalName is encountered in the Bam file.  It should create the
+ * InternalName and extract its information from the file.
+ */
 TypedWritable *InternalName::
 make_from_bam(const FactoryParams &params) {
   // The process of making a InternalName is slightly
@@ -373,13 +331,11 @@ make_from_bam(const FactoryParams &params) {
   return me.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::make_texcoord_from_bam
-//       Access: Protected, Static
-//  Description: This is a temporary method; it exists only to support
-//               old bam files (4.11 through 4.17) generated before we
-//               renamed this class from TexCoordName to InternalName.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a temporary method; it exists only to support old bam files (4.11
+ * through 4.17) generated before we renamed this class from TexCoordName to
+ * InternalName.
+ */
 TypedWritable *InternalName::
 make_texcoord_from_bam(const FactoryParams &params) {
   DatagramIterator scan;
@@ -400,14 +356,11 @@ make_texcoord_from_bam(const FactoryParams &params) {
   return me.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void InternalName::
 write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(get_name());
 }
-

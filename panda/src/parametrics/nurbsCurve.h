@@ -1,16 +1,15 @@
-// Filename: nurbsCurve.h
-// Created by:  drose (27Feb98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsCurve.h
+ * @author drose
+ * @date 1998-02-27
+ */
 
 #ifndef NURBSCURVE_H
 #define NURBSCURVE_H
@@ -22,29 +21,19 @@
 #include "cubicCurveseg.h"
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsCurve
-// Description : A Nonuniform Rational B-Spline.
-//
-//               This class is actually implemented as a
-//               PiecewiseCurve made up of several CubicCurvesegs,
-//               each of which is created using the nurbs_basis()
-//               method.  The list of CV's and knots is kept here,
-//               within the NurbsCurve class.
-//
-//               This class is the original Panda-native
-//               implementation of a NURBS curve.  It is typedeffed as
-//               "NurbsCurve" and performs all NURBS curve functions
-//               if we do not have the NURBS++ library available.
-//
-//               However, if we *do* have the NURBS++ library, another
-//               class exists, the NurbsPPCurve, which is a wrapper
-//               around that library and provides some additional
-//               functionality.  In that case, the other class is
-//               typedeffed to "NurbsCurve" instead of this one, and
-//               performs most of the NURBS curve functions.  This
-//               class then becomes vestigial.
-////////////////////////////////////////////////////////////////////
+/**
+ * A Nonuniform Rational B-Spline.  This class is actually implemented as a
+ * PiecewiseCurve made up of several CubicCurvesegs, each of which is created
+ * using the nurbs_basis() method.  The list of CV's and knots is kept here,
+ * within the NurbsCurve class.  This class is the original Panda-native
+ * implementation of a NURBS curve.  It is typedeffed as "NurbsCurve" and
+ * performs all NURBS curve functions if we do not have the NURBS++ library
+ * available.  However, if we *do* have the NURBS++ library, another class
+ * exists, the NurbsPPCurve, which is a wrapper around that library and provides
+ * some additional functionality.  In that case, the other class is typedeffed
+ * to "NurbsCurve" instead of this one, and performs most of the NURBS curve
+ * functions.  This class then becomes vestigial.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsCurve : public PiecewiseCurve, public NurbsCurveInterface {
 PUBLISHED:
   NurbsCurve();

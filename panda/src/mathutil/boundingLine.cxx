@@ -1,16 +1,15 @@
-// Filename: boundingLine.cxx
-// Created by:  drose (04Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingLine.cxx
+ * @author drose
+ * @date 2000-07-04
+ */
 
 #include "boundingLine.h"
 #include "boundingSphere.h"
@@ -21,21 +20,17 @@
 
 TypeHandle BoundingLine::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::make_copy
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BoundingVolume *BoundingLine::
 make_copy() const {
   return new BoundingLine(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::get_approx_center
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BoundingLine::
 get_approx_center() const {
   nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -43,11 +38,9 @@ get_approx_center() const {
   return (get_point_a() + get_point_b()) / 2.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::xform
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BoundingLine::
 xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
@@ -63,11 +56,9 @@ xform(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BoundingLine::
 output(ostream &out) const {
   if (is_empty()) {
@@ -79,33 +70,26 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::as_bounding_line
-//       Access: Public, Virtual
-//  Description: Virtual downcast method.  Returns this object as a
-//               pointer of the indicated type, if it is in fact that
-//               type.  Returns NULL if it is not that type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Virtual downcast method.  Returns this object as a pointer of the indicated
+ * type, if it is in fact that type.  Returns NULL if it is not that type.
+ */
 const BoundingLine *BoundingLine::
 as_bounding_line() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::extend_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BoundingLine::
 extend_other(BoundingVolume *other) const {
   return other->extend_by_line(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::around_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BoundingLine::
 around_other(BoundingVolume *other,
              const BoundingVolume **first,
@@ -113,21 +97,17 @@ around_other(BoundingVolume *other,
   return other->around_lines(first, last);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::contains_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingLine::
 contains_other(const BoundingVolume *other) const {
   return other->contains_line(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::extend_by_line
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BoundingLine::
 extend_by_line(const BoundingLine *line) {
   nassertr(!line->is_empty() && !line->is_infinite(), false);
@@ -143,11 +123,9 @@ extend_by_line(const BoundingLine *line) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::contains_sphere
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingLine::
 contains_sphere(const BoundingSphere *sphere) const {
   nassertr(!is_empty() && !is_infinite(), 0);
@@ -162,11 +140,9 @@ contains_sphere(const BoundingSphere *sphere) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::contains_box
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingLine::
 contains_box(const BoundingBox *box) const {
   nassertr(!is_empty() && !is_infinite(), 0);
@@ -182,11 +158,9 @@ contains_box(const BoundingBox *box) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::sqr_dist_to_line
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat BoundingLine::
 sqr_dist_to_line(const LPoint3 &point) const {
   nassertr(!point.is_nan(), 0.0f);

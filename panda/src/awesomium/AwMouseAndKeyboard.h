@@ -1,17 +1,16 @@
-// Filename: AwMouseAndKeyboard.h
-// Created by:  rurbino (12Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#ifndef AWWEBKEYBOARDMOUSE_H
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file AwMouseAndKeyboard.h
+ * @author rurbino
+ * @date 2009-10-12
+ */
+
 #define AWWEBKEYBOARDMOUSE_H
 
 #include "pandabase.h"
@@ -21,10 +20,9 @@
 #include "mouseAndKeyboard.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : AwMouseAndKeyboard
-// Description : Thin wrappings arround WebCore.h
-////////////////////////////////////////////////////////////////////
+/**
+ * Thin wrappings arround WebCore.h
+ */
 class EXPCL_PANDAAWESOMIUM AwMouseAndKeyboard : public DataNode {
 //member data data
 protected:

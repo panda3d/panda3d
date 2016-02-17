@@ -1,36 +1,31 @@
-// Filename: nurbsBasisVector.cxx
-// Created by:  drose (03Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsBasisVector.cxx
+ * @author drose
+ * @date 2002-12-03
+ */
 
 #include "nurbsBasisVector.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsBasisVector::clear
-//       Access: Public
-//  Description: Removes all the segments from the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the segments from the curve.
+ */
 void NurbsBasisVector::
 clear(int order) {
   _order = order;
   _segments.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsBasisVector::append_segment
-//       Access: Public
-//  Description: Computes a NURBS basis for one segment of the curve
-//               and appends it to the set of basis matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a NURBS basis for one segment of the curve and appends it to the set
+ * of basis matrices.
+ */
 void NurbsBasisVector::
 append_segment(int vertex_index, const PN_stdfloat knots[]) {
   int i;
@@ -62,11 +57,9 @@ append_segment(int vertex_index, const PN_stdfloat knots[]) {
   _segments.push_back(segment);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsBasisVector::transpose
-//       Access: Public
-//  Description: Transposes the basis matrices stored in the vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transposes the basis matrices stored in the vector.
+ */
 void NurbsBasisVector::
 transpose() {
   Segments::iterator si;
@@ -75,12 +68,10 @@ transpose() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsBasisVector::nurbs_blending_function
-//       Access: Private, Static
-//  Description: Recursively computes the appropriate blending
-//               function for the indicated knot vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively computes the appropriate blending function for the indicated knot
+ * vector.
+ */
 LVecBase4 NurbsBasisVector::
 nurbs_blending_function(int order, int i, int j, const PN_stdfloat knots[]) {
   // This is doubly recursive.  Ick.

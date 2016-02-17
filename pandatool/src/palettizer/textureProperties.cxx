@@ -1,16 +1,15 @@
-// Filename: textureProperties.cxx
-// Created by:  drose (29Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureProperties.cxx
+ * @author drose
+ * @date 2000-11-29
+ */
 
 #include "textureProperties.h"
 #include "palettizer.h"
@@ -23,11 +22,9 @@
 
 TypeHandle TextureProperties::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureProperties::
 TextureProperties() {
   _got_num_channels = false;
@@ -45,11 +42,9 @@ TextureProperties() {
   _alpha_type = (PNMFileType *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureProperties::
 TextureProperties(const TextureProperties &copy) :
   _format(copy._format),
@@ -68,11 +63,9 @@ TextureProperties(const TextureProperties &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextureProperties::
 operator = (const TextureProperties &copy) {
   _force_format = copy._force_format;
@@ -90,12 +83,10 @@ operator = (const TextureProperties &copy) {
   _format = copy._format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::clear_basic
-//       Access: Public
-//  Description: Resets only the properties that might be changed by
-//               update_properties() to a neutral state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets only the properties that might be changed by update_properties() to a
+ * neutral state.
+ */
 void TextureProperties::
 clear_basic() {
   if (!_force_format) {
@@ -108,36 +99,28 @@ clear_basic() {
   _anisotropic_degree = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::has_num_channels
-//       Access: Public
-//  Description: Returns true if the number of channels is known.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the number of channels is known.
+ */
 bool TextureProperties::
 has_num_channels() const {
   return _got_num_channels;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::get_num_channels
-//       Access: Public
-//  Description: Returns the number of channels (1 through 4)
-//               associated with the image.  It is an error to call
-//               this unless has_num_channels() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of channels (1 through 4) associated with the image.  It
+ * is an error to call this unless has_num_channels() returns true.
+ */
 int TextureProperties::
 get_num_channels() const {
   nassertr(_got_num_channels, 0);
   return _effective_num_channels;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::set_num_channels
-//       Access: Public
-//  Description: Sets the number of channels (1 through 4)
-//               associated with the image, presumably after reading
-//               this information from the image header.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the number of channels (1 through 4) associated with the image,
+ * presumably after reading this information from the image header.
+ */
 void TextureProperties::
 set_num_channels(int num_channels) {
   _num_channels = num_channels;
@@ -145,13 +128,10 @@ set_num_channels(int num_channels) {
   _got_num_channels = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::force_grayscale
-//       Access: Public
-//  Description: Sets the actual number of channels to indicate a
-//               grayscale image, presumably after discovering that
-//               the image contains no colored pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the actual number of channels to indicate a grayscale image, presumably
+ * after discovering that the image contains no colored pixels.
+ */
 void TextureProperties::
 force_grayscale() {
   nassertv(_got_num_channels && _num_channels >= 3);
@@ -159,14 +139,11 @@ force_grayscale() {
   _effective_num_channels = _num_channels;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::force_nonalpha
-//       Access: Public
-//  Description: Sets the actual number of channels to indicate an
-//               image with no alpha channel, presumably after
-//               discovering that the alpha channel contains no
-//               meaningful pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the actual number of channels to indicate an image with no alpha
+ * channel, presumably after discovering that the alpha channel contains no
+ * meaningful pixels.
+ */
 void TextureProperties::
 force_nonalpha() {
   nassertv(_got_num_channels && (_num_channels == 2 || _num_channels == 4));
@@ -174,12 +151,9 @@ force_nonalpha() {
   _effective_num_channels = _num_channels;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::uses_alpha
-//       Access: Public
-//  Description: Returns true if the texture uses an alpha channel,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the texture uses an alpha channel, false otherwise.
+ */
 bool TextureProperties::
 uses_alpha() const {
   switch (_format) {
@@ -199,15 +173,11 @@ uses_alpha() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::get_string
-//       Access: Public
-//  Description: Returns a string corresponding to the
-//               TextureProperties object.  Each unique set of
-//               TextureProperties will generate a unique string.
-//               This is used to generate unique palette image
-//               filenames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string corresponding to the TextureProperties object.  Each unique
+ * set of TextureProperties will generate a unique string.  This is used to
+ * generate unique palette image filenames.
+ */
 string TextureProperties::
 get_string() const {
   string result;
@@ -227,12 +197,10 @@ get_string() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::update_properties
-//       Access: Public
-//  Description: If the indicate TextureProperties structure is more
-//               specific than this one, updates this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the indicate TextureProperties structure is more specific than this one,
+ * updates this one.
+ */
 void TextureProperties::
 update_properties(const TextureProperties &other) {
   if (!_got_num_channels) {
@@ -260,12 +228,10 @@ update_properties(const TextureProperties &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::fully_define
-//       Access: Public
-//  Description: If any properties remain unspecified, specify them
-//               now.  Also reconcile conflicting information.
-////////////////////////////////////////////////////////////////////
+/**
+ * If any properties remain unspecified, specify them now.  Also reconcile
+ * conflicting information.
+ */
 void TextureProperties::
 fully_define() {
   if (!_got_num_channels || _force_format) {
@@ -370,7 +336,7 @@ fully_define() {
       case EggTexture::F_luminance_alpha:
       case EggTexture::F_luminance_alphamask:
         break;
-        
+
         // These formats implicitly reduce the number of channels to 1.
       case EggTexture::F_red:
       case EggTexture::F_green:
@@ -485,12 +451,10 @@ fully_define() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::update_egg_tex
-//       Access: Public
-//  Description: Adjusts the texture properties of the indicated egg
-//               reference to match these properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the texture properties of the indicated egg reference to match these
+ * properties.
+ */
 void TextureProperties::
 update_egg_tex(EggTexture *egg_tex) const {
   egg_tex->set_format(_format);
@@ -500,14 +464,11 @@ update_egg_tex(EggTexture *egg_tex) const {
   egg_tex->set_anisotropic_degree(_anisotropic_degree);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::egg_properties_match
-//       Access: Public
-//  Description: Returns true if all of the properties that are
-//               reflected directly in an egg file match between this
-//               TextureProperties object and the other, or false if
-//               any of them differ.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the properties that are reflected directly in an egg
+ * file match between this TextureProperties object and the other, or false if
+ * any of them differ.
+ */
 bool TextureProperties::
 egg_properties_match(const TextureProperties &other) const {
   return (_format == other._format &&
@@ -517,11 +478,9 @@ egg_properties_match(const TextureProperties &other) const {
           _anisotropic_degree == other._anisotropic_degree);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool TextureProperties::
 operator < (const TextureProperties &other) const {
   if (_format != other._format) {
@@ -550,11 +509,9 @@ operator < (const TextureProperties &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::Equality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool TextureProperties::
 operator == (const TextureProperties &other) const {
   return (_format == other._format &&
@@ -567,22 +524,17 @@ operator == (const TextureProperties &other) const {
            _alpha_type == other._alpha_type));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::Nonequality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool TextureProperties::
 operator != (const TextureProperties &other) const {
   return !operator == (other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::get_format_string
-//       Access: Private, Static
-//  Description: Returns a short string representing the given
-//               EggTexture format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a short string representing the given EggTexture format.
+ */
 string TextureProperties::
 get_format_string(EggTexture::Format format) {
   switch (format) {
@@ -647,33 +599,30 @@ get_format_string(EggTexture::Format format) {
   return "x";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::get_filter_string
-//       Access: Private, Static
-//  Description: Returns a short string representing the given
-//               EggTexture filter type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a short string representing the given EggTexture filter type.
+ */
 string TextureProperties::
 get_filter_string(EggTexture::FilterType filter_type) {
   switch (filter_type) {
   case EggTexture::FT_unspecified:
     return "u";
-    
+
   case EggTexture::FT_nearest:
     return "n";
-    
+
   case EggTexture::FT_linear:
     return "l";
-    
+
   case EggTexture::FT_nearest_mipmap_nearest:
     return "m1";
-    
+
   case EggTexture::FT_linear_mipmap_nearest:
     return "m2";
-    
+
   case EggTexture::FT_nearest_mipmap_linear:
     return "m3";
-    
+
   case EggTexture::FT_linear_mipmap_linear:
     return "m";
   }
@@ -681,11 +630,9 @@ get_filter_string(EggTexture::FilterType filter_type) {
   return "x";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::get_anisotropic_degree_string
-//       Access: Private, Static
-//  Description: Returns a short string describing the anisotropic degree.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a short string describing the anisotropic degree.
+ */
 string TextureProperties::
 get_anisotropic_degree_string(int aniso_degree) {
   if (aniso_degree <= 1) {
@@ -695,11 +642,9 @@ get_anisotropic_degree_string(int aniso_degree) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::get_quality_level_string
-//       Access: Private, Static
-//  Description: Returns a short string describing the quality level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a short string describing the quality level.
+ */
 string TextureProperties::
 get_quality_level_string(EggTexture::QualityLevel quality_level) {
   switch (quality_level) {
@@ -719,12 +664,10 @@ get_quality_level_string(EggTexture::QualityLevel quality_level) {
   return "";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::get_type_string
-//       Access: Private, Static
-//  Description: Returns a short string representing whether the color
-//               and/or alpha type has been specified or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a short string representing whether the color and/or alpha type has
+ * been specified or not.
+ */
 string TextureProperties::
 get_type_string(PNMFileType *color_type, PNMFileType *alpha_type) {
   if (color_type == (PNMFileType *)NULL) {
@@ -736,12 +679,9 @@ get_type_string(PNMFileType *color_type, PNMFileType *alpha_type) {
   return "a";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::union_format
-//       Access: Private, Static
-//  Description: Returns the EggTexture format which is the more
-//               specific of the two.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggTexture format which is the more specific of the two.
+ */
 EggTexture::Format TextureProperties::
 union_format(EggTexture::Format a, EggTexture::Format b) {
   switch (a) {
@@ -776,12 +716,9 @@ union_format(EggTexture::Format a, EggTexture::Format b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::union_filter
-//       Access: Private, Static
-//  Description: Returns the EggTexture filter type which is the more
-//               specific of the two.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggTexture filter type which is the more specific of the two.
+ */
 EggTexture::FilterType TextureProperties::
 union_filter(EggTexture::FilterType a, EggTexture::FilterType b) {
   if ((int)a < (int)b) {
@@ -791,12 +728,9 @@ union_filter(EggTexture::FilterType a, EggTexture::FilterType b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::union_quality_level
-//       Access: Private, Static
-//  Description: Returns the EggTexture quality level which is the
-//               more specific of the two.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggTexture quality level which is the more specific of the two.
+ */
 EggTexture::QualityLevel TextureProperties::
 union_quality_level(EggTexture::QualityLevel a, EggTexture::QualityLevel b) {
   if ((int)a < (int)b) {
@@ -806,25 +740,19 @@ union_quality_level(EggTexture::QualityLevel a, EggTexture::QualityLevel b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void TextureProperties::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_TextureProperties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void TextureProperties::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
@@ -843,15 +771,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   writer->write_pointer(datagram, _alpha_type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int TextureProperties::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = TypedWritable::complete_pointers(p_list, manager);
@@ -869,14 +794,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::make_TextureProperties
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable* TextureProperties::
 make_TextureProperties(const FactoryParams &params) {
   TextureProperties *me = new TextureProperties;
@@ -888,13 +810,10 @@ make_TextureProperties(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureProperties::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void TextureProperties::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

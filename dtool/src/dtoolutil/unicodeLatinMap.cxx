@@ -1,16 +1,15 @@
-// Filename: unicodeLatinMap.cxx
-// Created by:  drose (01Feb03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file unicodeLatinMap.cxx
+ * @author drose
+ * @date 2003-02-01
+ */
 
 #include "unicodeLatinMap.h"
 
@@ -1375,12 +1374,9 @@ static const wchar_t combining_accent_map[] = {
   0x0000, // topbar
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnicodeLatinMap::look_up
-//       Access: Public, Static
-//  Description: Returns the Entry associated with the indicated
-//               character, if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Entry associated with the indicated character, if there is one.
+ */
 const UnicodeLatinMap::Entry *UnicodeLatinMap::
 look_up(wchar_t character) {
   if (!_initialized) {
@@ -1400,24 +1396,18 @@ look_up(wchar_t character) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnicodeLatinMap::get_combining_accent
-//       Access: Public, Static
-//  Description: Returns the unicode code point for the combining
-//               character corresponding with the given accent type,
-//               or 0 if none is recorded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the unicode code point for the combining character corresponding with
+ * the given accent type, or 0 if none is recorded.
+ */
 wchar_t UnicodeLatinMap::
 get_combining_accent(AccentType accent) {
   return combining_accent_map[(size_t)accent];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnicodeLatinMap::init
-//       Access: Private, Static
-//  Description: Initializes the map, if it has not already been
-//               initialized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the map, if it has not already been initialized.
+ */
 void UnicodeLatinMap::
 init() {
   if (!_initialized) {
@@ -1437,4 +1427,3 @@ init() {
     _initialized = true;
   }
 }
-

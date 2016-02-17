@@ -1,24 +1,21 @@
-// Filename: bulletSoftBodyControl.cxx
-// Created by:  enn0x (04Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletSoftBodyControl.cxx
+ * @author enn0x
+ * @date 2010-03-04
+ */
 
 #include "bulletSoftBodyControl.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletSoftBodyControl::
 BulletSoftBodyControl() {
 
@@ -29,21 +26,17 @@ BulletSoftBodyControl() {
   _sign = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletSoftBodyControl::
 ~BulletSoftBodyControl() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Prepare
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletSoftBodyControl::
 Prepare(btSoftBody::AJoint* joint) {
 
@@ -53,14 +46,11 @@ Prepare(btSoftBody::AJoint* joint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Speed
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btScalar BulletSoftBodyControl::
 Speed(btSoftBody::AJoint *, btScalar current) {
 
   return (current + btMin(_maxtorque, btMax(-_maxtorque, _goal - current)));
 }
-

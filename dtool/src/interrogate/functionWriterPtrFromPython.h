@@ -1,16 +1,15 @@
-// Filename: functionWriterPtrFromPython.h
-// Created by:  drose (14Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file functionWriterPtrFromPython.h
+ * @author drose
+ * @date 2001-09-14
+ */
 
 #ifndef FUNCTIONWRITERPTRFROMPYTHON_H
 #define FUNCTIONWRITERPTRFROMPYTHON_H
@@ -19,13 +18,11 @@
 
 class CPPType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FunctionWriterPtrFromPython
-// Description : This specialization of FunctionWriter generates a
-//               function that converts a PyObject pointer
-//               representing a class wrapper object to the
-//               corresponding C++ pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization of FunctionWriter generates a function that converts a
+ * PyObject pointer representing a class wrapper object to the corresponding C++
+ * pointer.
+ */
 class FunctionWriterPtrFromPython : public FunctionWriter {
 public:
   FunctionWriterPtrFromPython(CPPType *type);

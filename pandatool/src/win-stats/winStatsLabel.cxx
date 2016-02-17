@@ -1,16 +1,15 @@
-// Filename: winStatsLabel.cxx
-// Created by:  drose (07Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winStatsLabel.cxx
+ * @author drose
+ * @date 2004-01-07
+ */
 
 #include "winStatsLabel.h"
 #include "winStatsMonitor.h"
@@ -24,11 +23,9 @@ int WinStatsLabel::_bottom_margin = 2;
 bool WinStatsLabel::_window_class_registered = false;
 const char * const WinStatsLabel::_window_class_name = "label";
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinStatsLabel::
 WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
               int thread_index, int collector_index, bool use_fullname) :
@@ -74,11 +71,9 @@ WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
   _mouse_within = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinStatsLabel::
 ~WinStatsLabel() {
   if (_window) {
@@ -88,11 +83,9 @@ WinStatsLabel::
   DeleteObject(_bg_brush);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::setup
-//       Access: Public
-//  Description: Creates the actual window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the actual window.
+ */
 void WinStatsLabel::
 setup(HWND parent_window) {
   if (_window) {
@@ -103,7 +96,7 @@ setup(HWND parent_window) {
   create_window(parent_window);
 
   HDC hdc = GetDC(_window);
-  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT); 
+  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT);
   SelectObject(hdc, hfnt);
 
   SIZE size;
@@ -114,88 +107,70 @@ setup(HWND parent_window) {
   ReleaseDC(_window, hdc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::set_pos
-//       Access: Public
-//  Description: Sets the position of the label on its parent.  The
-//               position describes the lower-left corner of the
-//               rectangle, not the upper-left.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the position of the label on its parent.  The position describes the
+ * lower-left corner of the rectangle, not the upper-left.
+ */
 void WinStatsLabel::
 set_pos(int x, int y, int width) {
   _x = x;
   _y = y;
   _width = width;
-  SetWindowPos(_window, 0, x, y - _height, _width, _height, 
+  SetWindowPos(_window, 0, x, y - _height, _width, _height,
                SWP_NOZORDER | SWP_SHOWWINDOW);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::get_x
-//       Access: Public
-//  Description: Returns the x position of the label on its parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the x position of the label on its parent.
+ */
 int WinStatsLabel::
 get_x() const {
   return _x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::get_y
-//       Access: Public
-//  Description: Returns the y position of the label on its parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the y position of the label on its parent.
+ */
 int WinStatsLabel::
 get_y() const {
   return _y;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::get_width
-//       Access: Public
-//  Description: Returns the width of the label as we requested it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width of the label as we requested it.
+ */
 int WinStatsLabel::
 get_width() const {
   return _width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::get_height
-//       Access: Public
-//  Description: Returns the height of the label as we requested it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the height of the label as we requested it.
+ */
 int WinStatsLabel::
 get_height() const {
   return _height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::get_ideal_width
-//       Access: Public
-//  Description: Returns the width the label would really prefer to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width the label would really prefer to be.
+ */
 int WinStatsLabel::
 get_ideal_width() const {
   return _ideal_width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::get_collector_index
-//       Access: Public
-//  Description: Returns the collector this label represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the collector this label represents.
+ */
 int WinStatsLabel::
 get_collector_index() const {
   return _collector_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::set_highlight
-//       Access: Public
-//  Description: Enables or disables the visual highlight for this
-//               label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables the visual highlight for this label.
+ */
 void WinStatsLabel::
 set_highlight(bool highlight) {
   if (_highlight != highlight) {
@@ -204,23 +179,17 @@ set_highlight(bool highlight) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::get_highlight
-//       Access: Public
-//  Description: Returns true if the visual highlight for this
-//               label is enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the visual highlight for this label is enabled.
+ */
 bool WinStatsLabel::
 get_highlight() const {
   return _highlight;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::set_mouse_within
-//       Access: Private
-//  Description: Used internally to indicate whether the mouse is
-//               within the label's window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used internally to indicate whether the mouse is within the label's window.
+ */
 void WinStatsLabel::
 set_mouse_within(bool mouse_within) {
   if (_mouse_within != mouse_within) {
@@ -229,11 +198,9 @@ set_mouse_within(bool mouse_within) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::create_window
-//       Access: Private
-//  Description: Creates the window for this label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the window for this label.
+ */
 void WinStatsLabel::
 create_window(HWND parent_window) {
   if (_window) {
@@ -243,7 +210,7 @@ create_window(HWND parent_window) {
   HINSTANCE application = GetModuleHandle(NULL);
   register_window_class(application);
 
-  _window = 
+  _window =
     CreateWindow(_window_class_name, _text.c_str(), WS_CHILD | WS_CLIPSIBLINGS,
                  0, 0, 0, 0,
                  parent_window, NULL, application, 0);
@@ -255,12 +222,10 @@ create_window(HWND parent_window) {
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::register_window_class
-//       Access: Private, Static
-//  Description: Registers the window class for the label window, if
-//               it has not already been registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the window class for the label window, if it has not already been
+ * registered.
+ */
 void WinStatsLabel::
 register_window_class(HINSTANCE application) {
   if (_window_class_registered) {
@@ -280,7 +245,7 @@ register_window_class(HINSTANCE application) {
 
   // Reserve space to associate the this pointer with the window.
   wc.cbWndExtra = sizeof(WinStatsLabel *);
-  
+
   if (!RegisterClass(&wc)) {
     nout << "Could not register Label window class!\n";
     exit(1);
@@ -289,11 +254,9 @@ register_window_class(HINSTANCE application) {
   _window_class_registered = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::static_window_proc
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LONG WINAPI WinStatsLabel::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsLabel *self = (WinStatsLabel *)GetWindowLongPtr(hwnd, 0);
@@ -304,23 +267,21 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsLabel::window_proc
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LONG WinStatsLabel::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDBLCLK:
     _graph->clicked_label(_collector_index);
     return 0;
-    
-  case WM_MOUSEMOVE: 
+
+  case WM_MOUSEMOVE:
     {
       // When the mouse enters the label area, highlight the label.
       set_mouse_within(true);
-      
+
       // Now we want to get a WM_MOUSELEAVE when the mouse leaves the
       // label.
       TRACKMOUSEEVENT tme = {
@@ -333,7 +294,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
-  case WM_MOUSELEAVE: 
+  case WM_MOUSELEAVE:
     set_mouse_within(false);
     break;
 
@@ -349,7 +310,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         FrameRect(hdc, &rect, _highlight_brush);
       }
 
-      HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT); 
+      HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT);
       SelectObject(hdc, hfnt);
       SetTextAlign(hdc, TA_RIGHT | TA_TOP);
 
@@ -358,7 +319,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       SetTextColor(hdc, _fg_color);
 
       TextOut(hdc, _width - _right_margin, _top_margin,
-              _text.data(), _text.length()); 
+              _text.data(), _text.length());
       EndPaint(hwnd, &ps);
       return 0;
     }

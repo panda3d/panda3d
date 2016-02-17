@@ -1,17 +1,15 @@
-// Filename: datagram.cxx
-// Created by:  drose (06Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagram.cxx
+ * @author drose
+ * @date 2000-06-06
+ */
 
 #include "datagram.h"
 
@@ -22,32 +20,25 @@
 
 TypeHandle Datagram::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Datagram::
 ~Datagram() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::clear
-//       Access: Public, Virtual
-//  Description: Resets the datagram to empty, in preparation for
-//               building up a new datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the datagram to empty, in preparation for building up a new datagram.
+ */
 void Datagram::
 clear() {
   _data.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::dump_hex
-//       Access: Public
-//  Description: Writes a representation of the entire datagram
-//               contents, as a sequence of hex (and ASCII) values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a representation of the entire datagram contents, as a sequence of hex
+ * (and ASCII) values.
+ */
 void Datagram::
 dump_hex(ostream &out, unsigned int indent) const {
   const char *message = (const char *)get_data();
@@ -83,11 +74,9 @@ dump_hex(ostream &out, unsigned int indent) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::add_wstring
-//       Access: Public
-//  Description: Adds a variable-length wstring to the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a variable-length wstring to the datagram.
+ */
 void Datagram::
 add_wstring(const wstring &str) {
   // By convention, wstrings are marked with 32-bit lengths.
@@ -101,12 +90,9 @@ add_wstring(const wstring &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::pad_bytes
-//       Access: Public
-//  Description: Adds the indicated number of zero bytes to the
-//               datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated number of zero bytes to the datagram.
+ */
 void Datagram::
 pad_bytes(size_t size) {
   nassertv((int)size >= 0);
@@ -134,12 +120,9 @@ pad_bytes(size_t size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::append_data
-//       Access: Public
-//  Description: Appends some more raw data to the end of the
-//               datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends some more raw data to the end of the datagram.
+ */
 void Datagram::
 append_data(const void *data, size_t size) {
   nassertv((int)size >= 0);
@@ -168,12 +151,9 @@ append_data(const void *data, size_t size) {
                    (const unsigned char *)data + size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::assign
-//       Access: Public
-//  Description: Replaces the datagram's data with the indicated
-//               block.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the datagram's data with the indicated block.
+ */
 void Datagram::
 assign(const void *data, size_t size) {
   nassertv((int)size >= 0);
@@ -183,12 +163,9 @@ assign(const void *data, size_t size) {
                    (const unsigned char *)data + size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void Datagram::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -196,12 +173,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void Datagram::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

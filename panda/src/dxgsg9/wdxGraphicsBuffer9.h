@@ -1,16 +1,15 @@
-// Filename: wdxGraphicsBuffer9.h
-// Created by:  drose (08Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wdxGraphicsBuffer9.h
+ * @author drose
+ * @date 2004-02-08
+ */
 
 #ifndef wdxGraphicsBuffer9_H
 #define wdxGraphicsBuffer9_H
@@ -20,16 +19,13 @@
 #include "dxgsg9base.h"
 #include "dxTextureContext9.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : wdxGraphicsBuffer9
-// Description : An offscreen render buffer.  In OpenGL under Windows,
-//               this simply renders into a window that is never made
-//               visible.  There's a Windows interface for rendering
-//               into a DIB, but this puts restrictions on the kind of
-//               pixelformat we can use, and thus makes it difficult
-//               to support one GSG rendering into an offscreen buffer
-//               and also into a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen render buffer.  In OpenGL under Windows, this simply renders
+ * into a window that is never made visible.  There's a Windows interface for
+ * rendering into a DIB, but this puts restrictions on the kind of pixelformat
+ * we can use, and thus makes it difficult to support one GSG rendering into an
+ * offscreen buffer and also into a window.
+ */
 class EXPCL_PANDADX wdxGraphicsBuffer9 : public GraphicsBuffer {
 public:
   wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -41,8 +37,8 @@ public:
                      GraphicsOutput *host);
   virtual ~wdxGraphicsBuffer9();
 
-  virtual INLINE bool get_supports_render_texture() const;  
-  
+  virtual INLINE bool get_supports_render_texture() const;
+
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 

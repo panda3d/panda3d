@@ -1,16 +1,15 @@
-// Filename: dxIndexBufferContext9.cxx
-// Created by:  drose (18Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxIndexBufferContext9.cxx
+ * @author drose
+ * @date 2005-03-18
+ */
 
 #include "dxIndexBufferContext9.h"
 #include "geomPrimitive.h"
@@ -22,11 +21,9 @@
 
 TypeHandle DXIndexBufferContext9::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXIndexBufferContext9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXIndexBufferContext9::
 DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
   IndexBufferContext(pgo, data),
@@ -35,32 +32,23 @@ DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
   _managed = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXIndexBufferContext9::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXIndexBufferContext9::
 ~DXIndexBufferContext9() {
 
   this -> free_ibuffer ( );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXIndexBufferContext9::evict_lru
-//       Access: Public, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines that
+ * it is full.  May also be called externally when necessary to explicitly evict
+ * the page.  It is legal for this method to either evict the page as requested,
+ * do nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void DXIndexBufferContext9::
 evict_lru() {
   dequeue_lru();
@@ -69,11 +57,9 @@ evict_lru() {
   mark_unloaded();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXIndexBufferContext9::free_ibuffer
-//       Access: Public
-//  Description: Free index buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Free index buffer.
+ */
 void DXIndexBufferContext9::
 free_ibuffer(void) {
   if (_ibuffer != NULL) {
@@ -95,11 +81,9 @@ free_ibuffer(void) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXIndexBufferContext9::allocate_ibuffer
-//       Access: Public
-//  Description: Allocates index buffer memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates index buffer memory.
+ */
 void DXIndexBufferContext9::
 allocate_ibuffer(DXScreenData &scrn,
                  const GeomPrimitivePipelineReader *reader) {
@@ -152,14 +136,11 @@ allocate_ibuffer(DXScreenData &scrn,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXIndexBufferContext9::create_ibuffer
-//       Access: Public
-//  Description: Creates a new index buffer (but does not upload data
-//               to it).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new index buffer (but does not upload data to it).
+ */
 void DXIndexBufferContext9::
-create_ibuffer(DXScreenData &scrn, 
+create_ibuffer(DXScreenData &scrn,
                const GeomPrimitivePipelineReader *reader) {
   nassertv(reader->get_object() == get_data());
   Thread *current_thread = reader->get_current_thread();
@@ -176,12 +157,9 @@ create_ibuffer(DXScreenData &scrn,
   this -> allocate_ibuffer(scrn, reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXIndexBufferContext9::upload_data
-//       Access: Public
-//  Description: Copies the latest data from the client store to
-//               DirectX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the latest data from the client store to DirectX.
+ */
 bool DXIndexBufferContext9::
 upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
   nassertr(reader->get_object() == get_data(), false);

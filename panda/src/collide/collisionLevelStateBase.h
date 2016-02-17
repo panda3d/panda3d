@@ -1,16 +1,15 @@
-// Filename: collisionLevelStateBase.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionLevelStateBase.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef COLLISIONLEVELSTATEBASE_H
 #define COLLISIONLEVELSTATEBASE_H
@@ -34,16 +33,11 @@
 class CollisionSolid;
 class CollisionNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionLevelStateBase
-// Description : This is the state information the
-//               CollisionTraverser retains for each level during
-//               traversal.
-//
-//               The CollisionLevelStateBase is the non-template base
-//               class.  The template version further specifies this
-//               on CurrentMask type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the state information the CollisionTraverser retains for each level
+ * during traversal.  The CollisionLevelStateBase is the non-template base
+ * class.  The template version further specifies this on CurrentMask type.
+ */
 class CollisionLevelStateBase {
 public:
   class ColliderDef {
@@ -54,7 +48,7 @@ public:
   };
 
   INLINE CollisionLevelStateBase(const NodePath &node_path);
-  INLINE CollisionLevelStateBase(const CollisionLevelStateBase &parent, 
+  INLINE CollisionLevelStateBase(const CollisionLevelStateBase &parent,
                              PandaNode *child);
   INLINE CollisionLevelStateBase(const CollisionLevelStateBase &copy);
   INLINE void operator = (const CollisionLevelStateBase &copy);
@@ -62,7 +56,7 @@ public:
   void clear();
   void reserve(int num_colliders);
   void prepare_collider(const ColliderDef &def, const NodePath &root);
-  
+
   INLINE NodePath get_node_path() const;
   INLINE PandaNode *node() const;
 
@@ -107,5 +101,3 @@ private:
 #include "collisionLevelStateBase.I"
 
 #endif
-
-

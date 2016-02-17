@@ -1,16 +1,15 @@
-// Filename: pnmFileTypePNG.cxx
-// Created by:  drose (16Mar04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypePNG.cxx
+ * @author drose
+ * @date 2004-03-16
+ */
 
 #include "pnmFileTypePNG.h"
 
@@ -35,7 +34,7 @@ static const int png_max_palette = 256;
 // sorts the non-maxval alpha pixels to the front of the list.
 class LowAlphaCompare {
 public:
-  bool operator() (const PNMImageHeader::PixelSpec &a, 
+  bool operator() (const PNMImageHeader::PixelSpec &a,
                    const PNMImageHeader::PixelSpec &b) {
     if (a._alpha != b._alpha) {
       return a._alpha < b._alpha;
@@ -44,11 +43,9 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePNG::
 PNMFileTypePNG() {
   // This constructor may run at static init time, so we use the ->
@@ -59,135 +56,105 @@ PNMFileTypePNG() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::get_name
-//       Access: Public, Virtual
-//  Description: Returns a few words describing the file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a few words describing the file type.
+ */
 string PNMFileTypePNG::
 get_name() const {
   return "PNG";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::get_num_extensions
-//       Access: Public, Virtual
-//  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of different possible filename extensions associated with
+ * this particular file type.
+ */
 int PNMFileTypePNG::
 get_num_extensions() const {
   return num_extensions_png;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the nth possible filename extension
-//               associated with this particular file type, without a
-//               leading dot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth possible filename extension associated with this particular
+ * file type, without a leading dot.
+ */
 string PNMFileTypePNG::
 get_extension(int n) const {
   nassertr(n >= 0 && n < num_extensions_png, string());
   return extensions_png[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::get_suggested_extension
-//       Access: Public, Virtual
-//  Description: Returns a suitable filename extension (without a
-//               leading dot) to suggest for files of this type, or
-//               empty string if no suggestions are available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable filename extension (without a leading dot) to suggest for
+ * files of this type, or empty string if no suggestions are available.
+ */
 string PNMFileTypePNG::
 get_suggested_extension() const {
   return "png";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::has_magic_number
-//       Access: Public, Virtual
-//  Description: Returns true if this particular file type uses a
-//               magic number to identify it, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular file type uses a magic number to identify it,
+ * false otherwise.
+ */
 bool PNMFileTypePNG::
 has_magic_number() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::matches_magic_number
-//       Access: Public, Virtual
-//  Description: Returns true if the indicated "magic number" byte
-//               stream (the initial few bytes read from the file)
-//               matches this particular file type, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated "magic number" byte stream (the initial few
+ * bytes read from the file) matches this particular file type, false otherwise.
+ */
 bool PNMFileTypePNG::
 matches_magic_number(const string &magic_number) const {
   return png_sig_cmp((png_bytep)magic_number.data(), 0, magic_number.length()) == 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::make_reader
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMReader suitable for
-//               reading from this file type, if possible.  If reading
-//               from this file type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMReader suitable for reading from this file
+ * type, if possible.  If reading from this file type is not supported, returns
+ * NULL.
+ */
 PNMReader *PNMFileTypePNG::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::make_writer
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMWriter suitable for
-//               reading from this file type, if possible.  If writing
-//               files of this type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMWriter suitable for reading from this file
+ * type, if possible.  If writing files of this type is not supported, returns
+ * NULL.
+ */
 PNMWriter *PNMFileTypePNG::
 make_writer(ostream *file, bool owns_file) {
   init_pnm();
   return new Writer(this, file, owns_file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void PNMFileTypePNG::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_PNMFileTypePNG);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::make_PNMFileTypePNG
-//       Access: Protected, Static
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-//
-//               In the case of the PNMFileType objects, since these
-//               objects are all shared, we just pull the object from
-//               the registry.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.  In the case of the PNMFileType objects, since these
+ * objects are all shared, we just pull the object from the registry.
+ */
 TypedWritable *PNMFileTypePNG::
 make_PNMFileTypePNG(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePNG::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -316,29 +283,21 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   png_read_update_info(_png, _info);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Reader::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePNG::Reader::
 ~Reader() {
   free_png();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Reader::read_data
-//       Access: Public, Virtual
-//  Description: Reads in an entire image all at once, storing it in
-//               the pre-allocated _x_size * _y_size array and alpha
-//               pointers.  (If the image type has no alpha channel,
-//               alpha is ignored.)  Returns the number of rows
-//               correctly read.
-//
-//               Derived classes need not override this if they
-//               instead provide supports_read_row() and read_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in an entire image all at once, storing it in the pre-allocated _x_size
+ * * _y_size array and alpha pointers.  (If the image type has no alpha channel,
+ * alpha is ignored.)  Returns the number of rows correctly read.  Derived
+ * classes need not override this if they instead provide supports_read_row()
+ * and read_row(), below.
+ */
 int PNMFileTypePNG::Reader::
 read_data(xel *array, xelval *alpha_data) {
   if (!is_valid()) {
@@ -444,12 +403,9 @@ read_data(xel *array, xelval *alpha_data) {
   return _y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Reader::free_png
-//       Access: Private
-//  Description: Releases the internal PNG structures and marks the
-//               reader invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the internal PNG structures and marks the reader invalid.
+ */
 void PNMFileTypePNG::Reader::
 free_png() {
   if (_is_valid) {
@@ -458,12 +414,9 @@ free_png() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Reader::png_read_data
-//       Access: Private, Static
-//  Description: A callback handler that PNG uses to read data from
-//               the iostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback handler that PNG uses to read data from the iostream.
+ */
 void PNMFileTypePNG::Reader::
 png_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
   Reader *self = (Reader *)png_get_io_ptr(png_ptr);
@@ -476,24 +429,20 @@ png_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
   Thread::consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Reader::png_warning
-//       Access: Private, Static
-//  Description: This is our own warning handler.  It is called by the
-//               png library to issue a warning message.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own warning handler.  It is called by the png library to issue a
+ * warning message.
+ */
 void PNMFileTypePNG::Reader::
 png_warning(png_structp, png_const_charp warning_msg) {
   pnmimage_png_cat.warning()
     << warning_msg << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Reader::png_error
-//       Access: Private, Static
-//  Description: This is our own error handler.  It is called by the
-//               png library to issue a fatal error message.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own error handler.  It is called by the png library to issue a
+ * fatal error message.
+ */
 void PNMFileTypePNG::Reader::
 png_error(png_structp png_ptr, png_const_charp error_msg) {
   pnmimage_png_cat.error()
@@ -513,11 +462,9 @@ png_error(png_structp png_ptr, png_const_charp error_msg) {
   longjmp(self->_jmpbuf, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePNG::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
@@ -541,29 +488,21 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
   _is_valid = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePNG::Writer::
 ~Writer() {
   free_png();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::write_data
-//       Access: Public, Virtual
-//  Description: Writes in an entire image all at once, storing it in
-//               the pre-allocated _x_size * _y_size array and alpha
-//               pointers.  (If the image type has no alpha channel,
-//               alpha is ignored.)  Returns the number of rows
-//               correctly write.
-//
-//               Derived classes need not override this if they
-//               instead provide supports_write_row() and write_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes in an entire image all at once, storing it in the pre-allocated
+ * _x_size * _y_size array and alpha pointers.  (If the image type has no alpha
+ * channel, alpha is ignored.)  Returns the number of rows correctly write.
+ * Derived classes need not override this if they instead provide
+ * supports_write_row() and write_row(), below.
+ */
 int PNMFileTypePNG::Writer::
 write_data(xel *array, xelval *alpha_data) {
   if (!is_valid()) {
@@ -631,7 +570,7 @@ write_data(xel *array, xelval *alpha_data) {
             _maxval != (1 << true_bit_depth) - 1) {
           pnmimage_png_cat.debug()
             << "palette bit depth of " << palette_bit_depth
-            << " improves on bit depth of " << total_bits 
+            << " improves on bit depth of " << total_bits
             << "; making a palette image.\n";
 
           color_type = PNG_COLOR_TYPE_PALETTE;
@@ -666,7 +605,7 @@ write_data(xel *array, xelval *alpha_data) {
         } else {
           pnmimage_png_cat.debug()
             << "palette bit depth of " << palette_bit_depth
-            << " does not improve on bit depth of " << total_bits 
+            << " does not improve on bit depth of " << total_bits
             << "; not making a palette image.\n";
         }
 
@@ -885,12 +824,9 @@ write_data(xel *array, xelval *alpha_data) {
   return _y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::free_png
-//       Access: Private
-//  Description: Releases the internal PNG structures and marks the
-//               writer invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the internal PNG structures and marks the writer invalid.
+ */
 void PNMFileTypePNG::Writer::
 free_png() {
   if (_is_valid) {
@@ -899,12 +835,10 @@ free_png() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::make_png_bit_depth
-//       Access: Private, Static
-//  Description: Elevates the indicated bit depth to one of the legal
-//               PNG bit depths: 1, 2, 4, 8, or 16.
-////////////////////////////////////////////////////////////////////
+/**
+ * Elevates the indicated bit depth to one of the legal PNG bit depths: 1, 2, 4,
+ * 8, or 16.
+ */
 int PNMFileTypePNG::Writer::
 make_png_bit_depth(int bit_depth) {
   switch (bit_depth) {
@@ -930,12 +864,9 @@ make_png_bit_depth(int bit_depth) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::png_write_data
-//       Access: Private, Static
-//  Description: A callback handler that PNG uses to write data to
-//               the iostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback handler that PNG uses to write data to the iostream.
+ */
 void PNMFileTypePNG::Writer::
 png_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
   Writer *self = (Writer *)png_get_io_ptr(png_ptr);
@@ -947,36 +878,29 @@ png_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::png_flush_data
-//       Access: Private, Static
-//  Description: A callback handler that PNG uses to write data to
-//               the iostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback handler that PNG uses to write data to the iostream.
+ */
 void PNMFileTypePNG::Writer::
 png_flush_data(png_structp png_ptr) {
   Writer *self = (Writer *)png_get_io_ptr(png_ptr);
   self->_file->flush();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::png_warning
-//       Access: Private, Static
-//  Description: This is our own warning handler.  It is called by the
-//               png library to issue a warning message.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own warning handler.  It is called by the png library to issue a
+ * warning message.
+ */
 void PNMFileTypePNG::Writer::
 png_warning(png_structp, png_const_charp warning_msg) {
   pnmimage_png_cat.warning()
     << warning_msg << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePNG::Writer::png_error
-//       Access: Private, Static
-//  Description: This is our own error handler.  It is called by the
-//               png library to issue a fatal error message.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own error handler.  It is called by the png library to issue a
+ * fatal error message.
+ */
 void PNMFileTypePNG::Writer::
 png_error(png_structp png_ptr, png_const_charp error_msg) {
   pnmimage_png_cat.error()

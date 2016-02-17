@@ -1,16 +1,15 @@
-// Filename: wdxGraphicsPipe9.h
-// Created by:  drose (20Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wdxGraphicsPipe9.h
+ * @author drose
+ * @date 2002-12-20
+ */
 
 #ifndef WDXGRAPHICSPIPE9_H
 #define WDXGRAPHICSPIPE9_H
@@ -21,11 +20,10 @@
 #include "dxgsg9base.h"
 #include <ddraw.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : wdxGraphicsPipe9
-// Description : This graphics pipe represents the interface for
-//               creating DirectX9 graphics windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating DirectX9 graphics
+ * windows.
+ */
 class EXPCL_PANDADX wdxGraphicsPipe9 : public WinGraphicsPipe {
 public:
   wdxGraphicsPipe9();

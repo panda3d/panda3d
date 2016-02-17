@@ -1,16 +1,15 @@
-// Filename: eggCharacterCollection.cxx
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCharacterCollection.cxx
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #include "eggCharacterCollection.h"
 #include "eggCharacterData.h"
@@ -31,21 +30,17 @@
 #include <algorithm>
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggCharacterCollection::
 EggCharacterCollection() {
   _next_model_index = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggCharacterCollection::
 ~EggCharacterCollection() {
   Characters::iterator ci;
@@ -55,20 +50,13 @@ EggCharacterCollection::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::add_egg
-//       Access: Public
-//  Description: Adds a new egg file to the list of models and
-//               animation files for this particular character.
-//
-//               Returns the new egg_index if the file is successfully
-//               added, or -1 if there is some problem (for instance,
-//               it does not contain a character model or animation
-//               table).
-//
-//               If the joint hierarchy does not match the existing
-//               joint hierarchy, a best match is attempted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new egg file to the list of models and animation files for this
+ * particular character.  Returns the new egg_index if the file is successfully
+ * added, or -1 if there is some problem (for instance, it does not contain a
+ * character model or animation table).  If the joint hierarchy does not match
+ * the existing joint hierarchy, a best match is attempted.
+ */
 int EggCharacterCollection::
 add_egg(EggData *egg) {
   _top_egg_nodes.clear();
@@ -119,12 +107,10 @@ add_egg(EggData *egg) {
   return egg_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::get_character_by_name
-//       Access: Public
-//  Description: Returns the Character with the indicated name, if it
-//               exists in the collection, or NULL if it does not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Character with the indicated name, if it exists in the
+ * collection, or NULL if it does not.
+ */
 EggCharacterData *EggCharacterCollection::
 get_character_by_name(const string &character_name) const {
   Characters::const_iterator ci;
@@ -139,55 +125,40 @@ get_character_by_name(const string &character_name) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::make_character_data
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new EggCharacterData
-//               structure.  This is primarily intended as a hook so
-//               derived classes can customize the type of
-//               EggCharacterData nodes used to represent the
-//               characters in this collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new EggCharacterData structure.  This is primarily
+ * intended as a hook so derived classes can customize the type of
+ * EggCharacterData nodes used to represent the characters in this collection.
+ */
 EggCharacterData *EggCharacterCollection::
 make_character_data() {
   return new EggCharacterData(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::make_joint_data
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new EggJointData structure
-//               for the given character.  This is primarily intended
-//               as a hook so derived classes can customize the type
-//               of EggJointData nodes used to represent the joint
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new EggJointData structure for the given character.
+ * This is primarily intended as a hook so derived classes can customize the
+ * type of EggJointData nodes used to represent the joint hierarchy.
+ */
 EggJointData *EggCharacterCollection::
 make_joint_data(EggCharacterData *char_data) {
   return new EggJointData(this, char_data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::make_slider_data
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new EggSliderData structure
-//               for the given character.  This is primarily intended
-//               as a hook so derived classes can customize the type
-//               of EggSliderData nodes used to represent the slider
-//               list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new EggSliderData structure for the given character.
+ * This is primarily intended as a hook so derived classes can customize the
+ * type of EggSliderData nodes used to represent the slider list.
+ */
 EggSliderData *EggCharacterCollection::
 make_slider_data(EggCharacterData *char_data) {
   return new EggSliderData(this, char_data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::make_character
-//       Access: Protected
-//  Description: Allocates and returns a new EggCharacterData object
-//               representing the named character, if there is not
-//               already a character by that name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new EggCharacterData object representing the named
+ * character, if there is not already a character by that name.
+ */
 EggCharacterData *EggCharacterCollection::
 make_character(const string &character_name) {
   // Does the named character exist yet?
@@ -207,18 +178,12 @@ make_character(const string &character_name) {
   return char_data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::scan_hierarchy
-//       Access: Private
-//  Description: Walks the given egg data's hierarchy, looking for
-//               either the start of an animation channel or the start
-//               of a character model.  Returns true if either (or
-//               both) is found, false if the model appears to have
-//               nothing to do with characters.
-//
-//               Fills up the _top_egg_nodes according to the nodes
-//               found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the given egg data's hierarchy, looking for either the start of an
+ * animation channel or the start of a character model.  Returns true if either
+ * (or both) is found, false if the model appears to have nothing to do with
+ * characters.  Fills up the _top_egg_nodes according to the nodes found.
+ */
 bool EggCharacterCollection::
 scan_hierarchy(EggNode *egg_node) {
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
@@ -252,13 +217,10 @@ scan_hierarchy(EggNode *egg_node) {
   return character_found;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::scan_for_top_joints
-//       Access: Private
-//  Description: Once a character model has been found, continue
-//               scanning the egg hierarchy to look for the topmost
-//               <Joint> nodes encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once a character model has been found, continue scanning the egg hierarchy to
+ * look for the topmost <Joint> nodes encountered.
+ */
 void EggCharacterCollection::
 scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
                     const string &character_name) {
@@ -289,13 +251,10 @@ scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::scan_for_top_tables
-//       Access: Private
-//  Description: Once an animation has been found, continue scanning
-//               the egg hierarchy to look for the topmost <Table>
-//               nodes encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once an animation has been found, continue scanning the egg hierarchy to look
+ * for the topmost <Table> nodes encountered.
+ */
 void EggCharacterCollection::
 scan_for_top_tables(EggTable *bundle, EggNode *model_root,
                     const string &character_name) {
@@ -324,12 +283,10 @@ scan_for_top_tables(EggTable *bundle, EggNode *model_root,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::scan_for_morphs
-//       Access: Private
-//  Description: Go back through a model's hierarchy and look for
-//               morph targets on the vertices and primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Go back through a model's hierarchy and look for morph targets on the
+ * vertices and primitives.
+ */
 void EggCharacterCollection::
 scan_for_morphs(EggNode *egg_node, int model_index,
                 EggCharacterData *char_data) {
@@ -365,12 +322,9 @@ scan_for_morphs(EggNode *egg_node, int model_index,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::scan_for_sliders
-//       Access: Private
-//  Description: Go back to the animation tables and look for morph
-//               slider animation channels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Go back to the animation tables and look for morph slider animation channels.
+ */
 void EggCharacterCollection::
 scan_for_sliders(EggNode *egg_node, int model_index,
                  EggCharacterData *char_data) {
@@ -405,12 +359,10 @@ scan_for_sliders(EggNode *egg_node, int model_index,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::add_morph_back_pointers
-//       Access: Private
-//  Description: Adds the back pointers for the kinds of morphs we
-//               might find in an EggAttributes object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the back pointers for the kinds of morphs we might find in an
+ * EggAttributes object.
+ */
 void EggCharacterCollection::
 add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
                         int model_index, EggCharacterData *char_data) {
@@ -431,12 +383,10 @@ add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::add_morph_back_pointers_vertex
-//       Access: Private
-//  Description: Adds the back pointers for the kinds of morphs we
-//               might find in an EggVertex object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the back pointers for the kinds of morphs we might find in an EggVertex
+ * object.
+ */
 void EggCharacterCollection::
 add_morph_back_pointers_vertex(EggVertex *vertex, EggObject *egg_object,
                                int model_index, EggCharacterData *char_data) {
@@ -453,16 +403,11 @@ add_morph_back_pointers_vertex(EggVertex *vertex, EggObject *egg_object,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::match_egg_nodes
-//       Access: Private
-//  Description: Attempts to match up the indicated list of egg_nodes
-//               with the children of the given joint_data, by name if
-//               possible.
-//
-//               Also recurses on each matched joint to build up the
-//               entire joint hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to match up the indicated list of egg_nodes with the children of the
+ * given joint_data, by name if possible.  Also recurses on each matched joint
+ * to build up the entire joint hierarchy.
+ */
 void EggCharacterCollection::
 match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
                 EggNodeList &egg_nodes, int egg_index, int model_index) {
@@ -600,13 +545,10 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
        IndirectCompareNames<Namable>());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::found_egg_match
-//       Access: Private
-//  Description: Marks a one-to-one association between the indicated
-//               EggJointData and the indicated EggNode, and then
-//               recurses below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks a one-to-one association between the indicated EggJointData and the
+ * indicated EggNode, and then recurses below.
+ */
 void EggCharacterCollection::
 found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
                 EggNode *egg_node, int egg_index, int model_index) {
@@ -660,13 +602,10 @@ found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::rename_char
-//       Access: Public
-//  Description: Renames the ith character to the indicated name.
-//               This name must not already be used by another
-//               character in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renames the ith character to the indicated name.  This name must not already
+ * be used by another character in the collection.
+ */
 void EggCharacterCollection::
 rename_char(int i, const string &name) {
   nassertv(i >= 0 && i < (int)_characters.size());
@@ -678,11 +617,9 @@ rename_char(int i, const string &name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggCharacterCollection::
 write(ostream &out, int indent_level) const {
   Characters::const_iterator ci;
@@ -693,20 +630,14 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterCollection::check_errors
-//       Access: Public
-//  Description: Can be called after the collection has been
-//               completely filled up with egg files to output any
-//               messages from warning conditions that have been
-//               detected, such as inconsistent animation tables.
-//
-//               In addition to reporting this errors, calling this
-//               function will also ensure that they are all repaired.
-//               Pass force_initial_rest_frame as true to also force
-//               rest frames from different models to be the same if
-//               they are initially different.
-////////////////////////////////////////////////////////////////////
+/**
+ * Can be called after the collection has been completely filled up with egg
+ * files to output any messages from warning conditions that have been detected,
+ * such as inconsistent animation tables.  In addition to reporting this errors,
+ * calling this function will also ensure that they are all repaired.  Pass
+ * force_initial_rest_frame as true to also force rest frames from different
+ * models to be the same if they are initially different.
+ */
 void EggCharacterCollection::
 check_errors(ostream &out, bool force_initial_rest_frame) {
   Characters::const_iterator ci;
@@ -718,10 +649,10 @@ check_errors(ostream &out, bool force_initial_rest_frame) {
       if (joint_data->rest_frames_differ()) {
         if (force_initial_rest_frame) {
           joint_data->force_initial_rest_frame();
-          out << "Forced rest frames the same for " << joint_data->get_name() 
+          out << "Forced rest frames the same for " << joint_data->get_name()
               << ".\n";
         } else {
-          out << "Warning: rest frames for " << joint_data->get_name() 
+          out << "Warning: rest frames for " << joint_data->get_name()
               << " differ.\n";
         }
       }
@@ -731,7 +662,7 @@ check_errors(ostream &out, bool force_initial_rest_frame) {
     for (int mi = 0; mi < num_models; mi++) {
       int model_index = char_data->get_model_index(mi);
       if (!char_data->check_num_frames(model_index)) {
-        out << "Warning: animation from " 
+        out << "Warning: animation from "
             << char_data->get_egg_data(model_index)->get_egg_filename().get_basename()
             << " had an inconsistent number of frames.\n";
       }

@@ -1,17 +1,15 @@
-// Filename: cppTemplateScope.cxx
-// Created by:  drose (28Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppTemplateScope.cxx
+ * @author drose
+ * @date 1999-10-28
+ */
 
 #include "cppTemplateScope.h"
 #include "cppExtensionType.h"
@@ -19,11 +17,9 @@
 #include "cppIdentifier.h"
 #include "cppTypedefType.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPTemplateScope::
 CPPTemplateScope(CPPScope *parent_scope) :
   CPPScope(parent_scope, CPPNameComponent("template"), V_public)
@@ -31,11 +27,9 @@ CPPTemplateScope(CPPScope *parent_scope) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::add_declaration
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateScope::
 add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
                 CPPPreprocessor *preprocessor,
@@ -45,11 +39,9 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
   _parent_scope->add_declaration(decl, global_scope, preprocessor, pos);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::add_enum_value
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateScope::
 add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
                const cppyyltype &pos) {
@@ -58,11 +50,9 @@ add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
   _parent_scope->add_enum_value(inst, preprocessor, pos);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::define_extension_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateScope::
 define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   type->_template_scope = this;
@@ -70,22 +60,18 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   _parent_scope->define_extension_type(type, error_sink);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::define_namespace
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateScope::
 define_namespace(CPPNamespace *scope) {
   assert(_parent_scope != NULL);
   _parent_scope->define_namespace(scope);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::add_using
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateScope::
 add_using(CPPUsing *using_decl, CPPScope *global_scope,
           CPPPreprocessor *error_sink) {
@@ -93,11 +79,9 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
   _parent_scope->add_using(using_decl, global_scope, error_sink);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::add_template_parameter
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateScope::
 add_template_parameter(CPPDeclaration *param) {
   _parameters._parameters.push_back(param);
@@ -118,57 +102,46 @@ add_template_parameter(CPPDeclaration *param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::is_fully_specified
-//       Access: Public, Virtual
-//  Description: Returns true if this declaration is an actual,
-//               factual declaration, or false if some part of the
-//               declaration depends on a template parameter which has
-//               not yet been instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this declaration is an actual, factual declaration, or false
+ * if some part of the declaration depends on a template parameter which has not
+ * yet been instantiated.
+ */
 bool CPPTemplateScope::
 is_fully_specified() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::get_simple_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPTemplateScope::
 get_simple_name() const {
   assert(_parent_scope != NULL);
   return _parent_scope->get_simple_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::get_local_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPTemplateScope::
 get_local_name(CPPScope *scope) const {
   assert(_parent_scope != NULL);
   return _parent_scope->get_local_name(scope);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::get_fully_scoped_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPTemplateScope::
 get_fully_scoped_name() const {
   assert(_parent_scope != NULL);
   return _parent_scope->get_fully_scoped_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateScope::
 output(ostream &out, CPPScope *scope) const {
   CPPScope::output(out, scope);
@@ -177,11 +150,9 @@ output(ostream &out, CPPScope *scope) const {
   out << " >";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateScope::as_template_scope
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPTemplateScope *CPPTemplateScope::
 as_template_scope() {
   return this;

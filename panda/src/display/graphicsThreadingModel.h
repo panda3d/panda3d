@@ -1,33 +1,31 @@
-// Filename: graphicsThreadingModel.h
-// Created by:  drose (27Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsThreadingModel.h
+ * @author drose
+ * @date 2003-01-27
+ */
 
 #ifndef GRAPHICSTHREADINGMODEL_H
 #define GRAPHICSTHREADINGMODEL_H
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsThreadingModel
-// Description : This represents the user's specification of how a
-//               particular frame is handled by the various threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the user's specification of how a particular frame is handled
+ * by the various threads.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsThreadingModel {
 PUBLISHED:
   GraphicsThreadingModel(const string &model = string());
   INLINE GraphicsThreadingModel(const GraphicsThreadingModel &copy);
   INLINE void operator = (const GraphicsThreadingModel &copy);
-  
+
   string get_model() const;
   INLINE const string &get_cull_name() const;
   INLINE void set_cull_name(const string &cull_name);
@@ -39,7 +37,7 @@ PUBLISHED:
 
   INLINE bool get_cull_sorting() const;
   INLINE void set_cull_sorting(bool cull_sorting);
- 
+
   INLINE bool is_single_threaded() const;
   INLINE bool is_default() const;
   INLINE void output(ostream &out) const;

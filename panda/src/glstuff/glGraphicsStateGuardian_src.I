@@ -1,29 +1,22 @@
-// Filename: glGraphicsStateGuardian_src.I
-// Created by:  drose (02Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGraphicsStateGuardian_src.I
+ * @author drose
+ * @date 1999-02-02
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::report_errors
-//       Access: Public, Static
-//  Description: Checks for any outstanding error codes and outputs
-//               them, if found.  If NDEBUG is defined, this function
-//               does nothing.  The return value is true if everything is
-//               ok, or false if we should shut down.
-//
-//               This is a static method so it can be called when
-//               there's no gsg pointer around.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks for any outstanding error codes and outputs them, if found.  If NDEBUG
+ * is defined, this function does nothing.  The return value is true if
+ * everything is ok, or false if we should shut down.  This is a static method
+ * so it can be called when there's no gsg pointer around.
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 report_errors(int line, const char *source_file) {
 #ifndef NDEBUG
@@ -37,12 +30,10 @@ report_errors(int line, const char *source_file) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::report_my_errors
-//       Access: Public
-//  Description: Like report_errors(), above, but non-static so we can
-//               throw an event on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Like report_errors(), above, but non-static so we can throw an event on
+ * failure.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 report_my_errors(int line, const char *source_file) {
 #ifndef NDEBUG
@@ -58,17 +49,12 @@ report_my_errors(int line, const char *source_file) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::clear_errors
-//       Access: Public, Static
-//  Description: This works like report_errors(), except that it
-//               always runs, even in the NDEBUG case.
-//
-//               It is designed to be called when it is important to
-//               clear the error stack (for instance, because we want
-//               to be able to reliably check the result of some
-//               upcoming GL operation).
-////////////////////////////////////////////////////////////////////
+/**
+ * This works like report_errors(), except that it always runs, even in the
+ * NDEBUG case.  It is designed to be called when it is important to clear the
+ * error stack (for instance, because we want to be able to reliably check the
+ * result of some upcoming GL operation).
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 clear_errors(int line, const char *source_file) {
   PStatTimer timer(_check_error_pcollector);
@@ -81,17 +67,13 @@ clear_errors(int line, const char *source_file) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::clear_my_errors
-//       Access: Public
-//  Description: This works like report_my_errors(), except that it
-//               always runs, even in the NDEBUG case (but not when
-//               _check_errors is false), and it never calls
-//               panic_deactivate().  It is designed to be called when
-//               it is important to clear the error stack (for
-//               instance, because we want to be able to reliably
-//               check the result of some upcoming GL operation).
-////////////////////////////////////////////////////////////////////
+/**
+ * This works like report_my_errors(), except that it always runs, even in the
+ * NDEBUG case (but not when _check_errors is false), and it never calls
+ * panic_deactivate().  It is designed to be called when it is important to
+ * clear the error stack (for instance, because we want to be able to reliably
+ * check the result of some upcoming GL operation).
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 clear_my_errors(int line, const char *source_file) {
   if (_check_errors) {
@@ -104,64 +86,49 @@ clear_my_errors(int line, const char *source_file) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_gl_vendor
-//       Access: Public
-//  Description: Returns the GL vendor string reported by the driver.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the GL vendor string reported by the driver.
+ */
 INLINE const string &CLP(GraphicsStateGuardian)::
 get_gl_vendor() const {
   return _gl_vendor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_gl_renderer
-//       Access: Public
-//  Description: Returns the GL renderer string reported by the driver.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the GL renderer string reported by the driver.
+ */
 INLINE const string &CLP(GraphicsStateGuardian)::
 get_gl_renderer() const {
   return _gl_renderer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_gl_version
-//       Access: Public
-//  Description: Returns the GL version string reported by the driver.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the GL version string reported by the driver.
+ */
 INLINE const string &CLP(GraphicsStateGuardian)::
 get_gl_version() const {
   return _gl_version;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_gl_version_major
-//       Access: Public
-//  Description: Returns the major part of the reported GL version
-//               number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the major part of the reported GL version number.
+ */
 INLINE int CLP(GraphicsStateGuardian)::
 get_gl_version_major() const {
   return _gl_version_major;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_gl_version_minor
-//       Access: Public
-//  Description: Returns the minor part of the reported GL version
-//               number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minor part of the reported GL version number.
+ */
 INLINE int CLP(GraphicsStateGuardian)::
 get_gl_version_minor() const {
   return _gl_version_minor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::maybe_gl_finish
-//       Access: Protected
-//  Description: Calls glFinish() if the config variable gl-finish is
-//               set True.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls glFinish() if the config variable gl-finish is set True.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 maybe_gl_finish() const {
 #ifdef DO_PSTATS
@@ -171,13 +138,10 @@ maybe_gl_finish() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::has_extension
-//       Access: Published, Final
-//  Description: Returns true if the indicated extension is reported
-//               by the GL system, false otherwise.  The extension
-//               name is case-sensitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated extension is reported by the GL system, false
+ * otherwise.  The extension name is case-sensitive.
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 has_extension(const string &extension) const {
   bool has_ext = (_extensions.find(extension) != _extensions.end());
@@ -190,14 +154,11 @@ has_extension(const string &extension) const {
   return has_ext;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::is_at_least_gl_version
-//       Access: Public
-//  Description: Returns true if we are compiled for mainline OpenGL,
-//               and the runtime GL version number is at least the
-//               indicated value, false otherwise.  Under OpenGL ES,
-//               this always returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if we are compiled for mainline OpenGL, and the runtime GL
+ * version number is at least the indicated value, false otherwise.  Under
+ * OpenGL ES, this always returns false.
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 is_at_least_gl_version(int major_version, int minor_version) const {
 #ifdef OPENGLES
@@ -215,14 +176,11 @@ is_at_least_gl_version(int major_version, int minor_version) const {
 #endif  // OPENGLES
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::is_at_least_gles_version
-//       Access: Public
-//  Description: Returns true if we are compiled for OpenGL ES,
-//               and the runtime GL ES version number is at least the
-//               indicated value, false otherwise.  Under mainline
-//               OpenGL, this always returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if we are compiled for OpenGL ES, and the runtime GL ES version
+ * number is at least the indicated value, false otherwise.  Under mainline
+ * OpenGL, this always returns false.
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 is_at_least_gles_version(int major_version, int minor_version) const {
 #ifndef OPENGLES
@@ -241,11 +199,9 @@ is_at_least_gles_version(int major_version, int minor_version) const {
 }
 
 #ifndef OPENGLES_1
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_vertex_attrib_array
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_vertex_attrib_array(GLuint index) {
   if (!_enabled_vertex_attrib_arrays.get_bit(index)) {
@@ -254,11 +210,9 @@ enable_vertex_attrib_array(GLuint index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::disable_vertex_attrib_array
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 disable_vertex_attrib_array(GLuint index) {
   if (_enabled_vertex_attrib_arrays.get_bit(index)) {
@@ -272,11 +226,9 @@ disable_vertex_attrib_array(GLuint index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_vertex_attrib_divisor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 set_vertex_attrib_divisor(GLuint index, GLuint divisor) {
   if (_supports_vertex_attrib_divisor &&
@@ -288,11 +240,9 @@ set_vertex_attrib_divisor(GLuint index, GLuint divisor) {
 
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_active_texture_stage
-//       Access: Protected
-//  Description: Calls glActiveTexture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls glActiveTexture.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 set_active_texture_stage(int i) {
   if (i != _active_texture_stage) {
@@ -305,12 +255,9 @@ set_active_texture_stage(int i) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_multisample_antialias
-//       Access: Protected
-//  Description: Specifies whether multisample should be enabled for
-//               antialiasing purposes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether multisample should be enabled for antialiasing purposes.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_antialias(bool val) {
 #ifndef OPENGLES_2
@@ -332,13 +279,10 @@ enable_multisample_antialias(bool val) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_multisample_alpha_one
-//       Access: Protected
-//  Description: Specifies whether multisample should be enabled for
-//               transparency purposes, using the sample_alpha_to_one
-//               mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether multisample should be enabled for transparency purposes,
+ * using the sample_alpha_to_one mode.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_one(bool val) {
 #ifndef OPENGLES_2
@@ -362,13 +306,10 @@ enable_multisample_alpha_one(bool val) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_multisample_alpha_mask
-//       Access: Protected
-//  Description: Specifies whether multisample should be enabled for
-//               transparency purposes, using the sample_alpha_to_mask
-//               mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether multisample should be enabled for transparency purposes,
+ * using the sample_alpha_to_mask mode.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_mask(bool val) {
 #ifndef OPENGLES_2
@@ -392,11 +333,9 @@ enable_multisample_alpha_mask(bool val) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_line_smooth
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_line_smooth(bool val) {
 #ifndef OPENGLES_2
@@ -412,11 +351,9 @@ enable_line_smooth(bool val) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_point_smooth
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -432,11 +369,9 @@ enable_point_smooth(bool val) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_polygon_smooth
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_polygon_smooth(bool val) {
 #ifndef OPENGLES  // GL_POLYGON_SMOOTH not supported in OpenGL ES.
@@ -451,13 +386,10 @@ enable_polygon_smooth(bool val) {
 #endif  // OPENGLES
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::setup_antialias_line
-//       Access: Protected
-//  Description: Sets the appropriate antialiasing modes to render a
-//               series of line primitives, according to
-//               _auto_antialias_mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the appropriate antialiasing modes to render a series of line
+ * primitives, according to _auto_antialias_mode.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 setup_antialias_line() {
   if (_auto_antialias_mode) {
@@ -468,13 +400,10 @@ setup_antialias_line() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::setup_antialias_point
-//       Access: Protected
-//  Description: Sets the appropriate antialiasing modes to render a
-//               series of point primitives, according to
-//               _auto_antialias_mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the appropriate antialiasing modes to render a series of point
+ * primitives, according to _auto_antialias_mode.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 setup_antialias_point() {
   if (_auto_antialias_mode) {
@@ -485,13 +414,10 @@ setup_antialias_point() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::setup_antialias_polygon
-//       Access: Protected
-//  Description: Sets the appropriate antialiasing modes to render a
-//               series of polygon primitives, according to
-//               _auto_antialias_mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the appropriate antialiasing modes to render a series of polygon
+ * primitives, according to _auto_antialias_mode.
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 setup_antialias_polygon() {
   if (_auto_antialias_mode) {
@@ -522,11 +448,9 @@ setup_antialias_polygon() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_stencil_test
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_stencil_test(bool val) {
   if (_stencil_test_enabled != val) {
@@ -547,11 +471,9 @@ enable_stencil_test(bool val) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_blend
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_blend(bool val) {
   if (_blend_enabled != val) {
@@ -572,11 +494,9 @@ enable_blend(bool val) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_depth_test
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_depth_test(bool val) {
   if (_depth_test_enabled != val) {
@@ -598,11 +518,9 @@ enable_depth_test(bool val) {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_fog
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_fog(bool val) {
   if (_fog_enabled != val) {
@@ -625,11 +543,9 @@ enable_fog(bool val) {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_alpha_test
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_alpha_test(bool val) {
   if (_alpha_test_enabled != val) {
@@ -651,11 +567,9 @@ enable_alpha_test(bool val) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_polygon_offset
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 enable_polygon_offset(bool val) {
   if (_polygon_offset_enabled != val) {
@@ -680,11 +594,9 @@ enable_polygon_offset(bool val) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_color_write_mask
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 set_color_write_mask(int mask) {
   if (gl_color_mask && _active_color_write_mask != mask) {
@@ -696,11 +608,9 @@ set_color_write_mask(int mask) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::clear_color_write_mask
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 clear_color_write_mask() {
   if (gl_color_mask && _active_color_write_mask != ColorWriteAttrib::C_all) {
@@ -710,11 +620,9 @@ clear_color_write_mask() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glLoadMatrix
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLoadMatrix(const LMatrix4 &mat) {
 #if defined(OPENGLES) && defined(STDFLOAT_DOUBLE)
@@ -729,12 +637,9 @@ call_glLoadMatrix(const LMatrix4 &mat) {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glFogfv
-//       Access: Public
-//  Description: This method is necessary because there is no
-//               glFogdv().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is necessary because there is no glFogdv().
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glFogfv(GLenum pname, const LColor &color) {
 #ifndef STDFLOAT_DOUBLE
@@ -747,12 +652,9 @@ call_glFogfv(GLenum pname, const LColor &color) {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glMaterialfv
-//       Access: Public
-//  Description: This method is necessary because there is no
-//               glMaterialdv().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is necessary because there is no glMaterialdv().
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 #ifndef STDFLOAT_DOUBLE
@@ -765,12 +667,9 @@ call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glLightfv
-//       Access: Public
-//  Description: This method is necessary because there is no
-//               glLightdv().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is necessary because there is no glLightdv().
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
 #ifndef STDFLOAT_DOUBLE
@@ -783,12 +682,9 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glLightfv
-//       Access: Public
-//  Description: This method is necessary because there is no
-//               glLightdv().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is necessary because there is no glLightdv().
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
 #ifndef STDFLOAT_DOUBLE
@@ -801,12 +697,9 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glLightModelfv
-//       Access: Public
-//  Description: This method is necessary because there is no
-//               glLightModeldv().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is necessary because there is no glLightModeldv().
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
 #ifndef STDFLOAT_DOUBLE
@@ -819,12 +712,9 @@ call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glTexEnvfv
-//       Access: Public
-//  Description: This method is necessary because there is no
-//               glTexEnvdv().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is necessary because there is no glTexEnvdv().
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 #ifndef STDFLOAT_DOUBLE
@@ -836,12 +726,9 @@ call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glTexParameterfv
-//       Access: Public
-//  Description: This method is necessary because there is no
-//               glTexParameterdv().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is necessary because there is no glTexParameterdv().
+ */
 INLINE void CLP(GraphicsStateGuardian)::
 call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 #ifndef STDFLOAT_DOUBLE
@@ -853,11 +740,9 @@ call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_light_id
-//       Access: Public
-//  Description: Convert index to gl light id
-////////////////////////////////////////////////////////////////////
+/**
+ * Convert index to gl light id
+ */
 INLINE GLenum CLP(GraphicsStateGuardian)::
 get_light_id(int index) const {
   return GL_LIGHT0 + index;
@@ -865,57 +750,47 @@ get_light_id(int index) const {
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_clip_plane_id
-//       Access: Public
-//  Description: Convert index to gl clip plane id
-////////////////////////////////////////////////////////////////////
+/**
+ * Convert index to gl clip plane id
+ */
 INLINE GLenum CLP(GraphicsStateGuardian)::
 get_clip_plane_id(int index) const {
   return GL_CLIP_PLANE0 + index;
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_multisample
-//       Access: Public
-//  Description: Returns if this glGsg supports multisample
-//               antialiasing for framebuffer objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns if this glGsg supports multisample antialiasing for framebuffer
+ * objects.
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 get_supports_framebuffer_multisample() {
   return _supports_framebuffer_multisample;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_multisample
-//       Access: Public
-//  Description: Returns if this glGsg supports multisample
-//               antialiasing for framebuffer objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns if this glGsg supports multisample antialiasing for framebuffer
+ * objects.
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 get_supports_framebuffer_multisample_coverage_nv() {
   return _supports_framebuffer_multisample_coverage_nv;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_blit
-//       Access: Public
-//  Description: Returns if this glGsg supports multisample
-//               antialiasing for framebuffer objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns if this glGsg supports multisample antialiasing for framebuffer
+ * objects.
+ */
 INLINE bool CLP(GraphicsStateGuardian)::
 get_supports_framebuffer_blit() {
   return _supports_framebuffer_blit;
 }
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::UsageTextureKey::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(GraphicsStateGuardian)::UsageTextureKey::
 UsageTextureKey(int x_size, int y_size) :
   _x_size(x_size),
@@ -925,11 +800,9 @@ UsageTextureKey(int x_size, int y_size) :
 #endif  // NDEBUG
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::UsageTextureKey::operator <
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool CLP(GraphicsStateGuardian)::UsageTextureKey::
 operator < (const CLP(GraphicsStateGuardian)::UsageTextureKey &other) const {
   if (_x_size != other._x_size) {

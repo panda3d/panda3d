@@ -1,16 +1,15 @@
-// Filename: fog.cxx
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fog.cxx
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #include "pandabase.h"
 
@@ -44,14 +43,12 @@ operator << (ostream &out, Fog::Mode mode) {
   return out << "**invalid**(" << (int)mode << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Fog::
-Fog(const string &name) : 
-  PandaNode(name) 
+Fog(const string &name) :
+  PandaNode(name)
 {
   _mode = M_linear;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -65,11 +62,9 @@ Fog(const string &name) :
   _transformed_opaque = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Fog::
 Fog(const Fog &copy) :
   PandaNode(copy)
@@ -86,46 +81,36 @@ Fog(const Fog &copy) :
   _transformed_opaque = copy._transformed_opaque;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Fog::
 ~Fog() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *Fog::
 make_copy() const {
   return new Fog(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this node by the indicated matrix, if it means
+ * anything to do so.  For most kinds of nodes, this does nothing.
+ */
 void Fog::
 xform(const LMatrix4 &mat) {
   _linear_onset_point = _linear_onset_point * mat;
   _linear_opaque_point = _linear_opaque_point * mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Fog::
 output(ostream &out) const {
   out << "fog: " << _mode;
@@ -142,15 +127,11 @@ output(ostream &out) const {
   };
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::adjust_to_camera
-//       Access: Public
-//  Description: This function is intended to be called by the cull
-//               traverser to compute the appropriate camera-relative
-//               onset and opaque distances, based on the fog node's
-//               position within the scene graph (if linear fog is in
-//               effect).
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is intended to be called by the cull traverser to compute the
+ * appropriate camera-relative onset and opaque distances, based on the fog
+ * node's position within the scene graph (if linear fog is in effect).
+ */
 void Fog::
 adjust_to_camera(const TransformState *camera_transform) {
   LVector3 forward = LVector3::forward();
@@ -161,9 +142,9 @@ adjust_to_camera(const TransformState *camera_transform) {
     // graph.
     NodePath this_np(this);
 
-    CPT(TransformState) rel_transform = 
+    CPT(TransformState) rel_transform =
       camera_transform->invert_compose(this_np.get_net_transform());
-    
+
     const LMatrix4 &mat = rel_transform->get_mat();
 
     // How far out of whack are we?
@@ -188,34 +169,27 @@ adjust_to_camera(const TransformState *camera_transform) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::get_linear_range
-//       Access: Public
-//  Description: Retrieves the current onset and offset ranges.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the current onset and offset ranges.
+ */
 void Fog::
 get_linear_range(PN_stdfloat &onset, PN_stdfloat &opaque) {
   onset = _transformed_onset;
   opaque = _transformed_opaque;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Fog.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Fog.
+ */
 void Fog::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void Fog::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
@@ -230,14 +204,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(_linear_fallback_opaque);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Fog is encountered
-//               in the Bam file.  It should create the Fog
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * Fog is encountered in the Bam file.  It should create the Fog and extract its
+ * information from the file.
+ */
 TypedWritable *Fog::
 make_from_bam(const FactoryParams &params) {
   Fog *node = new Fog("");
@@ -250,13 +221,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Fog::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Fog.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new Fog.
+ */
 void Fog::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);

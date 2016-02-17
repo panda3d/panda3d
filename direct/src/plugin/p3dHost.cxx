@@ -1,16 +1,15 @@
-// Filename: p3dHost.cxx
-// Created by:  drose (21Aug09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dHost.cxx
+ * @author drose
+ * @date 2009-08-21
+ */
 
 #include "p3dHost.h"
 #include "p3dInstanceManager.h"
@@ -26,15 +25,12 @@
 #include <unistd.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::Constructor
-//       Access: Private
-//  Description: Use P3DInstanceManager::get_host() to construct a
-//               new P3DHost.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use P3DInstanceManager::get_host() to construct a new P3DHost.
+ */
 P3DHost::
 P3DHost(const string &host_url, const string &host_dir) :
-  _host_url(host_url), 
+  _host_url(host_url),
   _host_dir(host_dir)
 {
   // Ensure that the download URL ends with a slash.
@@ -51,11 +47,9 @@ P3DHost(const string &host_url, const string &host_dir) :
   _contents_iseq = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::Destructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DHost::
 ~P3DHost() {
   if (_xcontents != NULL) {
@@ -83,28 +77,18 @@ P3DHost::
   _failed_packages.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::get_alt_host
-//       Access: Public
-//  Description: Returns the pre-defined alternate host with the
-//               indicated token, if one is defined for this token, or
-//               the original host if there is no alternate host
-//               defined for this token.
-//
-//               This is intended to implement test versions and the
-//               like, for instance in which a particular p3d file may
-//               reference a package on one particular host, but there
-//               is an alternate version to be tested on a different
-//               host.  The HTML code that embeds the p3d file can
-//               choose to set the alt_host token to redirect the p3d
-//               file to the alternate host.
-//
-//               The actual URL for the alternate host is embedded
-//               within the host's contents.xml as a security measure,
-//               to prevent people from tricking a p3d file into
-//               running untrusted code by redirecting it to an
-//               arbitrary URL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pre-defined alternate host with the indicated token, if one is
+ * defined for this token, or the original host if there is no alternate host
+ * defined for this token.  This is intended to implement test versions and the
+ * like, for instance in which a particular p3d file may reference a package on
+ * one particular host, but there is an alternate version to be tested on a
+ * different host.  The HTML code that embeds the p3d file can choose to set the
+ * alt_host token to redirect the p3d file to the alternate host.  The actual
+ * URL for the alternate host is embedded within the host's contents.xml as a
+ * security measure, to prevent people from tricking a p3d file into running
+ * untrusted code by redirecting it to an arbitrary URL.
+ */
 P3DHost *P3DHost::
 get_alt_host(const string &alt_host) {
   assert(_xcontents != NULL);
@@ -118,13 +102,10 @@ get_alt_host(const string &alt_host) {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::has_current_contents_file
-//       Access: Public
-//  Description: Returns true if a contents.xml file has been
-//               successfully read for this host and is still current,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a contents.xml file has been successfully read for this host
+ * and is still current, false otherwise.
+ */
 bool P3DHost::
 has_current_contents_file(P3DInstanceManager *inst_mgr) const {
   if (inst_mgr->get_verify_contents() == P3D_VC_never
@@ -138,14 +119,10 @@ has_current_contents_file(P3DInstanceManager *inst_mgr) const {
   return now < _contents_expiration && (_xcontents != NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::read_contents_file
-//       Access: Public
-//  Description: Reads the contents.xml file in the standard
-//               filename, if possible.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the contents.xml file in the standard filename, if possible.  Returns
+ * true on success, false on failure.
+ */
 bool P3DHost::
 read_contents_file() {
   if (_host_dir.empty()) {
@@ -157,16 +134,11 @@ read_contents_file() {
   return read_contents_file(standard_filename, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::read_contents_file
-//       Access: Public
-//  Description: Reads the contents.xml file in the indicated
-//               filename.  On success, writes the contents.xml file
-//               into the standard location (if it's not there
-//               already).
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the contents.xml file in the indicated filename.  On success, writes
+ * the contents.xml file into the standard location (if it's not there already).
+ * Returns true on success, false on failure.
+ */
 bool P3DHost::
 read_contents_file(const string &contents_filename, bool fresh_download) {
   TiXmlDocument doc(contents_filename.c_str());
@@ -263,14 +235,14 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  
+
   if (_host_dir.empty()) {
     determine_host_dir("");
   }
   assert(!_host_dir.empty());
-  
+
   string standard_filename = _host_dir + "/contents.xml";
-  
+
   if (inst_mgr->get_verify_contents() != P3D_VC_never) {
     mkdir_complete(_host_dir, nout);
 
@@ -279,7 +251,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
         nout << "Couldn't save to " << standard_filename << "\n";
       }
     } else {
-      if (standardize_filename(standard_filename) != 
+      if (standardize_filename(standard_filename) !=
           standardize_filename(contents_filename)) {
         if (!copy_file(contents_filename, standard_filename)) {
           nout << "Couldn't copy to " << standard_filename << "\n";
@@ -292,7 +264,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
       // file into the root Panda directory as well, for the next plugin
       // iteration.
       string top_filename = inst_mgr->get_root_dir() + "/contents.xml";
-      if (standardize_filename(top_filename) != 
+      if (standardize_filename(top_filename) !=
           standardize_filename(standard_filename)) {
         if (!copy_file(standard_filename, top_filename)) {
           nout << "Couldn't copy to " << top_filename << "\n";
@@ -304,13 +276,10 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::read_xhost
-//       Access: Public
-//  Description: Reads the host data from the <host> (or <alt_host>)
-//               entry in the contents.xml file, or from a
-//               p3d_info.xml file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the host data from the <host> (or <alt_host>) entry in the contents.xml
+ * file, or from a p3d_info.xml file.
+ */
 void P3DHost::
 read_xhost(TiXmlElement *xhost) {
   const char *descriptive_name = xhost->Attribute("descriptive_name");
@@ -339,7 +308,7 @@ read_xhost(TiXmlElement *xhost) {
   } else {
     _download_url_prefix = _host_url_prefix;
   }
-        
+
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
   while (xmirror != NULL) {
     const char *url = xmirror->Attribute("url");
@@ -350,22 +319,16 @@ read_xhost(TiXmlElement *xhost) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::get_package
-//       Access: Public
-//  Description: Returns a (possibly shared) pointer to the indicated
-//               package.
-//
-//               The package_seq value should be the expected minimum
-//               package_seq value for the indicated package.  If the
-//               given seq value is higher than the package_seq value
-//               in the contents.xml file cached for the host, it is a
-//               sign that the contents.xml file is out of date and
-//               needs to be redownloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a (possibly shared) pointer to the indicated package.  The
+ * package_seq value should be the expected minimum package_seq value for the
+ * indicated package.  If the given seq value is higher than the package_seq
+ * value in the contents.xml file cached for the host, it is a sign that the
+ * contents.xml file is out of date and needs to be redownloaded.
+ */
 P3DPackage *P3DHost::
 get_package(const string &package_name, const string &package_version,
-            const string &package_platform, const string &package_seq, 
+            const string &package_platform, const string &package_seq,
             const string &alt_host) {
   if (!alt_host.empty()) {
     if (_xcontents != NULL) {
@@ -373,7 +336,7 @@ get_package(const string &package_name, const string &package_version,
       // contents.xml file, then we already know all of our hosts, and
       // we can start the package off with the correct host immediately.
       P3DHost *new_host = get_alt_host(alt_host);
-      return new_host->get_package(package_name, package_version, 
+      return new_host->get_package(package_name, package_version,
                                    package_platform, package_seq);
     }
 
@@ -417,7 +380,7 @@ get_package(const string &package_name, const string &package_version,
   }
 
   if (package == NULL) {
-    package = 
+    package =
       new P3DPackage(this, package_name, package_version, package_platform, alt_host);
     ppackages.push_back(package);
   }
@@ -442,20 +405,16 @@ get_package(const string &package_name, const string &package_version,
       }
     }
   }
-    
+
   return package;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::choose_suitable_platform
-//       Access: Public
-//  Description: Chooses the most appropriate platform for the
-//               indicated package based on what this hardware
-//               supports and what is actually available.  Also fills
-//               in per_platform, which is a boolean value indicating
-//               whether the directory structure contains the platform
-//               directory or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses the most appropriate platform for the indicated package based on what
+ * this hardware supports and what is actually available.  Also fills in
+ * per_platform, which is a boolean value indicating whether the directory
+ * structure contains the platform directory or not.
+ */
 bool P3DHost::
 choose_suitable_platform(string &selected_platform,
                          bool &per_platform,
@@ -488,7 +447,7 @@ choose_suitable_platform(string &selected_platform,
           version = "";
         }
         if (name != NULL &&
-            package_name == name && 
+            package_name == name &&
             supported_platform == platform &&
             package_version == version) {
           // Here's the matching package definition.
@@ -496,7 +455,7 @@ choose_suitable_platform(string &selected_platform,
           per_platform = parse_bool_attrib(xpackage, "per_platform", false);
           return true;
         }
-        
+
         xpackage = xpackage->NextSiblingElement("package");
       }
     }
@@ -515,7 +474,7 @@ choose_suitable_platform(string &selected_platform,
       version = "";
     }
     if (name != NULL &&
-        package_name == name && 
+        package_name == name &&
         package_platform == platform &&
         package_version == version) {
       // Here's the matching package definition.
@@ -541,7 +500,7 @@ choose_suitable_platform(string &selected_platform,
       version = "";
     }
     if (name != NULL &&
-        package_name == name && 
+        package_name == name &&
         *platform == '\0' &&
         package_version == version) {
       selected_platform = platform;
@@ -556,16 +515,12 @@ choose_suitable_platform(string &selected_platform,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::get_package_desc_file
-//       Access: Public
-//  Description: Fills the indicated FileSpec with the hash
-//               information for the package's desc file, and also
-//               determines the package's platform.  Returns true if
-//               successful, false if the package is unknown.  This
-//               requires has_contents_file() to return true in order
-//               to be successful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated FileSpec with the hash information for the package's desc
+ * file, and also determines the package's platform.  Returns true if
+ * successful, false if the package is unknown.  This requires
+ * has_contents_file() to return true in order to be successful.
+ */
 bool P3DHost::
 get_package_desc_file(FileSpec &desc_file,              // out
                       string &package_seq,              // out
@@ -599,7 +554,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
       seq = "";
     }
     if (name != NULL && platform != NULL &&
-        package_name == name && 
+        package_name == name &&
         package_platform == platform &&
         package_version == version) {
       // Here's the matching package definition.
@@ -619,14 +574,11 @@ get_package_desc_file(FileSpec &desc_file,              // out
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::forget_package
-//       Access: Public
-//  Description: Removes the indicated package from the cache of
-//               packages known by this host.  This is invoked from
-//               the Python side by AppRunner.deletePackages(), so
-//               that we remove the package before deleting its files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated package from the cache of packages known by this host.
+ * This is invoked from the Python side by AppRunner.deletePackages(), so that
+ * we remove the package before deleting its files.
+ */
 void P3DHost::
 forget_package(P3DPackage *package, const string &alt_host) {
   string key = package->get_package_name() + "_" + package->get_package_version();
@@ -643,14 +595,11 @@ forget_package(P3DPackage *package, const string &alt_host) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::migrate_package_host
-//       Access: Public
-//  Description: This is called by P3DPackage when it migrates from
-//               this host to its final alt_host, after downloading
-//               the contents.xml file for this file and learning the
-//               true URL for its target alt_host.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by P3DPackage when it migrates from this host to its final
+ * alt_host, after downloading the contents.xml file for this file and learning
+ * the true URL for its target alt_host.
+ */
 void P3DHost::
 migrate_package_host(P3DPackage *package, const string &alt_host, P3DHost *new_host) {
   assert(new_host != this);
@@ -669,14 +618,11 @@ migrate_package_host(P3DPackage *package, const string &alt_host, P3DHost *new_h
   new_ppackages.push_back(package);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::choose_random_mirrors
-//       Access: Public
-//  Description: Selects num_mirrors elements, chosen at random, from
-//               the _mirrors list.  Adds the selected mirrors to
-//               result.  If there are fewer than num_mirrors elements
-//               in the list, adds only as many mirrors as we can get.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects num_mirrors elements, chosen at random, from the _mirrors list.  Adds
+ * the selected mirrors to result.  If there are fewer than num_mirrors elements
+ * in the list, adds only as many mirrors as we can get.
+ */
 void P3DHost::
 choose_random_mirrors(vector<string> &result, int num_mirrors) {
   vector<size_t> selected;
@@ -694,20 +640,17 @@ choose_random_mirrors(vector<string> &result, int num_mirrors) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::add_mirror
-//       Access: Public
-//  Description: Adds a new URL to serve as a mirror for this host.
-//               The mirrors will be consulted first, before
-//               consulting the host directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new URL to serve as a mirror for this host.  The mirrors will be
+ * consulted first, before consulting the host directly.
+ */
 void P3DHost::
 add_mirror(string mirror_url) {
   // Ensure the URL ends in a slash.
   if (!mirror_url.empty() && mirror_url[mirror_url.size() - 1] != '/') {
     mirror_url += '/';
   }
-  
+
   // Add it to the _mirrors list, but only if it's not already
   // there.
   if (find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
@@ -715,21 +658,18 @@ add_mirror(string mirror_url) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::uninstall
-//       Access: Public
-//  Description: Removes the host directory and all its contents
-//               from the user's hard disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the host directory and all its contents from the user's hard disk.
+ */
 void P3DHost::
 uninstall() {
   if (_host_dir.empty()) {
     nout << "Cannot uninstall " << _descriptive_name << ": host directory not yet known.\n";
     return;
   }
-  
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  
+
   // Check if we're even allowed to.
   if (inst_mgr->get_verify_contents() == P3D_VC_never) {
     nout << "Not allowed to uninstall " << _descriptive_name << ".\n";
@@ -757,16 +697,11 @@ uninstall() {
   inst_mgr->forget_host(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::determine_host_dir
-//       Access: Private
-//  Description: Hashes the host_url into a (mostly) unique directory
-//               string, which will be the root of the host's install
-//               tree.  Stores the result in _host_dir.
-//
-//               This code is duplicated in Python, in
-//               HostInfo.determineHostDir().
-////////////////////////////////////////////////////////////////////
+/**
+ * Hashes the host_url into a (mostly) unique directory string, which will be
+ * the root of the host's install tree.  Stores the result in _host_dir.  This
+ * code is duplicated in Python, in HostInfo.determineHostDir().
+ */
 void P3DHost::
 determine_host_dir(const string &host_dir_basename) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -846,15 +781,12 @@ determine_host_dir(const string &host_dir_basename) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::standardize_filename
-//       Access: Private, Static
-//  Description: Attempts to change the filename into some standard
-//               form for comparison with other filenames.  On a
-//               case-insensitive filesystem, this converts the
-//               filename to lowercase.  On Windows, it further
-//               replaces forward slashes with backslashes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to change the filename into some standard form for comparison with
+ * other filenames.  On a case-insensitive filesystem, this converts the
+ * filename to lowercase.  On Windows, it further replaces forward slashes with
+ * backslashes.
+ */
 string P3DHost::
 standardize_filename(const string &filename) {
 #if defined(_WIN32) || defined(__APPLE__)
@@ -876,12 +808,10 @@ standardize_filename(const string &filename) {
 #endif  // _WIN32 || __APPLE__
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::copy_file
-//       Access: Private, Static
-//  Description: Copies the data in the file named by from_filename
-//               into the file named by to_filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the data in the file named by from_filename into the file named by
+ * to_filename.
+ */
 bool P3DHost::
 copy_file(const string &from_filename, const string &to_filename) {
 #ifdef _WIN32
@@ -904,10 +834,10 @@ copy_file(const string &from_filename, const string &to_filename) {
   if (string_to_wstring(temp_filename_w, temp_filename)) {
     out.open(temp_filename_w.c_str(), ios::out | ios::binary);
   }
-        
+
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
-  
+
   in.read(buffer, buffer_size);
   streamsize count = in.gcount();
   while (count != 0) {
@@ -957,10 +887,10 @@ copy_file(const string &from_filename, const string &to_filename) {
   string temp_filename = strm.str();
   ofstream out;
   out.open(temp_filename.c_str(), ios::out | ios::binary);
-        
+
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
-  
+
   in.read(buffer, buffer_size);
   size_t count = in.gcount();
   while (count != 0) {
@@ -993,12 +923,9 @@ copy_file(const string &from_filename, const string &to_filename) {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::save_xml_file
-//       Access: Private, Static
-//  Description: Stores the XML document to the file named by
-//               to_filename, safely.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the XML document to the file named by to_filename, safely.
+ */
 bool P3DHost::
 save_xml_file(TiXmlDocument *doc, const string &to_filename) {
   // Save to a temporary file first, in case (a) we have different
@@ -1058,13 +985,10 @@ save_xml_file(TiXmlDocument *doc, const string &to_filename) {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::compare_seq
-//       Access: Private, Static
-//  Description: Compares the two dotted-integer sequence values
-//               numerically.  Returns -1 if seq_a sorts first, 1 if
-//               seq_b sorts first, 0 if they are equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the two dotted-integer sequence values numerically.  Returns -1 if
+ * seq_a sorts first, 1 if seq_b sorts first, 0 if they are equivalent.
+ */
 int P3DHost::
 compare_seq(const string &seq_a, const string &seq_b) {
   const char *num_a = seq_a.c_str();
@@ -1092,13 +1016,11 @@ compare_seq(const string &seq_a, const string &seq_b) {
   return comp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::compare_seq_int
-//       Access: Private, Static
-//  Description: Numerically compares the formatted integer value at
-//               num_a with num_b.  Increments both num_a and num_b to
-//               the next character following the valid integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Numerically compares the formatted integer value at num_a with num_b.
+ * Increments both num_a and num_b to the next character following the valid
+ * integer.
+ */
 int P3DHost::
 compare_seq_int(const char *&num_a, const char *&num_b) {
   long int a;

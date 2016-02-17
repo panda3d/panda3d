@@ -1,27 +1,24 @@
-// Filename: cachedTypedWritableReferenceCount.cxx
-// Created by:  drose (25Jan05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cachedTypedWritableReferenceCount.cxx
+ * @author drose
+ * @date 2005-01-25
+ */
 
 #include "cachedTypedWritableReferenceCount.h"
 
 TypeHandle CachedTypedWritableReferenceCount::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CachedTypedWritableReferenceCount::do_test_ref_count_integrity
-//       Access: Protected
-//  Description: Does some easy checks to make sure that the reference
-//               count isn't completely bogus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does some easy checks to make sure that the reference count isn't completely
+ * bogus.
+ */
 bool CachedTypedWritableReferenceCount::
 do_test_ref_count_integrity() const {
   nassertr(this != NULL, false);

@@ -1,16 +1,15 @@
-// Filename: asyncTaskCollection.h
-// Created by:  drose (16Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file asyncTaskCollection.h
+ * @author drose
+ * @date 2008-09-16
+ */
 
 #ifndef ASYNCTASKCOLLECTION_H
 #define ASYNCTASKCOLLECTION_H
@@ -19,14 +18,11 @@
 #include "pointerToArray.h"
 #include "asyncTask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskCollection
-// Description : A list of tasks, for instance as returned by some of
-//               the AsyncTaskManager query functions.  This also
-//               serves to define an AsyncTaskSequence.
-//
-//               TODO: None of this is thread-safe yet.
-////////////////////////////////////////////////////////////////////
+/**
+ * A list of tasks, for instance as returned by some of the AsyncTaskManager
+ * query functions.  This also serves to define an AsyncTaskSequence.  TODO:
+ * None of this is thread-safe yet.
+ */
 class EXPCL_PANDA_PGRAPH AsyncTaskCollection {
 PUBLISHED:
   AsyncTaskCollection();
@@ -69,5 +65,3 @@ INLINE ostream &operator << (ostream &out, const AsyncTaskCollection &col) {
 #include "asyncTaskCollection.I"
 
 #endif
-
-

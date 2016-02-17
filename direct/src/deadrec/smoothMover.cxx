@@ -1,26 +1,23 @@
-// Filename: smoothMover.cxx
-// Created by:  drose (19Oct01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file smoothMover.cxx
+ * @author drose
+ * @date 2001-10-19
+ */
 
 #include "smoothMover.h"
 #include "pnotify.h"
 #include "config_deadrec.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SmoothMover::
 SmoothMover() {
   _sample._pos.set(0.0, 0.0, 0.0);
@@ -62,27 +59,19 @@ SmoothMover() {
   _reset_velocity_age = 0.3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SmoothMover::
 ~SmoothMover() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::mark_position
-//       Access: Published
-//  Description: Stores the position, orientation, and timestamp (if
-//               relevant) indicated by previous calls to set_pos(),
-//               set_hpr(), and set_timestamp() in a new position
-//               report.
-//
-//               When compute_smooth_position() is called, it uses
-//               these stored position reports to base its computation
-//               of the known position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the position, orientation, and timestamp (if relevant) indicated by
+ * previous calls to set_pos(), set_hpr(), and set_timestamp() in a new position
+ * report.  When compute_smooth_position() is called, it uses these stored
+ * position reports to base its computation of the known position.
+ */
 void SmoothMover::
 mark_position() {
   /*
@@ -168,15 +157,12 @@ mark_position() {
   //cout << "mark_position: " << _points.back()._pos << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::clear_positions
-//       Access: Published
-//  Description: Erases all the old position reports.  This should be
-//               done, for instance, prior to teleporting the avatar
-//               to a new position; otherwise, the smoother might try
-//               to lerp the avatar there.  If reset_velocity is true,
-//               the velocity is also reset to 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Erases all the old position reports.  This should be done, for instance,
+ * prior to teleporting the avatar to a new position; otherwise, the smoother
+ * might try to lerp the avatar there.  If reset_velocity is true, the velocity
+ * is also reset to 0.
+ */
 void SmoothMover::
 clear_positions(bool reset_velocity) {
   if (deadrec_cat.is_debug()) {
@@ -197,20 +183,14 @@ clear_positions(bool reset_velocity) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::compute_smooth_position
-//       Access: Published
-//  Description: Computes the smoothed position (and orientation) of
-//               the mover at the indicated point in time, based on
-//               the previous position reports.  After this call has
-//               been made, get_smooth_pos() etc. may be called to
-//               retrieve the smoothed position.
-//
-//               The return value is true if the value has changed (or
-//               might have changed) since the last call to
-//               compute_smooth_position(), or false if it remains the
-//               same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the smoothed position (and orientation) of the mover at the
+ * indicated point in time, based on the previous position reports.  After this
+ * call has been made, get_smooth_pos() etc.  may be called to retrieve the
+ * smoothed position.  The return value is true if the value has changed (or
+ * might have changed) since the last call to compute_smooth_position(), or
+ * false if it remains the same.
+ */
 bool SmoothMover::
 compute_smooth_position(double timestamp) {
   if (deadrec_cat.is_spam()) {
@@ -269,7 +249,7 @@ compute_smooth_position(double timestamp) {
   if (deadrec_cat.is_spam()) {
     deadrec_cat.spam()
       << "time = " << timestamp << ", " << _points.size()
-      << " points, last = " << _last_point_before << ", " 
+      << " points, last = " << _last_point_before << ", "
       << _last_point_after << "\n";
     deadrec_cat.spam(false)
       << "  ";
@@ -315,7 +295,7 @@ compute_smooth_position(double timestamp) {
   if (point_before < 0) {
     nassertr(point_after >= 0, false);
     // If we only have an after point, we have to start there.
-    bool result = !(_last_point_before == point_before && 
+    bool result = !(_last_point_before == point_before &&
                     _last_point_after == point_after);
     const SamplePoint &point = _points[point_after];
     set_smooth_pos(point._pos, point._hpr, timestamp);
@@ -326,7 +306,7 @@ compute_smooth_position(double timestamp) {
     _last_point_after = point_after;
     if (deadrec_cat.is_spam()) {
       deadrec_cat.spam()
-        << "  only an after point: " << _last_point_before << ", " 
+        << "  only an after point: " << _last_point_before << ", "
         << _last_point_after << "\n";
     }
     return result;
@@ -348,7 +328,7 @@ compute_smooth_position(double timestamp) {
       timestamp_after = timestamp_before;
       point_before = point_way_before;
       timestamp_before = point._timestamp;
-      
+
       if (timestamp > timestamp_after + _max_position_age) {
         // Don't allow the prediction to get too far into the
         // future.
@@ -390,7 +370,7 @@ compute_smooth_position(double timestamp) {
       _smooth_rotational_velocity = 0.0;
     }
 
-    result = !(_last_point_before == point_before && 
+    result = !(_last_point_before == point_before &&
                _last_point_after == point_after);
   } else {
     // If we have two points, we can linearly interpolate between them.
@@ -400,7 +380,7 @@ compute_smooth_position(double timestamp) {
     }
     SamplePoint &point_b = _points[point_before];
     const SamplePoint &point_a = _points[point_after];
-    
+
     if (point_b._pos == point_a._pos && point_b._hpr == point_a._hpr) {
       // The points are equivalent, so just return that.
       if (deadrec_cat.is_spam()) {
@@ -417,7 +397,7 @@ compute_smooth_position(double timestamp) {
     } else {
       // The points are different, so we have to do some work.
       double age = (point_a._timestamp - point_b._timestamp);
-    
+
       if (_default_to_standing_still && (age > _max_position_age)) {
         // If the first point is too old, assume there were a lot of
         // implicit standing still messages that weren't sent.  Insert a new
@@ -435,7 +415,7 @@ compute_smooth_position(double timestamp) {
         }
         if (new_point._timestamp > point_b._timestamp) {
           _points.insert(_points.begin() + point_after, new_point);
-          
+
           // Now we've monkeyed with the sequence.  Start over.
           if (deadrec_cat.is_spam()) {
             deadrec_cat.spam()
@@ -470,7 +450,7 @@ compute_smooth_position(double timestamp) {
     --_last_point_after;
     if (deadrec_cat.is_spam()) {
       deadrec_cat.spam()
-        << "  popping old point: " << _last_point_before << ", " 
+        << "  popping old point: " << _last_point_before << ", "
         << _last_point_after << "\n";
     }
   }
@@ -481,13 +461,13 @@ compute_smooth_position(double timestamp) {
     if (point_way_before == 0) {
       nassertr(!_points.empty(), result);
       _points.pop_front();
-      
+
       --point_way_before;
       --_last_point_before;
       --_last_point_after;
       if (deadrec_cat.is_spam()) {
         deadrec_cat.spam()
-          << "  popping way_before point: " << _last_point_before << ", " 
+          << "  popping way_before point: " << _last_point_before << ", "
           << _last_point_after << "\n";
       }
     }
@@ -521,17 +501,12 @@ compute_smooth_position(double timestamp) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::get_latest_position
-//       Access: Published
-//  Description: Updates the smooth_pos (and smooth_hpr, etc.) members
-//               to reflect the absolute latest position known for
-//               this avatar.  This may result in a pop to the most
-//               recent position.
-//
-//               Returns true if the latest position is known, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the smooth_pos (and smooth_hpr, etc.) members to reflect the absolute
+ * latest position known for this avatar.  This may result in a pop to the most
+ * recent position.  Returns true if the latest position is known, false
+ * otherwise.
+ */
 bool SmoothMover::
 get_latest_position() {
   if (deadrec_cat.is_debug()) {
@@ -550,38 +525,32 @@ get_latest_position() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SmoothMover::
 output(ostream &out) const {
   out << "SmoothMover, " << _points.size() << " sample points.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SmoothMover::
 write(ostream &out) const {
   out << "SmoothMover, " << _points.size() << " sample points:\n";
   int num_points = _points.size();
   for (int i = 0; i < num_points; i++) {
     const SamplePoint &point = _points[i];
-    out << "  " << i << ". time = " << point._timestamp << " pos = " 
+    out << "  " << i << ". time = " << point._timestamp << " pos = "
         << point._pos << " hpr = " << point._hpr << "\n";
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_smooth_pos
-//       Access: Private
-//  Description: Sets the computed smooth position and orientation for
-//               the indicated timestamp.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the computed smooth position and orientation for the indicated
+ * timestamp.
+ */
 void SmoothMover::
 set_smooth_pos(const LPoint3 &pos, const LVecBase3 &hpr,
                double timestamp) {
@@ -605,12 +574,10 @@ set_smooth_pos(const LPoint3 &pos, const LVecBase3 &hpr,
   _smooth_position_known = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::linear_interpolate
-//       Access: Private
-//  Description: Interpolates the smooth position linearly between the
-//               two bracketing position reports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interpolates the smooth position linearly between the two bracketing position
+ * reports.
+ */
 void SmoothMover::
 linear_interpolate(int point_before, int point_after, double timestamp) {
   SamplePoint &point_b = _points[point_before];
@@ -627,7 +594,7 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
   cout << endl;
   */
 
-  if (point_before == _last_point_before && 
+  if (point_before == _last_point_before &&
       point_after == _last_point_after) {
     if (deadrec_cat.is_spam()) {
       deadrec_cat.spam()
@@ -659,7 +626,7 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
         point_b._hpr[j] += 360.0;
       }
     }
-    
+
     double t = (timestamp - point_b._timestamp) / age;
     LVector3 pos_delta = point_a._pos - point_b._pos;
     LVecBase3 hpr_delta = point_a._hpr - point_b._hpr;
@@ -669,19 +636,16 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
         << "   interp " << t << ": " << point_b._pos << " to " << point_a._pos
         << "\n";
     }
-    set_smooth_pos(point_b._pos + t * pos_delta, 
-                   point_b._hpr + t * hpr_delta, 
+    set_smooth_pos(point_b._pos + t * pos_delta,
+                   point_b._hpr + t * hpr_delta,
                    timestamp);
     compute_velocity(pos_delta, hpr_delta, age);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::compute_velocity
-//       Access: Private
-//  Description: Computes the forward and rotational velocities of the
-//               moving object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the forward and rotational velocities of the moving object.
+ */
 void SmoothMover::
 compute_velocity(const LVector3 &pos_delta, const LVecBase3 &hpr_delta,
                  double age) {
@@ -695,25 +659,25 @@ compute_velocity(const LVector3 &pos_delta, const LVecBase3 &hpr_delta,
       LMatrix3 rot_mat;
       compose_matrix(rot_mat, LVecBase3(1.0, 1.0, 1.0), _smooth_hpr);
       _forward_axis = LVector3(0.0, 1.0, 0.0) * rot_mat;
-      
+
       if (deadrec_cat.is_spam()) {
         deadrec_cat.spam()
           << "  compute forward_axis = " << _forward_axis << "\n";
       }
     }
-    
+
     LVector3 lateral_axis = _forward_axis.cross(LVector3(0.0,0.0,1.0));
-    
+
     PN_stdfloat forward_distance = pos_delta.dot(_forward_axis);
     PN_stdfloat lateral_distance = pos_delta.dot(lateral_axis);
-    
+
     _smooth_forward_velocity = forward_distance / age;
     _smooth_lateral_velocity = lateral_distance / age;
 
   } else {
     _smooth_forward_velocity = pos_delta.length();
     _smooth_lateral_velocity = 0.0f;
-  }   
+  }
 
   if (deadrec_cat.is_spam()) {
     deadrec_cat.spam()
@@ -721,14 +685,11 @@ compute_velocity(const LVector3 &pos_delta, const LVecBase3 &hpr_delta,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::record_timestamp_delay
-//       Access: Private
-//  Description: Records the delay measured in receiving this
-//               particular timestamp.  The average delay of the last
-//               n timestamps will be used to smooth the motion
-//               properly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the delay measured in receiving this particular timestamp.  The
+ * average delay of the last n timestamps will be used to smooth the motion
+ * properly.
+ */
 void SmoothMover::
 record_timestamp_delay(double timestamp) {
   double now = ClockObject::get_global_clock()->get_frame_time();
@@ -747,12 +708,10 @@ record_timestamp_delay(double timestamp) {
   _last_heard_from = now;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::handle_wrt_reparent
-//       Access: Private
-//  Description: Node is being wrtReparented, update recorded
-//               sample positions to reflect new parent
-////////////////////////////////////////////////////////////////////
+/**
+ * Node is being wrtReparented, update recorded sample positions to reflect new
+ * parent
+ */
 void SmoothMover::
 handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
   Points::iterator pi;
@@ -766,7 +725,7 @@ handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
     //cout << "(" << (*pi)._pos << "), ";
   }
   //cout << endl;
-  
+
   np.set_pos_hpr(_sample._pos, _sample._hpr);
   _sample._pos = np.get_pos(new_parent);
   _sample._hpr = np.get_hpr(new_parent);

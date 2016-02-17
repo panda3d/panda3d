@@ -1,3 +1,16 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file socket_address.h
+ * @author rdb
+ * @date 2014-10-19
+ */
+
 #ifndef SOCKET_ADDRESS_H
 #define SOCKET_ADDRESS_H
 
@@ -5,11 +18,10 @@
 #include "numeric_types.h"
 #include "socket_portable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_Address
-// Description : A simple place to store and munipulate tcp and port
-//               address for communication layer
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple place to store and munipulate tcp and port address for communication
+ * layer
+ */
 class EXPCL_PANDA_NATIVENET Socket_Address {
 public:
   typedef struct sockaddr_in AddressType;

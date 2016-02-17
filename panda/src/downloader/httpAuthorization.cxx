@@ -1,16 +1,15 @@
-// Filename: httpAuthorization.cxx
-// Created by:  drose (22Oct02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpAuthorization.cxx
+ * @author drose
+ * @date 2002-10-22
+ */
 
 #include "httpAuthorization.h"
 #include "httpChannel.h"
@@ -20,7 +19,7 @@
 
 static const char base64_table[64] = {
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
+  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
   'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
   'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
   'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
@@ -32,13 +31,11 @@ static const char base64_table[64] = {
 static unsigned char base64_invert[128];
 static bool got_base64_invert = false;
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPAuthorization::
-HTTPAuthorization(const HTTPAuthorization::Tokens &tokens, 
+HTTPAuthorization(const HTTPAuthorization::Tokens &tokens,
                   const URLSpec &url, bool is_proxy) {
   Tokens::const_iterator ti;
   ti = tokens.find("realm");
@@ -88,34 +85,27 @@ HTTPAuthorization(const HTTPAuthorization::Tokens &tokens,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPAuthorization::
 ~HTTPAuthorization() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::is_valid
-//       Access: Public, Virtual
-//  Description: Returns true if the authorization challenge was
-//               correctly parsed and is usable, or false if there was
-//               some unsupported algorithm or some such requested by
-//               the server, rendering the challenge unmeetable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the authorization challenge was correctly parsed and is
+ * usable, or false if there was some unsupported algorithm or some such
+ * requested by the server, rendering the challenge unmeetable.
+ */
 bool HTTPAuthorization::
 is_valid() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::parse_authentication_schemes
-//       Access: Public, Static
-//  Description: Decodes the text following a WWW-Authenticate: or
-//               Proxy-Authenticate: header field.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes the text following a WWW-Authenticate: or Proxy-Authenticate: header
+ * field.
+ */
 void HTTPAuthorization::
 parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
                              const string &field_value) {
@@ -140,12 +130,12 @@ parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
     // Here's our first scheme.
     string scheme = HTTPChannel::downcase(field_value.substr(p, q - p));
     Tokens *tokens = &(schemes[scheme]);
-    
+
     // Now pull off the tokens, one at a time.
     p = q + 1;
     while (p < field_value.length()) {
       q = p;
-      while (q < field_value.length() && field_value[q] != '=' && 
+      while (q < field_value.length() && field_value[q] != '=' &&
              field_value[q] != ',' && !isspace(field_value[q])) {
         ++q;
       }
@@ -157,7 +147,7 @@ parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
         (*tokens)[token] = value;
 
         // Skip trailing whitespace and extra commas.
-        while (p < field_value.length() && 
+        while (p < field_value.length() &&
                (field_value[p] == ',' || isspace(field_value[p]))) {
           ++p;
         }
@@ -172,14 +162,11 @@ parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::get_canonical_url
-//       Access: Public, Static
-//  Description: Returns the "canonical" URL corresponding to this
-//               URL.  This is the same URL with an explicit port
-//               indication, an explicit scheme, and a non-empty path,
-//               etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "canonical" URL corresponding to this URL.  This is the same URL
+ * with an explicit port indication, an explicit scheme, and a non-empty path,
+ * etc.
+ */
 URLSpec HTTPAuthorization::
 get_canonical_url(const URLSpec &url) {
   URLSpec canon = url;
@@ -191,12 +178,10 @@ get_canonical_url(const URLSpec &url) {
   return canon;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::base64_encode
-//       Access: Public, Static
-//  Description: Returns the input string encoded using base64.  No
-//               respect is paid to maintaining a 76-char line length.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the input string encoded using base64.  No respect is paid to
+ * maintaining a 76-char line length.
+ */
 string HTTPAuthorization::
 base64_encode(const string &s) {
   // Collect the string 3 bytes at a time into 24-bit words, then
@@ -206,7 +191,7 @@ base64_encode(const string &s) {
   result.reserve(num_words * 4);
   size_t p;
   for (p = 0; p + 2 < s.size(); p += 3) {
-    unsigned int word = 
+    unsigned int word =
       ((unsigned)s[p] << 16) |
       ((unsigned)s[p + 1] << 8) |
       ((unsigned)s[p + 2]);
@@ -239,11 +224,9 @@ base64_encode(const string &s) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::base64_decode
-//       Access: Public, Static
-//  Description: Returns the string decoded from base64.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string decoded from base64.
+ */
 string HTTPAuthorization::
 base64_decode(const string &s) {
   // Build up the invert table if this is the first time.
@@ -274,7 +257,7 @@ base64_decode(const string &s) {
     unsigned int c2 = base64_invert[s[p + 2] & 0x7f];
     unsigned int c3 = base64_invert[s[p + 3] & 0x7f];
 
-    unsigned int word = 
+    unsigned int word =
       (c0 << 18) | (c1 << 12) | (c2 << 6) | c3;
 
     result += (char)((word >> 16) & 0xff);
@@ -289,19 +272,15 @@ base64_decode(const string &s) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::scan_quoted_or_unquoted_string
-//       Access: Protected, Static
-//  Description: Scans the string source beginning at character
-//               position start, to identify either the
-//               (space-delimited) unquoted string there, or the
-//               (quote-delimited) quoted string.  In either case,
-//               fills the string found into result, and returns the
-//               next character position after the string (or after
-//               its closing quote mark).
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the string source beginning at character position start, to identify
+ * either the (space-delimited) unquoted string there, or the (quote-delimited)
+ * quoted string.  In either case, fills the string found into result, and
+ * returns the next character position after the string (or after its closing
+ * quote mark).
+ */
 size_t HTTPAuthorization::
-scan_quoted_or_unquoted_string(string &result, const string &source, 
+scan_quoted_or_unquoted_string(string &result, const string &source,
                                size_t start) {
   result = string();
 

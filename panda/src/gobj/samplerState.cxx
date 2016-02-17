@@ -1,16 +1,15 @@
-// Filename: samplerState.cxx
-// Created by:  rdb (09Dec14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file samplerState.cxx
+ * @author rdb
+ * @date 2014-12-09
+ */
 
 #include "samplerState.h"
 #include "indent.h"
@@ -54,14 +53,11 @@ ConfigVariableInt texture_anisotropic_degree
           "changed at runtime, you may need to reload textures explicitly "
           "in order to change their visible properties."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::get_effective_minfilter
-//       Access: Published
-//  Description: Returns the filter mode of the texture for
-//               minification, with special treatment for FT_default.
-//               This will normally not return FT_default, unless
-//               there is an error in the config file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the filter mode of the texture for minification, with special
+ * treatment for FT_default.  This will normally not return FT_default, unless
+ * there is an error in the config file.
+ */
 SamplerState::FilterType SamplerState::
 get_effective_minfilter() const {
   if (_minfilter != FT_default) {
@@ -70,14 +66,11 @@ get_effective_minfilter() const {
   return texture_minfilter;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::get_effective_magfilter
-//       Access: Published
-//  Description: Returns the filter mode of the texture for
-//               magnification, with special treatment for FT_default.
-//               This will normally not return FT_default, unless
-//               there is an error in the config file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the filter mode of the texture for magnification, with special
+ * treatment for FT_default.  This will normally not return FT_default, unless
+ * there is an error in the config file.
+ */
 SamplerState::FilterType SamplerState::
 get_effective_magfilter() const {
   if (_magfilter != FT_default) {
@@ -86,12 +79,9 @@ get_effective_magfilter() const {
   return texture_magfilter;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::format_filter_type
-//       Access: Published, Static
-//  Description: Returns the indicated FilterType converted to a
-//               string word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the indicated FilterType converted to a string word.
+ */
 string SamplerState::
 format_filter_type(FilterType ft) {
   switch (ft) {
@@ -121,13 +111,10 @@ format_filter_type(FilterType ft) {
   return "**invalid**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::string_filter_type
-//       Access: Public
-//  Description: Returns the FilterType value associated with the given
-//               string representation, or FT_invalid if the string
-//               does not match any known FilterType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the FilterType value associated with the given string representation,
+ * or FT_invalid if the string does not match any known FilterType value.
+ */
 SamplerState::FilterType SamplerState::
 string_filter_type(const string &string) {
   if (cmp_nocase_uh(string, "nearest") == 0) {
@@ -153,12 +140,9 @@ string_filter_type(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::format_wrap_mode
-//       Access: Published, Static
-//  Description: Returns the indicated WrapMode converted to a
-//               string word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the indicated WrapMode converted to a string word.
+ */
 string SamplerState::
 format_wrap_mode(WrapMode wm) {
   switch (wm) {
@@ -180,13 +164,10 @@ format_wrap_mode(WrapMode wm) {
   return "**invalid**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::string_wrap_mode
-//       Access: Public
-//  Description: Returns the WrapMode value associated with the given
-//               string representation, or WM_invalid if the string
-//               does not match any known WrapMode value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the WrapMode value associated with the given string representation,
+ * or WM_invalid if the string does not match any known WrapMode value.
+ */
 SamplerState::WrapMode SamplerState::
 string_wrap_mode(const string &string) {
   if (cmp_nocase_uh(string, "repeat") == 0 ||
@@ -207,77 +188,57 @@ string_wrap_mode(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::prepare
-//       Access: Published
-//  Description: Indicates that the sampler should be enqueued to be
-//               prepared in the indicated prepared_objects at the
-//               beginning of the next frame.
-//
-//               Use this function instead of prepare_now() to preload
-//               samplers from a user interface standpoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the sampler should be enqueued to be prepared in the indicated
+ * prepared_objects at the beginning of the next frame.  Use this function
+ * instead of prepare_now() to preload samplers from a user interface
+ * standpoint.
+ */
 void SamplerState::
 prepare(PreparedGraphicsObjects *prepared_objects) const {
   prepared_objects->enqueue_sampler(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::is_prepared
-//       Access: Published
-//  Description: Returns true if the sampler has already been prepared
-//               or enqueued for preparation on the indicated GSG,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the sampler has already been prepared or enqueued for
+ * preparation on the indicated GSG, false otherwise.
+ */
 bool SamplerState::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   return prepared_objects->is_sampler_queued(*this)
       || prepared_objects->is_sampler_prepared(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::release
-//       Access: Published
-//  Description: Frees the texture context only on the indicated object,
-//               if it exists there.  Returns true if it was released,
-//               false if it had not been prepared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the texture context only on the indicated object, if it exists there.
+ * Returns true if it was released, false if it had not been prepared.
+ */
 void SamplerState::
 release(PreparedGraphicsObjects *prepared_objects) const {
   prepared_objects->release_sampler(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::prepare_now
-//       Access: Published
-//  Description: Creates a context for the sampler on the particular
-//               GSG, if it does not already exist.  Returns the new
-//               (or old) SamplerContext.  This assumes that the
-//               GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               textures.  If this is not necessarily the case, you
-//               should use prepare() instead.
-//
-//               Normally, this is not called directly except by the
-//               GraphicsStateGuardian; a sampler does not need to be
-//               explicitly prepared by the user before it may be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a context for the sampler on the particular GSG, if it does not
+ * already exist.  Returns the new (or old) SamplerContext.  This assumes that
+ * the GraphicsStateGuardian is the currently active rendering context and that
+ * it is ready to accept new textures.  If this is not necessarily the case, you
+ * should use prepare() instead.  Normally, this is not called directly except
+ * by the GraphicsStateGuardian; a sampler does not need to be explicitly
+ * prepared by the user before it may be rendered.
+ */
 SamplerContext *SamplerState::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) const {
   return prepared_objects->prepare_sampler_now(*this, gsg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::compare_to
-//       Access: Public
-//  Description: Returns a number less than zero if this sampler
-//               sorts before the other one, greater than zero if it
-//               sorts after, or zero if they are equivalent.  The
-//               sorting order is arbitrary and largely meaningless,
-//               except to differentiate different sampler states.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if this sampler sorts before the other one,
+ * greater than zero if it sorts after, or zero if they are equivalent.  The
+ * sorting order is arbitrary and largely meaningless, except to differentiate
+ * different sampler states.
+ */
 int SamplerState::
 compare_to(const SamplerState &other) const {
   if (_wrap_u != other._wrap_u) {
@@ -314,11 +275,9 @@ compare_to(const SamplerState &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SamplerState::
 output(ostream &out) const {
   out
@@ -331,11 +290,9 @@ output(ostream &out) const {
     << ", bias=" << _lod_bias << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SamplerState::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "SamplerState\n";
@@ -351,11 +308,9 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "  lod_bias = " << _lod_bias << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::write_datagram
-//       Access: Public
-//  Description: Encodes the sampler state into a datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes the sampler state into a datagram.
+ */
 void SamplerState::
 write_datagram(Datagram &me) const {
   me.add_uint8(_wrap_u);
@@ -370,12 +325,10 @@ write_datagram(Datagram &me) const {
   me.add_stdfloat(_lod_bias);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerState::read_datagram
-//       Access: Protected
-//  Description: Reads the sampler state from the datagram that has
-//               been previously written using write_datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the sampler state from the datagram that has been previously written
+ * using write_datagram.
+ */
 void SamplerState::
 read_datagram(DatagramIterator &scan, BamReader *manager) {
   _wrap_u = (WrapMode)scan.get_uint8();

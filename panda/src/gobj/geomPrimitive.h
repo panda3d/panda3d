@@ -1,16 +1,15 @@
-// Filename: geomPrimitive.h
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomPrimitive.h
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #ifndef GEOMPRIMITIVE_H
 #define GEOMPRIMITIVE_H
@@ -39,27 +38,18 @@ class GraphicsStateGuardianBase;
 class FactoryParams;
 class GeomPrimitivePipelineReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomPrimitive
-// Description : This is an abstract base class for a family of
-//               classes that represent the fundamental geometry
-//               primitives that may be stored in a Geom.
-//
-//               They all have in common the fact that they are
-//               defined by tables of vertex data stored in a
-//               GeomVertexData object.  Each GeomPrimitive object
-//               contains an ordered list of integers, which index
-//               into the vertex array defined by the GeomVertexData
-//               and define the particular vertices of the
-//               GeomVertexData that are used for this primitive.
-//
-//               The meaning of a given arrangement of vertices is
-//               defined by each individual primitive type; for
-//               instance, a GeomTriangle renders a triangle from each
-//               three consecutive vertices, while a GeomTriangleStrip
-//               renders a strip of (n - 2) connected triangles from
-//               each sequence of n vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class for a family of classes that represent the
+ * fundamental geometry primitives that may be stored in a Geom.  They all have
+ * in common the fact that they are defined by tables of vertex data stored in a
+ * GeomVertexData object.  Each GeomPrimitive object contains an ordered list of
+ * integers, which index into the vertex array defined by the GeomVertexData and
+ * define the particular vertices of the GeomVertexData that are used for this
+ * primitive.  The meaning of a given arrangement of vertices is defined by each
+ * individual primitive type; for instance, a GeomTriangle renders a triangle
+ * from each three consecutive vertices, while a GeomTriangleStrip renders a
+ * strip of (n - 2) connected triangles from each sequence of n vertices.
+ */
 class EXPCL_PANDA_GOBJ GeomPrimitive : public CopyOnWriteObject, public GeomEnums {
 protected:
   GeomPrimitive();
@@ -348,11 +338,10 @@ private:
   friend class GeomPrimitivePipelineReader;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomPrimitivePipelineReader
-// Description : Encapsulates the data from a GeomPrimitive,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a GeomPrimitive, pre-fetched for one stage of the
+ * pipeline.
+ */
 class EXPCL_PANDA_GOBJ GeomPrimitivePipelineReader : public GeomEnums {
 public:
   INLINE GeomPrimitivePipelineReader(const GeomPrimitive *object, Thread *current_thread);

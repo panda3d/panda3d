@@ -1,27 +1,24 @@
-// Filename: dcClassParameter.cxx
-// Created by:  drose (18Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcClassParameter.cxx
+ * @author drose
+ * @date 2004-06-18
+ */
 
 #include "dcClassParameter.h"
 #include "dcClass.h"
 #include "dcArrayParameter.h"
 #include "hashGenerator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCClassParameter::
 DCClassParameter(const DCClass *dclass) :
   _dclass(dclass)
@@ -64,11 +61,9 @@ DCClassParameter(const DCClass *dclass) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCClassParameter::
 DCClassParameter(const DCClassParameter &copy) :
   DCParameter(copy),
@@ -77,80 +72,63 @@ DCClassParameter(const DCClassParameter &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::as_class_parameter
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCClassParameter *DCClassParameter::
 as_class_parameter() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::as_class_parameter
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const DCClassParameter *DCClassParameter::
 as_class_parameter() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::make_copy
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCParameter *DCClassParameter::
 make_copy() const {
   return new DCClassParameter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::is_valid
-//       Access: Published, Virtual
-//  Description: Returns false if the type is an invalid type
-//               (e.g. declared from an undefined typedef), true if
-//               it is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns false if the type is an invalid type (e.g.  declared from an
+ * undefined typedef), true if it is valid.
+ */
 bool DCClassParameter::
 is_valid() const {
   return !_dclass->is_bogus_class();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::get_class
-//       Access: Published
-//  Description: Returns the class object this parameter represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the class object this parameter represents.
+ */
 const DCClass *DCClassParameter::
 get_class() const {
   return _dclass;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::get_nested_field
-//       Access: Public, Virtual
-//  Description: Returns the DCPackerInterface object that represents
-//               the nth nested field.  This may return NULL if there
-//               is no such field (but it shouldn't do this if n is in
-//               the range 0 <= n < get_num_nested_fields()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface object that represents the nth nested field.
+ * This may return NULL if there is no such field (but it shouldn't do this if n
+ * is in the range 0 <= n < get_num_nested_fields()).
+ */
 DCPackerInterface *DCClassParameter::
 get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
   return _nested_fields[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::output_instance
-//       Access: Public, Virtual
-//  Description: Formats the parameter in the C++-like dc syntax as a
-//               typename and identifier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the parameter in the C++-like dc syntax as a typename and identifier.
+ */
 void DCClassParameter::
-output_instance(ostream &out, bool brief, const string &prename, 
+output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
     output_typedef_name(out, brief, prename, name, postname);
@@ -160,37 +138,29 @@ output_instance(ostream &out, bool brief, const string &prename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::generate_hash
-//       Access: Public, Virtual
-//  Description: Accumulates the properties of this type into the
-//               hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accumulates the properties of this type into the hash.
+ */
 void DCClassParameter::
 generate_hash(HashGenerator &hashgen) const {
   DCParameter::generate_hash(hashgen);
   _dclass->generate_hash(hashgen);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::do_check_match
-//       Access: Protected, Virtual
-//  Description: Returns true if the other interface is bitwise the
-//               same as this one--that is, a uint32 only matches a
-//               uint32, etc. Names of components, and range limits,
-//               are not compared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the other interface is bitwise the same as this one--that is,
+ * a uint32 only matches a uint32, etc.  Names of components, and range limits,
+ * are not compared.
+ */
 bool DCClassParameter::
 do_check_match(const DCPackerInterface *other) const {
   return other->do_check_match_class_parameter(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::do_check_match_class_parameter
-//       Access: Protected, Virtual
-//  Description: Returns true if this field matches the indicated
-//               class parameter, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this field matches the indicated class parameter, false
+ * otherwise.
+ */
 bool DCClassParameter::
 do_check_match_class_parameter(const DCClassParameter *other) const {
   if (_nested_fields.size() != other->_nested_fields.size()) {
@@ -205,12 +175,10 @@ do_check_match_class_parameter(const DCClassParameter *other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClassParameter::do_check_match_array_parameter
-//       Access: Protected, Virtual
-//  Description: Returns true if this field matches the indicated
-//               array parameter, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this field matches the indicated array parameter, false
+ * otherwise.
+ */
 bool DCClassParameter::
 do_check_match_array_parameter(const DCArrayParameter *other) const {
   if ((int)_nested_fields.size() != other->get_array_size()) {

@@ -1,16 +1,15 @@
-// Filename: colorBlendAttrib.h
-// Created by:  drose (29Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorBlendAttrib.h
+ * @author drose
+ * @date 2002-03-29
+ */
 
 #ifndef COLORBLENDATTRIB_H
 #define COLORBLENDATTRIB_H
@@ -21,12 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorBlendAttrib
-// Description : This specifies how colors are blended into the frame
-//               buffer, for special effects.  This overrides
-//               transparency if transparency is also specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specifies how colors are blended into the frame buffer, for special
+ * effects.  This overrides transparency if transparency is also specified.
+ */
 class EXPCL_PANDA_PGRAPH ColorBlendAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -120,7 +117,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

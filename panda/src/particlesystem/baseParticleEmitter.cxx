@@ -1,26 +1,23 @@
-// Filename: baseParticleEmitter.cxx
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file baseParticleEmitter.cxx
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #include "baseParticleEmitter.h"
 
 #include <stdlib.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticleEmitter
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 BaseParticleEmitter::
 BaseParticleEmitter() {
   _emission_type = ET_RADIATE;
@@ -31,11 +28,9 @@ BaseParticleEmitter() {
   _offset_force.set(0,0,0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticleEmitter
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 BaseParticleEmitter::
 BaseParticleEmitter(const BaseParticleEmitter &copy) {
   _emission_type = copy._emission_type;
@@ -46,20 +41,16 @@ BaseParticleEmitter(const BaseParticleEmitter &copy) {
   _offset_force = copy._offset_force;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticleEmitter
-//       Access: Protected
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 BaseParticleEmitter::
 ~BaseParticleEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: generate
-//       Access: Public
-//  Description: parent generation function
-////////////////////////////////////////////////////////////////////
+/**
+ * parent generation function
+ */
 void BaseParticleEmitter::
 generate(LPoint3& pos, LVector3& vel) {
   assign_initial_position(pos);
@@ -84,12 +75,9 @@ generate(LPoint3& pos, LVector3& vel) {
   vel += _offset_force;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticleEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -97,12 +85,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticleEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

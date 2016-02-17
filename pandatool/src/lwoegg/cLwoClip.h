@@ -1,16 +1,15 @@
-// Filename: cLwoClip.h
-// Created by:  drose (26Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cLwoClip.h
+ * @author drose
+ * @date 2001-04-26
+ */
 
 #ifndef CLWOCLIP_H
 #define CLWOCLIP_H
@@ -23,12 +22,10 @@
 
 class LwoToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLwoClip
-// Description : This class is a wrapper around LwoClip and stores
-//               additional information useful during the
-//               conversion-to-egg process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around LwoClip and stores additional information
+ * useful during the conversion-to-egg process.
+ */
 class CLwoClip {
 public:
   CLwoClip(LwoToEggConverter *converter, const LwoClip *clip);
@@ -46,5 +43,3 @@ public:
 #include "cLwoClip.I"
 
 #endif
-
-

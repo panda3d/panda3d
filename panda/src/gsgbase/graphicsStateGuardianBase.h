@@ -1,16 +1,15 @@
-// Filename: graphicsStateGuardianBase.h
-// Created by:  drose (06Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsStateGuardianBase.h
+ * @author drose
+ * @date 1999-10-06
+ */
 
 #ifndef GRAPHICSSTATEGUARDIANBASE_H
 #define GRAPHICSSTATEGUARDIANBASE_H
@@ -94,22 +93,16 @@ class LightLensNode;
 class DisplayRegion;
 class Lens;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsStateGuardianBase
-// Description : This is a base class for the GraphicsStateGuardian
-//               class, which is itself a base class for the various
-//               GSG's for different platforms.  This class contains
-//               all the function prototypes to support the
-//               double-dispatch of GSG to geoms, transitions, etc.  It
-//               lives in a separate class in its own package so we
-//               can avoid circular build dependency problems.
-//
-//               GraphicsStateGuardians are not actually writable to
-//               bam files, of course, but they may be passed as event
-//               parameters, so they inherit from
-//               TypedWritableReferenceCount instead of
-//               TypedReferenceCount for that convenience.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for the GraphicsStateGuardian class, which is itself a
+ * base class for the various GSG's for different platforms.  This class
+ * contains all the function prototypes to support the double-dispatch of GSG to
+ * geoms, transitions, etc.  It lives in a separate class in its own package so
+ * we can avoid circular build dependency problems.  GraphicsStateGuardians are
+ * not actually writable to bam files, of course, but they may be passed as
+ * event parameters, so they inherit from TypedWritableReferenceCount instead of
+ * TypedReferenceCount for that convenience.
+ */
 class EXPCL_PANDA_GSGBASE GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 PUBLISHED:
   virtual bool get_incomplete_render() const=0;

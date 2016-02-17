@@ -1,16 +1,15 @@
-// Filename: test_concurrency.cxx
-// Created by:  drose (06Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_concurrency.cxx
+ * @author drose
+ * @date 2006-04-06
+ */
 
 #include "pandabase.h"
 #include "thread.h"
@@ -51,37 +50,37 @@ volatile MemBlock memblock[number_of_threads];
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name, int index) : 
+  MyThread(const string &name, int index) :
     Thread(name, name),
     _index(index)
   {
   }
-    
+
   virtual void thread_main() {
     OUTPUT(nout << *this << " beginning.\n");
-    
+
     double total_seconds = 0.0;
     TrueClock *clock = TrueClock::get_global_ptr();
     volatile int snarf;
-    
+
     while (total_seconds < thread_run_time) {
       double start_time = clock->get_short_time();
-      
+
       for (long long i = 0; i < iterations_per_output; ++i) {
         memblock[_index]._value = snarf;
       }
 
       double end_time = clock->get_short_time();
-      
+
       double elapsed_seconds = end_time - start_time;
       double iterations_per_second = iterations_per_output / elapsed_seconds;
       OUTPUT(nout << *this << " achieving "
              << iterations_per_second / 1000000.0
              << " million iterations per second.\n");
-      
+
       total_seconds += elapsed_seconds;
-    }  
-    
+    }
+
     OUTPUT(nout << *this << " exiting.\n");
   }
 

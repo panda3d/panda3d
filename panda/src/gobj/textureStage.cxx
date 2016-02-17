@@ -1,16 +1,15 @@
-// Filename: textureStage.cxx
-// Created by:  MAsaduzz (16Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureStage.cxx
+ * @author MAsaduzz
+ * @date 2004-07-16
+ */
 
 #include "textureStage.h"
 #include "internalName.h"
@@ -22,11 +21,9 @@ UpdateSeq TextureStage::_sort_seq;
 
 TypeHandle TextureStage::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::Constructor
-//       Access: Published
-//  Description: Initialize the texture stage at construction
-////////////////////////////////////////////////////////////////////
+/**
+ * Initialize the texture stage at construction
+ */
 TextureStage::
 TextureStage(const string &name) {
   _name = name;
@@ -60,11 +57,9 @@ TextureStage(const string &name) {
   _involves_color_scale = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::operator =
-//       Access: Published
-//  Description: just copy the members of other to this
-////////////////////////////////////////////////////////////////////
+/**
+ * just copy the members of other to this
+ */
 void TextureStage::
 operator = (const TextureStage &other) {
   _name = other._name;
@@ -97,24 +92,19 @@ operator = (const TextureStage &other) {
   _involves_color_scale = other._involves_color_scale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureStage::
 ~TextureStage() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this TextureStage
-//               sorts before the other one, greater than zero if it
-//               sorts after, or zero if they are equivalent.  The
-//               sorting order is arbitrary and largely meaningless,
-//               except to differentiate different stages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if this TextureStage sorts before the other
+ * one, greater than zero if it sorts after, or zero if they are equivalent.
+ * The sorting order is arbitrary and largely meaningless, except to
+ * differentiate different stages.
+ */
 int TextureStage::
 compare_to(const TextureStage &other) const {
   // We put the sort parameter first, so that we sorting a list of
@@ -158,7 +148,7 @@ compare_to(const TextureStage &other) const {
     if (get_combine_rgb_mode() != other.get_combine_rgb_mode()) {
       return get_combine_rgb_mode() < other.get_combine_rgb_mode() ? -1 : 1;
     }
-    
+
     if (get_num_combine_rgb_operands() != other.get_num_combine_rgb_operands()) {
       return get_num_combine_rgb_operands() < other.get_num_combine_rgb_operands() ? -1 : 1;
     }
@@ -189,7 +179,7 @@ compare_to(const TextureStage &other) const {
     if (get_combine_alpha_mode() != other.get_combine_alpha_mode()) {
       return get_combine_alpha_mode() < other.get_combine_alpha_mode() ? -1 : 1;
     }
-    
+
     if (get_num_combine_alpha_operands() != other.get_num_combine_alpha_operands()) {
       return get_num_combine_alpha_operands() < other.get_num_combine_alpha_operands() ? -1 : 1;
     }
@@ -222,18 +212,16 @@ compare_to(const TextureStage &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::Destructor
-//       Access: Published
-//  Description: Writes the details of this stage
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the details of this stage
+ */
 void TextureStage::
 write(ostream &out) const {
   out << "TextureStage " << get_name() << ", sort = " << get_sort() << ", priority = " << get_priority() << "\n"
       << "  texcoords = " << get_texcoord_name()->get_name()
       << ", mode = " << get_mode() << ", color = " << get_color()
       << ", scale = " << get_rgb_scale() << ", " << get_alpha_scale()
-      << ", saved_result = " << get_saved_result() 
+      << ", saved_result = " << get_saved_result()
       << ", tex_view_offset = " << get_tex_view_offset() << "\n";
 
   if (get_mode() == M_combine) {
@@ -266,22 +254,18 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::Destructor
-//       Access: Published
-//  Description: Just a single line output
-////////////////////////////////////////////////////////////////////
+/**
+ * Just a single line output
+ */
 void TextureStage::
 output(ostream &out) const {
   out << "TextureStage " << get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::get_expected_num_combine_operands
-//       Access: Private, Static
-//  Description: Returns the number of combine operands expected with
-//               the indicated combine mode (0, 1, 2, or 3).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of combine operands expected with the indicated combine
+ * mode (0, 1, 2, or 3).
+ */
 int TextureStage::
 get_expected_num_combine_operands(TextureStage::CombineMode cm) {
   switch (cm) {
@@ -306,12 +290,10 @@ get_expected_num_combine_operands(TextureStage::CombineMode cm) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::operand_valid_for_rgb
-//       Access: Private, Static
-//  Description: Returns true if the indicated CombineOperand is valid
-//               for one of the RGB modes, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated CombineOperand is valid for one of the RGB
+ * modes, false otherwise.
+ */
 bool TextureStage::
 operand_valid_for_rgb(TextureStage::CombineOperand co) {
   switch (co) {
@@ -328,12 +310,10 @@ operand_valid_for_rgb(TextureStage::CombineOperand co) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::operand_valid_for_alpha
-//       Access: Private, Static
-//  Description: Returns true if the indicated CombineOperand is valid
-//               for one of the alpha modes, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated CombineOperand is valid for one of the alpha
+ * modes, false otherwise.
+ */
 bool TextureStage::
 operand_valid_for_alpha(TextureStage::CombineOperand co) {
   switch (co) {
@@ -350,21 +330,17 @@ operand_valid_for_alpha(TextureStage::CombineOperand co) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a TextureStage object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a TextureStage object
+ */
 void TextureStage::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_TextureStage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::make_TextureStage
-//       Access: Protected
-//  Description: Factory method to generate a TextureStage object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a TextureStage object
+ */
 TypedWritable* TextureStage::
 make_TextureStage(const FactoryParams &params) {
   DatagramIterator scan;
@@ -382,14 +358,11 @@ make_TextureStage(const FactoryParams &params) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void TextureStage::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _name = scan.get_string();
@@ -430,13 +403,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   update_color_flags();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int TextureStage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
@@ -446,12 +416,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void TextureStage::
 write_datagram(BamWriter *manager, Datagram &me) {
   // These properties are read in again by fillin(), above.
@@ -464,14 +432,14 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_int32(_priority);
 
     manager->write_pointer(me, _texcoord_name);
-    
+
     me.add_uint8(_mode);
     _color.write_datagram(me);
     me.add_uint8(_rgb_scale);
     me.add_uint8(_alpha_scale);
     me.add_bool(_saved_result);
     me.add_int32(_tex_view_offset);
-    
+
     me.add_uint8(_combine_rgb_mode);
     me.add_uint8(_num_combine_rgb_operands);
     me.add_uint8(_combine_rgb_source0);
@@ -480,7 +448,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     me.add_uint8(_combine_rgb_operand1);
     me.add_uint8(_combine_rgb_source2);
     me.add_uint8(_combine_rgb_operand2);
-    
+
     me.add_uint8(_combine_alpha_mode);
     me.add_uint8(_num_combine_alpha_operands);
     me.add_uint8(_combine_alpha_source0);
@@ -518,10 +486,10 @@ operator << (ostream &out, TextureStage::Mode mode) {
 
   case TextureStage::M_modulate_glow:
     return out << "modulate_glow";
-  
+
   case TextureStage::M_modulate_gloss:
     return out << "modulate_gloss";
-  
+
   case TextureStage::M_normal:
     return out << "normal";
 
@@ -530,13 +498,13 @@ operator << (ostream &out, TextureStage::Mode mode) {
 
   case TextureStage::M_glow:
     return out << "glow";
-  
+
   case TextureStage::M_gloss:
     return out << "gloss";
 
   case TextureStage::M_height:
     return out << "height";
-  
+
   case TextureStage::M_selector:
     return out << "selector";
 

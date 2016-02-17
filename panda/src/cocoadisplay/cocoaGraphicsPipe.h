@@ -1,16 +1,15 @@
-// Filename: cocoaGraphicsPipe.h
-// Created by:  rdb (14May12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cocoaGraphicsPipe.h
+ * @author rdb
+ * @date 2012-05-14
+ */
 
 #ifndef COCOAGRAPHICSPIPE_H
 #define COCOAGRAPHICSPIPE_H
@@ -30,12 +29,10 @@ struct NSScreen;
 
 class FrameBufferProperties;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CocoaGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on a Cocoa-based
-//               (e.g. Mac OS X) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on a Cocoa-based (e.g.  Mac OS X) client.
+ */
 class CocoaGraphicsPipe : public GraphicsPipe {
 public:
   CocoaGraphicsPipe();

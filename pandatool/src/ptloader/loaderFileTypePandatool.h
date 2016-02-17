@@ -1,16 +1,15 @@
-// Filename: loaderFileTypePandatool.h
-// Created by:  drose (20Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file loaderFileTypePandatool.h
+ * @author drose
+ * @date 2000-06-20
+ */
 
 #ifndef LOADERFILETYPEPANDATOOL_H
 #define LOADERFILETYPEPANDATOOL_H
@@ -22,13 +21,11 @@
 class SomethingToEggConverter;
 class EggToSomethingConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypePandatool
-// Description : This defines the Loader interface to files whose
-//               converters are defined within the Pandatool package
-//               and inherit from SomethingToEggConverter, like
-//               FltToEggConverter and LwoToEggConverter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface to files whose converters are defined
+ * within the Pandatool package and inherit from SomethingToEggConverter, like
+ * FltToEggConverter and LwoToEggConverter.
+ */
 class EXPCL_PTLOADER LoaderFileTypePandatool : public LoaderFileType {
 public:
   LoaderFileTypePandatool(SomethingToEggConverter *loader,
@@ -72,4 +69,3 @@ private:
 };
 
 #endif
-

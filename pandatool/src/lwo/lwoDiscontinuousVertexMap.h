@@ -1,16 +1,15 @@
-// Filename: lwoDiscontinuousVertexMap.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoDiscontinuousVertexMap.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWODISCONTINUOUSVERTEXMAP_H
 #define LWODISCONTINUOUSVERTEXMAP_H
@@ -22,12 +21,10 @@
 #include "pta_stdfloat.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoDiscontinuousVertexMap
-// Description : A mapping of floating-point values per integer index.
-//               The meaning of these values is determined by the
-//               mapping type code and/or its name.
-////////////////////////////////////////////////////////////////////
+/**
+ * A mapping of floating-point values per integer index.  The meaning of these
+ * values is determined by the mapping type code and/or its name.
+ */
 class LwoDiscontinuousVertexMap : public LwoChunk {
 public:
   bool has_value(int polygon_index, int vertex_index) const;
@@ -65,5 +62,3 @@ private:
 };
 
 #endif
-
-

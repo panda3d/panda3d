@@ -1,316 +1,254 @@
-// Filename: sceneGraphAnalyzer.I
-// Created by:  drose (15Oct06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneGraphAnalyzer.I
+ * @author drose
+ * @date 2006-10-15
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::set_lod_mode
-//       Access: Published
-//  Description: Specifies the mode in which LODNodes are analyzed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the mode in which LODNodes are analyzed.
+ */
 INLINE void SceneGraphAnalyzer::
 set_lod_mode(LodMode lod_mode) {
   _lod_mode = lod_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_lod_mode
-//       Access: Published
-//  Description: Returns the mode in which LODNodes are analyzed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the mode in which LODNodes are analyzed.
+ */
 INLINE  SceneGraphAnalyzer::LodMode SceneGraphAnalyzer::
 get_lod_mode(LodMode lod_mode) const {
   return _lod_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_nodes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_nodes() const {
   return _num_nodes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_instances
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_instances() const {
   return _num_instances;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_transforms
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_transforms() const {
   return _num_transforms;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_nodes_with_attribs
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_nodes_with_attribs() const {
   return _num_nodes_with_attribs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_lod_nodes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_lod_nodes() const {
   return _num_lod_nodes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_geom_nodes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_geom_nodes() const {
   return _num_geom_nodes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_geoms
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_geoms() const {
   return _num_geoms;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_geom_vertex_datas
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_geom_vertex_datas() const {
   return _num_geom_vertex_datas;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_geom_vertex_formats
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_geom_vertex_formats() const {
   return _num_geom_vertex_formats;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_vertex_data_size
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 size_t SceneGraphAnalyzer::
 get_vertex_data_size() const {
   return _vertex_data_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_vertices
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_vertices() const {
   return _num_vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_normals
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_normals() const {
   return _num_normals;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_colors
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_colors() const {
   return _num_colors;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_texcoords
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_texcoords() const {
   return _num_texcoords;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_tris
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_tris() const {
   return _num_tris;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_lines
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_lines() const {
   return _num_lines;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_points
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_points() const {
   return _num_points;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_patches
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_patches() const {
   return _num_patches;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_individual_tris
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_individual_tris() const {
   return _num_individual_tris;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_tristrips
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_tristrips() const {
   return _num_tristrips;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_triangles_in_strips
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_triangles_in_strips() const {
   return _num_triangles_in_strips;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_trifans
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_trifans() const {
   return _num_trifans;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_triangles_in_fans
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_triangles_in_fans() const {
   return _num_triangles_in_fans;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_vertices_in_patches
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_vertices_in_patches() const {
   return _num_vertices_in_patches;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_texture_bytes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_texture_bytes() const {
   return _texture_bytes;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_long_normals
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_long_normals() const {
   return _num_long_normals;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_num_short_normals
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int SceneGraphAnalyzer::
 get_num_short_normals() const {
   return _num_short_normals;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphAnalyzer::get_total_normal_length
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat SceneGraphAnalyzer::
 get_total_normal_length() const {
   return _total_normal_length;

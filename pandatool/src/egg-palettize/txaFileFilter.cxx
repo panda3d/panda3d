@@ -1,16 +1,15 @@
-// Filename: txaFileFilter.cxx
-// Created by:  drose (27Jul06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file txaFileFilter.cxx
+ * @author drose
+ * @date 2006-07-27
+ */
 
 #include "txaFileFilter.h"
 #include "palettizer.h"
@@ -39,17 +38,13 @@ TypeHandle TxaFileFilter::_type_handle;
 TxaFile *TxaFileFilter::_txa_file;
 bool TxaFileFilter::_got_txa_file;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFileFilter::post_load
-//       Access: Public, Virtual
-//  Description: This method is called after each texture has been
-//               loaded from disk, via the TexturePool, for the first
-//               time.  By the time this method is called, the Texture
-//               has already been fully read from disk.  This method
-//               should return the Texture pointer that the
-//               TexturePool should actually return (usually it is the
-//               same as the pointer supplied).
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called after each texture has been loaded from disk, via the
+ * TexturePool, for the first time.  By the time this method is called, the
+ * Texture has already been fully read from disk.  This method should return the
+ * Texture pointer that the TexturePool should actually return (usually it is
+ * the same as the pointer supplied).
+ */
 PT(Texture) TxaFileFilter::
 post_load(Texture *tex) {
   if (!_got_txa_file) {
@@ -82,8 +77,8 @@ post_load(Texture *tex) {
 
   tex_image.post_txa_file();
 
-  PNMImage dest(tex_image.get_x_size(), 
-                tex_image.get_y_size(), 
+  PNMImage dest(tex_image.get_x_size(),
+                tex_image.get_y_size(),
                 tex_image.get_num_channels(),
                 pnm_image.get_maxval());
   dest.quick_filter_from(pnm_image);
@@ -107,12 +102,10 @@ post_load(Texture *tex) {
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFileFilter::read_txa_file
-//       Access: Private, Static
-//  Description: Reads the textures.txa file named by the variable
-//               txa-file.  Called only once, at startup.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the textures.txa file named by the variable txa-file.  Called only
+ * once, at startup.
+ */
 void TxaFileFilter::
 read_txa_file() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -125,7 +118,7 @@ read_txa_file() {
 
   _txa_file = new TxaFile;
   _got_txa_file = true;
-  
+
   ConfigVariableFilename txa_file
     ("txa-file", Filename("textures.txa"),
      PRC_DESC("Specify the name of the txa file to load when the txafile texture filter"

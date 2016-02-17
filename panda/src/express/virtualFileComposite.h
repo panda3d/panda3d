@@ -1,16 +1,15 @@
-// Filename: virtualFileComposite.h
-// Created by:  drose (03Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFileComposite.h
+ * @author drose
+ * @date 2002-08-03
+ */
 
 #ifndef VIRTUALFILECOMPOSITE_H
 #define VIRTUALFILECOMPOSITE_H
@@ -19,13 +18,11 @@
 
 #include "virtualFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileComposite
-// Description : A composite directory within the VirtualFileSystem:
-//               this maps to more than one directory on different
-//               mount points.  The resulting directory appears to be
-//               the union of all the individual simple directories.
-////////////////////////////////////////////////////////////////////
+/**
+ * A composite directory within the VirtualFileSystem: this maps to more than
+ * one directory on different mount points.  The resulting directory appears to
+ * be the union of all the individual simple directories.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileComposite : public VirtualFile {
 public:
   INLINE VirtualFileComposite(VirtualFileSystem *file_system,
@@ -40,7 +37,7 @@ public:
   virtual bool is_directory() const;
 
 protected:
-  virtual bool scan_local_directory(VirtualFileList *file_list, 
+  virtual bool scan_local_directory(VirtualFileList *file_list,
                                     const ov_set<string> &mount_points) const;
 
 private:

@@ -1,16 +1,15 @@
-// Filename: eggSliderData.cxx
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggSliderData.cxx
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #include "eggSliderData.h"
 #include "eggVertexPointer.h"
@@ -24,11 +23,9 @@
 
 TypeHandle EggSliderData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSliderData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggSliderData::
 EggSliderData(EggCharacterCollection *collection,
               EggCharacterData *char_data) :
@@ -36,12 +33,10 @@ EggSliderData(EggCharacterCollection *collection,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSliderData::get_frame
-//       Access: Public
-//  Description: Returns the value corresponding to this slider
-//               position in the nth frame in the indicated model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value corresponding to this slider position in the nth frame in
+ * the indicated model.
+ */
 double EggSliderData::
 get_frame(int model_index, int n) const {
   EggBackPointer *back = get_model(model_index);
@@ -55,12 +50,9 @@ get_frame(int model_index, int n) const {
   return slider->get_frame(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSliderData::add_back_pointer
-//       Access: Public, Virtual
-//  Description: Adds the indicated vertex, primitive, or morph table
-//               to the data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated vertex, primitive, or morph table to the data.
+ */
 void EggSliderData::
 add_back_pointer(int model_index, EggObject *egg_object) {
   if (egg_object->is_of_type(EggPrimitive::get_class_type())) {
@@ -92,11 +84,9 @@ add_back_pointer(int model_index, EggObject *egg_object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSliderData::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggSliderData::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

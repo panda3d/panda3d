@@ -1,16 +1,15 @@
-// Filename: fltToEggConverter.h
-// Created by:  drose (17Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltToEggConverter.h
+ * @author drose
+ * @date 2001-04-17
+ */
 
 #ifndef FLTTOEGGCONVERTER_H
 #define FLTTOEGGCONVERTER_H
@@ -42,13 +41,11 @@ class FltTexture;
 class EggGroupNode;
 class EggPrimitive;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from the data represented by the FltHeader.
-//               Reading and writing the egg and flt structures is
-//               left to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from the data
+ * represented by the FltHeader.  Reading and writing the egg and flt structures
+ * is left to the user.
+ */
 class FltToEggConverter : public SomethingToEggConverter {
 public:
   FltToEggConverter();
@@ -112,5 +109,3 @@ private:
 #include "fltToEggConverter.I"
 
 #endif
-
-

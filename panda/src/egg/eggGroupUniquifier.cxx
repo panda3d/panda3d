@@ -1,16 +1,15 @@
-// Filename: eggGroupUniquifier.cxx
-// Created by:  drose (22Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroupUniquifier.cxx
+ * @author drose
+ * @date 2001-02-22
+ */
 
 #include "eggGroupUniquifier.h"
 #include "eggGroup.h"
@@ -22,28 +21,22 @@
 TypeHandle EggGroupUniquifier::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupUniquifier::Constructor
-//       Access: Public
-//  Description: If filter_names is true, then the group names will be
-//               coerced into a fairly safe, standard convention that
-//               uses no characters other than a-z, A-Z, 0-9, and
-//               underscore.  If filter_names is false, the group
-//               names will be left unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * If filter_names is true, then the group names will be coerced into a fairly
+ * safe, standard convention that uses no characters other than a-z, A-Z, 0-9,
+ * and underscore.  If filter_names is false, the group names will be left
+ * unchanged.
+ */
 EggGroupUniquifier::
 EggGroupUniquifier(bool filter_names)
   : _filter_names(filter_names)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupUniquifier::get_category
-//       Access: Public
-//  Description: Returns the category name into which the given node
-//               should be collected, or the empty string if the
-//               node's name should be left alone.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the category name into which the given node should be collected, or
+ * the empty string if the node's name should be left alone.
+ */
 string EggGroupUniquifier::
 get_category(EggNode *node) {
   if (node->is_of_type(EggGroup::get_class_type()) && node->has_name()) {
@@ -53,14 +46,11 @@ get_category(EggNode *node) {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupUniquifier::filter_name
-//       Access: Public, Virtual
-//  Description: Returns the name of the given node, or at least the
-//               name it should be.  This provides a hook to adjust
-//               the name before attempting to uniquify it, if
-//               desired, for instance to remove invalid characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the given node, or at least the name it should be.  This
+ * provides a hook to adjust the name before attempting to uniquify it, if
+ * desired, for instance to remove invalid characters.
+ */
 string EggGroupUniquifier::
 filter_name(EggNode *node) {
   string name = node->get_name();
@@ -95,18 +85,13 @@ filter_name(EggNode *node) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupUniquifier::generate_name
-//       Access: Public, Virtual
-//  Description: Generates a new name for the given node when its
-//               existing name clashes with some other node.  This
-//               function will be called repeatedly, if necessary,
-//               until it returns a name that actually is unique.
-//
-//               The category is the string returned by
-//               get_category(), and index is a uniquely-generated
-//               number that may be useful for synthesizing the name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a new name for the given node when its existing name clashes with
+ * some other node.  This function will be called repeatedly, if necessary,
+ * until it returns a name that actually is unique.  The category is the string
+ * returned by get_category(), and index is a uniquely-generated number that may
+ * be useful for synthesizing the name.
+ */
 string EggGroupUniquifier::
 generate_name(EggNode *node, const string &category, int index) {
   ostringstream str;

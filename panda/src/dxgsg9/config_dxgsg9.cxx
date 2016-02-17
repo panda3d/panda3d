@@ -1,16 +1,15 @@
-// Filename: config_dxgsg9.cxx
-// Created by:  drose (06Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_dxgsg9.cxx
+ * @author drose
+ * @date 1999-10-06
+ */
 
 #include "config_dxgsg9.h"
 #include "dxGraphicsStateGuardian9.h"
@@ -192,16 +191,16 @@ ConfigVariableInt dx_lru_maximum_page_updates_per_frame
 ConfigVariableBool dx_lru_debug
 ("dx-lru-debug", false);
 
-// valid only if dx_lru_debug == true 
+// valid only if dx_lru_debug == true
 // number of frames to wait until printing out the LRU status
 ConfigVariableInt dx_lru_debug_frames_til_output
 ("dx-lru-debug-frames-til-output", 500);
 
-// valid only if dx_lru_debug == true 
+// valid only if dx_lru_debug == true
 ConfigVariableBool dx_lru_debug_textures
 ("dx-lru-debug-textures", false);
 
-// valid only if dx_lru_debug == true 
+// valid only if dx_lru_debug == true
 ConfigVariableBool dx_lru_debug_vertex_buffers
 ("dx-lru-debug-vertex-buffers", false);
 
@@ -232,14 +231,12 @@ ConfigureFn(config_dxgsg9) {
   init_libdxgsg9();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdxgsg
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libdxgsg9() {
   static bool initialized = false;

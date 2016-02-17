@@ -1,16 +1,15 @@
-// Filename: eggMaterial.cxx
-// Created by:  drose (29Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMaterial.cxx
+ * @author drose
+ * @date 1999-01-29
+ */
 
 #include "eggMaterial.h"
 
@@ -19,11 +18,9 @@
 TypeHandle EggMaterial::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMaterial::
 EggMaterial(const string &mref_name)
   : EggNode(mref_name)
@@ -31,11 +28,9 @@ EggMaterial(const string &mref_name)
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMaterial::
 EggMaterial(const EggMaterial &copy)
   : EggNode(copy),
@@ -54,12 +49,9 @@ EggMaterial(const EggMaterial &copy)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::write
-//       Access: Public, Virtual
-//  Description: Writes the material definition to the indicated output
-//               stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the material definition to the indicated output stream in Egg format.
+ */
 void EggMaterial::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Material>");
@@ -157,24 +149,13 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::is_equivalent_to
-//       Access: Public
-//  Description: Returns true if the two materials are equivalent in
-//               all relevant properties (according to eq), false
-//               otherwise.
-//
-//               The Equivalence parameter, eq, should be set to the
-//               bitwise OR of the following properties, according to
-//               what you consider relevant:
-//
-//               EggMaterial::E_attributes:
-//                 All material attributes (diff, spec,
-//                 etc.) except MRef name.
-//
-//               EggMaterial::E_mref_name:
-//                 The MRef name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the two materials are equivalent in all relevant properties
+ * (according to eq), false otherwise.  The Equivalence parameter, eq, should be
+ * set to the bitwise OR of the following properties, according to what you
+ * consider relevant:  EggMaterial::E_attributes: All material attributes (diff,
+ * spec, etc.) except MRef name.  EggMaterial::E_mref_name: The MRef name.
+ */
 bool EggMaterial::
 is_equivalent_to(const EggMaterial &other, int eq) const {
   if (eq & E_attributes) {
@@ -202,15 +183,11 @@ is_equivalent_to(const EggMaterial &other, int eq) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::sorts_less_than
-//       Access: Public
-//  Description: An ordering operator to compare two materials for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique materials, according to the
-//               indicated Equivalence factor.  See
-//               is_equivalent_to().
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordering operator to compare two materials for sorting order.  This
+ * imposes an arbitrary ordering useful to identify unique materials, according
+ * to the indicated Equivalence factor.  See is_equivalent_to().
+ */
 bool EggMaterial::
 sorts_less_than(const EggMaterial &other, int eq) const {
   if (eq & E_attributes) {

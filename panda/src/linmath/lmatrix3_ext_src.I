@@ -1,24 +1,20 @@
-// Filename: lmatrix3_ext_src.I
-// Created by:  rdb (02Jan11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lmatrix3_ext_src.I
+ * @author rdb
+ * @date 2011-01-02
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special Python method is implement to provide support for the pickle
+ * module.
+ */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LMatrix3)>::
 __reduce__(PyObject *self) const {
   // We should return at least a 2-tuple, (Class, (args)): the
@@ -39,11 +35,9 @@ __reduce__(PyObject *self) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::__repr__
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH string Extension<FLOATNAME(LMatrix3)>::
 __repr__() const {
   ostringstream out;

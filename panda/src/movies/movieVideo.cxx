@@ -1,16 +1,15 @@
-// Filename: movieVideo.cxx
-// Created by: jyelon (02Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieVideo.cxx
+ * @author jyelon
+ * @date 2007-07-02
+ */
 
 #include "movieVideo.h"
 #include "movieVideoCursor.h"
@@ -21,63 +20,52 @@
 
 TypeHandle MovieVideo::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::Constructor
-//       Access: Public
-//  Description: This constructor returns a null video stream --- a
-//               stream of plain blue and white frames that last one
-//               second each. To get more interesting video, you need
-//               to construct a subclass of this class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor returns a null video stream --- a stream of plain blue and
+ * white frames that last one second each.  To get more interesting video, you
+ * need to construct a subclass of this class.
+ */
 MovieVideo::
 MovieVideo(const string &name) :
   Namable(name)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MovieVideo::
 ~MovieVideo() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::open
-//       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor of the
-//               appropriate type.  Returns NULL on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this video, returning a MovieVideoCursor of the appropriate type.
+ * Returns NULL on error.
+ */
 PT(MovieVideoCursor) MovieVideo::
 open() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::get
-//       Access: Published, Static
-//  Description: Obtains a MovieVideo that references a file.
-//               Just calls MovieTypeRegistry::make_video().
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a MovieVideo that references a file.  Just calls
+ * MovieTypeRegistry::make_video().
+ */
 PT(MovieVideo) MovieVideo::
 get(const Filename &name) {
   MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();
   return reg->make_video(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void MovieVideo::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
   dg.add_string(_filename);
-  
+
   // Now we record the raw movie data directly into the bam stream.
   // We always do this, regardless of bam-texture-mode; we generally
   // won't get to this codepath if bam-texture-mode isn't rawdata
@@ -103,13 +91,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new MovieVideo.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new MovieVideo.
+ */
 void MovieVideo::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);

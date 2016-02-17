@@ -1,16 +1,15 @@
-// Filename: nodePathComponent.cxx
-// Created by:  drose (25Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePathComponent.cxx
+ * @author drose
+ * @date 2002-02-25
+ */
 
 #include "nodePathComponent.h"
 #include "lightMutexHolder.h"
@@ -23,23 +22,18 @@ TypeHandle NodePathComponent::_type_handle;
 TypeHandle NodePathComponent::CData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *NodePathComponent::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::Constructor
-//       Access: Private
-//  Description: Constructs a new NodePathComponent from the
-//               indicated node.  Don't try to call this directly; ask
-//               the PandaNode to do it for you.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new NodePathComponent from the indicated node.  Don't try to
+ * call this directly; ask the PandaNode to do it for you.
+ */
 NodePathComponent::
 NodePathComponent(PandaNode *node, NodePathComponent *next,
                   int pipeline_stage, Thread *current_thread) :
@@ -51,25 +45,22 @@ NodePathComponent(PandaNode *node, NodePathComponent *next,
 #endif
 
   for (int pipeline_stage_i = pipeline_stage;
-       pipeline_stage_i >= 0; 
+       pipeline_stage_i >= 0;
        --pipeline_stage_i) {
     CDStageWriter cdata(_cycler, pipeline_stage_i, current_thread);
     cdata->_next = next;
-    
+
     if (next != (NodePathComponent *)NULL) {
       cdata->_length = next->get_length(pipeline_stage_i, current_thread) + 1;
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::get_key
-//       Access: Public
-//  Description: Returns an index number that is guaranteed to be
-//               unique for this particular NodePathComponent, and not
-//               to be reused for the lifetime of the application
-//               (barring integer overflow).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an index number that is guaranteed to be unique for this particular
+ * NodePathComponent, and not to be reused for the lifetime of the application
+ * (barring integer overflow).
+ */
 int NodePathComponent::
 get_key() const {
   LightMutexHolder holder(_key_lock);
@@ -84,50 +75,40 @@ get_key() const {
   return _key;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::is_top_node
-//       Access: Public
-//  Description: Returns true if this component represents the top
-//               node in the path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this component represents the top node in the path.
+ */
 bool NodePathComponent::
 is_top_node(int pipeline_stage, Thread *current_thread) const {
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   return (cdata->_next == (NodePathComponent *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::get_length
-//       Access: Public
-//  Description: Returns the length of the path to this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the length of the path to this node.
+ */
 int NodePathComponent::
 get_length(int pipeline_stage, Thread *current_thread) const {
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   return cdata->_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::get_next
-//       Access: Public
-//  Description: Returns the next component in the path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the next component in the path.
+ */
 NodePathComponent *NodePathComponent::
 get_next(int pipeline_stage, Thread *current_thread) const {
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
   NodePathComponent *next = cdata->_next;
-  
+
   return next;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::fix_length
-//       Access: Public
-//  Description: Checks that the length indicated by the component is
-//               one more than the length of its predecessor.  If this
-//               is broken, fixes it and returns true indicating the
-//               component has been changed; otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks that the length indicated by the component is one more than the length
+ * of its predecessor.  If this is broken, fixes it and returns true indicating
+ * the component has been changed; otherwise, returns false.
+ */
 bool NodePathComponent::
 fix_length(int pipeline_stage, Thread *current_thread) {
   CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
@@ -146,14 +127,11 @@ fix_length(int pipeline_stage, Thread *current_thread) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::output
-//       Access: Public
-//  Description: The recursive implementation of NodePath::output(),
-//               this writes the names of each node component in order
-//               from beginning to end, by first walking to the end of
-//               the linked list and then outputting from there.
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of NodePath::output(), this writes the names of
+ * each node component in order from beginning to end, by first walking to the
+ * end of the linked list and then outputting from there.
+ */
 void NodePathComponent::
 output(ostream &out) const {
   Thread *current_thread = Thread::get_current_thread();
@@ -186,11 +164,9 @@ output(ostream &out) const {
   //  out << "[" << this->get_length() << "]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::set_next
-//       Access: Private
-//  Description: Sets the next pointer in the path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the next pointer in the path.
+ */
 void NodePathComponent::
 set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread) {
   nassertv(next != (NodePathComponent *)NULL);
@@ -198,12 +174,10 @@ set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread) {
   cdata->_next = next;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::set_top_node
-//       Access: Private
-//  Description: Severs any connection to the next pointer in the
-//               path and makes this component a top node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Severs any connection to the next pointer in the path and makes this
+ * component a top node.
+ */
 void NodePathComponent::
 set_top_node(int pipeline_stage, Thread *current_thread) {
   CDStageWriter cdata(_cycler, pipeline_stage, current_thread);

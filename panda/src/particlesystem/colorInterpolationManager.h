@@ -1,16 +1,15 @@
-// Filename: colorInterpolationManager.h
-// Created by:  joswilso (02Jun05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorInterpolationManager.h
+ * @author joswilso
+ * @date 2005-06-02
+ */
 
 #ifndef COLORINTERPOLATIONMANAGER_H
 #define COLORINTERPOLATIONMANAGER_H
@@ -20,17 +19,15 @@
 #include "typedObject.h"
 #include "typedReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorInterpolationFunction
-// Description : Abstract class from which all other functions 
-//               should inherit. Defines the virtual interpolate()
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract class from which all other functions should inherit.  Defines the
+ * virtual interpolate() function.
+ */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationFunction : public TypedReferenceCount {
 PUBLISHED:
 //  virtual string get_type();
-  
+
 public:
   ColorInterpolationFunction();
   virtual ~ColorInterpolationFunction();
@@ -41,13 +38,13 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  
+
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "ColorInterpolationFunction",
                   TypedReferenceCount::get_class_type());
   }
-  
+
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
@@ -56,11 +53,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorInterpolationFunctionConstant
-// Description : Defines a constant color over the lifetime of
-//               the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a constant color over the lifetime of the segment.
+ */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationFunctionConstant : public ColorInterpolationFunction {
 PUBLISHED:
@@ -82,13 +77,13 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  
+
   static void init_type() {
     ColorInterpolationFunction::init_type();
     register_type(_type_handle, "ColorInterpolationFunctionConstant",
                   ColorInterpolationFunction::get_class_type());
   }
-  
+
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
@@ -97,11 +92,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorInterpolationFunctionLinear
-// Description : Defines a linear interpolation over the lifetime of
-//               the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a linear interpolation over the lifetime of the segment.
+ */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationFunctionLinear : public ColorInterpolationFunctionConstant {
 PUBLISHED:
@@ -123,13 +116,13 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  
+
   static void init_type() {
     ColorInterpolationFunctionConstant::init_type();
     register_type(_type_handle, "ColorInterpolationFunctionLinear",
                   ColorInterpolationFunctionConstant::get_class_type());
   }
-  
+
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
@@ -138,14 +131,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorInterpolationFunctionStepwave
-// Description : Defines a discrete cyclical transition between two colors.
-//               The widths describe a portion of the segment's lifetime
-//               for which the corresponding color should be selected. If
-//               their sum is less than 1, the function repeats until
-//               the end of the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a discrete cyclical transition between two colors.  The widths
+ * describe a portion of the segment's lifetime for which the corresponding
+ * color should be selected.  If their sum is less than 1, the function repeats
+ * until the end of the segment.
+ */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationFunctionStepwave : public ColorInterpolationFunctionLinear {
 PUBLISHED:
@@ -170,13 +161,13 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  
+
   static void init_type() {
     ColorInterpolationFunctionLinear::init_type();
     register_type(_type_handle, "ColorInterpolationFunctionStepwave",
                   ColorInterpolationFunctionLinear::get_class_type());
   }
-  
+
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
@@ -185,15 +176,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorInterpolationFunctionSinusoid
-// Description : Defines a sinusoidal blending between two colors.
-//               A period of "1" corresponds to a single transition 
-//               from color_a to color_b and then back to color_a 
-//               over the course of the segment's lifetime. A 
-//               shorter period will result in a higher frequency
-//               cycle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a sinusoidal blending between two colors.  A period of "1"
+ * corresponds to a single transition from color_a to color_b and then back to
+ * color_a over the course of the segment's lifetime.  A shorter period will
+ * result in a higher frequency cycle.
+ */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationFunctionSinusoid : public ColorInterpolationFunctionLinear {
 PUBLISHED:
@@ -215,13 +203,13 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  
+
   static void init_type() {
     ColorInterpolationFunctionLinear::init_type();
     register_type(_type_handle, "ColorInterpolationFunctionSinusoid",
                   ColorInterpolationFunctionLinear::get_class_type());
   }
-  
+
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
@@ -230,13 +218,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorInterpolationSegment
-// Description : A single unit of interpolation. The begin and end
-//               times are interpolated over the lifetime of the 
-//               particle, thus have the range of [0,1]. Each segment
-//               also has a function associated with it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single unit of interpolation.  The begin and end times are interpolated
+ * over the lifetime of the particle, thus have the range of [0,1]. Each segment
+ * also has a function associated with it.
+ */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationSegment : public ReferenceCount {
 PUBLISHED:
@@ -260,7 +246,7 @@ PUBLISHED:
 
 public:
   LColor interpolateColor(const PN_stdfloat t) const;
-    
+
 protected:
   PT(ColorInterpolationFunction) _color_inter_func;
   PN_stdfloat _t_begin;
@@ -271,20 +257,17 @@ protected:
   const int _id;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorInterpolationManager
-// Description : High level class for color interpolation.  Segments
-//               must be added to the manager in order to achieve
-//               results using the "add_*****()" functions.  Access
-//               to these segments is provided but not necessary
-//               general use.
-////////////////////////////////////////////////////////////////////
+/**
+ * High level class for color interpolation.  Segments must be added to the
+ * manager in order to achieve results using the "add_*****()" functions.
+ * Access to these segments is provided but not necessary general use.
+ */
 
 class EXPCL_PANDAPHYSICS ColorInterpolationManager : public ReferenceCount {
 PUBLISHED:
 ColorInterpolationManager();
   ColorInterpolationManager(const LColor &c);
-  ColorInterpolationManager(const ColorInterpolationManager& copy);    
+  ColorInterpolationManager(const ColorInterpolationManager& copy);
   virtual ~ColorInterpolationManager();
 
   int add_constant(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor &color = LColor(1.0f,1.0f,1.0f,1.0f), const bool is_modulated = true);

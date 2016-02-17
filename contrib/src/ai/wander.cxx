@@ -1,33 +1,29 @@
-// Filename: wander.cxx
-// Created by: Deepak, John, Navin (24Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wander.cxx
+ * @author Deepak, John, Navin
+ * @date 2009-10-24
+ */
 
 #include "wander.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: rand_float
-//  Description: This function creates a random float point number
-////////////////////////////////////////////////////////////////////
+/**
+ * This function creates a random float point number
+ */
 double rand_float() {
   const static double rand_max = 0x7fff;
   return ((rand()) / (rand_max + 1.0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: random_clamped
-//  Description: This function returns a random floating point number in the range
-//               -1 to 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function returns a random floating point number in the range -1 to 1.
+ */
 double random_clamped() {
   return  (rand_float() - rand_float());
 }
@@ -75,12 +71,11 @@ Wander::Wander(AICharacter *ai_ch, double wander_radius,int flag, double aoe, fl
 Wander::~Wander() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: do_wander
-//  Description: This function performs the wander and returns the wander force which is used
-//               in the calculate_prioritized function.
-//               This function is not to be used by the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function performs the wander and returns the wander force which is used
+ * in the calculate_prioritized function.  This function is not to be used by
+ * the user.
+ */
 LVecBase3 Wander::do_wander() {
   LVecBase3 present_pos = _ai_char->get_node_path().get_pos(_ai_char->get_char_render());
   // Create the random slices to enable random movement of wander for x,y,z respectively

@@ -1,16 +1,15 @@
-// Filename: datagramTCPHeader.cxx
-// Created by:  drose (08Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagramTCPHeader.cxx
+ * @author drose
+ * @date 2000-02-08
+ */
 
 #include "datagramTCPHeader.h"
 #include "netDatagram.h"
@@ -19,12 +18,10 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::Constructor
-//       Access: Public
-//  Description: This constructor creates a header based on an
-//               already-constructed NetDatagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor creates a header based on an already-constructed
+ * NetDatagram.
+ */
 DatagramTCPHeader::
 DatagramTCPHeader(const NetDatagram &datagram, int header_size) {
   const string &str = datagram.get_message();
@@ -55,25 +52,19 @@ DatagramTCPHeader(const NetDatagram &datagram, int header_size) {
   nassertv((int)_header.get_length() == header_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::Constructor
-//       Access: Public
-//  Description: This constructor decodes a header from a block of
-//               data of length datagram_tcp_header_size, presumably
-//               just read from a socket.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor decodes a header from a block of data of length
+ * datagram_tcp_header_size, presumably just read from a socket.
+ */
 DatagramTCPHeader::
-DatagramTCPHeader(const void *data, int header_size) : 
-  _header(data, header_size) 
+DatagramTCPHeader(const void *data, int header_size) :
+  _header(data, header_size)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::get_datagram_size
-//       Access: Public
-//  Description: Returns the number of bytes in the associated
-//               datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bytes in the associated datagram.
+ */
 int DatagramTCPHeader::
 get_datagram_size(int header_size) const {
   DatagramIterator di(_header);
@@ -91,13 +82,10 @@ get_datagram_size(int header_size) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::verify_datagram
-//       Access: Public
-//  Description: Verifies that the indicated datagram has the
-//               appropriate length.  Returns true if it matches,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the indicated datagram has the appropriate length.  Returns
+ * true if it matches, false otherwise.
+ */
 bool DatagramTCPHeader::
 verify_datagram(const NetDatagram &datagram, int header_size) const {
   if (header_size == 0) {

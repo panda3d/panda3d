@@ -1,27 +1,24 @@
-// Filename: nodeCachedReferenceCount.cxx
-// Created by:  drose (07May05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodeCachedReferenceCount.cxx
+ * @author drose
+ * @date 2005-05-07
+ */
 
 #include "nodeCachedReferenceCount.h"
 
 TypeHandle NodeCachedReferenceCount::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeCachedReferenceCount::do_test_ref_count_integrity
-//       Access: Protected
-//  Description: Does some easy checks to make sure that the reference
-//               count isn't completely bogus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does some easy checks to make sure that the reference count isn't completely
+ * bogus.
+ */
 bool NodeCachedReferenceCount::
 do_test_ref_count_integrity() const {
   nassertr(this != NULL, false);

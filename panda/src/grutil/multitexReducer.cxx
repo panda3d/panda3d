@@ -1,16 +1,15 @@
-// Filename: multitexReducer.cxx
-// Created by:  drose (30Nov04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file multitexReducer.cxx
+ * @author drose
+ * @date 2004-11-30
+ */
 
 #include "multitexReducer.h"
 #include "pandaNode.h"
@@ -38,11 +37,9 @@
 #include "geomVertexWriter.h"
 #include "geomVertexReader.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MultitexReducer::
 MultitexReducer() {
   _target_stage = TextureStage::get_default();
@@ -50,42 +47,30 @@ MultitexReducer() {
   _allow_tex_mat = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MultitexReducer::
 ~MultitexReducer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::clear
-//       Access: Published
-//  Description: Removes the record of nodes that were previously
-//               discovered by scan().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the record of nodes that were previously discovered by scan().
+ */
 void MultitexReducer::
 clear() {
   _stages.clear();
   _geom_node_list.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::scan
-//       Access: Published
-//  Description: Starts scanning the hierarchy beginning at the
-//               indicated node.  Any GeomNodes discovered in the
-//               hierarchy with multitexture will be added to internal
-//               structures in the MultitexReducer so that a future
-//               call to flatten() will operate on all of these at
-//               once.
-//
-//               The indicated transform and state are the state
-//               inherited from the node's ancestors; any multitexture
-//               operations will be accumulated from the indicated
-//               starting state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts scanning the hierarchy beginning at the indicated node.  Any GeomNodes
+ * discovered in the hierarchy with multitexture will be added to internal
+ * structures in the MultitexReducer so that a future call to flatten() will
+ * operate on all of these at once.  The indicated transform and state are the
+ * state inherited from the node's ancestors; any multitexture operations will
+ * be accumulated from the indicated starting state.
+ */
 void MultitexReducer::
 scan(PandaNode *node, const RenderState *state, const TransformState *transform) {
   if (grutil_cat.is_debug()) {
@@ -113,84 +98,55 @@ scan(PandaNode *node, const RenderState *state, const TransformState *transform)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::set_target
-//       Access: Published
-//  Description: Specifies the target TextureStage (and InternalName)
-//               that will be left on each multitexture node after the
-//               flatten operation has completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the target TextureStage (and InternalName) that will be left on
+ * each multitexture node after the flatten operation has completed.
+ */
 void MultitexReducer::
 set_target(TextureStage *stage) {
   _target_stage = stage;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::set_use_geom
-//       Access: Published
-//  Description: Indicates whether the actual geometry will be used to
-//               generate the textures.  
-//
-//               If this is set to true, the geometry discovered by
-//               scan() will be used to generate the textures, which
-//               allows for the vertex and polygon colors to be made
-//               part of the texture itself (and makes the M_decal
-//               multitexture mode more reliable).  However, this only
-//               works if the geometry does not contain multiple
-//               different polygons that map to the same UV range.
-//
-//               If this is set to false (the default), a plain flat
-//               card will be used to generate the textures, which is
-//               more robust in general, but the resulting texture
-//               will not include vertex colors and M_decal won't work
-//               properly.
-//
-//               Note that in case multiple sets of texture
-//               coordinates are in effect, then the additional sets
-//               will always use the geometry anyway regardless of the
-//               setting of this flag (but this will not affect vertex
-//               color).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates whether the actual geometry will be used to generate the textures.
+ * If this is set to true, the geometry discovered by scan() will be used to
+ * generate the textures, which allows for the vertex and polygon colors to be
+ * made part of the texture itself (and makes the M_decal multitexture mode more
+ * reliable).  However, this only works if the geometry does not contain
+ * multiple different polygons that map to the same UV range.  If this is set to
+ * false (the default), a plain flat card will be used to generate the textures,
+ * which is more robust in general, but the resulting texture will not include
+ * vertex colors and M_decal won't work properly.  Note that in case multiple
+ * sets of texture coordinates are in effect, then the additional sets will
+ * always use the geometry anyway regardless of the setting of this flag (but
+ * this will not affect vertex color).
+ */
 void MultitexReducer::
 set_use_geom(bool use_geom) {
   _use_geom = use_geom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::set_allow_tex_mat
-//       Access: Published
-//  Description: Indicates whether the resulting texture should be
-//               expected to be animated beyond its current range via
-//               a texture matrix (true), or whether the current range
-//               of texture coordinates will be sufficient forever
-//               (false).
-//
-//               If this is set to true, then the entire texture image
-//               must be generated, in the assumption that the user
-//               may animate the texture around on the surface after
-//               it has been composed.
-//
-//               If this is set to false (the default), then only the
-//               portion of the texture image which is actually in use
-//               must be generated, which may be a significant savings
-//               in texture memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates whether the resulting texture should be expected to be animated
+ * beyond its current range via a texture matrix (true), or whether the current
+ * range of texture coordinates will be sufficient forever (false).  If this is
+ * set to true, then the entire texture image must be generated, in the
+ * assumption that the user may animate the texture around on the surface after
+ * it has been composed.  If this is set to false (the default), then only the
+ * portion of the texture image which is actually in use must be generated,
+ * which may be a significant savings in texture memory.
+ */
 void MultitexReducer::
 set_allow_tex_mat(bool allow_tex_mat) {
   _allow_tex_mat = allow_tex_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::flatten
-//       Access: Published
-//  Description: Actually performs the reducing operations on the
-//               nodes that were previously scanned.
-//
-//               A window that can be used to create texture buffers
-//               suitable for rendering this geometry must be
-//               supplied.  This specifies the particular GSG that
-//               will be used to composite the textures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually performs the reducing operations on the nodes that were previously
+ * scanned.  A window that can be used to create texture buffers suitable for
+ * rendering this geometry must be supplied.  This specifies the particular GSG
+ * that will be used to composite the textures.
+ */
 void MultitexReducer::
 flatten(GraphicsOutput *window) {
   if (grutil_cat.is_debug()) {
@@ -203,11 +159,11 @@ flatten(GraphicsOutput *window) {
       grutil_cat.debug(false)
         << "stage_list for:";
       for (GeomList::const_iterator gi = geom_list.begin();
-           gi != geom_list.end(); 
+           gi != geom_list.end();
            ++gi) {
         const GeomInfo &geom_info = (*gi);
         grutil_cat.debug(false)
-          << " (" << geom_info._geom_node->get_name() << " g" 
+          << " (" << geom_info._geom_node->get_name() << " g"
           << geom_info._index << ")";
       }
       grutil_cat.debug(false) << ":\n";
@@ -317,7 +273,7 @@ flatten(GraphicsOutput *window) {
     bool force_use_geom = _use_geom;
     bool bake_in_color = _use_geom;
     LColor geom_color(1.0f, 1.0f, 1.0f, 1.0f);
-    
+
     //override the base color in the transparent pass down case.
     if(use_transparent_bg)
       geom_color = LColor(0.0f,0.0f,0.0f,0.0f);
@@ -328,7 +284,7 @@ flatten(GraphicsOutput *window) {
         // If we have M_decal, we need to bake in the flat color
         // even if there is no vertex color.
         bake_in_color = true;
-        
+
         /*
         int num_colors = 0;
         scan_color(geom_list, geom_color, num_colors);
@@ -344,7 +300,7 @@ flatten(GraphicsOutput *window) {
     if (!force_use_geom) {
       // Put one plain white (or flat-colored) card in the background
       // for the first texture layer to apply onto.
-      
+
       CardMaker cm("background");
       cm.set_frame(min_uv[0], max_uv[0], min_uv[1], max_uv[1]);
       if (bake_in_color) {
@@ -358,7 +314,7 @@ flatten(GraphicsOutput *window) {
       nassertv(bake_in_color);
       PT(GeomNode) geom_node = new GeomNode("background");
       transfer_geom(geom_node, NULL, geom_list, true);
-      
+
       render.attach_new_node(geom_node);
     }
 
@@ -366,7 +322,7 @@ flatten(GraphicsOutput *window) {
     for (si = stage_list.begin(); si != stage_list.end(); ++si) {
       const StageInfo &stage_info = (*si);
 
-      make_texture_layer(render, stage_info, geom_list, 
+      make_texture_layer(render, stage_info, geom_list,
                            min_uv, max_uv, force_use_geom, use_transparent_bg);
     }
 
@@ -378,8 +334,8 @@ flatten(GraphicsOutput *window) {
     GeomList::const_iterator gi;
     for (gi = geom_list.begin(); gi != geom_list.end(); ++gi) {
       const GeomInfo &geom_info = (*gi);
-      
-      CPT(RenderState) geom_state = 
+
+      CPT(RenderState) geom_state =
         geom_info._geom_node->get_geom_state(geom_info._index);
       int override = geom_info._geom_net_state->get_override(TextureAttrib::get_class_slot());
       geom_state = geom_state->add_attrib(new_ta, override);
@@ -393,7 +349,7 @@ flatten(GraphicsOutput *window) {
         // color scale we're getting from above.  This is not the same
         // thing as a ColorScaleAttrib::make_off(), since that would
         // prohibit any future changes to the color scale.
-        const RenderAttrib *attrib = 
+        const RenderAttrib *attrib =
           geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
 
         if (attrib != (const RenderAttrib *)NULL) {
@@ -441,21 +397,19 @@ flatten(GraphicsOutput *window) {
   for (gni = _geom_node_list.begin(); gni != _geom_node_list.end(); ++gni) {
     const GeomNodeInfo &geom_node_info = (*gni);
     AccumulatedAttribs attribs;
-    attribs._texture = 
+    attribs._texture =
       geom_node_info._state->get_attrib(TextureAttrib::get_class_slot());
     geom_node_info._geom_node->apply_attribs_to_vertices
       (attribs, SceneGraphReducer::TT_tex_matrix, transformer);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::scan_geom_node
-//       Access: Private
-//  Description: Adds the Geoms in the indicated GeomNode to the
-//               internal database of multitexture elements.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the Geoms in the indicated GeomNode to the internal database of
+ * multitexture elements.
+ */
 void MultitexReducer::
-scan_geom_node(GeomNode *node, const RenderState *state, 
+scan_geom_node(GeomNode *node, const RenderState *state,
                const TransformState *transform) {
   if (grutil_cat.is_debug()) {
     grutil_cat.debug()
@@ -467,7 +421,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
 
   int num_geoms = node->get_num_geoms();
   for (int gi = 0; gi < num_geoms; gi++) {
-    CPT(RenderState) geom_net_state = 
+    CPT(RenderState) geom_net_state =
       state->compose(node->get_geom_state(gi));
 
     if (grutil_cat.is_debug()) {
@@ -507,22 +461,22 @@ scan_geom_node(GeomNode *node, const RenderState *state,
       if (attrib != (const RenderAttrib *)NULL) {
         tma = DCAST(TexMatrixAttrib, attrib);
       }
-      
+
       StageList stage_list;
-      
+
       int num_stages = ta->get_num_on_stages();
       for (int si = 0; si < num_stages; si++) {
         TextureStage *stage = ta->get_on_stage(si);
         Texture *tex = ta->get_on_texture(stage);
         if (tex->get_x_size() != 0 && tex->get_y_size() != 0) {
           stage_list.push_back(StageInfo(stage, ta, tma));
-          
+
         } else {
           grutil_cat.info()
             << "Ignoring invalid texture stage " << stage->get_name() << "\n";
         }
       }
-      
+
       if (stage_list.size() >= 2) {
         record_stage_list(stage_list, GeomInfo(state, geom_net_state, node, gi));
       }
@@ -530,18 +484,15 @@ scan_geom_node(GeomNode *node, const RenderState *state,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::record_stage_list
-//       Access: Private
-//  Description: Adds the record of this one Geom and its associated
-//               StageList.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the record of this one Geom and its associated StageList.
+ */
 void MultitexReducer::
-record_stage_list(const MultitexReducer::StageList &stage_list, 
+record_stage_list(const MultitexReducer::StageList &stage_list,
                   const MultitexReducer::GeomInfo &geom_info) {
   if (grutil_cat.is_debug()) {
     grutil_cat.debug()
-      << "record_stage_list for " << geom_info._geom_node->get_name() << " g" 
+      << "record_stage_list for " << geom_info._geom_node->get_name() << " g"
       << geom_info._index << ":\n";
     StageList::const_iterator si;
     for (si = stage_list.begin(); si != stage_list.end(); ++si) {
@@ -555,13 +506,10 @@ record_stage_list(const MultitexReducer::StageList &stage_list,
   _stages[stage_list].push_back(geom_info);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::choose_model_stage
-//       Access: Private
-//  Description: Chooses one of the TextureStages in the stage_list to
-//               serve as the model to determine the size and
-//               properties of the resulting texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses one of the TextureStages in the stage_list to serve as the model to
+ * determine the size and properties of the resulting texture.
+ */
 size_t MultitexReducer::
 choose_model_stage(const MultitexReducer::StageList &stage_list) const {
   for (size_t si = 0; si < stage_list.size(); si++) {
@@ -576,13 +524,10 @@ choose_model_stage(const MultitexReducer::StageList &stage_list) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::determine_uv_range
-//       Access: Private
-//  Description: Determines what the effective UV range for the
-//               indicated texture is across its geoms.  Returns true
-//               if any UV's are found, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines what the effective UV range for the indicated texture is across
+ * its geoms.  Returns true if any UV's are found, false otherwise.
+ */
 bool MultitexReducer::
 determine_uv_range(LTexCoord &min_uv, LTexCoord &max_uv,
                    const MultitexReducer::StageInfo &model_stage,
@@ -593,8 +538,8 @@ determine_uv_range(LTexCoord &min_uv, LTexCoord &max_uv,
   GeomList::const_iterator gi;
   for (gi = geom_list.begin(); gi != geom_list.end(); ++gi) {
     const GeomInfo &geom_info = (*gi);
-    
-    PT(Geom) geom = 
+
+    PT(Geom) geom =
       geom_info._geom_node->get_geom(geom_info._index)->make_copy();
 
     CPT(GeomVertexData) vdata = geom->get_vertex_data();
@@ -607,7 +552,7 @@ determine_uv_range(LTexCoord &min_uv, LTexCoord &max_uv,
         if (!got_any) {
           min_uv = max_uv = uv;
           got_any = true;
-          
+
         } else {
           min_uv.set(min(min_uv[0], uv[0]), min(min_uv[1], uv[1]));
           max_uv.set(max(max_uv[0], uv[0]), max(max_uv[1], uv[1]));
@@ -630,17 +575,13 @@ determine_uv_range(LTexCoord &min_uv, LTexCoord &max_uv,
   return got_any;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::get_uv_scale
-//       Access: Private
-//  Description: Chooses an appropriate transform to apply to all of
-//               the UV's on the generated texture, based on the
-//               coverage of the model stage.  If only a portion of
-//               the model stage is used, we scale the UV's up to zoom
-//               into that one portion; on the other hand, if the
-//               texture repeats many times, we scale the UV's down to
-//               to include all of the repeating image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses an appropriate transform to apply to all of the UV's on the generated
+ * texture, based on the coverage of the model stage.  If only a portion of the
+ * model stage is used, we scale the UV's up to zoom into that one portion; on
+ * the other hand, if the texture repeats many times, we scale the UV's down to
+ * to include all of the repeating image.
+ */
 void MultitexReducer::
 get_uv_scale(LVecBase2 &uv_scale, LVecBase2 &uv_trans,
              const LTexCoord &min_uv, const LTexCoord &max_uv) const {
@@ -660,20 +601,17 @@ get_uv_scale(LVecBase2 &uv_scale, LVecBase2 &uv_trans,
   uv_trans[1] = (min_uv[1] + max_uv[1]) / 2.0f - uv_scale[1] * 0.5f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::choose_texture_size
-//       Access: Private
-//  Description: Chooses an appropriate size to make the new texture,
-//               based on the size of the original model stage's
-//               texture, and the scale applied to the UV's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses an appropriate size to make the new texture, based on the size of the
+ * original model stage's texture, and the scale applied to the UV's.
+ */
 void MultitexReducer::
-choose_texture_size(int &x_size, int &y_size, 
-                    const MultitexReducer::StageInfo &model_stage, 
+choose_texture_size(int &x_size, int &y_size,
+                    const MultitexReducer::StageInfo &model_stage,
                     const LVecBase2 &uv_scale,
                     GraphicsOutput *window) const {
   Texture *model_tex = model_stage._tex;
-  
+
   // Start with the same size as the model texture.
   x_size = model_tex->get_x_size();
   y_size = model_tex->get_y_size();
@@ -684,7 +622,7 @@ choose_texture_size(int &x_size, int &y_size,
   // keep it to a power of 2.
 
   LVecBase3 inherited_scale = model_stage._tex_mat->get_scale();
-  
+
   PN_stdfloat u_scale = cabs(inherited_scale[0]) * uv_scale[0];
   if (u_scale != 0.0f) {
     while (u_scale >= 2.0f) {
@@ -711,8 +649,8 @@ choose_texture_size(int &x_size, int &y_size,
 
   if (x_size == 0 || y_size == 0) {
     grutil_cat.warning()
-      << "Texture size " << model_tex->get_x_size() << " " 
-      << model_tex->get_y_size() << " with scale " 
+      << "Texture size " << model_tex->get_x_size() << " "
+      << model_tex->get_y_size() << " with scale "
       << model_stage._tex_mat->get_scale() << ", reduced to size "
       << x_size << " " << y_size << "; constraining to 1 1.\n";
     x_size = 1;
@@ -744,16 +682,13 @@ choose_texture_size(int &x_size, int &y_size,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::make_texture_layer
-//       Access: Private
-//  Description: Creates geometry to render the texture into the
-//               offscreen buffer using the same effects that were
-//               requested by its multitexture specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates geometry to render the texture into the offscreen buffer using the
+ * same effects that were requested by its multitexture specification.
+ */
 void MultitexReducer::
-make_texture_layer(const NodePath &render, 
-                   const MultitexReducer::StageInfo &stage_info, 
+make_texture_layer(const NodePath &render,
+                   const MultitexReducer::StageInfo &stage_info,
                    const MultitexReducer::GeomList &geom_list,
                    const LTexCoord &min_uv, const LTexCoord &max_uv,
                    bool force_use_geom, bool transparent_base) {
@@ -786,7 +721,7 @@ make_texture_layer(const NodePath &render,
     } else {
       cba = ColorBlendAttrib::make
         (ColorBlendAttrib::M_add, ColorBlendAttrib::O_incoming_alpha,
-         ColorBlendAttrib::O_one_minus_incoming_alpha);      
+         ColorBlendAttrib::O_one_minus_incoming_alpha);
     }
     break;
 
@@ -817,7 +752,7 @@ make_texture_layer(const NodePath &render,
         TextureStage::CombineSource source1 = stage_info._stage->get_combine_rgb_source1();
         TextureStage::CombineOperand operand1 = stage_info._stage->get_combine_rgb_operand1();
         // Since modulate doesn't care about order, let's establish
-        // the convention that the lowest-numbered source 
+        // the convention that the lowest-numbered source
         // operand is in slot 0 (just for purposes of comparison).
         if (source1 < source0) {
           source0 = stage_info._stage->get_combine_rgb_source1();
@@ -825,28 +760,28 @@ make_texture_layer(const NodePath &render,
           source1 = stage_info._stage->get_combine_rgb_source0();
           operand1 = stage_info._stage->get_combine_rgb_operand0();
         }
-        
+
         if (source0 == TextureStage::CS_primary_color &&
             source1 == TextureStage::CS_previous) {
           // This is just a trick to re-apply the vertex (lighting)
           // color on the top of the texture stack.  We can ignore it,
           // since the flattened texture will do this anyway.
           return;
-          
+
         } else if (source0 == TextureStage::CS_texture &&
                    source1 == TextureStage::CS_constant) {
           // Scaling the texture by a flat color.
           cba = ColorBlendAttrib::make
             (ColorBlendAttrib::M_add, ColorBlendAttrib::O_constant_color,
              ColorBlendAttrib::O_zero, stage_info._stage->get_color());
-          
+
         } else if (source0 == TextureStage::CS_texture &&
                    source1 == TextureStage::CS_previous) {
           // Just an ordinary modulate.
           cba = ColorBlendAttrib::make
             (ColorBlendAttrib::M_add, ColorBlendAttrib::O_fbuffer_color,
              ColorBlendAttrib::O_zero);
-          
+
         } else {
           // Some other kind of modulate; we don't support it.
           return;
@@ -878,7 +813,7 @@ make_texture_layer(const NodePath &render,
     cm.set_uv_range(min_uv, max_uv);
     cm.set_has_uvs(true);
     cm.set_frame(min_uv[0], max_uv[0], min_uv[1], max_uv[1]);
-    
+
     geom = render.attach_new_node(cm.generate());
 
   } else {
@@ -888,9 +823,9 @@ make_texture_layer(const NodePath &render,
     // where the geometry is not too extensive and doesn't repeat over
     // the same UV's.
     PT(GeomNode) geom_node = new GeomNode(stage_info._tex->get_name());
-    transfer_geom(geom_node, stage_info._stage->get_texcoord_name(), 
+    transfer_geom(geom_node, stage_info._stage->get_texcoord_name(),
                   geom_list, false);
-    
+
     geom = render.attach_new_node(geom_node);
 
     geom.set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
@@ -904,15 +839,12 @@ make_texture_layer(const NodePath &render,
   geom.node()->set_attrib(cba);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::transfer_geom
-//       Access: Private
-//  Description: Copy the vertices from the indicated geom_list,
-//               mapping the vertex coordinates so that the geometry
-//               will render the appropriate distortion on the texture
-//               to map UV's from the specified set of texture
-//               coordinates to the target set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the vertices from the indicated geom_list, mapping the vertex
+ * coordinates so that the geometry will render the appropriate distortion on
+ * the texture to map UV's from the specified set of texture coordinates to the
+ * target set.
+ */
 void MultitexReducer::
 transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
               const MultitexReducer::GeomList &geom_list,
@@ -935,29 +867,29 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     // data.
     PT(GeomVertexData) vdata = geom->modify_vertex_data();
     vdata->set_usage_hint(Geom::UH_stream);
-    
+
     if (vdata->has_column(_target_stage->get_texcoord_name())) {
       GeomVertexWriter vertex(vdata, InternalName::get_vertex(), current_thread);
       GeomVertexReader texcoord(vdata, _target_stage->get_texcoord_name(), current_thread);
-      
+
       while (!texcoord.is_at_end()) {
         const LVecBase2 &tc = texcoord.get_data2();
         vertex.set_data3(tc[0], 0.0f, tc[1]);
       }
     }
-    
+
     if (texcoord_name != (const InternalName *)NULL &&
         texcoord_name != InternalName::get_texcoord()) {
       // Copy the texture coordinates from the indicated name over
       // to the default name.
-      const GeomVertexColumn *column = 
+      const GeomVertexColumn *column =
         vdata->get_format()->get_column(texcoord_name);
       if (column != (const GeomVertexColumn *)NULL) {
         vdata = vdata->replace_column
           (InternalName::get_texcoord(), column->get_num_components(),
            column->get_numeric_type(), column->get_contents());
         geom->set_vertex_data(vdata);
-        
+
         GeomVertexReader from(vdata, texcoord_name, current_thread);
         GeomVertexWriter to(vdata, InternalName::get_texcoord(), current_thread);
         while (!from.is_at_end()) {
@@ -965,7 +897,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
         }
       }
     }
-    
+
     CPT(RenderState) geom_state = RenderState::make_empty();
     if (preserve_color) {
       // Be sure to preserve whatever colors are on the geom.
@@ -978,31 +910,25 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
         geom_state = geom_state->add_attrib(csa);
       }
     }
-    
+
     geom_node->add_geom(geom, geom_state);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::scan_color
-//       Access: Private
-//  Description: Checks all the geoms in the list to see if they all
-//               use flat color, or if there is per-vertex color in
-//               use.
-//
-//               Assumption: num_colors = 0 on entry.  On exit,
-//               num_colors = 1 if there is exactly one color in use,
-//               or 2 if there is more than one color in use.  If
-//               num_colors = 1, then geom_color is filled in with the
-//               color in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks all the geoms in the list to see if they all use flat color, or if
+ * there is per-vertex color in use.  Assumption: num_colors = 0 on entry.  On
+ * exit, num_colors = 1 if there is exactly one color in use, or 2 if there is
+ * more than one color in use.  If num_colors = 1, then geom_color is filled in
+ * with the color in use.
+ */
 void MultitexReducer::
-scan_color(const MultitexReducer::GeomList &geom_list, LColor &geom_color, 
+scan_color(const MultitexReducer::GeomList &geom_list, LColor &geom_color,
            int &num_colors) const {
   GeomList::const_iterator gi;
   for (gi = geom_list.begin(); gi != geom_list.end() && num_colors < 2; ++gi) {
     const GeomInfo &geom_info = (*gi);
-    
+
     LColor flat_color;
     bool has_flat_color = false;
     bool has_vertex_color = false;
@@ -1058,13 +984,10 @@ scan_color(const MultitexReducer::GeomList &geom_list, LColor &geom_color,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::scan_decal
-//       Access: Private
-//  Description: Checks all the stages in the list to see if any of
-//               them apply a texture via M_decal.  Returns true if
-//               so, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks all the stages in the list to see if any of them apply a texture via
+ * M_decal.  Returns true if so, false otherwise.
+ */
 bool MultitexReducer::
 scan_decal(const MultitexReducer::StageList &stage_list) const {
   StageList::const_iterator si;
@@ -1080,13 +1003,11 @@ scan_decal(const MultitexReducer::StageList &stage_list) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::StageInfo::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MultitexReducer::StageInfo::
-StageInfo(TextureStage *stage, const TextureAttrib *ta, 
+StageInfo(TextureStage *stage, const TextureAttrib *ta,
           const TexMatrixAttrib *tma) :
   _stage(stage),
   _tex_mat(TransformState::make_identity())
@@ -1096,4 +1017,3 @@ StageInfo(TextureStage *stage, const TextureAttrib *ta,
     _tex_mat = tma->get_transform(stage);
   }
 }
-

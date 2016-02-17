@@ -1,16 +1,15 @@
-// Filename: softEggGroupUserData.h
-// Created by:  masad (25Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file softEggGroupUserData.h
+ * @author masad
+ * @date 2003-09-25
+ */
 
 #ifndef SOFTEGGGROUPUSERDATA_H
 #define SOFTEGGGROUPUSERDATA_H
@@ -18,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "eggUserData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftEggGroupUserData
-// Description : This class contains extra user data which is
-//               piggybacked onto EggGroup objects for the purpose of
-//               the softimage converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class contains extra user data which is piggybacked onto EggGroup
+ * objects for the purpose of the softimage converter.
+ */
 class SoftEggGroupUserData : public EggUserData {
 public:
   INLINE SoftEggGroupUserData();

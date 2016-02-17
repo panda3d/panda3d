@@ -1,16 +1,15 @@
-// Filename: lwoSurfaceBlockCoordSys.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoSurfaceBlockCoordSys.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOSURFACEBLOCKCOORDSYS_H
 #define LWOSURFACEBLOCKCOORDSYS_H
@@ -19,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockCoordSys
-// Description : Specifies whether texture coordinates are computed
-//               based on the vertices' world coordinates or local
-//               coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether texture coordinates are computed based on the vertices'
+ * world coordinates or local coordinates.
+ */
 class LwoSurfaceBlockCoordSys : public LwoChunk {
 public:
   enum Type {
@@ -57,5 +54,3 @@ private:
 };
 
 #endif
-
-

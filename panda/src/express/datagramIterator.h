@@ -1,16 +1,15 @@
-// Filename: datagramIterator.h
-// Created by:  jns (07Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagramIterator.h
+ * @author jns
+ * @date 2000-02-07
+ */
 
 #ifndef DATAGRAMITERATOR_H
 #define DATAGRAMITERATOR_H
@@ -20,13 +19,11 @@
 #include "datagram.h"
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramIterator
-// Description : A class to retrieve the individual data elements
-//               previously stored in a Datagram.  Elements may be
-//               retrieved one at a time; it is up to the caller to
-//               know the correct type and order of each element.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class to retrieve the individual data elements previously stored in a
+ * Datagram.  Elements may be retrieved one at a time; it is up to the caller to
+ * know the correct type and order of each element.
+ */
 class EXPCL_PANDAEXPRESS DatagramIterator {
 public:
   INLINE void assign(Datagram &datagram, size_t offset = 0);

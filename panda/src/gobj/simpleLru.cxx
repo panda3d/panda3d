@@ -1,16 +1,15 @@
-// Filename: simpleLru.cxx
-// Created by:  drose (11May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file simpleLru.cxx
+ * @author drose
+ * @date 2007-05-11
+ */
 
 #include "simpleLru.h"
 #include "indent.h"
@@ -21,14 +20,12 @@
 // the various concrete SimpleLru objects which reference it.)
 LightMutex &SimpleLru::_global_lock = *new LightMutex;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SimpleLru::
-SimpleLru(const string &name, size_t max_size) : 
-  LinkedListNode(true), 
+SimpleLru(const string &name, size_t max_size) :
+  LinkedListNode(true),
   Namable(name)
 {
   _total_size = 0;
@@ -36,11 +33,9 @@ SimpleLru(const string &name, size_t max_size) :
   _active_marker = new SimpleLruPage(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SimpleLru::
 ~SimpleLru() {
   delete _active_marker;
@@ -57,15 +52,11 @@ SimpleLru::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLruPage::enqueue_lru
-//       Access: Published
-//  Description: Adds the page to the LRU for the first time, or marks
-//               it recently-accessed if it has already been added.
-//
-//               If lru is NULL, it means to remove this page from its
-//               LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the page to the LRU for the first time, or marks it recently-accessed if
+ * it has already been added.  If lru is NULL, it means to remove this page from
+ * its LRU.
+ */
 void SimpleLruPage::
 enqueue_lru(SimpleLru *lru) {
   LightMutexHolder holder(SimpleLru::_global_lock);
@@ -96,12 +87,10 @@ enqueue_lru(SimpleLru *lru) {
   //  _lru->consider_evict();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::count_active_size
-//       Access: Published
-//  Description: Returns the total size of the pages that were
-//               enqueued since the last call to begin_epoch().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total size of the pages that were enqueued since the last call to
+ * begin_epoch().
+ */
 size_t SimpleLru::
 count_active_size() const {
   LightMutexHolder holder(_global_lock);
@@ -116,11 +105,9 @@ count_active_size() const {
   return total;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SimpleLru::
 output(ostream &out) const {
   LightMutexHolder holder(_global_lock);
@@ -128,11 +115,9 @@ output(ostream &out) const {
       << ", " << _total_size << " of " << _max_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SimpleLru::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
@@ -162,14 +147,11 @@ write(ostream &out, int indent_level) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::do_evict_to
-//       Access: Private
-//  Description: Evicts pages until the LRU is within the indicated
-//               size.  Assumes the lock is already held.  If
-//               hard_evict is false, does not evict "active" pages
-//               that were added within this epoch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts pages until the LRU is within the indicated size.  Assumes the lock is
+ * already held.  If hard_evict is false, does not evict "active" pages that
+ * were added within this epoch.
+ */
 void SimpleLru::
 do_evict_to(size_t target_size, bool hard_evict) {
   if (_next == this) {
@@ -205,12 +187,10 @@ do_evict_to(size_t target_size, bool hard_evict) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::do_validate
-//       Access: Private
-//  Description: Checks that the LRU is internally consistent.  Assume
-//               the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks that the LRU is internally consistent.  Assume the lock is already
+ * held.
+ */
 bool SimpleLru::
 do_validate() {
   size_t total = 0;
@@ -224,11 +204,9 @@ do_validate() {
   return (total == _total_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLruPage::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SimpleLruPage::
 ~SimpleLruPage() {
   if (_lru != NULL) {
@@ -236,41 +214,30 @@ SimpleLruPage::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLruPage::evict_lru
-//       Access: Published, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines that
+ * it is full.  May also be called externally when necessary to explicitly evict
+ * the page.  It is legal for this method to either evict the page as requested,
+ * do nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void SimpleLruPage::
 evict_lru() {
   dequeue_lru();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLruPage::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SimpleLruPage::
 output(ostream &out) const {
   out << "page " << this << ", " << _lru_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLruPage::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SimpleLruPage::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";

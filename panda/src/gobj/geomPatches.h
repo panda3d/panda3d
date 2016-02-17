@@ -1,16 +1,15 @@
-// Filename: geomPatches.h
-// Created by:  drose (27Apr12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomPatches.h
+ * @author drose
+ * @date 2012-04-27
+ */
 
 #ifndef GEOMPATCHES_H
 #define GEOMPATCHES_H
@@ -18,12 +17,10 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomPatches
-// Description : Defines a series of "patches", fixed-size groupings
-//               of vertices that must be processed by a tessellation
-//               shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of "patches", fixed-size groupings of vertices that must be
+ * processed by a tessellation shader.
+ */
 class EXPCL_PANDA_GOBJ GeomPatches : public GeomPrimitive {
 PUBLISHED:
   GeomPatches(int num_vertices_per_patch, UsageHint usage_hint);

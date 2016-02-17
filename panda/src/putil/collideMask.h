@@ -1,16 +1,15 @@
-// Filename: collideMask.h
-// Created by:  drose (03Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collideMask.h
+ * @author drose
+ * @date 2000-07-03
+ */
 
 #ifndef COLLIDEMASK_H
 #define COLLIDEMASK_H
@@ -53,4 +52,3 @@ static const CollideMask default_geom_node_collide_mask = CollideMask::bit(20);
 // these bits on by default.
 
 #endif
-

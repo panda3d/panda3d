@@ -1,16 +1,15 @@
-// Filename: graphicsOutput.h
-// Created by:  drose (06Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsOutput.h
+ * @author drose
+ * @date 2004-02-06
+ */
 
 #ifndef GRAPHICSOUTPUT_H
 #define GRAPHICSOUTPUT_H
@@ -45,26 +44,18 @@
 class PNMImage;
 class GraphicsEngine;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsOutput
-// Description : This is a base class for the various different
-//               classes that represent the result of a frame of
-//               rendering.  The most common kind of GraphicsOutput is
-//               a GraphicsWindow, which is a real-time window on the
-//               desktop, but another example is GraphicsBuffer, which
-//               is an offscreen buffer.
-//
-//               The actual rendering, and anything associated with
-//               the graphics context itself, is managed by the
-//               associated GraphicsStateGuardian (which might output
-//               to multiple GraphicsOutput objects).
-//
-//               GraphicsOutputs are not actually writable to bam
-//               files, of course, but they may be passed as event
-//               parameters, so they inherit from
-//               TypedWritableReferenceCount instead of
-//               TypedReferenceCount for that convenience.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for the various different classes that represent the
+ * result of a frame of rendering.  The most common kind of GraphicsOutput is a
+ * GraphicsWindow, which is a real-time window on the desktop, but another
+ * example is GraphicsBuffer, which is an offscreen buffer.  The actual
+ * rendering, and anything associated with the graphics context itself, is
+ * managed by the associated GraphicsStateGuardian (which might output to
+ * multiple GraphicsOutput objects).  GraphicsOutputs are not actually writable
+ * to bam files, of course, but they may be passed as event parameters, so they
+ * inherit from TypedWritableReferenceCount instead of TypedReferenceCount for
+ * that convenience.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public DrawableRegion {
 protected:
   GraphicsOutput(GraphicsEngine *engine,

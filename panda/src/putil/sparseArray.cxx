@@ -1,16 +1,15 @@
-// Filename: sparseArray.cxx
-// Created by:  drose (14Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sparseArray.cxx
+ * @author drose
+ * @date 2007-02-14
+ */
 
 #include "sparseArray.h"
 #include "bitArray.h"
@@ -19,11 +18,9 @@
 
 TypeHandle SparseArray::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::Constructor (from BitArray)
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SparseArray::
 SparseArray(const BitArray &from) {
   bool empty_bit = from.get_highest_bits();
@@ -52,13 +49,10 @@ SparseArray(const BitArray &from) {
   nassertv(current_state == empty_bit);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::get_num_on_bits
-//       Access: Published
-//  Description: Returns the number of bits that are set to 1 in the
-//               array.  Returns -1 if there are an infinite number of
-//               1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits that are set to 1 in the array.  Returns -1 if
+ * there are an infinite number of 1 bits.
+ */
 int SparseArray::
 get_num_on_bits() const {
   if (_inverse) {
@@ -74,13 +68,10 @@ get_num_on_bits() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::get_num_off_bits
-//       Access: Published
-//  Description: Returns the number of bits that are set to 0 in the
-//               array.  Returns -1 if there are an infinite number of
-//               0 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits that are set to 0 in the array.  Returns -1 if
+ * there are an infinite number of 0 bits.
+ */
 int SparseArray::
 get_num_off_bits() const {
   if (!_inverse) {
@@ -96,13 +87,10 @@ get_num_off_bits() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::get_lowest_on_bit
-//       Access: Published
-//  Description: Returns the index of the lowest 1 bit in the array.
-//               Returns -1 if there are no 1 bits or if there are an
-//               infinite number of 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 1 bit in the array.  Returns -1 if there are
+ * no 1 bits or if there are an infinite number of 1 bits.
+ */
 int SparseArray::
 get_lowest_on_bit() const {
   if (_inverse) {
@@ -116,13 +104,10 @@ get_lowest_on_bit() const {
   return _subranges[0]._begin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::get_lowest_off_bit
-//       Access: Published
-//  Description: Returns the index of the lowest 0 bit in the array.
-//               Returns -1 if there are no 0 bits or if there are an
-//               infinite number of 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 0 bit in the array.  Returns -1 if there are
+ * no 0 bits or if there are an infinite number of 1 bits.
+ */
 int SparseArray::
 get_lowest_off_bit() const {
   if (!_inverse) {
@@ -136,13 +121,10 @@ get_lowest_off_bit() const {
   return _subranges[0]._begin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::get_highest_on_bit
-//       Access: Published
-//  Description: Returns the index of the highest 1 bit in the array.
-//               Returns -1 if there are no 1 bits or if there an
-//               infinite number of 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 1 bit in the array.  Returns -1 if there are
+ * no 1 bits or if there an infinite number of 1 bits.
+ */
 int SparseArray::
 get_highest_on_bit() const {
   if (_inverse) {
@@ -156,13 +138,10 @@ get_highest_on_bit() const {
   return _subranges[_subranges.size() - 1]._end - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::get_highest_off_bit
-//       Access: Published
-//  Description: Returns the index of the highest 0 bit in the array.
-//               Returns -1 if there are no 0 bits or if there an
-//               infinite number of 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 0 bit in the array.  Returns -1 if there are
+ * no 0 bits or if there an infinite number of 1 bits.
+ */
 int SparseArray::
 get_highest_off_bit() const {
   if (!_inverse) {
@@ -176,17 +155,12 @@ get_highest_off_bit() const {
   return _subranges[_subranges.size() - 1]._end - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::get_next_higher_different_bit
-//       Access: Published
-//  Description: Returns the index of the next bit in the array, above
-//               low_bit, whose value is different that the value of
-//               low_bit.  Returns low_bit again if all bits higher
-//               than low_bit have the same value.
-//
-//               This can be used to quickly iterate through all of
-//               the bits in the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the next bit in the array, above low_bit, whose value is
+ * different that the value of low_bit.  Returns low_bit again if all bits
+ * higher than low_bit have the same value.  This can be used to quickly iterate
+ * through all of the bits in the array.
+ */
 int SparseArray::
 get_next_higher_different_bit(int low_bit) const {
   Subrange range(low_bit, low_bit + 1);
@@ -212,15 +186,11 @@ get_next_higher_different_bit(int low_bit) const {
   return next;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::has_bits_in_common
-//       Access: Published
-//  Description: Returns true if this SparseArray has any "one" bits in
-//               common with the other one, false otherwise.
-//
-//               This is equivalent to (array & other) != 0, but may
-//               be faster.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this SparseArray has any "one" bits in common with the other
+ * one, false otherwise.  This is equivalent to (array & other) != 0, but may be
+ * faster.
+ */
 bool SparseArray::
 has_bits_in_common(const SparseArray &other) const {
   if (_inverse && other._inverse) {
@@ -238,11 +208,9 @@ has_bits_in_common(const SparseArray &other) const {
   return !(*this & other).is_zero();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SparseArray::
 output(ostream &out) const {
   out << "[ ";
@@ -262,15 +230,12 @@ output(ostream &out) const {
   out << "]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this SparseArray
-//               sorts before the indicated other SparseArray, greater
-//               than zero if it sorts after, or 0 if they are
-//               equivalent.  This is based on the same ordering
-//               defined by operator <.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if this SparseArray sorts before the
+ * indicated other SparseArray, greater than zero if it sorts after, or 0 if
+ * they are equivalent.  This is based on the same ordering defined by operator
+ * <.
+ */
 int SparseArray::
 compare_to(const SparseArray &other) const {
   if (_inverse != other._inverse) {
@@ -311,11 +276,9 @@ compare_to(const SparseArray &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::operator &=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SparseArray::
 operator &= (const SparseArray &other) {
   // We do this the slow and stupid way.  This could be done much
@@ -342,11 +305,9 @@ operator &= (const SparseArray &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::operator |=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SparseArray::
 operator |= (const SparseArray &other) {
   // We do this the slow and stupid way.  This could be done much
@@ -372,11 +333,9 @@ operator |= (const SparseArray &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::operator ^=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SparseArray::
 operator ^= (const SparseArray &other) {
   // We do this the slow and stupid way.  This could be done much
@@ -387,14 +346,11 @@ operator ^= (const SparseArray &other) {
   (*this) = ((*this) | other) & ~((*this) & other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_add_range
-//       Access: Private
-//  Description: Adds the consecutive range of integers beginning at
-//               begin, but not including end, to the array.  If this
-//               range overlaps with another range already in the
-//               array, the result is the union.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the consecutive range of integers beginning at begin, but not including
+ * end, to the array.  If this range overlaps with another range already in the
+ * array, the result is the union.
+ */
 void SparseArray::
 do_add_range(int begin, int end) {
   if (begin >= end) {
@@ -469,12 +425,10 @@ do_add_range(int begin, int end) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_remove_range
-//       Access: Private
-//  Description: Removes the consecutive range of integers beginning
-//               at begin, but not including end, from the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the consecutive range of integers beginning at begin, but not
+ * including end, from the array.
+ */
 void SparseArray::
 do_remove_range(int begin, int end) {
   if (begin >= end) {
@@ -549,14 +503,11 @@ do_remove_range(int begin, int end) {
   (*si)._end = min((*si)._end, begin);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_has_any
-//       Access: Private
-//  Description: Returns true if any of the consecutive range of
-//               integers beginning at begin, but not including end,
-//               appear in the array.  Note that this will return
-//               false for an empty range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the consecutive range of integers beginning at begin,
+ * but not including end, appear in the array.  Note that this will return false
+ * for an empty range.
+ */
 bool SparseArray::
 do_has_any(int begin, int end) const {
   if (begin >= end) {
@@ -579,14 +530,11 @@ do_has_any(int begin, int end) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_has_all
-//       Access: Private
-//  Description: Returns true if all of the consecutive range of
-//               integers beginning at begin, but not including end,
-//               appear in the array.  Note that this will return
-//               true for an empty range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the consecutive range of integers beginning at begin,
+ * but not including end, appear in the array.  Note that this will return true
+ * for an empty range.
+ */
 bool SparseArray::
 do_has_all(int begin, int end) const {
   if (begin >= end) {
@@ -603,12 +551,10 @@ do_has_all(int begin, int end) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_intersection
-//       Access: Private
-//  Description: Removes from this array all of the elements that do
-//               not appear in the other one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from this array all of the elements that do not appear in the other
+ * one.
+ */
 void SparseArray::
 do_intersection(const SparseArray &other) {
   if (_subranges.empty()) {
@@ -632,12 +578,9 @@ do_intersection(const SparseArray &other) {
   do_remove_range(other_end, my_end);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_union
-//       Access: Private
-//  Description: Adds to this array all of the elements that also
-//               appear in the other one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds to this array all of the elements that also appear in the other one.
+ */
 void SparseArray::
 do_union(const SparseArray &other) {
   Subranges::const_iterator si;
@@ -646,12 +589,10 @@ do_union(const SparseArray &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_intersection_neg
-//       Access: Private
-//  Description: Removes from this array all of the elements that also
-//               appear in the other one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from this array all of the elements that also appear in the other
+ * one.
+ */
 void SparseArray::
 do_intersection_neg(const SparseArray &other) {
   Subranges::const_iterator si;
@@ -660,12 +601,9 @@ do_intersection_neg(const SparseArray &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::do_shift
-//       Access: Private
-//  Description: Shifts all the elements in the array by the indicated
-//               amount.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shifts all the elements in the array by the indicated amount.
+ */
 void SparseArray::
 do_shift(int offset) {
   if (offset != 0) {
@@ -677,12 +615,10 @@ do_shift(int offset) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::write_datagram
-//       Access: Public
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void SparseArray::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint32(_subranges.size());
@@ -694,12 +630,9 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_bool(_inverse);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparseArray::read_datagram
-//       Access: Public
-//  Description: Reads the object that was previously written to a Bam
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the object that was previously written to a Bam file.
+ */
 void SparseArray::
 read_datagram(DatagramIterator &scan, BamReader *manager) {
   size_t num_subranges = scan.get_uint32();

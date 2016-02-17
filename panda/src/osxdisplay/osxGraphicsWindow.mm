@@ -1,15 +1,13 @@
-// Filename: osxGraphicsWindow.mm
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University. All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license. You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsWindow.mm
+ */
 
 // We include these system header files first, because there is a
 // namescope conflict between them and some other header file that
@@ -83,12 +81,9 @@ check_my_window(WindowRef window) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::get_current_osx_window
-//       Access: Public, Static
-//  Description: Returns the active window for the purpose of
-//               recording events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the active window for the purpose of recording events.
+ */
 osxGraphicsWindow *osxGraphicsWindow::
 get_current_osx_window(WindowRef window) {
   if (full_screen_window != NULL) {
@@ -114,11 +109,10 @@ get_current_osx_window(WindowRef window) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: report_agl_error
-//  Description: Convenience function to report the current AGL error
-//               code as a formatted error message.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience function to report the current AGL error code as a formatted
+ * error message.
+ */
 OSStatus
 report_agl_error(const string &comment) {
   GLenum err = aglGetError();
@@ -134,10 +128,9 @@ report_agl_error(const string &comment) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: invert_gl_image
-//  Description: Vertically inverts a rendered image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Vertically inverts a rendered image.
+ */
 static void
 invert_gl_image(char *imageData, size_t imageSize, size_t rowBytes) {
   char *buffer = (char*)alloca(rowBytes);
@@ -153,10 +146,9 @@ invert_gl_image(char *imageData, size_t imageSize, size_t rowBytes) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: composite_gl_buffer_into_window
-//  Description: Drop a GL overlay onto a carbon window..
-////////////////////////////////////////////////////////////////////
+/**
+ * Drop a GL overlay onto a carbon window..
+ */
 static void
 composite_gl_buffer_into_window(AGLContext ctx, Rect *bufferRect,
                                 GrafPtr out_port) {
@@ -213,12 +205,9 @@ composite_gl_buffer_into_window(AGLContext ctx, Rect *bufferRect,
   DisposePtr(image);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::event_handler
-//       Access: Public
-//  Description: The standard window event handler for non-fullscreen
-//               windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * The standard window event handler for non-fullscreen windows.
+ */
 OSStatus osxGraphicsWindow::
 event_handler(EventHandlerCallRef myHandler, EventRef event) {
   OSStatus result = eventNotHandledErr;
@@ -324,13 +313,10 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::user_close_request
-//       Access: Private
-//  Description: The user has requested to close the window, for
-//               instance with Cmd-W, or by clicking on the close
-//               button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user has requested to close the window, for instance with Cmd-W, or by
+ * clicking on the close button.
+ */
 void osxGraphicsWindow::
 user_close_request() {
   string close_request_event = get_close_request_event();
@@ -343,12 +329,9 @@ user_close_request() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::system_close_window
-//       Access: Private
-//  Description: The window has been closed by an OS resource, not by
-//               an internal request
-////////////////////////////////////////////////////////////////////
+/**
+ * The window has been closed by an OS resource, not by an internal request
+ */
 void osxGraphicsWindow::
 system_close_window() {
   if (osxdisplay_cat.is_debug()) {
@@ -358,13 +341,10 @@ system_close_window() {
   release_system_resources(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: window_event_handler
-//  Description: The C callback for Window Events
-//
-//               We only hook this up for non-fullscreen windows, so
-//               we only handle system window events.
-////////////////////////////////////////////////////////////////////
+/**
+ * The C callback for Window Events  We only hook this up for non-fullscreen
+ * windows, so we only handle system window events.
+ */
 static pascal OSStatus
 window_event_handler(EventHandlerCallRef my_handler, EventRef event, void *) {
   // volatile().lock();
@@ -385,11 +365,9 @@ window_event_handler(EventHandlerCallRef my_handler, EventRef event, void *) {
   return eventNotHandledErr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::do_resize
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void osxGraphicsWindow::
 do_resize() {
   if (osxdisplay_cat.is_debug()) {
@@ -439,12 +417,9 @@ do_resize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: app_event_handler
-//  Description: The C callback for Application events.
-//
-//               Hooked once per application.
-////////////////////////////////////////////////////////////////////
+/**
+ * The C callback for Application events.  Hooked once per application.
+ */
 static pascal OSStatus
 app_event_handler(EventHandlerCallRef my_handler, EventRef event,
                   void *user_data) {
@@ -515,11 +490,9 @@ app_event_handler(EventHandlerCallRef my_handler, EventRef event,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_text_input
-//       Access: Public
-//  Description: Trap Unicode Input.
-////////////////////////////////////////////////////////////////////
+/**
+ * Trap Unicode Input.
+ */
 OSStatus osxGraphicsWindow::
 handle_text_input(EventHandlerCallRef my_handler, EventRef text_event) {
   UniChar *text = NULL;
@@ -547,11 +520,9 @@ handle_text_input(EventHandlerCallRef my_handler, EventRef text_event) {
   return ret;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::release_system_resources
-//       Access: Private
-//  Description: Clean up the OS level messes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clean up the OS level messes.
+ */
 void osxGraphicsWindow::
 release_system_resources(bool destructing) {
   if (_is_fullscreen) {
@@ -616,11 +587,9 @@ release_system_resources(bool destructing) {
 
 static int id_seed = 100;
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 osxGraphicsWindow::
 osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -658,11 +627,9 @@ osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 osxGraphicsWindow::
 ~osxGraphicsWindow() {
   if (osxdisplay_cat.is_debug()) {
@@ -679,11 +646,9 @@ osxGraphicsWindow::
   release_system_resources(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::get_context
-//       Access: Private
-//  Description: Helper to decide whitch context to use if any
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper to decide whitch context to use if any
+ */
 AGLContext osxGraphicsWindow::
 get_context() {
   if (_holder_aglcontext != NULL) {
@@ -693,11 +658,9 @@ get_context() {
   return get_gsg_context();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::get_gsg_context
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AGLContext osxGraphicsWindow::
 get_gsg_context() {
   if (_gsg != NULL) {
@@ -708,12 +671,9 @@ get_gsg_context() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::build_gl
-//       Access: Private
-//  Description: Code of the class.. used to control the GL context
-//               Allocation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Code of the class.. used to control the GL context Allocation.
+ */
 OSStatus osxGraphicsWindow::
 build_gl(bool full_screen) {
   // make sure the gsg is up and runnig..
@@ -751,13 +711,10 @@ build_gl(bool full_screen) {
   return err;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_icon_filename
-//       Access: Private
-//  Description: Called internally to load up an icon file that should
-//               be applied to the window. Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to load up an icon file that should be applied to the
+ * window.  Returns true on success, false on failure.
+ */
 bool osxGraphicsWindow::
 set_icon_filename(const Filename &icon_filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -796,12 +753,9 @@ set_icon_filename(const Filename &icon_filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_pointer_in_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is seen within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is seen within the window.
+ */
 void osxGraphicsWindow::
 set_pointer_in_window(int x, int y) {
   _input_devices[0].set_pointer_in_window(x, y);
@@ -817,12 +771,9 @@ set_pointer_in_window(int x, int y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_pointer_out_of_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is no longer within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is no longer within the window.
+ */
 void osxGraphicsWindow::
 set_pointer_out_of_window() {
   _input_devices[0].set_pointer_out_of_window();
@@ -834,15 +785,12 @@ set_pointer_out_of_window() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame. It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool osxGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector);
@@ -896,13 +844,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame. It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void osxGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -929,20 +874,14 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.  This should instruct the window to prepare for the flip at the next
+ * video sync, but it should not wait.  We have the two separate functions,
+ * begin_flip() and end_flip(), to make it easier to flip all of the windows at
+ * the same time.
+ */
 void osxGraphicsWindow::
 end_flip() {
   // cerr << " end_flip [" << _ID << "]\n";
@@ -977,12 +916,9 @@ begin_flip() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now. Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void osxGraphicsWindow::
 close_window() {
   system_close_window();
@@ -1012,13 +948,10 @@ close_window() {
 //extern OSErr CPSSetFrontProcess(struct CPSProcessSerNum *psn);
 //};
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now. Called from the window
-//               thread. Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool osxGraphicsWindow::
 open_window() {
   WindowProperties req_properties = _properties;
@@ -1033,11 +966,9 @@ open_window() {
   return answer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::os_open_window
-//       Access: Private
-//  Description: Actually makes the OS calls to open a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually makes the OS calls to open a window.
+ */
 bool osxGraphicsWindow::
 os_open_window(WindowProperties &req_properties) {
   OSErr err = noErr;
@@ -1376,12 +1307,10 @@ os_open_window(WindowProperties &req_properties) {
   return (err == noErr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::process_events
-//       Access: Protected, Virtual
-//  Description: Required event upcall, used to dispatch window and
-//               application events back into panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required event upcall, used to dispatch window and application events back
+ * into panda.
+ */
 void osxGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
@@ -1399,12 +1328,10 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_key_input
-//       Access: Protected, Virtual
-//  Description: Required event upcall, used to dispatch window and
-//               application events back into panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required event upcall, used to dispatch window and application events back
+ * into panda.
+ */
 OSStatus osxGraphicsWindow::
 handle_key_input(EventHandlerCallRef my_handler, EventRef event,
                  Boolean key_down) {
@@ -1459,11 +1386,9 @@ handle_key_input(EventHandlerCallRef my_handler, EventRef event,
   // return noErr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::system_set_window_foreground
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void osxGraphicsWindow::
 system_set_window_foreground(bool foreground) {
   WindowProperties properties;
@@ -1471,11 +1396,9 @@ system_set_window_foreground(bool foreground) {
   system_changed_properties(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::system_point_to_local_point
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void osxGraphicsWindow::
 system_point_to_local_point(Point &global_point) {
   if (_osx_window != NULL) {
@@ -1490,11 +1413,9 @@ system_point_to_local_point(Point &global_point) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_mouse_window_events
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OSStatus osxGraphicsWindow::
 handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
   WindowRef window = NULL;
@@ -1626,11 +1547,9 @@ handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::osx_translate_key
-//       Access: Private
-//  Description: MAC Key Codes to Panda Key Codes
-////////////////////////////////////////////////////////////////////
+/**
+ * MAC Key Codes to Panda Key Codes
+ */
 ButtonHandle osxGraphicsWindow::
 osx_translate_key(UInt32 key, EventRef event) {
   ButtonHandle nk = ButtonHandle::none();
@@ -1756,11 +1675,9 @@ osx_translate_key(UInt32 key, EventRef event) {
   return nk;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_modifier_delta
-//       Access: Private
-//  Description: Used to emulate key events for the MAC key modifiers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to emulate key events for the MAC key modifiers.
+ */
 void osxGraphicsWindow::
 handle_modifier_delta(UInt32 new_modifiers) {
   UInt32 changed = _last_key_modifiers ^ new_modifiers;
@@ -1789,11 +1706,9 @@ handle_modifier_delta(UInt32 new_modifiers) {
   _last_key_modifiers = new_modifiers;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_button_delta
-//       Access: Private
-//  Description: Used to emulate button events
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to emulate button events
+ */
 void osxGraphicsWindow::
 handle_button_delta(UInt32 new_buttons) {
   UInt32 changed = _last_buttons ^ new_buttons;
@@ -1825,16 +1740,12 @@ handle_button_delta(UInt32 new_buttons) {
   _last_buttons = new_buttons;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure. This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if possible.
+ * Returns true if successful, false on failure.  This may fail if the mouse is
+ * not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool osxGraphicsWindow::
 move_pointer(int device, int x, int y) {
   if (_osx_window == NULL) {
@@ -1864,11 +1775,9 @@ move_pointer(int device, int x, int y) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::do_reshape_request
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool osxGraphicsWindow::
 do_reshape_request(int x_origin, int y_origin, bool has_origin,
                    int x_size, int y_size) {
@@ -1933,25 +1842,17 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame. This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The properties that have been applied are cleared
-//               from the structure by this function; so on return,
-//               whatever remains in the properties structure are
-//               those that were unchanged for some reason (probably
-//               because the underlying interface does not support
-//               changing that property on an open window).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.  The window
+ * properties are applied immediately, rather than waiting until the next frame.
+ * This implies that this method may *only* be called from within the window
+ * thread.  The properties that have been applied are cleared from the structure
+ * by this function; so on return, whatever remains in the properties structure
+ * are those that were unchanged for some reason (probably because the
+ * underlying interface does not support changing that property on an open
+ * window).
+ */
 void osxGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (osxdisplay_cat.is_debug()) {
@@ -2088,11 +1989,9 @@ set_properties_now(WindowProperties &properties) {
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::local_point_to_system_point
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void osxGraphicsWindow::
 local_point_to_system_point(Point &local_point) {
   if (_osx_window != NULL) {
@@ -2107,22 +2006,18 @@ local_point_to_system_point(Point &local_point) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::mouse_mode_relative
-//       Access: Protected, Virtual
-//  Description: detaches mouse. Only mouse delta from now on.
-////////////////////////////////////////////////////////////////////
+/**
+ * detaches mouse.  Only mouse delta from now on.
+ */
 void osxGraphicsWindow::
 mouse_mode_relative() {
   CGAssociateMouseAndMouseCursorPosition(false);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::mouse_mode_absolute
-//       Access: Protected, Virtual
-//  Description: reattaches mouse to location
-////////////////////////////////////////////////////////////////////
+/**
+ * reattaches mouse to location
+ */
 void osxGraphicsWindow::
 mouse_mode_absolute() {
   CGAssociateMouseAndMouseCursorPosition(true);

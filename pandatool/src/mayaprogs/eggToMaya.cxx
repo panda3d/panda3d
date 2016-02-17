@@ -1,16 +1,15 @@
-// Filename: eggToMaya.cxx
-// Created by:  drose (11Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToMaya.cxx
+ * @author drose
+ * @date 2005-08-11
+ */
 
 #include "eggToMaya.h"
 #include "mayaEggLoader.h"
@@ -28,11 +27,9 @@
 #include <maya/MFileIO.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToMaya::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToMaya::
 EggToMaya() :
   EggToSomething("Maya", ".mb", true, false)
@@ -66,11 +63,9 @@ EggToMaya() :
   _output_units = DU_centimeters;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToMaya::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToMaya::
 run() {
   if (!_convert_anim && !_convert_model) {
@@ -118,7 +113,7 @@ run() {
     status.perror("Could not save file");
     exit(1);
   }
-    
+
   /*
   // And write out the resulting Maya file.
   string os_specific = _output_filename.to_os_generic();
@@ -146,4 +141,3 @@ int main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-

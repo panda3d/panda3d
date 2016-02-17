@@ -1,16 +1,15 @@
-// Filename: physxForceField.cxx
-// Created by:  enn0x (06Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxForceField.cxx
+ * @author enn0x
+ * @date 2009-11-06
+ */
 
 #include "physxForceField.h"
 #include "physxForceFieldDesc.h"
@@ -19,11 +18,9 @@
 
 TypeHandle PhysxForceField::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxForceField::
 link(NxForceField *fieldPtr) {
 
@@ -42,11 +39,9 @@ link(NxForceField *fieldPtr) {
   group->link(&(_ptr->getIncludeShapeGroup()));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxForceField::
 unlink() {
 
@@ -62,11 +57,9 @@ unlink() {
   scene->_forcefields.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxForceField::
 release() {
 
@@ -77,11 +70,9 @@ release() {
   _ptr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::set_name
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxForceField::
 set_name(const char *name) {
 
@@ -91,11 +82,9 @@ set_name(const char *name) {
   _ptr->setName(_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::get_name
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const char *PhysxForceField::
 get_name() const {
 
@@ -103,11 +92,9 @@ get_name() const {
   return _ptr->getName();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::get_scene
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxScene *PhysxForceField::
 get_scene() const {
 
@@ -115,11 +102,9 @@ get_scene() const {
   return (PhysxScene *)(_ptr->getScene().userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::get_include_shape_group
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxForceFieldShapeGroup *PhysxForceField::
 get_include_shape_group() const {
 
@@ -127,11 +112,9 @@ get_include_shape_group() const {
   return (PhysxForceFieldShapeGroup *)(_ptr->getIncludeShapeGroup().userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::get_num_shape_groups
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxForceField::
 get_num_shape_groups() const {
 
@@ -139,11 +122,9 @@ get_num_shape_groups() const {
   return _ptr->getNbShapeGroups();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::get_shape_group
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxForceFieldShapeGroup *PhysxForceField::
 get_shape_group(unsigned int idx) const {
 
@@ -160,4 +141,3 @@ get_shape_group(unsigned int idx) const {
 
   return (PhysxForceFieldShapeGroup *)(groupPtr->userData);
 }
-

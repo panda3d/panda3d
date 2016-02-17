@@ -1,16 +1,15 @@
-// Filename: texturePosition.h
-// Created by:  drose (04Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texturePosition.h
+ * @author drose
+ * @date 2000-12-04
+ */
 
 #ifndef TEXTUREPOSITION_H
 #define TEXTUREPOSITION_H
@@ -23,14 +22,12 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TexturePosition
-// Description : This represents a particular position of a texture
-//               within a PaletteImage.  There is only one of these
-//               per TexturePlacement, but it exists as a separate
-//               structure so the TexturePlacement can easily consider
-//               repositioning the texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a particular position of a texture within a PaletteImage.
+ * There is only one of these per TexturePlacement, but it exists as a separate
+ * structure so the TexturePlacement can easily consider repositioning the
+ * texture.
+ */
 class TexturePosition : public TypedWritable {
 public:
   TexturePosition();
@@ -76,4 +73,3 @@ private:
 };
 
 #endif
-

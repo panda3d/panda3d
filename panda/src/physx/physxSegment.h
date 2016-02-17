@@ -1,16 +1,15 @@
-// Filename: physxSegment.h
-// Created by:  enn0x (31Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxSegment.h
+ * @author enn0x
+ * @date 2009-10-31
+ */
 
 #ifndef PHYSXSEGMENT_H
 #define PHYSXSEGMENT_H
@@ -20,10 +19,9 @@
 
 #include "config_physx.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSegment
-// Description : Represents a line segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a line segment.
+ */
 class EXPCL_PANDAPHYSX PhysxSegment {
 
 PUBLISHED:

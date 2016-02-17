@@ -1,16 +1,15 @@
-// Filename: parametricCurveCollection.h
-// Created by:  drose (04Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file parametricCurveCollection.h
+ * @author drose
+ * @date 2001-03-04
+ */
 
 #ifndef NODEPATHCOLLECTION_H
 #define NODEPATHCOLLECTION_H
@@ -28,16 +27,13 @@
 
 class ParametricCurveDrawer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParametricCurveCollection
-// Description : This is a set of zero or more ParametricCurves, which
-//               may or may not be related.  If they are related, the
-//               set should contain no more than one XYZ curve, no
-//               more than one HPR curve, and zero or more Timewarp
-//               curves, which can then be evaluated as a unit to
-//               return a single transformation matrix for a given
-//               unit of time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a set of zero or more ParametricCurves, which may or may not be
+ * related.  If they are related, the set should contain no more than one XYZ
+ * curve, no more than one HPR curve, and zero or more Timewarp curves, which
+ * can then be evaluated as a unit to return a single transformation matrix for
+ * a given unit of time.
+ */
 class EXPCL_PANDA_PARAMETRICS ParametricCurveCollection : public ReferenceCount {
 PUBLISHED:
   ParametricCurveCollection();
@@ -119,5 +115,3 @@ operator << (ostream &out, const ParametricCurveCollection &col) {
 #include "parametricCurveCollection.I"
 
 #endif
-
-

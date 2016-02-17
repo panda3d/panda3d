@@ -1,16 +1,15 @@
-// Filename: cppParameterList.h
-// Created by:  drose (21Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppParameterList.h
+ * @author drose
+ * @date 1999-10-21
+ */
 
 #ifndef CPPPARAMETERLIST_H
 #define CPPPARAMETERLIST_H
@@ -24,11 +23,9 @@
 class CPPInstance;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPParameterList
-// Description : A list of formal parameters for a function
-//               declaration.
-////////////////////////////////////////////////////////////////////
+/**
+ * A list of formal parameters for a function declaration.
+ */
 class CPPParameterList {
 public:
   CPPParameterList();
@@ -67,5 +64,3 @@ operator << (ostream &out, const CPPParameterList &plist) {
 }
 
 #endif
-
-

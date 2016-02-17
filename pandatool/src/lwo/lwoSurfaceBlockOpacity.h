@@ -1,16 +1,15 @@
-// Filename: lwoSurfaceBlockOpacity.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoSurfaceBlockOpacity.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOSURFACEBLOCKOPACITY_H
 #define LWOSURFACEBLOCKOPACITY_H
@@ -19,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockOpacity
-// Description : Indicates how transparent or opaque this particular
-//               layer is in relation to the layers beneath it.  This
-//               is a subchunk of LwoSurfaceBlockHeader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates how transparent or opaque this particular layer is in relation to
+ * the layers beneath it.  This is a subchunk of LwoSurfaceBlockHeader.
+ */
 class LwoSurfaceBlockOpacity : public LwoChunk {
 public:
   enum Type {
@@ -64,5 +61,3 @@ private:
 };
 
 #endif
-
-

@@ -1,36 +1,31 @@
-// Filename: stringDecoder.cxx
-// Created by:  drose (11Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stringDecoder.cxx
+ * @author drose
+ * @date 2002-02-11
+ */
 
 #include "stringDecoder.h"
 #include "config_dtoolutil.h"
 
 ostream *StringDecoder::_notify_ptr = &cerr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringDecoder::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 StringDecoder::
 ~StringDecoder() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringDecoder::get_next_character
-//       Access: Public, Virtual
-//  Description: Returns the next character in sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the next character in sequence.
+ */
 int StringDecoder::
 get_next_character() {
   if (test_eof()) {
@@ -39,26 +34,20 @@ get_next_character() {
   return (unsigned char)_input[_p++];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringDecoder::set_notify_ptr
-//       Access: Public, Static
-//  Description: Sets the ostream that is used to write error messages
-//               to.  This is necessary because of the low-level
-//               placement of this class, before the definition of the
-//               NotifyCategory class, so it cannot specify its own
-//               notify.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the ostream that is used to write error messages to.  This is necessary
+ * because of the low-level placement of this class, before the definition of
+ * the NotifyCategory class, so it cannot specify its own notify.
+ */
 void StringDecoder::
 set_notify_ptr(ostream *notify_ptr) {
   _notify_ptr = notify_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringDecoder::get_notify_ptr
-//       Access: Public, Static
-//  Description: Returns the ostream that is used to write error messages
-//               to.  See set_notify_ptr().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ostream that is used to write error messages to.  See
+ * set_notify_ptr().
+ */
 ostream *StringDecoder::
 get_notify_ptr() {
   return _notify_ptr;
@@ -89,11 +78,9 @@ The value of each individual byte indicates its UTF-8 function, as follows:
  E0 to EF hex (224 to 239):  first byte of a three-byte sequence.
 */
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringUtf8Decoder::get_next_character
-//       Access: Public, Virtual
-//  Description: Returns the next character in sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the next character in sequence.
+ */
 int StringUtf8Decoder::
 get_next_character() {
   unsigned int result;
@@ -116,7 +103,7 @@ get_next_character() {
       two = (unsigned char)_input[_p++];
       result = ((result & 0x1f) << 6) | (two & 0x3f);
       return result;
-      
+
     } else if ((result & 0xf0) == 0xe0) {
       // First byte of three.
       if (test_eof()) {
@@ -153,11 +140,9 @@ get_next_character() {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringUnicodeDecoder::get_next_character
-//       Access: Public, Virtual
-//  Description: Returns the next character in sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the next character in sequence.
+ */
 int StringUnicodeDecoder::
 get_next_character() {
   if (test_eof()) {

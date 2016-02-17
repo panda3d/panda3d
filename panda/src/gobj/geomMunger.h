@@ -1,16 +1,15 @@
-// Filename: geomMunger.h
-// Created by:  drose (10Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomMunger.h
+ * @author drose
+ * @date 2005-03-10
+ */
 
 #ifndef GEOMMUNGER_H
 #define GEOMMUNGER_H
@@ -33,27 +32,19 @@ class GraphicsStateGuardianBase;
 class RenderState;
 class Geom;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomMunger
-// Description : Objects of this class are used to convert vertex data
-//               from a Geom into a format suitable for passing to the
-//               rendering backend.  Typically, the rendering backend
-//               will create a specialization of this class to handle
-//               its particular needs (e.g. DXGeomMunger).  This class
-//               is necessary because DirectX and OpenGL have somewhat
-//               different requirements for vertex format.
-//
-//               This also performs runtime application of state
-//               changes to the vertex data; for instance, by scaling
-//               all of the color values in response to a
-//               ColorScaleAttrib.
-//
-//               A GeomMunger must be registered before it can be
-//               used, and once registered, the object is constant and
-//               cannot be changed.  All registered GeomMungers that
-//               perform the same operation will have the same
-//               pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects of this class are used to convert vertex data from a Geom into a
+ * format suitable for passing to the rendering backend.  Typically, the
+ * rendering backend will create a specialization of this class to handle its
+ * particular needs (e.g.  DXGeomMunger).  This class is necessary because
+ * DirectX and OpenGL have somewhat different requirements for vertex format.
+ * This also performs runtime application of state changes to the vertex data;
+ * for instance, by scaling all of the color values in response to a
+ * ColorScaleAttrib.  A GeomMunger must be registered before it can be used, and
+ * once registered, the object is constant and cannot be changed.  All
+ * registered GeomMungers that perform the same operation will have the same
+ * pointer.
+ */
 class EXPCL_PANDA_GOBJ GeomMunger : public TypedReferenceCount, public GeomEnums {
 public:
   GeomMunger(GraphicsStateGuardianBase *gsg);
@@ -180,4 +171,3 @@ private:
 #include "geomMunger.I"
 
 #endif
-

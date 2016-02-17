@@ -1,16 +1,15 @@
-// Filename: pythonTask.h
-// Created by:  drose (16Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pythonTask.h
+ * @author drose
+ * @date 2008-09-16
+ */
 
 #ifndef PYTHONTASK_H
 #define PYTHONTASK_H
@@ -22,11 +21,10 @@
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PythonTask
-// Description : This class exists to allow association of a Python
-//               function with the AsyncTaskManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class exists to allow association of a Python function with the
+ * AsyncTaskManager.
+ */
 class PythonTask : public AsyncTask {
 PUBLISHED:
   PythonTask(PyObject *function = Py_None, const string &name = string());
@@ -139,4 +137,3 @@ private:
 #endif  // HAVE_PYTHON
 
 #endif
-

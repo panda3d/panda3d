@@ -1,16 +1,15 @@
-// Filename: cMetaInterval.cxx
-// Created by:  drose (27Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cMetaInterval.cxx
+ * @author drose
+ * @date 2002-08-27
+ */
 
 #include "cMetaInterval.h"
 #include "waitInterval.h"
@@ -24,11 +23,9 @@
 
 TypeHandle CMetaInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CMetaInterval::
 CMetaInterval(const string &name) :
   CInterval(name, 0.0, true)
@@ -39,22 +36,17 @@ CMetaInterval(const string &name) :
   _processing_events = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CMetaInterval::
 ~CMetaInterval() {
   clear_intervals();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::clear_intervals
-//       Access: Published
-//  Description: Resets the list of intervals and prepares for
-//               receiving a new list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the list of intervals and prepares for receiving a new list.
+ */
 void CMetaInterval::
 clear_intervals() {
   // Better not do this unless you have serviced all of the
@@ -75,7 +67,7 @@ clear_intervals() {
   for (di = _defs.begin(); di != _defs.end(); ++di) {
     IntervalDef &def = (*di);
     if (def._c_interval != (CInterval *)NULL) {
-      CInterval::Parents::iterator pi = 
+      CInterval::Parents::iterator pi =
         find(def._c_interval->_parents.begin(),
              def._c_interval->_parents.end(),
              this);
@@ -95,18 +87,13 @@ clear_intervals() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::push_level
-//       Access: Published
-//  Description: Marks the beginning of a nested level of child
-//               intervals.  Within the nested level, a RelativeStart
-//               time of RS_level_begin refers to the start of the
-//               level, and the first interval added within the level
-//               is always relative to the start of the level.
-//
-//               The return value is the index of the def entry
-//               created by this push.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the beginning of a nested level of child intervals.  Within the nested
+ * level, a RelativeStart time of RS_level_begin refers to the start of the
+ * level, and the first interval added within the level is always relative to
+ * the start of the level.  The return value is the index of the def entry
+ * created by this push.
+ */
 int CMetaInterval::
 push_level(const string &name, double rel_time, RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
@@ -123,18 +110,13 @@ push_level(const string &name, double rel_time, RelativeStart rel_to) {
   return (int)_defs.size() - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::add_c_interval
-//       Access: Published
-//  Description: Adds a new CInterval to the list.  The interval will
-//               be played when the indicated time (relative to the
-//               given point) has been reached.
-//
-//               The return value is the index of the def entry
-//               representing the new interval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new CInterval to the list.  The interval will be played when the
+ * indicated time (relative to the given point) has been reached.  The return
+ * value is the index of the def entry representing the new interval.
+ */
 int CMetaInterval::
-add_c_interval(CInterval *c_interval, 
+add_c_interval(CInterval *c_interval,
                double rel_time, RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
   nassertr(c_interval != (CInterval *)NULL, -1);
@@ -152,28 +134,17 @@ add_c_interval(CInterval *c_interval,
   return (int)_defs.size() - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::add_ext_index
-//       Access: Published
-//  Description: Adds a new external interval to the list.  This
-//               represents some object in the external scripting
-//               language that has properties similar to a CInterval
-//               (for instance, a Python Interval object).
-//
-//               The CMetaInterval object cannot play this external
-//               interval directly, but it records a placeholder for
-//               it and will ask the scripting language to play it
-//               when it is time, via is_event_ready() and related
-//               methods.
-//
-//               The ext_index number itself is simply a handle that
-//               the scripting language makes up and associates with
-//               its interval object somehow.  The CMetaInterval
-//               object does not attempt to interpret this value.
-//
-//               The return value is the index of the def entry
-//               representing the new interval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new external interval to the list.  This represents some object in the
+ * external scripting language that has properties similar to a CInterval (for
+ * instance, a Python Interval object).  The CMetaInterval object cannot play
+ * this external interval directly, but it records a placeholder for it and will
+ * ask the scripting language to play it when it is time, via is_event_ready()
+ * and related methods.  The ext_index number itself is simply a handle that the
+ * scripting language makes up and associates with its interval object somehow.
+ * The CMetaInterval object does not attempt to interpret this value.  The
+ * return value is the index of the def entry representing the new interval.
+ */
 int CMetaInterval::
 add_ext_index(int ext_index, const string &name, double duration,
               bool open_ended,
@@ -194,18 +165,13 @@ add_ext_index(int ext_index, const string &name, double duration,
   return (int)_defs.size() - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::pop_level
-//       Access: Published
-//  Description: Finishes a level marked by a previous call to
-//               push_level(), and returns to the previous level.
-//
-//               If the duration is not negative, it represents a
-//               phony duration to assign to the level, for the
-//               purposes of sequencing later intervals.  Otherwise,
-//               the level's duration is computed based on the
-//               intervals within the level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finishes a level marked by a previous call to push_level(), and returns to
+ * the previous level.  If the duration is not negative, it represents a phony
+ * duration to assign to the level, for the purposes of sequencing later
+ * intervals.  Otherwise, the level's duration is computed based on the
+ * intervals within the level.
+ */
 int CMetaInterval::
 pop_level(double duration) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
@@ -221,21 +187,14 @@ pop_level(double duration) {
   return (int)_defs.size() - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::set_interval_start_time
-//       Access: Published
-//  Description: Adjusts the start time of the child interval with the
-//               given name, if found.  This may be either a C++
-//               interval added via add_c_interval(), or an external
-//               interval added via add_ext_index(); the name must
-//               match exactly.
-//
-//               If the interval is found, its start time is adjusted,
-//               and all subsequent intervals are adjusting
-//               accordingly, and true is returned.  If a matching
-//               interval is not found, nothing is changed and false
-//               is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the start time of the child interval with the given name, if found.
+ * This may be either a C++ interval added via add_c_interval(), or an external
+ * interval added via add_ext_index(); the name must match exactly.  If the
+ * interval is found, its start time is adjusted, and all subsequent intervals
+ * are adjusting accordingly, and true is returned.  If a matching interval is
+ * not found, nothing is changed and false is returned.
+ */
 bool CMetaInterval::
 set_interval_start_time(const string &name, double rel_time,
                         CMetaInterval::RelativeStart rel_to) {
@@ -269,14 +228,11 @@ set_interval_start_time(const string &name, double rel_time,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::get_interval_start_time
-//       Access: Published
-//  Description: Returns the actual start time, relative to the
-//               beginning of the interval, of the child interval with
-//               the given name, if found, or -1 if the interval is
-//               not found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the actual start time, relative to the beginning of the interval, of
+ * the child interval with the given name, if found, or -1 if the interval is
+ * not found.
+ */
 double CMetaInterval::
 get_interval_start_time(const string &name) const {
   recompute();
@@ -306,14 +262,11 @@ get_interval_start_time(const string &name) const {
   return -1.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::get_interval_end_time
-//       Access: Published
-//  Description: Returns the actual end time, relative to the
-//               beginning of the interval, of the child interval with
-//               the given name, if found, or -1 if the interval is
-//               not found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the actual end time, relative to the beginning of the interval, of
+ * the child interval with the given name, if found, or -1 if the interval is
+ * not found.
+ */
 double CMetaInterval::
 get_interval_end_time(const string &name) const {
   recompute();
@@ -346,14 +299,11 @@ get_interval_end_time(const string &name) const {
   return -1.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::initialize
-//       Access: Published, Virtual
-//  Description: This replaces the first call to priv_step(), and indicates
-//               that the interval has just begun.  This may be
-//               overridden by derived classes that need to do some
-//               explicit initialization on the first call.
-////////////////////////////////////////////////////////////////////
+/**
+ * This replaces the first call to priv_step(), and indicates that the interval
+ * has just begun.  This may be overridden by derived classes that need to do
+ * some explicit initialization on the first call.
+ */
 void CMetaInterval::
 priv_initialize(double t) {
   if (_processing_events) {
@@ -390,7 +340,7 @@ priv_initialize(double t) {
          _events[_next_event_index]->_time <= now) {
     PlaybackEvent *event = _events[_next_event_index];
     _next_event_index++;
-    
+
     // Do the indicated event.
     do_event_forward(event, new_active, true);
   }
@@ -401,14 +351,11 @@ priv_initialize(double t) {
   _state = S_started;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::instant
-//       Access: Published, Virtual
-//  Description: This is called in lieu of priv_initialize() .. priv_step()
-//               .. priv_finalize(), when everything is to happen within
-//               one frame.  The interval should initialize itself,
-//               then leave itself in the final state.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in lieu of priv_initialize() .. priv_step() ..
+ * priv_finalize(), when everything is to happen within one frame.  The interval
+ * should initialize itself, then leave itself in the final state.
+ */
 void CMetaInterval::
 priv_instant() {
   if (_processing_events) {
@@ -443,13 +390,10 @@ priv_instant() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the normal
+ * case) or decrease (e.g.  if the interval is being played by a slider).
+ */
 void CMetaInterval::
 priv_step(double t) {
   if (_processing_events) {
@@ -492,7 +436,7 @@ priv_step(double t) {
   } else {
     // A less usual case: time is decreasing.
     ActiveEvents new_active;
-    while (_next_event_index > 0 && 
+    while (_next_event_index > 0 &&
            _events[_next_event_index - 1]->_time > now) {
       _next_event_index--;
       PlaybackEvent *event = _events[_next_event_index];
@@ -508,13 +452,11 @@ priv_step(double t) {
   _state = S_started;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::finalize
-//       Access: Published, Virtual
-//  Description: This is called when an interval is interrupted.  It
-//               should advance the time as if priv_step() were called, and
-//               also perform whatever cleanup might be required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called when an interval is interrupted.  It should advance the time
+ * as if priv_step() were called, and also perform whatever cleanup might be
+ * required.
+ */
 void CMetaInterval::
 priv_finalize() {
   if (_processing_events) {
@@ -550,14 +492,11 @@ priv_finalize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::reverse_initialize
-//       Access: Published, Virtual
-//  Description: Similar to priv_initialize(), but this is called when the
-//               interval is being played backwards; it indicates that
-//               the interval should start at the finishing state and
-//               undo any intervening intervals.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to priv_initialize(), but this is called when the interval is being
+ * played backwards; it indicates that the interval should start at the
+ * finishing state and undo any intervening intervals.
+ */
 void CMetaInterval::
 priv_reverse_initialize(double t) {
   if (_processing_events) {
@@ -590,11 +529,11 @@ priv_reverse_initialize(double t) {
   // Now look for events from the end down to the current time.
   _processing_events = true;
   ActiveEvents new_active;
-  while (_next_event_index > 0 && 
+  while (_next_event_index > 0 &&
          _events[_next_event_index - 1]->_time > now) {
     _next_event_index--;
     PlaybackEvent *event = _events[_next_event_index];
-    
+
     // Do the indicated event.
     do_event_reverse(event, new_active, true);
   }
@@ -605,15 +544,11 @@ priv_reverse_initialize(double t) {
   _state = S_started;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::reverse_instant
-//       Access: Published, Virtual
-//  Description: This is called in lieu of priv_reverse_initialize()
-//               .. priv_step() .. priv_reverse_finalize(), when everything is
-//               to happen within one frame.  The interval should
-//               initialize itself, then leave itself in the initial
-//               state.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in lieu of priv_reverse_initialize() .. priv_step() ..
+ * priv_reverse_finalize(), when everything is to happen within one frame.  The
+ * interval should initialize itself, then leave itself in the initial state.
+ */
 void CMetaInterval::
 priv_reverse_instant() {
   if (_processing_events) {
@@ -642,13 +577,10 @@ priv_reverse_instant() {
   _state = S_initial;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::reverse_finalize
-//       Access: Published, Virtual
-//  Description: Called generally following a priv_reverse_initialize(),
-//               this indicates the interval should set itself to the
-//               initial state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called generally following a priv_reverse_initialize(), this indicates the
+ * interval should set itself to the initial state.
+ */
 void CMetaInterval::
 priv_reverse_finalize() {
   if (_processing_events) {
@@ -677,20 +609,14 @@ priv_reverse_finalize() {
   _state = S_initial;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::interrupt
-//       Access: Published, Virtual
-//  Description: This is called while the interval is playing to
-//               indicate that it is about to be interrupted; that is,
-//               priv_step() will not be called for a length of time.  But
-//               the interval should remain in its current state in
-//               anticipation of being eventually restarted when the
-//               calls to priv_step() eventually resume.
-//
-//               The purpose of this function is to allow self-running
-//               intervals like sound intervals to stop the actual
-//               sound playback during the pause.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called while the interval is playing to indicate that it is about to
+ * be interrupted; that is, priv_step() will not be called for a length of time.
+ * But the interval should remain in its current state in anticipation of being
+ * eventually restarted when the calls to priv_step() eventually resume.  The
+ * purpose of this function is to allow self-running intervals like sound
+ * intervals to stop the actual sound playback during the pause.
+ */
 void CMetaInterval::
 priv_interrupt() {
   if (_processing_events) {
@@ -711,16 +637,12 @@ priv_interrupt() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::pop_event
-//       Access: Published
-//  Description: Acknowledges that the external interval on the top of
-//               the queue has been extracted, and is about to be
-//               serviced by the scripting language.  This prepares
-//               the interval so the next call to is_event_ready()
-//               will return information about the next external
-//               interval on the queue, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Acknowledges that the external interval on the top of the queue has been
+ * extracted, and is about to be serviced by the scripting language.  This
+ * prepares the interval so the next call to is_event_ready() will return
+ * information about the next external interval on the queue, if any.
+ */
 void CMetaInterval::
 pop_event() {
 #ifndef NDEBUG
@@ -732,11 +654,9 @@ pop_event() {
   _event_queue.pop_front();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CMetaInterval::
 write(ostream &out, int indent_level) const {
   recompute();
@@ -763,12 +683,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::timeline
-//       Access: Published
-//  Description: Outputs a list of all events in the order in which
-//               they occur.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a list of all events in the order in which they occur.
+ */
 void CMetaInterval::
 timeline(ostream &out) const {
   recompute();
@@ -810,12 +727,10 @@ timeline(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::do_recompute
-//       Access: Protected, Virtual
-//  Description: Recomputes all of the events (and the duration)
-//               according to the set of interval defs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes all of the events (and the duration) according to the set of
+ * interval defs.
+ */
 void CMetaInterval::
 do_recompute() {
   _dirty = false;
@@ -835,11 +750,9 @@ do_recompute() {
   _duration = int_to_double_time(_end_time);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::clear_events
-//       Access: Private
-//  Description: Removes all entries from the _events list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all entries from the _events list.
+ */
 void CMetaInterval::
 clear_events() {
   PlaybackEvents::iterator ei;
@@ -851,27 +764,22 @@ clear_events() {
   _active.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::do_event_forward
-//       Access: Private
-//  Description: Process a single event in the interval, moving
-//               forwards in time.  If the event represents a new
-//               begin, adds it to the new_active list; if it is an
-//               end, finalizes it.
-//
-//               If is_initial is true, it is as if we are in
-//               initialize or finalize: instant events will be
-//               invoked only if they are marked open_ended.
-////////////////////////////////////////////////////////////////////
+/**
+ * Process a single event in the interval, moving forwards in time.  If the
+ * event represents a new begin, adds it to the new_active list; if it is an
+ * end, finalizes it.  If is_initial is true, it is as if we are in initialize
+ * or finalize: instant events will be invoked only if they are marked
+ * open_ended.
+ */
 void CMetaInterval::
-do_event_forward(CMetaInterval::PlaybackEvent *event, 
+do_event_forward(CMetaInterval::PlaybackEvent *event,
                  CMetaInterval::ActiveEvents &new_active, bool is_initial) {
   switch (event->_type) {
   case PET_begin:
     nassertv(event->_begin_event == event);
     new_active.push_back(event);
     break;
-    
+
   case PET_end:
     {
       // Erase the event from either the new active or the current
@@ -900,7 +808,7 @@ do_event_forward(CMetaInterval::PlaybackEvent *event,
       }
     }
     break;
-    
+
   case PET_instant:
     nassertv(event->_begin_event == event);
     enqueue_event(event->_n, ET_instant, is_initial);
@@ -908,15 +816,12 @@ do_event_forward(CMetaInterval::PlaybackEvent *event,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::finish_events_forward
-//       Access: Private
-//  Description: After walking through the event list and adding a
-//               bunch of new events to new_active, finished up by
-//               calling priv_step() on all of the events still in _active
-//               and priv_initialize() on all the events in new_active,
-//               then copying the events from new_active to active.
-////////////////////////////////////////////////////////////////////
+/**
+ * After walking through the event list and adding a bunch of new events to
+ * new_active, finished up by calling priv_step() on all of the events still in
+ * _active and priv_initialize() on all the events in new_active, then copying
+ * the events from new_active to active.
+ */
 void CMetaInterval::
 finish_events_forward(int now, CMetaInterval::ActiveEvents &new_active) {
   // Do whatever's still active.
@@ -925,7 +830,7 @@ finish_events_forward(int now, CMetaInterval::ActiveEvents &new_active) {
     PlaybackEvent *event = (*ai);
     enqueue_event(event->_n, ET_step, false, now - event->_time);
   }
-  
+
   // Initialize whatever new intervals we came across.
   for (ai = new_active.begin(); ai != new_active.end(); ++ai) {
     PlaybackEvent *event = (*ai);
@@ -934,21 +839,15 @@ finish_events_forward(int now, CMetaInterval::ActiveEvents &new_active) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::do_event_reverse
-//       Access: Private
-//  Description: Process a single event in the interval, moving
-//               backwards in time.  This undoes the indicated event.
-//               If the event represents a new begin, adds it to the
-//               new_active list; if it is an end, finalizes it.
-//
-//               If is_initial is true, it is as if we are in
-//               reverse_initialize or reverse_finalize: instant
-//               events will be invoked only if they are marked
-//               open_ended.
-////////////////////////////////////////////////////////////////////
+/**
+ * Process a single event in the interval, moving backwards in time.  This
+ * undoes the indicated event.  If the event represents a new begin, adds it to
+ * the new_active list; if it is an end, finalizes it.  If is_initial is true,
+ * it is as if we are in reverse_initialize or reverse_finalize: instant events
+ * will be invoked only if they are marked open_ended.
+ */
 void CMetaInterval::
-do_event_reverse(CMetaInterval::PlaybackEvent *event, 
+do_event_reverse(CMetaInterval::PlaybackEvent *event,
                  CMetaInterval::ActiveEvents &new_active, bool is_initial) {
   // Undo the indicated event.
   switch (event->_type) {
@@ -974,7 +873,7 @@ do_event_reverse(CMetaInterval::PlaybackEvent *event,
         } else {
           // Hmm, this event wasn't on either list.  Maybe there was a
           // stop event on the list whose time was greater than the
-          // total, somehow. 
+          // total, somehow.
           interval_cat.error()
             << "Event " << event->_n << " not on active list.\n";
           nassertv(false);
@@ -982,11 +881,11 @@ do_event_reverse(CMetaInterval::PlaybackEvent *event,
       }
     }
     break;
-    
+
   case PET_end:
     new_active.push_front(event->_begin_event);
     break;
-    
+
   case PET_instant:
     nassertv(event->_begin_event == event);
     enqueue_event(event->_n, ET_reverse_instant, is_initial);
@@ -994,16 +893,12 @@ do_event_reverse(CMetaInterval::PlaybackEvent *event,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::finish_events_reverse
-//       Access: Private
-//  Description: After walking through the event list and adding a
-//               bunch of new events to new_active, finishes up by
-//               calling priv_step() on all of the events still in _active
-//               and priv_reverse_initialize() on all the events in
-//               new_active, then copying the events from new_active
-//               to active.
-////////////////////////////////////////////////////////////////////
+/**
+ * After walking through the event list and adding a bunch of new events to
+ * new_active, finishes up by calling priv_step() on all of the events still in
+ * _active and priv_reverse_initialize() on all the events in new_active, then
+ * copying the events from new_active to active.
+ */
 void CMetaInterval::
 finish_events_reverse(int now, CMetaInterval::ActiveEvents &new_active) {
   // Do whatever's still active.
@@ -1012,7 +907,7 @@ finish_events_reverse(int now, CMetaInterval::ActiveEvents &new_active) {
     PlaybackEvent *event = (*ai);
     enqueue_event(event->_n, ET_step, false, now - event->_time);
   }
-  
+
   // Initialize whatever new intervals we came across.
   for (ai = new_active.begin(); ai != new_active.end(); ++ai) {
     PlaybackEvent *event = (*ai);
@@ -1020,23 +915,15 @@ finish_events_reverse(int now, CMetaInterval::ActiveEvents &new_active) {
     _active.push_front(event);
   }
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::enqueue_event
-//       Access: Private
-//  Description: Enqueues the indicated interval for invocation after
-//               we have finished scanning for events that need
-//               processing this frame.
-//
-//               is_initial is only relevant for event types
-//               ET_instant or ET_reverse_instant, and indicates
-//               whether we are in the priv_initialize() (or
-//               priv_reverse_initialize()) call, and should therefore only
-//               invoke open-ended intervals.
-//
-//               time is only relevant for ET_initialize,
-//               ET_reverse_initialize, and ET_step.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Enqueues the indicated interval for invocation after we have finished
+ * scanning for events that need processing this frame.  is_initial is only
+ * relevant for event types ET_instant or ET_reverse_instant, and indicates
+ * whether we are in the priv_initialize() (or priv_reverse_initialize()) call,
+ * and should therefore only invoke open-ended intervals.  time is only relevant
+ * for ET_initialize, ET_reverse_initialize, and ET_step.
+ */
 void CMetaInterval::
 enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time) {
   nassertv(n >= 0 && n < (int)_defs.size());
@@ -1079,17 +966,12 @@ enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time)
   _event_queue.push_back(EventQueueEntry(n, event_type, time));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::enqueue_self_event
-//       Access: Private
-//  Description: Enqueues a reference to *this* interval.  This is
-//               called only when the interval is recursively
-//               re-entered; the request will be serviced when the
-//               current request is done processing.
-//
-//               time is only relevant for ET_initialize,
-//               ET_reverse_initialize, and ET_step.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enqueues a reference to *this* interval.  This is called only when the
+ * interval is recursively re-entered; the request will be serviced when the
+ * current request is done processing.  time is only relevant for ET_initialize,
+ * ET_reverse_initialize, and ET_step.
+ */
 void CMetaInterval::
 enqueue_self_event(CInterval::EventType event_type, double t) {
   interval_cat.info()
@@ -1098,29 +980,21 @@ enqueue_self_event(CInterval::EventType event_type, double t) {
   _event_queue.push_back(EventQueueEntry(-1, event_type, time));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::enqueue_done_event
-//       Access: Private
-//  Description: Enqueues a special "event" that simply marks the end
-//               of processing of the interval; the interval's done
-//               event should be thrown now, if it is defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enqueues a special "event" that simply marks the end of processing of the
+ * interval; the interval's done event should be thrown now, if it is defined.
+ */
 void CMetaInterval::
 enqueue_done_event() {
   _event_queue.push_back(EventQueueEntry(-2, ET_finalize, 0));
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::service_event_queue
-//       Access: Private
-//  Description: Invokes whatever C++ intervals might be at the head
-//               of the queue, and prepares for passing an external
-//               interval to the scripting language.
-//
-//               The return value is true if there remains at least
-//               one external event to be serviced, false if all
-//               events are handled.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Invokes whatever C++ intervals might be at the head of the queue, and
+ * prepares for passing an external interval to the scripting language.  The
+ * return value is true if there remains at least one external event to be
+ * serviced, false if all events are handled.
+ */
 bool CMetaInterval::
 service_event_queue() {
   while (!_event_queue.empty()) {
@@ -1143,11 +1017,11 @@ service_event_queue() {
         // Handle the C++ event.
         def._c_interval->priv_do_event(int_to_double_time(entry._time), entry._event_type);
         break;
-        
+
       case DT_ext_index:
         // Here's an external event; leave it there and return.
         return true;
-        
+
       default:
         nassertr(false, false);
         return false;
@@ -1161,21 +1035,14 @@ service_event_queue() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::recompute_level
-//       Access: Private
-//  Description: Recursively recomputes a complete level (delimited by
-//               push/pop definitions).
-//
-//               The value n on entry refers to the first entry after
-//               the push; the return value will reference the
-//               matching pop, or an index greater than the last
-//               element in the array if there was no matching pop.
-//
-//               The level_begin value indicates the begin time of
-//               this level.  On return, level_end is filled with the
-//               end time of this level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively recomputes a complete level (delimited by push/pop definitions).
+ * The value n on entry refers to the first entry after the push; the return
+ * value will reference the matching pop, or an index greater than the last
+ * element in the array if there was no matching pop.  The level_begin value
+ * indicates the begin time of this level.  On return, level_end is filled with
+ * the end time of this level.
+ */
 int CMetaInterval::
 recompute_level(int n, int level_begin, int &level_end) {
   level_end = level_begin;
@@ -1256,13 +1123,10 @@ recompute_level(int n, int level_begin, int &level_end) {
   return n;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::get_begin_time
-//       Access: Private
-//  Description: Returns the integer begin time indicated by the given
-//               IntervalDef, given the indicated level begin,
-//               previous begin, and previous end times.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the integer begin time indicated by the given IntervalDef, given the
+ * indicated level begin, previous begin, and previous end times.
+ */
 int CMetaInterval::
 get_begin_time(const CMetaInterval::IntervalDef &def, int level_begin,
                int previous_begin, int previous_end) {
@@ -1281,14 +1145,11 @@ get_begin_time(const CMetaInterval::IntervalDef &def, int level_begin,
   return previous_end;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::write_event_desc
-//       Access: Private
-//  Description: Formats an event for output, for write() or
-//               timeline().
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats an event for output, for write() or timeline().
+ */
 void CMetaInterval::
-write_event_desc(ostream &out, const CMetaInterval::IntervalDef &def, 
+write_event_desc(ostream &out, const CMetaInterval::IntervalDef &def,
                  int &extra_indent_level) const {
   switch (def._type) {
   case DT_c_interval:
@@ -1299,7 +1160,7 @@ write_event_desc(ostream &out, const CMetaInterval::IntervalDef &def,
     }
     out << "\n";
     break;
-    
+
   case DT_ext_index:
     indent(out, extra_indent_level)
       << "*" << def._ext_name;
@@ -1311,13 +1172,13 @@ write_event_desc(ostream &out, const CMetaInterval::IntervalDef &def,
     }
     out<< "\n";
     break;
-    
+
   case DT_push_level:
     indent(out, extra_indent_level)
       << def._ext_name << " {\n";
     extra_indent_level += 2;
     break;
-    
+
   case DT_pop_level:
     extra_indent_level -= 2;
     indent(out, extra_indent_level)

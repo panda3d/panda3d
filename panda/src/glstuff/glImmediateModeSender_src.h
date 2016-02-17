@@ -1,44 +1,37 @@
-// Filename: glImmediateModeSender_src.h
-// Created by:  drose (15Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glImmediateModeSender_src.h
+ * @author drose
+ * @date 2005-08-15
+ */
 
 #include "pandabase.h"
 #include "geomVertexReader.h"
 
 #ifdef SUPPORT_IMMEDIATE_MODE
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLImmediateModeSender
-// Description : This class collects together a handful of objects
-//               that will issue immediate-mode commands like
-//               glVertex, glTexCoord, etc., for the purposes of
-//               sending an object's vertices using the immediate mode
-//               functions.
-//
-//               Normally, this isn't used, since it's almost always
-//               better to use vertex arrays or vertex buffers
-//               instead.  But OpenGL is a complicated API, and some
-//               drivers might have issues handling the vertex arrays;
-//               this code is provided as a last-ditch fallback in
-//               case you have such spectacularly buggy drivers.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class collects together a handful of objects that will issue immediate-
+ * mode commands like glVertex, glTexCoord, etc., for the purposes of sending an
+ * object's vertices using the immediate mode functions.  Normally, this isn't
+ * used, since it's almost always better to use vertex arrays or vertex buffers
+ * instead.  But OpenGL is a complicated API, and some drivers might have issues
+ * handling the vertex arrays; this code is provided as a last-ditch fallback in
+ * case you have such spectacularly buggy drivers.
+ */
 class EXPCL_GL CLP(ImmediateModeSender) {
 public:
   INLINE CLP(ImmediateModeSender)();
   ~CLP(ImmediateModeSender)();
 
   void clear();
-  
+
   void set_vertex(int vertex_index);
   void issue_vertex();
 
@@ -67,17 +60,17 @@ public:
 #endif  // STDFLOAT_DOUBLE
   typedef void APIENTRY VectorUintFunc(GLint, const GLuint *);
 
-  bool add_column(const GeomVertexDataPipelineReader *data_reader, 
-                  const InternalName *name, Func1f *func1f, 
+  bool add_column(const GeomVertexDataPipelineReader *data_reader,
+                  const InternalName *name, Func1f *func1f,
                   Func2f *func2, Func3f *func3, Func4f *func4);
-  bool add_texcoord_column(const GeomVertexDataPipelineReader *data_reader, 
+  bool add_texcoord_column(const GeomVertexDataPipelineReader *data_reader,
                            const InternalName *name, int stage_index,
-                           TexcoordFunc1f *func1f, TexcoordFunc2f *func2, 
+                           TexcoordFunc1f *func1f, TexcoordFunc2f *func2,
                            TexcoordFunc3f *func3, TexcoordFunc4f *func4);
 
-  bool add_vector_column(const GeomVertexDataPipelineReader *data_reader, 
+  bool add_vector_column(const GeomVertexDataPipelineReader *data_reader,
                          const InternalName *name, VectorFunc *func);
-  bool add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader, 
+  bool add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader,
                               const InternalName *name, VectorUintFunc *func);
 
   void add_sender(ComponentSender *sender);
@@ -238,4 +231,3 @@ private:
 #include "glImmediateModeSender_src.I"
 
 #endif  // SUPPORT_IMMEDIATE_MODE
-

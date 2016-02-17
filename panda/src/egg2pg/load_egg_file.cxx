@@ -1,16 +1,15 @@
-// Filename: load_egg_file.cxx
-// Created by:  drose (26Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file load_egg_file.cxx
+ * @author drose
+ * @date 2002-02-26
+ */
 
 #include "load_egg_file.h"
 #include "eggLoader.h"
@@ -64,15 +63,12 @@ load_from_loader(EggLoader &loader) {
   return loader._root;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: load_egg_file
-//  Description: A convenience function.  Loads up the indicated egg
-//               file, and returns the root of a scene graph.  Returns
-//               NULL if the file cannot be read for some reason.
-//               Does not search along the egg path for the filename
-//               first; use EggData::resolve_egg_filename() if this is
-//               required.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function.  Loads up the indicated egg file, and returns the
+ * root of a scene graph.  Returns NULL if the file cannot be read for some
+ * reason.  Does not search along the egg path for the filename first; use
+ * EggData::resolve_egg_filename() if this is required.
+ */
 PT(PandaNode)
 load_egg_file(const Filename &filename, CoordinateSystem cs,
               BamCacheRecord *record) {
@@ -120,13 +116,10 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   return load_from_loader(loader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: load_egg_data
-//  Description: Another convenience function; works like
-//               load_egg_file() but starts from an already-filled
-//               EggData structure.  The structure is destroyed in the
-//               loading.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another convenience function; works like load_egg_file() but starts from an
+ * already-filled EggData structure.  The structure is destroyed in the loading.
+ */
 PT(PandaNode)
 load_egg_data(EggData *data, CoordinateSystem cs) {
   // We temporarily shuttle the children to a holding node so we can

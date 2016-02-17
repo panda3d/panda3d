@@ -1,19 +1,26 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file time_clock.h
+ */
+
+
 #ifndef __Time_H__
 #define __Time_H__
-////////////////////////////////////////////////////////////////////
-//       Class : Time_Clock
-// Description : This class is to provide a consistant interface and
-//               storage to clock time .. Epoch based time to the second
-//
-// jan-2000 .. rhh changing all time to use sub second timing...
-//
-////////////////////////////////////////////////////////////////////
-
 
 #include <stdio.h>
 
 class Time_Span;
 
+/**
+ * This class is to provide a consistant interface and storage to clock time ..
+ * Epoch based time to the second
+ */
 class Time_Clock
 {
     friend class Time_Span;
@@ -87,10 +94,9 @@ public:
         struct timeval _my_time;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::Time_Clock
-//  Description: Construction from parts
-////////////////////////////////////////////////////////////////////
+/**
+ * Construction from parts
+ */
 inline Time_Clock::Time_Clock(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, long microseconds , int nDST)
 {
     struct tm atm;
@@ -109,10 +115,9 @@ inline Time_Clock::Time_Clock(int nYear, int nMonth, int nDay, int nHour, int nM
     _my_time.tv_usec = microseconds;
     assert(_my_time.tv_usec < 1000000);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::Set
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline void Time_Clock::Set(int nYear, int nMonth, int nDay, int nHour, int nMin, int nSec, long microseconds , int nDST)
 {
     struct tm atm;
@@ -131,36 +136,32 @@ inline void Time_Clock::Set(int nYear, int nMonth, int nDay, int nHour, int nMin
     _my_time.tv_usec = microseconds;
     assert(_my_time.tv_usec < 1000000);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetCurrentTime
-//  Description: The Default no param constructor.. Will set time to current system time
-////////////////////////////////////////////////////////////////////
+/**
+ * The Default no param constructor.. Will set time to current system time
+ */
 inline Time_Clock Time_Clock::GetCurrentTime()
 {
     return Time_Clock();
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::Time_Clock
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Time_Clock::Time_Clock()
 {
     gettimeofday(&_my_time, NULL);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::ToCurrentTime
-//  Description: Load this object with the current OS time
-////////////////////////////////////////////////////////////////////
+/**
+ * Load this object with the current OS time
+ */
 inline void Time_Clock::ToCurrentTime()
 {
     gettimeofday(&_my_time, NULL);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetGmtTm
-//  Description: Access the stored time and converts to a struct tm format
-//               If storage location is specified then it will stor information in the
-//               provided buffer else it will use the library's internal buffer space
-////////////////////////////////////////////////////////////////////
+/**
+ * Access the stored time and converts to a struct tm format If storage location
+ * is specified then it will stor information in the provided buffer else it
+ * will use the library's internal buffer space
+ */
 inline struct tm* Time_Clock::GetGmtTm(struct tm* ptm) const
 {
     if (ptm != NULL)
@@ -171,10 +172,9 @@ inline struct tm* Time_Clock::GetGmtTm(struct tm* ptm) const
         return gmtime((const time_t *)&_my_time.tv_sec);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetLocalTm
-//  Description: Gets The local time in a tm structre from the internal time value
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets The local time in a tm structre from the internal time value
+ */
 inline struct tm* Time_Clock::GetLocalTm(struct tm* ptm) const
 {
     if (ptm != NULL)
@@ -191,10 +191,9 @@ inline struct tm* Time_Clock::GetLocalTm(struct tm* ptm) const
 // Verifies will fail if the needed buffer size is too large
 #define maxTimeBufferSize       4096
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::Format
-//  Description: Used to allow access to the "C" library strftime functions..
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to allow access to the "C" library strftime functions..
+ */
 inline std::string Time_Clock::Format(const char * pFormat) const
 {
 
@@ -234,12 +233,10 @@ inline std::string Time_Clock::Format(const char * pFormat) const
         szBuffer1[0] = '\0';
     return std::string(szBuffer1);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::FormatGmt
-//  Description: A Wraper to
-//   size_t strftime( char *strDest, size_t maxsize, const char *format, const struct tm *timeptr );
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * A Wraper to size_t strftime( char *strDest, size_t maxsize, const char
+ * *format, const struct tm *timeptr );
+ */
 inline std::string Time_Clock::FormatGmt(const char * pFormat) const
 {
 
@@ -278,91 +275,81 @@ inline std::string Time_Clock::FormatGmt(const char * pFormat) const
         szBuffer1[0] = '\0';
     return std::string(szBuffer1);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::Time_Clock
-//  Description: The Constructor that take a time_t objext
-////////////////////////////////////////////////////////////////////
+/**
+ * The Constructor that take a time_t objext
+ */
 inline Time_Clock::Time_Clock(time_t time)
 {
     _my_time.tv_sec = (long)time;
     _my_time.tv_usec = 0;
 };
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::Time_Clock
-//  Description: Constructor that takes in sec and usecs..
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor that takes in sec and usecs..
+ */
 inline Time_Clock::Time_Clock(long secs, long usecs)
 {
     _my_time.tv_sec = secs;
     _my_time.tv_usec = usecs;
     NormalizeTime(_my_time);
 };
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::Time_Clock
-//  Description: yet another constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * yet another constructor
+ */
 inline Time_Clock::Time_Clock(const Time_Clock& timeSrc)
 {
     _my_time.tv_sec = timeSrc._my_time.tv_sec;
     _my_time.tv_usec = timeSrc._my_time.tv_usec;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::operator==
-//  Description: .. is time  equal
-////////////////////////////////////////////////////////////////////
+/**
+ * .. is time  equal
+ */
 inline bool Time_Clock::operator==(const Time_Clock &time) const
 {
     return ((_my_time.tv_sec == time._my_time.tv_sec) && (_my_time.tv_usec == time._my_time.tv_usec));
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::operator!=
-//  Description: .is time !=
-////////////////////////////////////////////////////////////////////
+/**
+ * .is time !=
+ */
 inline bool Time_Clock::operator!=(const Time_Clock &time) const
 {
     return ((_my_time.tv_sec != time._my_time.tv_sec) || (_my_time.tv_usec != time._my_time.tv_usec));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::operator<
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline bool Time_Clock::operator<(const Time_Clock &time) const
 {
     return ((_my_time.tv_sec < time._my_time.tv_sec) ||
         ((_my_time.tv_sec == time._my_time.tv_sec) && (_my_time.tv_usec < time._my_time.tv_usec)));
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::operator>
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline bool Time_Clock::operator>(const Time_Clock &time) const
 {
     return ((_my_time.tv_sec > time._my_time.tv_sec) ||
         ((_my_time.tv_sec == time._my_time.tv_sec) && (_my_time.tv_usec > time._my_time.tv_usec)));
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::operator<=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline bool Time_Clock::operator<=(const Time_Clock &time) const
 {
     return ((_my_time.tv_sec < time._my_time.tv_sec) ||
         ((_my_time.tv_sec == time._my_time.tv_sec) && (_my_time.tv_usec <= time._my_time.tv_usec)));
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::operator>=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline bool Time_Clock::operator>=(const Time_Clock &time) const
 {
     return ((_my_time.tv_sec > time._my_time.tv_sec) ||
         ((_my_time.tv_sec == time._my_time.tv_sec) && (_my_time.tv_usec >= time._my_time.tv_usec)));
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock& Time_Clock::operator=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline const Time_Clock& Time_Clock::operator=(const Time_Clock& timeSrc)
 {
     if (&timeSrc == this)
@@ -371,76 +358,67 @@ inline const Time_Clock& Time_Clock::operator=(const Time_Clock& timeSrc)
     _my_time = timeSrc._my_time;
     return *this;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock& Time_Clock::operator=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline const Time_Clock& Time_Clock::operator=(time_t t)
 {
     _my_time.tv_sec = (long)t;
     _my_time.tv_usec = 0;
     return *this;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetTime
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline time_t Time_Clock::GetTime() const
 {
     return _my_time.tv_sec;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetYear
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline int Time_Clock::GetYear() const
 {
     return (GetLocalTm(NULL)->tm_year) + 1900;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetMonth
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline int Time_Clock::GetMonth() const
 {
     return GetLocalTm(NULL)->tm_mon + 1;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetDay
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline int Time_Clock::GetDay() const
 {
     return GetLocalTm(NULL)->tm_mday;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetHour
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline int Time_Clock::GetHour() const
 {
     return GetLocalTm(NULL)->tm_hour;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetMinute
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline int Time_Clock::GetMinute() const
 {
     return GetLocalTm(NULL)->tm_min;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetSecond
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline int Time_Clock::GetSecond() const
 {
     return GetLocalTm(NULL)->tm_sec;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Clock::GetDayOfWeek
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline int Time_Clock::GetDayOfWeek() const
 {
     return GetLocalTm(NULL)->tm_wday + 1;

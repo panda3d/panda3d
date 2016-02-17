@@ -1,16 +1,15 @@
-// Filename: nurbsCurveInterface.cxx
-// Created by:  drose (02Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsCurveInterface.cxx
+ * @author drose
+ * @date 2001-03-02
+ */
 
 #include "nurbsCurveInterface.h"
 #include "parametricCurve.h"
@@ -18,21 +17,17 @@
 
 TypeHandle NurbsCurveInterface::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveInterface::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NurbsCurveInterface::
 ~NurbsCurveInterface() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveInterface::set_cv_weight
-//       Access: Published
-//  Description: Sets the weight of the indicated CV without affecting
-//               its position in 3-d space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the weight of the indicated CV without affecting its position in 3-d
+ * space.
+ */
 bool NurbsCurveInterface::
 set_cv_weight(int n, PN_stdfloat w) {
   nassertr(n >= 0 && n < get_num_cvs(), false);
@@ -45,11 +40,9 @@ set_cv_weight(int n, PN_stdfloat w) {
   return set_cv(n, cv);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveInterface::write_cv
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void NurbsCurveInterface::
 write_cv(ostream &out, int n) const {
   nassertv(n >= 0 && n < get_num_cvs());
@@ -58,11 +51,9 @@ write_cv(ostream &out, int n) const {
       << get_cv_weight(n) << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveInterface::write
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void NurbsCurveInterface::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level);
@@ -98,11 +89,9 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveInterface::format_egg
-//       Access: Protected
-//  Description: Formats the Nurbs curve for output to an Egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the Nurbs curve for output to an Egg file.
+ */
 bool NurbsCurveInterface::
 format_egg(ostream &out, const string &name, const string &curve_type,
            int indent_level) const {
@@ -160,13 +149,10 @@ format_egg(ostream &out, const string &name, const string &curve_type,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveInterface::convert_to_nurbs
-//       Access: Protected
-//  Description: Stores in the indicated NurbsCurve a NURBS
-//               representation of an equivalent curve.  Returns true
-//               if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores in the indicated NurbsCurve a NURBS representation of an equivalent
+ * curve.  Returns true if successful, false otherwise.
+ */
 bool NurbsCurveInterface::
 convert_to_nurbs(ParametricCurve *nc) const {
   NurbsCurveInterface *nurbs = nc->get_nurbs_interface();

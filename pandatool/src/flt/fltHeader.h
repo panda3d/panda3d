@@ -1,16 +1,15 @@
-// Filename: fltHeader.h
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltHeader.h
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #ifndef FLTHEADER_H
 #define FLTHEADER_H
@@ -35,16 +34,13 @@
 #include "pset.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltHeader
-// Description : This is the first bead in the file, the top of the
-//               bead hierarchy, and the primary interface to reading
-//               and writing a Flt file.  You always read a Flt file
-//               by creating a header and calling read_flt(), which
-//               fills in its children beads automatically; you write
-//               a Flt file by creating a header, adding its children,
-//               and calling write_flt().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the first bead in the file, the top of the bead hierarchy, and the
+ * primary interface to reading and writing a Flt file.  You always read a Flt
+ * file by creating a header and calling read_flt(), which fills in its children
+ * beads automatically; you write a Flt file by creating a header, adding its
+ * children, and calling write_flt().
+ */
 class FltHeader : public FltBeadID {
 public:
   FltHeader(PathReplace *path_replace);
@@ -342,5 +338,3 @@ private:
 };
 
 #endif
-
-

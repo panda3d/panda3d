@@ -1,16 +1,15 @@
-// Filename: displayRegion.cxx
-// Created by:  cary (10Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegion.cxx
+ * @author cary
+ * @date 1999-02-10
+ */
 
 #include "displayRegion.h"
 #include "stereoDisplayRegion.h"
@@ -27,11 +26,9 @@
 TypeHandle DisplayRegion::_type_handle;
 TypeHandle DisplayRegionPipelineReader::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegion::
 DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions) :
   _window(window),
@@ -49,34 +46,28 @@ DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions) :
   _window->add_display_region(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::Copy Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegion::
-DisplayRegion(const DisplayRegion &copy) : 
+DisplayRegion(const DisplayRegion &copy) :
   _window(NULL),
   _cull_region_pcollector("Cull:Invalid"),
   _draw_region_pcollector("Draw:Invalid")
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::Copy Assignment Operator
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplayRegion::
 operator = (const DisplayRegion&) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegion::
 ~DisplayRegion() {
   cleanup();
@@ -87,13 +78,10 @@ DisplayRegion::
   nassertv(_window == (GraphicsOutput *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::cleanup
-//       Access: Public
-//  Description: Cleans up some pointers associated with the
-//               DisplayRegion to help reduce the chance of memory
-//               leaks due to circular reference counts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Cleans up some pointers associated with the DisplayRegion to help reduce the
+ * chance of memory leaks due to circular reference counts.
+ */
 void DisplayRegion::
 cleanup() {
   set_camera(NodePath());
@@ -102,14 +90,11 @@ cleanup() {
   cdata->_cull_result = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_lens_index
-//       Access: Published
-//  Description: Sets the lens index, allows for multiple lenses to
-//               be attached to a camera.  This is useful for a 
-//               variety of setups, such as fish eye rendering.
-//               The default is 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the lens index, allows for multiple lenses to be attached to a camera.
+ * This is useful for a variety of setups, such as fish eye rendering.  The
+ * default is 0.
+ */
 void DisplayRegion::
 set_lens_index(int index) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
@@ -118,15 +103,11 @@ set_lens_index(int index) {
   cdata->_lens_index = index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_dimensions
-//       Access: Published, Virtual
-//  Description: Changes the portion of the framebuffer this
-//               DisplayRegion corresponds to.  The parameters range
-//               from 0 to 1, where 0,0 is the lower left corner and
-//               1,1 is the upper right; (0, 1, 0, 1) represents the
-//               whole screen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the portion of the framebuffer this DisplayRegion corresponds to.
+ * The parameters range from 0 to 1, where 0,0 is the lower left corner and 1,1
+ * is the upper right; (0, 1, 0, 1) represents the whole screen.
+ */
 void DisplayRegion::
 set_dimensions(int i, const LVecBase4 &dimensions) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
@@ -140,41 +121,30 @@ set_dimensions(int i, const LVecBase4 &dimensions) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_pipe
-//       Access: Published
-//  Description: Returns the GraphicsPipe that this DisplayRegion is
-//               ultimately associated with, or NULL if no pipe is
-//               associated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the GraphicsPipe that this DisplayRegion is ultimately associated
+ * with, or NULL if no pipe is associated.
+ */
 GraphicsPipe *DisplayRegion::
 get_pipe() const {
   return (_window != (GraphicsOutput *)NULL) ? _window->get_pipe() : NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::is_stereo
-//       Access: Published, Virtual
-//  Description: Returns true if this is a StereoDisplayRegion, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this is a StereoDisplayRegion, false otherwise.
+ */
 bool DisplayRegion::
 is_stereo() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_camera
-//       Access: Published, Virtual
-//  Description: Sets the camera that is associated with this
-//               DisplayRegion.  There is a one-to-many association
-//               between cameras and DisplayRegions; one camera may be
-//               shared by multiple DisplayRegions.
-//
-//               The camera is actually set via a NodePath, which
-//               clarifies which instance of the camera (if there
-//               happen to be multiple instances) we should use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the camera that is associated with this DisplayRegion.  There is a one-
+ * to-many association between cameras and DisplayRegions; one camera may be
+ * shared by multiple DisplayRegions.  The camera is actually set via a
+ * NodePath, which clarifies which instance of the camera (if there happen to be
+ * multiple instances) we should use.
+ */
 void DisplayRegion::
 set_camera(const NodePath &camera) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
@@ -208,13 +178,10 @@ set_camera(const NodePath &camera) {
   cdata->_camera = camera;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_active
-//       Access: Published, Virtual
-//  Description: Sets the active flag associated with the
-//               DisplayRegion.  If the DisplayRegion is marked
-//               inactive, nothing is rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the active flag associated with the DisplayRegion.  If the DisplayRegion
+ * is marked inactive, nothing is rendered.
+ */
 void DisplayRegion::
 set_active(bool active) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
@@ -228,14 +195,11 @@ set_active(bool active) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_sort
-//       Access: Published, Virtual
-//  Description: Sets the sort value associated with the
-//               DisplayRegion.  Within a window, DisplayRegions will
-//               be rendered in order from the lowest sort value to
-//               the highest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the sort value associated with the DisplayRegion.  Within a window,
+ * DisplayRegions will be rendered in order from the lowest sort value to the
+ * highest.
+ */
 void DisplayRegion::
 set_sort(int sort) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
@@ -248,40 +212,24 @@ set_sort(int sort) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_stereo_channel
-//       Access: Published, Virtual
-//  Description: Specifies whether the DisplayRegion represents the
-//               left or right channel of a stereo pair, or whether it
-//               is a normal, monocular image.  This automatically
-//               adjusts the lens that is used to render to this
-//               DisplayRegion to its left or right eye, according to
-//               the lens's stereo properties.
-//
-//               When the DisplayRegion is attached to a stereo window
-//               (one for which is_stereo() returns true), this also
-//               specifies which physical channel the DisplayRegion
-//               renders to.
-//
-//               Normally you would create at least two DisplayRegions
-//               for a stereo window, one for each of the left and
-//               right channels.  The two DisplayRegions may share the
-//               same camera (and thus the same lens); this parameter
-//               is used to control the exact properties of the lens
-//               when it is used to render into this DisplayRegion.
-//
-//               Also see the StereoDisplayRegion, which automates
-//               managing a pair of left/right DisplayRegions.
-//
-//               An ordinary DisplayRegion may be set to SC_mono,
-//               SC_left, or SC_right.  You may set SC_stereo only on
-//               a StereoDisplayRegion.
-//
-//               This call also resets tex_view_offset to its default
-//               value, which is 0 for the left eye or 1 for the right
-//               eye of a stereo display region, or 0 for a mono
-//               display region.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether the DisplayRegion represents the left or right channel of a
+ * stereo pair, or whether it is a normal, monocular image.  This automatically
+ * adjusts the lens that is used to render to this DisplayRegion to its left or
+ * right eye, according to the lens's stereo properties.  When the DisplayRegion
+ * is attached to a stereo window (one for which is_stereo() returns true), this
+ * also specifies which physical channel the DisplayRegion renders to.  Normally
+ * you would create at least two DisplayRegions for a stereo window, one for
+ * each of the left and right channels.  The two DisplayRegions may share the
+ * same camera (and thus the same lens); this parameter is used to control the
+ * exact properties of the lens when it is used to render into this
+ * DisplayRegion.  Also see the StereoDisplayRegion, which automates managing a
+ * pair of left/right DisplayRegions.  An ordinary DisplayRegion may be set to
+ * SC_mono, SC_left, or SC_right.  You may set SC_stereo only on a
+ * StereoDisplayRegion.  This call also resets tex_view_offset to its default
+ * value, which is 0 for the left eye or 1 for the right eye of a stereo display
+ * region, or 0 for a mono display region.
+ */
 void DisplayRegion::
 set_stereo_channel(Lens::StereoChannel stereo_channel) {
   nassertv(is_stereo() || stereo_channel != Lens::SC_stereo);
@@ -293,20 +241,14 @@ set_stereo_channel(Lens::StereoChannel stereo_channel) {
   cdata->_tex_view_offset = (stereo_channel == Lens::SC_right) ? 1 : 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_tex_view_offset
-//       Access: Published, Virtual
-//  Description: Sets the current texture view offset for this
-//               DisplayRegion.  This is normally set to zero.  If
-//               nonzero, it is used to select a particular view of
-//               any multiview textures that are rendered within this
-//               DisplayRegion.
-//
-//               For a StereoDisplayRegion, this is normally 0 for the
-//               left eye, and 1 for the right eye, to support stereo
-//               textures.  This is set automatically when you call
-//               set_stereo_channel().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the current texture view offset for this DisplayRegion.  This is
+ * normally set to zero.  If nonzero, it is used to select a particular view of
+ * any multiview textures that are rendered within this DisplayRegion.  For a
+ * StereoDisplayRegion, this is normally 0 for the left eye, and 1 for the right
+ * eye, to support stereo textures.  This is set automatically when you call
+ * set_stereo_channel().
+ */
 void DisplayRegion::
 set_tex_view_offset(int tex_view_offset) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
@@ -315,70 +257,49 @@ set_tex_view_offset(int tex_view_offset) {
   cdata->_tex_view_offset = tex_view_offset;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_incomplete_render
-//       Access: Published, Virtual
-//  Description: Sets the incomplete_render flag.  When this is
-//               true, the frame will be rendered even if some of the
-//               geometry or textures in the scene are not available
-//               (e.g. they have been temporarily paged out).  When
-//               this is false, the frame will be held up while this
-//               data is reloaded.
-//
-//               This flag may also be set on the
-//               GraphicsStateGuardian.  It will be considered true
-//               for a given DisplayRegion only if it is true on both
-//               the GSG and on the DisplayRegion.
-//
-//               See GraphicsStateGuardian::set_incomplete_render()
-//               for more detail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the incomplete_render flag.  When this is true, the frame will be
+ * rendered even if some of the geometry or textures in the scene are not
+ * available (e.g.  they have been temporarily paged out).  When this is false,
+ * the frame will be held up while this data is reloaded.  This flag may also be
+ * set on the GraphicsStateGuardian.  It will be considered true for a given
+ * DisplayRegion only if it is true on both the GSG and on the DisplayRegion.
+ * See GraphicsStateGuardian::set_incomplete_render() for more detail.
+ */
 void DisplayRegion::
 set_incomplete_render(bool incomplete_render) {
   _incomplete_render = incomplete_render;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_texture_reload_priority
-//       Access: Published, Virtual
-//  Description: Specifies an integer priority which is assigned to
-//               any asynchronous texture reload requests spawned
-//               while processing this DisplayRegion.  This controls
-//               which textures are loaded first when multiple
-//               textures need to be reloaded at once; it also
-//               controls the relative priority between asynchronous
-//               texture loads and asynchronous model or animation
-//               loads.
-//
-//               Specifying a larger number here makes the textures
-//               rendered by this DisplayRegion load up first.  This
-//               may be particularly useful to do, for instance, for
-//               the DisplayRegion that renders the gui.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies an integer priority which is assigned to any asynchronous texture
+ * reload requests spawned while processing this DisplayRegion.  This controls
+ * which textures are loaded first when multiple textures need to be reloaded at
+ * once; it also controls the relative priority between asynchronous texture
+ * loads and asynchronous model or animation loads.  Specifying a larger number
+ * here makes the textures rendered by this DisplayRegion load up first.  This
+ * may be particularly useful to do, for instance, for the DisplayRegion that
+ * renders the gui.
+ */
 void DisplayRegion::
 set_texture_reload_priority(int texture_reload_priority) {
   _texture_reload_priority = texture_reload_priority;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_cull_traverser
-//       Access: Published, Virtual
-//  Description: Specifies the CullTraverser that will be used to draw
-//               the contents of this DisplayRegion.  Normally the
-//               default CullTraverser is sufficient, but this may be
-//               changed to change the default cull behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the CullTraverser that will be used to draw the contents of this
+ * DisplayRegion.  Normally the default CullTraverser is sufficient, but this
+ * may be changed to change the default cull behavior.
+ */
 void DisplayRegion::
 set_cull_traverser(CullTraverser *trav) {
   _trav = trav;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_cull_traverser
-//       Access: Published
-//  Description: Returns the CullTraverser that will be used to draw
-//               the contents of this DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CullTraverser that will be used to draw the contents of this
+ * DisplayRegion.
+ */
 CullTraverser *DisplayRegion::
 get_cull_traverser() {
   if (_trav == (CullTraverser *)NULL) {
@@ -387,23 +308,15 @@ get_cull_traverser() {
   return _trav;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_target_tex_page
-//       Access: Published, Virtual
-//  Description: This is a special parameter that is only used when
-//               rendering the faces of a cube map or multipage and/or
-//               multiview texture.
-//
-//               This sets up the DisplayRegion to render to the ith
-//               page and jth view of its associated texture(s); the
-//               value must be consistent with the range of values
-//               availble to the texture.  A normal DisplayRegion that
-//               is not associated with any particular page should be
-//               set to page -1 and view 0.
-//
-//               This is particularly useful when rendering cube maps
-//               and/or stereo textures.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special parameter that is only used when rendering the faces of a
+ * cube map or multipage and/or multiview texture.  This sets up the
+ * DisplayRegion to render to the ith page and jth view of its associated
+ * texture(s); the value must be consistent with the range of values availble to
+ * the texture.  A normal DisplayRegion that is not associated with any
+ * particular page should be set to page -1 and view 0.  This is particularly
+ * useful when rendering cube maps and/or stereo textures.
+ */
 void DisplayRegion::
 set_target_tex_page(int page) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
@@ -412,11 +325,9 @@ set_target_tex_page(int page) {
   cdata->_target_tex_page = page;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplayRegion::
 output(ostream &out) const {
   CDReader cdata(_cycler);
@@ -424,22 +335,13 @@ output(ostream &out) const {
       << ")=pixels(" << cdata->_regions[0]._pixels << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::make_screenshot_filename
-//       Access: Published, Static
-//  Description: Synthesizes a suitable default filename for passing
-//               to save_screenshot().
-//
-//               The default filename is generated from the supplied
-//               prefix and from the Config variable
-//               screenshot-filename, which contains the following
-//               strings:
-//
-//                 %~p - the supplied prefix
-//                 %~f - the frame count
-//                 %~e - the value of screenshot-extension
-//                 All other % strings in strftime().
-////////////////////////////////////////////////////////////////////
+/**
+ * Synthesizes a suitable default filename for passing to save_screenshot().
+ * The default filename is generated from the supplied prefix and from the
+ * Config variable screenshot-filename, which contains the following strings:
+ * %~p - the supplied prefix %~f - the frame count %~e - the value of
+ * screenshot-extension All other % strings in strftime().
+ */
 Filename DisplayRegion::
 make_screenshot_filename(const string &prefix) {
   time_t now = time(NULL);
@@ -502,14 +404,11 @@ make_screenshot_filename(const string &prefix) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::save_screenshot_default
-//       Access: Published
-//  Description: Saves a screenshot of the region to a default
-//               filename, and returns the filename, or empty string
-//               if the screenshot failed.  The filename is generated
-//               by make_screenshot_filename().
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves a screenshot of the region to a default filename, and returns the
+ * filename, or empty string if the screenshot failed.  The filename is
+ * generated by make_screenshot_filename().
+ */
 Filename DisplayRegion::
 save_screenshot_default(const string &prefix) {
   Filename filename = make_screenshot_filename(prefix);
@@ -519,12 +418,10 @@ save_screenshot_default(const string &prefix) {
   return Filename();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::save_screenshot
-//       Access: Published
-//  Description: Saves a screenshot of the region to the indicated
-//               filename.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves a screenshot of the region to the indicated filename.  Returns true on
+ * success, false on failure.
+ */
 bool DisplayRegion::
 save_screenshot(const Filename &filename, const string &image_comment) {
   PNMImage image;
@@ -539,13 +436,10 @@ save_screenshot(const Filename &filename, const string &image_comment) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_screenshot
-//       Access: Published
-//  Description: Captures the most-recently rendered image from the
-//               framebuffer into the indicated PNMImage.  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Captures the most-recently rendered image from the framebuffer into the
+ * indicated PNMImage.  Returns true on success, false on failure.
+ */
 bool DisplayRegion::
 get_screenshot(PNMImage &image) {
   PT(Texture) tex = get_screenshot();
@@ -553,69 +447,56 @@ get_screenshot(PNMImage &image) {
   if (tex == NULL) {
     return false;
   }
-  
+
   if (!tex->store(image)) {
     return false;
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_screenshot
-//       Access: Published
-//  Description: Captures the most-recently rendered image from the
-//               framebuffer and returns it as a Texture, or NULL
-//               on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Captures the most-recently rendered image from the framebuffer and returns it
+ * as a Texture, or NULL on failure.
+ */
 PT(Texture) DisplayRegion::
 get_screenshot() {
   Thread *current_thread = Thread::get_current_thread();
 
   GraphicsOutput *window = get_window();
   nassertr(window != (GraphicsOutput *)NULL, NULL);
-  
+
   GraphicsStateGuardian *gsg = window->get_gsg();
   nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
-  
+
   if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
     return NULL;
   }
 
   PT(Texture) tex = new Texture;
-  
+
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
                                                _window->get_fb_properties());
   if (!gsg->framebuffer_copy_to_ram(tex, 0, -1, this, buffer)) {
     return NULL;
   }
-  
+
   window->end_frame(GraphicsOutput::FM_refresh, current_thread);
-  
+
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::make_cull_result_graph
-//       Access: Published
-//  Description: Returns a special scene graph constructed to
-//               represent the results of the last frame's cull
-//               operation.
-//
-//               This will be a hierarchy of nodes, one node for each
-//               bin, each of which will in term be a parent of a
-//               number of GeomNodes, representing the geometry drawn
-//               in each bin.
-//
-//               This is useful mainly for high-level debugging and
-//               abstraction tools; it should not be mistaken for the
-//               low-level cull result itself, which is constructed
-//               and maintained internally.  No such scene graph is
-//               normally constructed during the rendering of a frame;
-//               this is an artificial construct created for the
-//               purpose of making it easy to analyze the results of
-//               the cull operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a special scene graph constructed to represent the results of the
+ * last frame's cull operation.  This will be a hierarchy of nodes, one node for
+ * each bin, each of which will in term be a parent of a number of GeomNodes,
+ * representing the geometry drawn in each bin.  This is useful mainly for high-
+ * level debugging and abstraction tools; it should not be mistaken for the low-
+ * level cull result itself, which is constructed and maintained internally.  No
+ * such scene graph is normally constructed during the rendering of a frame;
+ * this is an artificial construct created for the purpose of making it easy to
+ * analyze the results of the cull operation.
+ */
 PT(PandaNode) DisplayRegion::
 make_cull_result_graph() {
   CullResult *cull_result = get_cull_result(Thread::get_current_thread());
@@ -625,31 +506,25 @@ make_cull_result_graph() {
   return cull_result->make_result_graph();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels
-//       Access: Public
-//  Description: Computes the pixel locations of the DisplayRegion
-//               within its window.  The DisplayRegion will request
-//               the size from the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the pixel locations of the DisplayRegion within its window.  The
+ * DisplayRegion will request the size from the window.
+ */
 void DisplayRegion::
 compute_pixels() {
   if (_window != (GraphicsOutput *)NULL) {
     CDWriter cdata(_cycler, false);
     for (size_t i = 0; i < cdata->_regions.size(); ++i) {
-      do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), 
+      do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(),
                         cdata);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels_all_stages
-//       Access: Public
-//  Description: Computes the pixel locations of the DisplayRegion
-//               within its window.  The DisplayRegion will request
-//               the size from the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the pixel locations of the DisplayRegion within its window.  The
+ * DisplayRegion will request the size from the window.
+ */
 void DisplayRegion::
 compute_pixels_all_stages() {
   int pipeline_stage = Thread::get_current_pipeline_stage();
@@ -659,7 +534,7 @@ compute_pixels_all_stages() {
     OPEN_ITERATE_ALL_STAGES(_cycler) {
       CDStageWriter cdata(_cycler, pipeline_stage);
       for (size_t i = 0; i < cdata->_regions.size(); ++i) {
-        do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), 
+        do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(),
                           cdata);
       }
     }
@@ -667,13 +542,10 @@ compute_pixels_all_stages() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels
-//       Access: Public
-//  Description: Computes the pixel locations of the DisplayRegion
-//               within its window, given the size of the window in
-//               pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the pixel locations of the DisplayRegion within its window, given
+ * the size of the window in pixels.
+ */
 void DisplayRegion::
 compute_pixels(int x_size, int y_size) {
   CDWriter cdata(_cycler, false);
@@ -682,15 +554,12 @@ compute_pixels(int x_size, int y_size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels_all_stages
-//       Access: Public
-//  Description: Performs a compute_pixels() operation for all stages
-//               of the pipeline.  This is appropriate, for instance,
-//               when a window changes sizes, since this is a global
-//               operation; and you want the new window size to be
-//               immediately available even to the downstream stages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a compute_pixels() operation for all stages of the pipeline.  This
+ * is appropriate, for instance, when a window changes sizes, since this is a
+ * global operation; and you want the new window size to be immediately
+ * available even to the downstream stages.
+ */
 void DisplayRegion::
 compute_pixels_all_stages(int x_size, int y_size) {
   OPEN_ITERATE_ALL_STAGES(_cycler) {
@@ -698,24 +567,18 @@ compute_pixels_all_stages(int x_size, int y_size) {
     for (size_t i = 0; i < cdata->_regions.size(); ++i) {
       do_compute_pixels(i, x_size, y_size, cdata);
     }
-  } 
+  }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::supports_pixel_zoom
-//       Access: Public, Virtual
-//  Description: Returns true if a call to set_pixel_zoom() will be
-//               respected, false if it will be ignored.  If this
-//               returns false, then get_pixel_factor() will always
-//               return 1.0, regardless of what value you specify for
-//               set_pixel_zoom().
-//
-//               This may return false if the underlying renderer
-//               doesn't support pixel zooming, or if you have called
-//               this on a DisplayRegion that doesn't have both
-//               set_clear_color() and set_clear_depth() enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a call to set_pixel_zoom() will be respected, false if it
+ * will be ignored.  If this returns false, then get_pixel_factor() will always
+ * return 1.0, regardless of what value you specify for set_pixel_zoom().  This
+ * may return false if the underlying renderer doesn't support pixel zooming, or
+ * if you have called this on a DisplayRegion that doesn't have both
+ * set_clear_color() and set_clear_depth() enabled.
+ */
 bool DisplayRegion::
 supports_pixel_zoom() const {
   if (_window != (GraphicsOutput *)NULL) {
@@ -726,15 +589,11 @@ supports_pixel_zoom() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::win_display_regions_changed
-//       Access: Private
-//  Description: Intended to be called when the active state on a
-//               nested channel or layer or display region changes,
-//               forcing the window to recompute its list of active
-//               display regions.  It is assumed the lock is already
-//               held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called when the active state on a nested channel or layer or
+ * display region changes, forcing the window to recompute its list of active
+ * display regions.  It is assumed the lock is already held.
+ */
 void DisplayRegion::
 win_display_regions_changed() {
   if (_window != (GraphicsOutput *)NULL) {
@@ -742,12 +601,10 @@ win_display_regions_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::do_compute_pixels
-//       Access: Private
-//  Description: The private implementation of compute_pixels, this
-//               assumes that we already have the lock.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of compute_pixels, this assumes that we already
+ * have the lock.
+ */
 void DisplayRegion::
 do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
   if (display_cat.is_debug()) {
@@ -782,18 +639,13 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_active_index
-//       Access: Private
-//  Description: This is called by GraphicsOutput to indicate that the
-//               index of this DisplayRegion within the window's list
-//               of active DisplayRegions might have changed.  The
-//               index number will be -1 if the DisplayRegion is not
-//               active.
-//
-//               This is primarily intended only for updating the
-//               PStatCollector name appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by GraphicsOutput to indicate that the index of this
+ * DisplayRegion within the window's list of active DisplayRegions might have
+ * changed.  The index number will be -1 if the DisplayRegion is not active.
+ * This is primarily intended only for updating the PStatCollector name
+ * appropriately.
+ */
 void DisplayRegion::
 set_active_index(int index) {
 #ifdef DO_PSTATS
@@ -806,12 +658,10 @@ set_active_index(int index) {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::do_cull
-//       Access: Protected, Virtual
-//  Description: Performs a cull traversal.  The default
-//               implementation simply calls GraphicsEngine::do_cull.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a cull traversal.  The default implementation simply calls
+ * GraphicsEngine::do_cull.
+ */
 void DisplayRegion::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         GraphicsStateGuardian *gsg, Thread *current_thread) {
@@ -819,11 +669,9 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   GraphicsEngine::do_cull(cull_handler, scene_setup, gsg, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegion::CData::
 CData() :
   _lens_index(0),
@@ -838,11 +686,9 @@ CData() :
   _regions.push_back(Region());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegion::CData::
 CData(const DisplayRegion::CData &copy) :
   _regions(copy._regions),
@@ -858,33 +704,26 @@ CData(const DisplayRegion::CData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *DisplayRegion::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::CDataCull::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *DisplayRegion::CDataCull::
 make_copy() const {
   return new CDataCull(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionPipelineReader::get_pipe
-//       Access: Public
-//  Description: Returns the GraphicsPipe that this DisplayRegion is
-//               ultimately associated with, or NULL if no pipe is
-//               associated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the GraphicsPipe that this DisplayRegion is ultimately associated
+ * with, or NULL if no pipe is associated.
+ */
 GraphicsPipe *DisplayRegionPipelineReader::
 get_pipe() const {
   return (_object->_window != (GraphicsOutput *)NULL) ? _object->_window->get_pipe() : NULL;

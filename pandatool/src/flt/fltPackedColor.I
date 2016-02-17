@@ -1,16 +1,15 @@
-// Filename: fltPackedColor.I
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltPackedColor.I
+ * @author drose
+ * @date 2000-08-25
+ */
 
 INLINE ostream &
 operator << (ostream &out, const FltPackedColor &color) {
@@ -19,11 +18,9 @@ operator << (ostream &out, const FltPackedColor &color) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE FltPackedColor::
 FltPackedColor() {
   _a = 0;
@@ -32,35 +29,28 @@ FltPackedColor() {
   _r = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::get_color
-//       Access: Public
-//  Description: Returns the four-component color as a LColor, where
-//               each component is in the range [0, 1].
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the four-component color as a LColor, where each component is in the
+ * range [0, 1].
+ */
 INLINE LColor FltPackedColor::
 get_color() const {
   return LColor(_r / 255.0, _g / 255.0, _b / 255.0, _a / 255.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::get_rgb
-//       Access: Public
-//  Description: Returns the three-component color as an LRGBColor
-//               (ignoring the alpha component), where each component
-//               is in the range [0, 1].
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the three-component color as an LRGBColor (ignoring the alpha
+ * component), where each component is in the range [0, 1].
+ */
 INLINE LRGBColor FltPackedColor::
 get_rgb() const {
   return LRGBColor(_r / 255.0, _g / 255.0, _b / 255.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::set_color
-//       Access: Public
-//  Description: Sets the color according to the indicated
-//               four-component LColor value (including alpha).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the color according to the indicated four-component LColor value
+ * (including alpha).
+ */
 INLINE void FltPackedColor::
 set_color(const LColor &color) {
   _r = (int)floor(color[0] * 255.0);
@@ -69,13 +59,10 @@ set_color(const LColor &color) {
   _a = (int)floor(color[3] * 255.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::set_rgb
-//       Access: Public
-//  Description: Sets the color according to the indicated
-//               three-component LRGBColor value, and set the alpha to
-//               1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the color according to the indicated three-component LRGBColor value,
+ * and set the alpha to 1.0.
+ */
 INLINE void FltPackedColor::
 set_rgb(const LRGBColor &color) {
   _r = (int)floor(color[0] * 255.0);

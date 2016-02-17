@@ -1,16 +1,15 @@
-// Filename: displayRegionCullCallbackData.cxx
-// Created by:  drose (14Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegionCullCallbackData.cxx
+ * @author drose
+ * @date 2009-03-14
+ */
 
 #include "displayRegionCullCallbackData.h"
 #include "cullHandler.h"
@@ -20,11 +19,9 @@
 TypeHandle DisplayRegionCullCallbackData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionCullCallbackData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegionCullCallbackData::
 DisplayRegionCullCallbackData(CullHandler *cull_handler, SceneSetup *scene_setup) :
   _cull_handler(cull_handler),
@@ -32,28 +29,22 @@ DisplayRegionCullCallbackData(CullHandler *cull_handler, SceneSetup *scene_setup
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionCullCallbackData::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplayRegionCullCallbackData::
 output(ostream &out) const {
-  out << get_type() << "(" << (void *)_cull_handler << ", " 
+  out << get_type() << "(" << (void *)_cull_handler << ", "
       << (void *)_scene_setup << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionCullCallbackData::upcall
-//       Access: Published, Virtual
-//  Description: You should make this call during the callback if you
-//               want to continue the normal rendering function that
-//               would have been done in the absence of a callback.
-//
-//               Specifically, this method will perform the cull
-//               traversal for the DisplayRegion's scene graph, and
-//               add all renderable objects to its CullResult.
-////////////////////////////////////////////////////////////////////
+/**
+ * You should make this call during the callback if you want to continue the
+ * normal rendering function that would have been done in the absence of a
+ * callback.  Specifically, this method will perform the cull traversal for the
+ * DisplayRegion's scene graph, and add all renderable objects to its
+ * CullResult.
+ */
 void DisplayRegionCullCallbackData::
 upcall() {
   Thread *current_thread = Thread::get_current_thread();

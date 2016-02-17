@@ -1,16 +1,15 @@
-// Filename: mouseSubregion.h
-// Created by:  drose (13May05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mouseSubregion.h
+ * @author drose
+ * @date 2005-05-13
+ */
 
 #ifndef MOUSESUBREGION_H
 #define MOUSESUBREGION_H
@@ -23,17 +22,12 @@
 #include "buttonEventList.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseSubregion
-// Description : The MouseSubregion object scales the mouse inputs
-//               from within a rectangular region of the screen, as if
-//               they were the full-screen inputs.
-//
-//               If you choose your MouseSubregion coordinates to
-//               exactly match a DisplayRegion within your window, you
-//               end up with a virtual mouse within your
-//               DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * The MouseSubregion object scales the mouse inputs from within a rectangular
+ * region of the screen, as if they were the full-screen inputs.  If you choose
+ * your MouseSubregion coordinates to exactly match a DisplayRegion within your
+ * window, you end up with a virtual mouse within your DisplayRegion.
+ */
 class EXPCL_PANDA_TFORM MouseSubregion : public MouseInterfaceNode {
 PUBLISHED:
   MouseSubregion(const string &name);

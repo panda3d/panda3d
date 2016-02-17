@@ -1,16 +1,15 @@
-// Filename: pallocator.h
-// Created by:  drose (05Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pallocator.h
+ * @author drose
+ * @date 2001-06-05
+ */
 
 #ifndef PALLOCATOR_H
 #define PALLOCATOR_H
@@ -21,21 +20,14 @@
 #include "deletedChain.h"
 #include "typeHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : pallocator
-// Description : This is our own Panda specialization on the default
-//               STL allocator.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-//
-//               pvector, pmap, etc. are all defined in this directory
-//               to use a pallocator.
-//
-//               pallocator actually comes it two flavors now:
-//               pallocator_single, which can only allocate single
-//               instances of an object, and pallocator_array, which
-//               can allocate arrays of objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL allocator.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.  pvector, pmap, etc.  are all defined in this directory to use a
+ * pallocator.  pallocator actually comes it two flavors now: pallocator_single,
+ * which can only allocate single instances of an object, and pallocator_array,
+ * which can allocate arrays of objects.
+ */
 
 #ifndef USE_STL_ALLOCATOR
 // If we're not trying to make custom allocators (either we don't know
@@ -67,7 +59,7 @@ public:
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(pointer p, size_type n);
 
-  template<class U> struct rebind { 
+  template<class U> struct rebind {
     typedef pallocator_single<U> other;
   };
 
@@ -95,7 +87,7 @@ public:
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(pointer p, size_type n);
 
-  template<class U> struct rebind { 
+  template<class U> struct rebind {
     typedef pallocator_array<U> other;
   };
 
@@ -107,4 +99,3 @@ public:
 #endif  // USE_STL_ALLOCATOR
 
 #endif
-

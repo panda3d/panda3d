@@ -1,16 +1,15 @@
-// Filename: datagramSinkNet.h
-// Created by:  drose (15Feb09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagramSinkNet.h
+ * @author drose
+ * @date 2009-02-15
+ */
 
 #ifndef DATAGRAMSINKNET_H
 #define DATAGRAMSINKNET_H
@@ -20,11 +19,10 @@
 #include "datagramSink.h"
 #include "connectionWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramSinkNet
-// Description : This class accepts datagrams one-at-a-time and sends
-//               them over the net, via a TCP connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class accepts datagrams one-at-a-time and sends them over the net, via a
+ * TCP connection.
+ */
 class EXPCL_PANDA_NET DatagramSinkNet : public DatagramSink, public ConnectionWriter {
 PUBLISHED:
   DatagramSinkNet(ConnectionManager *manager, int num_threads);

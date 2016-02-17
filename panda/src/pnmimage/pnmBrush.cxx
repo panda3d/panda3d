@@ -1,16 +1,15 @@
-// Filename: pnmBrush.cxx
-// Created by:  drose (01Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmBrush.cxx
+ * @author drose
+ * @date 2007-02-01
+ */
 
 #include "pnmBrush.h"
 #include "pnmImage.h"
@@ -70,7 +69,7 @@ public:
   PNMBlendPixelBrush(const LColorf &color) : PNMPixelBrush(color) { }
 
   virtual void draw(PNMImage &image, int x, int y, float pixel_scale) {
-    if (x >= 0 && x < image.get_x_size() && 
+    if (x >= 0 && x < image.get_x_size() &&
         y >= 0 && y < image.get_y_size()) {
       image.blend(x, y, _color[0], _color[1], _color[2], _color[3] * pixel_scale);
     }
@@ -242,34 +241,26 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMBrush::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMBrush::
 ~PNMBrush() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMBrush::make_transparent
-//       Access: Published, Static
-//  Description: Returns a new brush that does not paint anything.
-//               Can be used as either a pen or a fill brush to make
-//               borderless or unfilled shapes, respectively.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new brush that does not paint anything.  Can be used as either a
+ * pen or a fill brush to make borderless or unfilled shapes, respectively.
+ */
 PT(PNMBrush) PNMBrush::
 make_transparent() {
   return new PNMTransparentBrush();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMBrush::make_pixel
-//       Access: Published, Static
-//  Description: Returns a new brush that paints a single pixel of the
-//               indicated color on a border, or paints a solid color
-//               in an interior.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new brush that paints a single pixel of the indicated color on a
+ * border, or paints a solid color in an interior.
+ */
 PT(PNMBrush) PNMBrush::
 make_pixel(const LColorf &color, PNMBrush::BrushEffect effect) {
   switch (effect) {
@@ -291,13 +282,10 @@ make_pixel(const LColorf &color, PNMBrush::BrushEffect effect) {
   return new PNMSetPixelBrush(color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMBrush::make_spot
-//       Access: Published, Static
-//  Description: Returns a new brush that paints a spot of the
-//               indicated color and radius.  If fuzzy is true, the
-//               spot is fuzzy; otherwise, it is hard-edged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new brush that paints a spot of the indicated color and radius.  If
+ * fuzzy is true, the spot is fuzzy; otherwise, it is hard-edged.
+ */
 PT(PNMBrush) PNMBrush::
 make_spot(const LColorf &color, float radius, bool fuzzy,
           BrushEffect effect) {
@@ -338,17 +326,11 @@ make_spot(const LColorf &color, float radius, bool fuzzy,
   return make_image(spot, half_size, half_size, effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMBrush::make_image
-//       Access: Published, Static
-//  Description: Returns a new brush that paints with the indicated
-//               image.  xc and yc indicate the pixel in the center of
-//               the brush.
-//
-//               The brush makes a copy of the image; it is safe to
-//               deallocate or modify the image after making this
-//               call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new brush that paints with the indicated image.  xc and yc indicate
+ * the pixel in the center of the brush.  The brush makes a copy of the image;
+ * it is safe to deallocate or modify the image after making this call.
+ */
 PT(PNMBrush) PNMBrush::
 make_image(const PNMImage &image, float xc, float yc,
            PNMBrush::BrushEffect effect) {

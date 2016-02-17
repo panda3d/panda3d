@@ -1,16 +1,15 @@
-// Filename: loaderFileTypeSrt.h
-// Created by:  drose (06Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file loaderFileTypeSrt.h
+ * @author drose
+ * @date 2010-10-06
+ */
 
 #ifndef LOADERFILETYPESRT_H
 #define LOADERFILETYPESRT_H
@@ -19,13 +18,11 @@
 
 #include "loaderFileType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypeSrt
-// Description : This defines the Loader interface to read SpeedTree
-//               SRT files, which describe a single tree.  It actually
-//               returns a SpeedTreeNode with just a single tree
-//               within it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface to read SpeedTree SRT files, which describe
+ * a single tree.  It actually returns a SpeedTreeNode with just a single tree
+ * within it.
+ */
 class EXPCL_PANDASPEEDTREE LoaderFileTypeSrt : public LoaderFileType {
 public:
   LoaderFileTypeSrt();
@@ -56,4 +53,3 @@ private:
 };
 
 #endif
-

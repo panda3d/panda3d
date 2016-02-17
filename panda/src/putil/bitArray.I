@@ -1,33 +1,27 @@
-// Filename: bitArray.I
-// Created by:  drose (20Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bitArray.I
+ * @author drose
+ * @date 2006-01-20
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE BitArray::
 BitArray() {
   _highest_bits = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray::
 BitArray(WordType init_value) {
   if (init_value != 0) {
@@ -36,11 +30,9 @@ BitArray(WordType init_value) {
   _highest_bits = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray::
 BitArray(const BitArray &copy) :
   _array(copy._array),
@@ -48,11 +40,9 @@ BitArray(const BitArray &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray &BitArray::
 operator = (const BitArray &copy) {
   _array = copy._array;
@@ -60,12 +50,9 @@ operator = (const BitArray &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Named all_on constructor
-//       Access: Published, Static
-//  Description: Returns a BitArray with an infinite array of bits,
-//               all on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitArray with an infinite array of bits, all on.
+ */
 INLINE BitArray BitArray::
 all_on() {
   BitArray result;
@@ -73,21 +60,17 @@ all_on() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Named all_on constructor
-//       Access: Published, Static
-//  Description: Returns a BitArray whose bits are all off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitArray whose bits are all off.
+ */
 INLINE BitArray BitArray::
 all_off() {
   return BitArray();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Named lower_on constructor
-//       Access: Published, Static
-//  Description: Returns a BitArray whose lower on_bits bits are on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitArray whose lower on_bits bits are on.
+ */
 INLINE BitArray BitArray::
 lower_on(int on_bits) {
   BitArray result;
@@ -95,11 +78,9 @@ lower_on(int on_bits) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Named bit constructor
-//       Access: Published, Static
-//  Description: Returns a BitArray with only the indicated bit on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitArray with only the indicated bit on.
+ */
 INLINE BitArray BitArray::
 bit(int index) {
   BitArray result;
@@ -107,12 +88,9 @@ bit(int index) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Named range constructor
-//       Access: Published, Static
-//  Description: Returns a BitArray whose size bits, beginning at
-//               low_bit, are on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitArray whose size bits, beginning at low_bit, are on.
+ */
 INLINE BitArray BitArray::
 range(int low_bit, int size) {
   BitArray result;
@@ -120,89 +98,64 @@ range(int low_bit, int size) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray::
 ~BitArray() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::has_max_num_bits
-//       Access: Published, Static
-//  Description: Returns true if there is a maximum number of bits
-//               that may be stored in this structure, false
-//               otherwise.  If this returns true, the number may be
-//               queried in get_max_num_bits().
-//
-//               This method always returns false.  The BitArray has
-//               no maximum number of bits.  This method is defined so
-//               generic programming algorithms can use BitMask or
-//               BitArray interchangeably.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a maximum number of bits that may be stored in this
+ * structure, false otherwise.  If this returns true, the number may be queried
+ * in get_max_num_bits().  This method always returns false.  The BitArray has
+ * no maximum number of bits.  This method is defined so generic programming
+ * algorithms can use BitMask or BitArray interchangeably.
+ */
 CONSTEXPR bool BitArray::
 has_max_num_bits() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_max_num_bits
-//       Access: Published, Static
-//  Description: If get_max_num_bits() returned true, this method may
-//               be called to return the maximum number of bits that
-//               may be stored in this structure.  It is an error to
-//               call this if get_max_num_bits() return false.
-//
-//               It is always an error to call this method.  The
-//               BitArray has no maximum number of bits.  This method
-//               is defined so generic programming algorithms can use
-//               BitMask or BitArray interchangeably.
-////////////////////////////////////////////////////////////////////
+/**
+ * If get_max_num_bits() returned true, this method may be called to return the
+ * maximum number of bits that may be stored in this structure.  It is an error
+ * to call this if get_max_num_bits() return false.  It is always an error to
+ * call this method.  The BitArray has no maximum number of bits.  This method
+ * is defined so generic programming algorithms can use BitMask or BitArray
+ * interchangeably.
+ */
 CONSTEXPR int BitArray::
 get_max_num_bits() {
   return INT_MAX;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_num_bits_per_word
-//       Access: Published, Static
-//  Description: Returns the number of bits stored per word
-//               internally.  This is of interest only in that it
-//               limits the maximum number of bits that may be queried
-//               or set at once by extract() and store().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits stored per word internally.  This is of interest
+ * only in that it limits the maximum number of bits that may be queried or set
+ * at once by extract() and store().
+ */
 CONSTEXPR int BitArray::
 get_num_bits_per_word() {
   return num_bits_per_word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_num_bits
-//       Access: Published
-//  Description: Returns the current number of possibly different bits
-//               in this array.  There are actually an infinite number
-//               of bits, but every bit higher than this bit will have
-//               the same value, either 0 or 1 (see
-//               get_highest_bits()).
-//
-//               This number may grow and/or shrink automatically as
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current number of possibly different bits in this array.  There
+ * are actually an infinite number of bits, but every bit higher than this bit
+ * will have the same value, either 0 or 1 (see get_highest_bits()).  This
+ * number may grow and/or shrink automatically as needed.
+ */
 INLINE size_t BitArray::
 get_num_bits() const {
   return get_num_words() * (size_t)num_bits_per_word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_bit
-//       Access: Published
-//  Description: Returns true if the nth bit is set, false if it is
-//               cleared.  It is valid for n to increase beyond
-//               get_num_bits(), but the return value get_num_bits()
-//               will always be the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the nth bit is set, false if it is cleared.  It is valid for
+ * n to increase beyond get_num_bits(), but the return value get_num_bits() will
+ * always be the same.
+ */
 INLINE bool BitArray::
 get_bit(int index) const {
   nassertr(index >= 0, false);
@@ -215,12 +168,10 @@ get_bit(int index) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::set_bit
-//       Access: Published
-//  Description: Sets the nth bit on.  If n >= get_num_bits(), this
-//               automatically extends the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit on.  If n >= get_num_bits(), this automatically extends the
+ * array.
+ */
 INLINE void BitArray::
 set_bit(int index) {
   nassertv(index >= 0);
@@ -235,12 +186,10 @@ set_bit(int index) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::clear_bit
-//       Access: Published
-//  Description: Sets the nth bit off.  If n >= get_num_bits(), this
-//               automatically extends the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit off.  If n >= get_num_bits(), this automatically extends the
+ * array.
+ */
 INLINE void BitArray::
 clear_bit(int index) {
   nassertv(index >= 0);
@@ -255,12 +204,9 @@ clear_bit(int index) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::set_bit_to
-//       Access: Published
-//  Description: Sets the nth bit either on or off, according to the
-//               indicated bool value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit either on or off, according to the indicated bool value.
+ */
 INLINE void BitArray::
 set_bit_to(int index, bool value) {
   if (value) {
@@ -270,26 +216,20 @@ set_bit_to(int index, bool value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_highest_bits
-//       Access: Published
-//  Description: Returns true if the infinite set of bits beyond
-//               get_num_bits() are all on, or false of they are all
-//               off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the infinite set of bits beyond get_num_bits() are all on, or
+ * false of they are all off.
+ */
 INLINE bool BitArray::
 get_highest_bits() const {
   return (_highest_bits != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::extract
-//       Access: Published
-//  Description: Returns a word that represents only the indicated
-//               range of bits within this BitArray, shifted to the
-//               least-significant position.  size must be <=
-//               get_num_bits_per_word().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a word that represents only the indicated range of bits within this
+ * BitArray, shifted to the least-significant position.  size must be <=
+ * get_num_bits_per_word().
+ */
 INLINE BitArray::WordType BitArray::
 extract(int low_bit, int size) const {
   nassertr(size >= 0 && size <= num_bits_per_word, 0);
@@ -310,12 +250,10 @@ extract(int low_bit, int size) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::store
-//       Access: Published
-//  Description: Stores the indicated word into the indicated range of
-//               bits with this BitArray.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated word into the indicated range of bits with this
+ * BitArray.
+ */
 INLINE void BitArray::
 store(WordType value, int low_bit, int size) {
   nassertv(size >= 0);
@@ -339,11 +277,9 @@ store(WordType value, int low_bit, int size) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::set_range_to
-//       Access: Published
-//  Description: Sets the indicated range of bits to either on or off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated range of bits to either on or off.
+ */
 INLINE void BitArray::
 set_range_to(bool value, int low_bit, int size) {
   if (value) {
@@ -353,24 +289,19 @@ set_range_to(bool value, int low_bit, int size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_num_words
-//       Access: Published
-//  Description: Returns the number of possibly-unique words stored in
-//               the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of possibly-unique words stored in the array.
+ */
 INLINE size_t BitArray::
 get_num_words() const {
   return _array.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::get_word
-//       Access: Published
-//  Description: Returns the nth word in the array.  It is valid for n
-//               to be greater than get_num_words(), but the return
-//               value beyond get_num_words() will always be the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth word in the array.  It is valid for n to be greater than
+ * get_num_words(), but the return value beyond get_num_words() will always be
+ * the same.
+ */
 INLINE BitArray::MaskType BitArray::
 get_word(size_t n) const {
   nassertr(n >= 0, MaskType::all_off());
@@ -384,13 +315,10 @@ get_word(size_t n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::set_word
-//       Access: Published
-//  Description: Replaces the nth word in the array.  If n >=
-//               get_num_words(), this automatically extends the
-//               array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the nth word in the array.  If n >= get_num_words(), this
+ * automatically extends the array.
+ */
 INLINE void BitArray::
 set_word(size_t n, WordType value) {
   ensure_has_word(n);
@@ -398,54 +326,43 @@ set_word(size_t n, WordType value) {
   normalize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::clear
-//       Access: Published
-//  Description: Sets all the bits in the BitArray off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets all the bits in the BitArray off.
+ */
 void BitArray::
 clear() {
   _array.clear();
   _highest_bits = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool BitArray::
 operator == (const BitArray &other) const {
   return compare_to(other) == 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator !=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool BitArray::
 operator != (const BitArray &other) const {
   return compare_to(other) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator <
-//       Access: Published
-//  Description: Returns true if the unsigned integer which is
-//               represented by this BitArray is less than that of the
-//               other one, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the unsigned integer which is represented by this BitArray is
+ * less than that of the other one, false otherwise.
+ */
 INLINE bool BitArray::
 operator < (const BitArray &other) const {
   return compare_to(other) < 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator &
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray BitArray::
 operator & (const BitArray &other) const {
   BitArray result(*this);
@@ -453,11 +370,9 @@ operator & (const BitArray &other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator |
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray BitArray::
 operator | (const BitArray &other) const {
   BitArray result(*this);
@@ -465,11 +380,9 @@ operator | (const BitArray &other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator ^
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray BitArray::
 operator ^ (const BitArray &other) const {
   BitArray result(*this);
@@ -477,11 +390,9 @@ operator ^ (const BitArray &other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator ~
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray BitArray::
 operator ~ () const {
   BitArray result(*this);
@@ -489,11 +400,9 @@ operator ~ () const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator <<
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray BitArray::
 operator << (int shift) const {
   BitArray result(*this);
@@ -501,11 +410,9 @@ operator << (int shift) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::operator >>
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BitArray BitArray::
 operator >> (int shift) const {
   BitArray result(*this);
@@ -513,14 +420,11 @@ operator >> (int shift) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitArray::copy_on_write
-//       Access: Private
-//  Description: Called internally just before writing to the _array
-//               member, this makes a new copy of _array if it appears
-//               to be shared with any other objects--thus achieving
-//               copy-on-write.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally just before writing to the _array member, this makes a new
+ * copy of _array if it appears to be shared with any other objects--thus
+ * achieving copy-on-write.
+ */
 INLINE void BitArray::
 copy_on_write() {
   if (_array.get_ref_count() > 1) {

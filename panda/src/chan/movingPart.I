@@ -1,16 +1,15 @@
-// Filename: movingPart.I
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movingPart.I
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #include "animChannelFixed.h"
 #include "datagram.h"
@@ -27,12 +26,9 @@ TypeHandle MovingPart<SwitchType>::_type_handle;
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::Copy Constructor
-//       Access: Protected
-//  Description: Normally, you'd use make_copy() or copy_subgraph() to
-//               make a copy of this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, you'd use make_copy() or copy_subgraph() to make a copy of this.
+ */
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
 MovingPart(const MovingPart<SwitchType> &copy) :
@@ -42,11 +38,9 @@ MovingPart(const MovingPart<SwitchType> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
 MovingPart(PartGroup *parent, const string &name,
@@ -57,24 +51,19 @@ MovingPart(PartGroup *parent, const string &name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
 MovingPart() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::get_value_type
-//       Access: Public, Virtual
-//  Description: Returns the TypeHandle associated with the ValueType
-//               we are concerned with.  This is provided to allow a
-//               bit of run-time checking that joints and channels are
-//               matching properly in type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TypeHandle associated with the ValueType we are concerned with.
+ * This is provided to allow a bit of run-time checking that joints and channels
+ * are matching properly in type.
+ */
 template<class SwitchType>
 TypeHandle MovingPart<SwitchType>::
 get_value_type() const {
@@ -83,37 +72,29 @@ get_value_type() const {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::make_default_channel
-//       Access: Public, Virtual
-//  Description: Creates and returns a new AnimChannel that is not
-//               part of any hierarchy, but that returns the default
-//               value associated with this part.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates and returns a new AnimChannel that is not part of any hierarchy, but
+ * that returns the default value associated with this part.
+ */
 template<class SwitchType>
 AnimChannelBase *MovingPart<SwitchType>::
 make_default_channel() const {
   return new AnimChannelFixed<SwitchType>(get_name(), _default_value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::output_value
-//       Access: Public, Virtual
-//  Description: Outputs a very brief description of the channel's
-//               current value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a very brief description of the channel's current value.
+ */
 template<class SwitchType>
 void MovingPart<SwitchType>::
 output_value(ostream &out) const {
   SwitchType::output_value(out, _value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 template<class SwitchType>
 void MovingPart<SwitchType>::
 write_datagram(BamWriter *manager, Datagram &me) {
@@ -122,14 +103,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   SwitchType::write_datagram(me, _default_value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 template<class SwitchType>
 void MovingPart<SwitchType>::
 fillin(DatagramIterator &scan, BamReader *manager) {
@@ -137,6 +115,3 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   SwitchType::read_datagram(scan, _value);
   SwitchType::read_datagram(scan, _default_value);
 }
-
-
-

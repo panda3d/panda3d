@@ -1,21 +1,19 @@
-// Filename: frustum_src.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file frustum_src.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LFrustum
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_MATHUTIL FLOATNAME(LFrustum) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(LFrustum)();

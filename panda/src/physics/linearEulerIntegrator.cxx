@@ -1,56 +1,41 @@
-// Filename: linearEulerIntegrator.cxx
-// Created by:  charles (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearEulerIntegrator.cxx
+ * @author charles
+ * @date 2000-06-13
+ */
 
 #include "linearEulerIntegrator.h"
 #include "forceNode.h"
 #include "physicalNode.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearEulerIntegrator
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearEulerIntegrator::
 LinearEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearEulerIntegrator
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearEulerIntegrator::
 ~LinearEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Integrate
-//       Access: Public
-//  Description: Integrate a step of motion (based on dt) by
-//                applying every force in force_vec to every object
-//                in obj_vec.
-//
-//                physical,
-//                    The objects being acted upon and the
-//                    set of local forces that are applied
-//                    after the global forces.
-//                forces,
-//                    Global forces to be applied first.
-//                dt,
-//                    The delta time of this integration step.
-////////////////////////////////////////////////////////////////////
+/**
+ * Integrate a step of motion (based on dt) by applying every force in force_vec
+ * to every object in obj_vec.  physical, The objects being acted upon and the
+ * set of local forces that are applied after the global forces.  forces, Global
+ * forces to be applied first.  dt, The delta time of this integration step.
+ */
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
                 LinearForceVector& forces,
@@ -200,12 +185,9 @@ child_integrate(Physical *physical,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearEulerIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -213,12 +195,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearEulerIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -227,11 +206,3 @@ write(ostream &out, unsigned int indent) const {
   LinearIntegrator::write(out, indent+2);
   #endif //] NDEBUG
 }
-
-
-
-
-
-
-
-

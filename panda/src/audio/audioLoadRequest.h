@@ -1,16 +1,15 @@
-// Filename: audioLoadRequest.h
-// Created by:  drose (29Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file audioLoadRequest.h
+ * @author drose
+ * @date 2006-08-29
+ */
 
 #ifndef AUDIOLOADREQUEST_H
 #define AUDIOLOADREQUEST_H
@@ -22,21 +21,18 @@
 #include "audioSound.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AudioLoadRequest
-// Description : A class object that manages a single asynchronous
-//               audio load request.  This works in conjunction with
-//               the Loader class defined in pgraph, or really with
-//               any AsyncTaskManager.  Create a new AudioLoadRequest,
-//               and add it to the loader via load_async(), to begin
-//               an asynchronous load.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class object that manages a single asynchronous audio load request.  This
+ * works in conjunction with the Loader class defined in pgraph, or really with
+ * any AsyncTaskManager.  Create a new AudioLoadRequest, and add it to the
+ * loader via load_async(), to begin an asynchronous load.
+ */
 class EXPCL_PANDA_AUDIO AudioLoadRequest : public AsyncTask {
 public:
   ALLOC_DELETED_CHAIN(AudioLoadRequest);
 
 PUBLISHED:
-  INLINE AudioLoadRequest(AudioManager *audio_manager, const string &filename, 
+  INLINE AudioLoadRequest(AudioManager *audio_manager, const string &filename,
                           bool positional);
 
   INLINE AudioManager *get_audio_manager() const;
@@ -56,7 +52,7 @@ private:
 
   bool _is_ready;
   PT(AudioSound) _sound;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -70,7 +66,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
   static TypeHandle _type_handle;
 };
@@ -78,4 +74,3 @@ private:
 #include "audioLoadRequest.I"
 
 #endif
-

@@ -1,39 +1,33 @@
-// Filename: rangeDescription.cxx
-// Created by:  drose (07Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rangeDescription.cxx
+ * @author drose
+ * @date 2003-09-07
+ */
 
 #include "rangeDescription.h"
 #include "string_utils.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeDescription::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 RangeDescription::
 RangeDescription() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeDescription::parse_parameter
-//       Access: Public
-//  Description: Parses a string of comma- and hyphen-delimited
-//               unicode values, in decimal and/or hex, including
-//               possible bracket-delimited ASCII characters, as may
-//               have been passed on a command line.  Returns true if
-//               the parameter is parsed correctly, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a string of comma- and hyphen-delimited unicode values, in decimal
+ * and/or hex, including possible bracket-delimited ASCII characters, as may
+ * have been passed on a command line.  Returns true if the parameter is parsed
+ * correctly, false otherwise.
+ */
 bool RangeDescription::
 parse_parameter(const string &param) {
   // First, go through and separate the string by commas.  We have to
@@ -74,11 +68,9 @@ parse_parameter(const string &param) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeDescription::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void RangeDescription::
 output(ostream &out) const {
   bool first_time = true;
@@ -97,14 +89,11 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeDescription::parse_word
-//       Access: Private
-//  Description: Parses a single "word", i.e. the text delimited by
-//               commas, that might be listed on the command line.
-//               This is generally either the empty string, a single
-//               number, or a pair of numbers separated by a hyphen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a single "word", i.e.  the text delimited by commas, that might be
+ * listed on the command line.  This is generally either the empty string, a
+ * single number, or a pair of numbers separated by a hyphen.
+ */
 bool RangeDescription::
 parse_word(const string &word) {
   if (word.empty()) {
@@ -132,20 +121,16 @@ parse_word(const string &word) {
     }
     add_range(from_code, to_code);
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeDescription::parse_code
-//       Access: Private
-//  Description: Parses a single numeric value, either decimal or
-//               hexadecimal, and stores it in the indicated
-//               parameter.  Returns true if successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a single numeric value, either decimal or hexadecimal, and stores it
+ * in the indicated parameter.  Returns true if successful, false otherwise.
+ */
 bool RangeDescription::
-parse_code(const string &word, int &code) { 
+parse_code(const string &word, int &code) {
   string str = trim(word);
   const char *nptr = str.c_str();
   char *endptr;
@@ -158,12 +143,9 @@ parse_code(const string &word, int &code) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeDescription::parse_bracket
-//       Access: Private
-//  Description: Parses the text listed between square brackets on the
-//               command line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the text listed between square brackets on the command line.
+ */
 bool RangeDescription::
 parse_bracket(const string &str) {
   string::const_iterator si;

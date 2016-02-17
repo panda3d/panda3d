@@ -1,16 +1,15 @@
-// Filename: rescaleNormalAttrib.h
-// Created by:  drose (30Dec04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rescaleNormalAttrib.h
+ * @author drose
+ * @date 2004-12-30
+ */
 
 #ifndef RESCALENORMALATTRIB_H
 #define RESCALENORMALATTRIB_H
@@ -21,10 +20,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RescaleNormalAttrib
-// Description : Specifies how polygons are to be drawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how polygons are to be drawn.
+ */
 class EXPCL_PANDA_PGRAPH RescaleNormalAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -105,4 +103,3 @@ EXPCL_PANDA_PGRAPH istream &operator >> (istream &in, RescaleNormalAttrib::Mode 
 #include "rescaleNormalAttrib.I"
 
 #endif
-

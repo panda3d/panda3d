@@ -1,16 +1,15 @@
-// Filename: P3DActiveXCtrl.h
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file P3DActiveXCtrl.h
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #pragma once
 
@@ -29,7 +28,7 @@ class CP3DActiveXCtrl : public COleControl,
                         public PPInterface
 {
     DECLARE_DYNCREATE(CP3DActiveXCtrl)
-    
+
 // Constructor
 public:
     CP3DActiveXCtrl();
@@ -82,7 +81,7 @@ public:
     virtual IOleClientSite* GetClientSte();
 
     // ActiveX properties <PARAM NAME="name" VALUE="value">
-    std::vector< std::pair < CString, CString > > m_parameters; 
+    std::vector< std::pair < CString, CString > > m_parameters;
 
     CString m_hostingPageUrl;
 
@@ -114,4 +113,3 @@ protected:
     DWORD _init_time;
     CEvent _init_not_running;  // set when the init thread has finished, or before it has started.
 };
-

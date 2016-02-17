@@ -1,58 +1,47 @@
-// Filename: threadSafePointerToBase.I
-// Created by:  drose (28Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadSafePointerToBase.I
+ * @author drose
+ * @date 2006-04-28
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 template<class T>
 INLINE ThreadSafePointerToBase<T>::
 ThreadSafePointerToBase(To *ptr) {
   reassign(ptr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE ThreadSafePointerToBase<T>::
 ThreadSafePointerToBase(const ThreadSafePointerToBase<T> &copy) {
   reassign(copy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::Destructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE ThreadSafePointerToBase<T>::
 ~ThreadSafePointerToBase() {
   reassign((To *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::reassign
-//       Access: Protected
-//  Description: This is the main work of the ThreadSafePointerTo family.  When
-//               the pointer is reassigned, decrement the old
-//               reference count and increment the new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main work of the ThreadSafePointerTo family.  When the pointer is
+ * reassigned, decrement the old reference count and increment the new one.
+ */
 template<class T>
 INLINE void ThreadSafePointerToBase<T>::
 reassign(To *ptr) {
@@ -84,18 +73,16 @@ reassign(To *ptr) {
     }
 #endif
   }
-  
+
   // Now delete the old pointer.
   if (old_ptr != (To *)NULL) {
     unref_delete(old_ptr);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::reassign
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE void ThreadSafePointerToBase<T>::
 reassign(const ThreadSafePointerToBase<To> &copy) {
@@ -103,13 +90,10 @@ reassign(const ThreadSafePointerToBase<To> &copy) {
 }
 
 #ifdef DO_MEMORY_USAGE
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::update_type
-//       Access: Protected
-//  Description: Ensures that the MemoryUsage record for the pointer
-//               has the right type of object, if we know the type
-//               ourselves.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the MemoryUsage record for the pointer has the right type of
+ * object, if we know the type ourselves.
+ */
 template<class T>
 void ThreadSafePointerToBase<T>::
 update_type(To *ptr) {
@@ -125,24 +109,20 @@ update_type(To *ptr) {
 #endif  // DO_MEMORY_USAGE
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::clear
-//       Access: Published
-//  Description: A convenient way to set the ThreadSafePointerTo object to NULL.
-//               (Assignment to a NULL pointer also works, of course.)
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenient way to set the ThreadSafePointerTo object to NULL. (Assignment
+ * to a NULL pointer also works, of course.)
+ */
 template<class T>
 INLINE void ThreadSafePointerToBase<T>::
 clear() {
   reassign((To *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSafePointerToBase::output
-//       Access: Published
-//  Description: A handy function to output ThreadSafePointerTo's as a hex
-//               pointer followed by a reference count.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy function to output ThreadSafePointerTo's as a hex pointer followed by
+ * a reference count.
+ */
 template<class T>
 INLINE void ThreadSafePointerToBase<T>::
 output(ostream &out) const {

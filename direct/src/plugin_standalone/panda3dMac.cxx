@@ -1,16 +1,15 @@
-// Filename: panda3dMac.cxx
-// Created by:  drose (23Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file panda3dMac.cxx
+ * @author drose
+ * @date 2009-10-23
+ */
 
 #include "panda3dMac.h"
 #include "load_plugin.h"
@@ -22,11 +21,9 @@ using namespace std;
 // Having a global Panda3DMac object just makes things easier.
 static Panda3DMac *this_prog;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DMac::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Panda3DMac::
 Panda3DMac() : Panda3D(false) {
   // Mac applications traditionally keep running even when all windows
@@ -39,12 +36,9 @@ Panda3DMac() : Panda3D(false) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DMac::open_p3d_file
-//       Access: Public
-//  Description: Opens a p3d file received via the "open documents"
-//               event as its own instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a p3d file received via the "open documents" event as its own instance.
+ */
 void Panda3DMac::
 open_p3d_file(FSRef *ref) {
   OSErr err;
@@ -62,33 +56,33 @@ open_p3d_file(FSRef *ref) {
 }
 
 static pascal OSErr
-open_documents_handler(const AppleEvent *theAppleEvent, AppleEvent *reply, 
+open_documents_handler(const AppleEvent *theAppleEvent, AppleEvent *reply,
                        SRefCon handlerRefcon) {
   AEDescList docList;
   FSRef theFSRef;
   long index;
   long count = 0;
-  
+
   // Get the list of file aliases from the event.
   OSErr err = AEGetParamDesc(theAppleEvent,
                              keyDirectObject, typeAEList, &docList);
   require_noerr(err, CantGetDocList);
-  
+
   err = AECountItems(&docList, &count);
   require_noerr(err, CantGetCount);
-  
+
   for (index = 1; index <= count; index++) {
     err = AEGetNthPtr(&docList, index, typeFSRef,
                       NULL, NULL, &theFSRef, sizeof(FSRef), NULL);// 5
     require_noerr(err, CantGetDocDescPtr);
-    
+
     // Here's the file, do something with it.
     this_prog->open_p3d_file(&theFSRef);
   }
-  
+
   // Release list of files
   AEDisposeDesc(&docList);
-  
+
   // Error handlers.
  CantGetDocList:
  CantGetCount:

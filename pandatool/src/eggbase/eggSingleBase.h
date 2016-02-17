@@ -1,16 +1,15 @@
-// Filename: eggSingleBase.h
-// Created by:  drose (21Jul03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggSingleBase.h
+ * @author drose
+ * @date 2003-07-21
+ */
 
 #ifndef EGGSINGLEBASE_H
 #define EGGSINGLEBASE_H
@@ -27,16 +26,12 @@ class EggWriter;
 class EggNode;
 class PathReplace;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSingleBase
-// Description : This specialization of EggBase is intended for
-//               programs that read and/or write a single egg file.
-//               (See EggMultiBase for programs that operate on
-//               multiple egg files at once.)
-//
-//               This is just a base class; see EggReader, EggWriter,
-//               or EggFilter according to your particular I/O needs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization of EggBase is intended for programs that read and/or
+ * write a single egg file.  (See EggMultiBase for programs that operate on
+ * multiple egg files at once.)  This is just a base class; see EggReader,
+ * EggWriter, or EggFilter according to your particular I/O needs.
+ */
 class EggSingleBase : public EggBase {
 public:
   EggSingleBase();
@@ -52,5 +47,3 @@ protected:
 };
 
 #endif
-
-

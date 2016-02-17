@@ -1,16 +1,15 @@
-// Filename: partBundle.h
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file partBundle.h
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #ifndef PARTBUNDLE_H
 #define PARTBUNDLE_H
@@ -40,12 +39,10 @@ class PartBundleNode;
 class TransformState;
 class AnimPreloadTable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PartBundle
-// Description : This is the root of a MovingPart hierarchy.  It
-//               defines the hierarchy of moving parts that make up an
-//               animatable object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the root of a MovingPart hierarchy.  It defines the hierarchy of
+ * moving parts that make up an animatable object.
+ */
 class EXPCL_PANDA_CHAN PartBundle : public PartGroup {
 public:
 
@@ -126,7 +123,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
   PT(AnimControl) bind_anim(AnimBundle *anim,
-                            int hierarchy_match_flags = 0, 
+                            int hierarchy_match_flags = 0,
                             const PartSubset &subset = PartSubset());
   PT(AnimControl) load_bind_anim(Loader *loader,
                                  const Filename &filename,
@@ -143,7 +140,7 @@ PUBLISHED:
 
   bool update();
   bool force_update();
-  
+
 public:
   // The following functions aren't really part of the public
   // interface; they're just public so we don't have to declare a

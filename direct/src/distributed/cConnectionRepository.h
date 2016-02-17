@@ -1,16 +1,15 @@
-// Filename: cConnectionRepository.h
-// Created by:  drose (17May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cConnectionRepository.h
+ * @author drose
+ * @date 2004-05-17
+ */
 
 #ifndef CCONNECTIONREPOSITORY_H
 #define CCONNECTIONREPOSITORY_H
@@ -43,21 +42,16 @@ class URLSpec;
 class HTTPChannel;
 class SocketStream;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConnectionRepository
-// Description : This class implements the C++ side of the
-//               ConnectionRepository object.  In particular, it
-//               manages the connection to the server once it has been
-//               opened (but does not open it directly).  It manages
-//               reading and writing datagrams on the connection and
-//               monitoring for unexpected disconnects as well as
-//               handling intentional disconnects.
-//
-//               Certain server messages, like field updates, are
-//               handled entirely within the C++ layer, while server
-//               messages that are not understood by the C++ layer are
-//               returned up to the Python layer for processing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements the C++ side of the ConnectionRepository object.  In
+ * particular, it manages the connection to the server once it has been opened
+ * (but does not open it directly).  It manages reading and writing datagrams on
+ * the connection and monitoring for unexpected disconnects as well as handling
+ * intentional disconnects.  Certain server messages, like field updates, are
+ * handled entirely within the C++ layer, while server messages that are not
+ * understood by the C++ layer are returned up to the Python layer for
+ * processing.
+ */
 class EXPCL_DIRECT CConnectionRepository {
 PUBLISHED:
   CConnectionRepository(bool has_owner_view = false,

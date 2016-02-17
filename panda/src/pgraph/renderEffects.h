@@ -1,16 +1,15 @@
-// Filename: renderEffects.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderEffects.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef RENDEREFFECTS_H
 #define RENDEREFFECTS_H
@@ -31,18 +30,13 @@ class CullTraverser;
 class CullTraverserData;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderEffects
-// Description : This represents a unique collection of RenderEffect
-//               objects that correspond to a particular renderable
-//               state.
-//
-//               You should not attempt to create or modify a
-//               RenderEffects object directly.  Instead, call one of
-//               the make() functions to create one for you.  And
-//               instead of modifying a RenderEffects object, create a
-//               new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a unique collection of RenderEffect objects that correspond
+ * to a particular renderable state.  You should not attempt to create or modify
+ * a RenderEffects object directly.  Instead, call one of the make() functions
+ * to create one for you.  And instead of modifying a RenderEffects object,
+ * create a new one.
+ */
 class EXPCL_PANDA_PGRAPH RenderEffects : public TypedWritableReferenceCount {
 protected:
   RenderEffects();
@@ -181,7 +175,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -208,4 +202,3 @@ INLINE ostream &operator << (ostream &out, const RenderEffects &state) {
 #include "renderEffects.I"
 
 #endif
-

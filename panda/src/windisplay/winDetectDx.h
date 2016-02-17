@@ -1,16 +1,15 @@
-// Filename: winDetectDx.h
-// Created by:  aignacio (18Jan07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winDetectDx.h
+ * @author aignacio
+ * @date 2007-01-18
+ */
 
 #include <time.h>
 #include "displayInformation.h"
@@ -52,13 +51,13 @@ static int d3d_format_to_bits_per_pixel (D3DFORMAT d3d_format) {
   int bits_per_pixel;
 
   format_index = 0;
-  bits_per_pixel = 0;  
+  bits_per_pixel = 0;
   while (display_format_array [format_index].d3d_format != D3DFMT_UNKNOWN) {
     if (d3d_format == display_format_array [format_index].d3d_format) {
-      bits_per_pixel = display_format_array [format_index].bits_per_pixel;  
+      bits_per_pixel = display_format_array [format_index].bits_per_pixel;
       break;
     }
-    
+
     format_index++;
   }
 
@@ -111,7 +110,7 @@ static DWORD print_GetLastError (char *message_prefix)
 static int get_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information) {
 
   int debug = false;
-  
+
   int success;
   DisplayInformation::DetectionState state;
   int get_adapter_display_mode_state;
@@ -167,7 +166,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   video_memory = 0;
   texture_memory = 0;
 
-  state = DisplayInformation::DS_unknown;    
+  state = DisplayInformation::DS_unknown;
   get_adapter_display_mode_state = false;
   get_device_caps_state = false;
 
@@ -185,7 +184,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   month = 0;
   day = 0;
   year = 0;
-  
+
   HMODULE d3d_dll;
   DIRECT_3D_CREATE Direct3DCreate;
 
@@ -272,14 +271,14 @@ static int get_display_information (DisplaySearchParameters &display_search_para
               if (debug) {
                 printf ("Driver Date: %d/%d/%d\n",  month, day, year);
               }
-              
+
               _findclose (find);
-            }  
+            }
           }
 
           /*
           HMODULE driver_dll;
-          
+
           driver_dll = LoadLibrary (d3d_adapter_identifier.Driver);
           if (driver_dll)
           {
@@ -293,7 +292,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
             }
             else
             {
-              printf ("ERROR: could not get GetModuleFileName for %s \n", d3d_adapter_identifier.Driver);  
+              printf ("ERROR: could not get GetModuleFileName for %s \n", d3d_adapter_identifier.Driver);
             }
 
             FreeLibrary (driver_dll);
@@ -309,7 +308,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
             printf ("VendorId = 0x%x\n", d3d_adapter_identifier.VendorId);
             printf ("DeviceId = 0x%x\n", d3d_adapter_identifier.DeviceId);
           }
-          
+
           vendor_id = d3d_adapter_identifier.VendorId;
           device_id = d3d_adapter_identifier.DeviceId;
 
@@ -321,9 +320,9 @@ static int get_display_information (DisplaySearchParameters &display_search_para
           if (debug) {
             printf ("DRIVER VERSION: %d.%d.%d.%d \n", product, version, sub_version, build);
           }
-          
+
           WHQL whql;
-          
+
           whql.whql= d3d_adapter_identifier.WHQLLevel;
 
           if (debug) {
@@ -453,7 +452,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
                     }
                   }
                 }
-              }            
+              }
             }
           }
 
@@ -467,11 +466,11 @@ static int get_display_information (DisplaySearchParameters &display_search_para
         height = 480;
 
         // make a window
-        WNDCLASSEX window_class = 
-        { 
-          sizeof (WNDCLASSEX), CS_CLASSDC, window_procedure, 0L, 0L, 
+        WNDCLASSEX window_class =
+        {
+          sizeof (WNDCLASSEX), CS_CLASSDC, window_procedure, 0L, 0L,
           GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-          "class_name", NULL 
+          "class_name", NULL
         };
         RegisterClassEx (&window_class);
 
@@ -631,7 +630,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   // memory
   bool memory_state;
   HMODULE kernel32_dll;
-    
+
   memory_state = false;
   kernel32_dll = LoadLibrary ("kernel32.dll");
   if (kernel32_dll) {
@@ -646,7 +645,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
         physical_memory = memory_status.ullTotalPhys;
         available_physical_memory = memory_status.ullAvailPhys;
         memory_state = true;
-      }    
+      }
     }
     FreeLibrary (kernel32_dll);
   }
@@ -659,7 +658,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
     physical_memory = memory_status.dwTotalPhys;
     available_physical_memory = memory_status.dwAvailPhys;
   }
-  
+
   if (debug) {
     printf ("physical_memory %I64d \n", physical_memory);
     printf ("available_physical_memory %I64d \n", available_physical_memory);

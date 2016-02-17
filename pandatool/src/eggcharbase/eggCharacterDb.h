@@ -1,16 +1,15 @@
-// Filename: eggCharacterDb.h
-// Created by:  drose (05Oct06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCharacterDb.h
+ * @author drose
+ * @date 2006-10-05
+ */
 
 #ifndef EGGCHARACTERDB_H
 #define EGGCHARACTERDB_H
@@ -31,16 +30,12 @@
 
 class EggJointPointer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCharacterDb
-// Description : This class is used during joint optimization or
-//               restructuring to store the table of interim joint
-//               computations.
-//
-//               That is to say, this class provides an temporary data
-//               store for three tables of matrices per each
-//               EggJointPointer per frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used during joint optimization or restructuring to store the
+ * table of interim joint computations.  That is to say, this class provides an
+ * temporary data store for three tables of matrices per each EggJointPointer
+ * per frame.
+ */
 class EggCharacterDb {
 public:
   EggCharacterDb();
@@ -85,5 +80,3 @@ private:
 #include "eggCharacterDb.I"
 
 #endif
-
-

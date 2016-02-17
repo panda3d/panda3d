@@ -1,17 +1,17 @@
-// Filename: shaderInput.h
-// Created by: jyelon (01Sep05)
-// Updated by: fperazzi, PandaSE (06Apr10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderInput.h
+ * @author jyelon
+ * @date 2005-09-01
+ * @author fperazzi, PandaSE
+ * @date 2010-04-06
+ */
 
 #ifndef SHADERINPUT_H
 #define SHADERINPUT_H
@@ -32,12 +32,10 @@
 #include "shader.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderInput
-// Description : This is a small container class that can hold any
-//               one of the value types that can be passed as input
-//               to a shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a small container class that can hold any one of the value types that
+ * can be passed as input to a shader.
+ */
 class EXPCL_PANDA_PGRAPH ShaderInput : public TypedWritableReferenceCount {
 public:
   INLINE ~ShaderInput();
@@ -147,4 +145,3 @@ private:
 #include "shaderInput.I"
 
 #endif  // SHADERINPUT_H
-

@@ -1,16 +1,15 @@
-// Filename: thread.h
-// Created by:  cary (16Sep98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file thread.h
+ * @author cary
+ * @date 1998-09-16
+ */
 
 #ifndef THREAD_H
 #define THREAD_H
@@ -31,18 +30,13 @@ class ConditionVarDebug;
 class ConditionVarFullDebug;
 class AsyncTaskBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Thread
-// Description : A thread; that is, a lightweight process.  This is an
-//               abstract base class; to use it, you must subclass
-//               from it and redefine thread_main().
-//
-//               The thread itself will keep a reference count on the
-//               Thread object while it is running; when the thread
-//               returns from its root function, the Thread object
-//               will automatically be destructed if no other pointers
-//               are referencing it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A thread; that is, a lightweight process.  This is an abstract base class; to
+ * use it, you must subclass from it and redefine thread_main().  The thread
+ * itself will keep a reference count on the Thread object while it is running;
+ * when the thread returns from its root function, the Thread object will
+ * automatically be destructed if no other pointers are referencing it.
+ */
 class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
   Thread(const string &name, const string &sync_name);

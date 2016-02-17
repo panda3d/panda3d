@@ -1,16 +1,15 @@
-// Filename: factoryParam.h
-// Created by:  drose (08May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file factoryParam.h
+ * @author drose
+ * @date 2000-05-08
+ */
 
 #ifndef FACTORYPARAM_H
 #define FACTORYPARAM_H
@@ -21,16 +20,13 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FactoryParam
-// Description : The base class of any number of specific pieces of
-//               parameter information that might be passed to a
-//               Factory's CreateFunc to control what kind of instance
-//               is created.  This class is empty and contains no
-//               data, but different kinds of factories may expect
-//               parameters of various types that derive from
-//               FactoryParam (and do contain data).
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class of any number of specific pieces of parameter information that
+ * might be passed to a Factory's CreateFunc to control what kind of instance is
+ * created.  This class is empty and contains no data, but different kinds of
+ * factories may expect parameters of various types that derive from
+ * FactoryParam (and do contain data).
+ */
 class EXPCL_PANDA_PUTIL FactoryParam : public TypedReferenceCount {
 public:
   INLINE FactoryParam();
@@ -59,4 +55,3 @@ private:
 #include "factoryParam.I"
 
 #endif
-

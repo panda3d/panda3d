@@ -1,16 +1,15 @@
-// Filename: soft2Egg.c
-// Created by:  masad (26Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file soft2Egg.c
+ * @author masad
+ * @date 2003-09-26
+ */
 
 #include <SAA.h>
 
@@ -200,13 +199,10 @@ class soft2egg : public EggBase
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Help
-//       Access: Public, Virtual
-//  Description: Displays the "what is this program" message, along
-//               with the usage message.  Should be overridden in base
-//               classes to describe the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the "what is this program" message, along with the usage message.
+ * Should be overridden in base classes to describe the current program.
+ */
 void soft2egg::
 Help()
 {
@@ -217,11 +213,9 @@ Help()
     Usage();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Usage
-//       Access: Public, Virtual
-//  Description: Displays the usage message.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the usage message.
+ */
 void soft2egg::
 Usage() {
   cerr << "\nUsage:\n"
@@ -234,13 +228,10 @@ Usage() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShowOpts
-//       Access: Public, Virtual
-//  Description: Displays the valid options.  Should be extended in
-//               base classes to show additional options relevant to
-//               the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the valid options.  Should be extended in base classes to show
+ * additional options relevant to the current program.
+ */
 void soft2egg::
 ShowOpts()
 {
@@ -279,11 +270,9 @@ ShowOpts()
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleGetopts
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 boolean soft2egg::
 HandleGetopts(char flag, char *optarg, int &optind, int argc, char **argv)
 {
@@ -500,11 +489,9 @@ HandleGetopts(char flag, char *optarg, int &optind, int argc, char **argv)
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: isNum
-//       Access: Public, Virtual
-//  Description: Take a float and make sure it is of the body.
-////////////////////////////////////////////////////////////////////
+/**
+ * Take a float and make sure it is of the body.
+ */
 int soft2egg::
 isNum( float num )
 {
@@ -512,12 +499,10 @@ isNum( float num )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetRootName
-//       Access: Public
-//  Description: Given a string, return a copy of the string up to
-//               the first occurrence of '-'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return a copy of the string up to the first occurrence of
+ * '-'.
+ */
 char *soft2egg::
 GetRootName( const char *name )
 {
@@ -544,12 +529,9 @@ GetRootName( const char *name )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: RemovePathName
-//       Access: Public
-//  Description: Given a string, return a copy of the string after
-//               the last occurence of '/
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return a copy of the string after the last occurence of '
+ */
 char *soft2egg::
 RemovePathName( const char *name )
 {
@@ -574,13 +556,10 @@ RemovePathName( const char *name )
     return ( (char *)name );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetSliderName
-//       Access: Public
-//  Description: Given a string, return that part of the string after
-//               the first occurence of '-' and before the last
-//               occurance of '.'
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return that part of the string after the first occurence of
+ * '-' and before the last occurance of '.'
+ */
 char *soft2egg::
 GetSliderName( const char *name )
 {
@@ -618,12 +597,9 @@ GetSliderName( const char *name )
     return( (char *)name );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetName
-//       Access: Public
-//  Description: Given an element, return a copy of the element's
-//               name WITHOUT prefix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an element, return a copy of the element's name WITHOUT prefix.
+ */
 char *soft2egg::
 GetName( SAA_Scene *scene, SAA_Elem *element )
 {
@@ -638,12 +614,9 @@ GetName( SAA_Scene *scene, SAA_Elem *element )
     return name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetFullName
-//       Access: Public
-//  Description: Given an element, return a copy of the element's
-//               name complete with prefix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an element, return a copy of the element's name complete with prefix.
+ */
 char *soft2egg::
 GetFullName( SAA_Scene *scene, SAA_Elem *element )
 {
@@ -674,12 +647,10 @@ GetFullName( SAA_Scene *scene, SAA_Elem *element )
     return fullNameStrm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetModelNoteInfo
-//       Access: Public
-//  Description: Given an element, return a string containing the
-//               contents of its MODEL NOTE entry
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an element, return a string containing the contents of its MODEL NOTE
+ * entry
+ */
 char *soft2egg::
 GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model )
 {
@@ -716,12 +687,10 @@ GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeTableName
-//       Access: Public
-//  Description: Given a string, and a number, return a new string
-//               consisting of "string.number".
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, and a number, return a new string consisting of
+ * "string.number".
+ */
 char *soft2egg::
 MakeTableName( const char *name, int number )
 {
@@ -731,12 +700,10 @@ MakeTableName( const char *name, int number )
     return namestrm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindModelByName
-//       Access: Public
-//  Description: Given a string, find the model in the scene
-//               whose name corresponds to the given string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, find the model in the scene whose name corresponds to the
+ * given string.
+ */
 SAA_Elem *soft2egg::
 FindModelByName( char *name, SAA_Scene *scene, SAA_Elem *models,
     int numModels )
@@ -766,12 +733,9 @@ FindModelByName( char *name, SAA_Scene *scene, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DepointellizeName
-//       Access: Public
-//  Description: Given a string, return the string up to the first
-//                 period.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return the string up to the first period.
+ */
 char *soft2egg::
 DepointellizeName( char *name )
 {
@@ -789,13 +753,10 @@ DepointellizeName( char *name )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConvertTexture
-//       Access: Public
-//  Description: Given a string, return a copy of the string without
-//               the leading file path, and make an rgb file of the
-//               same name in the tex_path directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return a copy of the string without the leading file path,
+ * and make an rgb file of the same name in the tex_path directory.
+ */
 char *soft2egg::
 ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
 {
@@ -913,13 +874,10 @@ ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindClosestTriVert
-//       Access: Public
-//  Description: Given an egg vertex pool, map each vertex therein to
-//               a vertex within an array of SAA model vertices of
-//               size numVert. Mapping is done by closest proximity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an egg vertex pool, map each vertex therein to a vertex within an array
+ * of SAA model vertices of size numVert.  Mapping is done by closest proximity.
+ */
 int *soft2egg::
 FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert )
 {
@@ -970,13 +928,10 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeIndexMap
-//       Access: Public
-//  Description: Given an array of indices that is a map from one
-//               set of vertices to another, return an array that
-//               performs the reverse mapping of the indices array
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an array of indices that is a map from one set of vertices to another,
+ * return an array that performs the reverse mapping of the indices array
+ */
 int *soft2egg::
 MakeIndexMap( int *indices, int numIndices, int mapSize )
 {
@@ -1018,12 +973,9 @@ MakeIndexMap( int *indices, int numIndices, int mapSize )
     return( map );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: findShapeVert
-//       Access: Public
-//  Description: given a vertex, find its corresponding shape vertex
-//               and return its index.
-////////////////////////////////////////////////////////////////////
+/**
+ * given a vertex, find its corresponding shape vertex and return its index.
+ */
 int     soft2egg::
 findShapeVert( SAA_DVector vertex, SAA_DVector *vertices, int numVert )
 {
@@ -1052,11 +1004,9 @@ findShapeVert( SAA_DVector vertex, SAA_DVector *vertices, int numVert )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoadSoft
-//       Access: Public
-//  Description: Open the SI database and grab the scene & model info
-////////////////////////////////////////////////////////////////////
+/**
+ * Open the SI database and grab the scene & model info
+ */
 void soft2egg::
 LoadSoft()
 {
@@ -1428,12 +1378,10 @@ LoadSoft()
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeEgg
-//       Access: Public
-//  Description: Make egg geometry from a given model. This include
-//               textures, tex coords, colors, normals, and joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Make egg geometry from a given model.  This include textures, tex coords,
+ * colors, normals, and joints.
+ */
 void soft2egg::
 MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
             SAA_Scene *scene, SAA_Elem *model )
@@ -3014,12 +2962,10 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeSurfaceCurve
-//       Access: Public
-//  Description: Given a scene and lists of u and v samples create a
-//                an egg NURBS curve of degree two from the samples
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and lists of u and v samples create a an egg NURBS curve of
+ * degree two from the samples
+ */
 void  soft2egg::
 MakeSurfaceCurve(  SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     EggNurbsSurface *&nurbsSurf, int numTrims, SAA_SubElem *trims,
@@ -3105,12 +3051,10 @@ MakeSurfaceCurve(  SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     //free( vSamples );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeUVNurbsCurve
-//       Access: Public
-//  Description: Given a scene and lists of u and v samples create a
-//                an egg NURBS curve of degree two from the samples
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and lists of u and v samples create a an egg NURBS curve of
+ * degree two from the samples
+ */
 EggNurbsCurve  *soft2egg::
 MakeUVNurbsCurve( int numCurve, long *numSamples, double *uSamples,
     double *vSamples, EggGroup *parent, char *name )
@@ -3174,12 +3118,10 @@ MakeUVNurbsCurve( int numCurve, long *numSamples, double *uSamples,
     return( eggNurbsCurve );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeNurbsCurve
-//       Access: Public
-//  Description: Given a scene and a NURBS curve model create the
-//               the appropriate egg structures
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and a NURBS curve model create the the appropriate egg
+ * structures
+ */
 EggNurbsCurve  *soft2egg::
 MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     float matrix[4][4], char *name )
@@ -3286,13 +3228,11 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     return( eggNurbsCurve );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AddKnots
-//       Access: Public
-//  Description: Given a parametric surface, and its knots, create
-//               the appropriate egg structure by filling in Soft's
-//               implicit knots and assigning the rest to eggKnots.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a parametric surface, and its knots, create the appropriate egg
+ * structure by filling in Soft's implicit knots and assigning the rest to
+ * eggKnots.
+ */
 void soft2egg::
 AddKnots( perf_vector<double> &eggKnots, double *knots, int numKnots,
     SAA_Boolean closed, int degree )
@@ -3364,12 +3304,10 @@ AddKnots( perf_vector<double> &eggKnots, double *knots, int numKnots,
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeJoint
-//       Access: Public
-//  Description: Given a name, a parent and a model create a new
-//               a new EggJoint for that model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a name, a parent and a model create a new a new EggJoint for that
+ * model.
+ */
 void soft2egg::
 MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
     SAA_Elem *model, char *name )
@@ -3545,13 +3483,10 @@ MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeSoftSkin
-//       Access: Public
-//  Description: Given a skeleton part find its envelopes (if any)
-//               get the vertices associated with the envelopes and
-//               their weights and make vertex ref's for the joint
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a skeleton part find its envelopes (if any) get the vertices associated
+ * with the envelopes and their weights and make vertex ref's for the joint
+ */
 void soft2egg::
 MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels, char *name )
@@ -3886,13 +3821,10 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CleanUpSoftSkin
-//       Access: Public
-//  Description: Given a model, make sure all its vertices have been
-//               soft assigned. If not hard assign to the last
-//               joint we saw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a model, make sure all its vertices have been soft assigned.  If not
+ * hard assign to the last joint we saw.
+ */
 void soft2egg::
 CleanUpSoftSkin( SAA_Scene *scene, SAA_Elem *model, char *name )
 {
@@ -4049,14 +3981,11 @@ CleanUpSoftSkin( SAA_Scene *scene, SAA_Elem *model, char *name )
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeAnimTable
-//       Access: Public
-//  Description: Given a scene and a skeleton part ,get all the
-//               position, rotation, and scale for the skeleton
-//               part for this frame and write them out as Egg
-//               animation tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and a skeleton part ,get all the position, rotation, and scale
+ * for the skeleton part for this frame and write them out as Egg animation
+ * tables.
+ */
 void soft2egg::
 MakeAnimTable( SAA_Scene *scene, SAA_Elem *skeletonPart, char *name )
 {
@@ -4157,15 +4086,11 @@ MakeAnimTable( SAA_Scene *scene, SAA_Elem *skeletonPart, char *name )
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeVertexOffsets
-//       Access: Public
-//  Description: Given a scene, a model , the vertices of its original
-//               shape and its name find the difference between the
-//               geometry of its key shapes and the models original
-//               geometry and add morph vertices to the egg data to
-//               reflect these changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model , the vertices of its original shape and its name find
+ * the difference between the geometry of its key shapes and the models original
+ * geometry and add morph vertices to the egg data to reflect these changes.
+ */
 void soft2egg::
 MakeVertexOffsets( SAA_Scene *scene, SAA_Elem *model, SAA_ModelType type,
     int numShapes, int numOrigVert, SAA_DVector *originalVerts, float
@@ -4310,14 +4235,11 @@ MakeVertexOffsets( SAA_Scene *scene, SAA_Elem *model, SAA_ModelType type,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeMorphTable
-//       Access: Public
-//  Description: Given a scene, a model, a name and a frame time,
-//               determine what type of shape interpolation is
-//               used and call the appropriate function to extract
-//               the shape weight info for this frame...
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, a name and a frame time, determine what type of shape
+ * interpolation is used and call the appropriate function to extract the shape
+ * weight info for this frame...
+ */
 void soft2egg::
 MakeMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels, char *name, float time )
@@ -4351,14 +4273,11 @@ MakeMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeLinearMorphTable
-//       Access: Public
-//  Description: Given a scene, a model, its name, and the time,
-//               get the shape fcurve for the model and determine
-//               the shape weights for the given time and use them
-//               to populate the morph table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, its name, and the time, get the shape fcurve for the
+ * model and determine the shape weights for the given time and use them to
+ * populate the morph table.
+ */
 void soft2egg::
 MakeLinearMorphTable( SAA_Scene *scene, SAA_Elem *model, int numShapes,
     char *name, float time )
@@ -4439,16 +4358,12 @@ MakeLinearMorphTable( SAA_Scene *scene, SAA_Elem *model, int numShapes,
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeWeightedMorphTable
-//       Access: Public
-//  Description: Given a scene, a model, a list of all models in the
-//               scene, the number of models in the scece, the number
-//               of key shapes for this model, the name of the model
-//               and the current time, determine what method of
-//               controlling the shape weights is used and call the
-//               appropriate routine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, a list of all models in the scene, the number of
+ * models in the scece, the number of key shapes for this model, the name of the
+ * model and the current time, determine what method of controlling the shape
+ * weights is used and call the appropriate routine.
+ */
 void soft2egg::
 MakeWeightedMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels,  int numShapes, char *name, float time )
@@ -4504,14 +4419,11 @@ MakeWeightedMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeExpressionMorphTable
-//       Access: Public
-//  Description: Given a scene, a model and its number of key shapes
-//               generate a morph table describing transitions btwn
-//               the key shapes by evaluating the positions of the
-//               controlling sliders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model and its number of key shapes generate a morph table
+ * describing transitions btwn the key shapes by evaluating the positions of the
+ * controlling sliders.
+ */
 void soft2egg::
 MakeExpressionMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels,  int numShapes, char *name, float time )
@@ -4659,13 +4571,10 @@ MakeExpressionMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeTexAnim
-//       Access: Public
-//  Description: Given a scene, a POLYGON model, and the name
-//               of the that model, get the u and v offsets for
-//               the current frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a POLYGON model, and the name of the that model, get the u and
+ * v offsets for the current frame.
+ */
 void soft2egg::
 MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
 {
@@ -4877,11 +4786,9 @@ MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: Main
-//       Access: Private
-//  Description: Instantiate converter and process a file
-////////////////////////////////////////////////////////////////////
+/**
+ * Instantiate converter and process a file
+ */
 EXPCL_MISC SI_Error soft2egg(int argc, char *argv[]) {
   // pass control to the c++ system
   init_soft2egg(argc, argv);

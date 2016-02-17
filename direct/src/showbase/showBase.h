@@ -1,16 +1,15 @@
-// Filename: showBase.h
-// Created by:  shochet (02Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file showBase.h
+ * @author shochet
+ * @date 2000-02-02
+ */
 
 #ifndef SHOWBASE_H
 #define SHOWBASE_H
@@ -63,13 +62,13 @@ class TempGridZoneManager {
 PUBLISHED:
   TempGridZoneManager() {}
   ~TempGridZoneManager() {}
-  
+
   unsigned int add_grid_zone(
-      unsigned int x, 
-      unsigned int y, 
-      unsigned int width, 
-      unsigned int height, 
-      unsigned int zoneBase, 
+      unsigned int x,
+      unsigned int y,
+      unsigned int width,
+      unsigned int height,
+      unsigned int zoneBase,
       unsigned int xZoneResolution,
       unsigned int yZoneResolution);
   int get_zone_list(int x, int y);
@@ -80,11 +79,11 @@ protected:
     unsigned int base;
     unsigned int resolution;
     GridZone(
-        unsigned int x, 
-        unsigned int y, 
-        unsigned int width, 
-        unsigned int height, 
-        unsigned int zoneBase, 
+        unsigned int x,
+        unsigned int y,
+        unsigned int width,
+        unsigned int height,
+        unsigned int zoneBase,
         unsigned int xZoneResolution,
         unsigned int yZoneResolution) {
       base=zoneBase;

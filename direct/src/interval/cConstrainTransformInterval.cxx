@@ -1,16 +1,15 @@
-// Filename: cConstrainTransformInterval.cxx
-// Created by:  pratt (29Sep06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cConstrainTransformInterval.cxx
+ * @author pratt
+ * @date 2006-09-29
+ */
 
 #include "cConstrainTransformInterval.h"
 #include "transformState.h"
@@ -18,18 +17,13 @@
 
 TypeHandle CConstrainTransformInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainTransformInterval::Constructor
-//       Access: Published
-//  Description: Constructs a constraint interval that will constrain
-//               the transform of one node to the transform of another.
-//               To clarify, the transform of node will be copied to target.
-//
-//               If wrt is true, the node's transform will be
-//               transformed into the target node's parent's  space
-//               before being copied.  If wrt is false, the node's
-//               local transform will be copied unaltered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a constraint interval that will constrain the transform of one
+ * node to the transform of another.  To clarify, the transform of node will be
+ * copied to target.  If wrt is true, the node's transform will be transformed
+ * into the target node's parent's  space before being copied.  If wrt is false,
+ * the node's local transform will be copied unaltered.
+ */
 CConstrainTransformInterval::
 CConstrainTransformInterval(const string &name, double duration,
                             const NodePath &node, const NodePath &target,
@@ -41,13 +35,10 @@ CConstrainTransformInterval(const string &name, double duration,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainTransformInterval::step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the normal
+ * case) or decrease (e.g.  if the interval is being played by a slider).
+ */
 void CConstrainTransformInterval::
 priv_step(double t) {
   check_started(get_class_type(), "priv_step");
@@ -74,11 +65,9 @@ priv_step(double t) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainTransformInterval::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CConstrainTransformInterval::
 output(ostream &out) const {
   out << get_name() << ":";

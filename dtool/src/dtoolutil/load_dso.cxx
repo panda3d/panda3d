@@ -1,16 +1,15 @@
-// Filename: load_dso.cxx
-// Created by:  drose (12May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file load_dso.cxx
+ * @author drose
+ * @date 2000-05-12
+ */
 
 #include "load_dso.h"
 #include "executionEnvironment.h"
@@ -51,7 +50,7 @@ load_dso(const DSearchPath &path, const Filename &filename) {
     return NULL;
   }
   string os_specific = abspath.to_os_specific();
-  
+
   // Try using LoadLibraryEx, if possible.
   typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCTSTR, HANDLE, DWORD);
   tLoadLibraryEx pLoadLibraryEx;
@@ -62,7 +61,7 @@ load_dso(const DSearchPath &path, const Filename &filename) {
       return pLoadLibraryEx(os_specific.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
     }
   }
-  
+
   return LoadLibrary(os_specific.c_str());
 }
 

@@ -1,16 +1,15 @@
-// Filename: scissorEffect.h
-// Created by:  drose (30Jul08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file scissorEffect.h
+ * @author drose
+ * @date 2008-07-30
+ */
 
 #ifndef SCISSOREFFECT_H
 #define SCISSOREFFECT_H
@@ -24,14 +23,11 @@
 // Forward declarations
 class Lens;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ScissorEffect
-// Description : This provides a higher-level wrapper around
-//               ScissorAttrib.  It allows for the scissor region to
-//               be defined via points relative to the current node,
-//               and also performs culling based on the scissor
-//               region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This provides a higher-level wrapper around ScissorAttrib.  It allows for the
+ * scissor region to be defined via points relative to the current node, and
+ * also performs culling based on the scissor region.
+ */
 class EXPCL_PANDA_PGRAPH ScissorEffect : public RenderEffect {
 private:
   class PointDef {
@@ -91,7 +87,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -113,4 +109,3 @@ private:
 #include "scissorEffect.I"
 
 #endif
-

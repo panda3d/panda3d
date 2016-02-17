@@ -1,53 +1,44 @@
-// Filename: pnmTextGlyph.cxx
-// Created by:  drose (03Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmTextGlyph.cxx
+ * @author drose
+ * @date 2002-04-03
+ */
 
 #include "pnmTextGlyph.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextGlyph::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMTextGlyph::
-PNMTextGlyph(double advance) : 
-  _advance(advance) 
+PNMTextGlyph(double advance) :
+  _advance(advance)
 {
   _left = 0;
   _top = 0;
   _int_advance = (int)floor(_advance + 0.5);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextGlyph::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMTextGlyph::
 ~PNMTextGlyph() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextGlyph::place
-//       Access: Public
-//  Description: Copies the glyph to the indicated destination image
-//               at the indicated origin.  It colors the glyph pixels
-//               the indicated foreground color, blends antialiased
-//               pixels with the appropriate amount of the foreground
-//               color and the existing background color, and leaves
-//               other pixels alone.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the glyph to the indicated destination image at the indicated origin.
+ * It colors the glyph pixels the indicated foreground color, blends antialiased
+ * pixels with the appropriate amount of the foreground color and the existing
+ * background color, and leaves other pixels alone.
+ */
 void PNMTextGlyph::
 place(PNMImage &dest_image, int xp, int yp, const LColor &fg) {
   if (!_image.is_valid()) {
@@ -82,13 +73,10 @@ place(PNMImage &dest_image, int xp, int yp, const LColor &fg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextGlyph::place
-//       Access: Public
-//  Description: This flavor of place() also fills in the interior
-//               color.  This requires that determine_interior was
-//               called earlier.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of place() also fills in the interior color.  This requires that
+ * determine_interior was called earlier.
+ */
 void PNMTextGlyph::
 place(PNMImage &dest_image, int xp, int yp, const LColor &fg,
       const LColor &interior) {
@@ -137,15 +125,12 @@ place(PNMImage &dest_image, int xp, int yp, const LColor &fg,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextGlyph::determine_interior
-//       Access: Private
-//  Description: Once the glyph has been generated, but before it has
-//               been scaled down by _scale_factor, walk through the
-//               glyph and try to determine which parts represent the
-//               interior portions of a hollow font, and mark them so
-//               they may be properly colored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the glyph has been generated, but before it has been scaled down by
+ * _scale_factor, walk through the glyph and try to determine which parts
+ * represent the interior portions of a hollow font, and mark them so they may
+ * be properly colored.
+ */
 void PNMTextGlyph::
 determine_interior() {
   // We will use the red component as a working buffer.  First, we
@@ -206,16 +191,13 @@ determine_interior() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextGlyph::scan_interior
-//       Access: Private
-//  Description: Recursively scans the image for interior pixels.  On
-//               completion, the image's red channel will be filled
-//               with 0, 1, 2, etc., representing the number of edges
-//               between each pixel and the border.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively scans the image for interior pixels.  On completion, the image's
+ * red channel will be filled with 0, 1, 2, etc., representing the number of
+ * edges between each pixel and the border.
+ */
 void PNMTextGlyph::
-scan_interior(int x, int y, xelval new_code, bool neighbor_dark, 
+scan_interior(int x, int y, xelval new_code, bool neighbor_dark,
               int recurse_level) {
   if (x < 0 || y < 0 || x >= _image.get_x_size() || y >= _image.get_y_size()) {
     return;
@@ -249,12 +231,10 @@ scan_interior(int x, int y, xelval new_code, bool neighbor_dark,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextGlyph::rescale
-//       Access: Private
-//  Description: After the image has been rendered large by FreeType,
-//               scales it small again for placing.
-////////////////////////////////////////////////////////////////////
+/**
+ * After the image has been rendered large by FreeType, scales it small again
+ * for placing.
+ */
 void PNMTextGlyph::
 rescale(double scale_factor) {
   if (scale_factor == 1.0) {

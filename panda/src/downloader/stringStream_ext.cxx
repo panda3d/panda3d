@@ -1,36 +1,31 @@
-// Filename: stringStream_ext.cxx
-// Created by:  rdb (09Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stringStream_ext.cxx
+ * @author rdb
+ * @date 2013-12-09
+ */
 
 #include "stringStream_ext.h"
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::__init__
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Extension<StringStream>::
 __init__(PyObject *source) {
   set_data(source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::get_data
-//       Access: Published
-//  Description: Returns the contents of the data stream as a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the contents of the data stream as a string.
+ */
 PyObject *Extension<StringStream>::
 get_data() {
   _this->flush();
@@ -49,12 +44,9 @@ get_data() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::set_data
-//       Access: Published
-//  Description: Replaces the contents of the data stream.  This
-//               implicitly reseeks to 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the contents of the data stream.  This implicitly reseeks to 0.
+ */
 void Extension<StringStream>::
 set_data(PyObject *data) {
   _this->_buf.clear();

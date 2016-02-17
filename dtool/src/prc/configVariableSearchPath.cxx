@@ -1,26 +1,22 @@
-// Filename: configVariableSearchPath.cxx
-// Created by:  drose (21Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableSearchPath.cxx
+ * @author drose
+ * @date 2004-10-21
+ */
 
 #include "configVariableSearchPath.h"
 #include "executionEnvironment.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::reload_search_path
-//       Access: Private
-//  Description: Recopies the config variable into the search path for
-//               returning its value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recopies the config variable into the search path for returning its value.
+ */
 void ConfigVariableSearchPath::
 reload_search_path() {
   nassertv(_core != (ConfigVariableCore *)NULL);
@@ -45,7 +41,7 @@ reload_search_path() {
     }
   }
 
-  if (_prefix.is_empty() && _postfix.is_empty() && 
+  if (_prefix.is_empty() && _postfix.is_empty() &&
       num_unique_references == 0) {
     // An empty search path implicitly has the default value.
     _cache = _default_value;

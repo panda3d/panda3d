@@ -1,33 +1,30 @@
-// Filename: selectThreadImpl.h
-// Created by:  drose (09Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file selectThreadImpl.h
+ * @author drose
+ * @date 2002-08-09
+ */
 
 #ifndef SELECTTHREADIMPL_H
 #define SELECTTHREADIMPL_H
 
 #include "dtoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-// This file decides which of the core implementations of the various
-// threading and locking implementations we should use, based on
-// platform and/or available libraries.
-//
-// This file, along with mutexImpl.h and the various Mutex
-// implementation classes, are defined in dtool so that some form of
-// critical-section protection will be available to view low-level
-// classes like TypeRegistry.  Most of the rest of the threading and
-// synchronization classes are defined in panda/src/express.
-////////////////////////////////////////////////////////////////////
+/*
+ * This file decides which of the core implementations of the various threading
+ * and locking implementations we should use, based on platform andor available
+ * libraries.  This file, along with mutexImpl.h and the various Mutex
+ * implementation classes, are defined in dtool so that some form of critical-
+ * section protection will be available to view low-level classes like
+ * TypeRegistry.  Most of the rest of the threading and synchronization classes
+ * are defined in pandasrcexpress.
+ */
 
 // This keyword should be used to mark any variable which is possibly
 // volatile because multiple threads might contend on it, unprotected

@@ -1,16 +1,15 @@
-// Filename: texProjectorEffect.cxx
-// Created by:  drose (25Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texProjectorEffect.cxx
+ * @author drose
+ * @date 2004-07-25
+ */
 
 #include "texProjectorEffect.h"
 #include "cullTraverserData.h"
@@ -26,21 +25,16 @@
 CPT(RenderEffect) TexProjectorEffect::_empty_effect;
 TypeHandle TexProjectorEffect::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TexProjectorEffect::
 ~TexProjectorEffect() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::make
-//       Access: Published, Static
-//  Description: Constructs a TexProjectorEffect that modifies
-//               no stages at all.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a TexProjectorEffect that modifies no stages at all.
+ */
 CPT(RenderEffect) TexProjectorEffect::
 make() {
   // We make it a special case and store a pointer to the empty effect
@@ -52,23 +46,15 @@ make() {
   return _empty_effect;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::add_stage
-//       Access: Published, Static
-//  Description: Returns a new TexProjectorEffect just like this one,
-//               with the indicated projection for the given stage.
-//               If this stage already exists, its projection
-//               definition is replaced.
-//
-//               The relative transform between the "from" and the
-//               "to" nodes is automatically applied to the texture
-//               transform each frame.
-//
-//               Furthermore, if the "to" node is a LensNode, its
-//               projection matrix is also applied to the texture
-//               transform.  In this case, the lens_index may be used
-//               to select the particular lens that should be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TexProjectorEffect just like this one, with the indicated
+ * projection for the given stage.  If this stage already exists, its projection
+ * definition is replaced.  The relative transform between the "from" and the
+ * "to" nodes is automatically applied to the texture transform each frame.
+ * Furthermore, if the "to" node is a LensNode, its projection matrix is also
+ * applied to the texture transform.  In this case, the lens_index may be used
+ * to select the particular lens that should be used.
+ */
 CPT(RenderEffect) TexProjectorEffect::
 add_stage(TextureStage *stage, const NodePath &from, const NodePath &to, int lens_index) const {
   TexProjectorEffect *effect = new TexProjectorEffect(*this);
@@ -79,12 +65,10 @@ add_stage(TextureStage *stage, const NodePath &from, const NodePath &to, int len
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::remove_stage
-//       Access: Published, Static
-//  Description: Returns a new TexProjectorEffect just like this one,
-//               with the indicated stage removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TexProjectorEffect just like this one, with the indicated stage
+ * removed.
+ */
 CPT(RenderEffect) TexProjectorEffect::
 remove_stage(TextureStage *stage) const {
   TexProjectorEffect *effect = new TexProjectorEffect(*this);
@@ -92,40 +76,31 @@ remove_stage(TextureStage *stage) const {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::is_empty
-//       Access: Published
-//  Description: Returns true if no stages are defined in the
-//               TexProjectorEffect, false if at least one is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if no stages are defined in the TexProjectorEffect, false if at
+ * least one is.
+ */
 bool TexProjectorEffect::
 is_empty() const {
   return _stages.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::has_stage
-//       Access: Published
-//  Description: Returns true if there is a transform associated with
-//               the indicated stage, or false otherwise (in which
-//               case get_transform(stage) will return the identity
-//               transform).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a transform associated with the indicated stage, or
+ * false otherwise (in which case get_transform(stage) will return the identity
+ * transform).
+ */
 bool TexProjectorEffect::
 has_stage(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
   return (mi != _stages.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::get_from
-//       Access: Published
-//  Description: Returns the "from" node associated with the
-//               TexProjectorEffect on the indicated stage.  The
-//               relative transform between the "from" and the "to"
-//               nodes is automatically applied to the texture
-//               transform each frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "from" node associated with the TexProjectorEffect on the
+ * indicated stage.  The relative transform between the "from" and the "to"
+ * nodes is automatically applied to the texture transform each frame.
+ */
 NodePath TexProjectorEffect::
 get_from(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
@@ -133,19 +108,13 @@ get_from(TextureStage *stage) const {
   return (*mi).second._from;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::get_to
-//       Access: Published
-//  Description: Returns the "to" node associated with the
-//               TexProjectorEffect on the indicated stage.  The
-//               relative transform between the "from" and the "to"
-//               nodes is automatically applied to the texture
-//               transform each frame.
-//
-//               Furthermore, if the "to" node is a LensNode, its
-//               projection matrix is also applied to the texture
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "to" node associated with the TexProjectorEffect on the indicated
+ * stage.  The relative transform between the "from" and the "to" nodes is
+ * automatically applied to the texture transform each frame.  Furthermore, if
+ * the "to" node is a LensNode, its projection matrix is also applied to the
+ * texture transform.
+ */
 NodePath TexProjectorEffect::
 get_to(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
@@ -153,15 +122,11 @@ get_to(TextureStage *stage) const {
   return (*mi).second._to;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::get_lens_index
-//       Access: Published
-//  Description: Returns the lens_index associated with the
-//               TexProjectorEffect on the indicated stage.  This is
-//               only used if the "to" node is a LensNode, in which
-//               case it specifies the particular lens that should be
-//               used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the lens_index associated with the TexProjectorEffect on the
+ * indicated stage.  This is only used if the "to" node is a LensNode, in which
+ * case it specifies the particular lens that should be used.
+ */
 int TexProjectorEffect::
 get_lens_index(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
@@ -169,11 +134,9 @@ get_lens_index(TextureStage *stage) const {
   return (*mi).second._lens_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TexProjectorEffect::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -187,37 +150,26 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this effect during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if cull_callback() has
+ * been defined.  Otherwise, returns false to indicate cull_callback() does not
+ * need to be called for this effect during the cull traversal.
+ */
 bool TexProjectorEffect::
 has_cull_callback() const {
   return !_stages.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::cull_callback
-//       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
-//
-//               At the time this function is called, the current
-//               node's transform and state have not yet been applied
-//               to the net_transform and net_state.  This callback
-//               may modify the node_transform and node_state to apply
-//               an effective change to the render state at this
-//               level.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_cull_callback() returns true, this function will be called during the
+ * cull traversal to perform any additional operations that should be performed
+ * at cull time.  This may include additional manipulation of render state or
+ * additional visible/invisible decisions, or any other arbitrary operation.  At
+ * the time this function is called, the current node's transform and state have
+ * not yet been applied to the net_transform and net_state.  This callback may
+ * modify the node_transform and node_state to apply an effective change to the
+ * render state at this level.
+ */
 void TexProjectorEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
@@ -233,7 +185,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 
     if (def._to_lens_node != (LensNode *)NULL &&
         def._to_lens_node->get_lens() != (Lens *)NULL) {
-      
+
       // Get the lens's projection matrix, as a TransformState.
       Lens *lens = def._to_lens_node->get_lens(def._lens_index);
       if (lens != NULL) {
@@ -249,14 +201,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
              LVecBase3(0.0f, 0.0f, 0.0f),
              LVecBase3(0.5f, 0.5f, 1.0f));
         }
-        
+
         // Now apply both to the current transform.
         transform = fixmat->compose(projmat)->compose(transform);
       }
     }
 
     if (!transform->is_identity()) {
-      tex_matrix = DCAST(TexMatrixAttrib, 
+      tex_matrix = DCAST(TexMatrixAttrib,
                          tex_matrix->add_stage(stage, transform));
     }
   }
@@ -266,26 +218,20 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TexProjectorEffect
-//               types to return a unique number indicating whether
-//               this TexProjectorEffect is equivalent to the other one.
-//
-//               This should return 0 if the two TexProjectorEffect objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two TexProjectorEffect
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived TexProjectorEffect types to return a
+ * unique number indicating whether this TexProjectorEffect is equivalent to the
+ * other one.  This should return 0 if the two TexProjectorEffect objects are
+ * equivalent, a number less than zero if this one should be sorted before the
+ * other one, and a number greater than zero otherwise.  This will only be
+ * called with two TexProjectorEffect objects whose get_type() functions return
+ * the same.
+ */
 int TexProjectorEffect::
 compare_to_impl(const RenderEffect *other) const {
   const TexProjectorEffect *ta;
   DCAST_INTO_R(ta, other, 0);
-  
+
   Stages::const_iterator ai, bi;
   ai = _stages.begin();
   bi = ta->_stages.begin();
@@ -322,23 +268,18 @@ compare_to_impl(const RenderEffect *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               TexProjectorEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type TexProjectorEffect.
+ */
 void TexProjectorEffect::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void TexProjectorEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
@@ -355,13 +296,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // TexProjectorEffect from an egg file.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int TexProjectorEffect::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderEffect::complete_pointers(p_list, manager);
@@ -369,14 +307,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type TexProjectorEffect is encountered
-//               in the Bam file.  It should create the TexProjectorEffect
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * TexProjectorEffect is encountered in the Bam file.  It should create the
+ * TexProjectorEffect and extract its information from the file.
+ */
 TypedWritable *TexProjectorEffect::
 make_from_bam(const FactoryParams &params) {
   TexProjectorEffect *effect = new TexProjectorEffect;
@@ -389,13 +324,10 @@ make_from_bam(const FactoryParams &params) {
   return effect;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new TexProjectorEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new TexProjectorEffect.
+ */
 void TexProjectorEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);
@@ -409,11 +341,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   nassertv(num_stages == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexProjectorEffect::StageDef::set_to
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TexProjectorEffect::StageDef::
 set_to(const NodePath &to) {
   _to = to;

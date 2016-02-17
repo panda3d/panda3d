@@ -1,16 +1,15 @@
-// Filename: mayaPview.cxx
-// Created by:  drose (10Mar03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaPview.cxx
+ * @author drose
+ * @date 2003-03-10
+ */
 
 #ifdef __MACH__
 #define __OPENTRANSPORTPROVIDERS__
@@ -50,20 +49,16 @@
 #define SEPARATE_PVIEW 1
 #endif  // WIN32_VC
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaPview::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaPview::
 MayaPview() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaPview::doIt
-//       Access: Public, Virtual
-//  Description: Called when the plugin command is invoked.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the plugin command is invoked.
+ */
 MStatus MayaPview::
 doIt(const MArgList &args) {
   MStatus result;
@@ -122,7 +117,7 @@ doIt(const MArgList &args) {
 
   MProgressWindow::setProgressStatus("Spawning pview");
   MProgressWindow::advanceProgress(1);
-  
+
   // Now spawn a pview instance to view this temporary file.
   string pview_args = "-clD";
   if (animate) {
@@ -133,7 +128,7 @@ doIt(const MArgList &args) {
   // asynchronously.
   string quoted = string("\"") + bam_filename.get_fullpath() + string("\"");
   nout << "pview " << pview_args << " " << quoted << "\n";
-  int retval = _spawnlp(_P_DETACH, "pview", 
+  int retval = _spawnlp(_P_DETACH, "pview",
                         "pview", pview_args.c_str(), quoted.c_str(), NULL);
   if (retval == -1) {
     bam_filename.unlink();
@@ -141,7 +136,7 @@ doIt(const MArgList &args) {
     return MS::kFailure;
   }
 
-  nout << "pview running.\n"; 
+  nout << "pview running.\n";
   MProgressWindow::endProgress();
 
 #else  // SEPARATE_PVIEW
@@ -213,22 +208,18 @@ doIt(const MArgList &args) {
   return MS::kSuccess;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaPview::creator
-//       Access: Public, Static
-//  Description: This is used to create a new instance of the plugin.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to create a new instance of the plugin.
+ */
 void *MayaPview::
 creator() {
   return new MayaPview;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaPview::convert
-//       Access: Private
-//  Description: Actually converts the Maya selection to Panda
-//               geometry, and parents it to the indicated NodePath.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually converts the Maya selection to Panda geometry, and parents it to the
+ * indicated NodePath.
+ */
 bool MayaPview::
 convert(const NodePath &parent, bool animate) {
   // Now make a converter to get all the Maya structures.
@@ -251,7 +242,7 @@ convert(const NodePath &parent, bool animate) {
   PathReplace *path_replace = converter.get_path_replace();
 
   // Accept relative pathnames in the Maya file.
-  Filename source_file = 
+  Filename source_file =
     Filename::from_os_specific(MFileIO::currentFile().asChar());
   string source_dir = source_file.get_dirname();
   if (!source_dir.empty()) {
@@ -278,7 +269,7 @@ convert(const NodePath &parent, bool animate) {
   // convert this egg data to Panda data for immediate viewing.
   DistanceUnit input_units = converter.get_input_units();
   ConfigVariableEnum<DistanceUnit> ptloader_units("ptloader-units", DU_invalid);
-  if (input_units != DU_invalid && ptloader_units != DU_invalid && 
+  if (input_units != DU_invalid && ptloader_units != DU_invalid &&
       input_units != ptloader_units) {
     // Convert the file to the units specified by the ptloader-units
     // Configrc variable.
@@ -304,11 +295,10 @@ convert(const NodePath &parent, bool animate) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: initializePlugin
-//  Description: Called by Maya when the plugin is loaded.
-////////////////////////////////////////////////////////////////////
-EXPCL_MISC MStatus 
+/**
+ * Called by Maya when the plugin is loaded.
+ */
+EXPCL_MISC MStatus
 initializePlugin(MObject obj) {
   // This code is just for debugging, to cause Notify to write its
   // output to a log file we can inspect, so we can see the error
@@ -331,10 +321,9 @@ initializePlugin(MObject obj) {
   return status;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: uninitializePlugin
-//  Description: Called by Maya when the plugin is unloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Maya when the plugin is unloaded.
+ */
 EXPCL_MISC MStatus
 uninitializePlugin(MObject obj) {
   MFnPlugin plugin(obj);

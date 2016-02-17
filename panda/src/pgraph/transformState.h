@@ -1,16 +1,15 @@
-// Filename: transformState.h
-// Created by:  drose (25Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transformState.h
+ * @author drose
+ * @date 2002-02-25
+ */
 
 #ifndef TRANSFORMSTATE_H
 #define TRANSFORMSTATE_H
@@ -37,28 +36,17 @@
 class GraphicsStateGuardianBase;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TransformState
-// Description : Indicates a coordinate-system transform on vertices.
-//               TransformStates are the primary means for storing
-//               transformations on the scene graph.
-//
-//               Transforms may be specified in one of two ways:
-//               componentwise, with a pos-hpr-scale, or with an
-//               arbitrary transform matrix.  If you specify a
-//               transform componentwise, it will remember its
-//               original components.
-//
-//               TransformState objects are managed very much like
-//               RenderState objects.  They are immutable and
-//               reference-counted automatically.
-//
-//               You should not attempt to create or modify a
-//               TransformState object directly.  Instead, call one of
-//               the make() functions to create one for you.  And
-//               instead of modifying a TransformState object, create a
-//               new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates a coordinate-system transform on vertices.  TransformStates are the
+ * primary means for storing transformations on the scene graph.  Transforms may
+ * be specified in one of two ways: componentwise, with a pos-hpr-scale, or with
+ * an arbitrary transform matrix.  If you specify a transform componentwise, it
+ * will remember its original components.  TransformState objects are managed
+ * very much like RenderState objects.  They are immutable and reference-counted
+ * automatically.  You should not attempt to create or modify a TransformState
+ * object directly.  Instead, call one of the make() functions to create one for
+ * you.  And instead of modifying a TransformState object, create a new one.
+ */
 class EXPCL_PANDA_PGRAPH TransformState FINAL : public NodeCachedReferenceCount {
 protected:
   TransformState();
@@ -424,4 +412,3 @@ INLINE ostream &operator << (ostream &out, const TransformState &state) {
 #include "transformState.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: identityStreamBuf.cxx
-// Created by:  drose (09Oct02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file identityStreamBuf.cxx
+ * @author drose
+ * @date 2002-10-09
+ */
 
 #include "identityStreamBuf.h"
 
@@ -23,11 +22,9 @@
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IdentityStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 IdentityStreamBuf::
 IdentityStreamBuf() {
   _has_content_length = true;
@@ -48,11 +45,9 @@ IdentityStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IdentityStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 IdentityStreamBuf::
 ~IdentityStreamBuf() {
   close_read();
@@ -61,13 +56,10 @@ IdentityStreamBuf::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IdentityStreamBuf::open_read
-//       Access: Public
-//  Description: If the document pointer is non-NULL, it will be
-//               updated with the length of the file as it is derived
-//               from the identity encoding.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the document pointer is non-NULL, it will be updated with the length of
+ * the file as it is derived from the identity encoding.
+ */
 void IdentityStreamBuf::
 open_read(BioStreamPtr *source, HTTPChannel *doc,
           bool has_content_length, size_t content_length) {
@@ -78,22 +70,18 @@ open_read(BioStreamPtr *source, HTTPChannel *doc,
   _read_state = ISocketStream::RS_reading;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IdentityStreamBuf::close_read
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IdentityStreamBuf::
 close_read() {
   _source.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IdentityStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int IdentityStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -123,11 +111,9 @@ underflow() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IdentityStreamBuf::read_chars
-//       Access: Private
-//  Description: Gets some characters from the source stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets some characters from the source stream.
+ */
 size_t IdentityStreamBuf::
 read_chars(char *start, size_t length) {
   size_t read_count = 0;
@@ -146,7 +132,7 @@ read_chars(char *start, size_t length) {
         read_count = (*_source)->gcount();
       }
     }
-  
+
     if (read_count == 0) {
       if ((*_source)->is_closed()) {
         // socket closed; we're done.
@@ -173,7 +159,7 @@ read_chars(char *start, size_t length) {
       }
       nassertr(read_count <= _bytes_remaining, 0);
       _bytes_remaining -= read_count;
-  
+
       if (read_count == 0) {
         if ((*_source)->is_closed()) {
           // socket closed unexpectedly; problem.
@@ -182,7 +168,7 @@ read_chars(char *start, size_t length) {
         return 0;
       }
     }
-      
+
     if (_bytes_remaining == 0) {
       // We're done.
       _read_state = ISocketStream::RS_complete;

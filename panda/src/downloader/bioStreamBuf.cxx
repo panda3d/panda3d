@@ -1,16 +1,15 @@
-// Filename: bioStreamBuf.cxx
-// Created by:  drose (25Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bioStreamBuf.cxx
+ * @author drose
+ * @date 2002-09-25
+ */
 
 #include "bioStreamBuf.h"
 #include "config_downloader.h"
@@ -30,11 +29,9 @@
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BioStreamBuf::
 BioStreamBuf() {
   _read_open = false;
@@ -59,11 +56,9 @@ BioStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BioStreamBuf::
 ~BioStreamBuf() {
   close();
@@ -72,11 +67,9 @@ BioStreamBuf::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::open
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BioStreamBuf::
 open(BioPtr *source) {
   _source = source;
@@ -84,11 +77,9 @@ open(BioPtr *source) {
   _write_open = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::close
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BioStreamBuf::
 close() {
   sync();
@@ -97,12 +88,10 @@ close() {
   _write_open = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::overflow
-//       Access: Protected, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int BioStreamBuf::
 overflow(int ch) {
   size_t n = pptr() - pbase();
@@ -127,12 +116,9 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::sync
-//       Access: Protected, Virtual
-//  Description: Called by the system iostream implementation to
-//               implement a flush operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system iostream implementation to implement a flush operation.
+ */
 int BioStreamBuf::
 sync() {
   /*
@@ -157,12 +143,10 @@ sync() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int BioStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -207,7 +191,7 @@ underflow() {
         if (!_read_open) {
           downloader_cat.info()
             << "Lost connection to "
-            << _source->get_server_name() << ":" 
+            << _source->get_server_name() << ":"
             << _source->get_port() << " (" << read_count << ").\n";
           OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
 
@@ -229,8 +213,8 @@ underflow() {
         }
         gbump(num_bytes);
         return EOF;
-      } 
-        
+      }
+
       // Slide what we did read to the top of the buffer.
       nassertr(read_count < (int)num_bytes, EOF);
       size_t delta = (int)num_bytes - read_count;
@@ -247,13 +231,11 @@ underflow() {
   return (unsigned char)*gptr();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::write_chars
-//       Access: Private
-//  Description: Sends some characters to the dest stream.  Does not
-//               return until all characters are sent or the socket is
-//               closed, even if the underlying BIO is non-blocking.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends some characters to the dest stream.  Does not return until all
+ * characters are sent or the socket is closed, even if the underlying BIO is
+ * non-blocking.
+ */
 size_t BioStreamBuf::
 write_chars(const char *start, size_t length) {
   if (length != 0) {
@@ -276,7 +258,7 @@ write_chars(const char *start, size_t length) {
         if (!_write_open) {
           return wrote_so_far;
         }
-        
+
         // Block on the underlying socket before we try to write some
         // more.
         int fd = -1;
@@ -300,8 +282,8 @@ write_chars(const char *start, size_t length) {
           FD_SET(fd, &wset);
           select(fd + 1, NULL, &wset, NULL, NULL);
 #endif  // SIMPLE_THREADS
-        }        
-        
+        }
+
       } else {
         // wrote some characters.
         wrote_so_far += write_count;
@@ -310,7 +292,7 @@ write_chars(const char *start, size_t length) {
             << "wrote " << write_count << " bytes to " << _source << "\n";
         }
       }
-      
+
       // Try to write some more.
       write_count = BIO_write(*_source, start + wrote_so_far, length - wrote_so_far);
       if (downloader_cat.is_spam()) {

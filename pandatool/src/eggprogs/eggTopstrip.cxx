@@ -1,16 +1,15 @@
-// Filename: eggTopstrip.cxx
-// Created by:  drose (23Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggTopstrip.cxx
+ * @author drose
+ * @date 2001-02-23
+ */
 
 #include "eggTopstrip.h"
 
@@ -24,11 +23,9 @@
 #include "compose_matrix.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTopstrip::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggTopstrip::
 EggTopstrip() {
   add_path_replace_options();
@@ -80,11 +77,9 @@ EggTopstrip() {
   _transform_channels = "ijkphrxyz";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTopstrip::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggTopstrip::
 run() {
   nassertv(_collection != (EggCharacterCollection *)NULL);
@@ -188,13 +183,10 @@ run() {
   write_eggs();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTopstrip::check_transform_channels
-//       Access: Public
-//  Description: Checks the _transform_channels string to ensure that
-//               it contains only the expected nine letters, or a
-//               subset.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the _transform_channels string to ensure that it contains only the
+ * expected nine letters, or a subset.
+ */
 void EggTopstrip::
 check_transform_channels() {
   static string expected = "ijkphrxyz";
@@ -226,13 +218,10 @@ check_transform_channels() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTopstrip::strip_anim
-//       Access: Public
-//  Description: Applies the channels from joint _top_joint
-//               in model from_model to the joint referenced by
-//               joint_data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the channels from joint _top_joint in model from_model to the joint
+ * referenced by joint_data.
+ */
 void EggTopstrip::
 strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
            int from_model, EggCharacterData *from_char,
@@ -273,12 +262,10 @@ strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTopstrip::strip_anim_vertices
-//       Access: Public
-//  Description: Applies the channels from joint _top_joint
-//               in model from_model to the vertices at egg_node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the channels from joint _top_joint in model from_model to the
+ * vertices at egg_node.
+ */
 void EggTopstrip::
 strip_anim_vertices(EggNode *egg_node, int into_model, int from_model,
                     EggJointData *top_joint, EggCharacterDb &db) {
@@ -296,13 +283,10 @@ strip_anim_vertices(EggNode *egg_node, int into_model, int from_model,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTopstrip::adjust_transform
-//       Access: Public
-//  Description: Adjust the transform extracted from the "top" joint
-//               according to the -s and -i/-n options, prior to
-//               applying it to the skeleton.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjust the transform extracted from the "top" joint according to the -s and
+ * -i/-n options, prior to applying it to the skeleton.
+ */
 void EggTopstrip::
 adjust_transform(LMatrix4d &mat) const {
   if (_transform_channels.length() != 9) {

@@ -1,16 +1,15 @@
-// Filename: physxEnums.h
-// Created by:  enn0x (23Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxEnums.h
+ * @author enn0x
+ * @date 2009-09-23
+ */
 
 #ifndef PHYSXENUMS_H
 #define PHYSXENUMS_H
@@ -119,7 +118,7 @@
 #define NX_AF_FLUID_DISABLE_COLLISION 1<<3
 #define NX_AF_CONTACT_MODIFICATION 1<<4
 #define NX_AF_FORCE_CONE_FRICTION 1<<5
-#define NX_AF_USER_ACTOR_PAIR_FILTERING 1<<6 
+#define NX_AF_USER_ACTOR_PAIR_FILTERING 1<<6
 
 // PhysxBodyFlag
 #define NX_BF_DISABLE_GRAVITY 1<<0
@@ -170,8 +169,8 @@
 #define NX_NOTIFY_ON_ROLL 1<<5
 #define NX_NOTIFY_ON_SLIDE 1<<6
 #define NX_NOTIFY_FORCES 1<<7
-#define NX_NOTIFY_ON_START_TOUCH_FORCE_THRESHOLD 1<<8 
-#define NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD 1<<9  
+#define NX_NOTIFY_ON_START_TOUCH_FORCE_THRESHOLD 1<<8
+#define NX_NOTIFY_ON_END_TOUCH_FORCE_THRESHOLD 1<<9
 #define NX_NOTIFY_ON_TOUCH_FORCE_THRESHOLD 1<<10
 #define NX_NOTIFY_CONTACT_MODIFICATION 1<<16
 
@@ -349,11 +348,10 @@
 #define NX_WF_AFFECTED_BY_HANDBRAKE 1<<2
 #define NX_WF_ACCELERATED 1<<3
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxEnums
-// Description : This class exists just to provide scoping for the
-//               enums shared by PhysX classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class exists just to provide scoping for the enums shared by PhysX
+ * classes.
+ */
 class EXPCL_PANDAPHYSX PhysxEnums {
 PUBLISHED:
 
@@ -672,7 +670,7 @@ PUBLISHED:
   enum PhysxShapesType {
     ST_static   = NX_STATIC_SHAPES ,
     ST_dynamic  = NX_DYNAMIC_SHAPES ,
-    ST_all      = NX_ALL_SHAPES 
+    ST_all      = NX_ALL_SHAPES
   };
 
   enum PhysxSphericalJointFlag {
@@ -719,4 +717,3 @@ EXPCL_PANDAPHYSX ostream &operator << (ostream &out, PhysxEnums::PhysxUpAxis axi
 EXPCL_PANDAPHYSX istream &operator >> (istream &in, PhysxEnums::PhysxUpAxis &axis);
 
 #endif
-

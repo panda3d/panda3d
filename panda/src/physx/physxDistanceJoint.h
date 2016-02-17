@@ -1,16 +1,15 @@
-// Filename: physxDistanceJoint.h
-// Created by:  enn0x (02Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxDistanceJoint.h
+ * @author enn0x
+ * @date 2009-10-02
+ */
 
 #ifndef PHYSXDISTANCEJOINT_H
 #define PHYSXDISTANCEJOINT_H
@@ -22,11 +21,10 @@
 
 class PhysxDistanceJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxDistanceJoint
-// Description : A distance joint maintains a certain distance
-//               between two points on two actors. 
-////////////////////////////////////////////////////////////////////
+/**
+ * A distance joint maintains a certain distance between two points on two
+ * actors.
+ */
 class EXPCL_PANDAPHYSX PhysxDistanceJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -36,7 +34,6 @@ PUBLISHED:
   void save_to_desc(PhysxDistanceJointDesc &jointDesc) const;
   void load_from_desc(const PhysxDistanceJointDesc &jointDesc);
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -46,14 +43,13 @@ public:
 private:
   NxDistanceJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxDistanceJoint", 
+    register_type(_type_handle, "PhysxDistanceJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

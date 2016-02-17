@@ -1,16 +1,15 @@
-// Filename: chunkedStream.h
-// Created by:  drose (25Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file chunkedStream.h
+ * @author drose
+ * @date 2002-09-25
+ */
 
 #ifndef CHUNKEDSTREAM_H
 #define CHUNKEDSTREAM_H
@@ -26,14 +25,11 @@
 class HTTPChannel;
 class BioStreamPtr;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IChunkedStream
-// Description : An input stream object that reads data from a source
-//               istream, but automatically decodes the "chunked"
-//               transfer-coding specified by an HTTP server.
-//
-//               Seeking is not supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * An input stream object that reads data from a source istream, but
+ * automatically decodes the "chunked" transfer-coding specified by an HTTP
+ * server.  Seeking is not supported.
+ */
 // No need to export from DLL.
 class IChunkedStream : public ISocketStream {
 public:
@@ -56,6 +52,3 @@ private:
 #endif  // HAVE_OPENSSL
 
 #endif
-
-
-

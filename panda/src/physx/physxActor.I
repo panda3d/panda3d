@@ -1,55 +1,44 @@
-// Filename: physxActor.I
-// Created by:  enn0x (14Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxActor.I
+ * @author enn0x
+ * @date 2009-09-14
+ */
 
+/**
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxActor::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE PhysxActor::
 PhysxActor() : PhysxObject() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxActor::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxActor::
 ~PhysxActor() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxActor::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxActor::
 ls() const {
 
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxActor::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxActor::
 ls(ostream &out, int indent_level) const {
 
@@ -69,4 +58,3 @@ ls(ostream &out, int indent_level) const {
 
   _shapes.ls(out, indent_level);
 }
-

@@ -1,16 +1,15 @@
-// Filename: palettePage.cxx
-// Created by:  drose (01Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file palettePage.cxx
+ * @author drose
+ * @date 2000-12-01
+ */
 
 #include "palettePage.h"
 #include "texturePlacement.h"
@@ -28,22 +27,17 @@
 
 TypeHandle PalettePage::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::Default Constructor
-//       Access: Private
-//  Description: The default constructor is only for the convenience
-//               of the Bam reader.
-////////////////////////////////////////////////////////////////////
+/**
+ * The default constructor is only for the convenience of the Bam reader.
+ */
 PalettePage::
 PalettePage() {
   _group = (PaletteGroup *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PalettePage::
 PalettePage(PaletteGroup *group, const TextureProperties &properties) :
   Namable(properties.get_string()),
@@ -52,46 +46,35 @@ PalettePage(PaletteGroup *group, const TextureProperties &properties) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::get_group
-//       Access: Public
-//  Description: Returns the group this particular PalettePage belongs
-//               to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the group this particular PalettePage belongs to.
+ */
 PaletteGroup *PalettePage::
 get_group() const {
   return _group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::get_properties
-//       Access: Public
-//  Description: Returns the texture grouping properties that all
-//               textures in this page share.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the texture grouping properties that all textures in this page share.
+ */
 const TextureProperties &PalettePage::
 get_properties() const {
   return _properties;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::assign
-//       Access: Public
-//  Description: Adds the indicated texture to the list of textures to
-//               consider placing on the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated texture to the list of textures to consider placing on the
+ * page.
+ */
 void PalettePage::
 assign(TexturePlacement *placement) {
   _assigned.push_back(placement);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::place_all
-//       Access: Public
-//  Description: Assigns all the textures to their final home in a
-//               PaletteImage somewhere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns all the textures to their final home in a PaletteImage somewhere.
+ */
 void PalettePage::
 place_all() {
   // Sort the textures to be placed in order from biggest to smallest,
@@ -116,12 +99,9 @@ place_all() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::place
-//       Access: Public
-//  Description: Assigns the particular TexturePlacement to a
-//               PaletteImage where it fits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the particular TexturePlacement to a PaletteImage where it fits.
+ */
 void PalettePage::
 place(TexturePlacement *placement) {
   nassertv(placement->get_omit_reason() == OR_working);
@@ -146,25 +126,19 @@ place(TexturePlacement *placement) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::unplace
-//       Access: Public
-//  Description: Removes the TexturePlacement from wherever it has
-//               been placed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the TexturePlacement from wherever it has been placed.
+ */
 void PalettePage::
 unplace(TexturePlacement *placement) {
   nassertv(placement->is_placed() && placement->get_page() == this);
   placement->get_image()->unplace(placement);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::write_image_info
-//       Access: Public
-//  Description: Writes a list of the PaletteImages associated with
-//               this page, and all of their textures, to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of the PaletteImages associated with this page, and all of
+ * their textures, to the indicated output stream.
+ */
 void PalettePage::
 write_image_info(ostream &out, int indent_level) const {
   Images::const_iterator ii;
@@ -179,12 +153,9 @@ write_image_info(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::optimal_resize
-//       Access: Public
-//  Description: Attempts to resize each PalettteImage down to its
-//               smallest possible size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to resize each PalettteImage down to its smallest possible size.
+ */
 void PalettePage::
 optimal_resize() {
   Images::iterator ii;
@@ -194,13 +165,10 @@ optimal_resize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::reset_images
-//       Access: Public
-//  Description: Throws away all of the current PaletteImages, so that
-//               new ones may be created (and the packing made more
-//               optimal).
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws away all of the current PaletteImages, so that new ones may be created
+ * (and the packing made more optimal).
+ */
 void PalettePage::
 reset_images() {
   Images::iterator ii;
@@ -213,14 +181,11 @@ reset_images() {
   _images.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::setup_shadow_images
-//       Access: Public
-//  Description: Ensures that each PaletteImage's _shadow_image has
-//               the correct filename and image types, based on what
-//               was supplied on the command line and in the .txa
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that each PaletteImage's _shadow_image has the correct filename and
+ * image types, based on what was supplied on the command line and in the .txa
+ * file.
+ */
 void PalettePage::
 setup_shadow_images() {
   Images::iterator ii;
@@ -230,12 +195,9 @@ setup_shadow_images() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::update_images
-//       Access: Public
-//  Description: Regenerates each PaletteImage on this page that needs
-//               it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Regenerates each PaletteImage on this page that needs it.
+ */
 void PalettePage::
 update_images(bool redo_all) {
   Images::iterator ii;
@@ -245,25 +207,19 @@ update_images(bool redo_all) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void PalettePage::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_PalettePage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void PalettePage::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
@@ -281,15 +237,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int PalettePage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
@@ -312,14 +265,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::make_PalettePage
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable* PalettePage::
 make_PalettePage(const FactoryParams &params) {
   PalettePage *me = new PalettePage;
@@ -331,13 +281,10 @@ make_PalettePage(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PalettePage::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void PalettePage::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

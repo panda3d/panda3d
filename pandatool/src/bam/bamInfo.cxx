@@ -1,16 +1,15 @@
-// Filename: bamInfo.cxx
-// Created by:  drose (02Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamInfo.cxx
+ * @author drose
+ * @date 2000-07-02
+ */
 
 #include "bamInfo.h"
 
@@ -27,11 +26,9 @@
 #include "bamCacheIndex.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamInfo::
 BamInfo() {
   set_program_brief("describe the contents of .bam files");
@@ -61,11 +58,9 @@ BamInfo() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BamInfo::
 run() {
   bool okflag = true;
@@ -90,11 +85,9 @@ run() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BamInfo::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
@@ -111,12 +104,10 @@ handle_args(ProgramBase::Args &args) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::get_info
-//       Access: Private
-//  Description: Reads a single Bam file and displays its contents.
-//               Returns true if successful, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single Bam file and displays its contents.  Returns true if
+ * successful, false on error.
+ */
 bool BamInfo::
 get_info(const Filename &filename) {
   BamFile bam_file;
@@ -136,13 +127,13 @@ get_info(const Filename &filename) {
   }
 
   nout << filename << " : Bam version " << bam_file.get_file_major_ver()
-       << "." << bam_file.get_file_minor_ver() 
+       << "." << bam_file.get_file_minor_ver()
        << ", " << endian << ", " << float_width << "-bit floats.\n";
 
   Objects objects;
   TypedWritable *object = bam_file.read_object();
 
-  if (object != (TypedWritable *)NULL && 
+  if (object != (TypedWritable *)NULL &&
       object->is_exact_type(BamCacheRecord::get_class_type())) {
     // Here's a special case: if the first object in the file is a
     // BamCacheRecord, it's a cache data file; in this case, we output
@@ -166,15 +157,15 @@ get_info(const Filename &filename) {
   // We can't close the bam file until we have examined the objects,
   // since closing it will decrement reference counts.
 
-  if (objects.size() == 1 && 
+  if (objects.size() == 1 &&
       objects[0]->is_of_type(PandaNode::get_class_type())) {
     describe_scene_graph(DCAST(PandaNode, objects[0]));
 
-  } else if (objects.size() == 1 && 
+  } else if (objects.size() == 1 &&
       objects[0]->is_of_type(Texture::get_class_type())) {
     describe_texture(DCAST(Texture, objects[0]));
 
-  } else if (objects.size() == 1 && 
+  } else if (objects.size() == 1 &&
       objects[0]->is_of_type(BamCacheIndex::get_class_type())) {
     describe_cache_index(DCAST(BamCacheIndex, objects[0]));
 
@@ -192,13 +183,10 @@ get_info(const Filename &filename) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::describe_scene_graph
-//       Access: Private
-//  Description: Called for Bam files that contain a single scene
-//               graph and no other objects.  This should describe
-//               that scene graph in some meaningful way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for Bam files that contain a single scene graph and no other objects.
+ * This should describe that scene graph in some meaningful way.
+ */
 void BamInfo::
 describe_scene_graph(PandaNode *node) {
   // Parent the node to our own scene graph root, so we can (a)
@@ -223,33 +211,25 @@ describe_scene_graph(PandaNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::describe_texture
-//       Access: Private
-//  Description: Called for Bam files that contain a Texture object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for Bam files that contain a Texture object.
+ */
 void BamInfo::
 describe_texture(Texture *tex) {
   tex->write(nout, 2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::describe_cache_index
-//       Access: Private
-//  Description: Called for Bam files that contain a BamCacheIndex
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for Bam files that contain a BamCacheIndex object.
+ */
 void BamInfo::
 describe_cache_index(BamCacheIndex *index) {
   index->write(nout, 2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::describe_session
-//       Access: Private
-//  Description: Called for Bam files that contain a recorded session
-//               table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for Bam files that contain a recorded session table.
+ */
 void BamInfo::
 describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
   char time_buffer[1024];
@@ -273,7 +253,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
       last_timestamp = frame->_timestamp;
     }
   }
-    
+
   nout << "Session, " << last_timestamp
        << " secs, " << objects.size() - 1 << " frames, "
        << time_buffer << ".\n"
@@ -286,25 +266,19 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
   nout << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::describe_general_object
-//       Access: Private
-//  Description: Called for Bam files that contain multiple objects
-//               which may or may not be scene graph nodes.  This
-//               should describe each object in some meaningful way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for Bam files that contain multiple objects which may or may not be
+ * scene graph nodes.  This should describe each object in some meaningful way.
+ */
 void BamInfo::
 describe_general_object(TypedWritable *object) {
   nassertv(object != (TypedWritable *)NULL);
   nout << "  " << object->get_type() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamInfo::list_hierarchy
-//       Access: Private
-//  Description: Outputs the hierarchy and all of the verbose GeomNode
-//               information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the hierarchy and all of the verbose GeomNode information.
+ */
 void BamInfo::
 list_hierarchy(PandaNode *node, int indent_level) {
   indent(nout, indent_level) << *node;

@@ -1,16 +1,15 @@
-// Filename: xFile.cxx
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFile.cxx
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #include "xFile.h"
 #include "xParserDefs.h"
@@ -26,11 +25,9 @@
 TypeHandle XFile::_type_handle;
 PT(XFile) XFile::_standard_templates;
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFile::
 XFile(bool keep_names) : XFileNode(this, "") {
   _major_version = 3;
@@ -40,22 +37,18 @@ XFile(bool keep_names) : XFileNode(this, "") {
   _keep_names = keep_names;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFile::
 ~XFile() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::clear
-//       Access: Public, Virtual
-//  Description: Removes all of the classes defined within the XFile
-//               and prepares it for reading a new file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the classes defined within the XFile and prepares it for
+ * reading a new file.
+ */
 void XFile::
 clear() {
   XFileNode::clear();
@@ -63,18 +56,12 @@ clear() {
   _nodes_by_guid.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::read
-//       Access: Public
-//  Description: Opens and reads the indicated .x file by name.  The
-//               nodes and templates defined in the file will be
-//               appended to the set of nodes already recorded, if
-//               any.
-//
-//               Returns true if the file is successfully read, false
-//               if there was an error (in which case the file might
-//               have been partially read).
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens and reads the indicated .x file by name.  The nodes and templates
+ * defined in the file will be appended to the set of nodes already recorded, if
+ * any.  Returns true if the file is successfully read, false if there was an
+ * error (in which case the file might have been partially read).
+ */
 bool XFile::
 read(Filename filename) {
   filename.set_text();
@@ -90,22 +77,14 @@ read(Filename filename) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::read
-//       Access: Public
-//  Description: Parses the already-opened input stream for
-//               distributed class descriptions.  The filename
-//               parameter is optional and is only used when reporting
-//               errors.
-//
-//               The distributed classes defined in the file will be
-//               appended to the set of distributed classes already
-//               recorded, if any.
-//
-//               Returns true if the file is successfully read, false
-//               if there was an error (in which case the file might
-//               have been partially read).
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the already-opened input stream for distributed class descriptions.
+ * The filename parameter is optional and is only used when reporting errors.
+ * The distributed classes defined in the file will be appended to the set of
+ * distributed classes already recorded, if any.  Returns true if the file is
+ * successfully read, false if there was an error (in which case the file might
+ * have been partially read).
+ */
 bool XFile::
 read(istream &in, const string &filename) {
   if (!read_header(in)) {
@@ -132,16 +111,11 @@ read(istream &in, const string &filename) {
   return (x_error_count() == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::write
-//       Access: Public
-//  Description: Opens the indicated filename for output and writes a
-//               parseable description of all the known distributed
-//               classes to the file.
-//
-//               Returns true if the description is successfully
-//               written, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename for output and writes a parseable description of
+ * all the known distributed classes to the file.  Returns true if the
+ * description is successfully written, false otherwise.
+ */
 bool XFile::
 write(Filename filename) const {
   ofstream out;
@@ -169,15 +143,11 @@ write(Filename filename) const {
   return write(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::write
-//       Access: Public
-//  Description: Writes a parseable description of all the known
-//               nodes and templates to the stream.
-//
-//               Returns true if the description is successfully
-//               written, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a parseable description of all the known nodes and templates to the
+ * stream.  Returns true if the description is successfully written, false
+ * otherwise.
+ */
 bool XFile::
 write(ostream &out) const {
   if (!write_header(out)) {
@@ -189,12 +159,10 @@ write(ostream &out) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::find_template
-//       Access: Public
-//  Description: Returns the template associated with the indicated
-//               name, if any, or NULL if none.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the template associated with the indicated name, if any, or NULL if
+ * none.
+ */
 XFileTemplate *XFile::
 find_template(const string &name) const {
   XFileTemplate *standard = (XFileTemplate *)NULL;
@@ -220,12 +188,10 @@ find_template(const string &name) const {
   return standard;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::find_template
-//       Access: Public
-//  Description: Returns the template associated with the indicated
-//               GUID, if any, or NULL if none.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the template associated with the indicated GUID, if any, or NULL if
+ * none.
+ */
 XFileTemplate *XFile::
 find_template(const WindowsGuid &guid) const {
   XFileTemplate *standard = (XFileTemplate *)NULL;
@@ -236,7 +202,7 @@ find_template(const WindowsGuid &guid) const {
 
   NodesByGuid::const_iterator gi;
   gi = _nodes_by_guid.find(guid);
-  if (gi != _nodes_by_guid.end() && 
+  if (gi != _nodes_by_guid.end() &&
       (*gi).second->is_of_type(XFileTemplate::get_class_type())) {
     XFileTemplate *xtemplate = DCAST(XFileTemplate, (*gi).second);
     if (standard != (XFileTemplate *)NULL && xtemplate->matches(standard)) {
@@ -252,36 +218,30 @@ find_template(const WindowsGuid &guid) const {
   return standard;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::find_standard_template
-//       Access: Public, Static
-//  Description: Returns the standard template associated with the
-//               indicated name, if any, or NULL if none.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the standard template associated with the indicated name, if any, or
+ * NULL if none.
+ */
 XFileTemplate *XFile::
 find_standard_template(const string &name) {
   const XFile *standard_templates = get_standard_templates();
   return standard_templates->find_template(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::find_standard_template
-//       Access: Public, Static
-//  Description: Returns the template associated with the indicated
-//               GUID, if any, or NULL if none.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the template associated with the indicated GUID, if any, or NULL if
+ * none.
+ */
 XFileTemplate *XFile::
 find_standard_template(const WindowsGuid &guid) {
   const XFile *standard_templates = get_standard_templates();
   return standard_templates->find_template(guid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::find_data_object
-//       Access: Public
-//  Description: Returns the data object associated with the indicated
-//               name, if any, or NULL if none.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the data object associated with the indicated name, if any, or NULL
+ * if none.
+ */
 XFileDataNodeTemplate *XFile::
 find_data_object(const string &name) const {
   XFileNode *child = find_descendent(name);
@@ -293,17 +253,15 @@ find_data_object(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::find_data_object
-//       Access: Public
-//  Description: Returns the data object associated with the indicated
-//               GUID, if any, or NULL if none.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the data object associated with the indicated GUID, if any, or NULL
+ * if none.
+ */
 XFileDataNodeTemplate *XFile::
 find_data_object(const WindowsGuid &guid) const {
   NodesByGuid::const_iterator gi;
   gi = _nodes_by_guid.find(guid);
-  if (gi != _nodes_by_guid.end() && 
+  if (gi != _nodes_by_guid.end() &&
       (*gi).second->is_of_type(XFileDataNodeTemplate::get_class_type())) {
     return DCAST(XFileDataNodeTemplate, (*gi).second);
   }
@@ -311,12 +269,9 @@ find_data_object(const WindowsGuid &guid) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::write_text
-//       Access: Public, Virtual
-//  Description: Writes a suitable representation of this node to an
-//               .x file in text mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a suitable representation of this node to an .x file in text mode.
+ */
 void XFile::
 write_text(ostream &out, int indent_level) const {
   Children::const_iterator ci;
@@ -326,12 +281,10 @@ write_text(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::read_header
-//       Access: Private
-//  Description: Reads the header and magic number associated with the
-//               file.  Returns true on success, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the header and magic number associated with the file.  Returns true on
+ * success, false otherwise.
+ */
 bool XFile::
 read_header(istream &in) {
   char magic[4];
@@ -407,12 +360,10 @@ read_header(istream &in) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::write_header
-//       Access: Private
-//  Description: Writes the header and magic number associated with the
-//               file.  Returns true on success, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the header and magic number associated with the file.  Returns true on
+ * success, false otherwise.
+ */
 bool XFile::
 write_header(ostream &out) const {
   out.write("xof ", 4);
@@ -432,11 +383,11 @@ write_header(ostream &out) const {
   case FT_text:
     out.write("txt ", 4);
     break;
- 
+
   case FT_binary:
     out.write("bin ", 4);
     break;
-  
+
   case FT_compressed:
     out.write("cmp ", 4);
     break;
@@ -456,7 +407,7 @@ write_header(ostream &out) const {
   case FS_32:
     out.write("0032", 4);
     break;
- 
+
   case FS_64:
     out.write("0064", 4);
     break;
@@ -475,13 +426,10 @@ write_header(ostream &out) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFile::get_standard_templates
-//       Access: Private, Static
-//  Description: Returns a global XFile object that contains the
-//               standard list of Direct3D template definitions that
-//               may be assumed to be at the head of every file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a global XFile object that contains the standard list of Direct3D
+ * template definitions that may be assumed to be at the head of every file.
+ */
 const XFile *XFile::
 get_standard_templates() {
   if (_standard_templates == (XFile *)NULL) {
@@ -494,12 +442,12 @@ get_standard_templates() {
     // The data is stored compressed; decompress it on-the-fly.
     istringstream inz(data);
     IDecompressStream in(&inz, false);
-    
+
 #else
     // The data is stored uncompressed, so just load it.
     istringstream in(data);
 #endif  // HAVE_ZLIB
-    
+
     _standard_templates = new XFile;
     if (!_standard_templates->read(in, "standardTemplates.x")) {
       xfile_cat.error()
@@ -515,6 +463,6 @@ get_standard_templates() {
       }
     }
   }
-  
+
   return _standard_templates;
 }

@@ -1,27 +1,25 @@
-// Filename: bamEnums.h
-// Created by:  drose (26Feb09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamEnums.h
+ * @author drose
+ * @date 2009-02-26
+ */
 
 #ifndef BAMENUMS_H
 #define BAMENUMS_H
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamEnums
-// Description : This class exists just to provide scoping for the
-//               enums shared by BamReader and BamWriter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class exists just to provide scoping for the enums shared by BamReader
+ * and BamWriter.
+ */
 class EXPCL_PANDA_PUTIL BamEnums {
 PUBLISHED:
 
@@ -77,4 +75,3 @@ EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamEnums::BamTextureMode b
 EXPCL_PANDA_PUTIL istream &operator >> (istream &in, BamEnums::BamTextureMode &btm);
 
 #endif
-

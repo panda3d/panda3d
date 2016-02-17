@@ -1,16 +1,15 @@
-// Filename: collisionInvSphere.h
-// Created by:  drose (05Jan05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionInvSphere.h
+ * @author drose
+ * @date 2005-01-05
+ */
 
 #ifndef COLLISIONINVSPHERE_H
 #define COLLISIONINVSPHERE_H
@@ -19,15 +18,12 @@
 
 #include "collisionSphere.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionInvSphere
-// Description : An inverted sphere: this is a sphere whose collision
-//               surface is the inside surface of the sphere.
-//               Everything outside the sphere is solid matter;
-//               everything inside is empty space.  Useful for
-//               constraining objects to remain within a spherical
-//               perimeter.
-////////////////////////////////////////////////////////////////////
+/**
+ * An inverted sphere: this is a sphere whose collision surface is the inside
+ * surface of the sphere.  Everything outside the sphere is solid matter;
+ * everything inside is empty space.  Useful for constraining objects to remain
+ * within a spherical perimeter.
+ */
 class EXPCL_PANDA_COLLIDE CollisionInvSphere : public CollisionSphere {
 PUBLISHED:
   INLINE CollisionInvSphere(const LPoint3 &center, PN_stdfloat radius);
@@ -95,5 +91,3 @@ private:
 #include "collisionInvSphere.I"
 
 #endif
-
-

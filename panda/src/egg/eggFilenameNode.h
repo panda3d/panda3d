@@ -1,16 +1,15 @@
-// Filename: eggFilenameNode.h
-// Created by:  drose (11Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggFilenameNode.h
+ * @author drose
+ * @date 1999-02-11
+ */
 
 #ifndef EGGFILENAMENODE_H
 #define EGGFILENAMENODE_H
@@ -20,13 +19,11 @@
 #include "eggNode.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggFilenameNode
-// Description : This is an egg node that contains a filename.  It
-//               references a physical file relative to the directory
-//               the egg file was loaded in.  It is a base class for
-//               EggTexture and EggExternalReference.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an egg node that contains a filename.  It references a physical file
+ * relative to the directory the egg file was loaded in.  It is a base class for
+ * EggTexture and EggExternalReference.
+ */
 class EXPCL_PANDAEGG EggFilenameNode : public EggNode {
 PUBLISHED:
   INLINE EggFilenameNode();

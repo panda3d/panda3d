@@ -1,42 +1,34 @@
-// Filename: bioStream.I
-// Created by:  drose (25Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bioStream.I
+ * @author drose
+ * @date 2002-09-25
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: IBioStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE IBioStream::
 IBioStream() : ISocketStream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IBioStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IBioStream::
 IBioStream(BioPtr *source) : ISocketStream(&_buf) {
   open(source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IBioStream::open
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IBioStream &IBioStream::
 open(BioPtr *source) {
   clear((ios_iostate)0);
@@ -44,30 +36,24 @@ open(BioPtr *source) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OBioStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE OBioStream::
 OBioStream() : OSocketStream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OBioStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE OBioStream::
 OBioStream(BioPtr *source) : OSocketStream(&_buf) {
   open(source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OBioStream::open
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE OBioStream &OBioStream::
 open(BioPtr *source) {
   clear((ios_iostate)0);
@@ -75,30 +61,24 @@ open(BioPtr *source) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BioStream::
 BioStream() : SocketStream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BioStream::
 BioStream(BioPtr *source) : SocketStream(&_buf) {
   open(source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStream::open
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BioStream &BioStream::
 open(BioPtr *source) {
   clear((ios_iostate)0);

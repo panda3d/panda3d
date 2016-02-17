@@ -1,17 +1,15 @@
-// Filename: cppStructType.cxx
-// Created by:  drose (19Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppStructType.cxx
+ * @author drose
+ * @date 1999-10-19
+ */
 
 #include "cppStructType.h"
 #include "cppTypedefType.h"
@@ -25,11 +23,9 @@
 #include "indent.h"
 #include "cppParser.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::Base::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPStructType::Base::
 output(ostream &out) const {
   if (_is_virtual) {
@@ -38,11 +34,9 @@ output(ostream &out) const {
   out << _vis << " " << *_base;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPStructType::
 CPPStructType(CPPStructType::Type type, CPPIdentifier *ident,
               CPPScope *current_scope, CPPScope *scope,
@@ -55,11 +49,9 @@ CPPStructType(CPPStructType::Type type, CPPIdentifier *ident,
   _incomplete = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPStructType::
 CPPStructType(const CPPStructType &copy) :
   CPPExtensionType(copy),
@@ -71,11 +63,9 @@ CPPStructType(const CPPStructType &copy) :
   _subst_decl_recursive_protect = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPStructType::
 operator = (const CPPStructType &copy) {
   CPPExtensionType::operator = (copy);
@@ -85,13 +75,10 @@ operator = (const CPPStructType &copy) {
   _final = copy._final;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::append_derivation
-//       Access: Public
-//  Description: A handy function used while parsing to add a new base
-//               class to the list of classes (or structs) this class
-//               derives from.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy function used while parsing to add a new base class to the list of
+ * classes (or structs) this class derives from.
+ */
 void CPPStructType::
 append_derivation(CPPType *base, CPPVisibility vis, bool is_virtual) {
   if (base != NULL) {
@@ -120,23 +107,18 @@ append_derivation(CPPType *base, CPPVisibility vis, bool is_virtual) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_scope
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPScope *CPPStructType::
 get_scope() const {
   return _scope;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_abstract
-//       Access: Public
-//  Description: Returns true if this struct declaration is abstract,
-//               e.g. it contains or inherits at least one method that
-//               is pure virtual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this struct declaration is abstract, e.g.  it contains or
+ * inherits at least one method that is pure virtual.
+ */
 bool CPPStructType::
 is_abstract() const {
   VFunctions funcs;
@@ -144,12 +126,9 @@ is_abstract() const {
   return !funcs.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_trivial
-//       Access: Public, Virtual
-//  Description: Returns true if the type is considered a Plain Old
-//               Data (POD) type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is considered a Plain Old Data (POD) type.
+ */
 bool CPPStructType::
 is_trivial() const {
   // Make sure all base classes are trivial.
@@ -241,31 +220,25 @@ is_trivial() const {
   return is_default_constructible;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_default_constructible
-//       Access: Public, Virtual
-//  Description: Returns true if the type is default-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is default-constructible.
+ */
 bool CPPStructType::
 is_default_constructible() const {
   return is_default_constructible(V_public);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_copy_constructible
-//       Access: Public, Virtual
-//  Description: Returns true if the type is copy-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is copy-constructible.
+ */
 bool CPPStructType::
 is_copy_constructible() const {
   return is_copy_constructible(V_public);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_default_constructible
-//       Access: Public
-//  Description: Returns true if the type is default-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is default-constructible.
+ */
 bool CPPStructType::
 is_default_constructible(CPPVisibility min_vis) const {
   CPPInstance *constructor = get_default_constructor();
@@ -343,11 +316,9 @@ is_default_constructible(CPPVisibility min_vis) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_copy_constructible
-//       Access: Public
-//  Description: Returns true if the type is copy-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is copy-constructible.
+ */
 bool CPPStructType::
 is_copy_constructible(CPPVisibility min_vis) const {
   CPPInstance *constructor = get_copy_constructor();
@@ -428,26 +399,17 @@ is_copy_constructible(CPPVisibility min_vis) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::check_virtual
-//       Access: Public
-//  Description: Ensures all functions are correctly marked with the
-//               "virtual" flag if they are truly virtual by virtue of
-//               inheritance, rather than simply being labeled
-//               virtual.
-//
-//               This also sets the CPPInstance::SC_inherited_virtual
-//               flags on those virtual methods that override a
-//               virtual method defined in a parent class (as opposed
-//               to those that appear for this first time in this
-//               class).  It is sometimes useful to know whether a
-//               given virtual method represents the first time that
-//               particular method appears.
-//
-//               The return value is true if this class defines or
-//               inherits any virtual methods (and thus requires a
-//               virtual function pointer), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures all functions are correctly marked with the "virtual" flag if they
+ * are truly virtual by virtue of inheritance, rather than simply being labeled
+ * virtual.  This also sets the CPPInstance::SC_inherited_virtual flags on those
+ * virtual methods that override a virtual method defined in a parent class (as
+ * opposed to those that appear for this first time in this class).  It is
+ * sometimes useful to know whether a given virtual method represents the first
+ * time that particular method appears.  The return value is true if this class
+ * defines or inherits any virtual methods (and thus requires a virtual function
+ * pointer), or false otherwise.
+ */
 bool CPPStructType::
 check_virtual() const {
   VFunctions funcs;
@@ -455,14 +417,11 @@ check_virtual() const {
   return !funcs.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_fully_specified
-//       Access: Public, Virtual
-//  Description: Returns true if this declaration is an actual,
-//               factual declaration, or false if some part of the
-//               declaration depends on a template parameter which has
-//               not yet been instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this declaration is an actual, factual declaration, or false
+ * if some part of the declaration depends on a template parameter which has not
+ * yet been instantiated.
+ */
 bool CPPStructType::
 is_fully_specified() const {
   if (_scope != NULL && !_scope->is_fully_specified()) {
@@ -471,23 +430,18 @@ is_fully_specified() const {
   return CPPType::is_fully_specified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_incomplete
-//       Access: Public, Virtual
-//  Description: Returns true if the type has not yet been fully
-//               specified, false if it has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type has not yet been fully specified, false if it has.
+ */
 bool CPPStructType::
 is_incomplete() const {
   return _incomplete;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_constructor
-//       Access: Public
-//  Description: Returns the constructor defined for the struct type,
-//               if any, or NULL if no constructor is found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the constructor defined for the struct type, if any, or NULL if no
+ * constructor is found.
+ */
 CPPFunctionGroup *CPPStructType::
 get_constructor() const {
   // Just look for the function with the same name as the class.
@@ -500,12 +454,10 @@ get_constructor() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_default_constructor
-//       Access: Public
-//  Description: Returns the default constructor defined for the
-//               struct type, or NULL if there is none.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default constructor defined for the struct type, or NULL if there
+ * is none.
+ */
 CPPInstance *CPPStructType::
 get_default_constructor() const {
   CPPFunctionGroup *fgroup = get_constructor();
@@ -533,12 +485,10 @@ get_default_constructor() const {
   return (CPPInstance *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_copy_constructor
-//       Access: Public
-//  Description: Returns the copy constructor defined for the struct
-//               type, or NULL if no copy constructor exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the copy constructor defined for the struct type, or NULL if no copy
+ * constructor exists.
+ */
 CPPInstance *CPPStructType::
 get_copy_constructor() const {
   CPPFunctionGroup *fgroup = get_constructor();
@@ -564,12 +514,10 @@ get_copy_constructor() const {
   return (CPPInstance *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_move_constructor
-//       Access: Public
-//  Description: Returns the move constructor defined for the struct
-//               type, or NULL if no move constructor exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the move constructor defined for the struct type, or NULL if no move
+ * constructor exists.
+ */
 CPPInstance *CPPStructType::
 get_move_constructor() const {
   CPPFunctionGroup *fgroup = get_constructor();
@@ -595,12 +543,10 @@ get_move_constructor() const {
   return (CPPInstance *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_destructor
-//       Access: Public
-//  Description: Returns the destructor defined for the struct type,
-//               if any, or NULL if no destructor is found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the destructor defined for the struct type, if any, or NULL if no
+ * destructor is found.
+ */
 CPPInstance *CPPStructType::
 get_destructor() const {
   // Iterate through all the functions that begin with '~' until we
@@ -632,11 +578,9 @@ get_destructor() const {
   return (CPPInstance *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::instantiate
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPStructType::
 instantiate(const CPPTemplateParameterList *actual_params,
             CPPScope *current_scope, CPPScope *global_scope,
@@ -678,11 +622,9 @@ instantiate(const CPPTemplateParameterList *actual_params,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::substitute_decl
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPStructType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -776,11 +718,9 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return rep;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPStructType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (!complete && _ident != NULL) {
@@ -827,39 +767,30 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration::SubType CPPStructType::
 get_subtype() const {
   return ST_struct;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::as_struct_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPStructType *CPPStructType::
 as_struct_type() {
   return this;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::get_virtual_funcs
-//       Access: Public
-//  Description: Fills funcs up with a list of all the virtual
-//               function declarations (pure-virtual or otherwise)
-//               defined at or above this class.  This is used to
-//               determine which functions in a given class are
-//               actually virtual, since a function is virtual whose
-//               parent class holds a virtual function by the same
-//               name, whether or not it is actually declared virtual
-//               in the derived class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills funcs up with a list of all the virtual function declarations (pure-
+ * virtual or otherwise) defined at or above this class.  This is used to
+ * determine which functions in a given class are actually virtual, since a
+ * function is virtual whose parent class holds a virtual function by the same
+ * name, whether or not it is actually declared virtual in the derived class.
+ */
 void CPPStructType::
 get_virtual_funcs(VFunctions &funcs) const {
   // First, get all the virtual funcs from our parents.
@@ -960,13 +891,10 @@ get_virtual_funcs(VFunctions &funcs) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::count_pure_virtual_funcs
-//       Access: Public
-//  Description: Fills funcs up with a list of all the pure virtual
-//               function declarations defined at or above this class
-//               that have not been given definitions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills funcs up with a list of all the pure virtual function declarations
+ * defined at or above this class that have not been given definitions.
+ */
 void CPPStructType::
 get_pure_virtual_funcs(VFunctions &funcs) const {
   // First, get all the virtual functions.
@@ -984,12 +912,10 @@ get_pure_virtual_funcs(VFunctions &funcs) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_equal
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration to determine whether this
-//               type is equivalent to another type of the same type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration to determine whether this type is equivalent to
+ * another type of the same type.
+ */
 bool CPPStructType::
 is_equal(const CPPDeclaration *other) const {
   return CPPDeclaration::is_equal(other);
@@ -1002,13 +928,10 @@ is_equal(const CPPDeclaration *other) const {
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPStructType::is_less
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration to determine whether this
-//               type should be ordered before another type of the
-//               same type, in an arbitrary but fixed ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration to determine whether this type should be ordered
+ * before another type of the same type, in an arbitrary but fixed ordering.
+ */
 bool CPPStructType::
 is_less(const CPPDeclaration *other) const {
   return CPPDeclaration::is_less(other);
@@ -1024,4 +947,3 @@ is_less(const CPPDeclaration *other) const {
     (get_fully_scoped_name() < ot->get_fully_scoped_name());
   */
 }
-

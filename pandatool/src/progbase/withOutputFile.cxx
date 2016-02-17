@@ -1,16 +1,15 @@
-// Filename: withOutputFile.cxx
-// Created by:  drose (11Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file withOutputFile.cxx
+ * @author drose
+ * @date 2001-04-11
+ */
 
 #include "withOutputFile.h"
 #include "executionEnvironment.h"
@@ -18,11 +17,9 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WithOutputFile::
 WithOutputFile(bool allow_last_param, bool allow_stdout,
                bool binary_output) {
@@ -34,11 +31,9 @@ WithOutputFile(bool allow_last_param, bool allow_stdout,
   _owns_output_ptr = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WithOutputFile::
 ~WithOutputFile() {
   if (_owns_output_ptr) {
@@ -47,13 +42,10 @@ WithOutputFile::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::get_output
-//       Access: Public
-//  Description: Returns an output stream that corresponds to the
-//               user's intended egg file output--either stdout, or
-//               the named output file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an output stream that corresponds to the user's intended egg file
+ * output--either stdout, or the named output file.
+ */
 ostream &WithOutputFile::
 get_output() {
   if (_output_ptr == (ostream *)NULL) {
@@ -106,13 +98,10 @@ get_output() {
   return *_output_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::close_output
-//       Access: Public
-//  Description: Closes the output stream previously opened by
-//               get_output().  A subsequent call to get_output() will
-//               open a new stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the output stream previously opened by get_output().  A subsequent
+ * call to get_output() will open a new stream.
+ */
 void WithOutputFile::
 close_output() {
   if (_owns_output_ptr) {
@@ -125,25 +114,19 @@ close_output() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::has_output_filename
-//       Access: Public
-//  Description: Returns true if the user specified an output
-//               filename, false otherwise (e.g. the output file is
-//               implicitly stdout).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the user specified an output filename, false otherwise (e.g.
+ * the output file is implicitly stdout).
+ */
 bool WithOutputFile::
 has_output_filename() const {
   return _got_output_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::get_output_filename
-//       Access: Public
-//  Description: If has_output_filename() returns true, this is the
-//               filename that the user specified.  Otherwise, it
-//               returns the empty string.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_output_filename() returns true, this is the filename that the user
+ * specified.  Otherwise, it returns the empty string.
+ */
 Filename WithOutputFile::
 get_output_filename() const {
   if (_got_output_filename) {
@@ -152,19 +135,13 @@ get_output_filename() const {
   return Filename();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::check_last_arg
-//       Access: Protected
-//  Description: Checks if the last filename on the argument list is
-//               a file with the expected extension (if
-//               _allow_last_param was set true), and removes it from
-//               the argument list if it is.  Returns true if the
-//               arguments are good, false if something is invalid.
-//
-//               minimum_args is the number of arguments we know must
-//               be input parameters and therefore cannot be
-//               interpreted as output filenames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks if the last filename on the argument list is a file with the expected
+ * extension (if _allow_last_param was set true), and removes it from the
+ * argument list if it is.  Returns true if the arguments are good, false if
+ * something is invalid.  minimum_args is the number of arguments we know must
+ * be input parameters and therefore cannot be interpreted as output filenames.
+ */
 bool WithOutputFile::
 check_last_arg(ProgramBase::Args &args, int minimum_args) {
   if (_allow_last_param && !_got_output_filename &&
@@ -197,20 +174,14 @@ check_last_arg(ProgramBase::Args &args, int minimum_args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::verify_output_file_safe
-//       Access: Protected
-//  Description: This is called when the output file is given as the
-//               last parameter on the command line.  Since this is a
-//               fairly dangerous way to specify the output file (it's
-//               easy to accidentally overwrite an input file this
-//               way), the convention is to disallow this syntax if
-//               the output file already exists.
-//
-//               This function will test if the output file exists,
-//               and issue a warning message if it does, returning
-//               false.  If all is well, it will return true.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called when the output file is given as the last parameter on the
+ * command line.  Since this is a fairly dangerous way to specify the output
+ * file (it's easy to accidentally overwrite an input file this way), the
+ * convention is to disallow this syntax if the output file already exists.
+ * This function will test if the output file exists, and issue a warning
+ * message if it does, returning false.  If all is well, it will return true.
+ */
 bool WithOutputFile::
 verify_output_file_safe() const {
   nassertr(_got_output_filename, false);

@@ -1,16 +1,15 @@
-// Filename: softNodeDesc.cxx
-// Created by:  masad (03Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file softNodeDesc.cxx
+ * @author masad
+ * @date 2003-10-03
+ */
 
 #include "softNodeDesc.h"
 #include "config_softegg.h"
@@ -22,11 +21,9 @@
 
 TypeHandle SoftNodeDesc::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SoftNodeDesc::
 SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
   Namable(name),
@@ -67,11 +64,9 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
   gtype = SAA_GEOM_ORIGINAL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SoftNodeDesc::
 ~SoftNodeDesc() {
   // I think it is a mistake to try to delete this.  This was one
@@ -86,23 +81,18 @@ SoftNodeDesc::
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::set_model
-//       Access: Public
-//  Description: Indicates an associated between the SoftNodeDesc and
-//               some SAA_Elem instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates an associated between the SoftNodeDesc and some SAA_Elem instance.
+ */
 void SoftNodeDesc::
 set_model(SAA_Elem *model) {
   _model = model;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::set_parent
-//       Access: Public
-//  Description: Sometimes, parent is not known at node creation
-//               As soon as it is known, set the parent
-////////////////////////////////////////////////////////////////////
+/**
+ * Sometimes, parent is not known at node creation As soon as it is known, set
+ * the parent
+ */
 void SoftNodeDesc::
 set_parent(SoftNodeDesc *parent) {
   if (_parent) {
@@ -125,12 +115,10 @@ set_parent(SoftNodeDesc *parent) {
   _parent->_children.push_back(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::set_parent
-//       Access: Public
-//  Description: Sometimes, parent is not known at node creation
-//               As soon as it is known, set the parent
-////////////////////////////////////////////////////////////////////
+/**
+ * Sometimes, parent is not known at node creation As soon as it is known, set
+ * the parent
+ */
 void SoftNodeDesc::
 force_set_parent(SoftNodeDesc *parent) {
   if (_parent)
@@ -145,79 +133,60 @@ force_set_parent(SoftNodeDesc *parent) {
   _parent->_children.push_back(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::has_model
-//       Access: Public
-//  Description: Returns true if a Soft dag path has been associated
-//               with this node, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a Soft dag path has been associated with this node, false
+ * otherwise.
+ */
 bool SoftNodeDesc::
 has_model() const {
   return (_model != (SAA_Elem *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::get_model
-//       Access: Public
-//  Description: Returns the SAA_Elem * associated with this node.  It
-//               is an error to call this unless has_model()
-//               returned true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the SAA_Elem * associated with this node.  It is an error to call
+ * this unless has_model() returned true.
+ */
 SAA_Elem *SoftNodeDesc::
 get_model() const {
   nassertr(_model != (SAA_Elem *)NULL, _model);
   return _model;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::is_joint
-//       Access: Private
-//  Description: Returns true if the node should be treated as a joint
-//               by the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node should be treated as a joint by the converter.
+ */
 bool SoftNodeDesc::
 is_joint() const {
   //  return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
   return _joint_type == JT_joint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::is_junk
-//       Access: Private
-//  Description: Returns true if the node should be treated as a junk
-//               by the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node should be treated as a junk by the converter.
+ */
 bool SoftNodeDesc::
 is_junk() const {
   return _joint_type == JT_junk;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::set_joint
-//       Access: Private
-//  Description: sets the _joint_type to JT_joint
-////////////////////////////////////////////////////////////////////
+/**
+ * sets the _joint_type to JT_joint
+ */
 void SoftNodeDesc::
 set_joint() {
   _joint_type = JT_joint;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::is_joint_parent
-//       Access: Private
-//  Description: Returns true if the node is the parent or ancestor of
-//               a joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node is the parent or ancestor of a joint.
+ */
 bool SoftNodeDesc::
 is_joint_parent() const {
   return _joint_type == JT_joint_parent;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::clear_egg
-//       Access: Private
-//  Description: Recursively clears the egg pointers from this node
-//               and all children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively clears the egg pointers from this node and all children.
+ */
 void SoftNodeDesc::
 clear_egg() {
   _egg_group = (EggGroup *)NULL;
@@ -231,12 +200,10 @@ clear_egg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::mark_joint_parent
-//       Access: Private
-//  Description: Indicates that this node has at least one child that
-//               is a joint or a pseudo-joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that this node has at least one child that is a joint or a pseudo-
+ * joint.
+ */
 void SoftNodeDesc::
 mark_joint_parent() {
   if (_joint_type == JT_none) {
@@ -252,12 +219,10 @@ mark_joint_parent() {
   softegg_cat.spam() << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::check_joint_parent
-//       Access: Private
-//  Description: Walks the hierarchy, if a node is joint, make
-//               sure all its parents are marked JT_joint_parent
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy, if a node is joint, make sure all its parents are marked
+ * JT_joint_parent
+ */
 void SoftNodeDesc::
 check_joint_parent() {
   Children::const_iterator ci;
@@ -271,13 +236,10 @@ check_joint_parent() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeTree::check_junk
-//       Access: Public
-//  Description: check to see if this is a branch we don't want to
-//               descend - this will prevent creating geometry for
-//               animation control structures
-////////////////////////////////////////////////////////////////////
+/**
+ * check to see if this is a branch we don't want to descend - this will prevent
+ * creating geometry for animation control structures
+ */
 void SoftNodeDesc::
 check_junk(bool parent_junk) {
   const char *name = get_name().c_str();
@@ -311,13 +273,10 @@ check_junk(bool parent_junk) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeTree::is_partial
-//       Access: Public
-//  Description: check to see if this is a selected branch we want to
-//               descend - this will prevent creating geometry for
-//               other parts
-////////////////////////////////////////////////////////////////////
+/**
+ * check to see if this is a selected branch we want to descend - this will
+ * prevent creating geometry for other parts
+ */
 bool SoftNodeDesc::
 is_partial(char *search_prefix) {
   const char *name = fullname;
@@ -340,12 +299,10 @@ is_partial(char *search_prefix) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeTree::set_parentJoint
-//       Access: Public
-//  Description: Go through the ancestors and figure out who is the
-//               immediate _parentJoint of this node
-////////////////////////////////////////////////////////////////////
+/**
+ * Go through the ancestors and figure out who is the immediate _parentJoint of
+ * this node
+ */
 void SoftNodeDesc::
 set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
   if (is_junk())
@@ -384,14 +341,11 @@ set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::check_pseudo_joints
-//       Access: Private
-//  Description: Walks the hierarchy, looking for non-joint nodes that
-//               are both children and parents of a joint.  These
-//               nodes are deemed to be pseudo joints, since the
-//               converter must treat them as joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy, looking for non-joint nodes that are both children and
+ * parents of a joint.  These nodes are deemed to be pseudo joints, since the
+ * converter must treat them as joints.
+ */
 void SoftNodeDesc::
 check_pseudo_joints(bool joint_above) {
   if (_joint_type == JT_joint_parent && joint_above) {
@@ -450,12 +404,10 @@ check_pseudo_joints(bool joint_above) {
     softegg_cat.spam() << "found null joint " << get_name() << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_transform
-//       Access: Private
-//  Description: Extracts the transform on the indicated Soft node,
-//               and applies it to the corresponding Egg node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the transform on the indicated Soft node, and applies it to the
+ * corresponding Egg node.
+ */
 void SoftNodeDesc::
 get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   // Get the model's matrix
@@ -497,18 +449,14 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::get_joint_transform
-//       Access: Private
-//  Description: Extracts the transform on the indicated Soft node,
-//               as appropriate for a joint in an animated character,
-//               and applies it to the indicated node.  This is
-//               different from get_transform() in that it does not
-//               respect the _transform_type flag, and it does not
-//               consider the relative transforms within the egg file.
-//               more added functionality: now fills in components of
-//               anim (EffXfmSAnim) class (masad).
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the transform on the indicated Soft node, as appropriate for a joint
+ * in an animated character, and applies it to the indicated node.  This is
+ * different from get_transform() in that it does not respect the
+ * _transform_type flag, and it does not consider the relative transforms within
+ * the egg file.  more added functionality: now fills in components of anim
+ * (EffXfmSAnim) class (masad).
+ */
 void SoftNodeDesc::
 get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, bool global) {
   //  SI_Error result;
@@ -578,13 +526,10 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::load_poly_model
-//       Access: Private
-//  Description: Converts the indicated Soft polyset to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft polyset to a bunch of EggPolygons and parents
+ * them to the indicated egg group.
+ */
 void SoftNodeDesc::
 load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
   SI_Error result;
@@ -790,13 +735,10 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
   softegg_cat.spam() << "got textures" << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::load_nurbs_model
-//       Access: Private
-//  Description: Converts the indicated Soft polyset to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft polyset to a bunch of EggPolygons and parents
+ * them to the indicated egg group.
+ */
 void SoftNodeDesc::
 load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
   SI_Error result;
@@ -918,12 +860,9 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_shape_vert
-//       Access: Public
-//  Description: given a vertex, find its corresponding shape vertex
-//               and return its index.
-////////////////////////////////////////////////////////////////////
+/**
+ * given a vertex, find its corresponding shape vertex and return its index.
+ */
 int SoftNodeDesc::
 find_shape_vert(LPoint3d p3d, SAA_DVector *vertices, int numVert) {
   int i, found = 0;
@@ -945,15 +884,11 @@ find_shape_vert(LPoint3d p3d, SAA_DVector *vertices, int numVert) {
   return i;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_vertex_offsets
-//       Access: Public
-//  Description: Given a scene, a model , the vertices of its original
-//               shape and its name find the difference between the
-//               geometry of its key shapes and the models original
-//               geometry and add morph vertices to the egg data to
-//               reflect these changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model , the vertices of its original shape and its name find
+ * the difference between the geometry of its key shapes and the models original
+ * geometry and add morph vertices to the egg data to reflect these changes.
+ */
 void SoftNodeDesc::
 make_vertex_offsets(int numShapes) {
   int i, j;
@@ -1068,14 +1003,11 @@ make_vertex_offsets(int numShapes) {
   } //for i
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_morph_table
-//       Access: Public
-//  Description: Given a scene, a model, a name and a frame time,
-//               determine what type of shape interpolation is
-//               used and call the appropriate function to extract
-//               the shape weight info for this frame...
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, a name and a frame time, determine what type of shape
+ * interpolation is used and call the appropriate function to extract the shape
+ * weight info for this frame...
+ */
 void SoftNodeDesc::
 make_morph_table(  PN_stdfloat time ) {
   int numShapes;
@@ -1112,14 +1044,11 @@ make_morph_table(  PN_stdfloat time ) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_linear_morph_table
-//       Access: Public
-//  Description: Given a scene, a model, its name, and the time,
-//               get the shape fcurve for the model and determine
-//               the shape weights for the given time and use them
-//               to populate the morph table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, its name, and the time, get the shape fcurve for the
+ * model and determine the shape weights for the given time and use them to
+ * populate the morph table.
+ */
 void SoftNodeDesc::
 make_linear_morph_table(int numShapes, PN_stdfloat time) {
   int i;
@@ -1182,16 +1111,12 @@ make_linear_morph_table(int numShapes, PN_stdfloat time) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_weighted_morph_table
-//       Access: Public
-//  Description: Given a scene, a model, a list of all models in the
-//               scene, the number of models in the scece, the number
-//               of key shapes for this model, the name of the model
-//               and the current time, determine what method of
-//               controlling the shape weights is used and call the
-//               appropriate routine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, a list of all models in the scene, the number of
+ * models in the scece, the number of key shapes for this model, the name of the
+ * model and the current time, determine what method of controlling the shape
+ * weights is used and call the appropriate routine.
+ */
 void SoftNodeDesc::
 make_weighted_morph_table(int numShapes, PN_stdfloat time) {
   PN_stdfloat curveVal;
@@ -1237,14 +1162,11 @@ make_weighted_morph_table(int numShapes, PN_stdfloat time) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_expression_morph_table
-//       Access: Public
-//  Description: Given a scene, a model and its number of key shapes
-//               generate a morph table describing transitions btwn
-//               the key shapes by evaluating the positions of the
-//               controlling sliders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model and its number of key shapes generate a morph table
+ * describing transitions btwn the key shapes by evaluating the positions of the
+ * controlling sliders.
+ */
 void SoftNodeDesc::
 make_expression_morph_table(int numShapes, PN_stdfloat time)
 {

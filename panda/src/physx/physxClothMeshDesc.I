@@ -1,23 +1,19 @@
-// Filename: physxClothMeshDesc.I
-// Created by:  enn0x (28Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxClothMeshDesc.I
+ * @author enn0x
+ * @date 2010-03-28
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothMeshDesc::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE PhysxClothMeshDesc::
 PhysxClothMeshDesc() {
 
@@ -32,11 +28,9 @@ PhysxClothMeshDesc() {
   _texcoords = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothMeshDesc::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxClothMeshDesc::
 ~PhysxClothMeshDesc() {
 
@@ -53,33 +47,27 @@ INLINE PhysxClothMeshDesc::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothMeshDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxClothMeshDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothMeshDesc::get_desc
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const NxClothMeshDesc &PhysxClothMeshDesc::
 get_desc() const {
 
   return _desc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothMeshDesc::get_texcoords
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const plist<LPoint2f> PhysxClothMeshDesc::
 get_texcoords() const {
 
@@ -92,4 +80,3 @@ get_texcoords() const {
 
   return texcoords;
 }
-

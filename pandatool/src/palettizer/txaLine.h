@@ -1,16 +1,15 @@
-// Filename: txaLine.h
-// Created by:  drose (30Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file txaLine.h
+ * @author drose
+ * @date 2000-11-30
+ */
 
 #ifndef TXALINE_H
 #define TXALINE_H
@@ -29,13 +28,11 @@ class PNMFileType;
 class EggFile;
 class TextureImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TxaLine
-// Description : This is a single matching line in the .txa file.  It
-//               consists of a list of names (texture names or egg
-//               file names), followed by a colon and an optional size
-//               and a set of keywords.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single matching line in the .txa file.  It consists of a list of
+ * names (texture names or egg file names), followed by a colon and an optional
+ * size and a set of keywords.
+ */
 class TxaLine {
 public:
   TxaLine();
@@ -102,4 +99,3 @@ INLINE ostream &operator << (ostream &out, const TxaLine &line) {
 }
 
 #endif
-

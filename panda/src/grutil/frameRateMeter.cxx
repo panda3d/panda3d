@@ -1,16 +1,15 @@
-// Filename: frameRateMeter.cxx
-// Created by:  drose (23Dec03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file frameRateMeter.cxx
+ * @author drose
+ * @date 2003-12-23
+ */
 
 #include "frameRateMeter.h"
 #include "camera.h"
@@ -28,11 +27,9 @@ PStatCollector FrameRateMeter::_show_fps_pcollector("*:Show fps");
 
 TypeHandle FrameRateMeter::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FrameRateMeter::
 FrameRateMeter(const string &name) :
   TextNode(name),
@@ -75,23 +72,18 @@ FrameRateMeter(const string &name) :
   do_update(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FrameRateMeter::
 ~FrameRateMeter() {
   clear_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::setup_window
-//       Access: Published
-//  Description: Sets up the frame rate meter to create a
-//               DisplayRegion to render itself into the indicated
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the frame rate meter to create a DisplayRegion to render itself into
+ * the indicated window.
+ */
 void FrameRateMeter::
 setup_window(GraphicsOutput *window) {
   clear_window();
@@ -137,12 +129,9 @@ setup_window(GraphicsOutput *window) {
   _display_region->set_camera(camera_np);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::clear_window
-//       Access: Published
-//  Description: Undoes the effect of a previous call to
-//               setup_window().
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes the effect of a previous call to setup_window().
+ */
 void FrameRateMeter::
 clear_window() {
   if (_window != (GraphicsOutput *)NULL) {
@@ -153,31 +142,20 @@ clear_window() {
   _root = NodePath();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool FrameRateMeter::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // This triggers when you try to parent a frame rate meter into
@@ -215,11 +193,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return TextNode::cull_callback(trav, data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::do_update
-//       Access: Private
-//  Description: Resets the text according to the current frame rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the text according to the current frame rate.
+ */
 void FrameRateMeter::
 do_update(Thread *current_thread) {
   _last_update = _clock_object->get_frame_time(current_thread);

@@ -1,16 +1,15 @@
-// Filename: p3dInstance.cxx
-// Created by:  drose (29May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dInstance.cxx
+ * @author drose
+ * @date 2009-05-29
+ */
 
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
@@ -91,14 +90,12 @@ write_str(ostream &out, const wchar_t *str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DInstance::
-P3DInstance(P3D_request_ready_func *func, 
-            const P3D_token tokens[], size_t num_tokens, 
+P3DInstance(P3D_request_ready_func *func,
+            const P3D_token tokens[], size_t num_tokens,
             int argc, const char *argv[], void *user_data) :
   _func(func)
 {
@@ -159,7 +156,7 @@ P3DInstance(P3D_request_ready_func *func,
   _download_started = false;
   _download_complete = false;
   _instance_started = false;
-  
+
   INIT_LOCK(_request_lock);
   _requested_stop = false;
 
@@ -199,14 +196,14 @@ P3DInstance(P3D_request_ready_func *func,
   if (!inst_mgr->get_plugin_official_version()) {
     stream << "c";
   }
-  
+
   // The plugin version as a single number, with three digits reserved
   // for each component.
-  int numeric_version = 
-    inst_mgr->get_plugin_major_version() * 1000000 + 
-    inst_mgr->get_plugin_minor_version() * 1000 + 
+  int numeric_version =
+    inst_mgr->get_plugin_major_version() * 1000000 +
+    inst_mgr->get_plugin_minor_version() * 1000 +
     inst_mgr->get_plugin_sequence_version();
-  if (!inst_mgr->get_plugin_official_version()) { 
+  if (!inst_mgr->get_plugin_official_version()) {
     // Subtract 1 if we are not an official version.
     --numeric_version;
   }
@@ -259,11 +256,9 @@ P3DInstance(P3D_request_ready_func *func,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DInstance::
 ~P3DInstance() {
   assert(_session == NULL);
@@ -298,12 +293,9 @@ P3DInstance::
   // download is still running?  Who will crash when this happens?
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::cleanup
-//       Access: Public
-//  Description: Invalidates the instance and removes any structures
-//               prior to deleting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invalidates the instance and removes any structures prior to deleting.
+ */
 void P3DInstance::
 cleanup() {
   _failed = true;
@@ -313,7 +305,7 @@ cleanup() {
     p3d_unref_delete(_auth_session);
     _auth_session = NULL;
   }
-    
+
   for (int i = 0; i < (int)IT_num_image_types; ++i) {
     _image_files[i].cleanup();
   }
@@ -349,7 +341,7 @@ cleanup() {
     delete _temp_p3d_filename;
     _temp_p3d_filename = NULL;
   }
-  
+
   if (_xpackage != NULL) {
     delete _xpackage;
     _xpackage = NULL;
@@ -363,7 +355,7 @@ cleanup() {
   }
 
   free_swbuffer();
-#endif    
+#endif
 
   TiXmlDocument *doc = NULL;
   ACQUIRE_LOCK(_request_lock);
@@ -390,20 +382,13 @@ cleanup() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_p3d_url
-//       Access: Public
-//  Description: Specifies a URL that should be contacted to download
-//               the instance data.  Normally this, or
-//               set_p3d_filename() or make_p3d_stream(), is only
-//               called once.
-//
-//               The instance data at the other end of this URL is
-//               key.  We can't start the instance until we have
-//               downloaded the instance file and examined the
-//               p3d_info.xml, and we know what Python version we need
-//               and so forth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a URL that should be contacted to download the instance data.
+ * Normally this, or set_p3d_filename() or make_p3d_stream(), is only called
+ * once.  The instance data at the other end of this URL is key.  We can't start
+ * the instance until we have downloaded the instance file and examined the
+ * p3d_info.xml, and we know what Python version we need and so forth.
+ */
 void P3DInstance::
 set_p3d_url(const string &p3d_url) {
   if (p3d_url.empty()) {
@@ -446,13 +431,10 @@ set_p3d_url(const string &p3d_url) {
   start_download(download);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::make_p3d_stream
-//       Access: Public
-//  Description: Indicates an intention to transmit the p3d data as a
-//               stream.  Should return a new unique stream ID to
-//               receive it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates an intention to transmit the p3d data as a stream.  Should return a
+ * new unique stream ID to receive it.
+ */
 int P3DInstance::
 make_p3d_stream(const string &p3d_url) {
   _fparams.set_p3d_url(p3d_url);
@@ -490,25 +472,20 @@ make_p3d_stream(const string &p3d_url) {
   return start_download(download, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_p3d_filename
-//       Access: Public
-//  Description: Specifies the file that contains the instance data.
-//               Normally this is only called once.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the file that contains the instance data.  Normally this is only
+ * called once.
+ */
 void P3DInstance::
 set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
   determine_p3d_basename(p3d_filename);
   priv_set_p3d_filename(p3d_filename, p3d_offset);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_wparams
-//       Access: Public
-//  Description: Changes the window parameters, e.g. to resize or
-//               reposition the window; or sets the parameters for the
-//               first time, creating the initial window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the window parameters, e.g.  to resize or reposition the window; or
+ * sets the parameters for the first time, creating the initial window.
+ */
 void P3DInstance::
 set_wparams(const P3DWindowParams &wparams) {
   bool prev_got_wparams = _got_wparams;
@@ -534,13 +511,13 @@ set_wparams(const P3DWindowParams &wparams) {
       make_splash_window();
     }
   }
-  
+
   // It doesn't make much sense to go further than this point
   // if the instance is already in the failed state.
   if (is_failed()) {
     return;
   }
-  
+
   if (_wparams.get_window_type() != P3D_WT_hidden) {
 #ifdef __APPLE__
     // On Mac, we have to communicate the results of the rendering
@@ -554,7 +531,7 @@ set_wparams(const P3DWindowParams &wparams) {
         // We need to open a new shared buffer.
         alloc_swbuffer();
       }
-      
+
       if (_swbuffer == NULL) {
         nout << "Could not open swbuffer\n";
       }
@@ -569,7 +546,7 @@ set_wparams(const P3DWindowParams &wparams) {
     xcommand->SetAttribute("cmd", "setup_window");
     xcommand->SetAttribute("instance_id", get_instance_id());
     TiXmlElement *xwparams = _wparams.make_xml(this);
-    
+
     doc->LinkEndChild(xcommand);
     xcommand->LinkEndChild(xwparams);
 
@@ -584,28 +561,21 @@ set_wparams(const P3DWindowParams &wparams) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_panda_script_object
-//       Access: Public
-//  Description: Returns a pointer to the top-level scriptable object
-//               of the instance, to be used by JavaScript code in the
-//               browser to control this program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the top-level scriptable object of the instance, to be
+ * used by JavaScript code in the browser to control this program.
+ */
 P3D_object *P3DInstance::
 get_panda_script_object() const {
   nout << "get_panda_script_object\n";
   return _main_object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_browser_script_object
-//       Access: Public
-//  Description: Stores a pointer to the top-level window object
-//               of the browser, to be used by Panda code to control
-//               JavaScript.  The new object's reference count is
-//               incremented, and the previous object's is
-//               decremented.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a pointer to the top-level window object of the browser, to be used by
+ * Panda code to control JavaScript.  The new object's reference count is
+ * incremented, and the previous object's is decremented.
+ */
 void P3DInstance::
 set_browser_script_object(P3D_object *browser_script_object) {
   nout << "set_browser_script_object\n";
@@ -686,26 +656,21 @@ set_browser_script_object(P3D_object *browser_script_object) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::has_request
-//       Access: Public
-//  Description: Returns true if the instance has any pending requests
-//               at the time of this call, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the instance has any pending requests at the time of this
+ * call, false otherwise.
+ */
 bool P3DInstance::
 has_request() {
   return _request_pending;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_request
-//       Access: Public
-//  Description: Returns a newly-allocated P3D_request corresponding
-//               to the pending request for the host, or NULL if there
-//               is no pending request.  If the return value is
-//               non-NULL, it should eventually be passed back to
-//               finish_request() for cleanup.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated P3D_request corresponding to the pending request
+ * for the host, or NULL if there is no pending request.  If the return value is
+ * non-NULL, it should eventually be passed back to finish_request() for
+ * cleanup.
+ */
 P3D_request *P3DInstance::
 get_request() {
   bake_requests();
@@ -791,20 +756,14 @@ get_request() {
   return request;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::bake_requests
-//       Access: Public
-//  Description: Copies requests from the _raw_requests queue, which
-//               is built up in one or more sub-threads, into the
-//               _baked_requests queue, which is publicly presented
-//               to the browser.  Along the way, some requests (like
-//               script requests) are handled immediately.
-//
-//               At the end of this call, _baked_requests will contain
-//               the current set of requests pending for the browser.
-//
-//               This method should only be called in the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies requests from the _raw_requests queue, which is built up in one or
+ * more sub-threads, into the _baked_requests queue, which is publicly presented
+ * to the browser.  Along the way, some requests (like script requests) are
+ * handled immediately.  At the end of this call, _baked_requests will contain
+ * the current set of requests pending for the browser.  This method should only
+ * be called in the main thread.
+ */
 void P3DInstance::
 bake_requests() {
   while (true) {
@@ -816,7 +775,7 @@ bake_requests() {
       _raw_requests.pop_front();
     }
     RELEASE_LOCK(_request_lock);
-    
+
     if (doc == NULL) {
       // No more requests to process right now.
       return;
@@ -828,21 +787,18 @@ bake_requests() {
     assert(xrequest != (TiXmlElement *)NULL);
     P3D_request *request = make_p3d_request(xrequest);
     delete doc;
-    
+
     if (request != NULL) {
       _baked_requests.push_back(request);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_raw_request
-//       Access: Public
-//  Description: May be called in any thread to add a new XML request
-//               to the pending_request queue for this instance.  The
-//               XML document will be deleted when the request is
-//               eventually handled.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called in any thread to add a new XML request to the pending_request
+ * queue for this instance.  The XML document will be deleted when the request
+ * is eventually handled.
+ */
 void P3DInstance::
 add_raw_request(TiXmlDocument *doc) {
   ACQUIRE_LOCK(_request_lock);
@@ -862,14 +818,11 @@ add_raw_request(TiXmlDocument *doc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_baked_request
-//       Access: Public
-//  Description: May be called in the main thread only to add a new
-//               request to the baked_request queue.  This request
-//               queue is directly passed on the browser without
-//               further processing at this level.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called in the main thread only to add a new request to the
+ * baked_request queue.  This request queue is directly passed on the browser
+ * without further processing at this level.
+ */
 void P3DInstance::
 add_baked_request(P3D_request *request) {
   assert(request->_instance == NULL);
@@ -884,14 +837,11 @@ add_baked_request(P3D_request *request) {
   inst_mgr->signal_request_ready(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::finish_request
-//       Access: Public, Static
-//  Description: Deallocates a previously-returned request from
-//               get_request().  If handled is true, the request has
-//               been handled by the host; otherwise, it has been
-//               ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deallocates a previously-returned request from get_request().  If handled is
+ * true, the request has been handled by the host; otherwise, it has been
+ * ignored.
+ */
 void P3DInstance::
 finish_request(P3D_request *request, bool handled) {
   assert(request != NULL);
@@ -949,19 +899,16 @@ finish_request(P3D_request *request, bool handled) {
   delete request;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::feed_url_stream
-//       Access: Public
-//  Description: Called by the host in response to a get_url request,
-//               this sends the data retrieved from the requested URL,
-//               a piece at a time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the host in response to a get_url request, this sends the data
+ * retrieved from the requested URL, a piece at a time.
+ */
 bool P3DInstance::
 feed_url_stream(int unique_id,
                 P3D_result_code result_code,
-                int http_status_code, 
+                int http_status_code,
                 size_t total_expected_data,
-                const unsigned char *this_data, 
+                const unsigned char *this_data,
                 size_t this_data_size) {
   Downloads::iterator di = _downloads.find(unique_id);
   if (di == _downloads.end()) {
@@ -988,12 +935,10 @@ feed_url_stream(int unique_id,
   return download_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::handle_event
-//       Access: Public
-//  Description: Responds to the os-generated window event.  Returns
-//               true if the event is handled, false if ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Responds to the os-generated window event.  Returns true if the event is
+ * handled, false if ignored.
+ */
 bool P3DInstance::
 handle_event(const P3D_event_data &event) {
   bool retval = false;
@@ -1016,18 +961,13 @@ handle_event(const P3D_event_data &event) {
   return retval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_log_pathname
-//       Access: Public
-//  Description: Returns the log filename for this particular session,
-//               if the session was started and if it has a log file.
-//               Returns empty string if the session never started or
-//               if it lacks a log file.
-//
-//               This is the same value returned by
-//               P3DSession::get_log_pathname(), except that it
-//               remains valid even after the session has closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the log filename for this particular session, if the session was
+ * started and if it has a log file.  Returns empty string if the session never
+ * started or if it lacks a log file.  This is the same value returned by
+ * P3DSession::get_log_pathname(), except that it remains valid even after the
+ * session has closed.
+ */
 const string &P3DInstance::
 get_log_pathname() const {
   if (_session != NULL) {
@@ -1036,21 +976,15 @@ get_log_pathname() const {
   return _log_pathname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_package
-//       Access: Public
-//  Description: Adds the package to the list of packages used by this
-//               instance.  The instance will share responsibility for
-//               downloading the package with any of the other
-//               instances that use the same package.
-//
-//               The seq value should be the expected minimum
-//               package_seq value for the indicated package.  If the
-//               given seq value is higher than the package_seq value
-//               in the contents.xml file cached for the host, it is a
-//               sign that the contents.xml file is out of date and
-//               needs to be redownloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the package to the list of packages used by this instance.  The instance
+ * will share responsibility for downloading the package with any of the other
+ * instances that use the same package.  The seq value should be the expected
+ * minimum package_seq value for the indicated package.  If the given seq value
+ * is higher than the package_seq value in the contents.xml file cached for the
+ * host, it is a sign that the contents.xml file is out of date and needs to be
+ * redownloaded.
+ */
 void P3DInstance::
 add_package(const string &name, const string &version, const string &seq,
             P3DHost *host) {
@@ -1077,15 +1011,12 @@ add_package(const string &name, const string &version, const string &seq,
                                           seq, alt_host);
   add_package(package);
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_package
-//       Access: Public
-//  Description: Adds the package to the list of packages used by this
-//               instance.  The instance will share responsibility for
-//               downloading the package with any of the other
-//               instances that use the same package.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Adds the package to the list of packages used by this instance.  The instance
+ * will share responsibility for downloading the package with any of the other
+ * instances that use the same package.
+ */
 void P3DInstance::
 add_package(P3DPackage *package) {
   if (find(_packages.begin(), _packages.end(), package) != _packages.end()) {
@@ -1105,14 +1036,11 @@ add_package(P3DPackage *package) {
   package->add_instance(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::remove_package
-//       Access: Public
-//  Description: Indicates that the given package is destructing and
-//               this instance should no longer retain a pointer to
-//               it.  This is normally called only by the P3DPackage
-//               destructor, and it invalidates the instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the given package is destructing and this instance should no
+ * longer retain a pointer to it.  This is normally called only by the
+ * P3DPackage destructor, and it invalidates the instance.
+ */
 void P3DInstance::
 remove_package(P3DPackage *package) {
   Packages::iterator pi = find(_packages.begin(), _packages.end(), package);
@@ -1139,14 +1067,11 @@ remove_package(P3DPackage *package) {
   set_failed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_packages_info_ready
-//       Access: Public
-//  Description: Returns true if all of the packages required by the
-//               instance have their information available and are
-//               ready to be downloaded, false if one or more of them
-//               is still waiting for information (or has failed).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the packages required by the instance have their
+ * information available and are ready to be downloaded, false if one or more of
+ * them is still waiting for information (or has failed).
+ */
 bool P3DInstance::
 get_packages_info_ready() const {
   if (!_packages_specified) {
@@ -1164,15 +1089,11 @@ get_packages_info_ready() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_packages_ready
-//       Access: Public
-//  Description: Returns true if all of the packages required by the
-//               instance (as specified in previous calls to
-//               add_package()) have been fully downloaded and are
-//               ready to run, or false if one or more of them still
-//               requires downloading.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the packages required by the instance (as specified in
+ * previous calls to add_package()) have been fully downloaded and are ready to
+ * run, or false if one or more of them still requires downloading.
+ */
 bool P3DInstance::
 get_packages_ready() const {
   if (!_packages_specified) {
@@ -1190,13 +1111,10 @@ get_packages_ready() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_packages_failed
-//       Access: Public
-//  Description: Returns true if any of the packages required by the
-//               instance have failed to download (and thus we will
-//               never be ready).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the packages required by the instance have failed to
+ * download (and thus we will never be ready).
+ */
 bool P3DInstance::
 get_packages_failed() const {
   Packages::const_iterator pi;
@@ -1209,27 +1127,17 @@ get_packages_failed() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::start_download
-//       Access: Public
-//  Description: Adds a newly-allocated P3DDownload object to the
-//               download queue, and issues the request to start it
-//               downloading.  As the download data comes in, it will
-//               be fed to the download object.
-//
-//               This increments the P3DDownload object's reference
-//               count, and will decrement it (and possibly delete the
-//               object) after download_finished() has been called.
-//
-//               add_request should be true to actually request the
-//               URL from the plugin, or false not to.  Normally, this
-//               should always be set true, except in the one special
-//               case of make_p3d_stream(), in which case the plugin
-//               is already prepared to send the stream and doesn't
-//               need to have it requested.
-//
-//               Returns the unique ID of this stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a newly-allocated P3DDownload object to the download queue, and issues
+ * the request to start it downloading.  As the download data comes in, it will
+ * be fed to the download object.  This increments the P3DDownload object's
+ * reference count, and will decrement it (and possibly delete the object) after
+ * download_finished() has been called.  add_request should be true to actually
+ * request the URL from the plugin, or false not to.  Normally, this should
+ * always be set true, except in the one special case of make_p3d_stream(), in
+ * which case the plugin is already prepared to send the stream and doesn't need
+ * to have it requested.  Returns the unique ID of this stream.
+ */
 int P3DInstance::
 start_download(P3DDownload *download, bool add_request) {
   assert(download->get_download_id() == 0);
@@ -1260,20 +1168,17 @@ start_download(P3DDownload *download, bool add_request) {
     request->_request_type = P3D_RT_get_url;
     request->_request._get_url._url = strdup(download->get_url().c_str());
     request->_request._get_url._unique_id = download_id;
-    
+
     add_baked_request(request);
   }
 
   return download_id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::request_stop_sub_thread
-//       Access: Public
-//  Description: Asks the host to shut down this particular instance,
-//               presumably because the user has indicated it should
-//               exit.  This call may be made in any thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the host to shut down this particular instance, presumably because the
+ * user has indicated it should exit.  This call may be made in any thread.
+ */
 void P3DInstance::
 request_stop_sub_thread() {
   // Atomically check _requested_stop.
@@ -1291,18 +1196,16 @@ request_stop_sub_thread() {
     TiXmlElement *xrequest = new TiXmlElement("request");
     xrequest->SetAttribute("rtype", "stop");
     doc->LinkEndChild(xrequest);
-    
+
     add_raw_request(doc);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::request_stop_main_thread
-//       Access: Public
-//  Description: Asks the host to shut down this particular instance,
-//               presumably because the user has indicated it should
-//               exit.  This call may only be made in the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the host to shut down this particular instance, presumably because the
+ * user has indicated it should exit.  This call may only be made in the main
+ * thread.
+ */
 void P3DInstance::
 request_stop_main_thread() {
   // Atomically check _requested_stop.
@@ -1324,13 +1227,10 @@ request_stop_main_thread() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::request_refresh
-//       Access: Public
-//  Description: Asks the host to refresh the plugin window.  This is
-//               only relevant for windowless plugins, for instance,
-//               the way OSX plugins always run.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the host to refresh the plugin window.  This is only relevant for
+ * windowless plugins, for instance, the way OSX plugins always run.
+ */
 void P3DInstance::
 request_refresh() {
   P3D_request *request = new P3D_request;
@@ -1339,11 +1239,9 @@ request_refresh() {
   add_baked_request(request);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::request_callback
-//       Access: Public
-//  Description: Asks the host to make a callback later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the host to make a callback later.
+ */
 void P3DInstance::
 request_callback(P3D_callback_func *func, void *data) {
   P3D_request *request = new P3D_request;
@@ -1354,12 +1252,10 @@ request_callback(P3D_callback_func *func, void *data) {
   add_baked_request(request);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::make_xml
-//       Access: Public
-//  Description: Returns a newly-allocated XML structure that
-//               corresponds to the data within this instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated XML structure that corresponds to the data within
+ * this instance.
+ */
 TiXmlElement *P3DInstance::
 make_xml() {
   assert(_got_fparams);
@@ -1402,14 +1298,11 @@ make_xml() {
   return xinstance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::splash_button_clicked_sub_thread
-//       Access: Public
-//  Description: Called by the P3DSplashWindow code (maybe in a
-//               sub-thread) when the user clicks the button visible
-//               on the splash window.  This will forward the event to
-//               the main thread via the request callback mechanism.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the P3DSplashWindow code (maybe in a sub-thread) when the user
+ * clicks the button visible on the splash window.  This will forward the event
+ * to the main thread via the request callback mechanism.
+ */
 void P3DInstance::
 splash_button_clicked_sub_thread() {
   TiXmlDocument *doc = new TiXmlDocument;
@@ -1421,14 +1314,11 @@ splash_button_clicked_sub_thread() {
   add_raw_request(doc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::splash_button_clicked_main_thread
-//       Access: Public
-//  Description: Called only in the main thread, indirectly from
-//               splash_button_clicked_sub_thread(), as the result of
-//               the user clicking on the button visible in the splash
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only in the main thread, indirectly from
+ * splash_button_clicked_sub_thread(), as the result of the user clicking on the
+ * button visible in the splash window.
+ */
 void P3DInstance::
 splash_button_clicked_main_thread() {
   if (is_failed()) {
@@ -1446,12 +1336,9 @@ splash_button_clicked_main_thread() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::auth_button_clicked
-//       Access: Public
-//  Description: Called to authorize the p3d file by the user clicking
-//               the red "auth" button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to authorize the p3d file by the user clicking the red "auth" button.
+ */
 void P3DInstance::
 auth_button_clicked() {
   // Delete the previous session and create a new one.
@@ -1460,19 +1347,16 @@ auth_button_clicked() {
     p3d_unref_delete(_auth_session);
     _auth_session = NULL;
   }
-  
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _auth_session = inst_mgr->authorize_instance(this);
   _auth_session->ref();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::play_button_clicked
-//       Access: Public
-//  Description: Called to start the game by the user clicking the
-//               green "play" button, or by JavaScript calling
-//               play().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to start the game by the user clicking the green "play" button, or by
+ * JavaScript calling play().
+ */
 void P3DInstance::
 play_button_clicked() {
   if (_session == NULL && _p3d_trusted) {
@@ -1493,13 +1377,10 @@ play_button_clicked() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::auth_finished_sub_thread
-//       Access: Public
-//  Description: Called by the P3DAuthSession code in a sub-thread
-//               when the auth dialog exits (for instance, because the
-//               user approved the certificate, or cancelled).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the P3DAuthSession code in a sub-thread when the auth dialog exits
+ * (for instance, because the user approved the certificate, or cancelled).
+ */
 void P3DInstance::
 auth_finished_sub_thread() {
   TiXmlDocument *doc = new TiXmlDocument;
@@ -1511,13 +1392,10 @@ auth_finished_sub_thread() {
   add_raw_request(doc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::auth_finished_main_thread
-//       Access: Public
-//  Description: Called only in the main thread, indirectly from
-//               auth_finished_sub_thread(), as the result of
-//               the user closing the auth dialog.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only in the main thread, indirectly from auth_finished_sub_thread(),
+ * as the result of the user closing the auth dialog.
+ */
 void P3DInstance::
 auth_finished_main_thread() {
   // Set this flag to indicate that the user has clicked on the red
@@ -1530,14 +1408,11 @@ auth_finished_main_thread() {
   check_p3d_signature();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::uninstall_packages
-//       Access: Public
-//  Description: Stops the instance (if it is running) and deletes any
-//               packages referenced by the instance.  This is
-//               normally called by JavaScript, via
-//               P3DMainObject::call_uninstall().
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops the instance (if it is running) and deletes any packages referenced by
+ * the instance.  This is normally called by JavaScript, via
+ * P3DMainObject::call_uninstall().
+ */
 bool P3DInstance::
 uninstall_packages() {
   if (_packages.empty()) {
@@ -1573,16 +1448,12 @@ uninstall_packages() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::uninstall_host
-//       Access: Public
-//  Description: Stops the instance (if it is running) and deletes all
-//               packages downloaded from any of the host(s)
-//               referenced by the instance.  This is a more
-//               aggressive uninstall than uninstall_packages().  This
-//               is normally called by JavaScript, via
-//               P3DMainObject::call_uninstall().
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops the instance (if it is running) and deletes all packages downloaded
+ * from any of the host(s) referenced by the instance.  This is a more
+ * aggressive uninstall than uninstall_packages().  This is normally called by
+ * JavaScript, via P3DMainObject::call_uninstall().
+ */
 bool P3DInstance::
 uninstall_host() {
   if (_packages.empty()) {
@@ -1616,14 +1487,11 @@ uninstall_host() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::priv_set_p3d_filename
-//       Access: Private
-//  Description: The private implementation of set_p3d_filename(),
-//               this does all the work except for updating
-//               p3d_basename.  It is intended to be called
-//               internally, and might be passed a temporary filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of set_p3d_filename(), this does all the work
+ * except for updating p3d_basename.  It is intended to be called internally,
+ * and might be passed a temporary filename.
+ */
 void P3DInstance::
 priv_set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
   if (!_fparams.get_p3d_filename().empty()) {
@@ -1660,11 +1528,9 @@ priv_set_p3d_filename(const string &p3d_filename, const int &p3d_offset) {
   check_p3d_signature();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::determine_p3d_basename
-//       Access: Private
-//  Description: Determines _p3d_basename from the indicated URL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines _p3d_basename from the indicated URL.
+ */
 void P3DInstance::
 determine_p3d_basename(const string &p3d_url) {
   string file_part = p3d_url;
@@ -1681,14 +1547,11 @@ determine_p3d_basename(const string &p3d_url) {
   nout << "p3d_basename = " << _p3d_basename << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::check_matches_origin
-//       Access: Private
-//  Description: Returns true if the indicated origin_match string,
-//               one of either run_origin or script_origin from the
-//               p3d_info.xml file, matches the origin of the page
-//               that embedded the p3d file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated origin_match string, one of either run_origin
+ * or script_origin from the p3d_info.xml file, matches the origin of the page
+ * that embedded the p3d file.
+ */
 bool P3DInstance::
 check_matches_origin(const string &origin_match) {
   // First, separate the string up at the semicolons.
@@ -1710,12 +1573,10 @@ check_matches_origin(const string &origin_match) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::check_matches_origin_one
-//       Access: Private
-//  Description: Called for each semicolon-delimited string within
-//               origin_match passed to check_matches_origin().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for each semicolon-delimited string within origin_match passed to
+ * check_matches_origin().
+ */
 bool P3DInstance::
 check_matches_origin_one(const string &origin_match) {
   // Do we have a protocol?
@@ -1755,15 +1616,11 @@ check_matches_origin_one(const string &origin_match) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::check_matches_hostname
-//       Access: Private
-//  Description: Matches the hostname of check_matches_origin:
-//               the individual components of the hostname are matched
-//               independently, with '**.' allowed at the beginning to
-//               indicate zero or more prefixes.  Returns true on
-//               match, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Matches the hostname of check_matches_origin: the individual components of
+ * the hostname are matched independently, with '**.' allowed at the beginning
+ * to indicate zero or more prefixes.  Returns true on match, false on failure.
+ */
 bool P3DInstance::
 check_matches_hostname(const string &orig, const string &match) {
   // First, separate both strings up at the dots.
@@ -1808,12 +1665,9 @@ check_matches_hostname(const string &orig, const string &match) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::separate_components
-//       Access: Private
-//  Description: Separates the indicated hostname into its components
-//               at the dots.
-////////////////////////////////////////////////////////////////////
+/**
+ * Separates the indicated hostname into its components at the dots.
+ */
 void P3DInstance::
 separate_components(vector<string> &components, const string &str) {
   size_t p = 0;
@@ -1826,15 +1680,12 @@ separate_components(vector<string> &components, const string &str) {
   components.push_back(str.substr(p));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::check_matches_component
-//       Access: Private
-//  Description: Matches a single component of check_matches_origin:
-//               either protocol or port, or a single component of the
-//               hostname.  Case-insensitive, and supports the '*'
-//               wildcard operator to match the entire component.
-//               Returns true on match, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Matches a single component of check_matches_origin: either protocol or port,
+ * or a single component of the hostname.  Case-insensitive, and supports the
+ * '*' wildcard operator to match the entire component.  Returns true on match,
+ * false on failure.
+ */
 bool P3DInstance::
 check_matches_component(const string &orig, const string &match) {
   if (match == "*") {
@@ -1862,16 +1713,11 @@ check_matches_component(const string &orig, const string &match) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::check_p3d_signature
-//       Access: Private
-//  Description: Checks the signature(s) encoded in the p3d file, and
-//               looks to see if any of them are recognized.
-//
-//               If the signature is recognized, calls
-//               mark_p3d_trusted(); otherwise, calls
-//               mark_p3d_untrusted().
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the signature(s) encoded in the p3d file, and looks to see if any of
+ * them are recognized.  If the signature is recognized, calls
+ * mark_p3d_trusted(); otherwise, calls mark_p3d_untrusted().
+ */
 void P3DInstance::
 check_p3d_signature() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -1909,7 +1755,7 @@ check_p3d_signature() {
     if (_certlist_package != NULL) {
       _certlist_package->add_instance(this);
     }
-    
+
     // When the package finishes downloading, we will come back here.
     return;
   }
@@ -1924,16 +1770,12 @@ check_p3d_signature() {
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::mark_p3d_untrusted
-//       Access: Private
-//  Description: This is called internally when it has been determined
-//               that the p3d file can't (yet) be trusted, for
-//               instance because it lacks a signature, or because it
-//               is signed by an unrecognized certificate.  This puts
-//               up the red "auth" button and waits for the user to
-//               approve the app before continuing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called internally when it has been determined that the p3d file can't
+ * (yet) be trusted, for instance because it lacks a signature, or because it is
+ * signed by an unrecognized certificate.  This puts up the red "auth" button
+ * and waits for the user to approve the app before continuing.
+ */
 void P3DInstance::
 mark_p3d_untrusted() {
   // Failed test.
@@ -1950,7 +1792,7 @@ mark_p3d_untrusted() {
     if (_p3dcert_package != NULL) {
       _p3dcert_package->add_instance(this);
     }
-    
+
     // When the package finishes downloading, we will come back here.
     return;
   }
@@ -1977,15 +1819,11 @@ mark_p3d_untrusted() {
   make_splash_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::mark_p3d_trusted
-//       Access: Private
-//  Description: This is called internally when it has been determined
-//               that the p3d file can be trusted and started.  When
-//               this is called, the p3d file will be examined and
-//               made ready to start; it will not be started until
-//               this is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called internally when it has been determined that the p3d file can
+ * be trusted and started.  When this is called, the p3d file will be examined
+ * and made ready to start; it will not be started until this is called.
+ */
 void P3DInstance::
 mark_p3d_trusted() {
   nout << "p3d trusted\n";
@@ -2030,12 +1868,10 @@ mark_p3d_trusted() {
   add_panda3d_package();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::scan_app_desc_file
-//       Access: Private
-//  Description: Reads the p3d_info.xml file at instance startup, to
-//               determine the set of required packages and so forth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the p3d_info.xml file at instance startup, to determine the set of
+ * required packages and so forth.
+ */
 void P3DInstance::
 scan_app_desc_file(TiXmlDocument *doc) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -2120,8 +1956,8 @@ scan_app_desc_file(TiXmlDocument *doc) {
     _auto_start = true;
   }
 
-  nout << "_auto_install = " << _auto_install 
-       << ", _auto_start = " << _auto_start 
+  nout << "_auto_install = " << _auto_install
+       << ", _auto_start = " << _auto_start
        << ", _stop_on_ready = " << _stop_on_ready
        << "\n";
 
@@ -2130,20 +1966,17 @@ scan_app_desc_file(TiXmlDocument *doc) {
   }
 
   if (!_matches_run_origin) {
-    nout << "Cannot run " << _p3d_basename << " from origin " 
+    nout << "Cannot run " << _p3d_basename << " from origin "
          << _origin_protocol << "//" << _origin_hostname
          << ":" << _origin_port << "\n";
     set_failed();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_panda3d_package
-//       Access: Private
-//  Description: Adds the "panda3d" package only.  This package must
-//               be downloaded first, and its desc file examined,
-//               before we can begin downloading the other packages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the "panda3d" package only.  This package must be downloaded first, and
+ * its desc file examined, before we can begin downloading the other packages.
+ */
 void P3DInstance::
 add_panda3d_package() {
   assert(!_packages_specified);
@@ -2179,13 +2012,10 @@ add_panda3d_package() {
   set_failed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_packages
-//       Access: Private
-//  Description: Adds the set of packages required by this p3d file to
-//               the _packages member.  If _auto_install is true, this
-//               will also start downloading them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the set of packages required by this p3d file to the _packages member.
+ * If _auto_install is true, this will also start downloading them.
+ */
 void P3DInstance::
 add_packages() {
   assert(!_packages_specified);
@@ -2231,13 +2061,10 @@ add_packages() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::find_alt_host_url
-//       Access: Private
-//  Description: Looks in the p3d_info.xml file for the alt_host
-//               associated with the indicated host_url, if any.
-//               Returns empty string if there is no match.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks in the p3d_info.xml file for the alt_host associated with the indicated
+ * host_url, if any.  Returns empty string if there is no match.
+ */
 string P3DInstance::
 find_alt_host_url(const string &host_url, const string &alt_host) {
   TiXmlElement *xhost = _xpackage->FirstChildElement("host");
@@ -2264,15 +2091,11 @@ find_alt_host_url(const string &host_url, const string &alt_host) {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_host_info
-//       Access: Private
-//  Description: Looks in the p3d_info.xml file for the auxiliary host
-//               information for the selected host.  Some of this
-//               information is helpful to have before the host has
-//               read its own contents.xml file (particularly the
-//               host_dir specification).
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks in the p3d_info.xml file for the auxiliary host information for the
+ * selected host.  Some of this information is helpful to have before the host
+ * has read its own contents.xml file (particularly the host_dir specification).
+ */
 void P3DInstance::
 get_host_info(P3DHost *host) {
   // We should only call this function if we haven't already read the
@@ -2293,18 +2116,13 @@ get_host_info(P3DHost *host) {
   // Didn't find an entry for this host; oh well.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_start_dir_suffix
-//       Access: Public
-//  Description: Determines the local path to the appropriate start
-//               directory for this instance, within the generic
-//               "start" directory.  Returns empty string if this
-//               instance doesn't specify a custom start directory.
-//
-//               If this is nonempty, it will begin with a slash--the
-//               intention is to append this to the end of the generic
-//               start_dir path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the local path to the appropriate start directory for this
+ * instance, within the generic "start" directory.  Returns empty string if this
+ * instance doesn't specify a custom start directory.  If this is nonempty, it
+ * will begin with a slash--the intention is to append this to the end of the
+ * generic start_dir path.
+ */
 string P3DInstance::
 get_start_dir_suffix() const {
   string start_dir_suffix;
@@ -2333,12 +2151,10 @@ get_start_dir_suffix() const {
   return start_dir_suffix;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::send_browser_script_object
-//       Access: Private
-//  Description: Sends the XML sequence to inform the session of our
-//               browser's toplevel window object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the XML sequence to inform the session of our browser's toplevel window
+ * object.
+ */
 void P3DInstance::
 send_browser_script_object() {
   TiXmlDocument *doc = new TiXmlDocument;
@@ -2348,18 +2164,16 @@ send_browser_script_object() {
   if (_dom_object != NULL) {
     xcommand->LinkEndChild(_session->p3dobj_to_xml(_dom_object));
   }
-  
+
   doc->LinkEndChild(xcommand);
-  
+
   _session->send_command(doc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::make_p3d_request
-//       Access: Private
-//  Description: Creates a new P3D_request structure from the XML.
-//               Returns NULL if no request is needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new P3D_request structure from the XML. Returns NULL if no request
+ * is needed.
+ */
 P3D_request *P3DInstance::
 make_p3d_request(TiXmlElement *xrequest) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -2388,7 +2202,7 @@ make_p3d_request(TiXmlElement *xrequest) {
       xrequest->Attribute("needs_response", &needs_response);
       int unique_id = 0;
       xrequest->Attribute("unique_id", &unique_id);
-        
+
       P3D_object *value = NULL;
       TiXmlElement *xvalue = xrequest->FirstChildElement("value");
       if (xvalue != NULL) {
@@ -2417,7 +2231,7 @@ make_p3d_request(TiXmlElement *xrequest) {
         // We no longer need to keep this reference.
         _session->drop_p3dobj(object_id);
       }
-    
+
     } else if (strcmp(rtype, "stop") == 0) {
       // A stop request from Python code.  This is kind of weird, but OK.
       request = new P3D_request;
@@ -2458,12 +2272,10 @@ make_p3d_request(TiXmlElement *xrequest) {
   return request;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::handle_notify_request
-//       Access: Private
-//  Description: Called (in the main thread) when a notify request is
-//               received from the subprocess.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called (in the main thread) when a notify request is received from the
+ * subprocess.
+ */
 void P3DInstance::
 handle_notify_request(const string &message) {
   // We look for certain notify events that have particular meaning
@@ -2591,14 +2403,12 @@ handle_notify_request(const string &message) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::handle_script_request
-//       Access: Private
-//  Description: Called (in the main thread) when a script request is
-//               received from the subprocess.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called (in the main thread) when a script request is received from the
+ * subprocess.
+ */
 void P3DInstance::
-handle_script_request(const string &operation, P3D_object *object, 
+handle_script_request(const string &operation, P3D_object *object,
                       const string &property_name, P3D_object *value,
                       bool needs_response, int unique_id) {
 
@@ -2606,7 +2416,7 @@ handle_script_request(const string &operation, P3D_object *object,
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "script_response");
   xcommand->SetAttribute("unique_id", unique_id);
-  
+
   doc->LinkEndChild(xcommand);
 
   if (operation == "get_property") {
@@ -2614,16 +2424,16 @@ handle_script_request(const string &operation, P3D_object *object,
 
     // We've got the property value; feed it back down to the
     // subprocess.
-    
+
     if (result != NULL) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
       P3D_OBJECT_DECREF(result);
     }
 
   } else if (operation == "set_property") {
-    bool result = 
+    bool result =
       P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), true, value);
-    
+
     TiXmlElement *xvalue = new TiXmlElement("value");
     xvalue->SetAttribute("type", "bool");
     xvalue->SetAttribute("value", (int)result);
@@ -2631,7 +2441,7 @@ handle_script_request(const string &operation, P3D_object *object,
 
   } else if (operation == "del_property") {
     bool result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), true, NULL);
-    
+
     TiXmlElement *xvalue = new TiXmlElement("value");
     xvalue->SetAttribute("type", "bool");
     xvalue->SetAttribute("value", (int)result);
@@ -2639,7 +2449,7 @@ handle_script_request(const string &operation, P3D_object *object,
 
   } else if (operation == "has_method") {
     bool result = P3D_OBJECT_HAS_METHOD(object, property_name.c_str());
-    
+
     TiXmlElement *xvalue = new TiXmlElement("value");
     xvalue->SetAttribute("type", "bool");
     xvalue->SetAttribute("value", (int)result);
@@ -2660,7 +2470,7 @@ handle_script_request(const string &operation, P3D_object *object,
     P3D_object *result =
       P3D_OBJECT_CALL(object, property_name.c_str(), needs_response,
                       values, num_values);
-    
+
     if (result != NULL) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
       P3D_OBJECT_DECREF(result);
@@ -2673,7 +2483,7 @@ handle_script_request(const string &operation, P3D_object *object,
     P3D_OBJECT_GET_STRING(value, buffer, size + 1);
     result = P3D_OBJECT_EVAL(object, buffer);
     delete[] buffer;
-    
+
     if (result != NULL) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
       P3D_OBJECT_DECREF(result);
@@ -2687,13 +2497,10 @@ handle_script_request(const string &operation, P3D_object *object,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_failed
-//       Access: Private
-//  Description: Sets the "failed" indication to display sadness to
-//               the user--we're unable to launch the instance for
-//               some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the "failed" indication to display sadness to the user--we're unable to
+ * launch the instance for some reason.
+ */
 void P3DInstance::
 set_failed() {
   set_button_image(IT_none);
@@ -2707,12 +2514,9 @@ set_failed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::make_splash_window
-//       Access: Private
-//  Description: Creates the splash window to be displayed at startup,
-//               if it's time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the splash window to be displayed at startup, if it's time.
+ */
 void P3DInstance::
 make_splash_window() {
   // Should we make the splash window visible?
@@ -2722,7 +2526,7 @@ make_splash_window() {
     make_visible = false;
   }
 
-  if (_wparams.get_window_type() != P3D_WT_embedded && 
+  if (_wparams.get_window_type() != P3D_WT_embedded &&
       !_stuff_to_download && _auto_install &&
       (_auto_start || _stop_on_ready) && _p3d_trusted) {
     // If it's a toplevel or fullscreen window, then we don't want a
@@ -2889,23 +2693,23 @@ make_splash_window() {
       // image.  We do this via the P3DPackage interface, so we can
       // use the cached version on disk if it's good.
       _image_files[i]._use_standard_image = true;
-      
+
     } else {
       // We have an explicit image specified for this slot, so just
       // download it directly.  This one won't be cached locally
       // (though the browser might be free to cache it).
       _image_files[i]._use_standard_image = false;
       _image_files[i]._filename.clear();
-      
+
       // Make a temporary file to receive the splash image.
       assert(_image_files[i]._temp_filename == NULL);
       _image_files[i]._temp_filename = new P3DTemporaryFile(".jpg");
-      
+
       // Start downloading the requested image.
       ImageDownload *download = new ImageDownload(this, i);
       download->set_url(image_url);
       download->set_filename(_image_files[i]._temp_filename->get_filename());
-      
+
       start_download(download);
     }
   }
@@ -2917,19 +2721,16 @@ make_splash_window() {
   if (_current_button_image != IT_none) {
     _splash_window->set_image_filename(_image_files[_current_button_image]._filename, P3DSplashWindow::IP_button_ready);
     _splash_window->set_image_filename(_image_files[_current_button_image + 1]._filename, P3DSplashWindow::IP_button_rollover);
-    _splash_window->set_image_filename(_image_files[_current_button_image + 2]._filename, P3DSplashWindow::IP_button_click); 
+    _splash_window->set_image_filename(_image_files[_current_button_image + 2]._filename, P3DSplashWindow::IP_button_click);
     _splash_window->set_button_active(true);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_background_image
-//       Access: Private
-//  Description: Specifies the particular image that should be
-//               displayed as the background image in the splash
-//               window.  Specify IT_none to take the background image
-//               away.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the particular image that should be displayed as the background
+ * image in the splash window.  Specify IT_none to take the background image
+ * away.
+ */
 void P3DInstance::
 set_background_image(ImageType image_type) {
   if (is_failed()) {
@@ -2956,17 +2757,11 @@ set_background_image(ImageType image_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_button_image
-//       Access: Private
-//  Description: Specifies the particular image that should be
-//               displayed as the button image in the splash
-//               window.  Specify IT_none to take the button image
-//               away.
-//
-//               This actually defines a trilogy of button images:
-//               ready, rollover, click.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the particular image that should be displayed as the button image
+ * in the splash window.  Specify IT_none to take the button image away.  This
+ * actually defines a trilogy of button images: ready, rollover, click.
+ */
 void P3DInstance::
 set_button_image(ImageType image_type) {
   if (is_failed()) {
@@ -3016,13 +2811,10 @@ set_button_image(ImageType image_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::report_package_info_ready
-//       Access: Private
-//  Description: Notified when a package information has been
-//               successfully downloaded and the package is idle,
-//               waiting for activate_download() to be called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Notified when a package information has been successfully downloaded and the
+ * package is idle, waiting for activate_download() to be called.
+ */
 void P3DInstance::
 report_package_info_ready(P3DPackage *package) {
   nout << "report_package_info_ready: " << package->get_package_name() << "\n";
@@ -3039,7 +2831,7 @@ report_package_info_ready(P3DPackage *package) {
       }
       if (package == _certlist_package) {
         set_install_label("Getting Certificates");
-      } else {          
+      } else {
         set_install_label("Getting Authorization Dialog");
       }
     }
@@ -3073,19 +2865,16 @@ report_package_info_ready(P3DPackage *package) {
   P3DPackage::Requires::const_iterator ri;
   for (ri = package->_requires.begin(); ri != package->_requires.end(); ++ri) {
     const P3DPackage::RequiredPackage &rp = (*ri);
-    add_package(rp._package_name, rp._package_version, rp._package_seq, 
+    add_package(rp._package_name, rp._package_version, rp._package_seq,
                 rp._host);
   }
 
   consider_start_download();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::consider_start_download
-//       Access: Private
-//  Description: When all package info files have been obtained,
-//               begins downloading stuff.
-////////////////////////////////////////////////////////////////////
+/**
+ * When all package info files have been obtained, begins downloading stuff.
+ */
 void P3DInstance::
 consider_start_download() {
   if (get_packages_info_ready()) {
@@ -3110,23 +2899,20 @@ consider_start_download() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::ready_to_install
-//       Access: Private
-//  Description: Called when it's time to start the package download
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when it's time to start the package download process.
+ */
 void P3DInstance::
 ready_to_install() {
   if (_downloading_packages.empty() && _download_complete) {
     // We have already been here.  Ignore it.
-    
+
   } else if (!_auto_install && !_download_started) {
     // Not authorized to download yet.  We're waiting for the user
     // to acknowledge the download.
     set_background_image(IT_ready);
     set_button_image(IT_play_ready);
-    
+
   } else {
     _download_started = true;
     _download_complete = false;
@@ -3145,14 +2931,14 @@ ready_to_install() {
          << " packages, total " << _total_download_size
          << " bytes required (" << _prev_downloaded
          << " previously downloaded).\n";
-    
+
     if (_downloading_packages.size() > 0) {
       _stuff_to_download = true;
-      
+
       // Maybe it's time to open a splash window now.
       make_splash_window();
     }
-    
+
     _main_object->set_string_property("status", "downloading");
     _main_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
     _main_object->set_int_property("totalDownloadSize", _total_download_size);
@@ -3173,18 +2959,15 @@ ready_to_install() {
     }
 
     send_notify("ondownloadbegin");
-    
+
     start_next_download();
   }
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::start_next_download
-//       Access: Private
-//  Description: Checks whether all packages are ready and waiting to
-//               be downloaded; if so, starts the next package in
-//               sequence downloading.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Checks whether all packages are ready and waiting to be downloaded; if so,
+ * starts the next package in sequence downloading.
+ */
 void P3DInstance::
 start_next_download() {
   while (_download_package_index < (int)_downloading_packages.size()) {
@@ -3214,7 +2997,7 @@ start_next_download() {
       send_notify("ondownloadnext");
       return;
     }
-    
+
     // This package has been downloaded.  Move to the next.
     _total_downloaded += package->get_download_size();
     ++_download_package_index;
@@ -3228,12 +3011,9 @@ start_next_download() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::mark_download_complete
-//       Access: Private
-//  Description: Called internally when all files needed to launch
-//               have been downloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when all files needed to launch have been downloaded.
+ */
 void P3DInstance::
 mark_download_complete() {
   if (_failed) {
@@ -3246,7 +3026,7 @@ mark_download_complete() {
     _main_object->set_string_property("status", "downloadcomplete");
     send_notify("ondownloadcomplete");
   }
-  
+
   // Take down the download progress bar.
   if (_splash_window != NULL) {
     _splash_window->set_install_progress(0.0, true, 0);
@@ -3259,12 +3039,10 @@ mark_download_complete() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::ready_to_start
-//       Access: Private
-//  Description: Called internally when we have got the wparams and
-//               fparams and we have downloaded all required packages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when we have got the wparams and fparams and we have
+ * downloaded all required packages.
+ */
 void P3DInstance::
 ready_to_start() {
   if (_instance_started || is_failed()) {
@@ -3294,11 +3072,9 @@ ready_to_start() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::report_instance_progress
-//       Access: Private
-//  Description: Notified as the instance file is downloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Notified as the instance file is downloaded.
+ */
 void P3DInstance::
 report_instance_progress(double progress, bool is_progress_known,
                          size_t received_data) {
@@ -3337,12 +3113,9 @@ report_instance_progress(double progress, bool is_progress_known,
   _main_object->set_float_property("instanceDownloadProgress", progress);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::report_package_progress
-//       Access: Private
-//  Description: Notified as the packages required by the instance
-//               file are downloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Notified as the packages required by the instance file are downloaded.
+ */
 void P3DInstance::
 report_package_progress(P3DPackage *package, double progress) {
   if (package == _image_package) {
@@ -3414,7 +3187,7 @@ report_package_progress(P3DPackage *package, double progress) {
     tr._report_time = elapsed;
     _time_reports.push_back(tr);
     _total_time_reports += tr._total;
-      
+
     // Now get the average report.
     if (!_time_reports.empty()) {
       double total = _total_time_reports / (double)_time_reports.size();
@@ -3427,12 +3200,9 @@ report_package_progress(P3DPackage *package, double progress) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::report_package_done
-//       Access: Private
-//  Description: Notified when a required package is fully downloaded,
-//               or failed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Notified when a required package is fully downloaded, or failed.
+ */
 void P3DInstance::
 report_package_done(P3DPackage *package, bool success) {
   nout << "Done installing " << package->get_package_name()
@@ -3460,7 +3230,7 @@ report_package_done(P3DPackage *package, bool success) {
         } else {
           string image_filename = package_dir + "/" + *basename;
           _image_files[i]._filename = image_filename;
-          
+
           // If the image should be on the window now, and the window
           // still exists, put it up.
           if (_splash_window != NULL &&
@@ -3517,12 +3287,10 @@ report_package_done(P3DPackage *package, bool success) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_install_label
-//       Access: Private
-//  Description: Sets the install label that will be displayed on the
-//               splash window, if it is present.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the install label that will be displayed on the splash window, if it is
+ * present.
+ */
 void P3DInstance::
 set_install_label(const string &install_label) {
   _install_label = install_label;
@@ -3531,13 +3299,10 @@ set_install_label(const string &install_label) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::paint_window
-//       Access: Private
-//  Description: Actually paints the rendered image to the browser
-//               window.  This is only needed for OSX, where the child
-//               process isn't allowed to do it directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually paints the rendered image to the browser window.  This is only
+ * needed for OSX, where the child process isn't allowed to do it directly.
+ */
 void P3DInstance::
 paint_window() {
 #ifdef __APPLE__
@@ -3558,15 +3323,11 @@ paint_window() {
 }
 
 #if defined(__APPLE__) && !__LP64__
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_framebuffer_osx_port
-//       Access: Private
-//  Description: Fills _reversed_buffer with the pixels from the
-//               current frame, suitable for rendering via the old
-//               QuickDraw interface.  Returns true on success, or
-//               false if there is no Panda3D window visible.  Only
-//               needed on OSX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills _reversed_buffer with the pixels from the current frame, suitable for
+ * rendering via the old QuickDraw interface.  Returns true on success, or false
+ * if there is no Panda3D window visible.  Only needed on OSX.
+ */
 bool P3DInstance::
 get_framebuffer_osx_port() {
   if (_swbuffer == NULL || !_instance_window_attached) {
@@ -3582,7 +3343,7 @@ get_framebuffer_osx_port() {
   if (_swbuffer->ready_for_read()) {
     // Copy the new framebuffer image from the child process.
     const void *framebuffer = _swbuffer->open_read_framebuffer();
-    
+
     // We have to reverse the image vertically first (different
     // conventions between Panda and Mac).
     for (int yi = 0; yi < y_size; ++yi) {
@@ -3619,7 +3380,7 @@ get_framebuffer_osx_port() {
       }
 #endif
     }
-    
+
     _swbuffer->close_read_framebuffer();
 
     if (_splash_window != NULL && _splash_window->get_visible()) {
@@ -3638,15 +3399,11 @@ get_framebuffer_osx_port() {
 #endif  // __APPLE__
 
 #ifdef __APPLE__
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_framebuffer_osx_cgcontext
-//       Access: Private
-//  Description: Fills _reversed_buffer with the pixels from the
-//               current frame, suitable for rendering via the new
-//               CoreGraphics interface.  Returns true on success, or
-//               false if there is no Panda3D window visible.  Only
-//               needed on OSX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills _reversed_buffer with the pixels from the current frame, suitable for
+ * rendering via the new CoreGraphics interface.  Returns true on success, or
+ * false if there is no Panda3D window visible.  Only needed on OSX.
+ */
 bool P3DInstance::
 get_framebuffer_osx_cgcontext() {
   if (_swbuffer == NULL || !_instance_window_attached) {
@@ -3681,13 +3438,10 @@ get_framebuffer_osx_cgcontext() {
 #endif  // __APPLE__
 
 #if defined(__APPLE__) && !__LP64__
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::paint_window_osx_port
-//       Access: Private
-//  Description: Actually paints the rendered image to the browser
-//               window, using the OSX deprecated QuickDraw
-//               interfaces.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually paints the rendered image to the browser window, using the OSX
+ * deprecated QuickDraw interfaces.
+ */
 void P3DInstance::
 paint_window_osx_port() {
   if (!get_framebuffer_osx_port()) {
@@ -3705,7 +3459,7 @@ paint_window_osx_port() {
   QDErr err;
 
   GWorldPtr pGWorld;
-  err = NewGWorldFromPtr(&pGWorld, k32BGRAPixelFormat, &src_rect, 0, 0, 0, 
+  err = NewGWorldFromPtr(&pGWorld, k32BGRAPixelFormat, &src_rect, 0, 0, 0,
                          _reversed_buffer, rowsize);
   if (err != noErr) {
     nout << " error in NewGWorldFromPtr, called from paint_window()\n";
@@ -3720,29 +3474,26 @@ paint_window_osx_port() {
 
   // Make sure the clipping rectangle isn't in the way.  Is there a
   // better way to eliminate the cliprect from consideration?
-  Rect r = { 0, 0, 0x7fff, 0x7fff }; 
+  Rect r = { 0, 0, 0x7fff, 0x7fff };
   ClipRect(&r);
 
-  CopyBits(GetPortBitMapForCopyBits(pGWorld), 
-           GetPortBitMapForCopyBits(out_port), 
+  CopyBits(GetPortBitMapForCopyBits(pGWorld),
+           GetPortBitMapForCopyBits(out_port),
            &src_rect, &ddrc_rect, srcCopy, 0);
-  
+
   if (port_changed) {
     QDSwapPort(port_save, NULL);
   }
-  
+
   DisposeGWorld(pGWorld);
 }
-#endif  // __APPLE__  
+#endif  // __APPLE__
 
 #ifdef __APPLE__
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::paint_window_osx_cgcontext
-//       Access: Private
-//  Description: Actually paints the rendered image to the browser
-//               window.  This is the newer CoreGraphics
-//               implementation on OSX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually paints the rendered image to the browser window.  This is the newer
+ * CoreGraphics implementation on OSX.
+ */
 void P3DInstance::
 paint_window_osx_cgcontext(CGContextRef context) {
   if (!get_framebuffer_osx_cgcontext()) {
@@ -3760,12 +3511,9 @@ paint_window_osx_cgcontext(CGContextRef context) {
 }
 #endif  // __APPLE__
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::handle_event_osx_event_record
-//       Access: Private
-//  Description: Responds to the deprecated Carbon event types in Mac
-//               OSX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Responds to the deprecated Carbon event types in Mac OSX.
+ */
 bool P3DInstance::
 handle_event_osx_event_record(const P3D_event_data &event) {
   bool retval = false;
@@ -3784,9 +3532,9 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     GrafPtr out_port = handle._handle._osx_port._port;
     GrafPtr port_save = NULL;
     Boolean port_changed = QDSwapPort(out_port, &port_save);
-    
+
     GlobalToLocal(&pt);
-    
+
     if (port_changed) {
       QDSwapPort(port_save, NULL);
     }
@@ -3797,7 +3545,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     CGPoint cgpt = { pt.h, pt.v };
     HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
                    kHICoordSpaceWindow, window);
-    
+
     // Then convert to plugin coordinates.
     pt.h = (short)(cgpt.x - _wparams.get_win_x());
     pt.v = (short)(cgpt.y - _wparams.get_win_y());
@@ -3878,12 +3626,9 @@ handle_event_osx_event_record(const P3D_event_data &event) {
   return retval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::handle_event_osx_cocoa
-//       Access: Private
-//  Description: Responds to the new Cocoa event types in Mac
-//               OSX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Responds to the new Cocoa event types in Mac OSX.
+ */
 bool P3DInstance::
 handle_event_osx_cocoa(const P3D_event_data &event) {
   bool retval = false;
@@ -3976,13 +3721,10 @@ handle_event_osx_cocoa(const P3D_event_data &event) {
   return retval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_carbon_modifier_flags
-//       Access: Private
-//  Description: OSX only: adds the appropriate bits to the Event flag
-//               bitmask to correspond to the modifier buttons held in
-//               the MacOS-style EventRecord::modifiers mask.
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: adds the appropriate bits to the Event flag bitmask to correspond
+ * to the modifier buttons held in the MacOS-style EventRecord::modifiers mask.
+ */
 void P3DInstance::
 add_carbon_modifier_flags(unsigned int &swb_flags, int modifiers) {
 #if defined(__APPLE__) && !__LP64__
@@ -4001,13 +3743,10 @@ add_carbon_modifier_flags(unsigned int &swb_flags, int modifiers) {
 #endif  // __APPLE__
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_cocoa_modifier_flags
-//       Access: Private
-//  Description: OSX only: adds the appropriate bits to the Event flag
-//               bitmask to correspond to the modifier buttons held in
-//               the P3DCocoaEvent modifierFlags mask.
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: adds the appropriate bits to the Event flag bitmask to correspond
+ * to the modifier buttons held in the P3DCocoaEvent modifierFlags mask.
+ */
 void P3DInstance::
 add_cocoa_modifier_flags(unsigned int &swb_flags, int modifiers) {
 #ifdef __APPLE__
@@ -4026,17 +3765,12 @@ add_cocoa_modifier_flags(unsigned int &swb_flags, int modifiers) {
 #endif  // __APPLE__
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::send_notify
-//       Access: Private
-//  Description: Generates a synthetic notify message here at the C++
-//               level.
-//
-//               Most notify messages are generated from within the
-//               Python code, and don't use this method; but a few
-//               have to be sent before Python has started, and those
-//               come through this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a synthetic notify message here at the C++ level.  Most notify
+ * messages are generated from within the Python code, and don't use this
+ * method; but a few have to be sent before Python has started, and those come
+ * through this method.
+ */
 void P3DInstance::
 send_notify(const string &message) {
   nout << "send_notify(" << message << ")\n";
@@ -4048,13 +3782,10 @@ send_notify(const string &message) {
 }
 
 #ifdef __APPLE__
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::alloc_swbuffer
-//       Access: Private
-//  Description: OSX only: allocates the _swbuffer and associated
-//               support objects.  If it was already allocated,
-//               deallocates the previous one first.
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: allocates the _swbuffer and associated support objects.  If it was
+ * already allocated, deallocates the previous one first.
+ */
 void P3DInstance::
 alloc_swbuffer() {
   free_swbuffer();
@@ -4068,29 +3799,26 @@ alloc_swbuffer() {
     _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
     memset(_reversed_buffer, 0, _swbuffer->get_row_size());
     size_t rowsize = _swbuffer->get_row_size();
-    
-    _buffer_data = CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
+
+    _buffer_data = CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer,
                                                y_size * rowsize, kCFAllocatorNull);
-    
+
     _data_provider = CGDataProviderCreateWithCFData(_buffer_data);
     _buffer_color_space = CGColorSpaceCreateDeviceRGB();
-    
+
     _buffer_image = CGImageCreate(x_size, y_size, 8, 32, rowsize, _buffer_color_space,
-                                  kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little, 
+                                  kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little,
                                   _data_provider, NULL, false, kCGRenderingIntentDefault);
-    
+
   }
 }
 #endif  // __APPLE__
 
 #ifdef __APPLE__
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::free_swbuffer
-//       Access: Private
-//  Description: OSX only: releases the _swbuffer and associated
-//               support objects previously allocated by
-//               alloc_swbuffer().
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: releases the _swbuffer and associated support objects previously
+ * allocated by alloc_swbuffer().
+ */
 void P3DInstance::
 free_swbuffer() {
   if (_swbuffer != NULL) {
@@ -4116,16 +3844,13 @@ free_swbuffer() {
   }
 }
 #endif  // __APPLE__
-  
+
 
 #ifdef __APPLE__
-  ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::timer_callback
-//       Access: Private, Static
-//  Description: OSX only: this callback is associated with a
-//               CFRunLoopTimer, to be called periodically for
-//               updating the frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: this callback is associated with a CFRunLoopTimer, to be called
+ * periodically for updating the frame.
+ */
 void P3DInstance::
 timer_callback(CFRunLoopTimerRef timer, void *info) {
   P3DInstance *self = (P3DInstance *)info;
@@ -4133,11 +3858,9 @@ timer_callback(CFRunLoopTimerRef timer, void *info) {
 }
 #endif  // __APPLE__
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::ImageDownload::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DInstance::ImageDownload::
 ImageDownload(P3DInstance *inst, int index) :
   _inst(inst),
@@ -4145,14 +3868,11 @@ ImageDownload(P3DInstance *inst, int index) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::ImageDownload::download_finished
-//       Access: Protected, Virtual
-//  Description: Intended to be overloaded to generate a callback
-//               when the download finishes, either successfully or
-//               otherwise.  The bool parameter is true if the
-//               download was successful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overloaded to generate a callback when the download finishes,
+ * either successfully or otherwise.  The bool parameter is true if the download
+ * was successful.
+ */
 void P3DInstance::ImageDownload::
 download_finished(bool success) {
   P3DFileDownload::download_finished(success);
@@ -4171,37 +3891,30 @@ download_finished(bool success) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::InstanceDownload::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DInstance::InstanceDownload::
 InstanceDownload(P3DInstance *inst) :
   _inst(inst)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::InstanceDownload::download_progress
-//       Access: Protected, Virtual
-//  Description: Intended to be overloaded to generate an occasional
-//               callback as new data comes in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overloaded to generate an occasional callback as new data
+ * comes in.
+ */
 void P3DInstance::InstanceDownload::
 download_progress() {
   P3DFileDownload::download_progress();
   _inst->report_instance_progress(get_download_progress(), is_download_progress_known(), get_total_data());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::InstanceDownload::download_finished
-//       Access: Protected, Virtual
-//  Description: Intended to be overloaded to generate a callback
-//               when the download finishes, either successfully or
-//               otherwise.  The bool parameter is true if the
-//               download was successful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overloaded to generate a callback when the download finishes,
+ * either successfully or otherwise.  The bool parameter is true if the download
+ * was successful.
+ */
 void P3DInstance::InstanceDownload::
 download_finished(bool success) {
   P3DFileDownload::download_finished(success);

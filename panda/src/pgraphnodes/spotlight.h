@@ -1,16 +1,15 @@
-// Filename: spotlight.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file spotlight.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef SPOTLIGHT_H
 #define SPOTLIGHT_H
@@ -20,20 +19,13 @@
 #include "lightLensNode.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Spotlight
-// Description : A light originating from a single point in space, and
-//               shining in a particular direction, with a cone-shaped
-//               falloff.
-//
-//               The Spotlight frustum is defined using a Lens, so it
-//               can have any of the properties that a camera lens can
-//               have.
-//
-//               Note that the class is named Spotlight instead of
-//               SpotLight, because "spotlight" is a single English
-//               word, instead of two words.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light originating from a single point in space, and shining in a particular
+ * direction, with a cone-shaped falloff.  The Spotlight frustum is defined
+ * using a Lens, so it can have any of the properties that a camera lens can
+ * have.  Note that the class is named Spotlight instead of SpotLight, because
+ * "spotlight" is a single English word, instead of two words.
+ */
 class EXPCL_PANDA_PGRAPHNODES Spotlight : public LightLensNode {
 PUBLISHED:
   Spotlight(const string &name);

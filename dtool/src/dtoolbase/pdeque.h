@@ -1,16 +1,15 @@
-// Filename: pdeque.h
-// Created by:  drose (05Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pdeque.h
+ * @author drose
+ * @date 2001-06-05
+ */
 
 #ifndef PDEQUE_H
 #define PDEQUE_H
@@ -23,17 +22,15 @@
 #ifndef USE_STL_ALLOCATOR
 // If we're not using custom allocators, just use the standard class
 // definition.
-#define pdeque deque 
+#define pdeque deque
 
 #else
 
-////////////////////////////////////////////////////////////////////
-//       Class : pdeque
-// Description : This is our own Panda specialization on the default
-//               STL deque.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL deque.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.
+ */
 template<class Type>
 class pdeque : public deque<Type, pallocator_array<Type> > {
 public:

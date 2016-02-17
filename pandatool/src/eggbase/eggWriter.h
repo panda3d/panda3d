@@ -1,16 +1,15 @@
-// Filename: eggWriter.h
-// Created by:  drose (14Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggWriter.h
+ * @author drose
+ * @date 2000-02-14
+ */
 
 #ifndef EGGWRITER_H
 #define EGGWRITER_H
@@ -22,11 +21,10 @@
 #include "filename.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggWriter
-// Description : This is the base class for a program that generates
-//               an egg file output, but doesn't read any for input.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a program that generates an egg file output, but
+ * doesn't read any for input.
+ */
 class EggWriter : virtual public EggSingleBase, public WithOutputFile {
 public:
   EggWriter(bool allow_last_param = false, bool allow_stdout = true);
@@ -46,5 +44,3 @@ private:
 };
 
 #endif
-
-

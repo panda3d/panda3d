@@ -1,16 +1,15 @@
-// Filename: subdivSegment.h
-// Created by:  drose (14Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file subdivSegment.h
+ * @author drose
+ * @date 2003-10-14
+ */
 
 #ifndef SUBDIVSEGMENT_H
 #define SUBDIVSEGMENT_H
@@ -19,11 +18,10 @@
 #include "pvector.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SubdivSegment
-// Description : Represents a single hypothetical subdivided segment,
-//               under consideration by the IsoPlacer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single hypothetical subdivided segment, under consideration by
+ * the IsoPlacer.
+ */
 class SubdivSegment {
 public:
   INLINE SubdivSegment(const double *cint, int f, int t);
@@ -43,4 +41,3 @@ public:
 #include "subdivSegment.I"
 
 #endif
-

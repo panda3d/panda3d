@@ -1,16 +1,15 @@
-// Filename: threadSimpleManager.cxx
-// Created by:  drose (19Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadSimpleManager.cxx
+ * @author drose
+ * @date 2007-06-19
+ */
 
 #include "threadSimpleManager.h"
 
@@ -28,11 +27,9 @@
 bool ThreadSimpleManager::_pointers_initialized;
 ThreadSimpleManager *ThreadSimpleManager::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::Constructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ThreadSimpleManager::
 ThreadSimpleManager() :
   _simple_thread_epoch_timeslice
@@ -84,19 +81,13 @@ ThreadSimpleManager() :
   global_thread_consider_yield = &Thread::consider_yield;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::enqueue_ready
-//       Access: Public
-//  Description: Adds the indicated thread to the ready queue.  The
-//               thread will be executed when its turn comes.  If the
-//               thread is not the currently executing thread, its
-//               _jmp_context should be filled appropriately.
-//
-//               If volunteer is true, the thread is volunteering to
-//               sleep before its timeslice has been used up.  If
-//               volunteer is false, the thread would still be running
-//               if it could.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated thread to the ready queue.  The thread will be executed
+ * when its turn comes.  If the thread is not the currently executing thread,
+ * its _jmp_context should be filled appropriately.  If volunteer is true, the
+ * thread is volunteering to sleep before its timeslice has been used up.  If
+ * volunteer is false, the thread would still be running if it could.
+ */
 void ThreadSimpleManager::
 enqueue_ready(ThreadSimpleImpl *thread, bool volunteer) {
   // We actually add it to _next_ready, so that we can tell when we
@@ -115,19 +106,16 @@ enqueue_ready(ThreadSimpleImpl *thread, bool volunteer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::enqueue_sleep
-//       Access: Public
-//  Description: Adds the indicated thread to the sleep queue, until
-//               the indicated number of seconds have elapsed.  Then
-//               the thread will be automatically moved to the ready
-//               queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated thread to the sleep queue, until the indicated number of
+ * seconds have elapsed.  Then the thread will be automatically moved to the
+ * ready queue.
+ */
 void ThreadSimpleManager::
 enqueue_sleep(ThreadSimpleImpl *thread, double seconds) {
   if (thread_cat->is_debug()) {
     thread_cat.debug()
-      << *_current_thread->_parent_obj << " sleeping for " 
+      << *_current_thread->_parent_obj << " sleeping for "
       << seconds << " seconds\n";
   }
 
@@ -137,26 +125,20 @@ enqueue_sleep(ThreadSimpleImpl *thread, double seconds) {
   push_heap(_sleeping.begin(), _sleeping.end(), CompareStartTime());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::enqueue_block
-//       Access: Public
-//  Description: Adds the indicated thread to the blocked queue for
-//               the indicated blocker.  The thread will be awoken by
-//               a later call to unblock_one() or unblock_all().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated thread to the blocked queue for the indicated blocker.
+ * The thread will be awoken by a later call to unblock_one() or unblock_all().
+ */
 void ThreadSimpleManager::
 enqueue_block(ThreadSimpleImpl *thread, BlockerSimple *blocker) {
   _blocked[blocker].push_back(thread);
   blocker->_flags |= BlockerSimple::F_has_waiters;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::unblock_one
-//       Access: Public
-//  Description: Unblocks one thread waiting on the indicated blocker,
-//               if any.  Returns true if anything was unblocked,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unblocks one thread waiting on the indicated blocker, if any.  Returns true
+ * if anything was unblocked, false otherwise.
+ */
 bool ThreadSimpleManager::
 unblock_one(BlockerSimple *blocker) {
   Blocked::iterator bi = _blocked.find(blocker);
@@ -179,13 +161,10 @@ unblock_one(BlockerSimple *blocker) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::unblock_all
-//       Access: Public
-//  Description: Unblocks all threads waiting on the indicated
-//               blocker.  Returns true if anything was unblocked,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unblocks all threads waiting on the indicated blocker.  Returns true if
+ * anything was unblocked, false otherwise.
+ */
 bool ThreadSimpleManager::
 unblock_all(BlockerSimple *blocker) {
   Blocked::iterator bi = _blocked.find(blocker);
@@ -206,27 +185,21 @@ unblock_all(BlockerSimple *blocker) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::enqueue_finished
-//       Access: Public
-//  Description: Adds the indicated thread to the finished queue.  
-//               The manager will drop the reference count on the
-//               indicated thread at the next epoch.  (A thread can't
-//               drop its own reference count while it is running,
-//               since that might deallocate its own stack.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated thread to the finished queue.  The manager will drop the
+ * reference count on the indicated thread at the next epoch.  (A thread can't
+ * drop its own reference count while it is running, since that might deallocate
+ * its own stack.)
+ */
 void ThreadSimpleManager::
 enqueue_finished(ThreadSimpleImpl *thread) {
   _finished.push_back(thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::preempt
-//       Access: Public
-//  Description: Moves the indicated thread to the head of the ready
-//               queue.  If it is not already on the ready queue, does
-//               nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the indicated thread to the head of the ready queue.  If it is not
+ * already on the ready queue, does nothing.
+ */
 void ThreadSimpleManager::
 preempt(ThreadSimpleImpl *thread) {
   FifoThreads::iterator ti;
@@ -237,19 +210,13 @@ preempt(ThreadSimpleImpl *thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::next_context
-//       Access: Public
-//  Description: Switches out the currently executing thread and
-//               chooses a new thread for execution.  Before calling
-//               this, the current thread should have already
-//               re-enqueued itself with a call to enqueue(), if it
-//               intends to run again.
-//
-//               This will fill in the current thread's _jmp_context
-//               member appropriately, and then change the global
-//               current_thread pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Switches out the currently executing thread and chooses a new thread for
+ * execution.  Before calling this, the current thread should have already re-
+ * enqueued itself with a call to enqueue(), if it intends to run again.  This
+ * will fill in the current thread's _jmp_context member appropriately, and then
+ * change the global current_thread pointer.
+ */
 void ThreadSimpleManager::
 next_context() {
   // Delete any threads that need it.  We can't delete the current
@@ -289,20 +256,17 @@ next_context() {
 #endif  // HAVE_PYTHON
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::prepare_for_exit
-//       Access: Public
-//  Description: Blocks until all running threads (other than the
-//               current thread) have finished.  This only works when
-//               called from the main thread; if called on any other
-//               thread, nothing will happen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks until all running threads (other than the current thread) have
+ * finished.  This only works when called from the main thread; if called on any
+ * other thread, nothing will happen.
+ */
 void ThreadSimpleManager::
 prepare_for_exit() {
   if (!_current_thread->_parent_obj->is_exact_type(MainThread::get_class_type())) {
     if (thread_cat->is_debug()) {
       thread_cat.debug()
-        << "Ignoring prepare_for_exit called from " 
+        << "Ignoring prepare_for_exit called from "
         << *(_current_thread->_parent_obj) << "\n";
     }
     return;
@@ -347,25 +311,20 @@ prepare_for_exit() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::set_current_thread
-//       Access: Public
-//  Description: Sets the initial value of the current_thread pointer,
-//               i.e. the main thread.  It is valid to call this
-//               method only exactly once.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the initial value of the current_thread pointer, i.e.  the main thread.
+ * It is valid to call this method only exactly once.
+ */
 void ThreadSimpleManager::
 set_current_thread(ThreadSimpleImpl *current_thread) {
   nassertv(_current_thread == (ThreadSimpleImpl *)NULL);
   _current_thread = current_thread;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::remove_thread
-//       Access: Public
-//  Description: Removes the indicated thread from the accounting, for
-//               instance just before the thread destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated thread from the accounting, for instance just before
+ * the thread destructs.
+ */
 void ThreadSimpleManager::
 remove_thread(ThreadSimpleImpl *thread) {
   TickRecords new_records;
@@ -384,13 +343,10 @@ remove_thread(ThreadSimpleImpl *thread) {
   _tick_records.swap(new_records);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::system_sleep
-//       Access: Public, Static
-//  Description: Calls the appropriate system sleep function to sleep
-//               the whole process for the indicated number of
-//               seconds.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the appropriate system sleep function to sleep the whole process for
+ * the indicated number of seconds.
+ */
 void ThreadSimpleManager::
 system_sleep(double seconds) {
 #ifdef WIN32
@@ -403,7 +359,7 @@ system_sleep(double seconds) {
   rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0 + 0.5);
   nanosleep(&rqtp, NULL);
   */
-  
+
   // We use select() as the only way that seems to actually yield the
   // timeslice.  sleep() and nanosleep() don't appear to do the trick.
   struct timeval tv;
@@ -413,11 +369,9 @@ system_sleep(double seconds) {
 #endif  // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::write_status
-//       Access: Public
-//  Description: Writes a list of threads running and threads blocked.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of threads running and threads blocked.
+ */
 void ThreadSimpleManager::
 write_status(ostream &out) const {
   out << "Currently running: " << *_current_thread->_parent_obj << "\n";
@@ -467,12 +421,10 @@ write_status(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::system_yield
-//       Access: Public, Static
-//  Description: Calls the appropriate system function to yield
-//               the whole process to any other system processes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the appropriate system function to yield the whole process to any other
+ * system processes.
+ */
 void ThreadSimpleManager::
 system_yield() {
   if (!_pointers_initialized) {
@@ -495,24 +447,18 @@ system_yield() {
   system_sleep(_global_ptr->_simple_thread_yield_sleep);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::get_current_time
-//       Access: Public
-//  Description: Returns elapsed time in seconds from some undefined
-//               epoch, via whatever clock the manager is using for
-//               all thread timing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns elapsed time in seconds from some undefined epoch, via whatever clock
+ * the manager is using for all thread timing.
+ */
 double ThreadSimpleManager::
 get_current_time() const {
   return _clock->get_short_raw_time();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::init_pointers
-//       Access: Private, Static
-//  Description: Should be called at startup to initialize the
-//               simple threading system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called at startup to initialize the simple threading system.
+ */
 void ThreadSimpleManager::
 init_pointers() {
   if (!_pointers_initialized) {
@@ -533,24 +479,18 @@ init_pointers() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::st_choose_next_context
-//       Access: Private, Static
-//  Description: Select the next context to run.  Continuing the work
-//               of next_context().
-////////////////////////////////////////////////////////////////////
+/**
+ * Select the next context to run.  Continuing the work of next_context().
+ */
 void ThreadSimpleManager::
 st_choose_next_context(struct ThreadContext *from_context, void *data) {
   ThreadSimpleManager *self = (ThreadSimpleManager *)data;
   self->choose_next_context(from_context);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::choose_next_context
-//       Access: Private
-//  Description: Select the next context to run.  Continuing the work
-//               of next_context().
-////////////////////////////////////////////////////////////////////
+/**
+ * Select the next context to run.  Continuing the work of next_context().
+ */
 void ThreadSimpleManager::
 choose_next_context(struct ThreadContext *from_context) {
   double now = get_current_time();
@@ -605,7 +545,7 @@ choose_next_context(struct ThreadContext *from_context) {
           _tick_records.pop_front();
         }
         new_epoch = true;
-        
+
       } else if (!_volunteers.empty()) {
         // There are some volunteers.  Wake them.  Also wake any
         // sleepers that need it.
@@ -633,7 +573,7 @@ choose_next_context(struct ThreadContext *from_context) {
         now = get_current_time();
         wake_sleepers(_sleeping, now);
         wake_sleepers(_volunteers, now);
-        
+
       } else {
         // No threads are ready!
         if (_waiting_for_exit != NULL) {
@@ -654,7 +594,7 @@ choose_next_context(struct ThreadContext *from_context) {
           report_deadlock();
           abort();
         }
-        
+
         // No threads are queued anywhere.  This is some kind of
         // internal error, since normally the main thread, at least,
         // should be queued somewhere.
@@ -666,7 +606,7 @@ choose_next_context(struct ThreadContext *from_context) {
 
     ThreadSimpleImpl *chosen_thread = _ready.front();
     _ready.pop_front();
-    
+
     double timeslice = determine_timeslice(chosen_thread);
     if (timeslice > 0.0) {
       // This thread is ready to roll.  Break out of the loop.
@@ -708,12 +648,10 @@ choose_next_context(struct ThreadContext *from_context) {
   abort();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::do_timeslice_accounting
-//       Access: Private
-//  Description: Records the amount of time the indicated thread has
-//               run, and updates the moving average.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the amount of time the indicated thread has run, and updates the
+ * moving average.
+ */
 void ThreadSimpleManager::
 do_timeslice_accounting(ThreadSimpleImpl *thread, double now) {
   double elapsed = now - thread->_start_time;
@@ -756,12 +694,9 @@ do_timeslice_accounting(ThreadSimpleImpl *thread, double now) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::wake_sleepers
-//       Access: Private
-//  Description: Moves any threads due to wake up from the sleeping
-//               queue to the ready queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves any threads due to wake up from the sleeping queue to the ready queue.
+ */
 void ThreadSimpleManager::
 wake_sleepers(ThreadSimpleManager::Sleeping &sleepers, double now) {
   while (!sleepers.empty() && sleepers.front()->_wake_time <= now) {
@@ -772,12 +707,10 @@ wake_sleepers(ThreadSimpleManager::Sleeping &sleepers, double now) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::wake_all_sleepers
-//       Access: Private
-//  Description: Moves all threads from the indicated sleeping queue
-//               to the ready queue, regardless of wake time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves all threads from the indicated sleeping queue to the ready queue,
+ * regardless of wake time.
+ */
 void ThreadSimpleManager::
 wake_all_sleepers(ThreadSimpleManager::Sleeping &sleepers) {
   while (!sleepers.empty()) {
@@ -788,11 +721,9 @@ wake_all_sleepers(ThreadSimpleManager::Sleeping &sleepers) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::report_deadlock
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ThreadSimpleManager::
 report_deadlock() {
   Blocked::const_iterator bi;
@@ -816,14 +747,11 @@ report_deadlock() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::determine_timeslice
-//       Access: Private
-//  Description: Determines the amount of time that should be
-//               allocated to the next timeslice of this thread, based
-//               on its priority weight and the amount of time it has
-//               run recently relative to other threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the amount of time that should be allocated to the next timeslice
+ * of this thread, based on its priority weight and the amount of time it has
+ * run recently relative to other threads.
+ */
 double ThreadSimpleManager::
 determine_timeslice(ThreadSimpleImpl *chosen_thread) {
   if (_ready.empty() && _next_ready.empty()) {
@@ -871,12 +799,10 @@ determine_timeslice(ThreadSimpleImpl *chosen_thread) {
   return remaining_ratio * _simple_thread_epoch_timeslice;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::kill_non_joinable
-//       Access: Private
-//  Description: Removes any non-joinable threads from the indicated
-//               queue and marks them killed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any non-joinable threads from the indicated queue and marks them
+ * killed.
+ */
 void ThreadSimpleManager::
 kill_non_joinable(ThreadSimpleManager::FifoThreads &threads) {
   FifoThreads new_threads;
@@ -898,12 +824,10 @@ kill_non_joinable(ThreadSimpleManager::FifoThreads &threads) {
   threads.swap(new_threads);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::kill_non_joinable
-//       Access: Private
-//  Description: Removes any non-joinable threads from the indicated
-//               queue and marks them killed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any non-joinable threads from the indicated queue and marks them
+ * killed.
+ */
 void ThreadSimpleManager::
 kill_non_joinable(ThreadSimpleManager::Sleeping &threads) {
   Sleeping new_threads;

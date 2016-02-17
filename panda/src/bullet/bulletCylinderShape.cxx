@@ -1,26 +1,23 @@
-// Filename: bulletCylinderShape.cxx
-// Created by:  enn0x (17Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletCylinderShape.cxx
+ * @author enn0x
+ * @date 2010-02-17
+ */
 
 #include "bulletCylinderShape.h"
 
 TypeHandle BulletCylinderShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCylinderShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletCylinderShape::
 BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) {
 
@@ -44,11 +41,9 @@ BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCylinderShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletCylinderShape::
 BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
 
@@ -70,14 +65,11 @@ BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCylinderShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletCylinderShape::
 ptr() const {
 
   return _shape;
 }
-

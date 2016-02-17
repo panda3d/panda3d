@@ -1,16 +1,13 @@
-// Filename: multify.cxx
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file multify.cxx
+ */
 
 #include "pandabase.h"
 #include "pystub.h"
@@ -58,18 +55,13 @@ string text_ext_str = "txt";
 bool got_record_timestamp_flag = false;
 bool record_timestamp_flag = true;
 
-////////////////////////////////////////////////////////////////////
-//     Function: string_to_int
-//  Description: A string-interface wrapper around the C library
-//               strtol().  This parses the ASCII representation of an
-//               integer, and then sets tail to everything that
-//               follows the first valid integer read.  If, on exit,
-//               str == tail, there was no valid integer in the
-//               source string; if !tail.empty(), there was garbage
-//               after the integer.
-//
-//               It is legal if str and tail refer to the same string.
-////////////////////////////////////////////////////////////////////
+/**
+ * A string-interface wrapper around the C library strtol().  This parses the
+ * ASCII representation of an integer, and then sets tail to everything that
+ * follows the first valid integer read.  If, on exit, str == tail, there was no
+ * valid integer in the source string; if !tail.empty(), there was garbage after
+ * the integer.  It is legal if str and tail refer to the same string.
+ */
 static int
 string_to_int(const string &str, string &tail) {
   const char *nptr = str.c_str();
@@ -79,12 +71,10 @@ string_to_int(const string &str, string &tail) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: string_to_int
-//  Description: Another flavor of string_to_int(), this one returns
-//               true if the string is a perfectly valid integer (and
-//               sets result to that value), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another flavor of string_to_int(), this one returns true if the string is a
+ * perfectly valid integer (and sets result to that value), or false otherwise.
+ */
 static bool
 string_to_int(const string &str, int &result) {
   string tail;
@@ -92,13 +82,13 @@ string_to_int(const string &str, int &result) {
   return tail.empty();
 }
 
-void 
+void
 usage() {
   cerr <<
     "Usage: multify -[c|r|u|t|x] -f <multifile_name> [options] <subfile_name> ...\n";
 }
 
-void 
+void
 help() {
   usage();
   cerr << "\n"
@@ -114,7 +104,7 @@ help() {
     "for tar, the traditional Unix archiver utility.\n\n"
 
     "Options:\n\n"
-    
+
     "  You must specify exactly one of the following command switches:\n\n"
 
     "  -c\n"
@@ -392,7 +382,7 @@ add_files(const vector_string &params) {
       return false;
     }
   }
-  
+
   if (got_record_timestamp_flag) {
     multifile->set_record_timestamp(record_timestamp_flag);
   }
@@ -597,7 +587,7 @@ sign_multifile() {
     if (!multifile->add_signature(certificate, chain, pkey, password)) {
       return false;
     }
-  }    
+  }
 
   return true;
 #endif  // HAVE_OPENSSL
@@ -612,7 +602,7 @@ format_timestamp(bool record_timestamp, time_t timestamp) {
     // No timestamps.
     return "";
   }
-  
+
   if (timestamp == 0) {
     // A zero timestamp is a special case.
     return "  (no date) ";
@@ -646,7 +636,7 @@ list_files(const vector_string &params) {
   }
 
   int num_subfiles = multifile->get_num_subfiles();
-  
+
   int i;
   if (verbose) {
     cout << num_subfiles << " subfiles:\n" << flush;
@@ -678,14 +668,14 @@ list_files(const vector_string &params) {
           } else {
             printf("%12d  %3.0f%% %c%c %s %s\n",
                    (int)multifile->get_subfile_length(i),
-                   100.0 - ratio * 100.0, 
+                   100.0 - ratio * 100.0,
                    encrypted_symbol, text_symbol,
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           }
         } else {
-          printf("%12d       %c%c %s %s\n", 
+          printf("%12d       %c%c %s %s\n",
                  (int)multifile->get_subfile_length(i),
                  encrypted_symbol, text_symbol,
                  format_timestamp(multifile->get_record_timestamp(),
@@ -697,7 +687,7 @@ list_files(const vector_string &params) {
     fflush(stdout);
 
     if (multifile->get_record_timestamp()) {
-      cout << "Last modification " 
+      cout << "Last modification "
            << format_timestamp(true, multifile->get_timestamp()) << "\n";
     }
 

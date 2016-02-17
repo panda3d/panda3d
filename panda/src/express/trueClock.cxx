@@ -1,17 +1,15 @@
-// Filename: trueClock.cxx
-// Created by:  drose (04Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file trueClock.cxx
+ * @author drose
+ * @date 2000-07-04
+ */
 
 #include "trueClock.h"
 #include "config_express.h"
@@ -23,11 +21,9 @@ TrueClock *TrueClock::_global_ptr = NULL;
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 
-////////////////////////////////////////////////////////////////////
-//
-// The Win32 implementation.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * The Win32 implementation.
+ */
 
 #include <sys/timeb.h>
 #ifndef WIN32_LEAN_AND_MEAN
@@ -72,22 +68,18 @@ static const double paranoid_clock_chase_threshold = 0.5;
 // paranoid-clock-chase-threshold.
 static const double paranoid_clock_chase_factor = 0.1;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_long_time, Win32 implementation
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 double TrueClock::
 get_long_time() {
   int tc = GetTickCount();
   return (double)(tc - _init_tc) * _0001;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_short_raw_time, Win32 implementation
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 double TrueClock::
 get_short_raw_time() {
   double time;
@@ -120,11 +112,9 @@ get_short_raw_time() {
   return time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::set_cpu_affinity, Win32 implementation
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
 typedef BOOL (WINAPI * PFNGETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR*, DWORD_PTR*);
 
@@ -151,11 +141,9 @@ set_cpu_affinity(PN_uint32 mask) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::Constructor, Win32 implementation
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TrueClock::
 TrueClock() {
   _error_count = 0;
@@ -178,10 +166,10 @@ TrueClock() {
   if (lock_to_one_cpu) {
     set_cpu_affinity(0x01);
   }
-  
+
   if (get_use_high_res_clock()) {
     PN_int64 int_frequency;
-    _has_high_res = 
+    _has_high_res =
       (QueryPerformanceFrequency((LARGE_INTEGER *)&int_frequency) != 0);
     if (_has_high_res) {
       if (int_frequency <= 0) {
@@ -220,32 +208,20 @@ TrueClock() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::correct_time, Win32 implementation
-//       Access: Protected
-//  Description: Ensures that the reported timestamp from the
-//               high-precision (or even the low-precision) clock is
-//               valid by verifying against the time-of-day clock.
-//
-//               This attempts to detect sudden jumps in time that
-//               might be caused by a failure of the high-precision
-//               clock to roll over properly.  
-//
-//               It also corrects for long-term skew of the clock by
-//               measuring the timing discrepency against the wall
-//               clock and projecting that discrepency into the
-//               future.  This also should defeat programs such as
-//               Speed Gear that work by munging the value returned by
-//               QueryPerformanceCounter() and GetTickCount(), but not
-//               the wall clock time.
-//
-//               However, relying on wall clock time presents its own
-//               set of problems, since the time of day might be
-//               adjusted slightly forward or back from time to time
-//               in response to ntp messages, or it might even be
-//               suddenly reset at any time by the user.  So we do the
-//               best we can.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the reported timestamp from the high-precision (or even the low-
+ * precision) clock is valid by verifying against the time-of-day clock.  This
+ * attempts to detect sudden jumps in time that might be caused by a failure of
+ * the high-precision clock to roll over properly.  It also corrects for long-
+ * term skew of the clock by measuring the timing discrepency against the wall
+ * clock and projecting that discrepency into the future.  This also should
+ * defeat programs such as Speed Gear that work by munging the value returned by
+ * QueryPerformanceCounter() and GetTickCount(), but not the wall clock time.
+ * However, relying on wall clock time presents its own set of problems, since
+ * the time of day might be adjusted slightly forward or back from time to time
+ * in response to ntp messages, or it might even be suddenly reset at any time
+ * by the user.  So we do the best we can.
+ */
 double TrueClock::
 correct_time(double time) {
   // First, get the current time of day measurement.
@@ -259,7 +235,7 @@ correct_time(double time) {
   // measurement.
   double time_delta = (time - _timestamps.back()._time) * _time_scale;
   double tod_delta = (tod - _timestamps.back()._tod);
-  
+
   if (time_delta < -0.0001 ||
       fabs(time_delta - tod_delta) > paranoid_clock_jump_error) {
     // A step backward in the high-precision clock, or more than a
@@ -272,7 +248,7 @@ correct_time(double time) {
       << "s on high-resolution counter, and " << tod_delta
       << "s on time-of-day clock.\n";
     ++_error_count;
-    
+
     // If both are negative, we call it 0.  If one is negative, we
     // trust the other one (up to paranoid_clock_jump_error).  If both
     // are nonnegative, we trust the smaller of the two.
@@ -283,13 +259,13 @@ correct_time(double time) {
       // Trust neither.
       time_adjust = -time_delta;
       tod_adjust = -tod_delta;
-      
+
     } else if (time_delta < 0.0 || (tod_delta >= 0.0 && tod_delta < time_delta)) {
       // Trust tod, up to a point.
       double new_tod_delta = min(tod_delta, paranoid_clock_jump_error);
       time_adjust = new_tod_delta - time_delta;
       tod_adjust = new_tod_delta - tod_delta;
-      
+
     } else {
       // Trust time, up to a point.
       double new_time_delta = min(time_delta, paranoid_clock_jump_error);
@@ -301,7 +277,7 @@ correct_time(double time) {
     time_delta += time_adjust;
     _tod_offset += tod_adjust;
     tod_delta += tod_adjust;
-    
+
     // Apply the adjustments to the timestamp queue.  We could just
     // completely empty the timestamp queue, but that makes it hard to
     // catch up if we are getting lots of these "momentary" errors in
@@ -339,7 +315,7 @@ correct_time(double time) {
     // A small backwards jump on the time-of-day clock is not a
     // concern, since this is technically allowed with ntp enabled.
     // We simply ignore the event.
-    
+
   } else {
     // Ok, we don't think there was a sudden jump, so carry on.
 
@@ -349,25 +325,25 @@ correct_time(double time) {
     // runtime changes of the clock's scale, for instance if the user
     // is using a program like Speed Gear and pulls the slider during
     // runtime.
-    
+
     // Consider the oldest timestamp in our queue.
     Timestamp oldest = _timestamps.front();
     double time_age = (time - oldest._time);
     double tod_age = (tod - oldest._tod);
 
     double keep_interval = paranoid_clock_interval;
-    
+
     if (tod_age > keep_interval / 2.0 && time_age > 0.0) {
       // Adjust the _time_scale value to match the ratio between the
       // elapsed time on the high-resolution clock, and the
       // time-of-day clock.
       double new_time_scale = tod_age / time_age;
-      
+
       // When we adjust _time_scale, we have to be careful to adjust
       // _time_offset at the same time, so we don't introduce a
       // sudden jump in time.
       set_time_scale(time, new_time_scale);
-  
+
       // Check to see if the time scale has changed significantly
       // since we last reported it.
       double ratio = _time_scale / _last_reported_time_scale;
@@ -385,15 +361,15 @@ correct_time(double time) {
         }
       }
     }
-    
+
     // Clean out old entries in the timestamps queue.
     if (tod_age > keep_interval) {
-      while (!_timestamps.empty() && 
+      while (!_timestamps.empty() &&
              tod - _timestamps.front()._tod > keep_interval) {
         _timestamps.pop_front();
       }
     }
-    
+
     // Record this timestamp.
     _timestamps.push_back(Timestamp(time, tod));
   }
@@ -491,7 +467,7 @@ correct_time(double time) {
     }
     break;
   }
-  
+
   if (clock_cat.is_spam()) {
     clock_cat.spam()
       << "time " << time << " tod " << corrected_tod
@@ -501,13 +477,10 @@ correct_time(double time) {
   return corrected_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::set_time_scale, Win32 implementation
-//       Access: Protected
-//  Description: Changes the _time_scale value, recomputing
-//               _time_offset at the same time so we don't introduce a
-//               sudden jump in time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the _time_scale value, recomputing _time_offset at the same time so
+ * we don't introduce a sudden jump in time.
+ */
 void TrueClock::
 set_time_scale(double time, double new_time_scale) {
   nassertv(new_time_scale > 0.0);
@@ -517,22 +490,18 @@ set_time_scale(double time, double new_time_scale) {
 
 #else  // !WIN32_VC
 
-////////////////////////////////////////////////////////////////////
-//
-// The Posix implementation.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * The Posix implementation.
+ */
 
 #include <sys/time.h>
 #include <stdio.h>  // for perror
 
 static long _init_sec;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_long_time, Posix implementation
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 double TrueClock::
 get_long_time() {
   struct timeval tv;
@@ -557,11 +526,9 @@ get_long_time() {
   return (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_short_raw_time, Posix implementation
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 double TrueClock::
 get_short_raw_time() {
   struct timeval tv;
@@ -586,21 +553,17 @@ get_short_raw_time() {
   return (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::set_cpu_affinity, Posix implementation
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool TrueClock::
 set_cpu_affinity(PN_uint32 mask) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::Constructor, Posix implementation
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TrueClock::
 TrueClock() {
   _error_count = 0;

@@ -1,16 +1,15 @@
-// Filename: pstrtod.cxx
-// Created by:  drose (13Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pstrtod.cxx
+ * @author drose
+ * @date 2009-06-13
+ */
 
 #include "pstrtod.h"
 
@@ -22,15 +21,12 @@
 #define strncasecmp _strnicmp
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: pstrtod
-//  Description: This function re-implements strtod, to avoid the
-//               problems that occur when the LC_NUMERIC locale gets
-//               set to anything other than "C".  Regardless of the
-//               user's locale, we need to be able to parse
-//               floating-point numbers internally understanding a "."
-//               as the decimal point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function re-implements strtod, to avoid the problems that occur when the
+ * LC_NUMERIC locale gets set to anything other than "C".  Regardless of the
+ * user's locale, we need to be able to parse floating-point numbers internally
+ * understanding a "." as the decimal point.
+ */
 double
 pstrtod(const char *nptr, char **endptr) {
   // First, skip whitespace.
@@ -150,15 +146,12 @@ pstrtod(const char *nptr, char **endptr) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: patof
-//  Description: This function re-implements atof, to avoid the
-//               problems that occur when the LC_NUMERIC locale gets
-//               set to anything other than "C".  Regardless of the
-//               user's locale, we need to be able to parse
-//               floating-point numbers internally understanding a "."
-//               as the decimal point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function re-implements atof, to avoid the problems that occur when the
+ * LC_NUMERIC locale gets set to anything other than "C".  Regardless of the
+ * user's locale, we need to be able to parse floating-point numbers internally
+ * understanding a "." as the decimal point.
+ */
 double
 patof(const char *str) {
   return pstrtod(str, (char **)NULL);

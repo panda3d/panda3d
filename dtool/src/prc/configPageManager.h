@@ -1,16 +1,15 @@
-// Filename: configPageManager.h
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configPageManager.h
+ * @author drose
+ * @date 2004-10-15
+ */
 
 #ifndef CONFIGPAGEMANAGER_H
 #define CONFIGPAGEMANAGER_H
@@ -25,12 +24,10 @@
 
 class ConfigPage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigPageManager
-// Description : A global object that maintains the set of ConfigPages
-//               everywhere in the world, and keeps them in sorted
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * A global object that maintains the set of ConfigPages everywhere in the
+ * world, and keeps them in sorted order.
+ */
 class EXPCL_DTOOLCONFIG ConfigPageManager : public ConfigFlags {
 protected:
   ConfigPageManager();
@@ -74,7 +71,7 @@ private:
   void sort_pages();
 
   bool scan_auto_prc_dir(Filename &prc_dir) const;
-  bool scan_up_from(Filename &result, const Filename &dir, 
+  bool scan_up_from(Filename &result, const Filename &dir,
                     const Filename &suffix) const;
 
   void config_initialized();

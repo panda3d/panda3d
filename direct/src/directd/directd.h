@@ -1,16 +1,15 @@
-// Filename: directd.h
-// Created by:  skyler 2002.04.08
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file directd.h
+ * @author skyler
+ * @date 2002-04-08
+ */
 
 #include <process.h>
 #include "pandabase.h"
@@ -29,40 +28,19 @@ typedef int HANDLE;
 #endif //]
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DirectD
-// Description : DirectD is a client/server app for starting panda/direct.
-//
-//               Usage:
-//               Start a directd server on each of the machines you
-//               which to start panda on.
-//
-//               Start a directd client on the controlling machine or
-//               import ShowBaseGlobal with the xxxxx flag in your
-//               Configrc.  The client will connect each of the servers
-//               in the xxxxx list in your Configrc.
-//
-//               There are two API groups in this class, they are:
-//
-//                 listen_to()
-//                 client_ready() or tell_server()
-//                 wait_for_servers()
-//                 server_ready()
-//
-//               and:
-//
-//                 connect_to()
-//                 send_command()
-//                 disconnect_from()
-//
-//               The second group was from a more general implementation
-//               of DirectD.  The first group summarizes the main intents
-//               of DirectD.
-//               Both groups are presented in order chronologically by their
-//               intended usage.
-//               The first group will probably provide everthing needed for
-//               DirectD.
-////////////////////////////////////////////////////////////////////
+/**
+ * DirectD is a client/server app for starting panda/direct.  Usage: Start a
+ * directd server on each of the machines you which to start panda on.  Start a
+ * directd client on the controlling machine or import ShowBaseGlobal with the
+ * xxxxx flag in your Configrc.  The client will connect each of the servers in
+ * the xxxxx list in your Configrc.  There are two API groups in this class,
+ * they are:  listen_to() client_ready() or tell_server() wait_for_servers()
+ * server_ready()  and:  connect_to() send_command() disconnect_from()  The
+ * second group was from a more general implementation of DirectD.  The first
+ * group summarizes the main intents of DirectD. Both groups are presented in
+ * order chronologically by their intended usage.  The first group will probably
+ * provide everthing needed for DirectD.
+ */
 class EXPCL_DIRECT DirectD {
 PUBLISHED:
   DirectD();

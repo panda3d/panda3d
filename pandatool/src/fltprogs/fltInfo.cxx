@@ -1,16 +1,15 @@
-// Filename: fltInfo.cxx
-// Created by:  drose (05Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltInfo.cxx
+ * @author drose
+ * @date 2001-09-05
+ */
 
 #include "fltInfo.h"
 
@@ -18,11 +17,9 @@
 #include "indent.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltInfo::
 FltInfo() {
   set_program_brief("describe the contents of a MultiGen .flt file");
@@ -40,11 +37,9 @@ FltInfo() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltInfo::
 run() {
   PT(FltHeader) header = new FltHeader(_path_replace);
@@ -65,12 +60,9 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::list_hierarchy
-//       Access: Protected
-//  Description: Recursively lists the flt file's hierarchy in a
-//               meaningful way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively lists the flt file's hierarchy in a meaningful way.
+ */
 void FltInfo::
 list_hierarchy(FltRecord *record, int indent_level) {
   // Maybe in the future we can do something fancier here.
@@ -78,11 +70,9 @@ list_hierarchy(FltRecord *record, int indent_level) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltInfo::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {

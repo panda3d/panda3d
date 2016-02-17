@@ -1,16 +1,15 @@
-// Filename: bulletTriangleMeshShape.cxx
-// Created by:  enn0x (09Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletTriangleMeshShape.cxx
+ * @author enn0x
+ * @date 2010-02-09
+ */
 
 #include "bulletTriangleMeshShape.h"
 #include "bulletTriangleMesh.h"
@@ -21,11 +20,9 @@
 
 TypeHandle BulletTriangleMeshShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::Constructor
-//       Access: Private
-//  Description: Only used by make_from_bam.
-////////////////////////////////////////////////////////////////////
+/**
+ * Only used by make_from_bam.
+ */
 BulletTriangleMeshShape::
 BulletTriangleMeshShape() :
   _mesh(NULL),
@@ -36,12 +33,10 @@ BulletTriangleMeshShape() :
   _bvh(false) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::Constructor
-//       Access: Published
-//  Description: The parameters 'compress' and 'bvh' are only used
-//               if 'dynamic' is set to FALSE.
-////////////////////////////////////////////////////////////////////
+/**
+ * The parameters 'compress' and 'bvh' are only used if 'dynamic' is set to
+ * FALSE.
+ */
 BulletTriangleMeshShape::
 BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, bool bvh) :
   _dynamic(dynamic),
@@ -83,11 +78,9 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletTriangleMeshShape::
 ptr() const {
 
@@ -102,11 +95,9 @@ ptr() const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::refit_tree
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletTriangleMeshShape::
 refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max) {
 
@@ -119,23 +110,18 @@ refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max) {
                         LVecBase3_to_btVector3(aabb_max));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               BulletTriangleMeshShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type BulletTriangleMeshShape.
+ */
 void BulletTriangleMeshShape::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void BulletTriangleMeshShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(get_margin());
@@ -149,13 +135,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int BulletTriangleMeshShape::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = BulletShape::complete_pointers(p_list, manager);
@@ -177,14 +160,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type BulletShape is encountered
-//               in the Bam file.  It should create the BulletShape
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * BulletShape is encountered in the Bam file.  It should create the BulletShape
+ * and extract its information from the file.
+ */
 TypedWritable *BulletTriangleMeshShape::
 make_from_bam(const FactoryParams &params) {
   BulletTriangleMeshShape *param = new BulletTriangleMeshShape;
@@ -197,13 +177,10 @@ make_from_bam(const FactoryParams &params) {
   return param;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BulletTriangleMeshShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletTriangleMeshShape.
+ */
 void BulletTriangleMeshShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PN_stdfloat margin = scan.get_stdfloat();

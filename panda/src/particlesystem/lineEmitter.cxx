@@ -1,24 +1,21 @@
-// Filename: lineEmitter.cxx
-// Created by:  charles (22Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lineEmitter.cxx
+ * @author charles
+ * @date 2000-06-22
+ */
 
 #include "lineEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LineEmitter::
 LineEmitter() :
   BaseParticleEmitter() {
@@ -26,11 +23,9 @@ LineEmitter() :
   _endpoint2.set(0.0f, 0.0f, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LineEmitter::
 LineEmitter(const LineEmitter &copy) :
   BaseParticleEmitter(copy) {
@@ -38,30 +33,24 @@ LineEmitter(const LineEmitter &copy) :
   _endpoint2 = copy._endpoint2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LineEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LineEmitter::
 ~LineEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 BaseParticleEmitter *LineEmitter::
 make_copy() {
   return new LineEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void LineEmitter::
 assign_initial_position(LPoint3& pos) {
   PN_stdfloat t = NORMALIZED_RAND();
@@ -75,22 +64,17 @@ assign_initial_position(LPoint3& pos) {
   pos.set(lerp_x, lerp_y, lerp_z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineEmitter::assign_initial_velocity
-//       Access: Public
-//  Description: Generates a velocity for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a velocity for a new particle
+ */
 void LineEmitter::
 assign_initial_velocity(LVector3& vel) {
   vel.set(0,0,0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LineEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -98,12 +82,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LineEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

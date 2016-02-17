@@ -1,24 +1,20 @@
-// Filename: dxGraphicsStateGuardian9.I
-// Created by:  mike (02Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxGraphicsStateGuardian9.I
+ * @author mike
+ * @date 1999-02-02
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::LColor_to_D3DCOLOR
-//       Access: Public, Static
-//  Description: Converts Panda's floating-point LColor structure to
-//               DirectX's D3DCOLOR packed structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts Panda's floating-point LColor structure to DirectX's D3DCOLOR packed
+ * structure.
+ */
 INLINE DWORD DXGraphicsStateGuardian9::
 LColor_to_D3DCOLOR(const LColor &cLColor) {
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
@@ -72,12 +68,9 @@ LColor_to_D3DCOLOR(const LColor &cLColor) {
 #endif //!_X86_
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_texture_wrap_mode
-//       Access: Protected, Static
-//  Description: Maps from the Texture's internal wrap mode symbols to
-//               GL's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's internal wrap mode symbols to GL's.
+ */
 INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian9::
 get_texture_wrap_mode(SamplerState::WrapMode wm) {
   switch (wm) {
@@ -96,11 +89,9 @@ get_texture_wrap_mode(SamplerState::WrapMode wm) {
   return D3DTADDRESS_WRAP;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_fog_mode_type
-//       Access: Protected, Static
-//  Description: Maps from the fog types to gl version
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the fog types to gl version
+ */
 INLINE D3DFOGMODE DXGraphicsStateGuardian9::
 get_fog_mode_type(Fog::Mode m) {
   switch (m) {
@@ -115,22 +106,18 @@ get_fog_mode_type(Fog::Mode m) {
   return D3DFOG_EXP;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_tex_mat_sym
-//       Access: Protected, Static
-//  Description: Returns the nth D3DTS_TEXTURE(n) constant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth D3DTS_TEXTURE(n) constant.
+ */
 INLINE D3DTRANSFORMSTATETYPE DXGraphicsStateGuardian9::
 get_tex_mat_sym(int stage_index) {
   return (D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + stage_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_safe_buffer_start
-//       Access: Protected, Static
-//  Description: Returns the address of a 64K buffer that is allocated
-//               at the beginning of a 64K block.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the address of a 64K buffer that is allocated at the beginning of a
+ * 64K block.
+ */
 INLINE unsigned char *DXGraphicsStateGuardian9::
 get_safe_buffer_start() {
   if (_temp_buffer == NULL) {
@@ -147,13 +134,10 @@ get_safe_buffer_start() {
 
 #define ALWAYS_SET_RENDER_STATE true
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_render_state
-//       Access:
-//  Description: This function creates a common layer between DX
-//               and Panda for SetRenderState. It also keeps avoids
-//               setting redundant render states.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function creates a common layer between DX and Panda for SetRenderState.
+ * It also keeps avoids setting redundant render states.
+ */
 INLINE HRESULT DXGraphicsStateGuardian9::
 set_render_state (D3DRENDERSTATETYPE state, DWORD value)
 {
@@ -169,13 +153,10 @@ set_render_state (D3DRENDERSTATETYPE state, DWORD value)
   return hr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_texture_stage_state
-//       Access:
-//  Description: This function creates a common layer between DX
-//               and Panda. It also keeps avoids setting redundant
-//               render states.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function creates a common layer between DX and Panda.  It also keeps
+ * avoids setting redundant render states.
+ */
 INLINE HRESULT DXGraphicsStateGuardian9::
 set_texture_stage_state (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value)
 {
@@ -191,13 +172,10 @@ set_texture_stage_state (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value
   return hr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_sampler_state
-//       Access:
-//  Description: This function creates a common layer between DX
-//               and Panda. It also keeps avoids setting redundant
-//               render states.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function creates a common layer between DX and Panda.  It also keeps
+ * avoids setting redundant render states.
+ */
 INLINE HRESULT DXGraphicsStateGuardian9::
 set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value)
 {
@@ -214,14 +192,11 @@ set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_supports_render_texture
-//       Access: Published
-//  Description: Returns true if this particular GSG can render
-//               from a wdxGraphicsBuffer9 directly into a texture, or
-//               false if it must always copy-to-texture at the end of
-//               each frame to achieve this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GSG can render from a wdxGraphicsBuffer9
+ * directly into a texture, or false if it must always copy-to-texture at the
+ * end of each frame to achieve this effect.
+ */
 INLINE bool DXGraphicsStateGuardian9::
 get_supports_render_texture() const {
   return _supports_render_texture;

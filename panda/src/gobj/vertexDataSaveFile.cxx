@@ -1,16 +1,15 @@
-// Filename: vertexDataSaveFile.cxx
-// Created by:  drose (12May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexDataSaveFile.cxx
+ * @author drose
+ * @date 2007-05-12
+ */
 
 #include "vertexDataSaveFile.h"
 #include "mutexHolder.h"
@@ -24,11 +23,9 @@
 #include <errno.h>
 #endif  // _WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataSaveFile::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VertexDataSaveFile::
 VertexDataSaveFile(const Filename &directory, const string &prefix,
                    size_t max_size) :
@@ -57,7 +54,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
 
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
-        << "Creating vertex data save file " << os_specific << "\n"; 
+        << "Creating vertex data save file " << os_specific << "\n";
     }
 
 #ifdef _WIN32
@@ -125,7 +122,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
       // permissions issue.  Continue to the next.
       continue;
     }
-    
+
     // Now try to lock the file, so we can be sure that no other
     // process is simultaneously writing to the same save file.
 #ifdef HAVE_LOCKF
@@ -160,11 +157,9 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
   _is_valid = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataSaveFile::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VertexDataSaveFile::
 ~VertexDataSaveFile() {
 #ifdef _WIN32
@@ -187,14 +182,11 @@ VertexDataSaveFile::
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataSaveFile::write_data
-//       Access: Public
-//  Description: Writes a block of data to the file, and returns a
-//               handle to the block handle.  Returns NULL if the data
-//               cannot be written (e.g. no remaining space on the
-//               file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a block of data to the file, and returns a handle to the block handle.
+ * Returns NULL if the data cannot be written (e.g.  no remaining space on the
+ * file).
+ */
 PT(VertexDataSaveBlock) VertexDataSaveFile::
 write_data(const unsigned char *data, size_t size, bool compressed) {
   MutexHolder holder(_lock);
@@ -269,12 +261,10 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
   return block;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataSaveFile::read_data
-//       Access: Public
-//  Description: Reads a block of data from the file, and returns true
-//               on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a block of data from the file, and returns true on success, false on
+ * failure.
+ */
 bool VertexDataSaveFile::
 read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
   MutexHolder holder(_lock);
@@ -351,14 +341,11 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataSaveFile::make_block
-//       Access: Protected, Virtual
-//  Description: Creates a new SimpleAllocatorBlock object.  Override
-//               this function to specialize the block type returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new SimpleAllocatorBlock object.  Override this function to
+ * specialize the block type returned.
+ */
 SimpleAllocatorBlock *VertexDataSaveFile::
 make_block(size_t start, size_t size) {
   return new VertexDataSaveBlock(this, start, size);
 }
-

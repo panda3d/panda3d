@@ -1,24 +1,21 @@
-// Filename: mouseWatcherParameter.cxx
-// Created by:  drose (06Jul01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mouseWatcherParameter.cxx
+ * @author drose
+ * @date 2001-07-06
+ */
 
 #include "mouseWatcherParameter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherParameter::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MouseWatcherParameter::
 output(ostream &out) const {
   bool output_anything = false;

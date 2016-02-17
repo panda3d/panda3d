@@ -1,16 +1,15 @@
-// Filename: lwoInputFile.cxx
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoInputFile.cxx
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #include "lwoInputFile.h"
 #include "lwoBoundingBox.h"
@@ -27,30 +26,24 @@
 
 TypeHandle LwoInputFile::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoInputFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LwoInputFile::
 LwoInputFile() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoInputFile::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LwoInputFile::
 ~LwoInputFile() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoInputFile::get_vx
-//       Access: Public
-//  Description: Reads a Lightwave variable-length index.  This is
-//               either a 2-byte or 4-byte integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a Lightwave variable-length index.  This is either a 2-byte or 4-byte
+ * integer.
+ */
 int LwoInputFile::
 get_vx() {
   PN_uint16 top = get_be_uint16();
@@ -66,11 +59,9 @@ get_vx() {
   return top;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoInputFile::get_vec3
-//       Access: Public
-//  Description: Reads a three-component vector of floats.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a three-component vector of floats.
+ */
 LVecBase3 LwoInputFile::
 get_vec3() {
   LVecBase3 result;
@@ -80,12 +71,10 @@ get_vec3() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoInputFile::get_filename
-//       Access: Public
-//  Description: Reads a Lightwave platform-neutral filename and
-//               converts it to a Panda platform-neutral filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a Lightwave platform-neutral filename and converts it to a Panda
+ * platform-neutral filename.
+ */
 Filename LwoInputFile::
 get_filename() {
   string name = get_string();
@@ -103,12 +92,10 @@ get_filename() {
   return Filename("/", path);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoInputFile::make_new_chunk
-//       Access: Protected, Virtual
-//  Description: Allocates and returns a new chunk of the appropriate
-//               type based on the given ID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new chunk of the appropriate type based on the given
+ * ID.
+ */
 IffChunk *LwoInputFile::
 make_new_chunk(IffId id) {
   if (id == IffId("FORM")) {

@@ -1,16 +1,15 @@
-// Filename: collisionHandlerGravity.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandlerGravity.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "collisionHandlerGravity.h"
 #include "collisionNode.h"
@@ -21,11 +20,9 @@
 
 TypeHandle CollisionHandlerGravity::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerGravity::
 CollisionHandlerGravity() {
   _offset = 0.0f;
@@ -39,20 +36,16 @@ CollisionHandlerGravity() {
   _legacy_mode = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerGravity::
 ~CollisionHandlerGravity() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::set_highest_collision
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 #define OLD_COLLISION_HANDLER_GRAVITY 0
 #if OLD_COLLISION_HANDLER_GRAVITY
 PN_stdfloat CollisionHandlerGravity::
@@ -207,17 +200,13 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::handle_entries
-//       Access: Protected, Virtual
-//  Description: Called by the parent class after all collisions have
-//               been detected, this manages the various collisions
-//               and moves around the nodes as necessary.
-//
-//               The return value is normally true, but it may be
-//               false to indicate the CollisionTraverser should
-//               disable this handler from being called in the future.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the parent class after all collisions have been detected, this
+ * manages the various collisions and moves around the nodes as necessary.  The
+ * return value is normally true, but it may be false to indicate the
+ * CollisionTraverser should disable this handler from being called in the
+ * future.
+ */
 bool CollisionHandlerGravity::
 handle_entries() {
   bool okflag = true;
@@ -306,11 +295,9 @@ handle_entries() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::apply_linear_force
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionHandlerGravity::
 apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }

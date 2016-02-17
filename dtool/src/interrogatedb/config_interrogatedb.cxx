@@ -1,16 +1,15 @@
-// Filename: config_interrogatedb.cxx
-// Created by:  drose (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_interrogatedb.cxx
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #include "config_interrogatedb.h"
 #include "interrogate_request.h"
@@ -47,7 +46,7 @@ ConfigureFn(config_interrogatedb) {
     // normally, false means don't do any debug checking.
     if (!use_win32_dbgheap) {
       // deflt disable complete heap verify every 1024 allocations (VC7 deflt).
-      // With vc7 stl small-string-optimization causing more allocs, 
+      // With vc7 stl small-string-optimization causing more allocs,
       // this can cause order-of-magnitude slowdowns in dbg builds
       dbg_flags = 0;
     }
@@ -66,4 +65,3 @@ ConfigureFn(config_interrogatedb) {
 
 ConfigVariableSearchPath interrogatedb_path
 ("interrogatedb-path", "The search path for interrogate's *.in files.");
-

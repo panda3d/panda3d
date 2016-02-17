@@ -1,32 +1,26 @@
-// Filename: pandaNode_ext.cxx
-// Created by:  CFSworks (30Mar14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pandaNode_ext.cxx
+ * @author CFSworks
+ * @date 2014-03-30
+ */
 
 #include "pandaNode_ext.h"
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::__copy__
-//       Access: Published
-//  Description: A special Python method that is invoked by
-//               copy.copy(node).  Unlike the PandaNode copy
-//               constructor, which creates a new node without
-//               children, this shares child pointers (essentially
-//               making every child an instance).  This is intended to
-//               simulate the behavior of copy.copy() for other
-//               objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special Python method that is invoked by copy.copy(node).  Unlike the
+ * PandaNode copy constructor, which creates a new node without children, this
+ * shares child pointers (essentially making every child an instance).  This is
+ * intended to simulate the behavior of copy.copy() for other objects.
+ */
 PT(PandaNode) Extension<PandaNode>::
 __copy__() const {
   Thread *current_thread = Thread::get_current_thread();
@@ -43,14 +37,11 @@ __copy__() const {
   return node_dupe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::__deepcopy__
-//       Access: Published
-//  Description: A special Python method that is invoked by
-//               copy.deepcopy(node).  This calls copy_subgraph()
-//               unless the node is already present in the provided
-//               dictionary.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special Python method that is invoked by copy.deepcopy(node).  This calls
+ * copy_subgraph() unless the node is already present in the provided
+ * dictionary.
+ */
 PyObject *Extension<PandaNode>::
 __deepcopy__(PyObject *self, PyObject *memo) const {
   extern struct Dtool_PyTypedObject Dtool_PandaNode;
@@ -68,7 +59,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
   // DTool_CreatePyInstanceTyped() steals a C++ reference.
   node_dupe->ref();
   dupe = DTool_CreatePyInstanceTyped
-    ((void *)node_dupe.p(), Dtool_PandaNode, true, false, 
+    ((void *)node_dupe.p(), Dtool_PandaNode, true, false,
      node_dupe->get_type_index());
 
   if (PyDict_SetItem(memo, self, dupe) != 0) {
@@ -79,20 +70,14 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
   return dupe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::set_python_tag
-//       Access: Published
-//  Description: Associates an arbitrary Python object with a
-//               user-defined key which is stored on the node.  This
-//               is similar to set_tag(), except it can store any
-//               Python object instead of just a string.  However, the
-//               Python object is not recorded to a bam file.
-//
-//               Each unique key stores a different string value.
-//               There is no effective limit on the number of
-//               different keys that may be stored or on the length of
-//               any one key's value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates an arbitrary Python object with a user-defined key which is stored
+ * on the node.  This is similar to set_tag(), except it can store any Python
+ * object instead of just a string.  However, the Python object is not recorded
+ * to a bam file.  Each unique key stores a different string value.  There is no
+ * effective limit on the number of different keys that may be stored or on the
+ * length of any one key's value.
+ */
 void Extension<PandaNode>::
 set_python_tag(const string &key, PyObject *value) {
   Thread *current_thread = Thread::get_current_thread();
@@ -120,13 +105,10 @@ set_python_tag(const string &key, PyObject *value) {
   _this->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::get_python_tag
-//       Access: Published
-//  Description: Retrieves the Python object that was previously
-//               set on this node for the particular key, if any.  If
-//               no value has been previously set, returns None.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the Python object that was previously set on this node for the
+ * particular key, if any.  If no value has been previously set, returns None.
+ */
 PyObject *Extension<PandaNode>::
 get_python_tag(const string &key) const {
   PandaNode::CDReader cdata(_this->_cycler);
@@ -141,13 +123,11 @@ get_python_tag(const string &key) const {
   return Py_None;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::has_python_tag
-//       Access: Published
-//  Description: Returns true if a Python object has been defined on
-//               this node for the particular key (even if that object
-//               is None), or false if no object has been set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a Python object has been defined on this node for the
+ * particular key (even if that object is None), or false if no object has been
+ * set.
+ */
 bool Extension<PandaNode>::
 has_python_tag(const string &key) const {
   PandaNode::CDReader cdata(_this->_cycler);
@@ -156,14 +136,11 @@ has_python_tag(const string &key) const {
   return (ti != cdata->_python_tag_data.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::clear_python_tag
-//       Access: Published
-//  Description: Removes the Python object defined for this key on
-//               this particular node.  After a call to
-//               clear_python_tag(), has_python_tag() will return
-//               false for the indicated key.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the Python object defined for this key on this particular node.
+ * After a call to clear_python_tag(), has_python_tag() will return false for
+ * the indicated key.
+ */
 void Extension<PandaNode>::
 clear_python_tag(const string &key) {
   Thread *current_thread = Thread::get_current_thread();
@@ -183,16 +160,11 @@ clear_python_tag(const string &key) {
   _this->mark_bam_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::get_python_tag_keys
-//       Access: Published
-//  Description: Fills the given vector up with the
-//               list of Python tags on this PandaNode.
-//
-//               It is the user's responsibility to ensure that the
-//               keys vector is empty before making this call;
-//               otherwise, the new files will be appended to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the given vector up with the list of Python tags on this PandaNode.  It
+ * is the user's responsibility to ensure that the keys vector is empty before
+ * making this call; otherwise, the new files will be appended to it.
+ */
 void Extension<PandaNode>::
 get_python_tag_keys(vector_string &keys) const {
   PandaNode::CDReader cdata(_this->_cycler);
@@ -205,12 +177,9 @@ get_python_tag_keys(vector_string &keys) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::get_tag_keys
-//       Access: Published
-//  Description: This variant on get_tag_keys returns
-//               a Python list of strings.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on get_tag_keys returns a Python list of strings.
+ */
 PyObject *Extension<PandaNode>::
 get_tag_keys() const {
   vector_string keys;
@@ -230,12 +199,9 @@ get_tag_keys() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<PandaNode>::get_python_tag_keys
-//       Access: Published
-//  Description: This variant on get_python_tag_keys returns
-//               a Python list of strings.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on get_python_tag_keys returns a Python list of strings.
+ */
 PyObject *Extension<PandaNode>::
 get_python_tag_keys() const {
   vector_string keys;
@@ -256,4 +222,3 @@ get_python_tag_keys() const {
 }
 
 #endif  // HAVE_PYTHON
-

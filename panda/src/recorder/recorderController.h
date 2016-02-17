@@ -1,16 +1,15 @@
-// Filename: recorderController.h
-// Created by:  drose (25Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file recorderController.h
+ * @author drose
+ * @date 2004-01-25
+ */
 
 #ifndef RECORDERCONTROLLER_H
 #define RECORDERCONTROLLER_H
@@ -26,12 +25,10 @@
 class RecorderBase;
 class RecorderFrame;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderController
-// Description : This object manages the process of recording the
-//               user's runtime inputs to a bam file so that the
-//               session can be recreated later.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object manages the process of recording the user's runtime inputs to a
+ * bam file so that the session can be recreated later.
+ */
 class EXPCL_PANDA_RECORDER RecorderController : public TypedReferenceCount {
 PUBLISHED:
   RecorderController();
@@ -105,7 +102,7 @@ private:
   bool _eof;
 
   static RecorderFactory *_factory;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -129,4 +126,3 @@ private:
 #include "recorderController.I"
 
 #endif
-

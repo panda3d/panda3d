@@ -1,16 +1,15 @@
-// Filename: xFileArrayDef.h
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileArrayDef.h
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #ifndef XFILEARRAYDEF_H
 #define XFILEARRAYDEF_H
@@ -21,11 +20,9 @@
 
 class XFileDataDef;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileArrayDef
-// Description : Defines one level of array bounds for an associated
-//               XFileDataDef element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines one level of array bounds for an associated XFileDataDef element.
+ */
 class XFileArrayDef {
 public:
   INLINE XFileArrayDef(int fixed_size);
@@ -50,6 +47,3 @@ private:
 #include "xFileArrayDef.I"
 
 #endif
-  
-
-

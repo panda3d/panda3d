@@ -1,16 +1,15 @@
-// Filename: eggData.cxx
-// Created by:  drose (20Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggData.cxx
+ * @author drose
+ * @date 1999-01-20
+ */
 
 #include "eggData.h"
 #include "eggCoordinateSystem.h"
@@ -33,14 +32,11 @@ extern int eggyyparse();
 
 TypeHandle EggData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::resolve_egg_filename
-//       Access: Public, Static
-//  Description: Looks for the indicated filename, first along the
-//               indicated searchpath, and then along the model_path.
-//               If found, updates the filename to the full path and
-//               returns true; otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for the indicated filename, first along the indicated searchpath, and
+ * then along the model_path.  If found, updates the filename to the full path
+ * and returns true; otherwise, returns false.
+ */
 bool EggData::
 resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -55,18 +51,12 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
   return vfs->exists(egg_filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::read
-//       Access: Public
-//  Description: Opens the indicated filename and reads the egg data
-//               contents from it.  Returns true if the file was
-//               successfully opened and read, false if there were
-//               some errors, in which case the data may be partially
-//               read.
-//
-//               error is the output stream to which to write error
-//               messages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename and reads the egg data contents from it.
+ * Returns true if the file was successfully opened and read, false if there
+ * were some errors, in which case the data may be partially read.  error is the
+ * output stream to which to write error messages.
+ */
 bool EggData::
 read(Filename filename, string display_name) {
   filename.set_text();
@@ -100,20 +90,14 @@ read(Filename filename, string display_name) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::read
-//       Access: Public
-//  Description: Parses the egg syntax contained in the indicated
-//               input stream.  Returns true if the stream was a
-//               completely valid egg file, false if there were some
-//               errors, in which case the data may be partially read.
-//
-//               Before you call this routine, you should probably
-//               call set_egg_filename() to set the name of the egg
-//               file we're processing, if at all possible.  If there
-//               is no such filename, you may set it to the empty
-//               string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the egg syntax contained in the indicated input stream.  Returns true
+ * if the stream was a completely valid egg file, false if there were some
+ * errors, in which case the data may be partially read.  Before you call this
+ * routine, you should probably call set_egg_filename() to set the name of the
+ * egg file we're processing, if at all possible.  If there is no such filename,
+ * you may set it to the empty string.
+ */
 bool EggData::
 read(istream &in) {
   // First, dispense with any children we had previously.  We will
@@ -142,12 +126,10 @@ read(istream &in) {
   return (error_count == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::merge
-//       Access: Public
-//  Description: Appends the other egg structure to the end of this
-//               one.  The other egg structure is invalidated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends the other egg structure to the end of this one.  The other egg
+ * structure is invalidated.
+ */
 void EggData::
 merge(EggData &other) {
   if (get_coordinate_system() == CS_default) {
@@ -164,50 +146,38 @@ merge(EggData &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::load_externals
-//       Access: Public
-//  Description: Loads up all the egg files referenced by <File>
-//               entries within the egg structure, and inserts their
-//               contents in place of the <File> entries.  Searches
-//               for files in the searchpath, if not found directly,
-//               and writes error messages to the indicated output
-//               stream.  Returns true if all externals were loaded
-//               successfully, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads up all the egg files referenced by <File> entries within the egg
+ * structure, and inserts their contents in place of the <File> entries.
+ * Searches for files in the searchpath, if not found directly, and writes error
+ * messages to the indicated output stream.  Returns true if all externals were
+ * loaded successfully, false otherwise.
+ */
 bool EggData::
 load_externals(const DSearchPath &searchpath) {
   return
     r_load_externals(searchpath, get_coordinate_system(), NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::load_externals
-//       Access: Public
-//  Description: Loads up all the egg files referenced by <File>
-//               entries within the egg structure, and inserts their
-//               contents in place of the <File> entries.  Searches
-//               for files in the searchpath, if not found directly,
-//               and writes error messages to the indicated output
-//               stream.  Returns true if all externals were loaded
-//               successfully, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads up all the egg files referenced by <File> entries within the egg
+ * structure, and inserts their contents in place of the <File> entries.
+ * Searches for files in the searchpath, if not found directly, and writes error
+ * messages to the indicated output stream.  Returns true if all externals were
+ * loaded successfully, false otherwise.
+ */
 bool EggData::
 load_externals(const DSearchPath &searchpath, BamCacheRecord *record) {
   return
     r_load_externals(searchpath, get_coordinate_system(), record);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::collapse_equivalent_textures
-//       Access: Public
-//  Description: Removes duplicate references to the same texture
-//               image with the same properties.  Considers two
-//               texture references with identical properties, but
-//               different tref names, to be equivalent, and collapses
-//               them, choosing one tref name to keep arbitrarily.
-//               Returns the number of textures removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes duplicate references to the same texture image with the same
+ * properties.  Considers two texture references with identical properties, but
+ * different tref names, to be equivalent, and collapses them, choosing one tref
+ * name to keep arbitrarily.  Returns the number of textures removed.
+ */
 int EggData::
 collapse_equivalent_textures() {
   EggTextureCollection textures;
@@ -216,16 +186,12 @@ collapse_equivalent_textures() {
     textures.collapse_equivalent_textures(~EggTexture::E_tref_name, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::collapse_equivalent_materials
-//       Access: Public
-//  Description: Removes duplicate references to the same material
-//               with the same properties.  Considers two material
-//               references with identical properties, but different
-//               mref names, to be equivalent, and collapses them,
-//               choosing one mref name to keep arbitrarily.  Returns
-//               the number of materials removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes duplicate references to the same material with the same properties.
+ * Considers two material references with identical properties, but different
+ * mref names, to be equivalent, and collapses them, choosing one mref name to
+ * keep arbitrarily.  Returns the number of materials removed.
+ */
 int EggData::
 collapse_equivalent_materials() {
   EggMaterialCollection materials;
@@ -234,11 +200,9 @@ collapse_equivalent_materials() {
     materials.collapse_equivalent_materials(~EggMaterial::E_mref_name, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::write_egg
-//       Access: Public
-//  Description: The main interface for writing complete egg files.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main interface for writing complete egg files.
+ */
 bool EggData::
 write_egg(Filename filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -255,11 +219,9 @@ write_egg(Filename filename) {
   return wrote_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::write_egg
-//       Access: Public
-//  Description: The main interface for writing complete egg files.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main interface for writing complete egg files.
+ */
 bool EggData::
 write_egg(ostream &out) {
   pre_write();
@@ -278,13 +240,10 @@ write_egg(ostream &out) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::set_coordinate_system
-//       Access: Public
-//  Description: Changes the coordinate system of the EggData.  If the
-//               coordinate system was previously different, this may
-//               result in a conversion of the data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the coordinate system of the EggData.  If the coordinate system was
+ * previously different, this may result in a conversion of the data.
+ */
 void EggData::
 set_coordinate_system(CoordinateSystem new_coordsys) {
   if (new_coordsys == CS_default) {
@@ -307,12 +266,9 @@ set_coordinate_system(CoordinateSystem new_coordsys) {
   _coordsys = new_coordsys;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::write
-//       Access: Protected, Virtual
-//  Description: Writes the egg data out to the indicated output
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the egg data out to the indicated output stream.
+ */
 void EggData::
 write(ostream &out, int indent_level) const {
   PT(EggCoordinateSystem) ecs = new EggCoordinateSystem(_coordsys);
@@ -322,12 +278,10 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::post_read
-//       Access: Private
-//  Description: Does whatever processing is appropriate after reading
-//               the data in from an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does whatever processing is appropriate after reading the data in from an egg
+ * file.
+ */
 void EggData::
 post_read() {
   CoordinateSystem old_coordsys = _coordsys;
@@ -363,13 +317,10 @@ post_read() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::pre_write
-//       Access: Private
-//  Description: Does whatever processing is appropriate just before
-//               writing the data out to an egg file.  This includes
-//               verifying that vertex pool names are unique, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does whatever processing is appropriate just before writing the data out to
+ * an egg file.  This includes verifying that vertex pool names are unique, etc.
+ */
 void EggData::
 pre_write() {
   // Pull out all of the texture definitions in the file and massage

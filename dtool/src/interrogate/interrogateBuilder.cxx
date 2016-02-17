@@ -1,16 +1,15 @@
-// Filename: interrogateBuilder.cxx
-// Created by:  drose (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateBuilder.cxx
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #include "interrogateBuilder.h"
 #include "interrogate.h"
@@ -54,14 +53,11 @@
 InterrogateBuilder builder;
 std::string EXPORT_IMPORT_PREFIX;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::add_source_file
-//       Access: Public
-//  Description: Adds the given source filename to the list of files
-//               that we are scanning.  Those source files that appear
-//               to be header files will be #included in the generated
-//               code file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the given source filename to the list of files that we are scanning.
+ * Those source files that appear to be header files will be #included in the
+ * generated code file.
+ */
 void InterrogateBuilder::
 add_source_file(const string &filename) {
   if (filename.empty()) {
@@ -71,12 +67,10 @@ add_source_file(const string &filename) {
   _include_files[filename] = '"';
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::read_command_file
-//       Access: Public
-//  Description: Reads a .N file that might contain control
-//               information for the interrogate process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a .N file that might contain control information for the interrogate
+ * process.
+ */
 void InterrogateBuilder::
 read_command_file(istream &in) {
   string line;
@@ -120,11 +114,9 @@ read_command_file(istream &in) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::do_command
-//       Access: Public
-//  Description: Executes a single command as read from the .N file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Executes a single command as read from the .N file.
+ */
 void InterrogateBuilder::
 do_command(const string &command, const string &params) {
 
@@ -234,11 +226,9 @@ do_command(const string &command, const string &params) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::build
-//       Access: Public
-//  Description: Builds all of the interrogate data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds all of the interrogate data.
+ */
 void InterrogateBuilder::
 build() {
   _library_hash_name = hash_string(library_name, 5);
@@ -329,12 +319,9 @@ build() {
   //  make_wrappers();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::write_code
-//       Access: Public
-//  Description: Generates all the code necessary to the indicated
-//               output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates all the code necessary to the indicated output stream.
+ */
 void InterrogateBuilder::
 write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   typedef vector<InterfaceMaker *> InterfaceMakers;
@@ -565,19 +552,14 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::make_module_def
-//       Access: Public
-//  Description: Allocates and returns a new InterrogateModuleDef
-//               structure that reflects the data we have just build,
-//               or at least that subset of the InterrogateModuleDef
-//               data that we have available at this time.
-//
-//               The data in this structure may include pointers that
-//               reference directly into the InterrogateBuilder
-//               object; thus, this structure is only valid for as
-//               long as the builder itself remains in scope.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new InterrogateModuleDef structure that reflects the
+ * data we have just build, or at least that subset of the InterrogateModuleDef
+ * data that we have available at this time.  The data in this structure may
+ * include pointers that reference directly into the InterrogateBuilder object;
+ * thus, this structure is only valid for as long as the builder itself remains
+ * in scope.
+ */
 InterrogateModuleDef *InterrogateBuilder::
 make_module_def(int file_identifier) {
   InterrogateModuleDef *def = new InterrogateModuleDef;
@@ -594,16 +576,11 @@ make_module_def(int file_identifier) {
   return def;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::clean_identifier
-//       Access: Public, Static
-//  Description: Adjusts the given string to remove any characters we
-//               don't want to export as part of an identifier name.
-//               Returns the cleaned string.
-//
-//               This replaces any consecutive invalid characters with
-//               an underscore.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the given string to remove any characters we don't want to export as
+ * part of an identifier name.  Returns the cleaned string.  This replaces any
+ * consecutive invalid characters with an underscore.
+ */
 string InterrogateBuilder::
 clean_identifier(const string &name) {
   string result;
@@ -626,13 +603,10 @@ clean_identifier(const string &name) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::descope
-//       Access: Public, Static
-//  Description: Removes the leading "::", if present, from a
-//               fully-scoped name.  Sometimes CPPParser throws this
-//               on, and sometimes it doesn't.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the leading "::", if present, from a fully-scoped name.  Sometimes
+ * CPPParser throws this on, and sometimes it doesn't.
+ */
 string InterrogateBuilder::
 descope(const string &name) {
   if (name.length() >= 2 && name.substr(0, 2) == "::") {
@@ -641,13 +615,10 @@ descope(const string &name) {
   return name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_destructor_for
-//       Access: Public
-//  Description: Returns the FunctionIndex for the destructor
-//               appropriate to destruct an instance of the indicated
-//               type, or 0 if no suitable destructor exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the FunctionIndex for the destructor appropriate to destruct an
+ * instance of the indicated type, or 0 if no suitable destructor exists.
+ */
 FunctionIndex InterrogateBuilder::
 get_destructor_for(CPPType *type) {
   TypeIndex type_index = get_type(type, false);
@@ -658,16 +629,12 @@ get_destructor_for(CPPType *type) {
   return itype.get_destructor();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_preferred_name
-//       Access: Public
-//  Description: Returns the name of the type as it should be reported
-//               to the database.  This is either the name indicated
-//               by the user via a renametype command, or the
-//               "preferred name" of the type itself (i.e. the typedef
-//               name within the C++ code), or failing that, the
-//               type's true name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the type as it should be reported to the database.  This
+ * is either the name indicated by the user via a renametype command, or the
+ * "preferred name" of the type itself (i.e.  the typedef name within the C++
+ * code), or failing that, the type's true name.
+ */
 string InterrogateBuilder::
 get_preferred_name(CPPType *type) {
   string true_name = type->get_local_name(&parser);
@@ -678,13 +645,10 @@ get_preferred_name(CPPType *type) {
   return type->get_preferred_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::hash_string
-//       Access: Public, Static
-//  Description: Hashes an arbitrary string into a four-character
-//               string using only the characters legal in a C
-//               identifier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Hashes an arbitrary string into a four-character string using only the
+ * characters legal in a C identifier.
+ */
 string InterrogateBuilder::
 hash_string(const string &name, int shift_offset) {
   int hash = 0;
@@ -743,12 +707,10 @@ hash_string(const string &name, int shift_offset) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::insert_param_list
-//       Access: Public
-//  Description: Inserts a list of space-separated parameters into the
-//               given command parameter list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts a list of space-separated parameters into the given command parameter
+ * list.
+ */
 void InterrogateBuilder::
 insert_param_list(InterrogateBuilder::Commands &commands,
                   const string &params) {
@@ -768,24 +730,19 @@ insert_param_list(InterrogateBuilder::Commands &commands,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_forcetype
-//       Access: Private
-//  Description: Returns true if the indicated name is one that the
-//               user identified with a forcetype command.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is one that the user identified with a
+ * forcetype command.
+ */
 bool InterrogateBuilder::
 in_forcetype(const string &name) const {
   return (_forcetype.count(name) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_renametype
-//       Access: Private
-//  Description: If the user requested an explicit name for this type
-//               via the renametype command, returns that name;
-//               otherwise, returns the empty string.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the user requested an explicit name for this type via the renametype
+ * command, returns that name; otherwise, returns the empty string.
+ */
 string InterrogateBuilder::
 in_renametype(const string &name) const {
   CommandParams::const_iterator pi;
@@ -796,24 +753,20 @@ in_renametype(const string &name) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_ignoretype
-//       Access: Private
-//  Description: Returns true if the indicated name is one that the
-//               user identified with an ignoretype command.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is one that the user identified with an
+ * ignoretype command.
+ */
 bool InterrogateBuilder::
 in_ignoretype(const string &name) const {
   return (_ignoretype.count(name) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_defconstruct
-//       Access: Private
-//  Description: If the user requested an explicit default constructor
-//               for this type via the defconstruct command, returns
-//               that string; otherwise, returns the empty string.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the user requested an explicit default constructor for this type via the
+ * defconstruct command, returns that string; otherwise, returns the empty
+ * string.
+ */
 string InterrogateBuilder::
 in_defconstruct(const string &name) const {
   CommandParams::const_iterator pi;
@@ -824,23 +777,18 @@ in_defconstruct(const string &name) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_ignoreinvolved
-//       Access: Private
-//  Description: Returns true if the indicated name is one that the
-//               user identified with an ignoreinvolved command.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is one that the user identified with an
+ * ignoreinvolved command.
+ */
 bool InterrogateBuilder::
 in_ignoreinvolved(const string &name) const {
   return (_ignoreinvolved.count(name) != 0);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_ignoreinvolved
-//       Access: Private
-//  Description: Returns true if the indicated type involves some type
-//               name that the user identified with an ignoreinvolved
-//               command.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type involves some type name that the user
+ * identified with an ignoreinvolved command.
+ */
 bool InterrogateBuilder::
 in_ignoreinvolved(CPPType *type) const {
   switch (type->get_subtype()) {
@@ -899,46 +847,37 @@ in_ignoreinvolved(CPPType *type) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_ignorefile
-//       Access: Private
-//  Description: Returns true if the indicated name is one that the
-//               user identified with an ignorefile command.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is one that the user identified with an
+ * ignorefile command.
+ */
 bool InterrogateBuilder::
 in_ignorefile(const string &name) const {
   return (_ignorefile.count(name) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_ignoremember
-//       Access: Private
-//  Description: Returns true if the indicated name is one that the
-//               user identified with an ignoremember command.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is one that the user identified with an
+ * ignoremember command.
+ */
 bool InterrogateBuilder::
 in_ignoremember(const string &name) const {
   return (_ignoremember.count(name) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::in_noinclude
-//       Access: Private
-//  Description: Returns true if the indicated filename is one that
-//               the user identified with a noinclude command.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated filename is one that the user identified with a
+ * noinclude command.
+ */
 bool InterrogateBuilder::
 in_noinclude(const string &name) const {
   return (_noinclude.count(name) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::should_include
-//       Access: Private
-//  Description: Returns true if the indicated filename is a valid
-//               file to explicitly #include in the generated .cxx
-//               file, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated filename is a valid file to explicitly #include
+ * in the generated .cxx file, false otherwise.
+ */
 bool InterrogateBuilder::
 should_include(const string &filename) const {
   // Don't directly include any .cxx or .I files, except for extensions.
@@ -977,15 +916,11 @@ should_include(const string &filename) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::is_inherited_published
-//       Access: Private
-//  Description: Recursively looks for the first inherited version of
-//               this function in the derivation chain of this class.
-//               Returns true if this function is declared published,
-//               or false if it is not published, or if it can't be
-//               found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively looks for the first inherited version of this function in the
+ * derivation chain of this class.  Returns true if this function is declared
+ * published, or false if it is not published, or if it can't be found.
+ */
 bool InterrogateBuilder::
 is_inherited_published(CPPInstance *function, CPPStructType *struct_type) {
   nassertr(struct_type->_derivation.size() == 1, false);
@@ -1017,23 +952,15 @@ is_inherited_published(CPPInstance *function, CPPStructType *struct_type) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::remap_indices
-//       Access: Private
-//  Description: Resequences all of the index numbers so that
-//               function wrappers start at 1 and occupy consecutive
-//               positions, and everything else follows.  This allows
-//               us to build a table of function wrappers by index
-//               number.
-//
-//               The "remaps" member is a list of FunctionRemap
-//               pointers.  The collision in naming is unfortunate;
-//               the FunctionRemap objects are so named because they
-//               remap synthesized function wrappers to actual C++
-//               methods and functions.  It has nothing to do with the
-//               remapping of index numbers, which is the purpose of
-//               this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resequences all of the index numbers so that function wrappers start at 1 and
+ * occupy consecutive positions, and everything else follows.  This allows us to
+ * build a table of function wrappers by index number.  The "remaps" member is a
+ * list of FunctionRemap pointers.  The collision in naming is unfortunate; the
+ * FunctionRemap objects are so named because they remap synthesized function
+ * wrappers to actual C++ methods and functions.  It has nothing to do with the
+ * remapping of index numbers, which is the purpose of this function.
+ */
 void InterrogateBuilder::
 remap_indices(vector<FunctionRemap *> &remaps) {
   IndexRemapper index_remap;
@@ -1058,12 +985,9 @@ remap_indices(vector<FunctionRemap *> &remaps) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::scan_function
-//       Access: Private
-//  Description: Adds the indicated global function to the database,
-//               if warranted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated global function to the database, if warranted.
+ */
 void InterrogateBuilder::
 scan_function(CPPFunctionGroup *fgroup) {
   CPPFunctionGroup::Instances::const_iterator fi;
@@ -1073,12 +997,9 @@ scan_function(CPPFunctionGroup *fgroup) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::scan_function
-//       Access: Private
-//  Description: Adds the indicated global function to the database,
-//               if warranted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated global function to the database, if warranted.
+ */
 void InterrogateBuilder::
 scan_function(CPPInstance *function) {
   assert(function != (CPPInstance *)NULL);
@@ -1156,12 +1077,9 @@ scan_function(CPPInstance *function) {
                InterrogateFunction::F_global);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::scan_struct_type
-//       Access: Private
-//  Description: Adds the indicated struct type to the database, if
-//               warranted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated struct type to the database, if warranted.
+ */
 void InterrogateBuilder::
 scan_struct_type(CPPStructType *type) {
   if (type == (CPPStructType *)NULL) {
@@ -1210,12 +1128,9 @@ scan_struct_type(CPPStructType *type) {
   get_type(type, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::scan_enum_type
-//       Access: Private
-//  Description: Adds the indicated enum type to the database, if
-//               warranted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated enum type to the database, if warranted.
+ */
 void InterrogateBuilder::
 scan_enum_type(CPPEnumType *type) {
   if (type == (CPPEnumType *)NULL) {
@@ -1248,12 +1163,9 @@ scan_enum_type(CPPEnumType *type) {
   get_type(type, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::scan_typedef_type
-//       Access: Private
-//  Description: Adds the indicated typedef type to the database, if
-//               warranted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated typedef type to the database, if warranted.
+ */
 void InterrogateBuilder::
 scan_typedef_type(CPPTypedefType *type) {
   if (type == (CPPTypedefType *)NULL) {
@@ -1335,12 +1247,9 @@ scan_typedef_type(CPPTypedefType *type) {
   get_type(type, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::scan_manifest
-//       Access: Private
-//  Description: Adds the indicated manifest constant to the database,
-//               if warranted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated manifest constant to the database, if warranted.
+ */
 void InterrogateBuilder::
 scan_manifest(CPPManifest *manifest) {
   if (manifest == (CPPManifest *)NULL) {
@@ -1405,12 +1314,9 @@ scan_manifest(CPPManifest *manifest) {
   InterrogateDatabase::get_ptr()->add_manifest(index, imanifest);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::scan_element
-//       Access: Private
-//  Description: Adds the indicated data element to the database,
-//               if warranted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated data element to the database, if warranted.
+ */
 ElementIndex InterrogateBuilder::
 scan_element(CPPInstance *element, CPPStructType *struct_type,
              CPPScope *scope) {
@@ -1521,12 +1427,10 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_getter
-//       Access: Private
-//  Description: Adds a function to return the value for the indicated
-//               expression.  Returns the new function index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a function to return the value for the indicated expression.  Returns
+ * the new function index.
+ */
 FunctionIndex InterrogateBuilder::
 get_getter(CPPType *expr_type, string expression,
            CPPStructType *struct_type, CPPScope *scope,
@@ -1610,12 +1514,10 @@ get_getter(CPPType *expr_type, string expression,
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_setter
-//       Access: Private
-//  Description: Adds a function to return the value for the indicated
-//               expression.  Returns the new function index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a function to return the value for the indicated expression.  Returns
+ * the new function index.
+ */
 FunctionIndex InterrogateBuilder::
 get_setter(CPPType *expr_type, string expression,
            CPPStructType *struct_type, CPPScope *scope,
@@ -1686,13 +1588,10 @@ get_setter(CPPType *expr_type, string expression,
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_cast_function
-//       Access: Private
-//  Description: Adds a function to cast from a pointer of the
-//               indicated type to a pointer of the indicated type to
-//               the database.  Returns the new function index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a function to cast from a pointer of the indicated type to a pointer of
+ * the indicated type to the database.  Returns the new function index.
+ */
 FunctionIndex InterrogateBuilder::
 get_cast_function(CPPType *to_type, CPPType *from_type,
                   const string &prefix) {
@@ -1752,13 +1651,11 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_function
-//       Access: Private
-//  Description: Adds the indicated function to the database, if it is
-//               not already present.  In either case, returns the
-//               FunctionIndex of the function within the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated function to the database, if it is not already present.
+ * In either case, returns the FunctionIndex of the function within the
+ * database.
+ */
 FunctionIndex InterrogateBuilder::
 get_function(CPPInstance *function, string description,
              CPPStructType *struct_type,
@@ -1896,14 +1793,11 @@ get_function(CPPInstance *function, string description,
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_make_property
-//       Access: Private
-//  Description: Adds the indicated make_property to the database,
-//               if it is not already present.  In either case,
-//               returns the MakeSeqIndex of the make_seq within the
-//               database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated make_property to the database, if it is not already
+ * present.  In either case, returns the MakeSeqIndex of the make_seq within the
+ * database.
+ */
 ElementIndex InterrogateBuilder::
 get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CPPScope *scope) {
   // This is needed so we can get a proper unique name for the property.
@@ -2055,13 +1949,10 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_make_seq
-//       Access: Private
-//  Description: Adds the indicated make_seq to the database, if it is
-//               not already present.  In either case, returns the
-//               MakeSeq of the make_seq within the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated make_seq to the database, if it is not already present.
+ * In either case, returns the MakeSeq of the make_seq within the database.
+ */
 MakeSeqIndex InterrogateBuilder::
 get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
   string make_seq_name = make_seq->get_local_name(&parser);
@@ -2151,16 +2042,12 @@ get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_atomic_string_type
-//       Access: Private
-//  Description: Returns a TypeIndex for the "atomic string" type,
-//               which is a bogus type that might be used if -string
-//               is passed to interrogate.  It means to translate
-//               basic_string<char> and char * to whatever atomic
-//               string type is native to the particular the scripting
-//               language we happen to be generating wrappers for.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a TypeIndex for the "atomic string" type, which is a bogus type that
+ * might be used if -string is passed to interrogate.  It means to translate
+ * basic_string<char> and char * to whatever atomic string type is native to the
+ * particular the scripting language we happen to be generating wrappers for.
+ */
 TypeIndex InterrogateBuilder::
 get_atomic_string_type() {
   // Make up a true name that can't possibly clash with an actual C++
@@ -2190,13 +2077,10 @@ get_atomic_string_type() {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_type
-//       Access: Private
-//  Description: Adds the indicated type to the database, if it is not
-//               already present.  In either case, returns the
-//               TypeIndex of the type within the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated type to the database, if it is not already present.  In
+ * either case, returns the TypeIndex of the type within the database.
+ */
 TypeIndex InterrogateBuilder::
 get_type(CPPType *type, bool global) {
   if (type->is_template()) {
@@ -2362,11 +2246,9 @@ get_type(CPPType *type, bool global) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_atomic_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated atomic type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated atomic type.
+ */
 void InterrogateBuilder::
 define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
   itype._flags |= InterrogateType::F_atomic;
@@ -2438,33 +2320,27 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_wrapped_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated wrapped type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated wrapped type.
+ */
 void InterrogateBuilder::
 define_wrapped_type(InterrogateType &itype, CPPPointerType *cpptype) {
   itype._flags |= (InterrogateType::F_wrapped | InterrogateType::F_pointer);
   itype._wrapped_type = get_type(cpptype->_pointing_at, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_wrapped_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated wrapped type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated wrapped type.
+ */
 void InterrogateBuilder::
 define_wrapped_type(InterrogateType &itype, CPPConstType *cpptype) {
   itype._flags |= (InterrogateType::F_wrapped | InterrogateType::F_const);
   itype._wrapped_type = get_type(cpptype->_wrapped_around, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_struct_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated struct type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated struct type.
+ */
 void InterrogateBuilder::
 define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
                    TypeIndex type_index, bool forced) {
@@ -2765,16 +2641,12 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::update_function_comment
-//       Access: Private
-//  Description: Updates the function definition in the database to
-//               include whatever comment is associated with this
-//               declaration.  This is called when we encounted a
-//               method definition outside of the class or function
-//               definition in a C++ file; the only new information
-//               this might include for us is the comment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the function definition in the database to include whatever comment
+ * is associated with this declaration.  This is called when we encounted a
+ * method definition outside of the class or function definition in a C++ file;
+ * the only new information this might include for us is the comment.
+ */
 void InterrogateBuilder::
 update_function_comment(CPPInstance *function, CPPScope *scope) {
   if (function->_leading_comment == (CPPCommentBlock *)NULL) {
@@ -2833,11 +2705,9 @@ update_function_comment(CPPInstance *function, CPPScope *scope) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_method
-//       Access: Private
-//  Description: Adds the indicated member function to the struct type,
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated member function to the struct type,
+ */
 void InterrogateBuilder::
 define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
               CPPStructType *struct_type, CPPScope *scope) {
@@ -2848,11 +2718,9 @@ define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_method
-//       Access: Private
-//  Description: Adds the indicated member function to the struct type,
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated member function to the struct type,
+ */
 void InterrogateBuilder::
 define_method(CPPInstance *function, InterrogateType &itype,
               CPPStructType *struct_type, CPPScope *scope) {
@@ -2974,11 +2842,9 @@ define_method(CPPInstance *function, InterrogateType &itype,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_enum_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated enum type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated enum type.
+ */
 void InterrogateBuilder::
 define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
   itype._flags |= InterrogateType::F_enum;
@@ -3041,22 +2907,18 @@ define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_typedef_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated typedef.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated typedef.
+ */
 void InterrogateBuilder::
 define_typedef_type(InterrogateType &itype, CPPTypedefType *cpptype) {
   itype._flags |= InterrogateType::F_typedef;
   itype._wrapped_type = get_type(cpptype->_type, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_array_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated wrapped type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated wrapped type.
+ */
 void InterrogateBuilder::
 define_array_type(InterrogateType &itype, CPPArrayType *cpptype) {
   itype._flags |= InterrogateType::F_array;
@@ -3070,11 +2932,9 @@ define_array_type(InterrogateType &itype, CPPArrayType *cpptype) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::define_extension_type
-//       Access: Private
-//  Description: Builds up a definition for the indicated extension type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a definition for the indicated extension type.
+ */
 void InterrogateBuilder::
 define_extension_type(InterrogateType &itype, CPPExtensionType *cpptype) {
   // An "extension type" as returned by CPPParser is really a forward
@@ -3102,11 +2962,9 @@ define_extension_type(InterrogateType &itype, CPPExtensionType *cpptype) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::trim_blanks
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string InterrogateBuilder::
 trim_blanks(const string &str) {
   size_t start = 0;

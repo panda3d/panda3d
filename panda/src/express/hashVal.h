@@ -1,16 +1,15 @@
-// Filename: hashVal.h
-// Created by:  drose (14Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file hashVal.h
+ * @author drose
+ * @date 2000-11-14
+ */
 
 #ifndef HASHVAL_H
 #define HASHVAL_H
@@ -24,11 +23,10 @@
 #include "streamWriter.h"
 #include "streamReader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HashVal
-// Description : Stores a 128-bit value that represents the hashed
-//               contents (typically MD5) of a file or buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a 128-bit value that represents the hashed contents (typically MD5) of
+ * a file or buffer.
+ */
 class EXPCL_PANDAEXPRESS HashVal {
 PUBLISHED:
   INLINE HashVal();

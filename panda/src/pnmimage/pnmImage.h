@@ -1,16 +1,15 @@
-// Filename: pnmImage.h
-// Created by:  drose (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmImage.h
+ * @author drose
+ * @date 2000-06-14
+ */
 
 #ifndef PNMIMAGE_H
 #define PNMIMAGE_H
@@ -27,44 +26,28 @@ class PNMReader;
 class PNMWriter;
 class PNMFileType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMImage
-// Description : The name of this class derives from the fact that we
-//               originally implemented it as a layer on top of the
-//               "pnm library", based on netpbm, which was built to
-//               implement pbm, pgm, and pbm files, and is the
-//               underlying support of a number of public-domain image
-//               file converters.  Nowadays we are no longer derived
-//               directly from the pnm library, mainly to allow
-//               support of C++ iostreams instead of the C stdio FILE
-//               interface.
-//
-//               Conceptually, a PNMImage is a two-dimensional array
-//               of xels, which are the PNM-defined generic pixel
-//               type.  Each xel may have a red, green, and blue
-//               component, or (if the image is grayscale) a gray
-//               component.  The image may be read in, the individual
-//               xels manipulated, and written out again, or a black
-//               image may be constructed from scratch.
-//
-//               A PNMImage has a color space and a maxval, the
-//               combination of which defines how a floating-point
-//               linear color value is encoded as an integer value in
-//               memory.  The functions ending in _val operate on
-//               encoded colors, whereas the regular ones work with
-//               linear floating-point values.  All operations are
-//               color space correct unless otherwise specified.
-//
-//               The image is of size XSize() by YSize() xels,
-//               numbered from top to bottom, left to right, beginning
-//               at zero.
-//
-//               Files can be specified by filename, or by an iostream
-//               pointer.  The filename "-" refers to stdin or stdout.
-//
-//               This class is not inherently thread-safe; use it
-//               from a single thread or protect access using a mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * The name of this class derives from the fact that we originally implemented
+ * it as a layer on top of the "pnm library", based on netpbm, which was built
+ * to implement pbm, pgm, and pbm files, and is the underlying support of a
+ * number of public-domain image file converters.  Nowadays we are no longer
+ * derived directly from the pnm library, mainly to allow support of C++
+ * iostreams instead of the C stdio FILE interface.  Conceptually, a PNMImage is
+ * a two-dimensional array of xels, which are the PNM-defined generic pixel
+ * type.  Each xel may have a red, green, and blue component, or (if the image
+ * is grayscale) a gray component.  The image may be read in, the individual
+ * xels manipulated, and written out again, or a black image may be constructed
+ * from scratch.  A PNMImage has a color space and a maxval, the combination of
+ * which defines how a floating-point linear color value is encoded as an
+ * integer value in memory.  The functions ending in _val operate on encoded
+ * colors, whereas the regular ones work with linear floating-point values.  All
+ * operations are color space correct unless otherwise specified.  The image is
+ * of size XSize() by YSize() xels, numbered from top to bottom, left to right,
+ * beginning at zero.  Files can be specified by filename, or by an iostream
+ * pointer.  The filename "-" refers to stdin or stdout.  This class is not
+ * inherently thread-safe; use it from a single thread or protect access using a
+ * mutex.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMImage : public PNMImageHeader {
 PUBLISHED:
   INLINE PNMImage();

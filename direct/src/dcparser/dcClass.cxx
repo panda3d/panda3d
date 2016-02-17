@@ -1,16 +1,15 @@
-// Filename: dcClass.cxx
-// Created by:  drose (05Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcClass.cxx
+ * @author drose
+ * @date 2000-10-05
+ */
 
 #include "dcClass.h"
 #include "dcFile.h"
@@ -66,11 +65,9 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCClass::
 DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
 #ifdef WITHIN_PANDA
@@ -91,11 +88,9 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCClass::
 ~DCClass() {
   if (_constructor != (DCField *)NULL) {
@@ -113,91 +108,71 @@ DCClass::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::as_class
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCClass *DCClass::
 as_class() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::as_class
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const DCClass *DCClass::
 as_class() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_num_parents
-//       Access: Published
-//  Description: Returns the number of base classes this class
-//               inherits from.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of base classes this class inherits from.
+ */
 int DCClass::
 get_num_parents() const {
   return _parents.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_parent
-//       Access: Published
-//  Description: Returns the nth parent class this class inherits
-//               from.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth parent class this class inherits from.
+ */
 DCClass *DCClass::
 get_parent(int n) const {
   nassertr(n >= 0 && n < (int)_parents.size(), NULL);
   return _parents[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::has_constructor
-//       Access: Published
-//  Description: Returns true if this class has a constructor method,
-//               false if it just uses the default constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this class has a constructor method, false if it just uses
+ * the default constructor.
+ */
 bool DCClass::
 has_constructor() const {
   return (_constructor != (DCField *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_constructor
-//       Access: Published
-//  Description: Returns the constructor method for this class if it
-//               is defined, or NULL if the class uses the default
-//               constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the constructor method for this class if it is defined, or NULL if
+ * the class uses the default constructor.
+ */
 DCField *DCClass::
 get_constructor() const {
   return _constructor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_num_fields
-//       Access: Published
-//  Description: Returns the number of fields defined directly in this
-//               class, ignoring inheritance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of fields defined directly in this class, ignoring
+ * inheritance.
+ */
 int DCClass::
 get_num_fields() const {
   return _fields.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_field
-//       Access: Published
-//  Description: Returns the nth field in the class.  This is not
-//               necessarily the field with index n; this is the nth
-//               field defined in the class directly, ignoring
-//               inheritance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth field in the class.  This is not necessarily the field with
+ * index n; this is the nth field defined in the class directly, ignoring
+ * inheritance.
+ */
 DCField *DCClass::
 get_field(int n) const {
   #ifndef NDEBUG //[
@@ -212,16 +187,12 @@ get_field(int n) const {
   return _fields[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_field_by_name
-//       Access: Published
-//  Description: Returns a pointer to the DCField that shares the
-//               indicated name.  If the named field is not found in
-//               the current class, the parent classes will be
-//               searched, so the value returned may not actually be a
-//               field within this class.  Returns NULL if there is no
-//               such field defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the DCField that shares the indicated name.  If the
+ * named field is not found in the current class, the parent classes will be
+ * searched, so the value returned may not actually be a field within this
+ * class.  Returns NULL if there is no such field defined.
+ */
 DCField *DCClass::
 get_field_by_name(const string &name) const {
   FieldsByName::const_iterator ni;
@@ -243,16 +214,12 @@ get_field_by_name(const string &name) const {
   return (DCField *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_field_by_index
-//       Access: Published
-//  Description: Returns a pointer to the DCField that has the
-//               indicated index number.  If the numbered field is not
-//               found in the current class, the parent classes will
-//               be searched, so the value returned may not actually
-//               be a field within this class.  Returns NULL if there
-//               is no such field defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the DCField that has the indicated index number.  If the
+ * numbered field is not found in the current class, the parent classes will be
+ * searched, so the value returned may not actually be a field within this
+ * class.  Returns NULL if there is no such field defined.
+ */
 DCField *DCClass::
 get_field_by_index(int index_number) const {
   FieldsByIndex::const_iterator ni;
@@ -276,12 +243,10 @@ get_field_by_index(int index_number) const {
   return (DCField *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_num_inherited_fields
-//       Access: Published
-//  Description: Returns the total number of field fields defined in
-//               this class and all ancestor classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of field fields defined in this class and all
+ * ancestor classes.
+ */
 int DCClass::
 get_num_inherited_fields() const {
   if (dc_multiple_inheritance && dc_virtual_inheritance &&
@@ -308,18 +273,12 @@ get_num_inherited_fields() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_inherited_field
-//       Access: Published
-//  Description: Returns the nth field field in the class and all of
-//               its ancestors.
-//
-//               This *used* to be the same thing as
-//               get_field_by_index(), back when the fields were
-//               numbered sequentially within a class's inheritance
-//               hierarchy.  Now that fields have a globally unique
-//               index number, this is no longer true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth field field in the class and all of its ancestors.  This
+ * *used* to be the same thing as get_field_by_index(), back when the fields
+ * were numbered sequentially within a class's inheritance hierarchy.  Now that
+ * fields have a globally unique index number, this is no longer true.
+ */
 DCField *DCClass::
 get_inherited_field(int n) const {
   if (dc_multiple_inheritance && dc_virtual_inheritance &&
@@ -346,14 +305,11 @@ get_inherited_field(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::inherits_from_bogus_class
-//       Access: Published
-//  Description: Returns true if this class, or any class in the
-//                inheritance heirarchy for this class, is a "bogus"
-//                class--a forward reference to an as-yet-undefined
-//                class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this class, or any class in the inheritance heirarchy for
+ * this class, is a "bogus" class--a forward reference to an as-yet-undefined
+ * class.
+ */
 bool DCClass::
 inherits_from_bogus_class() const {
   if (is_bogus_class()) {
@@ -370,12 +326,9 @@ inherits_from_bogus_class() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::output
-//       Access: Published, Virtual
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void DCClass::
 output(ostream &out) const {
   if (_is_struct) {
@@ -389,12 +342,10 @@ output(ostream &out) const {
 }
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::has_class_def
-//       Access: Published
-//  Description: Returns true if the DCClass object has an associated
-//               Python class definition, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the DCClass object has an associated Python class definition,
+ * false otherwise.
+ */
 bool DCClass::
 has_class_def() const {
   return (_class_def != NULL);
@@ -402,13 +353,10 @@ has_class_def() const {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::set_class_def
-//       Access: Published
-//  Description: Sets the class object associated with this
-//               DistributedClass.  This object will be used to
-//               construct new instances of the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the class object associated with this DistributedClass.  This object
+ * will be used to construct new instances of the class.
+ */
 void DCClass::
 set_class_def(PyObject *class_def) {
   Py_XINCREF(class_def);
@@ -418,13 +366,10 @@ set_class_def(PyObject *class_def) {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_class_def
-//       Access: Published
-//  Description: Returns the class object that was previously
-//               associated with this DistributedClass.  This will
-//               return a new reference to the object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the class object that was previously associated with this
+ * DistributedClass.  This will return a new reference to the object.
+ */
 PyObject *DCClass::
 get_class_def() const {
   if (_class_def == NULL) {
@@ -438,12 +383,10 @@ get_class_def() const {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::has_owner_class_def
-//       Access: Published
-//  Description: Returns true if the DCClass object has an associated
-//               Python owner class definition, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the DCClass object has an associated Python owner class
+ * definition, false otherwise.
+ */
 bool DCClass::
 has_owner_class_def() const {
   return (_owner_class_def != NULL);
@@ -451,13 +394,10 @@ has_owner_class_def() const {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::set_owner_class_def
-//       Access: Published
-//  Description: Sets the owner class object associated with this
-//               DistributedClass.  This object will be used to
-//               construct new owner instances of the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the owner class object associated with this DistributedClass.  This
+ * object will be used to construct new owner instances of the class.
+ */
 void DCClass::
 set_owner_class_def(PyObject *owner_class_def) {
   Py_XINCREF(owner_class_def);
@@ -467,13 +407,10 @@ set_owner_class_def(PyObject *owner_class_def) {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::get_owner_class_def
-//       Access: Published
-//  Description: Returns the owner class object that was previously
-//               associated with this DistributedClass.  This will
-//               return a new reference to the object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the owner class object that was previously associated with this
+ * DistributedClass.  This will return a new reference to the object.
+ */
 PyObject *DCClass::
 get_owner_class_def() const {
   if (_owner_class_def == NULL) {
@@ -487,13 +424,10 @@ get_owner_class_def() const {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::receive_update
-//       Access: Published
-//  Description: Extracts the update message out of the packer and
-//               applies it to the indicated object by calling the
-//               appropriate method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the update message out of the packer and applies it to the indicated
+ * object by calling the appropriate method.
+ */
 void DCClass::
 receive_update(PyObject *distobj, DatagramIterator &di) const {
 #ifdef WITHIN_PANDA
@@ -525,14 +459,11 @@ receive_update(PyObject *distobj, DatagramIterator &di) const {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::receive_update_broadcast_required
-//       Access: Published
-//  Description: Processes a big datagram that includes all of the
-//               "required" fields that are sent along with a normal
-//               "generate with required" message.  This is all of the
-//               atomic fields that are marked "broadcast required".
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a big datagram that includes all of the "required" fields that are
+ * sent along with a normal "generate with required" message.  This is all of
+ * the atomic fields that are marked "broadcast required".
+ */
 void DCClass::
 receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const {
 #ifdef WITHIN_PANDA
@@ -561,15 +492,12 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::receive_update_broadcast_required_owner
-//       Access: Published
-//  Description: Processes a big datagram that includes all of the
-//               "required" fields that are sent along with a normal
-//               "generate with required" message.  This is all of the
-//               atomic fields that are marked "broadcast ownrecv". Should
-//               be used for 'owner-view' objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a big datagram that includes all of the "required" fields that are
+ * sent along with a normal "generate with required" message.  This is all of
+ * the atomic fields that are marked "broadcast ownrecv". Should be used for
+ * 'owner-view' objects.
+ */
 void DCClass::
 receive_update_broadcast_required_owner(PyObject *distobj,
                                         DatagramIterator &di) const {
@@ -605,14 +533,11 @@ receive_update_broadcast_required_owner(PyObject *distobj,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::receive_update_all_required
-//       Access: Published
-//  Description: Processes a big datagram that includes all of the
-//               "required" fields that are sent when an avatar is
-//               created.  This is all of the atomic fields that are
-//               marked "required", whether they are broadcast or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a big datagram that includes all of the "required" fields that are
+ * sent when an avatar is created.  This is all of the atomic fields that are
+ * marked "required", whether they are broadcast or not.
+ */
 void DCClass::
 receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
 #ifdef WITHIN_PANDA
@@ -641,12 +566,10 @@ receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::receive_update_other
-//       Access: Published
-//  Description: Processes a datagram that lists some additional
-//               fields that are broadcast in one chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a datagram that lists some additional fields that are broadcast in
+ * one chunk.
+ */
 void DCClass::
 receive_update_other(PyObject *distobj, DatagramIterator &di) const {
 #ifdef WITHIN_PANDA
@@ -660,12 +583,9 @@ receive_update_other(PyObject *distobj, DatagramIterator &di) const {
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::direct_update
-//       Access: Published
-//  Description: Processes an update for a named field from a packed
-//               value blob.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes an update for a named field from a packed value blob.
+ */
 void DCClass::
 direct_update(PyObject *distobj, const string &field_name,
               const string &value_blob) {
@@ -681,12 +601,9 @@ direct_update(PyObject *distobj, const string &field_name,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::direct_update
-//       Access: Published
-//  Description: Processes an update for a named field from a packed
-//               datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes an update for a named field from a packed datagram.
+ */
 void DCClass::
 direct_update(PyObject *distobj, const string &field_name,
               const Datagram &datagram) {
@@ -695,18 +612,13 @@ direct_update(PyObject *distobj, const string &field_name,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::pack_required_field
-//       Access: Published
-//  Description: Looks up the current value of the indicated field by
-//               calling the appropriate get*() function, then packs
-//               that value into the datagram.  This field is
-//               presumably either a required field or a specified
-//               optional field, and we are building up a datagram for
-//               the generate-with-required message.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the current value of the indicated field by calling the appropriate
+ * get*() function, then packs that value into the datagram.  This field is
+ * presumably either a required field or a specified optional field, and we are
+ * building up a datagram for the generate-with-required message.  Returns true
+ * on success, false on failure.
+ */
 bool DCClass::
 pack_required_field(Datagram &datagram, PyObject *distobj,
                     const DCField *field) const {
@@ -725,18 +637,13 @@ pack_required_field(Datagram &datagram, PyObject *distobj,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::pack_required_field
-//       Access: Published
-//  Description: Looks up the current value of the indicated field by
-//               calling the appropriate get*() function, then packs
-//               that value into the packer.  This field is
-//               presumably either a required field or a specified
-//               optional field, and we are building up a datagram for
-//               the generate-with-required message.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the current value of the indicated field by calling the appropriate
+ * get*() function, then packs that value into the packer.  This field is
+ * presumably either a required field or a specified optional field, and we are
+ * building up a datagram for the generate-with-required message.  Returns true
+ * on success, false on failure.
+ */
 bool DCClass::
 pack_required_field(DCPacker &packer, PyObject *distobj,
                     const DCField *field) const {
@@ -881,13 +788,10 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::client_format_update
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to send an update for the indicated distributed
-//               object from the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a datagram containing the message necessary to send an update for
+ * the indicated distributed object from the client.
+ */
 Datagram DCClass::
 client_format_update(const string &field_name, DOID_TYPE do_id,
                      PyObject *args) const {
@@ -905,13 +809,10 @@ client_format_update(const string &field_name, DOID_TYPE do_id,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::ai_format_update
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to send an update for the indicated distributed
-//               object from the AI.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a datagram containing the message necessary to send an update for
+ * the indicated distributed object from the AI.
+ */
 Datagram DCClass::
 ai_format_update(const string &field_name, DOID_TYPE do_id,
                  CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
@@ -929,14 +830,11 @@ ai_format_update(const string &field_name, DOID_TYPE do_id,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::ai_format_update_msg_type
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to send an update, using the indicated msg type
-//               for the indicated distributed
-//               object from the AI.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a datagram containing the message necessary to send an update,
+ * using the indicated msg type for the indicated distributed object from the
+ * AI.
+ */
 Datagram DCClass::
 ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
                  CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const {
@@ -954,19 +852,13 @@ ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::client_format_generate_CMU
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to generate a new distributed object from the client.
-//               This requires querying the object for the initial
-//               value of its required fields.
-//
-//               optional_fields is a list of fieldNames to generate
-//               in addition to the normal required fields.
-//
-//               This method is only called by the CMU implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a datagram containing the message necessary to generate a new
+ * distributed object from the client.  This requires querying the object for
+ * the initial value of its required fields.  optional_fields is a list of
+ * fieldNames to generate in addition to the normal required fields.  This
+ * method is only called by the CMU implementation.
+ */
 Datagram DCClass::
 client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
                            ZONEID_TYPE zone_id,
@@ -1029,17 +921,12 @@ client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::ai_format_generate
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to generate a new distributed object from the AI.
-//               This requires querying the object for the initial
-//               value of its required fields.
-//
-//               optional_fields is a list of fieldNames to generate
-//               in addition to the normal required fields.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a datagram containing the message necessary to generate a new
+ * distributed object from the AI. This requires querying the object for the
+ * initial value of its required fields.  optional_fields is a list of
+ * fieldNames to generate in addition to the normal required fields.
+ */
 Datagram DCClass::
 ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
                    DOID_TYPE parent_id, ZONEID_TYPE zone_id,
@@ -1120,15 +1007,11 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
 }
 #endif  // HAVE_PYTHON
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::ai_database_generate_context
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to create a new database distributed object from the AI.
-//
-//               First Pass is to only include required values
-//               (with Defaults).
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a datagram containing the message necessary to create a new
+ * database distributed object from the AI.  First Pass is to only include
+ * required values (with Defaults).
+ */
 Datagram DCClass::
 ai_database_generate_context(
     unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
@@ -1164,15 +1047,11 @@ ai_database_generate_context(
 
 #ifdef HAVE_PYTHON
 // TODO: remove this once Skyler has things working with the new server
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::ai_database_generate_context_old
-//       Access: Published
-//  Description: Generates a datagram containing the message necessary
-//               to create a new database distributed object from the AI.
-//
-//               First Pass is to only include required values
-//               (with Defaults).
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a datagram containing the message necessary to create a new
+ * database distributed object from the AI.  First Pass is to only include
+ * required values (with Defaults).
+ */
 Datagram DCClass::
 ai_database_generate_context_old(
     unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
@@ -1204,23 +1083,18 @@ ai_database_generate_context_old(
 }
 #endif  // HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::output
-//       Access: Public, Virtual
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void DCClass::
 output(ostream &out, bool brief) const {
   output_instance(out, brief, "", "", "");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::write
-//       Access: Public, Virtual
-//  Description: Generates a parseable description of the object to
-//               the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a parseable description of the object to the indicated output
+ * stream.
+ */
 void DCClass::
 write(ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level);
@@ -1277,12 +1151,10 @@ write(ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level) << "};\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::output_instance
-//       Access: Public
-//  Description: Generates a parseable description of the object to
-//               the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a parseable description of the object to the indicated output
+ * stream.
+ */
 void DCClass::
 output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
@@ -1326,12 +1198,9 @@ output_instance(ostream &out, bool brief, const string &prename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::generate_hash
-//       Access: Public, Virtual
-//  Description: Accumulates the properties of this class into the
-//               hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accumulates the properties of this class into the hash.
+ */
 void DCClass::
 generate_hash(HashGenerator &hashgen) const {
   hashgen.add_string(_name);
@@ -1357,23 +1226,18 @@ generate_hash(HashGenerator &hashgen) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::clear_inherited_fields
-//       Access: Public
-//  Description: Empties the list of inherited fields for the class,
-//               so that it may be rebuilt.  This is normally only
-//               called by DCFile::rebuild_inherited_fields().
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of inherited fields for the class, so that it may be
+ * rebuilt.  This is normally only called by DCFile::rebuild_inherited_fields().
+ */
 void DCClass::
 clear_inherited_fields() {
   _inherited_fields.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::rebuild_inherited_fields
-//       Access: Public
-//  Description: Recomputes the list of inherited fields for the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the list of inherited fields for the class.
+ */
 void DCClass::
 rebuild_inherited_fields() {
   typedef pset<string> Names;
@@ -1435,14 +1299,11 @@ rebuild_inherited_fields() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::shadow_inherited_field
-//       Access: Private
-//  Description: This is called only by rebuild_inherited_fields().
-//               It removes the named field from the list of
-//               _inherited_fields, presumably in preparation for
-//               adding a new definition below.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called only by rebuild_inherited_fields(). It removes the named field
+ * from the list of _inherited_fields, presumably in preparation for adding a
+ * new definition below.
+ */
 void DCClass::
 shadow_inherited_field(const string &name) {
   Fields::iterator fi;
@@ -1458,15 +1319,12 @@ shadow_inherited_field(const string &name) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::add_field
-//       Access: Public
-//  Description: Adds the newly-allocated field to the class.  The
-//               class becomes the owner of the pointer and will
-//               delete it when it destructs.  Returns true if the
-//               field is successfully added, or false if there was a
-//               name conflict or some other problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the newly-allocated field to the class.  The class becomes the owner of
+ * the pointer and will delete it when it destructs.  Returns true if the field
+ * is successfully added, or false if there was a name conflict or some other
+ * problem.
+ */
 bool DCClass::
 add_field(DCField *field) {
   nassertr(field->get_class() == this || field->get_class() == NULL, false);
@@ -1519,27 +1377,21 @@ add_field(DCField *field) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::add_parent
-//       Access: Public
-//  Description: Adds a new parent to the inheritance hierarchy of the
-//               class.  This is normally called only during parsing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new parent to the inheritance hierarchy of the class.  This is
+ * normally called only during parsing.
+ */
 void DCClass::
 add_parent(DCClass *parent) {
   _parents.push_back(parent);
   _dc_file->mark_inherited_fields_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::set_number
-//       Access: Public
-//  Description: Assigns the unique number to this class.  This is
-//               normally called only by the DCFile interface as the
-//               class is added.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the unique number to this class.  This is normally called only by the
+ * DCFile interface as the class is added.
+ */
 void DCClass::
 set_number(int number) {
   _number = number;
 }
-

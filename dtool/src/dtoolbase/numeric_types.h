@@ -1,16 +1,15 @@
-// Filename: numeric_types.h
-// Created by:  drose (06Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file numeric_types.h
+ * @author drose
+ * @date 2000-06-06
+ */
 
 #ifndef NUMERIC_TYPES_H
 #define NUMERIC_TYPES_H
@@ -58,4 +57,3 @@ typedef double PN_stdfloat;
 #endif  // STDFLOAT_DOUBLE
 
 #endif
-

@@ -1,23 +1,21 @@
-// Filename: lmatrix4_src.h
-// Created by:  drose (15Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lmatrix4_src.h
+ * @author drose
+ * @date 1999-01-15
+ */
 
 class FLOATNAME(UnalignedLMatrix4);
 
-////////////////////////////////////////////////////////////////////
-//       Class : LMatrix4
-// Description : This is a 4-by-4 transform matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a 4-by-4 transform matrix.
+ */
 class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix4) {
 public:
   typedef FLOATTYPE numeric_type;
@@ -311,18 +309,13 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : UnalignedLMatrix4
-// Description : This is an "unaligned" LMatrix4.  It has no
-//               functionality other than to store numbers, and it
-//               will pack them in as tightly as possible, avoiding
-//               any SSE2 alignment requirements shared by the primary
-//               LMatrix4 class.
-//
-//               Use it only when you need to pack numbers tightly
-//               without respect to alignment, and then copy it to a
-//               proper LMatrix4 to get actual use from it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an "unaligned" LMatrix4.  It has no functionality other than to store
+ * numbers, and it will pack them in as tightly as possible, avoiding any SSE2
+ * alignment requirements shared by the primary LMatrix4 class.  Use it only
+ * when you need to pack numbers tightly without respect to alignment, and then
+ * copy it to a proper LMatrix4 to get actual use from it.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLMatrix4) {
 PUBLISHED:
   enum {

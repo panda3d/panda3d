@@ -1,17 +1,17 @@
-// Filename: texture.h
-// Created by:  mike (09Jan97)
-// Updated by: fperazzi, PandaSE(29Apr10) (added TT_2d_texture_array)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texture.h
+ * @author mike
+ * @date 1997-01-09
+ * @author fperazzi, PandaSE
+ * @date 2010-04-29
+ */
 
 #ifndef TEXTURE_H
 #define TEXTURE_H
@@ -55,24 +55,17 @@ class CullTraverserData;
 class TexturePeeker;
 struct DDSHeader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Texture
-// Description : Represents a texture object, which is typically a
-//               single 2-d image but may also represent a 1-d or 3-d
-//               texture image, or the six 2-d faces of a cube map
-//               texture.
-//
-//               A texture's image data might be stored in system RAM
-//               (see get_ram_image()) or its image may be represented
-//               in texture memory on one or more
-//               GraphicsStateGuardians (see prepare()), or both.  The
-//               typical usage pattern is that a texture is loaded
-//               from an image file on disk, which copies its image
-//               data into system RAM; then the first time the texture
-//               is rendered its image data is copied to texture
-//               memory (actually, to the graphics API), and the
-//               system RAM image is automatically freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a texture object, which is typically a single 2-d image but may
+ * also represent a 1-d or 3-d texture image, or the six 2-d faces of a cube map
+ * texture.  A texture's image data might be stored in system RAM (see
+ * get_ram_image()) or its image may be represented in texture memory on one or
+ * more GraphicsStateGuardians (see prepare()), or both.  The typical usage
+ * pattern is that a texture is loaded from an image file on disk, which copies
+ * its image data into system RAM; then the first time the texture is rendered
+ * its image data is copied to texture memory (actually, to the graphics API),
+ * and the system RAM image is automatically freed.
+ */
 class EXPCL_PANDA_GOBJ Texture : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   typedef PT(Texture) MakeTextureFunc();

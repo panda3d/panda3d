@@ -1,24 +1,19 @@
-// Filename: physxController.I
-// Created by:  enn0x (24Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxController.I
+ * @author enn0x
+ * @date 2009-09-24
+ */
 
+/**
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE PhysxController::
 PhysxController() : PhysxObject() {
 
@@ -51,22 +46,18 @@ PhysxController() : PhysxObject() {
   _up_quat_inv.invert();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxController::
 ls() const {
 
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxController::
 ls(ostream &out, int indent_level) const {
 
@@ -76,4 +67,3 @@ ls(ostream &out, int indent_level) const {
   out << " A:0x" << get_actor();
   out << "\n";
 }
-

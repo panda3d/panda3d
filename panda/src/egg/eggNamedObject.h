@@ -1,16 +1,15 @@
-// Filename: eggNamedObject.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggNamedObject.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGNAMEDOBJECT_H
 #define EGGNAMEDOBJECT_H
@@ -21,11 +20,9 @@
 #include "namable.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggNamedObject
-// Description : This is a fairly low-level base class--any egg
-//               object that has a name.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a fairly low-level base class--any egg object that has a name.
+ */
 class EXPCL_PANDAEGG EggNamedObject : public EggObject, public Namable {
 PUBLISHED:
   INLINE EggNamedObject(const string &name = "");

@@ -1,16 +1,15 @@
-// Filename: physxController.h
-// Created by:  enn0x (24Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxController.h
+ * @author enn0x
+ * @date 2009-09-24
+ */
 
 #ifndef PHYSXCONTROLLER_H
 #define PHYSXCONTROLLER_H
@@ -25,10 +24,9 @@
 
 class PhysxActor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxController
-// Description : Abstract base class for character controllers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for character controllers.
+ */
 class EXPCL_PANDAPHYSX PhysxController : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -90,14 +88,13 @@ private:
   NxQuat _up_quat_inv;
   NxHeightFieldAxis _up_axis;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxController", 
+    register_type(_type_handle, "PhysxController",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

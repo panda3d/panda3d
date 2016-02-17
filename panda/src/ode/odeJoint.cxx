@@ -1,16 +1,15 @@
-// Filename: odeJoint.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeJoint.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #include "config_ode.h"
 #include "odeJoint.h"
@@ -30,14 +29,14 @@
 TypeHandle OdeJoint::_type_handle;
 
 OdeJoint::
-OdeJoint() : 
+OdeJoint() :
   _id(0) {
   ostream &out = odejoint_cat.debug();
   out << get_type() << "(" << _id  << ")\n";
 }
 
 OdeJoint::
-OdeJoint(dJointID id) : 
+OdeJoint(dJointID id) :
   _id(id) {
   ostream &out = odejoint_cat.debug();
   out << get_type() << "(" << _id  << ")\n";
@@ -53,14 +52,11 @@ destroy() {
   dJointDestroy(_id);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJoint::attach_bodies
-//       Access: Published
-//  Description: Attaches two OdeBody objects to this joint.
-//               Order is important.
-//               Consider using the OdeJoint::attach extension
-//               function if you're using the Python interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches two OdeBody objects to this joint.  Order is important.  Consider
+ * using the OdeJoint::attach extension function if you're using the Python
+ * interface.
+ */
 void OdeJoint::
 attach_bodies(const OdeBody &body1, const OdeBody &body2) {
   nassertv(_id);
@@ -68,15 +64,11 @@ attach_bodies(const OdeBody &body1, const OdeBody &body2) {
   dJointAttach(_id, body1.get_id(), body2.get_id());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJoint::attach_body
-//       Access: Published
-//  Description: Attaches a single OdeBody to this joint at the
-//               specified index (0 or 1).  The other index will be 
-//               set to the environment (null).
-//               Consider using the OdeJoint::attach extension
-//               function if you're using the Python interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches a single OdeBody to this joint at the specified index (0 or 1).  The
+ * other index will be set to the environment (null). Consider using the
+ * OdeJoint::attach extension function if you're using the Python interface.
+ */
 void OdeJoint::
 attach_body(const OdeBody &body, int index) {
   nassertv(_id);
@@ -207,4 +199,3 @@ convert_to_plane2d() const {
   nassertr(get_joint_type() == JT_plane2d, OdePlane2dJoint(0));
   return OdePlane2dJoint(_id);
 }
-

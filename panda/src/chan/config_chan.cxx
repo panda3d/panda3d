@@ -1,17 +1,15 @@
-// Filename: config_chan.cxx
-// Created by:  drose (28Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_chan.cxx
+ * @author drose
+ * @date 2000-02-28
+ */
 
 #include "config_chan.h"
 #include "animBundle.h"
@@ -147,7 +145,3 @@ ConfigureFn(config_chan) {
   AnimChannelScalarDynamic::register_with_read_factory();
   AnimPreloadTable::register_with_read_factory();
 }
-
-
-
-

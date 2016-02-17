@@ -1,16 +1,15 @@
-// Filename: multiplexStream.h
-// Created by:  drose (27Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file multiplexStream.h
+ * @author drose
+ * @date 2000-11-27
+ */
 
 #ifndef MULTIPLEXSTREAM_H
 #define MULTIPLEXSTREAM_H
@@ -23,15 +22,12 @@
 
 #include <stdio.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : MultiplexStream
-// Description : This is a special ostream that forwards the data that
-//               is written to it to any number of other sources, for
-//               instance other ostreams, or explicitly to a disk file
-//               or to system logging utilities.  It's a very handy
-//               thing to set Notify to refer to when running in batch
-//               mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special ostream that forwards the data that is written to it to any
+ * number of other sources, for instance other ostreams, or explicitly to a disk
+ * file or to system logging utilities.  It's a very handy thing to set Notify
+ * to refer to when running in batch mode.
+ */
 class EXPCL_PANDAEXPRESS MultiplexStream : public ostream {
 PUBLISHED:
   INLINE MultiplexStream();

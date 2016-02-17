@@ -1,16 +1,15 @@
-// Filename: cppInstance.h
-// Created by:  drose (19Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppInstance.h
+ * @author drose
+ * @date 1999-10-19
+ */
 
 #ifndef CPPINSTANCE_H
 #define CPPINSTANCE_H
@@ -27,10 +26,9 @@ class CPPParameterList;
 class CPPScope;
 class CPPExpression;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPInstance
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPInstance : public CPPDeclaration {
 public:
   // Some of these flags clearly only make sense in certain contexts,
@@ -129,4 +127,3 @@ private:
 };
 
 #endif
-

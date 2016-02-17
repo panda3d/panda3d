@@ -1,16 +1,15 @@
-// Filename: fileSpec.cxx
-// Created by:  drose (29Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fileSpec.cxx
+ * @author drose
+ * @date 2009-06-29
+ */
 
 #include "fileSpec.h"
 #include "wstring_encode.h"
@@ -34,11 +33,9 @@
 
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FileSpec::
 FileSpec() {
   _size = 0;
@@ -48,11 +45,9 @@ FileSpec() {
   _actual_file = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FileSpec::
 FileSpec(const FileSpec &copy) :
   _filename(copy._filename),
@@ -64,11 +59,9 @@ FileSpec(const FileSpec &copy) :
   _actual_file = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FileSpec::
 operator = (const FileSpec &copy) {
   _filename = copy._filename;
@@ -78,11 +71,9 @@ operator = (const FileSpec &copy) {
   _got_hash = copy._got_hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FileSpec::
 ~FileSpec() {
   if (_actual_file != NULL) {
@@ -90,11 +81,9 @@ FileSpec::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::load_xml
-//       Access: Public
-//  Description: Reads the data from the indicated XML file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data from the indicated XML file.
+ */
 void FileSpec::
 load_xml(TiXmlElement *xelement) {
   const char *filename = xelement->Attribute("filename");
@@ -122,11 +111,9 @@ load_xml(TiXmlElement *xelement) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::store_xml
-//       Access: Public
-//  Description: Stores the data to the indicated XML file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the data to the indicated XML file.
+ */
 void FileSpec::
 store_xml(TiXmlElement *xelement) {
   if (!_filename.empty()) {
@@ -146,29 +133,21 @@ store_xml(TiXmlElement *xelement) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::quick_verify
-//       Access: Public
-//  Description: Performs a quick test to ensure the file has not been
-//               modified.  This test is vulnerable to people
-//               maliciously attempting to fool the program (by
-//               setting datestamps etc.).
-//
-//               Returns true if it is intact, false if it needs to be
-//               redownloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a quick test to ensure the file has not been modified.  This test is
+ * vulnerable to people maliciously attempting to fool the program (by setting
+ * datestamps etc.).  Returns true if it is intact, false if it needs to be
+ * redownloaded.
+ */
 bool FileSpec::
 quick_verify(const string &package_dir) {
   return quick_verify_pathname(get_pathname(package_dir));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::quick_verify_pathname
-//       Access: Public
-//  Description: Works like quick_verify(), above, with an explicit
-//               pathname.  Useful for verifying the copy of a file in
-//               a temporary location.
-////////////////////////////////////////////////////////////////////
+/**
+ * Works like quick_verify(), above, with an explicit pathname.  Useful for
+ * verifying the copy of a file in a temporary location.
+ */
 bool FileSpec::
 quick_verify_pathname(const string &pathname) {
   if (_actual_file != NULL) {
@@ -233,17 +212,12 @@ quick_verify_pathname(const string &pathname) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::full_verify
-//       Access: Public
-//  Description: Performs a more thorough test to ensure the file has
-//               not been modified.  This test is less vulnerable to
-//               malicious attacks, since it reads and verifies the
-//               entire file.
-//
-//               Returns true if it is intact, false if it needs to be
-//               redownloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a more thorough test to ensure the file has not been modified.  This
+ * test is less vulnerable to malicious attacks, since it reads and verifies the
+ * entire file.  Returns true if it is intact, false if it needs to be
+ * redownloaded.
+ */
 bool FileSpec::
 full_verify(const string &package_dir) {
   if (_actual_file != NULL) {
@@ -297,17 +271,14 @@ full_verify(const string &package_dir) {
     utime(pathname.c_str(), &utb);
 #endif  // _WIN32
   }
-    
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::force_get_actual_file
-//       Access: Public
-//  Description: Returns a FileSpec that represents the actual data
-//               read on disk.  This will read the disk to determine
-//               the data if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FileSpec that represents the actual data read on disk.  This will
+ * read the disk to determine the data if necessary.
+ */
 const FileSpec *FileSpec::
 force_get_actual_file(const string &pathname) {
   if (_actual_file == NULL) {
@@ -328,12 +299,9 @@ force_get_actual_file(const string &pathname) {
   return _actual_file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::check_hash
-//       Access: Public
-//  Description: Returns true if the file has the expected md5 hash,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file has the expected md5 hash, false otherwise.
+ */
 bool FileSpec::
 check_hash(const string &pathname) const {
   FileSpec other;
@@ -344,12 +312,10 @@ check_hash(const string &pathname) const {
   return (memcmp(_hash, other._hash, hash_size) == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::read_hash
-//       Access: Public
-//  Description: Computes the hash from the indicated pathname and
-//               stores it within the FileSpec.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the hash from the indicated pathname and stores it within the
+ * FileSpec.
+ */
 bool FileSpec::
 read_hash(const string &pathname) {
   memset(_hash, 0, hash_size);
@@ -364,7 +330,7 @@ read_hash(const string &pathname) {
 #else // _WIN32
   stream.open(pathname.c_str(), ios::in | ios::binary);
 #endif  // _WIN32
-  
+
   if (!stream) {
     //cerr << "unable to read " << pathname << "\n";
     return false;
@@ -390,13 +356,10 @@ read_hash(const string &pathname) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::read_hash_stream
-//       Access: Public
-//  Description: Reads the hash from the next 16 bytes on the
-//               indicated istream, in the same unusual order observed
-//               by Panda's HashVal::read_stream() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the hash from the next 16 bytes on the indicated istream, in the same
+ * unusual order observed by Panda's HashVal::read_stream() method.
+ */
 bool FileSpec::
 read_hash_stream(istream &in) {
   for (int i = 0; i < hash_size; i += 4) {
@@ -413,22 +376,18 @@ read_hash_stream(istream &in) {
   return !in.fail();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::compare_hash
-//       Access: Public
-//  Description: Returns < 0 if this hash sorts before the other
-//               hash, > 0 if it sorts after, 0 if they are the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns < 0 if this hash sorts before the other hash, > 0 if it sorts after,
+ * 0 if they are the same.
+ */
 int FileSpec::
 compare_hash(const FileSpec &other) const {
   return memcmp(_hash, other._hash, hash_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::write
-//       Access: Public
-//  Description: Describes the data in the FileSpec.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes the data in the FileSpec.
+ */
 void FileSpec::
 write(ostream &out) const {
   out << "filename: " << _filename << ", " << _size << " bytes, "
@@ -439,29 +398,21 @@ write(ostream &out) const {
   out << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::output_hash
-//       Access: Public
-//  Description: Writes just the hash code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes just the hash code.
+ */
 void FileSpec::
 output_hash(ostream &out) const {
   stream_hex(out, _hash, hash_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::priv_check_hash
-//       Access: Private
-//  Description: Returns true if the file has the expected md5 hash,
-//               false otherwise.  Updates _actual_file with the data
-//               read from disk, including the hash, for future
-//               reference.
-//
-//               The parameter stp is a pointer to a stat structure.
-//               It's declared as a void * to get around issues with
-//               the nonstandard declaration of this structure in
-//               Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file has the expected md5 hash, false otherwise.  Updates
+ * _actual_file with the data read from disk, including the hash, for future
+ * reference.  The parameter stp is a pointer to a stat structure.  It's
+ * declared as a void * to get around issues with the nonstandard declaration of
+ * this structure in Windows.
+ */
 bool FileSpec::
 priv_check_hash(const string &pathname, void *stp) {
   const struct stat &st = *(const struct stat *)stp;
@@ -478,16 +429,11 @@ priv_check_hash(const string &pathname, void *stp) {
   return (memcmp(_hash, _actual_file->_hash, hash_size) == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::decode_hex
-//       Access: Private, Static
-//  Description: Decodes the hex string in source into the character
-//               array in dest.  dest must have has least size bytes;
-//               source must have size * 2 bytes.
-//
-//               Returns true on success, false if there was a non-hex
-//               digit in the string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes the hex string in source into the character array in dest.  dest must
+ * have has least size bytes; source must have size * 2 bytes.  Returns true on
+ * success, false if there was a non-hex digit in the string.
+ */
 bool FileSpec::
 decode_hex(unsigned char *dest, const char *source, size_t size) {
   for (size_t i = 0; i < size; ++i) {
@@ -502,14 +448,11 @@ decode_hex(unsigned char *dest, const char *source, size_t size) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::encode_hex
-//       Access: Private, Static
-//  Description: Encodes a character array into a hex string for
-//               output.  dest must have at least size * 2 bytes;
-//               source must have size bytes.  The result is not
-//               null-terminated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes a character array into a hex string for output.  dest must have at
+ * least size * 2 bytes; source must have size bytes.  The result is not null-
+ * terminated.
+ */
 void FileSpec::
 encode_hex(char *dest, const unsigned char *source, size_t size) {
   for (size_t i = 0; i < size; ++i) {
@@ -520,12 +463,10 @@ encode_hex(char *dest, const unsigned char *source, size_t size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::stream_hex
-//       Access: Private, Static
-//  Description: Writes the indicated buffer as a string of hex
-//               characters to the given ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated buffer as a string of hex characters to the given
+ * ostream.
+ */
 void FileSpec::
 stream_hex(ostream &out, const unsigned char *source, size_t size) {
   for (size_t i = 0; i < size; ++i) {

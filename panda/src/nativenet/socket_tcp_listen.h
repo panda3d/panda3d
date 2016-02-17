@@ -1,3 +1,17 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file socket_tcp_listen.h
+ * @author drose
+ * @date 2007-03-01
+ */
+
+
 #ifndef __SOCKET_TCP_LISTEN_H__
 #define __SOCKET_TCP_LISTEN_H__
 
@@ -5,10 +19,9 @@
 #include "socket_ip.h"
 #include "socket_tcp.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_TCP_Listen
-// Description : Base functionality for a TCP rendezvous socket
-////////////////////////////////////////////////////////////////////
+/**
+ * Base functionality for a TCP rendezvous socket
+ */
 class EXPCL_PANDA_NATIVENET Socket_TCP_Listen : public Socket_IP
 {
 public:
@@ -38,10 +51,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenForListen
-//  Description: This function will initialize a listening Socket
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will initialize a listening Socket
+ */
 inline bool Socket_TCP_Listen::OpenForListen(const Socket_Address & Inaddess, int backlog_size )
 {
     ErrorClose();
@@ -59,10 +71,9 @@ inline bool Socket_TCP_Listen::OpenForListen(const Socket_Address & Inaddess, in
 
     return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: GetIncomingConnection
-//  Description: This function is used to accept new connections
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used to accept new connections
+ */
 inline bool Socket_TCP_Listen::GetIncomingConnection(SOCKET & newsession, Socket_Address &address)
 {
     newsession = DO_ACCEPT(_socket, &address.GetAddressInfo());

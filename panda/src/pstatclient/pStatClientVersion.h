@@ -1,16 +1,15 @@
-// Filename: pStatClientVersion.h
-// Created by:  drose (21May01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatClientVersion.h
+ * @author drose
+ * @date 2001-05-21
+ */
 
 #ifndef PSTATCLIENTVERSION_H
 #define PSTATCLIENTVERSION_H
@@ -20,12 +19,10 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatClientVersion
-// Description : Records the version number of a particular client.
-//               Normally this will be the same as
-//               get_current_pstat_major/minor_version().
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the version number of a particular client.  Normally this will be the
+ * same as get_current_pstat_major/minor_version().
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatClientVersion : public ReferenceCount {
 public:
   PStatClientVersion();
@@ -45,4 +42,3 @@ private:
 #include "pStatClientVersion.I"
 
 #endif
-

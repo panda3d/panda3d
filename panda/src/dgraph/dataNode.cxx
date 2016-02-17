@@ -1,16 +1,15 @@
-// Filename: dataNode.cxx
-// Created by:  drose (11Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dataNode.cxx
+ * @author drose
+ * @date 2002-03-11
+ */
 
 #include "dataNode.h"
 #include "dataNodeTransmit.h"
@@ -19,27 +18,21 @@
 
 TypeHandle DataNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *DataNode::
 make_copy() const {
   return new DataNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::transmit_data
-//       Access: Public
-//  Description: Collects the data from all of the parent nodes and
-//               puts it into one DataNodeTransmit object, for
-//               processing; calls do_transmit_data() to read all the
-//               inputs and put the result into the indicated output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects the data from all of the parent nodes and puts it into one
+ * DataNodeTransmit object, for processing; calls do_transmit_data() to read all
+ * the inputs and put the result into the indicated output.
+ */
 void DataNode::
 transmit_data(DataGraphTraverser *trav,
               const DataNodeTransmit inputs[],
@@ -50,7 +43,7 @@ transmit_data(DataGraphTraverser *trav,
   DataConnections::const_iterator ci;
   for (ci = _data_connections.begin(); ci != _data_connections.end(); ++ci) {
     const DataConnection &connect = (*ci);
-    const EventParameter &data = 
+    const EventParameter &data =
       inputs[connect._parent_index].get_data(connect._output_index);
     if (!data.is_empty()) {
       new_input.set_data(connect._input_index, data);
@@ -70,7 +63,7 @@ transmit_data(DataGraphTraverser *trav,
             << *this << " receives:\n";
           any_data = true;
         }
-        dgraph_cat.spam(false) 
+        dgraph_cat.spam(false)
           << "  " << name << " = " << new_input.get_data(def._index)
           << "\n";
       }
@@ -93,7 +86,7 @@ transmit_data(DataGraphTraverser *trav,
             << *this << " transmits:\n";
           any_data = true;
         }
-        dgraph_cat.spam(false) 
+        dgraph_cat.spam(false)
           << "  " << name << " = " << output.get_data(def._index)
           << "\n";
       }
@@ -102,12 +95,10 @@ transmit_data(DataGraphTraverser *trav,
   #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::write_inputs
-//       Access: Published
-//  Description: Writes to the indicated ostream a list of all the
-//               inputs this DataNode might expect to receive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes to the indicated ostream a list of all the inputs this DataNode might
+ * expect to receive.
+ */
 void DataNode::
 write_inputs(ostream &out) const {
   Wires::const_iterator wi;
@@ -118,12 +109,10 @@ write_inputs(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::write_outputs
-//       Access: Published
-//  Description: Writes to the indicated ostream a list of all the
-//               outputs this DataNode might generate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes to the indicated ostream a list of all the outputs this DataNode might
+ * generate.
+ */
 void DataNode::
 write_outputs(ostream &out) const {
   Wires::const_iterator wi;
@@ -134,13 +123,10 @@ write_outputs(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::write_connections
-//       Access: Published
-//  Description: Writes to the indicated ostream a list of all the
-//               connections currently showing between this DataNode
-//               and its parent(s).
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes to the indicated ostream a list of all the connections currently
+ * showing between this DataNode and its parent(s).
+ */
 void DataNode::
 write_connections(ostream &out) const {
   DataConnections::const_iterator ci;
@@ -156,7 +142,7 @@ write_connections(ostream &out) const {
       const string &name = (*wi).first;
       const WireDef &def = (*wi).second;
       if (def._index == connect._input_index) {
-        out << name << " " << def._data_type << " from " 
+        out << name << " " << def._data_type << " from "
             << *get_parent(connect._parent_index) << "\n";
         found = true;
       }
@@ -165,23 +151,15 @@ write_connections(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::define_input
-//       Access: Protected
-//  Description: Adds a new input wire with the given name and the
-//               indicated data type.  The data type should be the
-//               TypeHandle for some type that derives from
-//               TypedReferenceCount, e.g. EventStoreInt,
-//               EventStoreDouble, or some fancier data type like
-//               Texture.
-//
-//               If there is already an input wire defined with the
-//               indicated name, its type is changed.
-//
-//               The return value is the index into the "input"
-//               parameter to do_transmit_data() that can be used to
-//               access the input data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new input wire with the given name and the indicated data type.  The
+ * data type should be the TypeHandle for some type that derives from
+ * TypedReferenceCount, e.g.  EventStoreInt, EventStoreDouble, or some fancier
+ * data type like Texture.  If there is already an input wire defined with the
+ * indicated name, its type is changed.  The return value is the index into the
+ * "input" parameter to do_transmit_data() that can be used to access the input
+ * data.
+ */
 int DataNode::
 define_input(const string &name, TypeHandle data_type) {
   // We shouldn't already be connected.
@@ -204,23 +182,15 @@ define_input(const string &name, TypeHandle data_type) {
   return def._index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::define_output
-//       Access: Protected
-//  Description: Adds a new output wire with the given name and the
-//               indicated data type.  The data type should be the
-//               TypeHandle for some type that derives from
-//               TypedReferenceCount, e.g. EventStoreInt,
-//               EventStoreDouble, or some fancier data type like
-//               Texture.
-//
-//               If there is already an output wire defined with the
-//               indicated name, its type is changed.
-//
-//               The return value is the index into the "output"
-//               parameter to do_transmit_data() where the output data
-//               should be stored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new output wire with the given name and the indicated data type.  The
+ * data type should be the TypeHandle for some type that derives from
+ * TypedReferenceCount, e.g.  EventStoreInt, EventStoreDouble, or some fancier
+ * data type like Texture.  If there is already an output wire defined with the
+ * indicated name, its type is changed.  The return value is the index into the
+ * "output" parameter to do_transmit_data() where the output data should be
+ * stored.
+ */
 int DataNode::
 define_output(const string &name, TypeHandle data_type) {
   // We shouldn't already be connected.
@@ -243,46 +213,34 @@ define_output(const string &name, TypeHandle data_type) {
   return def._index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::parents_changed
-//       Access: Protected, Virtual
-//  Description: Called after a scene graph update that either adds or
-//               remove parents from this node, this just provides a
-//               hook for derived PandaNode objects that need to
-//               update themselves based on the set of parents the
-//               node has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a scene graph update that either adds or remove parents from
+ * this node, this just provides a hook for derived PandaNode objects that need
+ * to update themselves based on the set of parents the node has.
+ */
 void DataNode::
 parents_changed() {
   PandaNode::parents_changed();
   reconnect();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void DataNode::
-do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &, 
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::reconnect
-//       Access: Private
-//  Description: Establishes the input(s) that this DataNode has in
-//               common with its parents' output(s).  Builds up the
-//               _data_connections list correspondingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Establishes the input(s) that this DataNode has in common with its parents'
+ * output(s).  Builds up the _data_connections list correspondingly.
+ */
 void DataNode::
 reconnect() {
   int num_parents = get_num_parents();
@@ -308,7 +266,7 @@ reconnect() {
           num_found++;
           if (output_def._data_type != input_def._data_type) {
             dgraph_cat.warning()
-              << "Ignoring mismatched type for connection " << name 
+              << "Ignoring mismatched type for connection " << name
               << " between " << *data_node << " and " << *this << "\n";
           } else {
             DataConnection dc;
@@ -329,32 +287,27 @@ reconnect() {
       }
     }
   }
-            
-  if (_data_connections.empty() && get_num_inputs() != 0 && 
+
+  if (_data_connections.empty() && get_num_inputs() != 0 &&
       num_datanode_parents != 0) {
     dgraph_cat.warning()
       << "No data connected to " << *this << "\n";
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void DataNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new Lens.
+ */
 void DataNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);

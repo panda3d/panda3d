@@ -1,16 +1,15 @@
-// Filename: config_pgraphnodes.cxx
-// Created by:  drose (05Nov08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_pgraphnodes.cxx
+ * @author drose
+ * @date 2008-11-05
+ */
 
 #include "config_pgraphnodes.h"
 
@@ -94,14 +93,12 @@ ConfigVariableDouble parallax_mapping_scale
           "how much influence the height values have on the texture "
           "coordinates."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libpgraphnodes
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libpgraphnodes() {
   static bool initialized = false;

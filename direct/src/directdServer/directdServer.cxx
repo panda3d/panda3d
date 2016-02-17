@@ -1,16 +1,15 @@
-// Filename: directdServer.cxx
-// Created by:  skyler 2002.04.08
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file directdServer.cxx
+ * @author skyler
+ * @date 2002-04-08
+ */
 
 #include "directdServer.h"
 
@@ -82,7 +81,7 @@ DirectDServer::read_command(string& cmd) {
 void
 DirectDServer::run_server(int port) {
   nout<<"server"<<endl;
-  
+
   listen_to(port);
 
   while (!_shutdown) {
@@ -111,6 +110,6 @@ main(int argc, char *argv[]) {
   }
   DirectDServer directd;
   directd.run_server(port);
-  
+
   return 0;
 }

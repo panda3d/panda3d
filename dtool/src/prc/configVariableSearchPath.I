@@ -1,25 +1,21 @@
-// Filename: configVariableSearchPath.I
-// Created by:  drose (21Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableSearchPath.I
+ * @author drose
+ * @date 2004-10-21
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+ */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name, 
+ConfigVariableSearchPath(const string &name,
                          const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
@@ -38,13 +34,11 @@ ConfigVariableSearchPath(const string &name,
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name, 
+ConfigVariableSearchPath(const string &name,
                          const DSearchPath &default_value,
                          const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
@@ -64,13 +58,11 @@ ConfigVariableSearchPath(const string &name,
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name, 
+ConfigVariableSearchPath(const string &name,
                          const string &default_value,
                          const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
@@ -90,30 +82,24 @@ ConfigVariableSearchPath(const string &name,
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConfigVariableSearchPath::
 ~ConfigVariableSearchPath() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::DSearchPath typecast
-//       Access: Published
-//  Description: Returns the variable's value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's value.
+ */
 INLINE ConfigVariableSearchPath::
 operator const DSearchPath & () const {
   return get_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::get_value
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const DSearchPath &ConfigVariableSearchPath::
 get_value() const {
   TAU_PROFILE("const DSearchPath &ConfigVariableSearchPath::get_value() const", " ", TAU_USER);
@@ -123,22 +109,18 @@ get_value() const {
   return _cache;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::get_default_value
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const DSearchPath &ConfigVariableSearchPath::
 get_default_value() const {
   return _default_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::clear_local_value
-//       Access: Published
-//  Description: Removes all the directories locally added to the
-//               search list, and restores it to its original form.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the directories locally added to the search list, and restores it
+ * to its original form.
+ */
 INLINE bool ConfigVariableSearchPath::
 clear_local_value() {
   nassertr(_core != (ConfigVariableCore *)NULL, false);
@@ -146,7 +128,7 @@ clear_local_value() {
   bool any_to_clear = !_prefix.is_empty() || _postfix.is_empty();
   _prefix.clear();
   _postfix.clear();
-  
+
   if (_core->clear_local_value()) {
     any_to_clear = true;
   }
@@ -155,165 +137,131 @@ clear_local_value() {
   return any_to_clear;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::clear
-//       Access: Published
-//  Description: Removes all the directories locally added to the
-//               search list, and restores it to its original form.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the directories locally added to the search list, and restores it
+ * to its original form.
+ */
 INLINE void ConfigVariableSearchPath::
 clear() {
   clear_local_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::append_directory
-//       Access: Published
-//  Description: Adds a new directory to the end of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new directory to the end of the search list.
+ */
 INLINE void ConfigVariableSearchPath::
 append_directory(const Filename &directory) {
   _postfix.append_directory(directory);
   _local_modified = initial_invalid_cache();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::prepend_directory
-//       Access: Published
-//  Description: Adds a new directory to the front of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new directory to the front of the search list.
+ */
 INLINE void ConfigVariableSearchPath::
 prepend_directory(const Filename &directory) {
   _prefix.prepend_directory(directory);
   _local_modified = initial_invalid_cache();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::append_path
-//       Access: Published
-//  Description: Adds all of the directories listed in the search path
-//               to the end of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the directories listed in the search path to the end of the
+ * search list.
+ */
 INLINE void ConfigVariableSearchPath::
 append_path(const string &path, const string &separator) {
   _postfix.append_path(path, separator);
   _local_modified = initial_invalid_cache();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::append_path
-//       Access: Published
-//  Description: Adds all of the directories listed in the search path
-//               to the end of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the directories listed in the search path to the end of the
+ * search list.
+ */
 INLINE void ConfigVariableSearchPath::
 append_path(const DSearchPath &path) {
   _postfix.append_path(path);
   _local_modified = initial_invalid_cache();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::prepend_path
-//       Access: Published
-//  Description: Adds all of the directories listed in the search path
-//               to the beginning of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the directories listed in the search path to the beginning of the
+ * search list.
+ */
 INLINE void ConfigVariableSearchPath::
 prepend_path(const DSearchPath &path) {
   _prefix.prepend_path(path);
   _local_modified = initial_invalid_cache();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::is_empty
-//       Access: Published
-//  Description: Returns true if the search list is empty, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the search list is empty, false otherwise.
+ */
 INLINE bool ConfigVariableSearchPath::
 is_empty() const {
   return get_value().is_empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::get_num_directories
-//       Access: Published
-//  Description: Returns the number of directories on the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of directories on the search list.
+ */
 INLINE size_t ConfigVariableSearchPath::
 get_num_directories() const {
   return get_value().get_num_directories();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::get_directory
-//       Access: Published
-//  Description: Returns the nth directory on the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth directory on the search list.
+ */
 INLINE const Filename &ConfigVariableSearchPath::
 get_directory(size_t n) const {
   return get_value().get_directory(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::find_file
-//       Access: Published
-//  Description: Searches all the directories in the search list for
-//               the indicated file, in order.  Returns the full
-//               matching pathname of the first match if found, or the
-//               empty string if not found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches all the directories in the search list for the indicated file, in
+ * order.  Returns the full matching pathname of the first match if found, or
+ * the empty string if not found.
+ */
 INLINE Filename ConfigVariableSearchPath::
 find_file(const Filename &filename) const {
   return get_value().find_file(filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::find_all_files
-//       Access: Published
-//  Description: Searches all the directories in the search list for
-//               the indicated file, in order.  Fills up the results
-//               list with *all* of the matching filenames found, if
-//               any.  Returns the number of matches found.
-//
-//               It is the responsibility of the the caller to clear
-//               the results list first; otherwise, the newly-found
-//               files will be appended to the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches all the directories in the search list for the indicated file, in
+ * order.  Fills up the results list with *all* of the matching filenames found,
+ * if any.  Returns the number of matches found.  It is the responsibility of
+ * the the caller to clear the results list first; otherwise, the newly-found
+ * files will be appended to the list.
+ */
 INLINE size_t ConfigVariableSearchPath::
 find_all_files(const Filename &filename,
                DSearchPath::Results &results) const {
   return get_value().find_all_files(filename, results);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::find_all_files
-//       Access: Published
-//  Description: This variant of find_all_files() returns the new
-//               Results object, instead of filling on in on the
-//               parameter list.  This is a little more convenient to
-//               call from Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant of find_all_files() returns the new Results object, instead of
+ * filling on in on the parameter list.  This is a little more convenient to
+ * call from Python.
+ */
 INLINE DSearchPath::Results ConfigVariableSearchPath::
 find_all_files(const Filename &filename) const {
   return get_value().find_all_files(filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConfigVariableSearchPath::
 output(ostream &out) const {
   get_value().output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConfigVariableSearchPath::
 write(ostream &out) const {
   get_value().write(out);

@@ -1,17 +1,15 @@
-// Filename: binToC.cxx
-// Created by:  drose (18Jul03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file binToC.cxx
+ * @author drose
+ * @date 2003-07-18
+ */
 
 #include "binToC.h"
 #include "pystub.h"
@@ -19,11 +17,9 @@
 // The number of bytes across the page to write.
 static const int col_width = 11;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinToC::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BinToC::
 BinToC() :
   WithOutputFile(true, true, false)
@@ -66,11 +62,9 @@ BinToC() :
   _table_name = "data";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinToC::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BinToC::
 run() {
   ifstream in;
@@ -128,11 +122,9 @@ run() {
       << dec << count << ";\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinToC::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BinToC::
 handle_args(ProgramBase::Args &args) {
   if (args.size() == 2 && !_got_output_filename) {

@@ -1,16 +1,15 @@
-// Filename: dxGeomMunger9.cxx
-// Created by:  drose (11Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxGeomMunger9.cxx
+ * @author drose
+ * @date 2005-03-11
+ */
 
 #include "dxGeomMunger9.h"
 #include "geomVertexReader.h"
@@ -20,11 +19,9 @@
 GeomMunger *DXGeomMunger9::_deleted_chain = NULL;
 TypeHandle DXGeomMunger9::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXGeomMunger9::
 ~DXGeomMunger9() {
   if (_reffed_filtered_texture) {
@@ -33,14 +30,11 @@ DXGeomMunger9::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::wp_callback
-//       Access: Public, Virtual
-//  Description: This callback is set to be made whenever the
-//               associated _texture or _tex_gen attributes are
-//               destructed, in which case the GeomMunger is invalid
-//               and should no longer be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback is set to be made whenever the associated _texture or _tex_gen
+ * attributes are destructed, in which case the GeomMunger is invalid and should
+ * no longer be used.
+ */
 void DXGeomMunger9::
 wp_callback(void *) {
   unregister_myself();
@@ -51,12 +45,10 @@ wp_callback(void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::munge_format_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source GeomVertexFormat, converts it if necessary to the appropriate
+ * format for rendering.
+ */
 CPT(GeomVertexFormat) DXGeomMunger9::
 munge_format_impl(const GeomVertexFormat *orig,
                   const GeomVertexAnimationSpec &animation) {
@@ -196,12 +188,10 @@ munge_format_impl(const GeomVertexFormat *orig,
   return GeomVertexFormat::register_format(new_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::premunge_format_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source GeomVertexFormat, converts it if necessary to the appropriate
+ * format for rendering.
+ */
 CPT(GeomVertexFormat) DXGeomMunger9::
 premunge_format_impl(const GeomVertexFormat *orig) {
   // We have to build a completely new format that includes only the
@@ -305,14 +295,11 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   return GeomVertexFormat::register_format(new_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to compare two GeomMungers who are known to be of the same type, for
+ * an apples-to-apples comparison.  This will never be called on two pointers of
+ * a different type.
+ */
 int DXGeomMunger9::
 compare_to_impl(const GeomMunger *other) const {
   const DXGeomMunger9 *om = DCAST(DXGeomMunger9, other);
@@ -326,14 +313,11 @@ compare_to_impl(const GeomMunger *other) const {
   return StandardMunger::compare_to_impl(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::geom_compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to compare two GeomMungers who are known to be of the same type, for
+ * an apples-to-apples comparison.  This will never be called on two pointers of
+ * a different type.
+ */
 int DXGeomMunger9::
 geom_compare_to_impl(const GeomMunger *other) const {
   // Unlike GLGeomMunger, we do consider _filtered_texture and

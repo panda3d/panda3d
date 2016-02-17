@@ -1,18 +1,18 @@
-// Filename: glGraphicsStateGuardian_src.cxx
-// Created by:  drose (02Feb99)
-// Updated by: fperazzi, PandaSE (05May10) (added
-//   get_supports_cg_profile)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGraphicsStateGuardian_src.cxx
+ * @author drose
+ * @date 1999-02-02
+ * @author fperazzi, PandaSE
+ * @date 2010-05-05
+ *   get_supports_cg_profile)
+ */
 
 #include "config_util.h"
 #include "displayRegion.h"
@@ -194,11 +194,9 @@ static const string default_fshader =
 #endif
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: uchar_bgr_to_rgb
-//  Description: Recopies the given array of pixels, converting from
-//               BGR to RGB arrangement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recopies the given array of pixels, converting from BGR to RGB arrangement.
+ */
 static void
 uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
                  int num_pixels) {
@@ -211,11 +209,9 @@ uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: uchar_bgra_to_rgba
-//  Description: Recopies the given array of pixels, converting from
-//               BGRA to RGBA arrangement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recopies the given array of pixels, converting from BGRA to RGBA arrangement.
+ */
 static void
 uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
                    int num_pixels) {
@@ -229,11 +225,9 @@ uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ushort_bgr_to_rgb
-//  Description: Recopies the given array of pixels, converting from
-//               BGR to RGB arrangement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recopies the given array of pixels, converting from BGR to RGB arrangement.
+ */
 static void
 ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source,
                   int num_pixels) {
@@ -246,11 +240,9 @@ ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ushort_bgra_to_rgba
-//  Description: Recopies the given array of pixels, converting from
-//               BGRA to RGBA arrangement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recopies the given array of pixels, converting from BGRA to RGBA arrangement.
+ */
 static void
 ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
                     int num_pixels) {
@@ -264,21 +256,15 @@ ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: fix_component_ordering
-//  Description: Reverses the order of the components within the
-//               image, to convert (for instance) GL_BGR to GL_RGB.
-//               Returns the byte pointer representing the converted
-//               image, or the original image if it is unchanged.
-//
-//               new_image must be supplied; it is the PTA_uchar that
-//               will be used to hold the converted image if required.
-//               It will be modified only if the conversion is
-//               necessary, in which case the data will be stored
-//               there, and this pointer will be returned.  If the
-//               conversion is not necessary, this pointer will be
-//               left unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the order of the components within the image, to convert (for
+ * instance) GL_BGR to GL_RGB. Returns the byte pointer representing the
+ * converted image, or the original image if it is unchanged.  new_image must be
+ * supplied; it is the PTA_uchar that will be used to hold the converted image
+ * if required.  It will be modified only if the conversion is necessary, in
+ * which case the data will be stored there, and this pointer will be returned.
+ * If the conversion is not necessary, this pointer will be left unchanged.
+ */
 static const unsigned char *
 fix_component_ordering(PTA_uchar &new_image,
                        const unsigned char *orig_image, size_t orig_image_size,
@@ -349,11 +335,9 @@ int CLP(GraphicsStateGuardian)::get_driver_version_minor() { return _gl_version_
 int CLP(GraphicsStateGuardian)::get_driver_shader_version_major() { return _gl_shadlang_ver_major; }
 int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _gl_shadlang_ver_minor; }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(GraphicsStateGuardian)::
 CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   GraphicsStateGuardian(gl_coordinate_system, engine, pipe),
@@ -399,11 +383,9 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(GraphicsStateGuardian)::
 ~CLP(GraphicsStateGuardian)() {
   if (GLCAT.is_debug()) {
@@ -414,13 +396,10 @@ CLP(GraphicsStateGuardian)::
   close_gsg();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::debug_callback
-//       Access: Public, Static
-//  Description: This is called by the GL if an error occurs, if
-//               gl_debug has been enabled (and the driver supports
-//               the GL_ARB_debug_output extension).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GL if an error occurs, if gl_debug has been enabled
+ * (and the driver supports the GL_ARB_debug_output extension).
+ */
 #ifndef OPENGLES_1
 void CLP(GraphicsStateGuardian)::
 debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam) {
@@ -459,12 +438,9 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
 }
 #endif  // OPENGLES_1
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
 void CLP(GraphicsStateGuardian)::
 reset() {
   _last_error_check = -1.0;
@@ -2848,17 +2824,13 @@ reset() {
   add_gsg(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::finish
-//       Access: Public, Virtual
-//  Description: Force the graphics card to finish drawing before
-//               returning.  !!!!!HACK WARNING!!!!
-//               glfinish does not actually wait for the graphics card to finish drawing
-//               only for draw calls to finish.  Thus flip may not happene
-//               immediately.  Instead we read a single pixel from
-//               the framebuffer.  This forces the graphics card to
-//               finish drawing the frame before returning.
-////////////////////////////////////////////////////////////////////
+/**
+ * Force the graphics card to finish drawing before returning.  !!!!!HACK
+ * WARNING!!!! glfinish does not actually wait for the graphics card to finish
+ * drawing only for draw calls to finish.  Thus flip may not happene
+ * immediately.  Instead we read a single pixel from the framebuffer.  This
+ * forces the graphics card to finish drawing the frame before returning.
+ */
 void CLP(GraphicsStateGuardian)::
 finish() {
   // Rather than call glfinish which returns immediately if
@@ -2870,17 +2842,12 @@ finish() {
   //glFinish();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear
-//       Access: Public
-//  Description: Clears the framebuffer within the current
-//               DisplayRegion, according to the flags indicated by
-//               the given DrawableRegion object.
-//
-//               This does not set the DisplayRegion first.  You
-//               should call prepare_display_region() to specify the
-//               region you wish the clear operation to apply to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the framebuffer within the current DisplayRegion, according to the
+ * flags indicated by the given DrawableRegion object.  This does not set the
+ * DisplayRegion first.  You should call prepare_display_region() to specify the
+ * region you wish the clear operation to apply to.
+ */
 void CLP(GraphicsStateGuardian)::
 clear(DrawableRegion *clearable) {
   PStatGPUTimer timer(this, _clear_pcollector);
@@ -3048,12 +3015,9 @@ clear(DrawableRegion *clearable) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_display_region
-//       Access: Public, Virtual
-//  Description: Prepare a display region for rendering (set up
-//               scissor region and viewport)
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepare a display region for rendering (set up scissor region and viewport)
+ */
 void CLP(GraphicsStateGuardian)::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
@@ -3163,15 +3127,12 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::clear_before_callback
-//       Access: Public, Virtual
-//  Description: Resets any non-standard graphics state that might
-//               give a callback apoplexy.  Some drivers require that
-//               the graphics state be restored to neutral before
-//               performing certain operations.  In OpenGL, for
-//               instance, this closes any open vertex buffers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets any non-standard graphics state that might give a callback apoplexy.
+ * Some drivers require that the graphics state be restored to neutral before
+ * performing certain operations.  In OpenGL, for instance, this closes any open
+ * vertex buffers.
+ */
 void CLP(GraphicsStateGuardian)::
 clear_before_callback() {
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -3208,17 +3169,12 @@ clear_before_callback() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::calc_projection_mat
-//       Access: Public, Virtual
-//  Description: Given a lens, calculates the appropriate projection
-//               matrix for use with this gsg.  Note that the
-//               projection matrix depends a lot upon the coordinate
-//               system of the rendering API.
-//
-//               The return value is a TransformState if the lens is
-//               acceptable, NULL if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a lens, calculates the appropriate projection matrix for use with this
+ * gsg.  Note that the projection matrix depends a lot upon the coordinate
+ * system of the rendering API.  The return value is a TransformState if the
+ * lens is acceptable, NULL if it is not.
+ */
 CPT(TransformState) CLP(GraphicsStateGuardian)::
 calc_projection_mat(const Lens *lens) {
   if (lens == (Lens *)NULL) {
@@ -3251,18 +3207,13 @@ calc_projection_mat(const Lens *lens) {
   return TransformState::make_mat(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_lens
-//       Access: Public, Virtual
-//  Description: Makes the current lens (whichever lens was most
-//               recently specified with set_scene()) active, so
-//               that it will transform future rendered geometry.
-//               Normally this is only called from the draw process,
-//               and usually it is called by set_scene().
-//
-//               The return value is true if the lens is acceptable,
-//               false if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the current lens (whichever lens was most recently specified with
+ * set_scene()) active, so that it will transform future rendered geometry.
+ * Normally this is only called from the draw process, and usually it is called
+ * by set_scene().  The return value is true if the lens is acceptable, false if
+ * it is not.
+ */
 bool CLP(GraphicsStateGuardian)::
 prepare_lens() {
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -3287,19 +3238,13 @@ prepare_lens() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_frame
-//       Access: Public, Virtual
-//  Description: Called before each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup before
-//               beginning the frame.
-//
-//               The return value is true if successful (in which case
-//               the frame will be drawn and end_frame() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_frame() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup before beginning the frame.  The return value is true if
+ * successful (in which case the frame will be drawn and end_frame() will be
+ * called later), or false if unsuccessful (in which case nothing will be drawn
+ * and end_frame() will not be called).
+ */
 bool CLP(GraphicsStateGuardian)::
 begin_frame(Thread *current_thread) {
   if (!GraphicsStateGuardian::begin_frame(current_thread)) {
@@ -3365,35 +3310,26 @@ begin_frame(Thread *current_thread) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_scene
-//       Access: Public, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the beginning of drawing commands for a "scene"
-//               (usually a particular DisplayRegion) within a frame.
-//               All 3-D drawing commands, except the clear operation,
-//               must be enclosed within begin_scene() .. end_scene().
-//
-//               The return value is true if successful (in which case
-//               the scene will be drawn and end_scene() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_scene() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the beginning of drawing
+ * commands for a "scene" (usually a particular DisplayRegion) within a frame.
+ * All 3-D drawing commands, except the clear operation, must be enclosed within
+ * begin_scene() .. end_scene().  The return value is true if successful (in
+ * which case the scene will be drawn and end_scene() will be called later), or
+ * false if unsuccessful (in which case nothing will be drawn and end_scene()
+ * will not be called).
+ */
 bool CLP(GraphicsStateGuardian)::
 begin_scene() {
   return GraphicsStateGuardian::begin_scene();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_scene
-//       Access: Protected, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the end of drawing commands for a "scene" (usually a
-//               particular DisplayRegion) within a frame.  All 3-D
-//               drawing commands, except the clear operation, must be
-//               enclosed within begin_scene() .. end_scene().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the end of drawing
+ * commands for a "scene" (usually a particular DisplayRegion) within a frame.
+ * All 3-D drawing commands, except the clear operation, must be enclosed within
+ * begin_scene() .. end_scene().
+ */
 void CLP(GraphicsStateGuardian)::
 end_scene() {
   GraphicsStateGuardian::end_scene();
@@ -3402,13 +3338,10 @@ end_scene() {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_frame
-//       Access: Public, Virtual
-//  Description: Called after each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup after
-//               rendering the frame, and before the window flips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup after rendering the frame, and before the window flips.
+ */
 void CLP(GraphicsStateGuardian)::
 end_frame(Thread *current_thread) {
   report_my_gl_errors();
@@ -3573,14 +3506,11 @@ end_frame(Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_draw_primitives
-//       Access: Public, Virtual
-//  Description: Called before a sequence of draw_primitive()
-//               functions are called, this should prepare the vertex
-//               data for rendering.  It returns true if the vertices
-//               are ok, false to abort this group of primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before a sequence of draw_primitive() functions are called, this
+ * should prepare the vertex data for rendering.  It returns true if the
+ * vertices are ok, false to abort this group of primitives.
+ */
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
@@ -3787,18 +3717,13 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::update_standard_vertex_arrays
-//       Access: Protected
-//  Description: Disables any unneeded vertex arrays that
-//               were previously enabled, and enables any vertex
-//               arrays that are needed that were not previously
-//               enabled (or, sets up an immediate-mode sender).
-//               Called only from begin_draw_primitives.
-//               Used only when the standard (non-shader) pipeline
-//               is about to be used - glShaderContexts are responsible
-//               for setting up their own vertex arrays.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables any unneeded vertex arrays that were previously enabled, and enables
+ * any vertex arrays that are needed that were not previously enabled (or, sets
+ * up an immediate-mode sender). Called only from begin_draw_primitives.  Used
+ * only when the standard (non-shader) pipeline is about to be used -
+ * glShaderContexts are responsible for setting up their own vertex arrays.
+ */
 bool CLP(GraphicsStateGuardian)::
 update_standard_vertex_arrays(bool force) {
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -3975,13 +3900,10 @@ update_standard_vertex_arrays(bool force) {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::unbind_buffers
-//       Access: Protected
-//  Description: Ensures the vertex and array buffers are no longer
-//               bound.  Some graphics drivers crash if these are left
-//               bound indiscriminantly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures the vertex and array buffers are no longer bound.  Some graphics
+ * drivers crash if these are left bound indiscriminantly.
+ */
 void CLP(GraphicsStateGuardian)::
 unbind_buffers() {
   if (_current_vbuffer_index != 0) {
@@ -4020,16 +3942,12 @@ unbind_buffers() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::disable_standard_vertex_arrays
-//       Access: Protected
-//  Description: Used to disable all the standard vertex arrays that
-//               are currently enabled.  glShaderContexts are
-//               responsible for setting up their own vertex arrays,
-//               but before they can do so, the standard vertex
-//               arrays need to be disabled to get them "out of the
-//               way."  Called only from begin_draw_primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to disable all the standard vertex arrays that are currently enabled.
+ * glShaderContexts are responsible for setting up their own vertex arrays, but
+ * before they can do so, the standard vertex arrays need to be disabled to get
+ * them "out of the way."  Called only from begin_draw_primitives.
+ */
 void CLP(GraphicsStateGuardian)::
 disable_standard_vertex_arrays() {
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -4052,12 +3970,10 @@ disable_standard_vertex_arrays() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::update_shader_vertex_format
-//       Access: Protected
-//  Description: Updates the vertex format used by the shader.  This
-//               is still an experimental feature.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the vertex format used by the shader.  This is still an experimental
+ * feature.
+ */
 void CLP(GraphicsStateGuardian)::
 update_shader_vertex_format(const GeomVertexFormat *format) {
   size_t num_columns = format->get_num_columns();
@@ -4125,11 +4041,9 @@ update_shader_vertex_format(const GeomVertexFormat *format) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_triangles
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected triangles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected triangles.
+ */
 bool CLP(GraphicsStateGuardian)::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
@@ -4192,11 +4106,9 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_tristrips
-//       Access: Public, Virtual
-//  Description: Draws a series of triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of triangle strips.
+ */
 bool CLP(GraphicsStateGuardian)::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
@@ -4319,11 +4231,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_trifans
-//       Access: Public, Virtual
-//  Description: Draws a series of triangle fans.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of triangle fans.
+ */
 bool CLP(GraphicsStateGuardian)::
 draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
@@ -4399,12 +4309,10 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_patches
-//       Access: Public, Virtual
-//  Description: Draws a series of "patches", which can only be
-//               processed by a tessellation shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of "patches", which can only be processed by a tessellation
+ * shader.
+ */
 bool CLP(GraphicsStateGuardian)::
 draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
@@ -4476,11 +4384,9 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_lines
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected line segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected line segments.
+ */
 bool CLP(GraphicsStateGuardian)::
 draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
@@ -4541,11 +4447,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_linestrips
-//       Access: Public, Virtual
-//  Description: Draws a series of line strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of line strips.
+ */
 bool CLP(GraphicsStateGuardian)::
 draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
@@ -4665,11 +4569,9 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_points
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected points.
+ */
 bool CLP(GraphicsStateGuardian)::
 draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
@@ -4728,13 +4630,10 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_draw_primitives()
-//       Access: Public, Virtual
-//  Description: Called after a sequence of draw_primitive()
-//               functions are called, this should do whatever cleanup
-//               is appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a sequence of draw_primitive() functions are called, this should
+ * do whatever cleanup is appropriate.
+ */
 void CLP(GraphicsStateGuardian)::
 end_draw_primitives() {
 #if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)  // Display lists not supported by OpenGL ES.
@@ -4772,13 +4671,10 @@ end_draw_primitives() {
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_memory_barrier
-//       Access: Public
-//  Description: Issues the given memory barriers, and clears the
-//               list of textures marked as incoherent for the given
-//               bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Issues the given memory barriers, and clears the list of textures marked as
+ * incoherent for the given bits.
+ */
 void CLP(GraphicsStateGuardian)::
 issue_memory_barrier(GLbitfield barriers) {
   if (!gl_enable_memory_barriers || _glMemoryBarrier == NULL) {
@@ -4821,19 +4717,14 @@ issue_memory_barrier(GLbitfield barriers) {
 }
 #endif  // OPENGLES
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_texture
-//       Access: Public, Virtual
-//  Description: Creates whatever structures the GSG requires to
-//               represent the texture internally, and returns a
-//               newly-allocated TextureContext object with this data.
-//               It is the responsibility of the calling function to
-//               later call release_texture() with this same pointer
-//               (which will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a texture.  Instead, call Texture::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates whatever structures the GSG requires to represent the texture
+ * internally, and returns a newly-allocated TextureContext object with this
+ * data.  It is the responsibility of the calling function to later call
+ * release_texture() with this same pointer (which will also delete the
+ * pointer).  This function should not be called directly to prepare a texture.
+ * Instead, call Texture::prepare().
+ */
 TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex, int view) {
   PStatGPUTimer timer(this, _prepare_texture_pcollector);
@@ -4892,22 +4783,15 @@ prepare_texture(Texture *tex, int view) {
   return gtc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::update_texture
-//       Access: Public, Virtual
-//  Description: Ensures that the current Texture data is refreshed
-//               onto the GSG.  This means updating the texture
-//               properties and/or re-uploading the texture image, if
-//               necessary.  This should only be called within the
-//               draw thread.
-//
-//               If force is true, this function will not return until
-//               the texture has been fully uploaded.  If force is
-//               false, the function may choose to upload a simple
-//               version of the texture instead, if the texture is not
-//               fully resident (and if get_incomplete_render() is
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the current Texture data is refreshed onto the GSG.  This means
+ * updating the texture properties and/or re-uploading the texture image, if
+ * necessary.  This should only be called within the draw thread.  If force is
+ * true, this function will not return until the texture has been fully
+ * uploaded.  If force is false, the function may choose to upload a simple
+ * version of the texture instead, if the texture is not fully resident (and if
+ * get_incomplete_render() is true).
+ */
 bool CLP(GraphicsStateGuardian)::
 update_texture(TextureContext *tc, bool force) {
   CLP(TextureContext) *gtc;
@@ -4961,14 +4845,11 @@ update_texture(TextureContext *tc, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_texture
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               texture.  This function should never be called
-//               directly; instead, call Texture::release() (or simply
-//               let the Texture destruct).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the texture.  This function
+ * should never be called directly; instead, call Texture::release() (or simply
+ * let the Texture destruct).
+ */
 void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
@@ -4989,18 +4870,12 @@ release_texture(TextureContext *tc) {
   delete gtc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::extract_texture_data
-//       Access: Public, Virtual
-//  Description: This method should only be called by the
-//               GraphicsEngine.  Do not call it directly; call
-//               GraphicsEngine::extract_texture_data() instead.
-//
-//               This method will be called in the draw thread to
-//               download the texture memory's image into its
-//               ram_image value.  It returns true on success, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.  This method
+ * will be called in the draw thread to download the texture memory's image into
+ * its ram_image value.  It returns true on success, false otherwise.
+ */
 bool CLP(GraphicsStateGuardian)::
 extract_texture_data(Texture *tex) {
   bool success = true;
@@ -5022,20 +4897,14 @@ extract_texture_data(Texture *tex) {
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_sampler
-//       Access: Public, Virtual
-//  Description: Creates whatever structures the GSG requires to
-//               represent the sampler state internally, and returns a
-//               newly-allocated SamplerContext object with this data.
-//               It is the responsibility of the calling function to
-//               later call release_sampler() with this same pointer
-//               (which will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a sampler object.  Instead, call
-//               SamplerState::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates whatever structures the GSG requires to represent the sampler state
+ * internally, and returns a newly-allocated SamplerContext object with this
+ * data.  It is the responsibility of the calling function to later call
+ * release_sampler() with this same pointer (which will also delete the
+ * pointer).  This function should not be called directly to prepare a sampler
+ * object.  Instead, call SamplerState::prepare().
+ */
 SamplerContext *CLP(GraphicsStateGuardian)::
 prepare_sampler(const SamplerState &sampler) {
   nassertr(_supports_sampler_objects, NULL);
@@ -5114,13 +4983,10 @@ prepare_sampler(const SamplerState &sampler) {
 #endif  // !OPENGLES
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_sampler
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               sampler.  This function should never be called
-//               directly; instead, call SamplerState::release().
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the sampler.  This function
+ * should never be called directly; instead, call SamplerState::release().
+ */
 void CLP(GraphicsStateGuardian)::
 release_sampler(SamplerContext *sc) {
   CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
@@ -5133,33 +4999,24 @@ release_sampler(SamplerContext *sc) {
 }
 #endif  // !OPENGLES
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_geom
-//       Access: Public, Virtual
-//  Description: Creates a new retained-mode representation of the
-//               given geom, and returns a newly-allocated
-//               GeomContext pointer to reference it.  It is the
-//               responsibility of the calling function to later
-//               call release_geom() with this same pointer (which
-//               will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a geom.  Instead, call Geom::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new retained-mode representation of the given geom, and returns a
+ * newly-allocated GeomContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_geom() with this
+ * same pointer (which will also delete the pointer).  This function should not
+ * be called directly to prepare a geom.  Instead, call Geom::prepare().
+ */
 GeomContext *CLP(GraphicsStateGuardian)::
 prepare_geom(Geom *geom) {
   PStatGPUTimer timer(this, _prepare_geom_pcollector);
   return new CLP(GeomContext)(geom);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_geom
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               geom.  This function should never be called
-//               directly; instead, call Geom::release() (or simply
-//               let the Geom destruct).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the geom.  This function
+ * should never be called directly; instead, call Geom::release() (or simply let
+ * the Geom destruct).
+ */
 void CLP(GraphicsStateGuardian)::
 release_geom(GeomContext *gc) {
   CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
@@ -5169,11 +5026,9 @@ release_geom(GeomContext *gc) {
   delete ggc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_shader
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(Shader *se) {
   PStatGPUTimer timer(this, _prepare_shader_pcollector);
@@ -5228,11 +5083,9 @@ prepare_shader(Shader *se) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_shader
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
 #ifndef OPENGLES_1
@@ -5249,33 +5102,25 @@ release_shader(ShaderContext *sc) {
   delete sc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::record_deleted_display_list
-//       Access: Public
-//  Description: This is intended to be called only from the
-//               GLGeomContext destructor.  It saves the indicated
-//               display list index in the list to be deleted at the
-//               end of the frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is intended to be called only from the GLGeomContext destructor.  It
+ * saves the indicated display list index in the list to be deleted at the end
+ * of the frame.
+ */
 void CLP(GraphicsStateGuardian)::
 record_deleted_display_list(GLuint index) {
   LightMutexHolder holder(_lock);
   _deleted_display_lists.push_back(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_vertex_buffer
-//       Access: Public, Virtual
-//  Description: Creates a new retained-mode representation of the
-//               given data, and returns a newly-allocated
-//               VertexBufferContext pointer to reference it.  It is the
-//               responsibility of the calling function to later
-//               call release_vertex_buffer() with this same pointer (which
-//               will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a buffer.  Instead, call Geom::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new retained-mode representation of the given data, and returns a
+ * newly-allocated VertexBufferContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_vertex_buffer()
+ * with this same pointer (which will also delete the pointer).  This function
+ * should not be called directly to prepare a buffer.  Instead, call
+ * Geom::prepare().
+ */
 VertexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
   if (_supports_buffers) {
@@ -5299,13 +5144,10 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::update_vertex_buffer
-//       Access: Public
-//  Description: Makes sure that the data in the vertex buffer is
-//               up-to-date.  This may bind it to the GL_ARRAY_BUFFER
-//               binding point if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes sure that the data in the vertex buffer is up-to-date.  This may bind
+ * it to the GL_ARRAY_BUFFER binding point if necessary.
+ */
 bool CLP(GraphicsStateGuardian)::
 update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
                      const GeomVertexArrayDataHandle *reader, bool force) {
@@ -5359,14 +5201,11 @@ update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_vertex_buffer
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               data.  This function should never be called
-//               directly; instead, call Data::release() (or simply
-//               let the Data destruct).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply let
+ * the Data destruct).
+ */
 void CLP(GraphicsStateGuardian)::
 release_vertex_buffer(VertexBufferContext *vbc) {
   nassertv(_supports_buffers);
@@ -5399,24 +5238,16 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   delete gvbc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::setup_array_data
-//       Access: Public
-//  Description: Internal function to bind a buffer object for the
-//               indicated data array, if appropriate, or to unbind a
-//               buffer object if it should be rendered from client
-//               memory.
-//
-//               If the buffer object is bound, this function sets
-//               client_pointer to NULL (representing the start of the
-//               buffer object in server memory); if the buffer object
-//               is not bound, this function sets client_pointer the
-//               pointer to the data array in client memory, that is,
-//               the data array passed in.
-//
-//               If force is not true, the function may return false
-//               indicating the data is not currently available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Internal function to bind a buffer object for the indicated data array, if
+ * appropriate, or to unbind a buffer object if it should be rendered from
+ * client memory.  If the buffer object is bound, this function sets
+ * client_pointer to NULL (representing the start of the buffer object in server
+ * memory); if the buffer object is not bound, this function sets client_pointer
+ * the pointer to the data array in client memory, that is, the data array
+ * passed in.  If force is not true, the function may return false indicating
+ * the data is not currently available.
+ */
 bool CLP(GraphicsStateGuardian)::
 setup_array_data(const unsigned char *&client_pointer,
                  const GeomVertexArrayDataHandle *array_reader,
@@ -5465,19 +5296,14 @@ setup_array_data(const unsigned char *&client_pointer,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_index_buffer
-//       Access: Public, Virtual
-//  Description: Creates a new retained-mode representation of the
-//               given data, and returns a newly-allocated
-//               IndexBufferContext pointer to reference it.  It is the
-//               responsibility of the calling function to later
-//               call release_index_buffer() with this same pointer (which
-//               will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a buffer.  Instead, call Geom::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new retained-mode representation of the given data, and returns a
+ * newly-allocated IndexBufferContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_index_buffer()
+ * with this same pointer (which will also delete the pointer).  This function
+ * should not be called directly to prepare a buffer.  Instead, call
+ * Geom::prepare().
+ */
 IndexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_index_buffer(GeomPrimitive *data) {
   if (_supports_buffers) {
@@ -5503,12 +5329,9 @@ prepare_index_buffer(GeomPrimitive *data) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_index_buffer
-//       Access: Public
-//  Description: Makes the data the currently available data for
-//               rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the data the currently available data for rendering.
+ */
 bool CLP(GraphicsStateGuardian)::
 apply_index_buffer(IndexBufferContext *ibc,
                    const GeomPrimitivePipelineReader *reader,
@@ -5564,14 +5387,11 @@ apply_index_buffer(IndexBufferContext *ibc,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_index_buffer
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               data.  This function should never be called
-//               directly; instead, call Data::release() (or simply
-//               let the Data destruct).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply let
+ * the Data destruct).
+ */
 void CLP(GraphicsStateGuardian)::
 release_index_buffer(IndexBufferContext *ibc) {
   nassertv(_supports_buffers);
@@ -5604,24 +5424,16 @@ release_index_buffer(IndexBufferContext *ibc) {
   delete gibc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::setup_primitive
-//       Access: Public
-//  Description: Internal function to bind a buffer object for the
-//               indicated primitive's index list, if appropriate, or
-//               to unbind a buffer object if it should be rendered
-//               from client memory.
-//
-//               If the buffer object is bound, this function sets
-//               client_pointer to NULL (representing the start of the
-//               buffer object in server memory); if the buffer object
-//               is not bound, this function sets client_pointer to to
-//               the data array in client memory, that is, the data
-//               array passed in.
-//
-//               If force is not true, the function may return false
-//               indicating the data is not currently available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Internal function to bind a buffer object for the indicated primitive's index
+ * list, if appropriate, or to unbind a buffer object if it should be rendered
+ * from client memory.  If the buffer object is bound, this function sets
+ * client_pointer to NULL (representing the start of the buffer object in server
+ * memory); if the buffer object is not bound, this function sets client_pointer
+ * to to the data array in client memory, that is, the data array passed in.  If
+ * force is not true, the function may return false indicating the data is not
+ * currently available.
+ */
 bool CLP(GraphicsStateGuardian)::
 setup_primitive(const unsigned char *&client_pointer,
                 const GeomPrimitivePipelineReader *reader,
@@ -5660,22 +5472,15 @@ setup_primitive(const unsigned char *&client_pointer,
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_occlusion_query
-//       Access: Public, Virtual
-//  Description: Begins a new occlusion query.  After this call, you
-//               may call begin_draw_primitives() and
-//               draw_triangles()/draw_whatever() repeatedly.
-//               Eventually, you should call end_occlusion_query()
-//               before the end of the frame; that will return a new
-//               OcclusionQueryContext object that will tell you how
-//               many pixels represented by the bracketed geometry
-//               passed the depth test.
-//
-//               It is not valid to call begin_occlusion_query()
-//               between another begin_occlusion_query()
-//               .. end_occlusion_query() sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins a new occlusion query.  After this call, you may call
+ * begin_draw_primitives() and draw_triangles()/draw_whatever() repeatedly.
+ * Eventually, you should call end_occlusion_query() before the end of the
+ * frame; that will return a new OcclusionQueryContext object that will tell you
+ * how many pixels represented by the bracketed geometry passed the depth test.
+ * It is not valid to call begin_occlusion_query() between another
+ * begin_occlusion_query() .. end_occlusion_query() sequence.
+ */
 void CLP(GraphicsStateGuardian)::
 begin_occlusion_query() {
   nassertv(_supports_occlusion_query);
@@ -5697,15 +5502,12 @@ begin_occlusion_query() {
 #endif  // !OPENGLES
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_occlusion_query
-//       Access: Public, Virtual
-//  Description: Ends a previous call to begin_occlusion_query().
-//               This call returns the OcclusionQueryContext object
-//               that will (eventually) report the number of pixels
-//               that passed the depth test between the call to
-//               begin_occlusion_query() and end_occlusion_query().
-////////////////////////////////////////////////////////////////////
+/**
+ * Ends a previous call to begin_occlusion_query(). This call returns the
+ * OcclusionQueryContext object that will (eventually) report the number of
+ * pixels that passed the depth test between the call to begin_occlusion_query()
+ * and end_occlusion_query().
+ */
 PT(OcclusionQueryContext) CLP(GraphicsStateGuardian)::
 end_occlusion_query() {
   nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
@@ -5741,12 +5543,10 @@ end_occlusion_query() {
 }
 #endif  // !OPENGLES
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_timer_query
-//       Access: Public, Virtual
-//  Description: Adds a timer query to the command stream, associated
-//               with the given PStats collector index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a timer query to the command stream, associated with the given PStats
+ * collector index.
+ */
 PT(TimerQueryContext) CLP(GraphicsStateGuardian)::
 issue_timer_query(int pstats_index) {
 #if defined(DO_PSTATS) && !defined(OPENGLES)
@@ -5793,12 +5593,10 @@ issue_timer_query(int pstats_index) {
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::dispatch_compute
-//       Access: Public, Virtual
-//  Description: Dispatches a currently bound compute shader using
-//               the given work group counts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatches a currently bound compute shader using the given work group
+ * counts.
+ */
 void CLP(GraphicsStateGuardian)::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   maybe_gl_finish();
@@ -5812,40 +5610,31 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
 }
 #endif  // !OPENGLES
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::make_geom_munger
-//       Access: Public, Virtual
-//  Description: Creates a new GeomMunger object to munge vertices
-//               appropriate to this GSG for the indicated state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new GeomMunger object to munge vertices appropriate to this GSG for
+ * the indicated state.
+ */
 PT(GeomMunger) CLP(GraphicsStateGuardian)::
 make_geom_munger(const RenderState *state, Thread *current_thread) {
   PT(CLP(GeomMunger)) munger = new CLP(GeomMunger)(this, state);
   return GeomMunger::register_munger(munger, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::compute_distance_to
-//       Access: Public, Virtual
-//  Description: This function will compute the distance to the
-//               indicated point, assumed to be in eye coordinates,
-//               from the camera plane.  The point is assumed to be
-//               in the GSG's internal coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will compute the distance to the indicated point, assumed to be
+ * in eye coordinates, from the camera plane.  The point is assumed to be in the
+ * GSG's internal coordinate system.
+ */
 PN_stdfloat CLP(GraphicsStateGuardian)::
 compute_distance_to(const LPoint3 &point) const {
   return -point[2];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::framebuffer_copy_to_texture
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display
-//               region from the framebuffer into texture memory.
-//
-//               If z > -1, it is the cube map index or layer index
-//               into which to copy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer into
+ * texture memory.  If z > -1, it is the cube map index or layer index into
+ * which to copy.
+ */
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr, const RenderBuffer &rb) {
@@ -6056,16 +5845,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::framebuffer_copy_to_ram
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display region
-//               from the framebuffer into system memory, not texture
-//               memory.  Returns true on success, false on failure.
-//
-//               This completely redefines the ram image of the
-//               indicated texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer into
+ * system memory, not texture memory.  Returns true on success, false on
+ * failure.  This completely redefines the ram image of the indicated texture.
+ */
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
                         const DisplayRegion *dr, const RenderBuffer &rb) {
@@ -6241,11 +6025,9 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_fog
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 apply_fog(Fog *fog) {
   Fog::Mode fmode = fog->get_mode();
@@ -6267,15 +6049,11 @@ apply_fog(Fog *fog) {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_transform
-//       Access: Protected
-//  Description: Sends the indicated transform matrix to the graphics
-//               API to be applied to future vertices.
-//
-//               This transform is the internal_transform, already
-//               converted into the GSG's internal coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the indicated transform matrix to the graphics API to be applied to
+ * future vertices.  This transform is the internal_transform, already converted
+ * into the GSG's internal coordinate system.
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_transform() {
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -6297,11 +6075,9 @@ do_issue_transform() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_shade_model
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_shade_model() {
   const ShadeModelAttrib *target_shade_model;
@@ -6322,11 +6098,9 @@ do_issue_shade_model() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifndef OPENGLES_1
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_shader
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
   ShaderContext *context = 0;
@@ -6389,11 +6163,9 @@ do_issue_shader() {
 }
 #endif  // !OPENGLES_1
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_render_mode
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_render_mode() {
   const RenderModeAttrib *target_render_mode;
@@ -6442,11 +6214,9 @@ do_issue_render_mode() {
   do_point_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_antialias
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_antialias() {
   const AntialiasAttrib *target_antialias;
@@ -6511,11 +6281,9 @@ do_issue_antialias() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION // OpenGL ES 2.0 doesn't support rescaling normals.
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_rescale_normal
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_rescale_normal() {
   RescaleNormalAttrib::Mode mode = RescaleNormalAttrib::M_none;
@@ -6560,11 +6328,9 @@ do_issue_rescale_normal() {
 // PandaCompareFunc - 1 + 0x200 === GL_NEVER, etc.  order is sequential
 #define PANDA_TO_GL_COMPAREFUNC(PANDACMPFUNC) (PANDACMPFUNC-1 +0x200)
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_depth_test
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_test() {
   const DepthTestAttrib *target_depth_test;
@@ -6581,11 +6347,9 @@ do_issue_depth_test() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_alpha_test
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_alpha_test() {
 #ifndef OPENGLES_1
@@ -6609,11 +6373,9 @@ do_issue_alpha_test() {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_depth_write
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_write() {
   const DepthWriteAttrib *target_depth_write;
@@ -6636,11 +6398,9 @@ do_issue_depth_write() {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_cull_face
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_cull_face() {
   const CullFaceAttrib *target_cull_face;
@@ -6669,11 +6429,9 @@ do_issue_cull_face() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_fog
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_fog() {
   const FogAttrib *target_fog;
@@ -6691,11 +6449,9 @@ do_issue_fog() {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_depth_offset
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_depth_offset() {
   const DepthOffsetAttrib *target_depth_offset = (const DepthOffsetAttrib *)
@@ -6731,11 +6487,9 @@ do_issue_depth_offset() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_material
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_material() {
   static Material empty;
@@ -6838,11 +6592,9 @@ do_issue_material() {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_blending
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_blending() {
   // Handle the color_write attrib.  If color_write is off, then
@@ -6994,14 +6746,11 @@ do_issue_blending() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id within
+ * a frame, this should set up the associated hardware light with the light's
+ * properties.
+ */
 void CLP(GraphicsStateGuardian)::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   //  static PStatCollector _draw_set_state_light_bind_point_pcollector("Draw:Set State:Light:Bind:Point");
@@ -7039,14 +6788,11 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id within
+ * a frame, this should set up the associated hardware light with the light's
+ * properties.
+ */
 void CLP(GraphicsStateGuardian)::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   //  static PStatCollector _draw_set_state_light_bind_directional_pcollector("Draw:Set State:Light:Bind:Directional");
@@ -7091,14 +6837,11 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id within
+ * a frame, this should set up the associated hardware light with the light's
+ * properties.
+ */
 void CLP(GraphicsStateGuardian)::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   //  static PStatCollector _draw_set_state_light_bind_spotlight_pcollector("Draw:Set State:Light:Bind:Spotlight");
@@ -7137,12 +6880,10 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_IMMEDIATE_MODE
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_immediate_simple_primitives
-//       Access: Protected
-//  Description: Uses the ImmediateModeSender to draw a series of
-//               primitives of the indicated type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the ImmediateModeSender to draw a series of primitives of the indicated
+ * type.
+ */
 void CLP(GraphicsStateGuardian)::
 draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode) {
   int num_vertices = reader->get_num_vertices();
@@ -7167,14 +6908,11 @@ draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLen
 #endif  // SUPPORT_IMMEDIATE_MODE
 
 #ifdef SUPPORT_IMMEDIATE_MODE
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_immediate_composite_primitives
-//       Access: Protected
-//  Description: Uses the ImmediateModeSender to draw a series of
-//               primitives of the indicated type.  This form is for
-//               primitive types like tristrips which must involve
-//               several begin/end groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the ImmediateModeSender to draw a series of primitives of the indicated
+ * type.  This form is for primitive types like tristrips which must involve
+ * several begin/end groups.
+ */
 void CLP(GraphicsStateGuardian)::
 draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode) {
   int num_vertices = reader->get_num_vertices();
@@ -7217,22 +6955,18 @@ draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, G
 }
 #endif  // SUPPORT_IMMEDIATE_MODE
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::gl_flush
-//       Access: Protected, Virtual
-//  Description: Calls glFlush().
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls glFlush().
+ */
 void CLP(GraphicsStateGuardian)::
 gl_flush() const {
   PStatTimer timer(_flush_pcollector);
   glFlush();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::gl_get_error
-//       Access: Protected, Virtual
-//  Description: Returns the result of glGetError().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the result of glGetError().
+ */
 GLenum CLP(GraphicsStateGuardian)::
 gl_get_error() const {
   if (_check_errors) {
@@ -7243,14 +6977,11 @@ gl_get_error() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::report_errors_loop
-//       Access: Protected, Static
-//  Description: The internal implementation of report_errors().
-//               Don't call this function; use report_errors()
-//               instead.  The return value is true if everything is
-//               ok, or false if we should shut down.
-////////////////////////////////////////////////////////////////////
+/**
+ * The internal implementation of report_errors(). Don't call this function; use
+ * report_errors() instead.  The return value is true if everything is ok, or
+ * false if we should shut down.
+ */
 bool CLP(GraphicsStateGuardian)::
 report_errors_loop(int line, const char *source_file, GLenum error_code,
                    int &error_count) {
@@ -7267,11 +6998,9 @@ report_errors_loop(int line, const char *source_file, GLenum error_code,
   return (error_code == GL_NO_ERROR);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_error_string
-//       Access: Protected, Static
-//  Description: Returns an error string for an OpenGL error code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an error string for an OpenGL error code.
+ */
 string CLP(GraphicsStateGuardian)::
 get_error_string(GLenum error_code) {
   // We used to use gluErrorString here, but I (rdb) took it out
@@ -7305,12 +7034,10 @@ get_error_string(GLenum error_code) {
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::show_gl_string
-//       Access: Protected
-//  Description: Outputs the result of glGetString() on the indicated
-//               tag.  The output string is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the result of glGetString() on the indicated tag.  The output string
+ * is returned.
+ */
 string CLP(GraphicsStateGuardian)::
 show_gl_string(const string &name, GLenum id) {
   string result;
@@ -7332,11 +7059,9 @@ show_gl_string(const string &name, GLenum id) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::query_gl_version
-//       Access: Protected, Virtual
-//  Description: Queries the runtime version of OpenGL in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the runtime version of OpenGL in use.
+ */
 void CLP(GraphicsStateGuardian)::
 query_gl_version() {
   _gl_vendor = show_gl_string("GL_VENDOR", GL_VENDOR);
@@ -7433,11 +7158,9 @@ query_gl_version() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::query_glsl_version
-//       Access: Protected
-//  Description: Queries the supported GLSL version.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the supported GLSL version.
+ */
 void CLP(GraphicsStateGuardian)::
 query_glsl_version() {
   _gl_shadlang_ver_major = 0;
@@ -7480,13 +7203,10 @@ query_glsl_version() {
 #endif  // !OPENGLES_1
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::save_extensions
-//       Access: Protected
-//  Description: Separates the string returned by GL_EXTENSIONS (or
-//               glx or wgl extensions) into its individual tokens
-//               and saves them in the _extensions member.
-////////////////////////////////////////////////////////////////////
+/**
+ * Separates the string returned by GL_EXTENSIONS (or glx or wgl extensions)
+ * into its individual tokens and saves them in the _extensions member.
+ */
 void CLP(GraphicsStateGuardian)::
 save_extensions(const char *extensions) {
   if (extensions != (const char *)NULL) {
@@ -7500,24 +7220,18 @@ save_extensions(const char *extensions) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_extra_extensions
-//       Access: Protected, Virtual
-//  Description: This may be redefined by a derived class (e.g. glx or
-//               wgl) to get whatever further extensions strings may
-//               be appropriate to that interface, in addition to the
-//               GL extension strings return by glGetString().
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be redefined by a derived class (e.g.  glx or wgl) to get whatever
+ * further extensions strings may be appropriate to that interface, in addition
+ * to the GL extension strings return by glGetString().
+ */
 void CLP(GraphicsStateGuardian)::
 get_extra_extensions() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::report_extensions
-//       Access: Protected
-//  Description: Outputs the list of GL extensions to notify, if debug
-//               mode is enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the list of GL extensions to notify, if debug mode is enabled.
+ */
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
@@ -7547,13 +7261,10 @@ report_extensions() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_extension_func
-//       Access: Public
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name, or NULL if the function is not
-//               available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name, or
+ * NULL if the function is not available.
+ */
 void *CLP(GraphicsStateGuardian)::
 get_extension_func(const char *name) {
   // First, look in the static-compiled namespace.  If we were
@@ -7632,29 +7343,22 @@ get_extension_func(const char *name) {
   return do_get_extension_func(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: This is the virtual implementation of
-//               get_extension_func().  Each API-specific GL
-//               implementation will map this method to the
-//               appropriate API call to retrieve the extension
-//               function pointer.  Returns NULL if the function is
-//               not available.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the virtual implementation of get_extension_func().  Each API-
+ * specific GL implementation will map this method to the appropriate API call
+ * to retrieve the extension function pointer.  Returns NULL if the function is
+ * not available.
+ */
 void *CLP(GraphicsStateGuardian)::
 do_get_extension_func(const char *) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_draw_buffer
-//       Access: Protected
-//  Description: Sets up the glDrawBuffer to render into the buffer
-//               indicated by the RenderBuffer object.  This only sets
-//               up the color and aux bits; it does not affect the depth,
-//               stencil, accum layers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the glDrawBuffer to render into the buffer indicated by the
+ * RenderBuffer object.  This only sets up the color and aux bits; it does not
+ * affect the depth, stencil, accum layers.
+ */
 void CLP(GraphicsStateGuardian)::
 set_draw_buffer(int rbtype) {
 #ifndef OPENGLES  // Draw buffers not supported by OpenGL ES.
@@ -7744,14 +7448,11 @@ set_draw_buffer(int rbtype) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_read_buffer
-//       Access: Protected
-//  Description: Sets up the glReadBuffer to render into the buffer
-//               indicated by the RenderBuffer object.  This only sets
-//               up the color bits; it does not affect the depth,
-//               stencil, accum layers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the glReadBuffer to render into the buffer indicated by the
+ * RenderBuffer object.  This only sets up the color bits; it does not affect
+ * the depth, stencil, accum layers.
+ */
 void CLP(GraphicsStateGuardian)::
 set_read_buffer(int rbtype) {
 #ifndef OPENGLES  // Draw buffers not supported by OpenGL ES.
@@ -7833,12 +7534,9 @@ set_read_buffer(int rbtype) {
 #endif  // OPENGLES
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_numeric_type
-//       Access: Protected, Static
-//  Description: Maps from the Geom's internal numeric type symbols
-//               to GL's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Geom's internal numeric type symbols to GL's.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_numeric_type(Geom::NumericType numeric_type) {
   switch (numeric_type) {
@@ -7897,12 +7595,9 @@ get_numeric_type(Geom::NumericType numeric_type) {
   return GL_UNSIGNED_BYTE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_target
-//       Access: Protected
-//  Description: Maps from the Texture's texture type symbols to
-//               GL's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's texture type symbols to GL's.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_texture_target(Texture::TextureType texture_type) const {
   switch (texture_type) {
@@ -7959,12 +7654,9 @@ get_texture_target(Texture::TextureType texture_type) const {
   return GL_TEXTURE_2D;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_wrap_mode
-//       Access: Protected
-//  Description: Maps from the Texture's internal wrap mode symbols to
-//               GL's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's internal wrap mode symbols to GL's.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_texture_wrap_mode(SamplerState::WrapMode wm) const {
   if (gl_ignore_clamp) {
@@ -7993,12 +7685,9 @@ get_texture_wrap_mode(SamplerState::WrapMode wm) const {
   return _edge_clamp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_panda_wrap_mode
-//       Access: Protected, Static
-//  Description: Maps from the GL's internal wrap mode symbols to
-//               Panda's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the GL's internal wrap mode symbols to Panda's.
+ */
 SamplerState::WrapMode CLP(GraphicsStateGuardian)::
 get_panda_wrap_mode(GLenum wm) {
   switch (wm) {
@@ -8029,12 +7718,9 @@ get_panda_wrap_mode(GLenum wm) {
   return SamplerState::WM_clamp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_filter_type
-//       Access: Protected, Static
-//  Description: Maps from the Texture's internal filter type symbols
-//               to GL's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's internal filter type symbols to GL's.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_texture_filter_type(SamplerState::FilterType ft, bool ignore_mipmaps) {
   if (gl_ignore_filters) {
@@ -8082,12 +7768,9 @@ get_texture_filter_type(SamplerState::FilterType ft, bool ignore_mipmaps) {
   return GL_NEAREST;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_panda_filter_type
-//       Access: Protected, Static
-//  Description: Maps from the GL's internal filter type symbols
-//               to Panda's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the GL's internal filter type symbols to Panda's.
+ */
 SamplerState::FilterType CLP(GraphicsStateGuardian)::
 get_panda_filter_type(GLenum ft) {
   switch (ft) {
@@ -8108,12 +7791,9 @@ get_panda_filter_type(GLenum ft) {
   return SamplerState::FT_linear;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_component_type
-//       Access: Protected, Static
-//  Description: Maps from the Texture's internal ComponentType symbols
-//               to GL's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's internal ComponentType symbols to GL's.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_component_type(Texture::ComponentType component_type) {
   switch (component_type) {
@@ -8149,12 +7829,9 @@ get_component_type(Texture::ComponentType component_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_external_image_format
-//       Access: Protected
-//  Description: Maps from the Texture's Format symbols
-//               to GL's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's Format symbols to GL's.
+ */
 GLint CLP(GraphicsStateGuardian)::
 get_external_image_format(Texture *tex) const {
   Texture::CompressionMode compression = tex->get_ram_image_compression();
@@ -8433,12 +8110,10 @@ get_external_image_format(Texture *tex) const {
   return GL_RGB;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_internal_image_format
-//       Access: Protected
-//  Description: Maps from the Texture's Format symbols to a
-//               suitable internal format for GL textures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Texture's Format symbols to a suitable internal format for GL
+ * textures.
+ */
 GLint CLP(GraphicsStateGuardian)::
 get_internal_image_format(Texture *tex, bool force_sized) const {
   Texture::CompressionMode compression = tex->get_compression();
@@ -9061,12 +8736,10 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::is_mipmap_filter
-//       Access: Protected, Static
-//  Description: Returns true if the indicated GL minfilter type
-//               represents a mipmap format, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated GL minfilter type represents a mipmap format,
+ * false otherwise.
+ */
 bool CLP(GraphicsStateGuardian)::
 is_mipmap_filter(GLenum min_filter) {
   switch (min_filter) {
@@ -9081,13 +8754,10 @@ is_mipmap_filter(GLenum min_filter) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::is_compressed_format
-//       Access: Protected, Static
-//  Description: Returns true if the indicated GL internal format
-//               represents a compressed texture format, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated GL internal format represents a compressed
+ * texture format, false otherwise.
+ */
 bool CLP(GraphicsStateGuardian)::
 is_compressed_format(GLenum format) {
   switch (format) {
@@ -9128,12 +8798,9 @@ is_compressed_format(GLenum format) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_apply_mode_type
-//       Access: Protected, Static
-//  Description: Maps from the texture stage's mode types
-//               to the corresponding OpenGL ids
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the texture stage's mode types to the corresponding OpenGL ids
+ */
 GLint CLP(GraphicsStateGuardian)::
 get_texture_apply_mode_type(TextureStage::Mode am) {
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -9160,12 +8827,10 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_combine_type
-//       Access: Protected, Static
-//  Description: Maps from the texture stage's CombineMode types
-//               to the corresponding OpenGL ids
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the texture stage's CombineMode types to the corresponding OpenGL
+ * ids
+ */
 GLint CLP(GraphicsStateGuardian)::
 get_texture_combine_type(TextureStage::CombineMode cm) {
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -9186,12 +8851,10 @@ get_texture_combine_type(TextureStage::CombineMode cm) {
   return GL_REPLACE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_src_type
-//       Access: Protected
-//  Description: Maps from the texture stage's CombineSource types
-//               to the corresponding OpenGL ids
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the texture stage's CombineSource types to the corresponding OpenGL
+ * ids
+ */
 GLint CLP(GraphicsStateGuardian)::
 get_texture_src_type(TextureStage::CombineSource cs,
                      int last_stage, int last_saved_result,
@@ -9237,12 +8900,10 @@ get_texture_src_type(TextureStage::CombineSource cs,
   return GL_TEXTURE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_operand_type
-//       Access: Protected, Static
-//  Description: Maps from the texture stage's CombineOperand types
-//               to the corresponding OpenGL ids
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the texture stage's CombineOperand types to the corresponding
+ * OpenGL ids
+ */
 GLint CLP(GraphicsStateGuardian)::
 get_texture_operand_type(TextureStage::CombineOperand co) {
   switch (co) {
@@ -9259,11 +8920,9 @@ get_texture_operand_type(TextureStage::CombineOperand co) {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_fog_mode_type
-//       Access: Protected, Static
-//  Description: Maps from the fog types to gl version
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the fog types to gl version
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_fog_mode_type(Fog::Mode m) {
   switch(m) {
@@ -9281,12 +8940,9 @@ get_fog_mode_type(Fog::Mode m) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_blend_equation_type
-//       Access: Protected, Static
-//  Description: Maps from ColorBlendAttrib::Mode to glBlendEquation
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from ColorBlendAttrib::Mode to glBlendEquation value.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_blend_equation_type(ColorBlendAttrib::Mode mode) {
   switch (mode) {
@@ -9320,12 +8976,9 @@ get_blend_equation_type(ColorBlendAttrib::Mode mode) {
   return GL_FUNC_ADD;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_blend_func
-//       Access: Protected, Static
-//  Description: Maps from ColorBlendAttrib::Operand to glBlendFunc
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from ColorBlendAttrib::Operand to glBlendFunc value.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_blend_func(ColorBlendAttrib::Operand operand) {
   switch (operand) {
@@ -9397,11 +9050,9 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
   return GL_ZERO;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_usage
-//       Access: Public, Static
-//  Description: Maps from UsageHint to the GL symbol.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from UsageHint to the GL symbol.
+ */
 GLenum CLP(GraphicsStateGuardian)::
 get_usage(Geom::UsageHint usage_hint) {
   switch (usage_hint) {
@@ -9429,11 +9080,9 @@ get_usage(Geom::UsageHint usage_hint) {
 }
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_compressed_format_string
-//       Access: Public, Static
-//  Description: Returns a string describing an compression format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string describing an compression format.
+ */
 const char *CLP(GraphicsStateGuardian)::
 get_compressed_format_string(GLenum format) {
   switch (format) {
@@ -9549,14 +9198,11 @@ get_compressed_format_string(GLenum format) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_light_color
-//       Access: Public
-//  Description: Returns the value that that should be issued as the
-//               light's color, as scaled by the current value of
-//               _light_color_scale, in the case of
-//               color_scale_via_lighting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value that that should be issued as the light's color, as scaled
+ * by the current value of _light_color_scale, in the case of
+ * color_scale_via_lighting.
+ */
 LVecBase4 CLP(GraphicsStateGuardian)::
 get_light_color(Light *light) const {
 #ifndef NDEBUG
@@ -9577,14 +9223,11 @@ get_light_color(Light *light) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::reissue_transforms
-//       Access: Protected, Virtual
-//  Description: Called by clear_state_and_transform() to ensure that
-//               the current modelview and projection matrices are
-//               properly loaded in the graphics state, after a
-//               callback might have mucked them up.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by clear_state_and_transform() to ensure that the current modelview
+ * and projection matrices are properly loaded in the graphics state, after a
+ * callback might have mucked them up.
+ */
 void CLP(GraphicsStateGuardian)::
 reissue_transforms() {
   prepare_lens();
@@ -9600,14 +9243,11 @@ reissue_transforms() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_lighting
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable or disable the use of lighting overall.  This
-//               is called by do_issue_light() according to whether any
-//               lights are in use or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable or disable the use of
+ * lighting overall.  This is called by do_issue_light() according to whether
+ * any lights are in use or not.
+ */
 void CLP(GraphicsStateGuardian)::
 enable_lighting(bool enable) {
   //  static PStatCollector _draw_set_state_light_enable_lighting_pcollector("Draw:Set State:Light:Enable lighting");
@@ -9622,14 +9262,11 @@ enable_lighting(bool enable) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_ambient_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               indicate the color of the ambient light that should
-//               be in effect.  This is called by do_issue_light() after
-//               all other lights have been enabled or disabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to indicate the color of the
+ * ambient light that should be in effect.  This is called by do_issue_light()
+ * after all other lights have been enabled or disabled.
+ */
 void CLP(GraphicsStateGuardian)::
 set_ambient_light(const LColor &color) {
   //  static PStatCollector _draw_set_state_light_ambient_pcollector("Draw:Set State:Light:Ambient");
@@ -9645,13 +9282,11 @@ set_ambient_light(const LColor &color) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated light id.  A specific Light will
-//               already have been bound to this id via bind_light().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable the indicated light
+ * id.  A specific Light will already have been bound to this id via
+ * bind_light().
+ */
 void CLP(GraphicsStateGuardian)::
 enable_light(int light_id, bool enable) {
   //  static PStatCollector _draw_set_state_light_enable_light_pcollector("Draw:Set State:Light:Enable light");
@@ -9666,18 +9301,12 @@ enable_light(int light_id, bool enable) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_bind_lights
-//       Access: Protected, Virtual
-//  Description: Called immediately before bind_light() is called,
-//               this is intended to provide the derived class a hook
-//               in which to set up some state (like transform) that
-//               might apply to several lights.
-//
-//               The sequence is: begin_bind_lights() will be called,
-//               then one or more bind_light() calls, then
-//               end_bind_lights().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called immediately before bind_light() is called, this is intended to provide
+ * the derived class a hook in which to set up some state (like transform) that
+ * might apply to several lights.  The sequence is: begin_bind_lights() will be
+ * called, then one or more bind_light() calls, then end_bind_lights().
+ */
 void CLP(GraphicsStateGuardian)::
 begin_bind_lights() {
   //  static PStatCollector _draw_set_state_light_begin_bind_pcollector("Draw:Set State:Light:Begin bind");
@@ -9700,15 +9329,12 @@ begin_bind_lights() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_bind_lights
-//       Access: Protected, Virtual
-//  Description: Called after before bind_light() has been called one
-//               or more times (but before any geometry is issued or
-//               additional state is changed), this is intended to
-//               clean up any temporary changes to the state that may
-//               have been made by begin_bind_lights().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after before bind_light() has been called one or more times (but
+ * before any geometry is issued or additional state is changed), this is
+ * intended to clean up any temporary changes to the state that may have been
+ * made by begin_bind_lights().
+ */
 void CLP(GraphicsStateGuardian)::
 end_bind_lights() {
   //  static PStatCollector _draw_set_state_light_end_bind_pcollector("Draw:Set State:Light:End bind");
@@ -9720,14 +9346,11 @@ end_bind_lights() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_clip_plane
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated clip_plane id.  A specific
-//               PlaneNode will already have been bound to this id via
-//               bind_clip_plane().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable the indicated
+ * clip_plane id.  A specific PlaneNode will already have been bound to this id
+ * via bind_clip_plane().
+ */
 void CLP(GraphicsStateGuardian)::
 enable_clip_plane(int plane_id, bool enable) {
   if (enable) {
@@ -9739,18 +9362,13 @@ enable_clip_plane(int plane_id, bool enable) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_bind_clip_planes
-//       Access: Protected, Virtual
-//  Description: Called immediately before bind_clip_plane() is called,
-//               this is intended to provide the derived class a hook
-//               in which to set up some state (like transform) that
-//               might apply to several clip_planes.
-//
-//               The sequence is: begin_bind_clip_planes() will be called,
-//               then one or more bind_clip_plane() calls, then
-//               end_bind_clip_planes().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called immediately before bind_clip_plane() is called, this is intended to
+ * provide the derived class a hook in which to set up some state (like
+ * transform) that might apply to several clip_planes.  The sequence is:
+ * begin_bind_clip_planes() will be called, then one or more bind_clip_plane()
+ * calls, then end_bind_clip_planes().
+ */
 void CLP(GraphicsStateGuardian)::
 begin_bind_clip_planes() {
   // We need to temporarily load a new matrix so we can define the
@@ -9770,14 +9388,11 @@ begin_bind_clip_planes() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_clip_plane
-//       Access: Protected, Virtual
-//  Description: Called the first time a particular clip_plane has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware clip_plane with the clip_plane's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular clip_plane has been bound to a given id
+ * within a frame, this should set up the associated hardware clip_plane with
+ * the clip_plane's properties.
+ */
 void CLP(GraphicsStateGuardian)::
 bind_clip_plane(const NodePath &plane, int plane_id) {
   GLenum id = get_clip_plane_id(plane_id);
@@ -9802,15 +9417,12 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_bind_clip_planes
-//       Access: Protected, Virtual
-//  Description: Called after before bind_clip_plane() has been called one
-//               or more times (but before any geometry is issued or
-//               additional state is changed), this is intended to
-//               clean up any temporary changes to the state that may
-//               have been made by begin_bind_clip_planes().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after before bind_clip_plane() has been called one or more times (but
+ * before any geometry is issued or additional state is changed), this is
+ * intended to clean up any temporary changes to the state that may have been
+ * made by begin_bind_clip_planes().
+ */
 void CLP(GraphicsStateGuardian)::
 end_bind_clip_planes() {
   glMatrixMode(GL_MODELVIEW);
@@ -9818,23 +9430,15 @@ end_bind_clip_planes() {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_state_and_transform
-//       Access: Public, Virtual
-//  Description: Simultaneously resets the render state and the
-//               transform state.
-//
-//               This transform specified is the "internal" net
-//               transform, already converted into the GSG's internal
-//               coordinate space by composing it to
-//               get_cs_transform().  (Previously, this used to be the
-//               "external" net transform, with the assumption that
-//               that GSG would convert it internally, but that is no
-//               longer the case.)
-//
-//               Special case: if (state==NULL), then the target
-//               state is already stored in _target.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously resets the render state and the transform state.  This
+ * transform specified is the "internal" net transform, already converted into
+ * the GSG's internal coordinate space by composing it to get_cs_transform().
+ * (Previously, this used to be the "external" net transform, with the
+ * assumption that that GSG would convert it internally, but that is no longer
+ * the case.)  Special case: if (state==NULL), then the target state is already
+ * stored in _target.
+ */
 void CLP(GraphicsStateGuardian)::
 set_state_and_transform(const RenderState *target,
                         const TransformState *transform) {
@@ -10119,12 +9723,9 @@ set_state_and_transform(const RenderState *target,
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::free_pointers
-//       Access: Protected, Virtual
-//  Description: Frees some memory that was explicitly allocated
-//               within the glgsg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees some memory that was explicitly allocated within the glgsg.
+ */
 void CLP(GraphicsStateGuardian)::
 free_pointers() {
 #if defined(HAVE_CG) && !defined(OPENGLES)
@@ -10135,12 +9736,10 @@ free_pointers() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_texture
-//       Access: Protected, Virtual
-//  Description: This is called by set_state_and_transform() when
-//               the texture state has changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by set_state_and_transform() when the texture state has
+ * changed.
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
@@ -10174,13 +9773,10 @@ do_issue_texture() {
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::update_standard_texture_bindings
-//       Access: Private
-//  Description: Applies the appropriate set of textures for the
-//               current state, using the standard fixed-function
-//               pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the appropriate set of textures for the current state, using the
+ * standard fixed-function pipeline.
+ */
 void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings() {
 #ifndef NDEBUG
@@ -10421,12 +10017,10 @@ update_standard_texture_bindings() {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_white_texture
-//       Access: Private
-//  Description: Applies a white dummy texture.  This is useful to
-//               bind to a texture slot when a texture is missing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a white dummy texture.  This is useful to bind to a texture slot when
+ * a texture is missing.
+ */
 void CLP(GraphicsStateGuardian)::
 apply_white_texture() {
   if (_white_texture != 0) {
@@ -10446,12 +10040,10 @@ apply_white_texture() {
                GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_white_texture
-//       Access: Private
-//  Description: Returns a white dummy texture.  This is useful to
-//               bind to a texture slot when a texture is missing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a white dummy texture.  This is useful to bind to a texture slot when
+ * a texture is missing.
+ */
 GLuint CLP(GraphicsStateGuardian)::
 get_white_texture() {
   if (_white_texture == 0) {
@@ -10461,18 +10053,13 @@ get_white_texture() {
 }
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::update_show_usage_texture_bindings
-//       Access: Private
-//  Description: This is a special function that loads the usage
-//               textures in gl-show-texture-usage mode, instead of
-//               loading the actual used textures.
-//
-//               If the indicated stage_index is >= 0, then it is the
-//               particular texture that is shown.  Otherwise, the
-//               textures are rotated through based on
-//               show_texture_usage_index.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special function that loads the usage textures in gl-show-texture-
+ * usage mode, instead of loading the actual used textures.  If the indicated
+ * stage_index is >= 0, then it is the particular texture that is shown.
+ * Otherwise, the textures are rotated through based on
+ * show_texture_usage_index.
+ */
 void CLP(GraphicsStateGuardian)::
 update_show_usage_texture_bindings(int show_stage_index) {
   int num_stages = _target_texture->get_num_on_ff_stages();
@@ -10572,13 +10159,10 @@ update_show_usage_texture_bindings(int show_stage_index) {
 #endif  // NDEBUG
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::upload_usage_texture
-//       Access: Protected
-//  Description: Uploads a special "usage" texture intended to be
-//               applied only in gl-show-texture-usage mode, to reveal
-//               where texture memory is being spent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uploads a special "usage" texture intended to be applied only in gl-show-
+ * texture-usage mode, to reveal where texture memory is being spent.
+ */
 void CLP(GraphicsStateGuardian)::
 upload_usage_texture(int width, int height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -10644,11 +10228,9 @@ upload_usage_texture(int width, int height) {
 #endif  // NDEBUG
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::disable_standard_texture_bindings
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 disable_standard_texture_bindings() {
   // Disable the texture stages that are no longer used.
@@ -10675,11 +10257,9 @@ disable_standard_texture_bindings() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_tex_matrix
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_matrix() {
   nassertv(_num_active_texture_stages <= _max_texture_stages);
@@ -10712,11 +10292,9 @@ do_issue_tex_matrix() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 #ifdef SUPPORT_FIXED_FUNCTION
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_tex_gen
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
   bool force_normal = false;
@@ -10996,13 +10574,10 @@ do_issue_tex_gen() {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::specify_texture
-//       Access: Protected
-//  Description: Specifies the texture parameters.  Returns true if
-//               the texture may need to be reloaded.  Pass non-NULL
-//               sampler argument to use different sampler settings.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the texture parameters.  Returns true if the texture may need to be
+ * reloaded.  Pass non-NULL sampler argument to use different sampler settings.
+ */
 bool CLP(GraphicsStateGuardian)::
 specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
   nassertr(gtc->_handle == 0 /* can't modify tex with active handle */, false);
@@ -11128,13 +10703,10 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_texture
-//       Access: Protected
-//  Description: Updates OpenGL with the current information for this
-//               texture, and makes it the current texture available
-//               for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates OpenGL with the current information for this texture, and makes it
+ * the current texture available for rendering.
+ */
 bool CLP(GraphicsStateGuardian)::
 apply_texture(CLP(TextureContext) *gtc) {
   gtc->set_active(true);
@@ -11160,17 +10732,12 @@ apply_texture(CLP(TextureContext) *gtc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_sampler
-//       Access: Protected
-//  Description: Updates OpenGL with the current information for this
-//               sampler, and makes it the current sampler available
-//               for rendering.  Use NULL to unbind the sampler.
-//
-//               If the GSG doesn't support sampler objects, the
-//               sampler settings are applied to the given texture
-//               context instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates OpenGL with the current information for this sampler, and makes it
+ * the current sampler available for rendering.  Use NULL to unbind the sampler.
+ * If the GSG doesn't support sampler objects, the sampler settings are applied
+ * to the given texture context instead.
+ */
 bool CLP(GraphicsStateGuardian)::
 apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
@@ -11223,15 +10790,10 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::upload_texture
-//       Access: Protected
-//  Description: Uploads the entire texture image to OpenGL, including
-//               all pages.
-//
-//               The return value is true if successful, or false if
-//               the texture has no image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uploads the entire texture image to OpenGL, including all pages.  The return
+ * value is true if successful, or false if the texture has no image.
+ */
 bool CLP(GraphicsStateGuardian)::
 upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   PStatGPUTimer timer(this, _load_texture_pcollector);
@@ -11746,22 +11308,15 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::upload_texture_image
-//       Access: Protected
-//  Description: Loads a texture image, or one page of a cube map
-//               image, from system RAM to texture memory.
-//
-//               texture_target is normally the same thing as
-//               page_target; both represent the GL target onto which
-//               the texture image is loaded, e.g. GL_TEXTURE_1D,
-//               GL_TEXTURE_2D, etc.  The only time they may differ is
-//               in the case of cube mapping, in which case
-//               texture_target will be target for the overall
-//               texture, e.g. GL_TEXTURE_CUBE_MAP, and page_target
-//               will be the target for this particular page,
-//               e.g. GL_TEXTURE_CUBE_MAP_POSITIVE_X.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a texture image, or one page of a cube map image, from system RAM to
+ * texture memory.  texture_target is normally the same thing as page_target;
+ * both represent the GL target onto which the texture image is loaded, e.g.
+ * GL_TEXTURE_1D, GL_TEXTURE_2D, etc.  The only time they may differ is in the
+ * case of cube mapping, in which case texture_target will be target for the
+ * overall texture, e.g.  GL_TEXTURE_CUBE_MAP, and page_target will be the
+ * target for this particular page, e.g.  GL_TEXTURE_CUBE_MAP_POSITIVE_X.
+ */
 bool CLP(GraphicsStateGuardian)::
 upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                      bool uses_mipmaps, int mipmap_bias,
@@ -12195,12 +11750,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::generate_mipmaps
-//       Access: Protected
-//  Description: Causes mipmaps to be generated for an uploaded
-//               texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Causes mipmaps to be generated for an uploaded texture.
+ */
 void CLP(GraphicsStateGuardian)::
 generate_mipmaps(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
@@ -12220,16 +11772,12 @@ generate_mipmaps(CLP(TextureContext) *gtc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::upload_simple_texture
-//       Access: Protected
-//  Description: This is used as a standin for upload_texture
-//               when the texture in question is unavailable (e.g. it
-//               hasn't yet been loaded from disk).  Until the texture
-//               image itself becomes available, we will render the
-//               texture's "simple" image--a sharply reduced version
-//               of the same texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used as a standin for upload_texture when the texture in question is
+ * unavailable (e.g.  it hasn't yet been loaded from disk).  Until the texture
+ * image itself becomes available, we will render the texture's "simple" image--
+ * a sharply reduced version of the same texture.
+ */
 bool CLP(GraphicsStateGuardian)::
 upload_simple_texture(CLP(TextureContext) *gtc) {
   report_my_gl_errors();
@@ -12290,13 +11838,10 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_memory_size
-//       Access: Protected
-//  Description: Asks OpenGL how much texture memory is consumed by
-//               the indicated texture (which is also the
-//               currently-selected texture).
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks OpenGL how much texture memory is consumed by the indicated texture
+ * (which is also the currently-selected texture).
+ */
 size_t CLP(GraphicsStateGuardian)::
 get_texture_memory_size(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
@@ -12392,12 +11937,10 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::check_nonresident_texture
-//       Access: Private
-//  Description: Checks the list of resident texture objects to see if
-//               any have recently been evicted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the list of resident texture objects to see if any have recently been
+ * evicted.
+ */
 void CLP(GraphicsStateGuardian)::
 check_nonresident_texture(BufferContextChain &chain) {
 #if defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)  // Residency queries not supported by OpenGL ES.
@@ -12434,13 +11977,10 @@ check_nonresident_texture(BufferContextChain &chain) {
 #endif  // OPENGLES
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_extract_texture_data
-//       Access: Protected
-//  Description: The internal implementation of
-//               extract_texture_data(), given an already-created
-//               TextureContext.
-////////////////////////////////////////////////////////////////////
+/**
+ * The internal implementation of extract_texture_data(), given an already-
+ * created TextureContext.
+ */
 bool CLP(GraphicsStateGuardian)::
 do_extract_texture_data(CLP(TextureContext) *gtc) {
   report_my_gl_errors();
@@ -12990,13 +12530,10 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::extract_texture_image
-//       Access: Protected
-//  Description: Called from extract_texture_data(), this gets just
-//               the image array for a particular mipmap level (or for
-//               the base image).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from extract_texture_data(), this gets just the image array for a
+ * particular mipmap level (or for the base image).
+ */
 bool CLP(GraphicsStateGuardian)::
 extract_texture_image(PTA_uchar &image, size_t &page_size,
                       Texture *tex, GLenum target, GLenum page_target,
@@ -13123,13 +12660,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 #endif  // OPENGLES
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_point_size
-//       Access: Protected
-//  Description: Internally sets the point size parameters after any
-//               of the properties have changed that might affect
-//               this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Internally sets the point size parameters after any of the properties have
+ * changed that might affect this.
+ */
 void CLP(GraphicsStateGuardian)::
 do_point_size() {
 #ifndef OPENGLES_2
@@ -13167,12 +12701,9 @@ do_point_size() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_supports_cg_profile
-//       Access: Public, Virtual
-//  Description: Returns true if this particular GSG supports the
-//               specified Cg Shader Profile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GSG supports the specified Cg Shader Profile.
+ */
 bool CLP(GraphicsStateGuardian)::
 get_supports_cg_profile(const string &name) const {
 #if !defined(HAVE_CG) || defined(OPENGLES)
@@ -13188,11 +12719,9 @@ get_supports_cg_profile(const string &name) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_fbo
-//       Access: Protected
-//  Description: Binds a framebuffer object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Binds a framebuffer object.
+ */
 void CLP(GraphicsStateGuardian)::
 bind_fbo(GLuint fbo) {
   if (_current_fbo == fbo) {
@@ -13213,9 +12742,9 @@ bind_fbo(GLuint fbo) {
   _current_fbo = fbo;
 }
 
-////////////////////////////////////////////////////////////////////
-//  GL stencil code section
-////////////////////////////////////////////////////////////////////
+/*
+ * GL stencil code section
+ */
 
 static int gl_stencil_operations_array[] = {
   GL_KEEP,
@@ -13234,11 +12763,9 @@ static int gl_stencil_operations_array[] = {
   GL_DECR,
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_stencil
-//       Access: Protected
-//  Description: Set stencil render states.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set stencil render states.
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_stencil() {
   if (!_supports_stencil) {
@@ -13329,11 +12856,9 @@ do_issue_stencil() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_issue_scissor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor;

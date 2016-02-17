@@ -1,16 +1,15 @@
-// Filename: bulletSphericalConstraint.h
-// Created by:  enn0x (01Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletSphericalConstraint.h
+ * @author enn0x
+ * @date 2010-03-01
+ */
 
 #ifndef __BULLET_SPHERICAL_CONSTRAINT_H__
 #define __BULLET_SPHERICAL_CONSTRAINT_H__
@@ -25,20 +24,17 @@
 
 class BulletRigidBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletSphericalConstraint
-// Description : A constraint between two rigid bodies, each with a
-//               pivot point. The pivot points are described in the
-//               body's local space. The constraint limits movement
-//               of the two rigid bodies in such a way that the 
-//               pivot points match in global space. The spherical
-//               constraint can be seen as a "ball and socket"
-//               joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * A constraint between two rigid bodies, each with a pivot point.  The pivot
+ * points are described in the body's local space.  The constraint limits
+ * movement of the two rigid bodies in such a way that the pivot points match in
+ * global space.  The spherical constraint can be seen as a "ball and socket"
+ * joint.
+ */
 class EXPCL_PANDABULLET BulletSphericalConstraint : public BulletConstraint {
 
 PUBLISHED:
-  BulletSphericalConstraint(const BulletRigidBodyNode *node_a, 
+  BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
                             const LPoint3 &pivot_a);
   BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
                             const BulletRigidBodyNode *node_b,
@@ -58,14 +54,13 @@ public:
 private:
   btPoint2PointConstraint *_constraint;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     BulletConstraint::init_type();
-    register_type(_type_handle, "BulletSphericalConstraint", 
+    register_type(_type_handle, "BulletSphericalConstraint",
                   BulletConstraint::get_class_type());
   }
   virtual TypeHandle get_type() const {

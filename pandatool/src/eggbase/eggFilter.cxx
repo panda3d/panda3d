@@ -1,24 +1,21 @@
-// Filename: eggFilter.cxx
-// Created by:  drose (14Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggFilter.cxx
+ * @author drose
+ * @date 2000-02-14
+ */
 
 #include "eggFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggFilter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggFilter::
 EggFilter(bool allow_last_param, bool allow_stdout) :
   EggWriter(allow_last_param, allow_stdout)
@@ -45,14 +42,11 @@ EggFilter(bool allow_last_param, bool allow_stdout) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggFilter::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggFilter::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 1)) {
@@ -67,11 +61,9 @@ handle_args(ProgramBase::Args &args) {
   return EggReader::handle_args(args);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggFilter::post_command_line
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggFilter::
 post_command_line() {
   // writer first, so we can fiddle with the _path_replace options if

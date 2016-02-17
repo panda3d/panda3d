@@ -1,16 +1,15 @@
-// Filename: geomVertexFormat.h
-// Created by:  drose (07Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexFormat.h
+ * @author drose
+ * @date 2005-03-07
+ */
 
 #ifndef GEOMVERTEXFORMAT_H
 #define GEOMVERTEXFORMAT_H
@@ -33,31 +32,20 @@ class FactoryParams;
 class GeomVertexData;
 class GeomMunger;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexFormat
-// Description : This class defines the physical layout of the vertex
-//               data stored within a Geom.  The layout consists of a
-//               list of named columns, each of which has a numeric
-//               type and a size.
-//
-//               The columns are typically interleaved within a single
-//               array, but they may also be distributed among
-//               multiple different arrays; at the extreme, each
-//               column may be alone within its own array (which
-//               amounts to a parallel-array definition).
-//
-//               Thus, a GeomVertexFormat is really a list of
-//               GeomVertexArrayFormats, each of which contains a list
-//               of columns.  However, a particular column name should
-//               not appear more than once in the format, even between
-//               different arrays.
-//
-//               There are a handful of standard pre-defined
-//               GeomVertexFormat objects, or you may define your own
-//               as needed.  You may record any combination of
-//               standard and/or user-defined columns in your custom
-//               GeomVertexFormat constructions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the physical layout of the vertex data stored within a
+ * Geom.  The layout consists of a list of named columns, each of which has a
+ * numeric type and a size.  The columns are typically interleaved within a
+ * single array, but they may also be distributed among multiple different
+ * arrays; at the extreme, each column may be alone within its own array (which
+ * amounts to a parallel-array definition).  Thus, a GeomVertexFormat is really
+ * a list of GeomVertexArrayFormats, each of which contains a list of columns.
+ * However, a particular column name should not appear more than once in the
+ * format, even between different arrays.  There are a handful of standard pre-
+ * defined GeomVertexFormat objects, or you may define your own as needed.  You
+ * may record any combination of standard and/or user-defined columns in your
+ * custom GeomVertexFormat constructions.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();

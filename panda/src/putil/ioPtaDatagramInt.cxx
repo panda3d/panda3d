@@ -1,16 +1,15 @@
-// Filename: ioPtaDatagramInt.cxx
-// Created by:  jason (26Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ioPtaDatagramInt.cxx
+ * @author jason
+ * @date 2000-06-26
+ */
 
 #include "pandabase.h"
 
@@ -18,11 +17,9 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: IoPtaDatagramInt::write_datagram
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IoPtaDatagramInt::
 write_datagram(BamWriter *, Datagram &dest, CPTA_int array) {
   dest.add_uint32(array.size());
@@ -31,11 +28,9 @@ write_datagram(BamWriter *, Datagram &dest, CPTA_int array) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IoPtaDatagramInt::read_datagram
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PTA_int IoPtaDatagramInt::
 read_datagram(BamReader *, DatagramIterator &source) {
   PTA_int array;
@@ -47,4 +42,3 @@ read_datagram(BamReader *, DatagramIterator &source) {
 
   return array;
 }
-

@@ -1,16 +1,15 @@
-// Filename: cullTraverserData.h
-// Created by:  drose (06Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullTraverserData.h
+ * @author drose
+ * @date 2002-03-06
+ */
 
 #ifndef CULLTRAVERSERDATA_H
 #define CULLTRAVERSERDATA_H
@@ -28,20 +27,14 @@
 class PandaNode;
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullTraverserData
-// Description : This collects together the pieces of data that are
-//               accumulated for each node while walking the scene
-//               graph during the cull traversal.
-//
-//               Having this as a separate object simplifies the
-//               parameter list to CullTraverser::r_traverse(), as
-//               well as to other functions like
-//               PandaNode::cull_callback().  It also makes it easier
-//               to add cull parameters, and provides a place to
-//               abstract out some of the cull behavior (like
-//               view-frustum culling).
-////////////////////////////////////////////////////////////////////
+/**
+ * This collects together the pieces of data that are accumulated for each node
+ * while walking the scene graph during the cull traversal.  Having this as a
+ * separate object simplifies the parameter list to CullTraverser::r_traverse(),
+ * as well as to other functions like PandaNode::cull_callback().  It also makes
+ * it easier to add cull parameters, and provides a place to abstract out some
+ * of the cull behavior (like view-frustum culling).
+ */
 class EXPCL_PANDA_PGRAPH CullTraverserData {
 public:
   INLINE CullTraverserData(const NodePath &start,

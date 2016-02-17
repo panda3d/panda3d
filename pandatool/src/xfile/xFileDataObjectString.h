@@ -1,16 +1,15 @@
-// Filename: xFileDataObjectString.h
-// Created by:  drose (08Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataObjectString.h
+ * @author drose
+ * @date 2004-10-08
+ */
 
 #ifndef XFILEDATAOBJECTSTRING_H
 #define XFILEDATAOBJECTSTRING_H
@@ -18,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectString
-// Description : An string-valued data element.  This matches one
-//               string data member of a template, or a single
-//               element of an string array.
-////////////////////////////////////////////////////////////////////
+/**
+ * An string-valued data element.  This matches one string data member of a
+ * template, or a single element of an string array.
+ */
 class XFileDataObjectString : public XFileDataObject {
 public:
   XFileDataObjectString(const XFileDataDef *data_def, const string &value);
@@ -40,7 +37,7 @@ private:
   void enquote_string(ostream &out) const;
 
   string _value;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

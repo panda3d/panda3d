@@ -1,16 +1,15 @@
-// Filename: billboardEffect.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file billboardEffect.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef BILLBOARDEFFECT_H
 #define BILLBOARDEFFECT_H
@@ -21,12 +20,10 @@
 #include "luse.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BillboardEffect
-// Description : Indicates that geometry at this node should
-//               automatically rotate to face the camera, or any other
-//               arbitrary node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that geometry at this node should automatically rotate to face the
+ * camera, or any other arbitrary node.
+ */
 class EXPCL_PANDA_PGRAPH BillboardEffect : public RenderEffect {
 private:
   INLINE BillboardEffect();
@@ -69,8 +66,8 @@ protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
 
 private:
-  void compute_billboard(CPT(TransformState) &node_transform, 
-                         const TransformState *net_transform, 
+  void compute_billboard(CPT(TransformState) &node_transform,
+                         const TransformState *net_transform,
                          const TransformState *camera_transform) const;
 
 private:
@@ -89,7 +86,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -111,4 +108,3 @@ private:
 #include "billboardEffect.I"
 
 #endif
-

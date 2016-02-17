@@ -1,16 +1,15 @@
-// Filename: collisionPolygon.cxx
-// Created by:  drose (25Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionPolygon.cxx
+ * @author drose
+ * @date 2000-04-25
+ */
 
 #include "collisionPolygon.h"
 #include "collisionHandler.h"
@@ -46,11 +45,9 @@ PStatCollector CollisionPolygon::_volume_pcollector("Collision Volumes:Collision
 PStatCollector CollisionPolygon::_test_pcollector("Collision Tests:CollisionPolygon");
 TypeHandle CollisionPolygon::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionPolygon::
 CollisionPolygon(const CollisionPolygon &copy) :
   CollisionPlane(copy),
@@ -59,28 +56,21 @@ CollisionPolygon(const CollisionPolygon &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionSolid *CollisionPolygon::
 make_copy() {
   return new CollisionPolygon(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::verify_points
-//       Access: Public, Static
-//  Description: Verifies that the indicated set of points will define
-//               a valid CollisionPolygon: that is, at least three
-//               non-collinear points, with no points repeated.
-//
-//               This does not check that the polygon defined is
-//               convex; that check is made later, once we have
-//               projected the points to 2-d space where the decision
-//               is easier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the indicated set of points will define a valid
+ * CollisionPolygon: that is, at least three non-collinear points, with no
+ * points repeated.  This does not check that the polygon defined is convex;
+ * that check is made later, once we have projected the points to 2-d space
+ * where the decision is easier.
+ */
 bool CollisionPolygon::
 verify_points(const LPoint3 *begin, const LPoint3 *end) {
   int num_points = end - begin;
@@ -126,24 +116,19 @@ verify_points(const LPoint3 *begin, const LPoint3 *end) {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::is_valid
-//       Access: Public
-//  Description: Returns true if the CollisionPolygon is valid
-//               (that is, it has at least three vertices), or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the CollisionPolygon is valid (that is, it has at least three
+ * vertices), or false otherwise.
+ */
 bool CollisionPolygon::
 is_valid() const {
   return (_points.size() >= 3);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::is_concave
-//       Access: Public
-//  Description: Returns true if the CollisionPolygon appears to be
-//               concave, or false if it is safely convex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the CollisionPolygon appears to be concave, or false if it is
+ * safely convex.
+ */
 bool CollisionPolygon::
 is_concave() const {
   if (_points.size() < 3) {
@@ -182,11 +167,9 @@ is_concave() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::xform
-//       Access: Public, Virtual
-//  Description: Transforms the solid by the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the solid by the indicated matrix.
+ */
 void CollisionPolygon::
 xform(const LMatrix4 &mat) {
   // We need to convert all the vertices to 3-d for this operation,
@@ -222,14 +205,11 @@ xform(const LMatrix4 &mat) {
   CollisionSolid::xform(mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::get_collision_origin
-//       Access: Public, Virtual
-//  Description: Returns the point in space deemed to be the "origin"
-//               of the solid for collision purposes.  The closest
-//               intersection point to this origin point is considered
-//               to be the most significant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point in space deemed to be the "origin" of the solid for
+ * collision purposes.  The closest intersection point to this origin point is
+ * considered to be the most significant.
+ */
 LPoint3 CollisionPolygon::
 get_collision_origin() const {
   LMatrix4 to_3d_mat;
@@ -244,16 +224,13 @@ get_collision_origin() const {
   return to_3d(median, to_3d_mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::get_viz
-//       Access: Public, Virtual
-//  Description: Returns a GeomNode that may be rendered to visualize
-//               the CollisionSolid.  This is used during the cull
-//               traversal to render the CollisionNodes that have been
-//               made visible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a GeomNode that may be rendered to visualize the CollisionSolid.
+ * This is used during the cull traversal to render the CollisionNodes that have
+ * been made visible.
+ */
 PT(PandaNode) CollisionPolygon::
-get_viz(const CullTraverser *trav, const CullTraverserData &data, 
+get_viz(const CullTraverser *trav, const CullTraverserData &data,
         bool bounds_only) const {
   const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, data._state->get_attrib(ClipPlaneAttrib::get_class_slot()));
   if (cpa == (const ClipPlaneAttrib *)NULL) {
@@ -297,46 +274,36 @@ get_viz(const CullTraverser *trav, const CullTraverserData &data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::get_volume_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of bounding volume tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of bounding volume
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionPolygon::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::get_test_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of intersection tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of intersection
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionPolygon::
 get_test_pcollector() {
   return _test_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionPolygon::
 output(ostream &out) const {
   out << "cpolygon, (" << get_plane()
       << "), " << _points.size() << " vertices";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionPolygon::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
@@ -354,11 +321,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(BoundingVolume) CollisionPolygon::
 compute_internal_bounds() const {
   if (_points.empty()) {
@@ -388,13 +353,10 @@ compute_internal_bounds() const {
   return new BoundingBox(n, x);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_sphere
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a sphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a sphere.
+ */
 PT(CollisionEntry) CollisionPolygon::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
@@ -451,7 +413,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       // from start pos to end pos), along axis of plane normal
       PN_stdfloat dist_to_p = dist_to_plane(a);
       t = (dist_to_p / -dot);
-      
+
       // also compute the actual contact point and time of contact
       // for handlers that need it
       actual_t = ((dist_to_p - from_radius) / -dot);
@@ -519,7 +481,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     }
 
   } else {
-    // No clip plane is in effect.  Do the default test. 
+    // No clip plane is in effect.  Do the default test.
     edge_dist = dist_to_polygon(p, _points);
   }
 
@@ -576,13 +538,10 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_line
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a line.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a line.
+ */
 PT(CollisionEntry) CollisionPolygon::
 test_intersection_from_line(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
@@ -647,13 +606,10 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_ray
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a ray.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a ray.
+ */
 PT(CollisionEntry) CollisionPolygon::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
@@ -723,13 +679,10 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_segment
-//       Access: Public, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a segment.
+ */
 PT(CollisionEntry) CollisionPolygon::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
@@ -801,13 +754,10 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_parabola
-//       Access: Public, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a parabola.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a parabola.
+ */
 PT(CollisionEntry) CollisionPolygon::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
@@ -893,13 +843,10 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection_from_box
-//       Access: Public, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a box.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a box.
+ */
 PT(CollisionEntry) CollisionPolygon::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
@@ -1005,12 +952,9 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::fill_viz_geom
-//       Access: Protected, Virtual
-//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
-//               for rendering this solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this solid.
+ */
 void CollisionPolygon::
 fill_viz_geom() {
   if (collide_cat.is_debug()) {
@@ -1021,18 +965,14 @@ fill_viz_geom() {
   draw_polygon(_viz_geom, _bounds_viz_geom, _points);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::dist_to_line_segment
-//       Access: Private, Static
-//  Description: Returns the linear distance of p to the line segment
-//               defined by f and t, where v = (t - f).normalize().
-//               The result is negative if p is left of the line,
-//               positive if it is right of the line.  If the result
-//               is positive, it is constrained by endpoints of the
-//               line segment (i.e. the result might be larger than it
-//               would be for a straight distance-to-line test).  If
-//               the result is negative, we don't bother.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear distance of p to the line segment defined by f and t,
+ * where v = (t - f).normalize(). The result is negative if p is left of the
+ * line, positive if it is right of the line.  If the result is positive, it is
+ * constrained by endpoints of the line segment (i.e.  the result might be
+ * larger than it would be for a straight distance-to-line test).  If the result
+ * is negative, we don't bother.
+ */
 PN_stdfloat CollisionPolygon::
 dist_to_line_segment(const LPoint2 &p,
                      const LPoint2 &f, const LPoint2 &t,
@@ -1141,13 +1081,10 @@ dist_to_line_segment(const LPoint2 &p,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::compute_vectors
-//       Access: Private, Static
-//  Description: Now that the _p members of the given points array
-//               have been computed, go back and compute all of the _v
-//               members.
-////////////////////////////////////////////////////////////////////
+/**
+ * Now that the _p members of the given points array have been computed, go back
+ * and compute all of the _v members.
+ */
 void CollisionPolygon::
 compute_vectors(Points &points) {
   size_t num_points = points.size();
@@ -1157,13 +1094,10 @@ compute_vectors(Points &points) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::draw_polygon
-//       Access: Private
-//  Description: Fills up the indicated GeomNode with the Geoms to
-//               draw the polygon indicated with the given set of 2-d
-//               points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the indicated GeomNode with the Geoms to draw the polygon indicated
+ * with the given set of 2-d points.
+ */
 void CollisionPolygon::
 draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
              const CollisionPolygon::Points &points) const {
@@ -1182,41 +1116,39 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
     ("collision", GeomVertexFormat::get_v3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   Points::const_iterator pi;
   for (pi = points.begin(); pi != points.end(); ++pi) {
     vertex.add_data3(to_3d((*pi)._p, to_3d_mat));
   }
-  
+
   PT(GeomTrifans) body = new GeomTrifans(Geom::UH_static);
   body->add_consecutive_vertices(0, points.size());
   body->close_primitive();
-  
+
   PT(GeomLinestrips) border = new GeomLinestrips(Geom::UH_static);
   border->add_consecutive_vertices(0, points.size());
   border->add_vertex(0);
   border->close_primitive();
-  
+
   PT(Geom) geom1 = new Geom(vdata);
   geom1->add_primitive(body);
-  
+
   PT(Geom) geom2 = new Geom(vdata);
   geom2->add_primitive(border);
 
   viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_viz_state());
   viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_viz_state());
-  
+
   bounds_viz_geom_node->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
   bounds_viz_geom_node->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::point_is_inside
-//       Access: Private
-//  Description: Returns true if the indicated point is within the
-//               polygon's 2-d space, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated point is within the polygon's 2-d space, false
+ * otherwise.
+ */
 bool CollisionPolygon::
 point_is_inside(const LPoint2 &p, const CollisionPolygon::Points &points) const {
   // We insist that the polygon be convex.  This makes things a bit simpler.
@@ -1237,25 +1169,22 @@ point_is_inside(const LPoint2 &p, const CollisionPolygon::Points &points) const 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::dist_to_polygon
-//       Access: Private
-//  Description: Returns the linear distance from the 2-d point to the
-//               nearest part of the polygon defined by the points
-//               vector.  The result is negative if the point is
-//               within the polygon.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear distance from the 2-d point to the nearest part of the
+ * polygon defined by the points vector.  The result is negative if the point is
+ * within the polygon.
+ */
 PN_stdfloat CollisionPolygon::
 dist_to_polygon(const LPoint2 &p, const CollisionPolygon::Points &points) const {
 
   // We know that that the polygon is convex and is defined with the
   // points in counterclockwise order.  Therefore, we simply compare
   // the signed distance to each line segment; we ignore any negative
-  // values, and take the minimum of all the positive values.  
+  // values, and take the minimum of all the positive values.
 
   // If all values are negative, the point is within the polygon; we
   // therefore return an arbitrary negative result.
-  
+
   bool got_dist = false;
   PN_stdfloat best_dist = -1.0f;
 
@@ -1283,12 +1212,10 @@ dist_to_polygon(const LPoint2 &p, const CollisionPolygon::Points &points) const 
   return best_dist;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::project
-//       Access: Private
-//  Description: Projects the polygon onto the given axis, returning
-//               the center on the line and the half extent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Projects the polygon onto the given axis, returning the center on the line
+ * and the half extent.
+ */
 void CollisionPolygon::
 project(const LVector3 &axis, PN_stdfloat &center, PN_stdfloat &extent) const {
   PN_stdfloat begin, end;
@@ -1312,11 +1239,9 @@ project(const LVector3 &axis, PN_stdfloat &center, PN_stdfloat &extent) const {
   extent = cabs((end - begin) * 0.5f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::setup_points
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionPolygon::
 setup_points(const LPoint3 *begin, const LPoint3 *end) {
   int num_points = end - begin;
@@ -1412,13 +1337,10 @@ setup_points(const LPoint3 *begin, const LPoint3 *end) {
   compute_vectors(_points);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::legacy_to_3d
-//       Access: Private
-//  Description: Converts the indicated point to 3-d space according
-//               to the way CollisionPolygons used to be stored in bam
-//               files prior to 4.9.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated point to 3-d space according to the way
+ * CollisionPolygons used to be stored in bam files prior to 4.9.
+ */
 LPoint3 CollisionPolygon::
 legacy_to_3d(const LVecBase2 &point2d, int axis) const {
   nassertr(!point2d.is_nan(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -1446,20 +1368,15 @@ legacy_to_3d(const LVecBase2 &point2d, int axis) const {
   return LPoint3(0.0f, 0.0f, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::clip_polygon
-//       Access: Private
-//  Description: Clips the source_points of the polygon by the
-//               indicated clipping plane, and modifies new_points to
-//               reflect the new set of clipped points (but does not
-//               compute the vectors in new_points).
-//
-//               The return value is true if the set of points is
-//               unmodified (all points are behind the clip plane), or
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clips the source_points of the polygon by the indicated clipping plane, and
+ * modifies new_points to reflect the new set of clipped points (but does not
+ * compute the vectors in new_points).  The return value is true if the set of
+ * points is unmodified (all points are behind the clip plane), or false
+ * otherwise.
+ */
 bool CollisionPolygon::
-clip_polygon(CollisionPolygon::Points &new_points, 
+clip_polygon(CollisionPolygon::Points &new_points,
              const CollisionPolygon::Points &source_points,
              const LPlane &plane) const {
   new_points.clear();
@@ -1522,7 +1439,7 @@ clip_polygon(CollisionPolygon::Points &new_points,
         new_points.push_back(PointDef(p[0], p[1]));
         last_is_in = this_is_in;
       }
-    } 
+    }
 
     if (this_is_in) {
       // We are behind the clipping line.  Keep the point.
@@ -1537,19 +1454,14 @@ clip_polygon(CollisionPolygon::Points &new_points,
   return all_in;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::apply_clip_plane
-//       Access: Private
-//  Description: Clips the polygon by all of the clip planes named in
-//               the clip plane attribute and fills new_points up with
-//               the resulting points.
-//
-//               The return value is true if the set of points is
-//               unmodified (all points are behind all the clip
-//               planes), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clips the polygon by all of the clip planes named in the clip plane attribute
+ * and fills new_points up with the resulting points.  The return value is true
+ * if the set of points is unmodified (all points are behind all the clip
+ * planes), or false otherwise.
+ */
 bool CollisionPolygon::
-apply_clip_plane(CollisionPolygon::Points &new_points, 
+apply_clip_plane(CollisionPolygon::Points &new_points,
                  const ClipPlaneAttrib *cpa,
                  const TransformState *net_transform) const {
   bool all_in = true;
@@ -1561,9 +1473,9 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
     NodePath plane_path = cpa->get_on_plane(i);
     PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
     if ((plane_node->get_clip_effect() & PlaneNode::CE_collision) != 0) {
-      CPT(TransformState) new_transform = 
+      CPT(TransformState) new_transform =
         net_transform->invert_compose(plane_path.get_net_transform());
-      
+
       LPlane plane = plane_node->get_plane() * new_transform->get_mat();
       if (first_plane) {
         first_plane = false;
@@ -1587,12 +1499,10 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
   return all_in;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CollisionPolygon::
 write_datagram(BamWriter *manager, Datagram &me) {
   CollisionPlane::write_datagram(manager, me);
@@ -1604,14 +1514,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   _to_2d_mat.write_datagram(me);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void CollisionPolygon::
 fillin(DatagramIterator &scan, BamReader *manager) {
   CollisionPlane::fillin(scan, manager);
@@ -1649,11 +1556,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::make_CollisionPolygon
-//       Access: Protected
-//  Description: Factory method to generate a CollisionPolygon object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionPolygon object
+ */
 TypedWritable* CollisionPolygon::
 make_CollisionPolygon(const FactoryParams &params) {
   CollisionPolygon *me = new CollisionPolygon;
@@ -1665,14 +1570,10 @@ make_CollisionPolygon(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a CollisionPolygon object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionPolygon object
+ */
 void CollisionPolygon::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionPolygon);
 }
-
-

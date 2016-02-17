@@ -1,16 +1,15 @@
-// Filename: pointerEventList.cxx
-// Created by: jyelon (20Sep2007)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointerEventList.cxx
+ * @author jyelon
+ * @date 2007-09-20
+ */
 
 #include "pointerEventList.h"
 #include "indent.h"
@@ -21,12 +20,10 @@
 
 TypeHandle PointerEventList::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: delta_angle
-//       Access: Static, Inline
-//  Description: Compute the difference between two angles.
-//               Returns a value in the range -180 to 180.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compute the difference between two angles.  Returns a value in the range -180
+ * to 180.
+ */
 INLINE double delta_angle(double angle1, double angle2) {
   double deltang = angle2 - angle1;
   while (deltang < -180.0) deltang += 360.0;
@@ -35,12 +32,10 @@ INLINE double delta_angle(double angle1, double angle2) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: delta_angle
-//       Access: Static, Inline
-//  Description: Compute the difference between two angles.
-//               Returns a value in the range -180 to 180.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compute the difference between two angles.  Returns a value in the range -180
+ * to 180.
+ */
 INLINE double normalize_angle(double angle) {
   while (angle <   0.0) angle += 360.0;
   while (angle > 360.0) angle -= 360.0;
@@ -49,11 +44,9 @@ INLINE double normalize_angle(double angle) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PointerEventList::
 output(ostream &out) const {
   if (_events.empty()) {
@@ -71,11 +64,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PointerEventList::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << _events.size() << " events:\n";
@@ -85,13 +76,10 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::add_event
-//       Access: Published
-//  Description: Adds a new event to the end of the list.
-//               Automatically calculates the dx, dy, length,
-//               direction, and rotation for all but the first event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new event to the end of the list.  Automatically calculates the dx,
+ * dy, length, direction, and rotation for all but the first event.
+ */
 void PointerEventList::
 add_event(bool in_win, int xpos, int ypos, int seq, double time) {
   PointerEvent pe;
@@ -120,14 +108,11 @@ add_event(bool in_win, int xpos, int ypos, int seq, double time) {
     pe._rotation = 0.0;
   }
   _events.push_back(pe);
-}       
+}
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::encircles
-//       Access: Published
-//  Description: Returns true if the trail loops around the
-//               specified point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the trail loops around the specified point.
+ */
 bool PointerEventList::
 encircles(int x, int y) const {
   int tot_events = _events.size();
@@ -156,15 +141,12 @@ encircles(int x, int y) const {
   return (total > 360.0) || (total < -360.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::total_turns
-//       Access: Published
-//  Description: returns the total angular deviation that the trail
-//               has made in the specified time period.  A small
-//               number means that the trail is moving in a relatively
-//               straight line, a large number means that the trail
-//               is zig-zagging or spinning.  The result is in degrees.
-////////////////////////////////////////////////////////////////////
+/**
+ * returns the total angular deviation that the trail has made in the specified
+ * time period.  A small number means that the trail is moving in a relatively
+ * straight line, a large number means that the trail is zig-zagging or
+ * spinning.  The result is in degrees.
+ */
 double PointerEventList::
 total_turns(double sec) const {
   double old = ClockObject::get_global_clock()->get_frame_time() - sec;
@@ -178,41 +160,32 @@ total_turns(double sec) const {
   return tot;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::match_pattern
-//       Access: Published
-//  Description: This function is not implemented yet.  It is a work
-//               in progress.  The intent is as follows:
-//
-//               Returns a nonzero value if the mouse movements 
-//               match the specified pattern.  The higher the value,
-//               the better the match.  The pattern is a sequence
-//               of compass directions (ie, "E", "NE", etc) separated
-//               by spaces.  If rot is nonzero, then the pattern is
-//               rotated counterclockwise by the specified amount 
-//               before testing.  Seglen is the minimum length a
-//               mouse movement needs to be in order to be considered
-//               significant.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is not implemented yet.  It is a work in progress.  The intent
+ * is as follows:  Returns a nonzero value if the mouse movements match the
+ * specified pattern.  The higher the value, the better the match.  The pattern
+ * is a sequence of compass directions (ie, "E", "NE", etc) separated by spaces.
+ * If rot is nonzero, then the pattern is rotated counterclockwise by the
+ * specified amount before testing.  Seglen is the minimum length a mouse
+ * movement needs to be in order to be considered significant.
+ */
 double PointerEventList::
 match_pattern(const string &ascpat, double rot, double seglen) {
   // Convert the pattern from ascii to a more usable form.
   vector_double pattern;
   parse_pattern(ascpat, pattern);
-  
+
   // Apply the rotation to the pattern.
   for (size_t i=0; i<pattern.size(); i++) {
     pattern[i] = normalize_angle(pattern[i] + rot);
   }
-  
+
   return 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::parse_pattern
-//       Access: Private
-//  Description: Parses a pattern as used by match_pattern.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a pattern as used by match_pattern.
+ */
 void PointerEventList::
 parse_pattern(const string &ascpat, vector_double &pattern) {
   int chars = 0;
@@ -246,7 +219,7 @@ parse_pattern(const string &ascpat, vector_double &pattern) {
   if (chars > 0) {
     pattern.push_back(dir);
   }
-  
+
   cerr << "Pattern: ";
   for (int i=0; i<(int)pattern.size(); i++) {
     cerr << pattern[i] << " ";

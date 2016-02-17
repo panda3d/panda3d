@@ -1,16 +1,15 @@
-// Filename: eggVertexAux.h
-// Created by:  jenes (15Nov11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggVertexAux.h
+ * @author jenes
+ * @date 2011-11-15
+ */
 
 #ifndef EGGVERTEXAUX_H
 #define EGGVERTEXAUX_H
@@ -22,14 +21,12 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggVertexAux
-// Description : The set of named auxiliary data that may or may not
-//               be assigned to a vertex.  Panda will import this data
-//               and create a custom column for it in the vertex data,
-//               but will not otherwise interpret it.  Presumably, a
-//               shader will process the data later.
-////////////////////////////////////////////////////////////////////
+/**
+ * The set of named auxiliary data that may or may not be assigned to a vertex.
+ * Panda will import this data and create a custom column for it in the vertex
+ * data, but will not otherwise interpret it.  Presumably, a shader will process
+ * the data later.
+ */
 class EXPCL_PANDAEGG EggVertexAux : public EggNamedObject {
 PUBLISHED:
   EggVertexAux(const string &name, const LVecBase4d &aux);
@@ -72,4 +69,3 @@ private:
 #include "eggVertexAux.I"
 
 #endif
-

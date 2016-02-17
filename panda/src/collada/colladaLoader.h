@@ -1,16 +1,15 @@
-// Filename: colladaLoader.h
-// Created by: Xidram (21Dec10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colladaLoader.h
+ * @author Xidram
+ * @date 2010-12-21
+ */
 
 #ifndef COLLADALOADER_H
 #define COLLADALOADER_H
@@ -40,11 +39,10 @@ class domCamera;
 class domSource;
 class DAE;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColladaLoader
-// Description : Object that interfaces with the COLLADA DOM library
-//               and loads the COLLADA structures into Panda nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Object that interfaces with the COLLADA DOM library and loads the COLLADA
+ * structures into Panda nodes.
+ */
 class ColladaLoader {
 public:
   ColladaLoader();

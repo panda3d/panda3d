@@ -1,16 +1,15 @@
-// Filename: conditionVarFullDebug.cxx
-// Created by:  drose (28Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file conditionVarFullDebug.cxx
+ * @author drose
+ * @date 2006-08-28
+ */
 
 #include "conditionVarFullDebug.h"
 #include "thread.h"
@@ -18,16 +17,12 @@
 
 #ifdef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::Constructor
-//       Access: Public
-//  Description: You must pass in a Mutex to the condition variable
-//               constructor.  This mutex may be shared by other
-//               condition variables, if desired.  It is the caller's
-//               responsibility to ensure the Mutex object does not
-//               destruct during the lifetime of the condition
-//               variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * You must pass in a Mutex to the condition variable constructor.  This mutex
+ * may be shared by other condition variables, if desired.  It is the caller's
+ * responsibility to ensure the Mutex object does not destruct during the
+ * lifetime of the condition variable.
+ */
 ConditionVarFullDebug::
 ConditionVarFullDebug(MutexDebug &mutex) :
   _mutex(mutex),
@@ -36,40 +31,27 @@ ConditionVarFullDebug(MutexDebug &mutex) :
   nassertv(!_mutex._allow_recursion);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ConditionVarFullDebug::
 ~ConditionVarFullDebug() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::wait
-//       Access: Published
-//  Description: Waits on the condition.  The caller must already be
-//               holding the lock associated with the condition
-//               variable before calling this function.
-//
-//               wait() will release the lock, then go to sleep until
-//               some other thread calls notify() on this condition
-//               variable.  At that time at least one thread waiting
-//               on the same ConditionVarFullDebug will grab the lock again,
-//               and then return from wait().
-//
-//               It is possible that wait() will return even if no one
-//               has called notify().  It is the responsibility of the
-//               calling process to verify the condition on return
-//               from wait, and possibly loop back to wait again if
-//               necessary.
-//
-//               Note the semantics of a condition variable: the mutex
-//               must be held before wait() is called, and it will
-//               still be held when wait() returns.  However, it will
-//               be temporarily released during the wait() call
-//               itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits on the condition.  The caller must already be holding the lock
+ * associated with the condition variable before calling this function.  wait()
+ * will release the lock, then go to sleep until some other thread calls
+ * notify() on this condition variable.  At that time at least one thread
+ * waiting on the same ConditionVarFullDebug will grab the lock again, and then
+ * return from wait().  It is possible that wait() will return even if no one
+ * has called notify().  It is the responsibility of the calling process to
+ * verify the condition on return from wait, and possibly loop back to wait
+ * again if necessary.  Note the semantics of a condition variable: the mutex
+ * must be held before wait() is called, and it will still be held when wait()
+ * returns.  However, it will be temporarily released during the wait() call
+ * itself.
+ */
 void ConditionVarFullDebug::
 wait() {
   _mutex._global_lock->acquire();
@@ -94,7 +76,7 @@ wait() {
            current_thread->_waiting_on_cvar_full == NULL) {
   }
   current_thread->_waiting_on_cvar_full = this;
-  
+
   _mutex.do_release();
   _impl.wait();  // temporarily releases _global_lock
   _mutex.do_acquire(current_thread);
@@ -111,17 +93,13 @@ wait() {
   _mutex._global_lock->release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::wait
-//       Access: Published
-//  Description: Waits on the condition, with a timeout.  The function
-//               will return when the condition variable is notified,
-//               or the timeout occurs.  There is no way to directly
-//               tell which happened, and it is possible that neither
-//               in fact happened (spurious wakeups are possible).
-//
-//               See wait() with no parameters for more.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits on the condition, with a timeout.  The function will return when the
+ * condition variable is notified, or the timeout occurs.  There is no way to
+ * directly tell which happened, and it is possible that neither in fact
+ * happened (spurious wakeups are possible).  See wait() with no parameters for
+ * more.
+ */
 void ConditionVarFullDebug::
 wait(double timeout) {
   _mutex._global_lock->acquire();
@@ -139,7 +117,7 @@ wait(double timeout) {
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
-      << *current_thread << " waiting on " << *this 
+      << *current_thread << " waiting on " << *this
       << ", with timeout " << timeout << "\n";
   }
 
@@ -147,7 +125,7 @@ wait(double timeout) {
            current_thread->_waiting_on_cvar_full == NULL) {
   }
   current_thread->_waiting_on_cvar_full = this;
-  
+
   _mutex.do_release();
   _impl.wait(timeout);  // temporarily releases _global_lock
   _mutex.do_acquire(current_thread);
@@ -164,23 +142,15 @@ wait(double timeout) {
   _mutex._global_lock->release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::notify
-//       Access: Published
-//  Description: Informs one of the other threads who are currently
-//               blocked on wait() that the relevant condition has
-//               changed.  If multiple threads are currently waiting,
-//               at least one of them will be woken up, although there
-//               is no way to predict which one.  It is possible that
-//               more than one thread will be woken up.
-//
-//               The caller must be holding the mutex associated with
-//               the condition variable before making this call, which
-//               will not release the mutex.
-//
-//               If no threads are waiting, this is a no-op: the
-//               notify event is lost.
-////////////////////////////////////////////////////////////////////
+/**
+ * Informs one of the other threads who are currently blocked on wait() that the
+ * relevant condition has changed.  If multiple threads are currently waiting,
+ * at least one of them will be woken up, although there is no way to predict
+ * which one.  It is possible that more than one thread will be woken up.  The
+ * caller must be holding the mutex associated with the condition variable
+ * before making this call, which will not release the mutex.  If no threads are
+ * waiting, this is a no-op: the notify event is lost.
+ */
 void ConditionVarFullDebug::
 notify() {
   _mutex._global_lock->acquire();
@@ -205,20 +175,13 @@ notify() {
   _mutex._global_lock->release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::notify
-//       Access: Published
-//  Description: Informs all of the other threads who are currently
-//               blocked on wait() that the relevant condition has
-//               changed.
-//
-//               The caller must be holding the mutex associated with
-//               the condition variable before making this call, which
-//               will not release the mutex.
-//
-//               If no threads are waiting, this is a no-op: the
-//               notify event is lost.
-////////////////////////////////////////////////////////////////////
+/**
+ * Informs all of the other threads who are currently blocked on wait() that the
+ * relevant condition has changed.  The caller must be holding the mutex
+ * associated with the condition variable before making this call, which will
+ * not release the mutex.  If no threads are waiting, this is a no-op: the
+ * notify event is lost.
+ */
 void ConditionVarFullDebug::
 notify_all() {
   _mutex._global_lock->acquire();
@@ -243,12 +206,10 @@ notify_all() {
   _mutex._global_lock->release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::output
-//       Access: Published, Virtual
-//  Description: This method is declared virtual in ConditionVarFullDebug,
-//               but non-virtual in ConditionVarFullDirect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is declared virtual in ConditionVarFullDebug, but non-virtual in
+ * ConditionVarFullDirect.
+ */
 void ConditionVarFullDebug::
 output(ostream &out) const {
   out << "ConditionVarFull " << (void *)this << " on " << _mutex;

@@ -1,16 +1,15 @@
-// Filename: bufferResidencyTracker.h
-// Created by:  drose (16Mar06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bufferResidencyTracker.h
+ * @author drose
+ * @date 2006-03-16
+ */
 
 #ifndef BUFFERRESIDENCYTRACKER_H
 #define BUFFERRESIDENCYTRACKER_H
@@ -21,18 +20,13 @@
 
 class BufferContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BufferResidencyTracker
-// Description : This class is used to keep track of the current state
-//               of all the BufferContexts for a particular graphics
-//               context: whether each one is active (rendered this
-//               frame) or inactive (not rendered this frame), and
-//               whether it is resident or nonresident in video
-//               memory.
-//
-//               The primary purpose of this class is to facilitate
-//               PStats reporting of video card memory usage.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to keep track of the current state of all the
+ * BufferContexts for a particular graphics context: whether each one is active
+ * (rendered this frame) or inactive (not rendered this frame), and whether it
+ * is resident or nonresident in video memory.  The primary purpose of this
+ * class is to facilitate PStats reporting of video card memory usage.
+ */
 class EXPCL_PANDA_GOBJ BufferResidencyTracker {
 public:
   BufferResidencyTracker(const string &pgo_name, const string &type_name);

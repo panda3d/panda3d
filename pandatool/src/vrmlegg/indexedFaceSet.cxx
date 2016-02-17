@@ -1,14 +1,15 @@
-// Filename: indexedFaceSet.cxx
-// Created by:  drose (24Jun99)
-// 
-////////////////////////////////////////////////////////////////////
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file indexedFaceSet.cxx
+ * @author drose
+ * @date 1999-06-24
+ */
 
 #include "indexedFaceSet.h"
 #include "vrmlAppearance.h"
@@ -21,11 +22,9 @@
 #include "eggVertexPool.h"
 #include "eggPolygon.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 IndexedFaceSet::
 IndexedFaceSet(const VrmlNode *geometry, const VRMLAppearance &appearance) :
   _geometry(geometry), _appearance(appearance)
@@ -44,11 +43,9 @@ IndexedFaceSet(const VrmlNode *geometry, const VRMLAppearance &appearance) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::convert_to_egg
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IndexedFaceSet::
 convert_to_egg(EggGroup *group, const LMatrix4d &net_transform) {
   EggVertexPool *vpool = new EggVertexPool(group->get_name());
@@ -61,11 +58,9 @@ convert_to_egg(EggGroup *group, const LMatrix4d &net_transform) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_coord_values
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IndexedFaceSet::
 get_coord_values() {
   const VrmlNode *coord = _geometry->get_value("coord")._sfnode._p;
@@ -81,11 +76,9 @@ get_coord_values() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_polys
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IndexedFaceSet::
 get_polys() {
   const MFArray *coordIndex = _geometry->get_value("coordIndex")._mf;
@@ -106,12 +99,9 @@ get_polys() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_vrml_colors
-//       Access: Private
-//  Description: Builds up a vector of LColor pointers corresponding
-//               to the VRML color node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a vector of LColor pointers corresponding to the VRML color node.
+ */
 void IndexedFaceSet::
 get_vrml_colors(const VrmlNode *color_node, double transparency,
                 pvector<UnalignedLVecBase4> &color_list) {
@@ -124,14 +114,12 @@ get_vrml_colors(const VrmlNode *color_node, double transparency,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_vrml_normals
-//       Access: Private
-//  Description: Builds up a vector of double array pointers corresponding
-//               to the VRML normal node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a vector of double array pointers corresponding to the VRML normal
+ * node.
+ */
 void IndexedFaceSet::
-get_vrml_normals(const VrmlNode *normal_node, 
+get_vrml_normals(const VrmlNode *normal_node,
                  pvector<LNormald> &normal_list) {
   const MFArray *point = normal_node->get_value("vector")._mf;
   MFArray::const_iterator ci;
@@ -142,14 +130,12 @@ get_vrml_normals(const VrmlNode *normal_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_vrml_uvs
-//       Access: Private
-//  Description: Builds up a vector of double array pointers corresponding
-//               to the VRML texCoord node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a vector of double array pointers corresponding to the VRML
+ * texCoord node.
+ */
 void IndexedFaceSet::
-get_vrml_uvs(const VrmlNode *texCoord_node, 
+get_vrml_uvs(const VrmlNode *texCoord_node,
              pvector<LTexCoordd> &uv_list) {
   const MFArray *point = texCoord_node->get_value("point")._mf;
   MFArray::const_iterator ci;
@@ -161,11 +147,9 @@ get_vrml_uvs(const VrmlNode *texCoord_node,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_colors
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool IndexedFaceSet::
 get_colors() {
   const VrmlNode *color = _geometry->get_value("color")._sfnode._p;
@@ -173,7 +157,7 @@ get_colors() {
     // Vertex or face colors.
     pvector<UnalignedLVecBase4> color_list;
     get_vrml_colors(color, _appearance._transparency, color_list);
-    
+
     bool colorPerVertex = _geometry->get_value("colorPerVertex")._sfbool;
     MFArray *colorIndex = _geometry->get_value("colorIndex")._mf;
     if (colorPerVertex) {
@@ -233,11 +217,9 @@ get_colors() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_normals
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool IndexedFaceSet::
 get_normals() {
   const VrmlNode *normal = _geometry->get_value("normal")._sfnode._p;
@@ -245,7 +227,7 @@ get_normals() {
     // Vertex or face normals.
     pvector<LNormald> normal_list;
     get_vrml_normals(normal, normal_list);
-    
+
     bool normalPerVertex = _geometry->get_value("normalPerVertex")._sfbool;
     MFArray *normalIndex = _geometry->get_value("normalIndex")._mf;
     MFArray::const_iterator ci;
@@ -280,12 +262,12 @@ get_normals() {
       // number of normal indices exactly matches the number of
       // vertices, and none of the indices is -1.
       bool linear_list = (normalIndex->size() == _coord_values.size());
-      for (ci = normalIndex->begin(); 
-           ci != normalIndex->end() && linear_list; 
+      for (ci = normalIndex->begin();
+           ci != normalIndex->end() && linear_list;
            ++ci) {
         linear_list = ((*ci)._sfint32 >= 0);
       }
-      
+
       if (linear_list) {
         // Ok, we do have such a list.  This .wrl file seems to store
         // its texture coordinates one per vertex, instead of one per
@@ -368,15 +350,12 @@ get_normals() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::assign_per_vertex_normals
-//       Access: Private
-//  Description: Once the array of _per_vertex_normals has been filled
-//               (by a broken .wrl file that indexes the normal's
-//               directly into the vertex array instead of per polygon
-//               vertex), go back through the polygons and assign the
-//               normals by index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the array of _per_vertex_normals has been filled (by a broken .wrl file
+ * that indexes the normal's directly into the vertex array instead of per
+ * polygon vertex), go back through the polygons and assign the normals by index
+ * number.
+ */
 void IndexedFaceSet::
 assign_per_vertex_normals() {
   for (size_t pi = 0; pi < _polys.size(); pi++) {
@@ -391,11 +370,9 @@ assign_per_vertex_normals() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::get_uvs
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool IndexedFaceSet::
 get_uvs() {
   const VrmlNode *texCoord = _geometry->get_value("texCoord")._sfnode._p;
@@ -403,7 +380,7 @@ get_uvs() {
     // Vertex or face texCoords.
     pvector<LTexCoordd> uv_list;
     get_vrml_uvs(texCoord, uv_list);
-    
+
     MFArray *texCoordIndex = _geometry->get_value("texCoordIndex")._mf;
     MFArray::const_iterator ci;
 
@@ -425,8 +402,8 @@ get_uvs() {
     // number of texture coordinate indices exactly matches the number
     // of vertices, and none of the indices is -1.
     bool linear_list = (texCoordIndex->size() == _coord_values.size());
-    for (ci = texCoordIndex->begin(); 
-         ci != texCoordIndex->end() && linear_list; 
+    for (ci = texCoordIndex->begin();
+         ci != texCoordIndex->end() && linear_list;
          ++ci) {
       linear_list = ((*ci)._sfint32 >= 0);
     }
@@ -484,15 +461,11 @@ get_uvs() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::assign_per_vertex_uvs
-//       Access: Private
-//  Description: Once the array of _per_vertex_uvs has been filled (by
-//               a broken .wrl file that indexes the uv's directly
-//               into the vertex array instead of per polygon vertex),
-//               go back through the polygons and assign the UV's by
-//               index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the array of _per_vertex_uvs has been filled (by a broken .wrl file that
+ * indexes the uv's directly into the vertex array instead of per polygon
+ * vertex), go back through the polygons and assign the UV's by index number.
+ */
 void IndexedFaceSet::
 assign_per_vertex_uvs() {
   for (size_t pi = 0; pi < _polys.size(); pi++) {
@@ -507,13 +480,11 @@ assign_per_vertex_uvs() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::make_polys
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IndexedFaceSet::
-make_polys(EggVertexPool *vpool, EggGroup *group, 
+make_polys(EggVertexPool *vpool, EggGroup *group,
            const LMatrix4d &net_transform) {
   bool ccw = _geometry->get_value("ccw")._sfbool;
   bool solid = _geometry->get_value("solid")._sfbool;
@@ -539,7 +510,7 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
       // The vertices are counterclockwise, same as Egg.
       for (int pv = 0; pv < (int)_polys[pi]._verts.size(); pv++) {
         EggVertex vert(_polys[pi]._verts[pv]._attrib);
-        LVertexd pos = 
+        LVertexd pos =
           _polys[pi]._verts[pv]._pos * net_transform;
         vert.set_pos(pos);
 
@@ -549,7 +520,7 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
       // The vertices are clockwise, so add 'em in reverse order.
       for (int pv = (int)_polys[pi]._verts.size() - 1; pv >= 0; pv--) {
         EggVertex vert(_polys[pi]._verts[pv]._attrib);
-        LVertexd pos = 
+        LVertexd pos =
           _polys[pi]._verts[pv]._pos * net_transform;
         vert.set_pos(pos);
 
@@ -560,11 +531,9 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexedFaceSet::compute_normals
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IndexedFaceSet::
 compute_normals(EggGroup *group) {
   const VrmlNode *normal = _geometry->get_value("normal")._sfnode._p;

@@ -1,16 +1,15 @@
-// Filename: adaptiveLru.h
-// Created by:  drose (03Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file adaptiveLru.h
+ * @author drose
+ * @date 2008-09-03
+ */
 
 #ifndef ADAPTIVELRU_H
 #define ADAPTIVELRU_H
@@ -35,17 +34,12 @@ public:
   friend class AdaptiveLru;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : AdaptiveLru
-// Description : A basic LRU-type algorithm, except that it is
-//               adaptive and attempts to avoid evicting pages that
-//               have been used more frequently (even if less
-//               recently) than other pages.
-//
-//               The interface is designed to be identical to that for
-//               SimpleLru, so that it may be used as a drop-in
-//               replacement.
-////////////////////////////////////////////////////////////////////
+/**
+ * A basic LRU-type algorithm, except that it is adaptive and attempts to avoid
+ * evicting pages that have been used more frequently (even if less recently)
+ * than other pages.  The interface is designed to be identical to that for
+ * SimpleLru, so that it may be used as a drop-in replacement.
+ */
 class EXPCL_PANDA_GOBJ AdaptiveLru : public Namable {
 PUBLISHED:
   AdaptiveLru(const string &name, size_t max_size);
@@ -126,22 +120,16 @@ private:
   friend class AdaptiveLruPage;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : AdaptiveLruPage
-// Description : One atomic piece that may be managed by a AdaptiveLru
-//               chain.  To use this class, inherit from it and
-//               override evict_lru().
-//
-//               This class multiply inherits from two classes which
-//               in turn both inherit from LinkedListNode.  This is
-//               just a sneaky C++ trick to allow this class to
-//               inherit from LinkedListNode twice, so that pages can
-//               be stored on two different linked lists
-//               simultaneously.  The AdaptiveLru class depends on
-//               this; it maintains its pages in two different lists,
-//               one grouped by priority, and one in order by next
-//               partial update needs.
-////////////////////////////////////////////////////////////////////
+/**
+ * One atomic piece that may be managed by a AdaptiveLru chain.  To use this
+ * class, inherit from it and override evict_lru().  This class multiply
+ * inherits from two classes which in turn both inherit from LinkedListNode.
+ * This is just a sneaky C++ trick to allow this class to inherit from
+ * LinkedListNode twice, so that pages can be stored on two different linked
+ * lists simultaneously.  The AdaptiveLru class depends on this; it maintains
+ * its pages in two different lists, one grouped by priority, and one in order
+ * by next partial update needs.
+ */
 class EXPCL_PANDA_GOBJ AdaptiveLruPage : public AdaptiveLruPageDynamicList, public AdaptiveLruPageStaticList {
 PUBLISHED:
   AdaptiveLruPage(size_t lru_size);

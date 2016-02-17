@@ -1,16 +1,15 @@
-// Filename: cycleDataStageReader.h
-// Created by:  drose (08Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cycleDataStageReader.h
+ * @author drose
+ * @date 2006-02-08
+ */
 
 #ifndef CYCLEDATASTAGEREADER_H
 #define CYCLEDATASTAGEREADER_H
@@ -20,19 +19,17 @@
 #include "cycleData.h"
 #include "pipelineCycler.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleDataStageReader
-// Description : This class is similar to CycleDataReader, except it
-//               allows reading from a particular stage of the
-//               pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is similar to CycleDataReader, except it allows reading from a
+ * particular stage of the pipeline.
+ */
 template<class CycleDataType>
 class CycleDataStageReader {
 public:
   // By hiding this template from interrogate, we improve compile-time
   // speed and memory utilization.
 #ifndef CPPPARSER
-  INLINE CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler, 
+  INLINE CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler,
                               int stage, Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataStageReader(const CycleDataStageReader<CycleDataType> &copy);
   INLINE void operator = (const CycleDataStageReader<CycleDataType> &copy);

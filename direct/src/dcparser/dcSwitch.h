@@ -1,16 +1,15 @@
-// Filename: dcSwitch.h
-// Created by:  drose (23Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcSwitch.h
+ * @author drose
+ * @date 2004-06-23
+ */
 
 #ifndef DCSWITCH_H
 #define DCSWITCH_H
@@ -23,13 +22,11 @@ class DCParameter;
 class HashGenerator;
 class DCField;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCSwitch
-// Description : This represents a switch statement, which can appear
-//               inside a class body and represents two or more
-//               alternative unpacking schemes based on the first
-//               field read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a switch statement, which can appear inside a class body and
+ * represents two or more alternative unpacking schemes based on the first field
+ * read.
+ */
 class EXPCL_DIRECT DCSwitch : public DCDeclaration {
 public:
   DCSwitch(const string &name, DCField *key_parameter);
@@ -64,7 +61,7 @@ public:
 
   virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;
-  void output_instance(ostream &out, bool brief, const string &prename, 
+  void output_instance(ostream &out, bool brief, const string &prename,
                        const string &name, const string &postname) const;
   void write_instance(ostream &out, bool brief, int indent_level,
                       const string &prename, const string &name,

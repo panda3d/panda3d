@@ -1,16 +1,15 @@
-// Filename: pfmVizzer.cxx
-// Created by:  drose (30Sep12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pfmVizzer.cxx
+ * @author drose
+ * @date 2012-09-30
+ */
 
 #include "pfmVizzer.h"
 #include "geomNode.h"
@@ -24,15 +23,12 @@
 #include "pnmImage.h"
 #include "config_grutil.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::Constructor
-//       Access: Published
-//  Description: The PfmVizzer constructor receives a reference to a
-//               PfmFile which it will operate on.  It does not keep
-//               ownership of this reference; it is your
-//               responsibility to ensure the PfmFile does not
-//               destruct during the lifetime of the PfmVizzer.
-////////////////////////////////////////////////////////////////////
+/**
+ * The PfmVizzer constructor receives a reference to a PfmFile which it will
+ * operate on.  It does not keep ownership of this reference; it is your
+ * responsibility to ensure the PfmFile does not destruct during the lifetime of
+ * the PfmVizzer.
+ */
 PfmVizzer::
 PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
   _vis_inverse = false;
@@ -42,17 +38,13 @@ PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
   _aux_pfm = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::project
-//       Access: Published
-//  Description: Adjusts each (x, y, z) point of the Pfm file by
-//               projecting it through the indicated lens, converting
-//               each point to a (u, v, w) texture coordinate.  The
-//               resulting file can be generated to a mesh (with
-//               set_vis_inverse(true) and generate_vis_mesh())
-//               that will apply the lens distortion to an arbitrary
-//               texture image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts each (x, y, z) point of the Pfm file by projecting it through the
+ * indicated lens, converting each point to a (u, v, w) texture coordinate.  The
+ * resulting file can be generated to a mesh (with set_vis_inverse(true) and
+ * generate_vis_mesh()) that will apply the lens distortion to an arbitrary
+ * texture image.
+ */
 void PfmVizzer::
 project(const Lens *lens, const PfmFile *undist_lut) {
   nassertv(_pfm.is_valid());
@@ -95,19 +87,13 @@ project(const Lens *lens, const PfmFile *undist_lut) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::extrude
-//       Access: Published
-//  Description: Converts each (u, v, depth) point of the Pfm file to
-//               an (x, y, z) point, by reversing project().  If the
-//               original file is only a 1-d file, assumes that it is
-//               a depth map with implicit (u, v) coordinates.
-//
-//               This method is only valid for a linear lens (e.g. a
-//               PerspectiveLens or OrthographicLens).  Non-linear
-//               lenses don't necessarily compute a sensible depth
-//               coordinate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts each (u, v, depth) point of the Pfm file to an (x, y, z) point, by
+ * reversing project().  If the original file is only a 1-d file, assumes that
+ * it is a depth map with implicit (u, v) coordinates.  This method is only
+ * valid for a linear lens (e.g.  a PerspectiveLens or OrthographicLens).  Non-
+ * linear lenses don't necessarily compute a sensible depth coordinate.
+ */
 void PfmVizzer::
 extrude(const Lens *lens) {
   nassertv(_pfm.is_valid());
@@ -147,7 +133,7 @@ extrude(const Lens *lens) {
           p.set(((PN_stdfloat)xi + 0.5) * uv_scale[0],
                 ((PN_stdfloat)yi + 0.5) * uv_scale[1],
                 (PN_stdfloat)_pfm.get_point1(xi, yi));
-          
+
           from_uv.xform_point_in_place(p);
           rp = proj_mat_inv.xform_point_general(p);
           result.set_point(xi, yi, rp);
@@ -162,7 +148,7 @@ extrude(const Lens *lens) {
           }
           LPoint3 p, rp;
           p = LCAST(PN_stdfloat, _pfm.get_point(xi, yi));
-          
+
           from_uv.xform_point_in_place(p);
           rp = proj_mat_inv.xform_point_general(p);
           result.set_point(xi, yi, rp);
@@ -190,7 +176,7 @@ extrude(const Lens *lens) {
           p.set(((PN_stdfloat)xi + 0.5) * uv_scale[0],
                 ((PN_stdfloat)yi + 0.5) * uv_scale[1],
                 (PN_stdfloat)_pfm.get_point1(xi, yi));
-          
+
           from_uv.xform_point_in_place(p);
           lens->extrude_depth(p, rp);
           result.set_point(xi, yi, rp);
@@ -205,7 +191,7 @@ extrude(const Lens *lens) {
           }
           LPoint3 p, rp;
           p = LCAST(PN_stdfloat, _pfm.get_point(xi, yi));
-          
+
           from_uv.xform_point_in_place(p);
           lens->extrude_depth(p, rp);
           result.set_point(xi, yi, rp);
@@ -217,37 +203,27 @@ extrude(const Lens *lens) {
   _pfm = result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::clear_vis_columns
-//       Access: Published
-//  Description: Removes all of the previously-added vis columns in
-//               preparation for building a new list.  See
-//               add_vis_column().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the previously-added vis columns in preparation for building a
+ * new list.  See add_vis_column().
+ */
 void PfmVizzer::
 clear_vis_columns() {
   _vis_columns.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::add_vis_column
-//       Access: Published
-//  Description: Adds a new vis column specification to the list of
-//               vertex data columns that will be generated at the
-//               next call to generate_vis_points() or
-//               generate_vis_mesh().  This advanced interface
-//               supercedes the higher-level set_vis_inverse(),
-//               set_flat_texcoord_name(), and set_vis_2d().
-//
-//               If you use this advanced interface, you must specify
-//               explicitly the complete list of data columns to be
-//               created in the resulting GeomVertexData, by calling
-//               add_vis_column() each time.  For each column, you
-//               specify the source of the column in the PFMFile, the
-//               target column and name in the GeomVertexData, and an
-//               optional transform matrix and/or lens to transform
-//               and project the point before generating it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new vis column specification to the list of vertex data columns that
+ * will be generated at the next call to generate_vis_points() or
+ * generate_vis_mesh().  This advanced interface supercedes the higher-level
+ * set_vis_inverse(), set_flat_texcoord_name(), and set_vis_2d().  If you use
+ * this advanced interface, you must specify explicitly the complete list of
+ * data columns to be created in the resulting GeomVertexData, by calling
+ * add_vis_column() each time.  For each column, you specify the source of the
+ * column in the PFMFile, the target column and name in the GeomVertexData, and
+ * an optional transform matrix and/or lens to transform and project the point
+ * before generating it.
+ */
 void PfmVizzer::
 add_vis_column(ColumnType source, ColumnType target,
                InternalName *name, const TransformState *transform,
@@ -255,14 +231,11 @@ add_vis_column(ColumnType source, ColumnType target,
   add_vis_column(_vis_columns, source, target, name, transform, lens, undist_lut);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::generate_vis_points
-//       Access: Published
-//  Description: Creates a point cloud with the points of the pfm as
-//               3-d coordinates in space, and texture coordinates
-//               ranging from 0 .. 1 based on the position within the
-//               pfm grid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a point cloud with the points of the pfm as 3-d coordinates in space,
+ * and texture coordinates ranging from 0 .. 1 based on the position within the
+ * pfm grid.
+ */
 NodePath PfmVizzer::
 generate_vis_points() const {
   nassertr(_pfm.is_valid(), NodePath());
@@ -278,9 +251,9 @@ generate_vis_points() const {
       // We need a 3-d texture coordinate if we're inverting the vis
       // and it's 3-d.
       GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
-        (InternalName::get_vertex(), 3, 
+        (InternalName::get_vertex(), 3,
          Geom::NT_stdfloat, Geom::C_point,
-         InternalName::get_texcoord(), 3, 
+         InternalName::get_texcoord(), 3,
          Geom::NT_stdfloat, Geom::C_texcoord);
       format = GeomVertexFormat::register_format(v3t3);
     }
@@ -328,25 +301,22 @@ generate_vis_points() const {
       ++num_points;
     }
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   PT(GeomPoints) points = new GeomPoints(Geom::UH_static);
   points->add_next_vertices(num_points);
   geom->add_primitive(points);
-  
+
   PT(GeomNode) gnode = new GeomNode("");
   gnode->add_geom(geom);
   return NodePath(gnode);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::generate_vis_mesh
-//       Access: Published
-//  Description: Creates a triangle mesh with the points of the pfm as
-//               3-d coordinates in space, and texture coordinates
-//               ranging from 0 .. 1 based on the position within the
-//               pfm grid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a triangle mesh with the points of the pfm as 3-d coordinates in
+ * space, and texture coordinates ranging from 0 .. 1 based on the position
+ * within the pfm grid.
+ */
 NodePath PfmVizzer::
 generate_vis_mesh(MeshFace face) const {
   nassertr(_pfm.is_valid(), NodePath());
@@ -364,12 +334,12 @@ generate_vis_mesh(MeshFace face) const {
     PfmVizzer exvizzer(expanded);
     return exvizzer.generate_vis_mesh(face);
   }
-  
+
   if (_pfm.get_x_size() == 1 || _pfm.get_y_size() == 1) {
     // Can't generate a 1-d mesh, so generate points in this case.
     return generate_vis_points();
   }
-  
+
   PT(GeomNode) gnode = new GeomNode("");
 
   if (face & MF_front) {
@@ -384,14 +354,11 @@ generate_vis_mesh(MeshFace face) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::calc_max_u_displacement
-//       Access: Published
-//  Description: Computes the maximum amount of shift, in pixels
-//               either left or right, of any pixel in the distortion
-//               map.  This can be passed to make_displacement(); see
-//               that function for more information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the maximum amount of shift, in pixels either left or right, of any
+ * pixel in the distortion map.  This can be passed to make_displacement(); see
+ * that function for more information.
+ */
 double PfmVizzer::
 calc_max_u_displacement() const {
   int x_size = _pfm.get_x_size();
@@ -415,14 +382,11 @@ calc_max_u_displacement() const {
   return max_u;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::calc_max_v_displacement
-//       Access: Published
-//  Description: Computes the maximum amount of shift, in pixels
-//               either up or down, of any pixel in the distortion
-//               map.  This can be passed to make_displacement(); see
-//               that function for more information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the maximum amount of shift, in pixels either up or down, of any
+ * pixel in the distortion map.  This can be passed to make_displacement(); see
+ * that function for more information.
+ */
 double PfmVizzer::
 calc_max_v_displacement() const {
   int x_size = _pfm.get_x_size();
@@ -446,32 +410,21 @@ calc_max_v_displacement() const {
   return max_v;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::make_displacement
-//       Access: Published
-//  Description: Assuming the underlying PfmFile is a 2-d distortion
-//               mesh, with the U and V in the first two components
-//               and the third component unused, this computes an
-//               AfterEffects-style displacement map that represents
-//               the same distortion.  The indicated PNMImage will be
-//               filled in with a displacement map image, with
-//               horizontal shift in the red channel and vertical
-//               shift in the green channel, where a fully bright (or
-//               fully black) pixel indicates a shift of max_u or
-//               max_v pixels.
-//
-//               Use calc_max_u_displacement() and
-//               calc_max_v_displacement() to compute suitable values
-//               for max_u and max_v.
-//
-//               This generates an integer 16-bit displacement image.
-//               It is a good idea, though not necessarily essential,
-//               to check "Preserve RGB" in the interpret footage
-//               section for each displacement image.  Set
-//               for_32bit true if this is meant to be used in a
-//               32-bit project file, and false if it is meant to be
-//               used in a 16-bit project file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming the underlying PfmFile is a 2-d distortion mesh, with the U and V in
+ * the first two components and the third component unused, this computes an
+ * AfterEffects-style displacement map that represents the same distortion.  The
+ * indicated PNMImage will be filled in with a displacement map image, with
+ * horizontal shift in the red channel and vertical shift in the green channel,
+ * where a fully bright (or fully black) pixel indicates a shift of max_u or
+ * max_v pixels.  Use calc_max_u_displacement() and calc_max_v_displacement() to
+ * compute suitable values for max_u and max_v.  This generates an integer
+ * 16-bit displacement image.  It is a good idea, though not necessarily
+ * essential, to check "Preserve RGB" in the interpret footage section for each
+ * displacement image.  Set for_32bit true if this is meant to be used in a
+ * 32-bit project file, and false if it is meant to be used in a 16-bit project
+ * file.
+ */
 void PfmVizzer::
 make_displacement(PNMImage &result, double max_u, double max_v, bool for_32bit) const {
   int x_size = _pfm.get_x_size();
@@ -518,9 +471,9 @@ make_displacement(PNMImage &result, double max_u, double max_v, bool for_32bit) 
 
       // We use the blue channel to mark holes, so we can fill them in
       // later.
-      result.set_xel_val(xi, yi, 
-                         min(max(u_val, 0), PNM_MAXMAXVAL), 
-                         min(max(v_val, 0), PNM_MAXMAXVAL), 
+      result.set_xel_val(xi, yi,
+                         min(max(u_val, 0), PNM_MAXMAXVAL),
+                         min(max(v_val, 0), PNM_MAXMAXVAL),
                          0);
     }
   }
@@ -551,31 +504,20 @@ make_displacement(PNMImage &result, double max_u, double max_v, bool for_32bit) 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::make_displacement
-//       Access: Published
-//  Description: Assuming the underlying PfmFile is a 2-d distortion
-//               mesh, with the U and V in the first two components
-//               and the third component unused, this computes an
-//               AfterEffects-style displacement map that represents
-//               the same distortion.  The indicated PNMImage will be
-//               filled in with a displacement map image, with
-//               horizontal shift in the red channel and vertical
-//               shift in the green channel, where a fully bright (or
-//               fully black) pixel indicates a shift of max_u or
-//               max_v pixels.
-//
-//               Use calc_max_u_displacement() and
-//               calc_max_v_displacement() to compute suitable values
-//               for max_u and max_v.
-//
-//               This generates a 32-bit floating-point displacement
-//               image.  It is essential to check "Preserve RGB" in
-//               the interpret footage section for each displacement
-//               image.  Set for_32bit true if this is meant to
-//               be used in a 32-bit project file, and false if it is
-//               meant to be used in a 16-bit project file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming the underlying PfmFile is a 2-d distortion mesh, with the U and V in
+ * the first two components and the third component unused, this computes an
+ * AfterEffects-style displacement map that represents the same distortion.  The
+ * indicated PNMImage will be filled in with a displacement map image, with
+ * horizontal shift in the red channel and vertical shift in the green channel,
+ * where a fully bright (or fully black) pixel indicates a shift of max_u or
+ * max_v pixels.  Use calc_max_u_displacement() and calc_max_v_displacement() to
+ * compute suitable values for max_u and max_v.  This generates a 32-bit
+ * floating-point displacement image.  It is essential to check "Preserve RGB"
+ * in the interpret footage section for each displacement image.  Set for_32bit
+ * true if this is meant to be used in a 32-bit project file, and false if it is
+ * meant to be used in a 16-bit project file.
+ */
 void PfmVizzer::
 make_displacement(PfmFile &result, double max_u, double max_v, bool for_32bit) const {
   int x_size = _pfm.get_x_size();
@@ -647,12 +589,10 @@ make_displacement(PfmFile &result, double max_u, double max_v, bool for_32bit) c
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::uses_aux_pfm
-//       Access: Private
-//  Description: Returns true if any of the vis_column tokens
-//               reference the aux_pfm file, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the vis_column tokens reference the aux_pfm file,
+ * false otherwise.
+ */
 bool PfmVizzer::
 uses_aux_pfm() const {
   for (VisColumns::const_iterator vci = _vis_columns.begin();
@@ -672,16 +612,13 @@ uses_aux_pfm() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::r_fill_displacement
-//       Access: Private
-//  Description: Recursively fills in holes with the color of their
-//               nearest neighbor after processing the image.  This
-//               avoids sudden discontinuities in the displacement map
-//               at the edge of the screen geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively fills in holes with the color of their nearest neighbor after
+ * processing the image.  This avoids sudden discontinuities in the displacement
+ * map at the edge of the screen geometry.
+ */
 void PfmVizzer::
-r_fill_displacement(PNMImage &result, int xi, int yi, 
+r_fill_displacement(PNMImage &result, int xi, int yi,
                     double nxi, double nyi, double u_scale, double v_scale,
                     int distance) const {
   if (xi < 0 || yi < 0 ||
@@ -704,9 +641,9 @@ r_fill_displacement(PNMImage &result, int xi, int yi,
     double y_shift = (nyi - (double)yi);
     int u_val = midval + (int)cfloor(x_shift * u_scale + 0.5);
     int v_val = midval + (int)cfloor(y_shift * v_scale + 0.5);
-    result.set_xel_val(xi, yi, 
-                       min(max(u_val, 0), PNM_MAXMAXVAL), 
-                       min(max(v_val, 0), PNM_MAXMAXVAL), 
+    result.set_xel_val(xi, yi,
+                       min(max(u_val, 0), PNM_MAXMAXVAL),
+                       min(max(v_val, 0), PNM_MAXMAXVAL),
                        min(distance, PNM_MAXMAXVAL));
 
     r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
@@ -716,16 +653,13 @@ r_fill_displacement(PNMImage &result, int xi, int yi,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::r_fill_displacement
-//       Access: Private
-//  Description: Recursively fills in holes with the color of their
-//               nearest neighbor after processing the image.  This
-//               avoids sudden discontinuities in the displacement map
-//               at the edge of the screen geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively fills in holes with the color of their nearest neighbor after
+ * processing the image.  This avoids sudden discontinuities in the displacement
+ * map at the edge of the screen geometry.
+ */
 void PfmVizzer::
-r_fill_displacement(PfmFile &result, int xi, int yi, 
+r_fill_displacement(PfmFile &result, int xi, int yi,
                     double nxi, double nyi, double u_scale, double v_scale,
                     int distance) const {
   if (xi < 0 || yi < 0 ||
@@ -755,12 +689,10 @@ r_fill_displacement(PfmFile &result, int xi, int yi,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::make_vis_mesh_geom
-//       Access: Private
-//  Description: Returns a triangle mesh for the pfm.  If inverted is
-//               true, the mesh is facing the opposite direction.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a triangle mesh for the pfm.  If inverted is true, the mesh is facing
+ * the opposite direction.
+ */
 void PfmVizzer::
 make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
   static const bool keep_beyond_lens = true;
@@ -870,7 +802,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
           }
         }
       }
-  
+
       PT(Geom) geom = new Geom(vdata);
       PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
 
@@ -891,7 +823,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
                                 !_aux_pfm->has_point(xi + 1, yi))) {
             continue;
           }
-          
+
           if (!keep_beyond_lens &&
               (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
                skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
@@ -907,17 +839,17 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
           int vi1 = ((xi0) + (yi0 + 1) * x_size);
           int vi2 = ((xi0 + 1) + (yi0 + 1) * x_size);
           int vi3 = ((xi0 + 1) + (yi0) * x_size);
-          
+
           if (reverse_faces) {
             tris->add_vertices(vi2, vi0, vi1);
             tris->close_primitive();
-            
+
             tris->add_vertices(vi3, vi0, vi2);
             tris->close_primitive();
           } else {
             tris->add_vertices(vi2, vi1, vi0);
             tris->close_primitive();
-            
+
             tris->add_vertices(vi3, vi2, vi0);
             tris->close_primitive();
           }
@@ -931,13 +863,10 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::add_vis_column
-//       Access: Private, Static
-//  Description: The private implementation of the public
-//               add_vis_column(), this adds the column to the
-//               indicated specific vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of the public add_vis_column(), this adds the
+ * column to the indicated specific vector.
+ */
 void PfmVizzer::
 add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
                InternalName *name, const TransformState *transform,
@@ -957,15 +886,12 @@ add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
   vis_columns.push_back(column);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::build_auto_vis_columns
-//       Access: Private
-//  Description: This function is called internally to construct the
-//               list of vis_columns automatically from the high-level
-//               interfaces such as set_vis_inverse(),
-//               set_flat_texcoord_name(), and set_vis_2d().  It's not
-//               called if the list has been build explicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called internally to construct the list of vis_columns
+ * automatically from the high-level interfaces such as set_vis_inverse(),
+ * set_flat_texcoord_name(), and set_vis_2d().  It's not called if the list has
+ * been build explicitly.
+ */
 void PfmVizzer::
 build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
   vis_columns.clear();
@@ -1006,12 +932,9 @@ build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::make_array_format
-//       Access: Private
-//  Description: Constructs a GeomVertexFormat that corresponds to the
-//               vis_columns list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a GeomVertexFormat that corresponds to the vis_columns list.
+ */
 CPT(GeomVertexFormat) PfmVizzer::
 make_array_format(const VisColumns &vis_columns) const {
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
@@ -1079,13 +1002,10 @@ make_array_format(const VisColumns &vis_columns) const {
   return GeomVertexFormat::register_format(array_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::VisColumn::add_data
-//       Access: Public
-//  Description: Adds the data for this column to the appropriate
-//               column of the GeomVertexWriter.  Returns true if the
-//               point is valid, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the data for this column to the appropriate column of the
+ * GeomVertexWriter.  Returns true if the point is valid, false otherwise.
+ */
 bool PfmVizzer::VisColumn::
 add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const {
   const PfmFile &pfm = vizzer.get_pfm();
@@ -1093,7 +1013,7 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
 
   switch (_source) {
   case CT_texcoord2:
-    { 
+    {
       LPoint2f uv((PN_float32(xi) + 0.5) / PN_float32(pfm.get_x_size()),
                   (PN_float32(yi) + 0.5) / PN_float32(pfm.get_y_size()));
       if (!transform_point(uv)) {
@@ -1106,7 +1026,7 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   case CT_texcoord3:
     {
       LPoint3f uv((PN_float32(xi) + 0.5) / PN_float32(pfm.get_x_size()),
-                  (PN_float32(yi) + 0.5) / PN_float32(pfm.get_y_size()), 
+                  (PN_float32(yi) + 0.5) / PN_float32(pfm.get_y_size()),
                   0.0f);
       if (!transform_point(uv)) {
         success = false;
@@ -1194,14 +1114,14 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
         v[1] = pfm.get_point(xi - 1, yi);
         flip = !flip;
       }
-                
+
       if (pfm.has_point(xi, yi + 1)) {
         v[2] = pfm.get_point(xi, yi + 1);
       } else if (pfm.has_point(xi, yi - 1)) {
         v[2] = pfm.get_point(xi, yi - 1);
         flip = !flip;
       }
-                
+
       LVector3f n = LVector3f::zero();
       for (int i = 0; i < 3; ++i) {
         const LPoint3f &v0 = v[i];
@@ -1245,12 +1165,9 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::VisColumn::transform_point
-//       Access: Public
-//  Description: Transforms the indicated point as specified by the
-//               VisColumn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the indicated point as specified by the VisColumn.
+ */
 bool PfmVizzer::VisColumn::
 transform_point(LPoint2f &point) const {
   bool success = true;
@@ -1261,12 +1178,9 @@ transform_point(LPoint2f &point) const {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::VisColumn::transform_point
-//       Access: Public
-//  Description: Transforms the indicated point as specified by the
-//               VisColumn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the indicated point as specified by the VisColumn.
+ */
 bool PfmVizzer::VisColumn::
 transform_point(LPoint3f &point) const {
   bool success = true;
@@ -1275,8 +1189,8 @@ transform_point(LPoint3f &point) const {
   }
   if (_lens != (Lens *)NULL) {
     static LMatrix4f to_uv(0.5, 0.0, 0.0, 0.0,
-                           0.0, 0.5, 0.0, 0.0, 
-                           0.0, 0.0, 1.0, 0.0, 
+                           0.0, 0.5, 0.0, 0.0,
+                           0.0, 0.0, 1.0, 0.0,
                            0.5, 0.5, 0.0, 1.0);
     LPoint3 film;
     if (!_lens->project(LCAST(PN_stdfloat, point), film)) {
@@ -1300,12 +1214,9 @@ transform_point(LPoint3f &point) const {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmVizzer::VisColumn::transform_vector
-//       Access: Public
-//  Description: Transforms the indicated vector as specified by the
-//               VisColumn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the indicated vector as specified by the VisColumn.
+ */
 bool PfmVizzer::VisColumn::
 transform_vector(LVector3f &vec) const {
   if (!_transform->is_identity()) {

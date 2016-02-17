@@ -1,16 +1,15 @@
-// Filename: physical.cxx
-// Created by:  charles (16Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physical.cxx
+ * @author charles
+ * @date 2000-06-16
+ */
 
 #include "pointerTo.h"
 
@@ -19,23 +18,15 @@
 
 TypeHandle Physical::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Physical
-//       Access: Public
-//  Description: Default Constructor
-//                The idea here is that most physicals will NOT
-//                be collections of sets (i.e. particle systems
-//                and whatever else).  Because of this, the default
-//                constructor, unless otherwise specified, will
-//                automatically allocate and initialize one
-//                PhysicalObject.  This makes it easier for
-//                high-level work.
-//
-//                pre-alloc is ONLY for multiple-object physicals,
-//                and if true, fills the physics_object vector
-//                with dead nodes, pre-allocating for the speed
-//                end of the speed-vs-overhead deal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor The idea here is that most physicals will NOT be
+ * collections of sets (i.e.  particle systems and whatever else).  Because of
+ * this, the default constructor, unless otherwise specified, will automatically
+ * allocate and initialize one PhysicalObject.  This makes it easier for high-
+ * level work.  pre-alloc is ONLY for multiple-object physicals, and if true,
+ * fills the physics_object vector with dead nodes, pre-allocating for the speed
+ * end of the speed-vs-overhead deal.
+ */
 Physical::
 Physical(int total_objects, bool pre_alloc) {
   _viscosity=0.0;
@@ -57,13 +48,10 @@ Physical(int total_objects, bool pre_alloc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Physical
-//       Access: Public
-//  Description: copy constructor (note- does deep copy of pn's)
-//                but does NOT attach itself to its template's
-//                physicsmanager.
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor (note- does deep copy of pn's) but does NOT attach itself to
+ * its template's physicsmanager.
+ */
 Physical::
 Physical(const Physical& copy) {
   _physics_manager = (PhysicsManager *) NULL;
@@ -99,11 +87,9 @@ Physical(const Physical& copy) {
     _phys_body = (PhysicsObject *) NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~Physical
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 Physical::
 ~Physical() {
   // note that this removes a physical from a physics manager.
@@ -115,10 +101,9 @@ Physical::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_objects
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const PhysicsObjectCollection Physical::
 get_objects() const{
   PhysicsObjectCollection poc;
@@ -132,12 +117,9 @@ get_objects() const{
   return poc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void Physical::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -145,12 +127,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_physics_objects
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void Physical::
 write_physics_objects(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -164,12 +143,9 @@ write_physics_objects(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_linear_forces
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void Physical::
 write_linear_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -183,12 +159,9 @@ write_linear_forces(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_angular_forces
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void Physical::
 write_angular_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -202,12 +175,9 @@ write_angular_forces(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void Physical::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

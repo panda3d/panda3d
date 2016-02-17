@@ -1,16 +1,15 @@
-// Filename: pStatFrameData.h
-// Created by:  drose (10Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatFrameData.h
+ * @author drose
+ * @date 2000-07-10
+ */
 
 #ifndef PSTATFRAMEDATA_H
 #define PSTATFRAMEDATA_H
@@ -26,13 +25,11 @@ class DatagramIterator;
 class PStatClientVersion;
 class PStatClient;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatFrameData
-// Description : Contains the raw timing and level data for a single
-//               frame.  This is a sequence of start/stop events, as
-//               well as a table of level values, associated with a
-//               number of collectors within a single frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Contains the raw timing and level data for a single frame.  This is a
+ * sequence of start/stop events, as well as a table of level values, associated
+ * with a number of collectors within a single frame.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatFrameData {
 public:
   INLINE bool is_time_empty() const;
@@ -79,4 +76,3 @@ private:
 #include "pStatFrameData.I"
 
 #endif
-

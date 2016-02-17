@@ -1,16 +1,15 @@
-// Filename: multiplexStreamBuf.cxx
-// Created by:  drose (27Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file multiplexStreamBuf.cxx
+ * @author drose
+ * @date 2000-11-27
+ */
 
 #include "multiplexStreamBuf.h"
 
@@ -30,12 +29,9 @@
 typedef int streamsize;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Output::close
-//       Access: Public
-//  Description: Closes or deletes the relevant pointers, if _owns_obj
-//               is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes or deletes the relevant pointers, if _owns_obj is true.
+ */
 void MultiplexStreamBuf::Output::
 close() {
   if (_owns_obj) {
@@ -56,11 +52,9 @@ close() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Output::write_string
-//       Access: Public
-//  Description: Dumps the indicated string to the appropriate place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dumps the indicated string to the appropriate place.
+ */
 void MultiplexStreamBuf::Output::
 write_string(const string &str) {
   switch (_output_type) {
@@ -84,11 +78,9 @@ write_string(const string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MultiplexStreamBuf::
 MultiplexStreamBuf() {
 #ifndef PHAVE_IOSTREAM
@@ -98,11 +90,9 @@ MultiplexStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MultiplexStreamBuf::
 ~MultiplexStreamBuf() {
   sync();
@@ -115,13 +105,10 @@ MultiplexStreamBuf::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::add_output
-//       Access: Public
-//  Description: Adds the indicated output destinition to the set of
-//               things that will be written to when characters are
-//               output to the MultiplexStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated output destinition to the set of things that will be
+ * written to when characters are output to the MultiplexStream.
+ */
 void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
            MultiplexStreamBuf::OutputType output_type,
@@ -142,11 +129,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::flush
-//       Access: Public
-//  Description: Forces out all output that hasn't yet been written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces out all output that hasn't yet been written.
+ */
 void MultiplexStreamBuf::
 flush() {
 #ifdef OLD_HAVE_IPC
@@ -156,12 +141,10 @@ flush() {
   write_chars("", 0, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::overflow
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int MultiplexStreamBuf::
 overflow(int ch) {
 #ifdef OLD_HAVE_IPC
@@ -184,13 +167,10 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::sync
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when the
-//               buffer should be flushed to output (for instance, on
-//               destruction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when the buffer should be flushed
+ * to output (for instance, on destruction).
+ */
 int MultiplexStreamBuf::
 sync() {
 #ifdef OLD_HAVE_IPC
@@ -210,17 +190,12 @@ sync() {
   return 0;  // Return 0 for success, EOF to indicate write full.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::write_chars
-//       Access: Private
-//  Description: An internal function called by sync() and overflow()
-//               to store one or more characters written to the stream
-//               into the memory buffer.
-//
-//               It is assumed that there is only one thread at a time
-//               running this code; it is the responsibility of the
-//               caller to grab the _lock mutex before calling this.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by sync() and overflow() to store one or more
+ * characters written to the stream into the memory buffer.  It is assumed that
+ * there is only one thread at a time running this code; it is the
+ * responsibility of the caller to grab the _lock mutex before calling this.
+ */
 void MultiplexStreamBuf::
 write_chars(const char *start, int length, bool flush) {
   size_t orig = _line_buffer.length();

@@ -1,16 +1,15 @@
-// Filename: conditionVarFullDebug.h
-// Created by:  drose (28Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file conditionVarFullDebug.h
+ * @author drose
+ * @date 2006-08-28
+ */
 
 #ifndef CONDITIONVARFULLDEBUG_H
 #define CONDITIONVARFULLDEBUG_H
@@ -21,18 +20,13 @@
 
 #ifdef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarFullDebug
-// Description : A condition variable, usually used to communicate
-//               information about changing state to a thread that is
-//               waiting for something to happen.  A condition
-//               variable can be used to "wake up" a thread when some
-//               arbitrary condition has changed.
-//
-//               A condition variable is associated with a single
-//               mutex, and several condition variables may share the
-//               same mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * A condition variable, usually used to communicate information about changing
+ * state to a thread that is waiting for something to happen.  A condition
+ * variable can be used to "wake up" a thread when some arbitrary condition has
+ * changed.  A condition variable is associated with a single mutex, and several
+ * condition variables may share the same mutex.
+ */
 class EXPCL_PANDA_PIPELINE ConditionVarFullDebug {
 public:
   ConditionVarFullDebug(MutexDebug &mutex);

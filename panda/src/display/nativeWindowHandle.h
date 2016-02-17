@@ -1,16 +1,15 @@
-// Filename: nativeWindowHandle.h
-// Created by:  drose (30Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nativeWindowHandle.h
+ * @author drose
+ * @date 2009-09-30
+ */
 
 #ifndef NATIVEWINDOWHANDLE_H
 #define NATIVEWINDOWHANDLE_H
@@ -27,16 +26,12 @@
 #include <windows.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : NativeWindowHandle
-// Description : This subclass of WindowHandle exists to allow simple
-//               creation of a WindowHandle of the appropriate type to
-//               the current OS.
-//
-//               This class exists for name scoping only.  Don't use
-//               the constructor directly; use one of the make_*
-//               methods.
-////////////////////////////////////////////////////////////////////
+/**
+ * This subclass of WindowHandle exists to allow simple creation of a
+ * WindowHandle of the appropriate type to the current OS.  This class exists
+ * for name scoping only.  Don't use the constructor directly; use one of the
+ * make_* methods.
+ */
 class EXPCL_PANDA_DISPLAY NativeWindowHandle : public WindowHandle {
 private:
   INLINE NativeWindowHandle();
@@ -54,7 +49,7 @@ public:
 #if defined(WIN32) && !defined(CPPPARSER)
   static PT(WindowHandle) make_win(HWND window);
 #endif  // WIN32
-  
+
 public:
   class EXPCL_PANDA_DISPLAY IntHandle : public OSHandle {
   public:
@@ -80,7 +75,7 @@ public:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -108,7 +103,7 @@ public:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -119,12 +114,12 @@ public:
     INLINE X11Handle(X11_Window handle);
     virtual size_t get_int_handle() const;
     virtual void output(ostream &out) const;
-    
+
     INLINE X11_Window get_handle() const;
-    
+
   private:
     X11_Window _handle;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -138,7 +133,7 @@ public:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -170,7 +165,7 @@ public:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };

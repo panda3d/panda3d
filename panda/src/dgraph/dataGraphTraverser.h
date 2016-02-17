@@ -1,16 +1,15 @@
-// Filename: dataGraphTraverser.h
-// Created by:  drose (11Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dataGraphTraverser.h
+ * @author drose
+ * @date 2002-03-11
+ */
 
 #ifndef DATAGRAPHTRAVERSER_H
 #define DATAGRAPHTRAVERSER_H
@@ -24,14 +23,11 @@
 class DataNode;
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DataGraphTraverser
-// Description : This object supervises the traversal of the data
-//               graph and the moving of data from one DataNode to its
-//               children.  The data graph is used to manage data from
-//               input devices, etc.  See the overview of the data
-//               graph in dataNode.h.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object supervises the traversal of the data graph and the moving of data
+ * from one DataNode to its children.  The data graph is used to manage data
+ * from input devices, etc.  See the overview of the data graph in dataNode.h.
+ */
 class EXPCL_PANDA_DGRAPH DataGraphTraverser {
 PUBLISHED:
   DataGraphTraverser(Thread *current_thread = Thread::get_current_thread());

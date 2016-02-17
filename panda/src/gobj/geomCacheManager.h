@@ -1,16 +1,15 @@
-// Filename: geomCacheManager.h
-// Created by:  drose (11Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomCacheManager.h
+ * @author drose
+ * @date 2005-03-11
+ */
 
 #ifndef GEOMCACHEMANAGER_H
 #define GEOMCACHEMANAGER_H
@@ -22,24 +21,17 @@
 
 class GeomCacheEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomCacheManager
-// Description : This is used to keep track of, and limit the size of,
-//               the cache of munged vertices, which would otherwise
-//               be distributed through all of the GeomVertexData
-//               objects in the system.
-//
-//               The actual data in the cache is not stored here, but
-//               rather it is distributed among the various
-//               GeomVertexData source objects.  This allows the cache
-//               data to propagate through the multiprocess pipeline.
-//
-//               This structure actually caches any of a number of
-//               different types of pointers, and mixes them all up in
-//               the same LRU cache list.  Some of them (such as
-//               GeomMunger) are reference-counted here in the cache;
-//               most are not.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to keep track of, and limit the size of, the cache of munged
+ * vertices, which would otherwise be distributed through all of the
+ * GeomVertexData objects in the system.  The actual data in the cache is not
+ * stored here, but rather it is distributed among the various GeomVertexData
+ * source objects.  This allows the cache data to propagate through the
+ * multiprocess pipeline.  This structure actually caches any of a number of
+ * different types of pointers, and mixes them all up in the same LRU cache
+ * list.  Some of them (such as GeomMunger) are reference-counted here in the
+ * cache; most are not.
+ */
 class EXPCL_PANDA_GOBJ GeomCacheManager {
 protected:
   GeomCacheManager();

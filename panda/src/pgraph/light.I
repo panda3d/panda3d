@@ -1,23 +1,19 @@
-// Filename: light.I
-// Created by:  drose (26Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file light.I
+ * @author drose
+ * @date 2002-03-26
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE Light::CData::
 CData() :
   _color(1.0f, 1.0f, 1.0f, 1.0f),
@@ -25,11 +21,9 @@ CData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Light::CData::
 CData(const Light::CData &copy) :
   _color(copy._color),
@@ -38,11 +32,9 @@ CData(const Light::CData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Light::
 Light() :
   _priority(0),
@@ -51,11 +43,9 @@ Light() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Light::
 Light(const Light &copy) :
   _priority(copy._priority),
@@ -65,22 +55,18 @@ Light(const Light &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::get_color
-//       Access: Published
-//  Description: Returns the basic color of the light.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the basic color of the light.
+ */
 INLINE const LColor &Light::
 get_color() const {
   CDReader cdata(_cycler);
   return cdata->_color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::set_color
-//       Access: Published
-//  Description: Sets the basic color of the light.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the basic color of the light.
+ */
 INLINE void Light::
 set_color(const LColor &color) {
   CDWriter cdata(_cycler);
@@ -89,45 +75,32 @@ set_color(const LColor &color) {
   mark_viz_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::has_color_temperature
-//       Access: Published
-//  Description: Returns true if the color was specified as a
-//               temperature in kelvins, and get_color_temperature
-//               is defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the color was specified as a temperature in kelvins, and
+ * get_color_temperature is defined.
+ */
 INLINE bool Light::
 has_color_temperature() const {
   return _has_color_temperature;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::get_color_temperature
-//       Access: Published
-//  Description: Returns the basic color temperature of the light,
-//               assuming has_color_temperature() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the basic color temperature of the light, assuming
+ * has_color_temperature() returns true.
+ */
 INLINE PN_stdfloat Light::
 get_color_temperature() const {
   nassertr(_has_color_temperature, _color_temperature);
   return _color_temperature;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::set_priority
-//       Access: Published
-//  Description: Changes the relative importance of this light
-//               relative to the other lights that are applied
-//               simultaneously.
-//
-//               The priority number is used to decide which of the
-//               requested lights are to be selected for rendering
-//               when more lights are requested than the hardware will
-//               support.  The highest-priority n lights are selected
-//               for rendering.
-//
-//               This is similar to TextureStage::set_priority().
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the relative importance of this light relative to the other lights
+ * that are applied simultaneously.  The priority number is used to decide which
+ * of the requested lights are to be selected for rendering when more lights are
+ * requested than the hardware will support.  The highest-priority n lights are
+ * selected for rendering.  This is similar to TextureStage::set_priority().
+ */
 INLINE void Light::
 set_priority(int priority) {
   _priority = priority;
@@ -137,37 +110,27 @@ set_priority(int priority) {
   _sort_seq++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::get_priority
-//       Access: Published
-//  Description: Returns the priority associated with this light.  See
-//               set_priority().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the priority associated with this light.  See set_priority().
+ */
 INLINE int Light::
 get_priority() const {
   return _priority;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::get_sort_seq
-//       Access: Public, Static
-//  Description: Returns a global sequence number that is incremented
-//               any time any Light in the world changes sort
-//               or priority.  This is used by LightAttrib to
-//               determine when it is necessary to re-sort its
-//               internal array of stages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a global sequence number that is incremented any time any Light in
+ * the world changes sort or priority.  This is used by LightAttrib to determine
+ * when it is necessary to re-sort its internal array of stages.
+ */
 INLINE UpdateSeq Light::
 get_sort_seq() {
   return _sort_seq;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Light::mark_viz_stale
-//       Access: Protected
-//  Description: Indicates that the internal visualization object will
-//               need to be updated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the internal visualization object will need to be updated.
+ */
 INLINE void Light::
 mark_viz_stale() {
   CDWriter cdata(_cycler);

@@ -1,20 +1,19 @@
-// Filename: iPhoneGraphicsStateGuardian.h
-// Created by:  drose (08Apr09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iPhoneGraphicsStateGuardian.h
+ * @author drose
+ * @date 2009-04-08
+ */
 
 #ifndef IPHONEGRAPHICSSTATEGUARDIAN_H
 #define IPHONEGRAPHICSSTATEGUARDIAN_H
-        
+
 #include "pandabase.h"
 #include "glesgsg.h"
 
@@ -22,10 +21,9 @@
 
 class IPhoneGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IPhoneGraphicsStateGuardian
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class IPhoneGraphicsStateGuardian : public GLESGraphicsStateGuardian {
 public:
   IPhoneGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -35,7 +33,7 @@ public:
 
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
-  
+
 private:
   void describe_pixel_format(FrameBufferProperties &fb_props);
 

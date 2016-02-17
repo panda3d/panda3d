@@ -1,16 +1,15 @@
-// Filename: driveInterface.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file driveInterface.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef DRIVEINTERFACE_H
 #define DRIVEINTERFACE_H
@@ -24,13 +23,11 @@
 #include "transformState.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DriveInterface
-// Description : This is a TFormer, similar to Trackball, that moves
-//               around a transform matrix in response to mouse input.
-//               The basic motion is on a horizontal plane, as if
-//               driving a vehicle.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a TFormer, similar to Trackball, that moves around a transform matrix
+ * in response to mouse input.  The basic motion is on a horizontal plane, as if
+ * driving a vehicle.
+ */
 class EXPCL_PANDA_TFORM DriveInterface : public MouseInterfaceNode {
 PUBLISHED:
   DriveInterface(const string &name = "");

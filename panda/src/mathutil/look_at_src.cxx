@@ -1,16 +1,15 @@
-// Filename: look_at_src.cxx
-// Created by:  drose (25Apr97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file look_at_src.cxx
+ * @author drose
+ * @date 1997-04-25
+ */
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_xi_mat(const FLOATNAME(LVector2) &x) {
@@ -43,17 +42,14 @@ make_z_mat(const FLOATNAME(LVector2) &z) {
                                 0,     0,     1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: heads_up
-//  Description: Given two vectors defining a forward direction and an
-//               up vector, constructs the matrix that rotates things
-//               from the defined coordinate system to y-forward and
-//               z-up.  The up vector will be rotated to z-up first,
-//               then the forward vector will be rotated as nearly to
-//               y-forward as possible.  This will only have a
-//               different effect from look_at() if the forward and up
-//               vectors are not perpendicular.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given two vectors defining a forward direction and an up vector, constructs
+ * the matrix that rotates things from the defined coordinate system to
+ * y-forward and z-up.  The up vector will be rotated to z-up first, then the
+ * forward vector will be rotated as nearly to y-forward as possible.  This will
+ * only have a different effect from look_at() if the forward and up vectors are
+ * not perpendicular.
+ */
 void
 heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
          const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
@@ -179,17 +175,14 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: look_at
-//  Description: Given two vectors defining a forward direction and an
-//               up vector, constructs the matrix that rotates things
-//               from the defined coordinate system to y-forward and
-//               z-up.  The forward vector will be rotated to
-//               y-forward first, then the up vector will be rotated
-//               as nearly to z-up as possible.  This will only have a
-//               different effect from heads_up() if the forward and
-//               up vectors are not perpendicular.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given two vectors defining a forward direction and an up vector, constructs
+ * the matrix that rotates things from the defined coordinate system to
+ * y-forward and z-up.  The forward vector will be rotated to y-forward first,
+ * then the up vector will be rotated as nearly to z-up as possible.  This will
+ * only have a different effect from heads_up() if the forward and up vectors
+ * are not perpendicular.
+ */
 void
 look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
         const FLOATNAME(LVector3) &up, CoordinateSystem cs) {

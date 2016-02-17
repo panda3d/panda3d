@@ -1,16 +1,15 @@
-// Filename: eggJointNodePointer.cxx
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggJointNodePointer.cxx
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #include "eggJointNodePointer.h"
 
@@ -22,11 +21,9 @@
 
 TypeHandle EggJointNodePointer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggJointNodePointer::
 EggJointNodePointer(EggObject *object) {
   _joint = DCAST(EggGroup, object);
@@ -40,63 +37,45 @@ EggJointNodePointer(EggObject *object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::get_num_frames
-//       Access: Public, Virtual
-//  Description: Returns the number of frames of animation for this
-//               particular joint.
-//
-//               In the case of a EggJointNodePointer, which just
-//               stores a pointer to a <Joint> entry for a character
-//               model (not an animation table), there is always
-//               exactly one frame: the rest pose.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames of animation for this particular joint.  In the
+ * case of a EggJointNodePointer, which just stores a pointer to a <Joint> entry
+ * for a character model (not an animation table), there is always exactly one
+ * frame: the rest pose.
+ */
 int EggJointNodePointer::
 get_num_frames() const {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::get_frame
-//       Access: Public, Virtual
-//  Description: Returns the transform matrix corresponding to this
-//               joint position in the nth frame.
-//
-//               In the case of a EggJointNodePointer, which just
-//               stores a pointer to a <Joint> entry for a character
-//               model (not an animation table), there is always
-//               exactly one frame: the rest pose.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transform matrix corresponding to this joint position in the nth
+ * frame.  In the case of a EggJointNodePointer, which just stores a pointer to
+ * a <Joint> entry for a character model (not an animation table), there is
+ * always exactly one frame: the rest pose.
+ */
 LMatrix4d EggJointNodePointer::
 get_frame(int n) const {
   nassertr(n == 0, LMatrix4d::ident_mat());
   return _joint->get_transform3d();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::set_frame
-//       Access: Public, Virtual
-//  Description: Sets the transform matrix corresponding to this
-//               joint position in the nth frame.
-//
-//               In the case of a EggJointNodePointer, which just
-//               stores a pointer to a <Joint> entry for a character
-//               model (not an animation table), there is always
-//               exactly one frame: the rest pose.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the transform matrix corresponding to this joint position in the nth
+ * frame.  In the case of a EggJointNodePointer, which just stores a pointer to
+ * a <Joint> entry for a character model (not an animation table), there is
+ * always exactly one frame: the rest pose.
+ */
 void EggJointNodePointer::
 set_frame(int n, const LMatrix4d &mat) {
   nassertv(n == 0);
   _joint->set_transform3d(mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::do_finish_reparent
-//       Access: Protected
-//  Description: Performs the actual reparenting operation
-//               by removing the node from its old parent and
-//               associating it with its new parent, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the actual reparenting operation by removing the node from its old
+ * parent and associating it with its new parent, if any.
+ */
 void EggJointNodePointer::
 do_finish_reparent(EggJointPointer *new_parent) {
   if (new_parent == (EggJointPointer *)NULL) {
@@ -117,12 +96,10 @@ do_finish_reparent(EggJointPointer *new_parent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::move_vertices_to
-//       Access: Public, Virtual
-//  Description: Moves the vertices assigned to this joint into the
-//               other joint (which should be of the same type).
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the vertices assigned to this joint into the other joint (which should
+ * be of the same type).
+ */
 void EggJointNodePointer::
 move_vertices_to(EggJointPointer *new_joint) {
   if (new_joint == (EggJointPointer *)NULL) {
@@ -136,19 +113,12 @@ move_vertices_to(EggJointPointer *new_joint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::do_rebuild
-//       Access: Public, Virtual
-//  Description: Rebuilds the entire table all at once, based on the
-//               frames added by repeated calls to add_rebuild_frame()
-//               since the last call to begin_rebuild().
-//
-//               Until do_rebuild() is called, the animation table is
-//               not changed.
-//
-//               The return value is true if all frames are
-//               acceptable, or false if there is some problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the entire table all at once, based on the frames added by repeated
+ * calls to add_rebuild_frame() since the last call to begin_rebuild().  Until
+ * do_rebuild() is called, the animation table is not changed.  The return value
+ * is true if all frames are acceptable, or false if there is some problem.
+ */
 bool EggJointNodePointer::
 do_rebuild(EggCharacterDb &db) {
   LMatrix4d mat;
@@ -161,16 +131,14 @@ do_rebuild(EggCharacterDb &db) {
 
   // We shouldn't have a frame 1.
   nassertr(!db.get_matrix(this, EggCharacterDb::TT_rebuild_frame, 1, mat), false);
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::expose
-//       Access: Public, Virtual
-//  Description: Flags the joint with the indicated DCS flag so that
-//               it will be loaded as a separate node in the player.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flags the joint with the indicated DCS flag so that it will be loaded as a
+ * separate node in the player.
+ */
 void EggJointNodePointer::
 expose(EggGroup::DCSType dcs_type) {
   if (_joint != (EggGroup *)NULL) {
@@ -178,13 +146,10 @@ expose(EggGroup::DCSType dcs_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::apply_default_pose
-//       Access: Public, Virtual
-//  Description: Applies the pose from the indicated frame of the
-//               indicated source joint as the initial pose for
-//               this joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the pose from the indicated frame of the indicated source joint as
+ * the initial pose for this joint.
+ */
 void EggJointNodePointer::
 apply_default_pose(EggJointPointer *source_joint, int frame) {
   if (_joint != (EggGroup *)NULL) {
@@ -199,14 +164,11 @@ apply_default_pose(EggJointPointer *source_joint, int frame) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::has_vertices
-//       Access: Public, Virtual
-//  Description: Returns true if there are any vertices referenced by
-//               the node this points to, false otherwise.  For
-//               certain kinds of back pointers (e.g. table animation
-//               entries), this is always false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are any vertices referenced by the node this points to,
+ * false otherwise.  For certain kinds of back pointers (e.g.  table animation
+ * entries), this is always false.
+ */
 bool EggJointNodePointer::
 has_vertices() const {
   if (_joint != (EggGroup *)NULL) {
@@ -216,12 +178,10 @@ has_vertices() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::make_new_joint
-//       Access: Public, Virtual
-//  Description: Creates a new child of the current joint in the
-//               egg data, and returns a pointer to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new child of the current joint in the egg data, and returns a
+ * pointer to it.
+ */
 EggJointPointer *EggJointNodePointer::
 make_new_joint(const string &name) {
   EggGroup *new_joint = new EggGroup(name);
@@ -230,11 +190,9 @@ make_new_joint(const string &name) {
   return new EggJointNodePointer(new_joint);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointNodePointer::set_name
-//       Access: Public, Virtual
-//  Description: Applies the indicated name change to the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated name change to the egg file.
+ */
 void EggJointNodePointer::
 set_name(const string &name) {
   _joint->set_name(name);

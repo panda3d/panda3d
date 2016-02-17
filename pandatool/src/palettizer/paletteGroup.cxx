@@ -1,16 +1,15 @@
-// Filename: paletteGroup.cxx
-// Created by:  drose (30Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file paletteGroup.cxx
+ * @author drose
+ * @date 2000-11-30
+ */
 
 #include "paletteGroup.h"
 #include "palettePage.h"
@@ -29,11 +28,9 @@
 
 TypeHandle PaletteGroup::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PaletteGroup::
 PaletteGroup() {
   _egg_count = 0;
@@ -44,48 +41,37 @@ PaletteGroup() {
   _margin_override = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::set_dirname
-//       Access: Public
-//  Description: Sets the directory name associated with the palette
-//               group.  This is an optional feature that can be used
-//               to place the maps for the different palette groups
-//               into different install directories.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the directory name associated with the palette group.  This is an
+ * optional feature that can be used to place the maps for the different palette
+ * groups into different install directories.
+ */
 void PaletteGroup::
 set_dirname(const string &dirname) {
   _dirname = dirname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::has_dirname
-//       Access: Public
-//  Description: Returns true if the directory name has been
-//               explicitly set for this group.  If it has not,
-//               get_dirname() returns an empty string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the directory name has been explicitly set for this group.
+ * If it has not, get_dirname() returns an empty string.
+ */
 bool PaletteGroup::
 has_dirname() const {
   return !_dirname.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_dirname
-//       Access: Public
-//  Description: Returns the directory name associated with the
-//               palette group.  See set_dirname().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the directory name associated with the palette group.  See
+ * set_dirname().
+ */
 const string &PaletteGroup::
 get_dirname() const {
   return _dirname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::clear_depends
-//       Access: Public
-//  Description: Eliminates all the dependency information for this
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Eliminates all the dependency information for this group.
+ */
 void PaletteGroup::
 clear_depends() {
   _dependent.clear();
@@ -94,74 +80,57 @@ clear_depends() {
   _dirname_order = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::group_with
-//       Access: Public
-//  Description: Indicates a dependency of this group on some other
-//               group.  This means that the textures assigned to this
-//               group may be considered successfully assigned if they
-//               are actually placed in the other group.  In practice,
-//               this means that the textures associated with the
-//               other palette group will always be resident at
-//               runtime when textures from this palette group are
-//               required.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates a dependency of this group on some other group.  This means that
+ * the textures assigned to this group may be considered successfully assigned
+ * if they are actually placed in the other group.  In practice, this means that
+ * the textures associated with the other palette group will always be resident
+ * at runtime when textures from this palette group are required.
+ */
 void PaletteGroup::
 group_with(PaletteGroup *other) {
   _dependent.insert(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_groups
-//       Access: Public
-//  Description: Returns the set of groups this group depends on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of groups this group depends on.
+ */
 const PaletteGroups &PaletteGroup::
 get_groups() const {
   return _dependent;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_margin_override
-//       Access: Public
-//  Description: Returns the set of groups this group depends on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of groups this group depends on.
+ */
 int PaletteGroup::
 get_margin_override() const {
   return _margin_override;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_margin_override
-//       Access: Public
-//  Description: Returns the set of groups this group depends on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of groups this group depends on.
+ */
 void PaletteGroup::
 set_margin_override(const int override) {
   _margin_override = override;
   _has_margin_override = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::has_margin_override
-//       Access: Public
-//  Description: Returns the set of groups this group depends on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of groups this group depends on.
+ */
 bool PaletteGroup::
 has_margin_override() const {
   return _has_margin_override;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_placements
-//       Access: Public
-//  Description: Adds the set of TexturePlacements associated with
-//               this group to the indicated vector.  The vector is
-//               not cleared before this operation; if the user wants
-//               to retrieve the set of placements particular to this
-//               group only, it is the user's responsibility to clear
-//               the vector first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the set of TexturePlacements associated with this group to the indicated
+ * vector.  The vector is not cleared before this operation; if the user wants
+ * to retrieve the set of placements particular to this group only, it is the
+ * user's responsibility to clear the vector first.
+ */
 void PaletteGroup::
 get_placements(pvector<TexturePlacement *> &placements) const {
   Placements::const_iterator pi;
@@ -170,13 +139,10 @@ get_placements(pvector<TexturePlacement *> &placements) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_complete_placements
-//       Access: Public
-//  Description: Adds the set of TexturePlacements associated with
-//               this group and all dependent groups to the indicated
-//               vector.  See get_placements().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the set of TexturePlacements associated with this group and all
+ * dependent groups to the indicated vector.  See get_placements().
+ */
 void PaletteGroup::
 get_complete_placements(pvector<TexturePlacement *> &placements) const {
   PaletteGroups complete;
@@ -191,14 +157,11 @@ get_complete_placements(pvector<TexturePlacement *> &placements) const {
   get_placements(placements);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::reset_dependency_level
-//       Access: Public
-//  Description: Unconditionally sets the dependency level and order
-//               of this group to zero, in preparation for a later
-//               call to set_dependency_level().  See
-//               set_dependency_level().
-////////////////////////////////////////////////////////////////////
+/**
+ * Unconditionally sets the dependency level and order of this group to zero, in
+ * preparation for a later call to set_dependency_level().  See
+ * set_dependency_level().
+ */
 void PaletteGroup::
 reset_dependency_level() {
   _dependency_level = 0;
@@ -206,18 +169,12 @@ reset_dependency_level() {
   _dirname_order = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::set_dependency_level
-//       Access: Public
-//  Description: Sets the dependency level of this group to the
-//               indicated level, provided that level is not lower
-//               than the level that was set previously.  Also
-//               cascades to all dependent groups.  See
-//               get_dependency_level().
-//
-//               This call recurses to correctly set the dependency
-//               level of all PaletteGroups in the hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the dependency level of this group to the indicated level, provided that
+ * level is not lower than the level that was set previously.  Also cascades to
+ * all dependent groups.  See get_dependency_level().  This call recurses to
+ * correctly set the dependency level of all PaletteGroups in the hierarchy.
+ */
 void PaletteGroup::
 set_dependency_level(int level) {
   if (level > _dependency_level) {
@@ -230,18 +187,13 @@ set_dependency_level(int level) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::set_dependency_order
-//       Access: Public
-//  Description: Updates the dependency order of this group.  This
-//               number is the inverse of the dependency level, and
-//               can be used to rank the groups in order so that all
-//               the groups that a given group depends on will appear
-//               first in the list.  See get_dependency_order().
-//
-//               This function returns true if anything was changed,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the dependency order of this group.  This number is the inverse of
+ * the dependency level, and can be used to rank the groups in order so that all
+ * the groups that a given group depends on will appear first in the list.  See
+ * get_dependency_order().  This function returns true if anything was changed,
+ * false otherwise.
+ */
 bool PaletteGroup::
 set_dependency_order() {
   bool any_changed = false;
@@ -276,80 +228,55 @@ set_dependency_order() {
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_dependency_level
-//       Access: Public
-//  Description: Returns the dependency level of this group.  This is
-//               a measure of how specific the group is; the lower the
-//               dependency level, the more specific the group.
-//
-//               Groups depend on other groups in a hierarchical
-//               relationship.  In general, if group a depends on
-//               group b, then b->get_dependency_level() >
-//               a->get_dependency_level().
-//
-//               Thus, groups that lots of other groups depend on have
-//               a higher dependency level; groups that no one else
-//               depends on have a low dependency level.  This is
-//               important when deciding which groups are best suited
-//               for assigning a texture to; in general, the texture
-//               should be assigned to the most specific suitable
-//               group (i.e. the one with the lowest dependency
-//               level).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the dependency level of this group.  This is a measure of how
+ * specific the group is; the lower the dependency level, the more specific the
+ * group.  Groups depend on other groups in a hierarchical relationship.  In
+ * general, if group a depends on group b, then b->get_dependency_level() >
+ * a->get_dependency_level().  Thus, groups that lots of other groups depend on
+ * have a higher dependency level; groups that no one else depends on have a low
+ * dependency level.  This is important when deciding which groups are best
+ * suited for assigning a texture to; in general, the texture should be assigned
+ * to the most specific suitable group (i.e.  the one with the lowest dependency
+ * level).
+ */
 int PaletteGroup::
 get_dependency_level() const {
   return _dependency_level;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_dependency_order
-//       Access: Public
-//  Description: Returns the dependency order of this group.  This is
-//               similar in principle to the dependency level, but it
-//               represents the inverse concept: if group a depends on
-//               group b, then a->get_dependency_order() >
-//               b->get_dependency_order().
-//
-//               This is not exactly the same thing as n -
-//               get_dependency_level().  In particular, this can be
-//               used to sort the groups into an ordering such that
-//               all the groups that group a depends on appear before
-//               group a in the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the dependency order of this group.  This is similar in principle to
+ * the dependency level, but it represents the inverse concept: if group a
+ * depends on group b, then a->get_dependency_order() >
+ * b->get_dependency_order().  This is not exactly the same thing as n -
+ * get_dependency_level().  In particular, this can be used to sort the groups
+ * into an ordering such that all the groups that group a depends on appear
+ * before group a in the list.
+ */
 int PaletteGroup::
 get_dependency_order() const {
   return _dependency_order;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_dirname_order
-//       Access: Public
-//  Description: Returns the dependency order of this group.  This is
-//               similar in principle to the dependency level, but it
-//               represents the inverse concept: if group a depends on
-//               group b, then a->get_dirname_order() >
-//               b->get_dirname_order().
-//
-//               This is not exactly the same thing as n -
-//               get_dependency_level().  In particular, this can be
-//               used to sort the groups into an ordering such that
-//               all the groups that group a depends on appear before
-//               group a in the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the dependency order of this group.  This is similar in principle to
+ * the dependency level, but it represents the inverse concept: if group a
+ * depends on group b, then a->get_dirname_order() > b->get_dirname_order().
+ * This is not exactly the same thing as n - get_dependency_level().  In
+ * particular, this can be used to sort the groups into an ordering such that
+ * all the groups that group a depends on appear before group a in the list.
+ */
 int PaletteGroup::
 get_dirname_order() const {
   return _dirname_order;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::is_preferred_over
-//       Access: Public
-//  Description: Returns true if this group should be preferred for
-//               adding textures over the other group, if both are
-//               available.  In other words, this is a more specific
-//               group than the other one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this group should be preferred for adding textures over the
+ * other group, if both are available.  In other words, this is a more specific
+ * group than the other one.
+ */
 bool PaletteGroup::
 is_preferred_over(const PaletteGroup &other) const {
   if (get_dirname_order() != other.get_dirname_order()) {
@@ -363,38 +290,29 @@ is_preferred_over(const PaletteGroup &other) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::increment_egg_count
-//       Access: Public
-//  Description: Increments by one the number of egg files that are
-//               known to reference this PaletteGroup.  This is
-//               designed to aid the heuristics in texture placing;
-//               it's useful to know how many different egg files are
-//               sharing a particular PaletteGroup.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments by one the number of egg files that are known to reference this
+ * PaletteGroup.  This is designed to aid the heuristics in texture placing;
+ * it's useful to know how many different egg files are sharing a particular
+ * PaletteGroup.
+ */
 void PaletteGroup::
 increment_egg_count() {
   _egg_count++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_egg_count
-//       Access: Public
-//  Description: Returns the number of egg files that share this
-//               PaletteGroup.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of egg files that share this PaletteGroup.
+ */
 int PaletteGroup::
 get_egg_count() const {
   return _egg_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::get_page
-//       Access: Public
-//  Description: Returns the page associated with the indicated
-//               properties.  If no page object has yet been created,
-//               creates one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the page associated with the indicated properties.  If no page object
+ * has yet been created, creates one.
+ */
 PalettePage *PaletteGroup::
 get_page(const TextureProperties &properties) {
   Pages::iterator pi = _pages.find(properties);
@@ -408,17 +326,12 @@ get_page(const TextureProperties &properties) {
   return page;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::prepare
-//       Access: Public
-//  Description: Marks the indicated Texture as ready for placing
-//               somewhere within this group, and returns a
-//               placeholder TexturePlacement object.  The texture is
-//               not placed immediately, but may be placed later when
-//               place_all() is called; at this time, the
-//               TexturePlacement fields will be filled in as
-//               appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the indicated Texture as ready for placing somewhere within this group,
+ * and returns a placeholder TexturePlacement object.  The texture is not placed
+ * immediately, but may be placed later when place_all() is called; at this
+ * time, the TexturePlacement fields will be filled in as appropriate.
+ */
 TexturePlacement *PaletteGroup::
 prepare(TextureImage *texture) {
   TexturePlacement *placement = new TexturePlacement(texture, this);
@@ -452,17 +365,15 @@ prepare(TextureImage *texture) {
       placement->_textureSwaps.push_back(swapTextureImage);
       ++wi;
     }
-  }  
+  }
 
   return placement;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::unplace
-//       Access: Public
-//  Description: Removes the texture from its position on a
-//               PaletteImage, if it has been so placed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the texture from its position on a PaletteImage, if it has been so
+ * placed.
+ */
 void PaletteGroup::
 unplace(TexturePlacement *placement) {
   nassertv(placement->get_group() == this);
@@ -478,13 +389,10 @@ unplace(TexturePlacement *placement) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::place_all
-//       Access: Public
-//  Description: Once all the textures have been assigned to this
-//               group, try to place them all onto suitable
-//               PaletteImages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once all the textures have been assigned to this group, try to place them all
+ * onto suitable PaletteImages.
+ */
 void PaletteGroup::
 place_all() {
   // First, go through our prepared textures and assign each unplaced
@@ -492,7 +400,7 @@ place_all() {
   Placements::iterator pli;
   for (pli = _placements.begin(); pli != _placements.end(); ++pli) {
     TexturePlacement *placement = (*pli);
-      
+
     if (placement->get_omit_reason() == OR_working) {
       PalettePage *page = get_page(placement->get_properties());
       page->assign(placement);
@@ -507,14 +415,11 @@ place_all() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::update_unknown_textures
-//       Access: Public
-//  Description: Checks for new information on any textures within the
-//               group for which some of the saved information is
-//               incomplete.  This may be necessary before we can
-//               properly place all of the textures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks for new information on any textures within the group for which some of
+ * the saved information is incomplete.  This may be necessary before we can
+ * properly place all of the textures.
+ */
 void PaletteGroup::
 update_unknown_textures(const TxaFile &txa_file) {
   Placements::iterator pli;
@@ -537,13 +442,10 @@ update_unknown_textures(const TxaFile &txa_file) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::write_image_info
-//       Access: Public
-//  Description: Writes a list of the PaletteImages associated with
-//               this group, and all of their textures, to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of the PaletteImages associated with this group, and all of
+ * their textures, to the indicated output stream.
+ */
 void PaletteGroup::
 write_image_info(ostream &out, int indent_level) const {
   Pages::const_iterator pai;
@@ -566,7 +468,7 @@ write_image_info(ostream &out, int indent_level) const {
        IndirectCompareNames<TexturePlacement>());
 
   pvector<TexturePlacement *>::const_iterator pvi;
-  for (pvi = placement_vector.begin(); 
+  for (pvi = placement_vector.begin();
        pvi != placement_vector.end();
        ++pvi) {
     TexturePlacement *placement = (*pvi);
@@ -578,12 +480,12 @@ write_image_info(ostream &out, int indent_level) const {
     case OR_coverage:
       out << "coverage (" << placement->get_uv_area() << ")";
       break;
-      
+
     case OR_size:
       out << "size (" << placement->get_x_size() << " "
           << placement->get_y_size() << ")";
       break;
-      
+
     default:
       out << placement->get_omit_reason();
     }
@@ -591,12 +493,9 @@ write_image_info(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::optimal_resize
-//       Access: Public
-//  Description: Attempts to resize each PalettteImage down to its
-//               smallest possible size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to resize each PalettteImage down to its smallest possible size.
+ */
 void PaletteGroup::
 optimal_resize() {
   Pages::iterator pai;
@@ -606,13 +505,10 @@ optimal_resize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::reset_images
-//       Access: Public
-//  Description: Throws away all of the current PaletteImages, so that
-//               new ones may be created (and the packing made more
-//               optimal).
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws away all of the current PaletteImages, so that new ones may be created
+ * (and the packing made more optimal).
+ */
 void PaletteGroup::
 reset_images() {
   Pages::iterator pai;
@@ -622,14 +518,11 @@ reset_images() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::setup_shadow_images
-//       Access: Public
-//  Description: Ensures that each PaletteImage's _shadow_image has
-//               the correct filename and image types, based on what
-//               was supplied on the command line and in the .txa
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that each PaletteImage's _shadow_image has the correct filename and
+ * image types, based on what was supplied on the command line and in the .txa
+ * file.
+ */
 void PaletteGroup::
 setup_shadow_images() {
   Pages::iterator pai;
@@ -639,12 +532,9 @@ setup_shadow_images() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::update_images
-//       Access: Public
-//  Description: Regenerates each PaletteImage on this group that needs
-//               it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Regenerates each PaletteImage on this group that needs it.
+ */
 void PaletteGroup::
 update_images(bool redo_all) {
   Pages::iterator pai;
@@ -654,25 +544,19 @@ update_images(bool redo_all) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void PaletteGroup::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_PaletteGroup);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void PaletteGroup::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
@@ -700,15 +584,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int PaletteGroup::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
@@ -737,15 +618,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::finalize
-//       Access: Public, Virtual
-//  Description: This method is called by the BamReader after all
-//               pointers everywhere in the world have been completely
-//               read in.  It's a hook at which the object can do
-//               whatever final setup it requires that depends on
-//               other pointers being valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader after all pointers everywhere in the
+ * world have been completely read in.  It's a hook at which the object can do
+ * whatever final setup it requires that depends on other pointers being valid.
+ */
 void PaletteGroup::
 finalize(BamReader *) {
   // Now we can copy the pages into the actual map.
@@ -760,14 +637,11 @@ finalize(BamReader *) {
   _load_pages.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::make_PaletteGroup
-//       Access: Protected, Static
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable *PaletteGroup::
 make_PaletteGroup(const FactoryParams &params) {
   PaletteGroup *me = new PaletteGroup;
@@ -780,13 +654,10 @@ make_PaletteGroup(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void PaletteGroup::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
@@ -804,17 +675,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _num_pages = scan.get_uint32();
   manager->read_pointers(scan, _num_pages);
 
-  if(Palettizer::_read_pi_version >= 19) {    
+  if(Palettizer::_read_pi_version >= 19) {
     _has_margin_override = scan.get_bool();
     _margin_override = scan.get_int16();
-  } 
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::add_texture_swap_info
-//       Access: Public
-//  Description: Store textureswap information from textures.txa
-////////////////////////////////////////////////////////////////////
+/**
+ * Store textureswap information from textures.txa
+ */
 void PaletteGroup::
 add_texture_swap_info(const string sourceTextureName, const vector_string &swapTextures) {
   TextureSwapInfo::iterator tsi = _textureSwapInfo.find(sourceTextureName);
@@ -824,12 +693,9 @@ add_texture_swap_info(const string sourceTextureName, const vector_string &swapT
   _textureSwapInfo.insert(TextureSwapInfo::value_type(sourceTextureName, swapTextures));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::is_none_texture_swap
-//       Access: Public
-//  Description: Returns textureswap information is set or not,
-//               True if it's not set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns textureswap information is set or not, True if it's not set.
+ */
 bool PaletteGroup::
 is_none_texture_swap() const {
   return _textureSwapInfo.empty();

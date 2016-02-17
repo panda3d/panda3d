@@ -1,16 +1,15 @@
-// Filename: dynamicTextPage.cxx
-// Created by:  drose (09Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dynamicTextPage.cxx
+ * @author drose
+ * @date 2002-02-09
+ */
 
 #include "dynamicTextPage.h"
 #include "dynamicTextFont.h"
@@ -21,13 +20,11 @@
 
 TypeHandle DynamicTextPage::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextPage::Constructor
-//       Access: Publiic
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DynamicTextPage::
-DynamicTextPage(DynamicTextFont *font, int page_number) : 
+DynamicTextPage(DynamicTextFont *font, int page_number) :
   _font(font)
 {
   // Since the texture might change frequently, don't try to compress
@@ -65,13 +62,10 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   fill_region(0, 0, _size[0], _size[1], font->get_bg());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextPage::slot_glyph
-//       Access: Public
-//  Description: Finds space within the page for a glyph of the
-//               indicated size.  If space is found, creates a new
-//               glyph object and returns it; otherwise, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds space within the page for a glyph of the indicated size.  If space is
+ * found, creates a new glyph object and returns it; otherwise, returns NULL.
+ */
 DynamicTextGlyph *DynamicTextPage::
 slot_glyph(int character, int x_size, int y_size, int margin,
            PN_stdfloat advance) {
@@ -82,19 +76,16 @@ slot_glyph(int character, int x_size, int y_size, int margin,
   }
 
   // The glyph can be fit at (x, y).  Slot it.
-  PT(DynamicTextGlyph) glyph = 
+  PT(DynamicTextGlyph) glyph =
     new DynamicTextGlyph(character, this,
                          x, y, x_size, y_size, margin, advance);
   _glyphs.push_back(glyph);
   return glyph;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextPage::fill_region
-//       Access: Private
-//  Description: Fills a rectangular region of the texture with the
-//               indicated color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills a rectangular region of the texture with the indicated color.
+ */
 void DynamicTextPage::
 fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
   nassertv(x >= 0 && x + x_size <= _size[0] && y >= 0 && y + y_size <= _size[1]);
@@ -105,7 +96,7 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
     if (get_format() != Texture::F_alpha) {
       ci = 0;
     }
-    
+
     unsigned char v = (unsigned char)(color[ci] * 255.0f);
 
     unsigned char *image = modify_ram_image();
@@ -149,7 +140,7 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
         row[xi * 3 + 2] = p2;
       }
     }
-    
+
   } else { // (num_components == 4)
     // RGBA.
     union {
@@ -172,15 +163,11 @@ fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextPage::garbage_collect
-//       Access: Private
-//  Description: Removes all of the glyphs from the page that are no
-//               longer being used by any Geoms.  This should only be
-//               called from DynamicTextFont::garbage_collect(), since
-//               it is important to remove these glyphs from the
-//               font's index first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the glyphs from the page that are no longer being used by any
+ * Geoms.  This should only be called from DynamicTextFont::garbage_collect(),
+ * since it is important to remove these glyphs from the font's index first.
+ */
 int DynamicTextPage::
 garbage_collect(DynamicTextFont *font) {
   int removed_count = 0;
@@ -203,14 +190,11 @@ garbage_collect(DynamicTextFont *font) {
   return removed_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextPage::find_hole
-//       Access: Private
-//  Description: Searches for a hole of at least x_size by y_size
-//               pixels somewhere within the page.  If a suitable hole
-//               is found, sets x and y to the top left corner and
-//               returns true; otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for a hole of at least x_size by y_size pixels somewhere within the
+ * page.  If a suitable hole is found, sets x and y to the top left corner and
+ * returns true; otherwise, returns false.
+ */
 bool DynamicTextPage::
 find_hole(int &x, int &y, int x_size, int y_size) const {
   y = 0;
@@ -243,17 +227,13 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextPage::find_overlap
-//       Access: Private
-//  Description: If the rectangle whose top left corner is x, y and
-//               whose size is x_size, y_size describes an empty hole
-//               that does not overlap any placed glyphs, returns
-//               NULL; otherwise, returns the first placed glyph
-//               that the image does overlap.  It is assumed the
-//               rectangle lies completely within the boundaries of
-//               the page itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the rectangle whose top left corner is x, y and whose size is x_size,
+ * y_size describes an empty hole that does not overlap any placed glyphs,
+ * returns NULL; otherwise, returns the first placed glyph that the image does
+ * overlap.  It is assumed the rectangle lies completely within the boundaries
+ * of the page itself.
+ */
 DynamicTextGlyph *DynamicTextPage::
 find_overlap(int x, int y, int x_size, int y_size) const {
   Glyphs::const_iterator gi;

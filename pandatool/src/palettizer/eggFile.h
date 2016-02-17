@@ -1,16 +1,15 @@
-// Filename: eggFile.h
-// Created by:  drose (28Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggFile.h
+ * @author drose
+ * @date 2000-11-28
+ */
 
 #ifndef EGGFILE_H
 #define EGGFILE_H
@@ -28,14 +27,11 @@
 
 class TextureImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggFile
-// Description : This represents a single egg file known to the
-//               palettizer.  It may reference a number of textures,
-//               and may also be assigned to a number of groups.  All
-//               of its textures will try to assign themselves to one
-//               of its groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single egg file known to the palettizer.  It may reference
+ * a number of textures, and may also be assigned to a number of groups.  All of
+ * its textures will try to assign themselves to one of its groups.
+ */
 class EggFile : public TypedWritable, public Namable {
 public:
   EggFile();
@@ -139,4 +135,3 @@ private:
 };
 
 #endif
-

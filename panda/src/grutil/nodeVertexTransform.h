@@ -1,16 +1,15 @@
-// Filename: nodeVertexTransform.h
-// Created by:  drose (22eb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodeVertexTransform.h
+ * @author drose
+ * @date 2007-02-22
+ */
 
 #ifndef NODEVERTEXTRANSFORM_H
 #define NODEVERTEXTRANSFORM_H
@@ -21,18 +20,15 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodeVertexTransform
-// Description : This VertexTransform gets its matrix from the
-//               Transform stored on a node.  It can also compose its
-//               node's transform with another VertexTransform,
-//               allowing you to build up a chain of
-//               NodeVertexTransforms that represent a list of
-//               composed matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * This VertexTransform gets its matrix from the Transform stored on a node.  It
+ * can also compose its node's transform with another VertexTransform, allowing
+ * you to build up a chain of NodeVertexTransforms that represent a list of
+ * composed matrices.
+ */
 class EXPCL_PANDA_GRUTIL NodeVertexTransform : public VertexTransform {
 PUBLISHED:
-  NodeVertexTransform(const PandaNode *node, 
+  NodeVertexTransform(const PandaNode *node,
                       const VertexTransform *prev = NULL);
 
   INLINE const PandaNode *get_node() const;

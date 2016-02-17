@@ -1,16 +1,15 @@
-// Filename: pnmFileTypePNG.h
-// Created by:  drose (16Mar04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypePNG.h
+ * @author drose
+ * @date 2004-03-16
+ */
 
 #ifndef PNMFILETYPEPNG_H
 #define PNMFILETYPEPNG_H
@@ -26,10 +25,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypePNG
-// Description : For reading and writing PNG files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing PNG files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePNG : public PNMFileType {
 public:
   PNMFileTypePNG();
@@ -57,7 +55,7 @@ public:
 
   private:
     void free_png();
-    static void png_read_data(png_structp png_ptr, png_bytep data, 
+    static void png_read_data(png_structp png_ptr, png_bytep data,
                               png_size_t length);
 
     static void png_error(png_structp png_ptr, png_const_charp error_msg);
@@ -82,7 +80,7 @@ public:
   private:
     void free_png();
     static int make_png_bit_depth(int bit_depth);
-    static void png_write_data(png_structp png_ptr, png_bytep data, 
+    static void png_write_data(png_structp png_ptr, png_bytep data,
                                png_size_t length);
     static void png_flush_data(png_structp png_ptr);
 

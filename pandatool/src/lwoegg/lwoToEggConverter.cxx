@@ -1,16 +1,15 @@
-// Filename: lwoToEggConverter.cxx
-// Created by:  drose (25Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoToEggConverter.cxx
+ * @author drose
+ * @date 2001-04-25
+ */
 
 #include "lwoToEggConverter.h"
 #include "cLwoLayer.h"
@@ -33,94 +32,71 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LwoToEggConverter::
 LwoToEggConverter() {
   _generic_layer = (CLwoLayer *)NULL;
   _make_materials = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LwoToEggConverter::
 LwoToEggConverter(const LwoToEggConverter &copy) :
   SomethingToEggConverter(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LwoToEggConverter::
 ~LwoToEggConverter() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *LwoToEggConverter::
 make_copy() {
   return new LwoToEggConverter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string LwoToEggConverter::
 get_name() const {
   return "Lightwave";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string LwoToEggConverter::
 get_extension() const {
   return "lwo";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files (with
+ * a .pz extension), false otherwise.
+ */
 bool LwoToEggConverter::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-//
-//               This is designed to be as generic as possible,
-//               generally in support of run-time loading.
-//               Command-line converters may choose to use
-//               convert_lwo() instead, as it provides more control.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns true
+ * if successful, false otherwise.  This is designed to be as generic as
+ * possible, generally in support of run-time loading.  Command-line converters
+ * may choose to use convert_lwo() instead, as it provides more control.
+ */
 bool LwoToEggConverter::
 convert_file(const Filename &filename) {
   LwoInputFile in;
@@ -153,12 +129,9 @@ convert_file(const Filename &filename) {
   return convert_lwo(header);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::convert_lwo
-//       Access: Public
-//  Description: Fills up the egg_data structure according to the
-//               indicated lwo structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the egg_data structure according to the indicated lwo structure.
+ */
 bool LwoToEggConverter::
 convert_lwo(const LwoHeader *lwo_header) {
   if (_egg_data->get_coordinate_system() == CS_default) {
@@ -178,12 +151,10 @@ convert_lwo(const LwoHeader *lwo_header) {
   return !had_error();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::get_layer
-//       Access: Public
-//  Description: Returns a pointer to the layer with the given index
-//               number, or NULL if there is no such layer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the layer with the given index number, or NULL if there
+ * is no such layer.
+ */
 CLwoLayer *LwoToEggConverter::
 get_layer(int number) const {
   if (number >= 0 && number < (int)_layers.size()) {
@@ -192,12 +163,10 @@ get_layer(int number) const {
   return (CLwoLayer *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::get_clip
-//       Access: Public
-//  Description: Returns a pointer to the clip with the given index
-//               number, or NULL if there is no such clip.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the clip with the given index number, or NULL if there
+ * is no such clip.
+ */
 CLwoClip *LwoToEggConverter::
 get_clip(int number) const {
   if (number >= 0 && number < (int)_clips.size()) {
@@ -206,12 +175,10 @@ get_clip(int number) const {
   return (CLwoClip *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::get_surface
-//       Access: Public
-//  Description: Returns a pointer to the surface definition with the
-//               given name, or NULL if there is no such surface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the surface definition with the given name, or NULL if
+ * there is no such surface.
+ */
 CLwoSurface *LwoToEggConverter::
 get_surface(const string &name) const {
   Surfaces::const_iterator si;
@@ -222,13 +189,10 @@ get_surface(const string &name) const {
   return (CLwoSurface *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::cleanup
-//       Access: Private
-//  Description: Frees all the internal data structures after we're
-//               done converting, and resets the converter to its
-//               initial state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees all the internal data structures after we're done converting, and
+ * resets the converter to its initial state.
+ */
 void LwoToEggConverter::
 cleanup() {
   _lwo_header.clear();
@@ -278,12 +242,10 @@ cleanup() {
   _surfaces.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::collect_lwo
-//       Access: Private
-//  Description: Walks through the chunks in the Lightwave data and
-//               creates wrapper objects for each relevant piece.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the chunks in the Lightwave data and creates wrapper objects
+ * for each relevant piece.
+ */
 void LwoToEggConverter::
 collect_lwo() {
   CLwoLayer *last_layer = (CLwoLayer *)NULL;
@@ -389,12 +351,9 @@ collect_lwo() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::make_egg
-//       Access: Private
-//  Description: Makes egg structures for all of the conversion
-//               wrapper objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes egg structures for all of the conversion wrapper objects.
+ */
 void LwoToEggConverter::
 make_egg() {
   if (_generic_layer != (CLwoLayer *)NULL) {
@@ -422,11 +381,9 @@ make_egg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::connect_egg
-//       Access: Private
-//  Description: Connects together all of the egg structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Connects together all of the egg structures.
+ */
 void LwoToEggConverter::
 connect_egg() {
   if (_generic_layer != (CLwoLayer *)NULL) {
@@ -454,12 +411,10 @@ connect_egg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::slot_layer
-//       Access: Private
-//  Description: Ensures that there is space in the _layers array to
-//               store an element at position number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that there is space in the _layers array to store an element at
+ * position number.
+ */
 void LwoToEggConverter::
 slot_layer(int number) {
   nassertv(number - (int)_layers.size() < 1000);
@@ -469,12 +424,10 @@ slot_layer(int number) {
   nassertv(number >= 0 && number < (int)_layers.size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::slot_clip
-//       Access: Private
-//  Description: Ensures that there is space in the _clips array to
-//               store an element at position number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that there is space in the _clips array to store an element at
+ * position number.
+ */
 void LwoToEggConverter::
 slot_clip(int number) {
   nassertv(number - (int)_clips.size() < 1000);
@@ -484,15 +437,11 @@ slot_clip(int number) {
   nassertv(number >= 0 && number < (int)_clips.size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEggConverter::make_generic_layer
-//       Access: Private
-//  Description: If a geometry definition is encountered in the
-//               Lightwave file before a layer definition, we should
-//               make a generic layer to hold the geometry.  This
-//               makes and returns a single layer for this purpose.
-//               It should not be called twice.
-////////////////////////////////////////////////////////////////////
+/**
+ * If a geometry definition is encountered in the Lightwave file before a layer
+ * definition, we should make a generic layer to hold the geometry.  This makes
+ * and returns a single layer for this purpose.  It should not be called twice.
+ */
 CLwoLayer *LwoToEggConverter::
 make_generic_layer() {
   nassertr(_generic_layer == (CLwoLayer *)NULL, _generic_layer);

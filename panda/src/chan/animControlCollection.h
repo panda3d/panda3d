@@ -1,16 +1,15 @@
-// Filename: animControlCollection.h
-// Created by:  drose (22Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animControlCollection.h
+ * @author drose
+ * @date 2000-02-22
+ */
 
 #ifndef ANIMCONTROLCOLLECTION_H
 #define ANIMCONTROLCOLLECTION_H
@@ -24,16 +23,13 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimControlCollection
-// Description : This is a named collection of AnimControl pointers.
-//               An AnimControl may be added to the collection by
-//               name.  While an AnimControl is associated, its
-//               reference count is maintained; associating a new
-//               AnimControl with the same name will decrement the
-//               previous control's reference count (and possibly
-//               delete it, unbinding its animation).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a named collection of AnimControl pointers.  An AnimControl may be
+ * added to the collection by name.  While an AnimControl is associated, its
+ * reference count is maintained; associating a new AnimControl with the same
+ * name will decrement the previous control's reference count (and possibly
+ * delete it, unbinding its animation).
+ */
 class EXPCL_PANDA_CHAN AnimControlCollection {
 PUBLISHED:
   AnimControlCollection();

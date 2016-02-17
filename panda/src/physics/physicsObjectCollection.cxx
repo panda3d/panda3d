@@ -1,56 +1,47 @@
-// Filename: physicsObjectCollection.cxx
-// Created by:  joswilso (12Jul06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicsObjectCollection.cxx
+ * @author joswilso
+ * @date 2006-07-12
+ */
 
 #include "physicsObjectCollection.h"
 
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysicsObjectCollection::
 PhysicsObjectCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysicsObjectCollection::
 PhysicsObjectCollection(const PhysicsObjectCollection &copy) :
   _physics_objects(copy._physics_objects)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysicsObjectCollection::
 operator = (const PhysicsObjectCollection &copy) {
   _physics_objects = copy._physics_objects;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::add_physics_object
-//       Access: Published
-//  Description: Adds a new PhysicsObject to the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new PhysicsObject to the collection.
+ */
 void PhysicsObjectCollection::
 add_physics_object(PT(PhysicsObject) physics_object) {
   // If the pointer to our internal array is shared by any other
@@ -67,13 +58,10 @@ add_physics_object(PT(PhysicsObject) physics_object) {
   _physics_objects.push_back(physics_object);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::remove_physics_object
-//       Access: Published
-//  Description: Removes the indicated PhysicsObject from the collection.
-//               Returns true if the physics_object was removed, false if it was
-//               not a member of the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated PhysicsObject from the collection.  Returns true if the
+ * physics_object was removed, false if it was not a member of the collection.
+ */
 bool PhysicsObjectCollection::
 remove_physics_object(PT(PhysicsObject) physics_object) {
   int object_index = -1;
@@ -103,15 +91,11 @@ remove_physics_object(PT(PhysicsObject) physics_object) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::add_physics_objects_from
-//       Access: Published
-//  Description: Adds all the PhysicsObjects indicated in the other
-//               collection to this collection.  The other 
-//               physics_objects are simply appended to the end of 
-//               the physics_objects in this list;
-//               duplicates are not automatically removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all the PhysicsObjects indicated in the other collection to this
+ * collection.  The other physics_objects are simply appended to the end of the
+ * physics_objects in this list; duplicates are not automatically removed.
+ */
 void PhysicsObjectCollection::
 add_physics_objects_from(const PhysicsObjectCollection &other) {
   int other_num_physics_objects = other.get_num_physics_objects();
@@ -121,12 +105,10 @@ add_physics_objects_from(const PhysicsObjectCollection &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::remove_physics_objects_from
-//       Access: Published
-//  Description: Removes from this collection all of the PhysicsObjects
-//               listed in the other collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from this collection all of the PhysicsObjects listed in the other
+ * collection.
+ */
 void PhysicsObjectCollection::
 remove_physics_objects_from(const PhysicsObjectCollection &other) {
   PhysicsObjects new_physics_objects;
@@ -140,14 +122,11 @@ remove_physics_objects_from(const PhysicsObjectCollection &other) {
   _physics_objects = new_physics_objects;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::remove_duplicate_physics_objects
-//       Access: Published
-//  Description: Removes any duplicate entries of the same PhysicsObjects
-//               on this collection.  If a PhysicsObject appears multiple
-//               times, the first appearance is retained; subsequent
-//               appearances are removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any duplicate entries of the same PhysicsObjects on this collection.
+ * If a PhysicsObject appears multiple times, the first appearance is retained;
+ * subsequent appearances are removed.
+ */
 void PhysicsObjectCollection::
 remove_duplicate_physics_objects() {
   PhysicsObjects new_physics_objects;
@@ -169,12 +148,10 @@ remove_duplicate_physics_objects() {
   _physics_objects = new_physics_objects;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::has_physics_object
-//       Access: Published
-//  Description: Returns true if the indicated PhysicsObject appears in
-//               this collection, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated PhysicsObject appears in this collection, false
+ * otherwise.
+ */
 bool PhysicsObjectCollection::
 has_physics_object(PT(PhysicsObject) physics_object) const {
   for (int i = 0; i < get_num_physics_objects(); i++) {
@@ -185,42 +162,34 @@ has_physics_object(PT(PhysicsObject) physics_object) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::clear
-//       Access: Published
-//  Description: Removes all PhysicsObjects from the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all PhysicsObjects from the collection.
+ */
 void PhysicsObjectCollection::
 clear() {
   _physics_objects.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::is_empty
-//       Access: Published
-//  Description: Returns true if there are no PhysicsObjects in the
-//               collection, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are no PhysicsObjects in the collection, false
+ * otherwise.
+ */
 bool PhysicsObjectCollection::
 is_empty() const {
   return _physics_objects.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::get_num_physics_objects
-//       Access: Published
-//  Description: Returns the number of PhysicsObjects in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of PhysicsObjects in the collection.
+ */
 int PhysicsObjectCollection::
 get_num_physics_objects() const {
   return _physics_objects.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::get_physics_object
-//       Access: Published
-//  Description: Returns the nth PhysicsObject in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth PhysicsObject in the collection.
+ */
 PT(PhysicsObject) PhysicsObjectCollection::
 get_physics_object(int index) const {
   nassertr(index >= 0 && index < (int)_physics_objects.size(), PT(PhysicsObject)());
@@ -228,13 +197,10 @@ get_physics_object(int index) const {
   return _physics_objects[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::operator []
-//       Access: Published
-//  Description: Returns the nth PhysicsObject in the collection.  This is
-//               the same as get_physics_object(), but it may be a more
-//               convenient way to access it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth PhysicsObject in the collection.  This is the same as
+ * get_physics_object(), but it may be a more convenient way to access it.
+ */
 PT(PhysicsObject) PhysicsObjectCollection::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_physics_objects.size(), PT(PhysicsObject)());
@@ -242,24 +208,19 @@ operator [] (int index) const {
   return _physics_objects[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::size
-//       Access: Published
-//  Description: Returns the number of physics objects in the
-//               collection.  This is the same thing as
-//               get_num_physics_objects().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of physics objects in the collection.  This is the same
+ * thing as get_num_physics_objects().
+ */
 int PhysicsObjectCollection::
 size() const {
   return _physics_objects.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::output
-//       Access: Published
-//  Description: Writes a brief one-line description of the
-//               PhysicsObjectCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief one-line description of the PhysicsObjectCollection to the
+ * indicated output stream.
+ */
 void PhysicsObjectCollection::
 output(ostream &out) const {
   if (get_num_physics_objects() == 1) {
@@ -269,16 +230,13 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::write
-//       Access: Published
-//  Description: Writes a complete multi-line description of the
-//               PhysicsObjectCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a complete multi-line description of the PhysicsObjectCollection to
+ * the indicated output stream.
+ */
 void PhysicsObjectCollection::
 write(ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_physics_objects(); i++) {
     indent(out, indent_level) << get_physics_object(i) << "\n";
   }
 }
-

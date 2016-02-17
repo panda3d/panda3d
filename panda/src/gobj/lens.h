@@ -1,16 +1,15 @@
-// Filename: lens.h
-// Created by:  drose (18Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lens.h
+ * @author drose
+ * @date 1999-02-18
+ */
 
 #ifndef LENS_H
 #define LENS_H
@@ -30,18 +29,13 @@
 
 class BoundingVolume;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Lens
-// Description : A base class for any number of different kinds of
-//               lenses, linear and otherwise.  Presently, this
-//               includes perspective and orthographic lenses.
-//
-//               A Lens object is the main part of a Camera node,
-//               which defines the fundamental interface to
-//               point-of-view for rendering.  Lenses are also used in
-//               other contexts, however; for instance, a Spotlight is
-//               also defined using a lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any number of different kinds of lenses, linear and
+ * otherwise.  Presently, this includes perspective and orthographic lenses.  A
+ * Lens object is the main part of a Camera node, which defines the fundamental
+ * interface to point-of-view for rendering.  Lenses are also used in other
+ * contexts, however; for instance, a Spotlight is also defined using a lens.
+ */
 class EXPCL_PANDA_GOBJ Lens : public TypedWritableReferenceCount {
 public:
   Lens();
@@ -269,7 +263,7 @@ private:
   static void build_shear_mat(LMatrix4 &shear_mat,
                               const LPoint3 &cul, const LPoint3 &cur,
                               const LPoint3 &cll, const LPoint3 &clr);
-  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin,
                                       const LVector3 &vec);
 
 protected:
@@ -329,7 +323,7 @@ protected:
     string _change_event;
     UpdateSeq _last_change;
     CoordinateSystem _cs;
-    
+
     LVecBase2 _film_size;
     LVector2 _film_offset;
     PN_stdfloat _focal_length;
@@ -337,20 +331,20 @@ protected:
     PN_stdfloat _min_fov;
     PN_stdfloat _aspect_ratio;
     PN_stdfloat _near_distance, _far_distance;
-    
+
     LVecBase3 _view_hpr;
     LVector3 _view_vector, _up_vector;
     PN_stdfloat _interocular_distance;
     PN_stdfloat _convergence_distance;
     LVecBase2 _keystone;
     LMatrix4 _custom_film_mat;
-    
+
     LMatrix4 _film_mat, _film_mat_inv;
     LMatrix4 _lens_mat, _lens_mat_inv;
     LMatrix4 _projection_mat, _projection_mat_inv;
     LMatrix4 _projection_mat_left, _projection_mat_left_inv;
     LMatrix4 _projection_mat_right, _projection_mat_right_inv;
-    
+
     short _user_flags;
     short _comp_flags;
 
@@ -359,9 +353,9 @@ protected:
     // We therefore need to remember the order in which the user has
     // specified these three parameters.  A bit of a mess.
     char _focal_length_seq, _fov_seq, _film_size_seq;
-    
+
     PT(GeomVertexData) _geom_data;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -369,11 +363,11 @@ protected:
     static void init_type() {
       register_type(_type_handle, "Lens::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
- 
+
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
@@ -408,4 +402,3 @@ EXPCL_PANDA_GOBJ INLINE ostream &operator << (ostream &out, const Lens &lens);
 #include "lens.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: eggUserData.h
-// Created by:  drose (03Jun03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggUserData.h
+ * @author drose
+ * @date 2003-06-03
+ */
 
 #ifndef EGGUSERDATA_H
 #define EGGUSERDATA_H
@@ -19,18 +18,13 @@
 
 #include "typedReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggUserData
-// Description : This is a base class for a user-defined data type to
-//               extend egg structures in processing code.  The user
-//               of the egg library may derive from EggUserData to
-//               associate any arbitrary data with various egg
-//               objects.
-//
-//               However, this data will not be written out to the
-//               disk when the egg file is written; it is an in-memory
-//               object only.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for a user-defined data type to extend egg structures in
+ * processing code.  The user of the egg library may derive from EggUserData to
+ * associate any arbitrary data with various egg objects.  However, this data
+ * will not be written out to the disk when the egg file is written; it is an
+ * in-memory object only.
+ */
 class EXPCL_PANDAEGG EggUserData : public TypedReferenceCount {
 PUBLISHED:
   INLINE EggUserData();
@@ -60,4 +54,3 @@ private:
 #include "eggUserData.I"
 
 #endif
-

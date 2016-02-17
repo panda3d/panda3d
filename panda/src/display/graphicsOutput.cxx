@@ -1,16 +1,15 @@
-// Filename: graphicsOutput.cxx
-// Created by:  drose (06Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsOutput.cxx
+ * @author drose
+ * @date 2004-02-06
+ */
 
 #include "graphicsOutput.h"
 #include "graphicsPipe.h"
@@ -60,13 +59,10 @@ static CubeFaceDef cube_faces[6] = {
   CubeFaceDef("negative_z", LPoint3(0, 0, -1), LVector3(0, -1, 0))
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::Constructor
-//       Access: Protected
-//  Description: Normally, the GraphicsOutput constructor is not
-//               called directly; these are created instead via the
-//               GraphicsEngine::make_window() function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, the GraphicsOutput constructor is not called directly; these are
+ * created instead via the GraphicsEngine::make_window() function.
+ */
 GraphicsOutput::
 GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
                const string &name,
@@ -166,11 +162,9 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   set_clear_color(background_color.get_value());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::Copy Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsOutput::
 GraphicsOutput(const GraphicsOutput &) :
   _cull_window_pcollector(_cull_pcollector, "Invalid"),
@@ -179,21 +173,17 @@ GraphicsOutput(const GraphicsOutput &) :
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::Copy Assignment Operator
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GraphicsOutput::
 operator = (const GraphicsOutput &) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsOutput::
 ~GraphicsOutput() {
   // The window should be closed by the time we destruct.
@@ -217,13 +207,10 @@ GraphicsOutput::
   _overlay_display_region = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::clear_render_textures
-//       Access: Published
-//  Description: If the GraphicsOutput is currently rendering to
-//               a texture, then all textures are dissociated from
-//               the GraphicsOuput.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the GraphicsOutput is currently rendering to a texture, then all textures
+ * are dissociated from the GraphicsOuput.
+ */
 void GraphicsOutput::
 clear_render_textures() {
   CDWriter cdata(_cycler, true);
@@ -232,47 +219,23 @@ clear_render_textures() {
   throw_event("render-texture-targets-changed");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::add_render_texture
-//       Access: Published
-//  Description: Creates a new Texture object, suitable for rendering
-//               the contents of this buffer into, and appends it to
-//               the list of render textures.
-//
-//               If tex is not NULL, it is the texture that will be
-//               set up for rendering into; otherwise, a new Texture
-//               object will be created, in which case you may call
-//               get_texture() to retrieve the new texture pointer.
-//
-//               You can specify a bitplane to attach the texture to.
-//               the legal choices are:
-//
-//               * RTP_depth
-//               * RTP_depth_stencil
-//               * RTP_color
-//               * RTP_aux_rgba_0
-//               * RTP_aux_rgba_1
-//               * RTP_aux_rgba_2
-//               * RTP_aux_rgba_3
-//
-//               If you do not specify a bitplane to attach the
-//               texture to, this routine will use a default based
-//               on the texture's format:
-//
-//               * F_depth_component attaches to RTP_depth
-//               * F_depth_stencil attaches to RTP_depth_stencil
-//               * all other formats attach to RTP_color.
-//
-//               The texture's format will be changed to match
-//               the format of the bitplane to which it is attached.
-//               For example, if you pass in an F_rgba texture and
-//               order that it be attached to RTP_depth_stencil, it will turn
-//               into an F_depth_stencil texture.
-//
-//               Also see make_texture_buffer(), which is a
-//               higher-level interface for preparing
-//               render-to-a-texture mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new Texture object, suitable for rendering the contents of this
+ * buffer into, and appends it to the list of render textures.  If tex is not
+ * NULL, it is the texture that will be set up for rendering into; otherwise, a
+ * new Texture object will be created, in which case you may call get_texture()
+ * to retrieve the new texture pointer.  You can specify a bitplane to attach
+ * the texture to.  the legal choices are:  * RTP_depth * RTP_depth_stencil *
+ * RTP_color * RTP_aux_rgba_0 * RTP_aux_rgba_1 * RTP_aux_rgba_2 * RTP_aux_rgba_3
+ * If you do not specify a bitplane to attach the texture to, this routine will
+ * use a default based on the texture's format:  * F_depth_component attaches to
+ * RTP_depth * F_depth_stencil attaches to RTP_depth_stencil * all other formats
+ * attach to RTP_color.  The texture's format will be changed to match the
+ * format of the bitplane to which it is attached.  For example, if you pass in
+ * an F_rgba texture and order that it be attached to RTP_depth_stencil, it will
+ * turn into an F_depth_stencil texture.  Also see make_texture_buffer(), which
+ * is a higher-level interface for preparing render-to-a-texture mode.
+ */
 void GraphicsOutput::
 add_render_texture(Texture *tex, RenderTextureMode mode,
                    RenderTexturePlane plane) {
@@ -395,15 +358,11 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   throw_event("render-texture-targets-changed");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::setup_render_texture
-//       Access: Published
-//  Description: This is a deprecated interface that made sense back
-//               when GraphicsOutputs could only render into one
-//               texture at a time.  From now on, use
-//               clear_render_textures and add_render_texture
-//               instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a deprecated interface that made sense back when GraphicsOutputs
+ * could only render into one texture at a time.  From now on, use
+ * clear_render_textures and add_render_texture instead.
+ */
 void GraphicsOutput::
 setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
   display_cat.warning() <<
@@ -418,13 +377,10 @@ setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_active
-//       Access: Published
-//  Description: Sets the active flag associated with the
-//               GraphicsOutput.  If the GraphicsOutput is marked
-//               inactive, nothing is rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the active flag associated with the GraphicsOutput.  If the
+ * GraphicsOutput is marked inactive, nothing is rendered.
+ */
 void GraphicsOutput::
 set_active(bool active) {
   CDLockedReader cdata(_cycler);
@@ -434,12 +390,9 @@ set_active(bool active) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::is_active
-//       Access: Published, Virtual
-//  Description: Returns true if the window is ready to be rendered
-//               into, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the window is ready to be rendered into, false otherwise.
+ */
 bool GraphicsOutput::
 is_active() const {
   if (!is_valid()) {
@@ -457,27 +410,19 @@ is_active() const {
   return cdata->_active;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_one_shot
-//       Access: Published
-//  Description: Changes the current setting of the one-shot flag.
-//               When this is true, the GraphicsOutput will render the
-//               current frame and then automatically set itself
-//               inactive.  This is particularly useful for buffers
-//               that are created for the purposes of
-//               render-to-texture, for static textures that don't
-//               need to be continually re-rendered once they have
-//               been rendered the first time.
-//
-//               Setting the buffer inactive is not the same thing as
-//               destroying it.  You are still responsible for passing
-//               this buffer to GraphicsEngine::remove_window() when
-//               you no longer need the texture, in order to clean up
-//               fully.  (However, you should not call remove_window()
-//               on this buffer while the texture is still needed,
-//               because depending on the render-to-texture mechanism
-//               in use, this may invalidate the texture contents.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the current setting of the one-shot flag.  When this is true, the
+ * GraphicsOutput will render the current frame and then automatically set
+ * itself inactive.  This is particularly useful for buffers that are created
+ * for the purposes of render-to-texture, for static textures that don't need to
+ * be continually re-rendered once they have been rendered the first time.
+ * Setting the buffer inactive is not the same thing as destroying it.  You are
+ * still responsible for passing this buffer to GraphicsEngine::remove_window()
+ * when you no longer need the texture, in order to clean up fully.  (However,
+ * you should not call remove_window() on this buffer while the texture is still
+ * needed, because depending on the render-to-texture mechanism in use, this may
+ * invalidate the texture contents.)
+ */
 void GraphicsOutput::
 set_one_shot(bool one_shot) {
   CDWriter cdata(_cycler, true);
@@ -488,36 +433,26 @@ set_one_shot(bool one_shot) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_one_shot
-//       Access: Published
-//  Description: Returns the current setting of the one-shot flag.
-//               When this is true, the GraphicsOutput will
-//               automatically set itself inactive after the next
-//               frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current setting of the one-shot flag.  When this is true, the
+ * GraphicsOutput will automatically set itself inactive after the next frame.
+ */
 bool GraphicsOutput::
 get_one_shot() const {
   CDReader cdata(_cycler);
   return (cdata->_one_shot_frame == ClockObject::get_global_clock()->get_frame_count());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_inverted
-//       Access: Published
-//  Description: Changes the current setting of the inverted flag.
-//               When this is true, the scene is rendered into the
-//               window upside-down and backwards, that is, inverted
-//               as if viewed through a mirror placed on the floor.
-//
-//               This is primarily intended to support DirectX (and a
-//               few buggy OpenGL graphics drivers) that perform a
-//               framebuffer-to-texture copy upside-down from the
-//               usual OpenGL (and Panda) convention.  Panda will
-//               automatically set this flag for offscreen buffers on
-//               hardware that is known to do this, to compensate when
-//               rendering offscreen into a texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the current setting of the inverted flag.  When this is true, the
+ * scene is rendered into the window upside-down and backwards, that is,
+ * inverted as if viewed through a mirror placed on the floor.  This is
+ * primarily intended to support DirectX (and a few buggy OpenGL graphics
+ * drivers) that perform a framebuffer-to-texture copy upside-down from the
+ * usual OpenGL (and Panda) convention.  Panda will automatically set this flag
+ * for offscreen buffers on hardware that is known to do this, to compensate
+ * when rendering offscreen into a texture.
+ */
 void GraphicsOutput::
 set_inverted(bool inverted) {
   if (_inverted != inverted) {
@@ -536,23 +471,16 @@ set_inverted(bool inverted) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_side_by_side_stereo
-//       Access: Published
-//  Description: Enables side-by-side stereo mode on this particular
-//               window.  When side-by-side stereo mode is in effect,
-//               DisplayRegions that have the "left" channel set will
-//               render on the part of the window specified by
-//               sbs_left_dimensions (typically the left half: (0,
-//               0.5, 0, 1)), while DisplayRegions that have the
-//               "right" channel set will render on the part of the
-//               window specified by sbs_right_dimensions (typically
-//               the right half: (0.5, 1, 0, 1)).
-//
-//               This is commonly used in a dual-monitor mode, where a
-//               window is opened that spans two monitors, and each
-//               monitor represents a different eye.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables side-by-side stereo mode on this particular window.  When side-by-
+ * side stereo mode is in effect, DisplayRegions that have the "left" channel
+ * set will render on the part of the window specified by sbs_left_dimensions
+ * (typically the left half: (0, 0.5, 0, 1)), while DisplayRegions that have the
+ * "right" channel set will render on the part of the window specified by
+ * sbs_right_dimensions (typically the right half: (0.5, 1, 0, 1)).  This is
+ * commonly used in a dual-monitor mode, where a window is opened that spans two
+ * monitors, and each monitor represents a different eye.
+ */
 void GraphicsOutput::
 set_side_by_side_stereo(bool side_by_side_stereo) {
   LVecBase4 left, right;
@@ -563,23 +491,16 @@ set_side_by_side_stereo(bool side_by_side_stereo) {
   set_side_by_side_stereo(side_by_side_stereo, left, right);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_side_by_side_stereo
-//       Access: Published
-//  Description: Enables side-by-side stereo mode on this particular
-//               window.  When side-by-side stereo mode is in effect,
-//               DisplayRegions that have the "left" channel set will
-//               render on the part of the window specified by
-//               sbs_left_dimensions (typically the left half: (0,
-//               0.5, 0, 1)), while DisplayRegions that have the
-//               "right" channel set will render on the part of the
-//               window specified by sbs_right_dimensions (typically
-//               the right half: (0.5, 1, 0, 1)).
-//
-//               This is commonly used in a dual-monitor mode, where a
-//               window is opened that spans two monitors, and each
-//               monitor represents a different eye.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables side-by-side stereo mode on this particular window.  When side-by-
+ * side stereo mode is in effect, DisplayRegions that have the "left" channel
+ * set will render on the part of the window specified by sbs_left_dimensions
+ * (typically the left half: (0, 0.5, 0, 1)), while DisplayRegions that have the
+ * "right" channel set will render on the part of the window specified by
+ * sbs_right_dimensions (typically the right half: (0.5, 1, 0, 1)).  This is
+ * commonly used in a dual-monitor mode, where a window is opened that spans two
+ * monitors, and each monitor represents a different eye.
+ */
 void GraphicsOutput::
 set_side_by_side_stereo(bool side_by_side_stereo,
                         const LVecBase4 &sbs_left_dimensions,
@@ -594,14 +515,11 @@ set_side_by_side_stereo(bool side_by_side_stereo,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_delete_flag
-//       Access: Published
-//  Description: Returns the current setting of the delete flag.  When
-//               this is true, the GraphicsOutput will automatically
-//               be removed before the beginning of the next frame by
-//               the GraphicsEngine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current setting of the delete flag.  When this is true, the
+ * GraphicsOutput will automatically be removed before the beginning of the next
+ * frame by the GraphicsEngine.
+ */
 bool GraphicsOutput::
 get_delete_flag() const {
   // We only delete the window or buffer automatically when it is
@@ -615,12 +533,10 @@ get_delete_flag() const {
   return _delete_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_sort
-//       Access: Published, Virtual
-//  Description: Adjusts the sorting order of this particular
-//               GraphicsOutput, relative to other GraphicsOutputs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the sorting order of this particular GraphicsOutput, relative to
+ * other GraphicsOutputs.
+ */
 void GraphicsOutput::
 set_sort(int sort) {
   if (_sort != sort) {
@@ -631,20 +547,13 @@ set_sort(int sort) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_display_region
-//       Access: Published
-//  Description: Creates a new DisplayRegion that covers the indicated
-//               sub-rectangle within the window.  The range on all
-//               parameters is 0..1.
-//
-//               If is_stereo() is true for this window, and
-//               default-stereo-camera is configured true, this
-//               actually makes a StereoDisplayRegion.  Call
-//               make_mono_display_region() or
-//               make_stereo_display_region() if you want to insist on
-//               one or the other.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new DisplayRegion that covers the indicated sub-rectangle within
+ * the window.  The range on all parameters is 0..1.  If is_stereo() is true for
+ * this window, and default-stereo-camera is configured true, this actually
+ * makes a StereoDisplayRegion.  Call make_mono_display_region() or
+ * make_stereo_display_region() if you want to insist on one or the other.
+ */
 DisplayRegion *GraphicsOutput::
 make_display_region(const LVecBase4 &dimensions) {
   if (is_stereo() && default_stereo_camera) {
@@ -654,20 +563,14 @@ make_display_region(const LVecBase4 &dimensions) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_mono_display_region
-//       Access: Published
-//  Description: Creates a new DisplayRegion that covers the indicated
-//               sub-rectangle within the window.  The range on all
-//               parameters is 0..1.
-//
-//               This generally returns a mono DisplayRegion, even if
-//               is_stereo() is true.  However, if side-by-side stereo
-//               is enabled, this will return a StereoDisplayRegion
-//               whose two eyes are both set to SC_mono.  (This is
-//               necessary because in side-by-side stereo mode, it is
-//               necessary to draw even mono DisplayRegions twice).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new DisplayRegion that covers the indicated sub-rectangle within
+ * the window.  The range on all parameters is 0..1.  This generally returns a
+ * mono DisplayRegion, even if is_stereo() is true.  However, if side-by-side
+ * stereo is enabled, this will return a StereoDisplayRegion whose two eyes are
+ * both set to SC_mono.  (This is necessary because in side-by-side stereo mode,
+ * it is necessary to draw even mono DisplayRegions twice).
+ */
 DisplayRegion *GraphicsOutput::
 make_mono_display_region(const LVecBase4 &dimensions) {
   if (_side_by_side_stereo) {
@@ -680,16 +583,11 @@ make_mono_display_region(const LVecBase4 &dimensions) {
   return new DisplayRegion(this, dimensions);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_stereo_display_region
-//       Access: Published
-//  Description: Creates a new DisplayRegion that covers the indicated
-//               sub-rectangle within the window.  The range on all
-//               parameters is 0..1.
-//
-//               This always returns a stereo DisplayRegion, even if
-//               is_stereo() is false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new DisplayRegion that covers the indicated sub-rectangle within
+ * the window.  The range on all parameters is 0..1.  This always returns a
+ * stereo DisplayRegion, even if is_stereo() is false.
+ */
 StereoDisplayRegion *GraphicsOutput::
 make_stereo_display_region(const LVecBase4 &dimensions) {
   PT(DisplayRegion) left, right;
@@ -746,15 +644,11 @@ make_stereo_display_region(const LVecBase4 &dimensions) {
   return stereo;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::remove_display_region
-//       Access: Published
-//  Description: Removes the indicated DisplayRegion from the window,
-//               and destructs it if there are no other references.
-//
-//               Returns true if the DisplayRegion is found and
-//               removed, false if it was not a part of the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated DisplayRegion from the window, and destructs it if
+ * there are no other references.  Returns true if the DisplayRegion is found
+ * and removed, false if it was not a part of the window.
+ */
 bool GraphicsOutput::
 remove_display_region(DisplayRegion *display_region) {
   LightMutexHolder holder(_lock);
@@ -771,12 +665,10 @@ remove_display_region(DisplayRegion *display_region) {
   return do_remove_display_region(display_region);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::remove_all_display_regions
-//       Access: Published
-//  Description: Removes all display regions from the window, except
-//               the default one that is created with the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all display regions from the window, except the default one that is
+ * created with the window.
+ */
 void GraphicsOutput::
 remove_all_display_regions() {
   LightMutexHolder holder(_lock);
@@ -799,37 +691,28 @@ remove_all_display_regions() {
   _total_display_regions.push_back(_overlay_display_region);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_overlay_display_region
-//       Access: Published
-//  Description: Replaces the special "overlay" DisplayRegion that is
-//               created for each window or buffer.  See
-//               get_overlay_display_region().  This must be a new
-//               DisplayRegion that has already been created for this
-//               window, for instance via a call to
-//               make_mono_display_region().  You are responsible for
-//               ensuring that the new DisplayRegion covers the entire
-//               window.  The previous overlay display region is not
-//               automatically removed; you must explicitly call
-//               remove_display_region() on it after replacing it with
-//               this method, if you wish it to be removed.
-//
-//               Normally, there is no reason to change the overlay
-//               DisplayRegion, so this method should be used only
-//               in very unusual circumstances.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the special "overlay" DisplayRegion that is created for each window
+ * or buffer.  See get_overlay_display_region().  This must be a new
+ * DisplayRegion that has already been created for this window, for instance via
+ * a call to make_mono_display_region().  You are responsible for ensuring that
+ * the new DisplayRegion covers the entire window.  The previous overlay display
+ * region is not automatically removed; you must explicitly call
+ * remove_display_region() on it after replacing it with this method, if you
+ * wish it to be removed.  Normally, there is no reason to change the overlay
+ * DisplayRegion, so this method should be used only in very unusual
+ * circumstances.
+ */
 void GraphicsOutput::
 set_overlay_display_region(DisplayRegion *display_region) {
   nassertv(display_region->get_window() == this);
   _overlay_display_region = display_region;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_num_display_regions
-//       Access: Published
-//  Description: Returns the number of DisplayRegions that have
-//               been created within the window, active or otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of DisplayRegions that have been created within the
+ * window, active or otherwise.
+ */
 int GraphicsOutput::
 get_num_display_regions() const {
   determine_display_regions();
@@ -841,15 +724,12 @@ get_num_display_regions() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_display_region
-//       Access: Published
-//  Description: Returns the nth DisplayRegion of those that have been
-//               created within the window.  This may return NULL if n
-//               is out of bounds; particularly likely if the number
-//               of display regions has changed since the last call to
-//               get_num_display_regions().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth DisplayRegion of those that have been created within the
+ * window.  This may return NULL if n is out of bounds; particularly likely if
+ * the number of display regions has changed since the last call to
+ * get_num_display_regions().
+ */
 PT(DisplayRegion) GraphicsOutput::
 get_display_region(int n) const {
   determine_display_regions();
@@ -865,12 +745,10 @@ get_display_region(int n) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_num_active_display_regions
-//       Access: Published
-//  Description: Returns the number of active DisplayRegions that have
-//               been created within the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of active DisplayRegions that have been created within the
+ * window.
+ */
 int GraphicsOutput::
 get_num_active_display_regions() const {
   determine_display_regions();
@@ -878,15 +756,12 @@ get_num_active_display_regions() const {
   return cdata->_active_display_regions.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_active_display_region
-//       Access: Published
-//  Description: Returns the nth active DisplayRegion of those that
-//               have been created within the window.  This may return
-//               NULL if n is out of bounds; particularly likely if
-//               the number of display regions has changed since the
-//               last call to get_num_active_display_regions().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth active DisplayRegion of those that have been created within
+ * the window.  This may return NULL if n is out of bounds; particularly likely
+ * if the number of display regions has changed since the last call to
+ * get_num_active_display_regions().
+ */
 PT(DisplayRegion) GraphicsOutput::
 get_active_display_region(int n) const {
   determine_display_regions();
@@ -898,39 +773,24 @@ get_active_display_region(int n) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_texture_buffer
-//       Access: Published
-//  Description: Creates and returns an offscreen buffer for rendering
-//               into, the result of which will be a texture suitable
-//               for applying to geometry within the scene rendered
-//               into this window.
-//
-//               If tex is not NULL, it is the texture that will be
-//               set up for rendering into; otherwise, a new Texture
-//               object will be created.  In either case, the target
-//               texture can be retrieved from the return value with
-//               buffer->get_texture() (assuming the return value is
-//               not NULL).
-//
-//               If to_ram is true, the buffer will be set up to
-//               download its contents to the system RAM memory
-//               associated with the Texture object, instead of
-//               keeping it strictly within texture memory; this is
-//               much slower, but it allows using the texture with any
-//               GSG.
-//
-//               This will attempt to be smart about maximizing render
-//               performance while minimizing framebuffer waste.  It
-//               might return a GraphicsBuffer set to render directly
-//               into a texture, if possible; or it might return a
-//               ParasiteBuffer that renders into this window.  The
-//               return value is NULL if the buffer could not be
-//               created for some reason.
-//
-//               When you are done using the buffer, you should remove
-//               it with a call to GraphicsEngine::remove_window().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates and returns an offscreen buffer for rendering into, the result of
+ * which will be a texture suitable for applying to geometry within the scene
+ * rendered into this window.  If tex is not NULL, it is the texture that will
+ * be set up for rendering into; otherwise, a new Texture object will be
+ * created.  In either case, the target texture can be retrieved from the return
+ * value with buffer->get_texture() (assuming the return value is not NULL).  If
+ * to_ram is true, the buffer will be set up to download its contents to the
+ * system RAM memory associated with the Texture object, instead of keeping it
+ * strictly within texture memory; this is much slower, but it allows using the
+ * texture with any GSG.  This will attempt to be smart about maximizing render
+ * performance while minimizing framebuffer waste.  It might return a
+ * GraphicsBuffer set to render directly into a texture, if possible; or it
+ * might return a ParasiteBuffer that renders into this window.  The return
+ * value is NULL if the buffer could not be created for some reason.  When you
+ * are done using the buffer, you should remove it with a call to
+ * GraphicsEngine::remove_window().
+ */
 GraphicsOutput *GraphicsOutput::
 make_texture_buffer(const string &name, int x_size, int y_size,
                     Texture *tex, bool to_ram, FrameBufferProperties *fbp) {
@@ -976,28 +836,18 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_cube_map
-//       Access: Published
-//  Description: This is similar to make_texture_buffer() in that it
-//               allocates a separate buffer suitable for rendering to
-//               a texture that can be assigned to geometry in this
-//               window, but in this case, the buffer is set up to
-//               render the six faces of a cube map.
-//
-//               The buffer is automatically set up with six display
-//               regions and six cameras, each of which are assigned
-//               the indicated draw_mask and parented to the given
-//               camera_rig node (which you should then put in your
-//               scene to render the cube map from the appropriate
-//               point of view).
-//
-//               You may take the texture associated with the buffer
-//               and apply it to geometry, particularly with
-//               TexGenAttrib::M_world_cube_map also in effect, to
-//               apply a reflection of everything seen by the camera
-//               rig.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to make_texture_buffer() in that it allocates a separate
+ * buffer suitable for rendering to a texture that can be assigned to geometry
+ * in this window, but in this case, the buffer is set up to render the six
+ * faces of a cube map.  The buffer is automatically set up with six display
+ * regions and six cameras, each of which are assigned the indicated draw_mask
+ * and parented to the given camera_rig node (which you should then put in your
+ * scene to render the cube map from the appropriate point of view).  You may
+ * take the texture associated with the buffer and apply it to geometry,
+ * particularly with TexGenAttrib::M_world_cube_map also in effect, to apply a
+ * reflection of everything seen by the camera rig.
+ */
 GraphicsOutput *GraphicsOutput::
 make_cube_map(const string &name, int size, NodePath &camera_rig,
               DrawMask camera_mask, bool to_ram, FrameBufferProperties *fbp) {
@@ -1059,23 +909,16 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
   return buffer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_texture_card
-//       Access: Published
-//  Description: Returns a PandaNode containing a square polygon.
-//               The dimensions are (-1,0,-1) to (1,0,1). The texture
-//               coordinates are such that the texture of this
-//               GraphicsOutput is aligned properly to the polygon.
-//               The GraphicsOutput promises to surgically update
-//               the Geom inside the PandaNode if necessary to maintain
-//               this invariant.
-//
-//               Each invocation of this function returns a freshly-
-//               allocated PandaNode.  You can therefore safely modify
-//               the RenderAttribs of the PandaNode.  The
-//               PandaNode is initially textured with the texture
-//               of this GraphicOutput.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PandaNode containing a square polygon.  The dimensions are
+ * (-1,0,-1) to (1,0,1). The texture coordinates are such that the texture of
+ * this GraphicsOutput is aligned properly to the polygon.  The GraphicsOutput
+ * promises to surgically update the Geom inside the PandaNode if necessary to
+ * maintain this invariant.  Each invocation of this function returns a freshly-
+ * allocated PandaNode.  You can therefore safely modify the RenderAttribs of
+ * the PandaNode.  The PandaNode is initially textured with the texture of this
+ * GraphicOutput.
+ */
 NodePath GraphicsOutput::
 get_texture_card() {
   if (_texture_card == NULL) {
@@ -1110,134 +953,100 @@ get_texture_card() {
   return path;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::share_depth_buffer
-//       Access: Published, Virtual
-//  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly
-//               the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Will attempt to use the depth buffer of the input graphics_output.  The
+ * buffer sizes must be exactly the same.
+ */
 bool GraphicsOutput::
 share_depth_buffer(GraphicsOutput *graphics_output) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::unshare_depth_buffer
-//       Access: Published, Virtual
-//  Description: Discontinue sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Discontinue sharing the depth buffer.
+ */
 void GraphicsOutput::
 unshare_depth_buffer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_supports_render_texture
-//       Access: Published, Virtual
-//  Description: Returns true if this particular GraphicsOutput can
-//               render directly into a texture, or false if it must
-//               always copy-to-texture at the end of each frame to
-//               achieve this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GraphicsOutput can render directly into a
+ * texture, or false if it must always copy-to-texture at the end of each frame
+ * to achieve this effect.
+ */
 bool GraphicsOutput::
 get_supports_render_texture() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::flip_ready
-//       Access: Published, Virtual
-//  Description: Returns true if a frame has been rendered and needs
-//               to be flipped, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a frame has been rendered and needs to be flipped, false
+ * otherwise.
+ */
 bool GraphicsOutput::
 flip_ready() const {
   return _flip_ready;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_host
-//       Access: Published, Virtual
-//  Description: This is normally called only from within
-//               make_texture_buffer().  When called on a
-//               ParasiteBuffer, it returns the host of that buffer;
-//               but when called on some other buffer, it returns the
-//               buffer itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is normally called only from within make_texture_buffer().  When called
+ * on a ParasiteBuffer, it returns the host of that buffer; but when called on
+ * some other buffer, it returns the buffer itself.
+ */
 GraphicsOutput *GraphicsOutput::
 get_host() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::request_open
-//       Access: Public, Virtual
-//  Description: This is called by the GraphicsEngine to request that
-//               the window (or whatever) open itself or, in general,
-//               make itself valid, at the next call to
-//               process_events().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsEngine to request that the window (or whatever)
+ * open itself or, in general, make itself valid, at the next call to
+ * process_events().
+ */
 void GraphicsOutput::
 request_open() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::request_close
-//       Access: Public, Virtual
-//  Description: This is called by the GraphicsEngine to request that
-//               the window (or whatever) close itself or, in general,
-//               make itself invalid, at the next call to
-//               process_events().  By that time we promise the gsg
-//               pointer will be cleared.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsEngine to request that the window (or whatever)
+ * close itself or, in general, make itself invalid, at the next call to
+ * process_events().  By that time we promise the gsg pointer will be cleared.
+ */
 void GraphicsOutput::
 request_close() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_close_now
-//       Access: Public, Virtual
-//  Description: This is called by the GraphicsEngine to insist that
-//               the output be closed immediately.  This is only
-//               called from the window thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsEngine to insist that the output be closed
+ * immediately.  This is only called from the window thread.
+ */
 void GraphicsOutput::
 set_close_now() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::reset_window
-//       Access: Protected, Virtual
-//  Description: Resets the window framebuffer from its derived
-//               children. Does nothing here.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the window framebuffer from its derived children.  Does nothing here.
+ */
 void GraphicsOutput::
 reset_window(bool swapchain) {
   display_cat.info()
     << "Resetting " << get_type() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::clear_pipe
-//       Access: Protected, Virtual
-//  Description: Sets the window's _pipe pointer to NULL; this is
-//               generally called only as a precursor to deleting the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the window's _pipe pointer to NULL; this is generally called only as a
+ * precursor to deleting the window.
+ */
 void GraphicsOutput::
 clear_pipe() {
   _pipe = (GraphicsPipe *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::set_size_and_recalc
-//       Access: Public
-//  Description: Changes the x_size and y_size, then recalculates
-//               structures that depend on size.  The recalculation
-//               currently includes:
-//               - compute_pixels on all the graphics regions.
-//               - updating the texture card, if one is present.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the x_size and y_size, then recalculates structures that depend on
+ * size.  The recalculation currently includes: - compute_pixels on all the
+ * graphics regions.  - updating the texture card, if one is present.
+ */
 void GraphicsOutput::
 set_size_and_recalc(int x, int y) {
   _size.set(x, y);
@@ -1260,16 +1069,11 @@ set_size_and_recalc(int x, int y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::clear
-//       Access: Public, Virtual
-//  Description: Clears the entire framebuffer before rendering,
-//               according to the settings of get_color_clear_active()
-//               and get_depth_clear_active() (inherited from
-//               DrawableRegion).
-//
-//               This function is called only within the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the entire framebuffer before rendering, according to the settings of
+ * get_color_clear_active() and get_depth_clear_active() (inherited from
+ * DrawableRegion).  This function is called only within the draw thread.
+ */
 void GraphicsOutput::
 clear(Thread *current_thread) {
   if (is_any_clear_active()) {
@@ -1287,40 +1091,30 @@ clear(Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool GraphicsOutput::
 begin_frame(FrameMode mode, Thread *current_thread) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void GraphicsOutput::
 end_frame(FrameMode mode, Thread *current_thread) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::change_scenes
-//       Access: Public
-//  Description: Called by the GraphicsEngine when the window is about
-//               to change to another DisplayRegion.  This exists
-//               mainly to provide a callback for switching the cube
-//               map face, if we are rendering to the different faces
-//               of a cube map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the GraphicsEngine when the window is about to change to another
+ * DisplayRegion.  This exists mainly to provide a callback for switching the
+ * cube map face, if we are rendering to the different faces of a cube map.
+ */
 void GraphicsOutput::
 change_scenes(DisplayRegionPipelineReader *new_dr) {
   int new_target_tex_page = new_dr->get_target_tex_page();
@@ -1393,85 +1187,59 @@ change_scenes(DisplayRegionPipelineReader *new_dr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::select_target_tex_page
-//       Access: Public, Virtual
-//  Description: Called internally when the window is in
-//               render-to-a-texture mode and we are in the process of
-//               rendering the six faces of a cube map, or any other
-//               multi-page texture.  This should do whatever needs
-//               to be done to switch the buffer to the indicated page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the window is in render-to-a-texture mode and we are
+ * in the process of rendering the six faces of a cube map, or any other multi-
+ * page texture.  This should do whatever needs to be done to switch the buffer
+ * to the indicated page.
+ */
 void GraphicsOutput::
 select_target_tex_page(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.  This should instruct the window to prepare for the flip at the next
+ * video sync, but it should not wait.  We have the two separate functions,
+ * begin_flip() and end_flip(), to make it easier to flip all of the windows at
+ * the same time.
+ */
 void GraphicsOutput::
 begin_flip() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::ready_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip when it is command but not actually flip
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.  This should instruct the window to prepare for the flip when it is
+ * command but not actually flip
+ */
 void GraphicsOutput::
 ready_flip() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.  This should cause the window to wait for the flip, if necessary.
+ */
 void GraphicsOutput::
 end_flip() {
   _flip_ready = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing in the window thread is
-//               appropriate for this output object each frame.
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing in the window thread is appropriate for this output
+ * object each frame.  This function is called only within the window thread.
+ */
 void GraphicsOutput::
 process_events() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::pixel_factor_changed
-//       Access: Published, Virtual
-//  Description: Called internally when the pixel factor changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the pixel factor changes.
+ */
 void GraphicsOutput::
 pixel_factor_changed() {
   if (_has_size) {
@@ -1479,12 +1247,10 @@ pixel_factor_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::prepare_for_deletion
-//       Access: Protected
-//  Description: Set the delete flag, and do the usual cleanup
-//               activities associated with that.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the delete flag, and do the usual cleanup activities associated with
+ * that.
+ */
 void GraphicsOutput::
 prepare_for_deletion() {
   CDWriter cdata(_cycler, true);
@@ -1509,15 +1275,11 @@ prepare_for_deletion() {
   remove_all_display_regions();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::promote_to_copy_texture
-//       Access: Protected
-//  Description: If any textures are marked RTM_bind_or_copy, change
-//               them to RTM_copy_texture.  This does not change
-//               textures that are set to RTM_bind_layered, as
-//               layered framebuffers aren't supported with
-//               RTM_copy_texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * If any textures are marked RTM_bind_or_copy, change them to RTM_copy_texture.
+ * This does not change textures that are set to RTM_bind_layered, as layered
+ * framebuffers aren't supported with RTM_copy_texture.
+ */
 void GraphicsOutput::
 promote_to_copy_texture() {
   CDLockedReader cdata(_cycler);
@@ -1541,16 +1303,11 @@ promote_to_copy_texture() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::copy_to_textures
-//       Access: Protected
-//  Description: For all textures marked RTM_copy_texture,
-//               RTM_copy_ram, RTM_triggered_copy_texture, or
-//               RTM_triggered_copy_ram, do the necessary copies.
-//
-//               Returns true if all copies are successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * For all textures marked RTM_copy_texture, RTM_copy_ram,
+ * RTM_triggered_copy_texture, or RTM_triggered_copy_ram, do the necessary
+ * copies.  Returns true if all copies are successful, false otherwise.
+ */
 bool GraphicsOutput::
 copy_to_textures() {
   bool okflag = true;
@@ -1624,11 +1381,9 @@ copy_to_textures() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOuput::create_texture_card_vdata
-//       Access: Private
-//  Description: Generates a GeomVertexData for a texture card.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a GeomVertexData for a texture card.
+ */
 PT(GeomVertexData) GraphicsOutput::
 create_texture_card_vdata(int x, int y) {
   PN_stdfloat xhi = 1.0;
@@ -1668,12 +1423,10 @@ create_texture_card_vdata(int x, int y) {
   return vdata;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::add_display_region
-//       Access: Private
-//  Description: Called by the DisplayRegion constructor to
-//               add the new DisplayRegion to the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the DisplayRegion constructor to add the new DisplayRegion to the
+ * list.
+ */
 DisplayRegion *GraphicsOutput::
 add_display_region(DisplayRegion *display_region) {
   LightMutexHolder holder(_lock);
@@ -1685,12 +1438,10 @@ add_display_region(DisplayRegion *display_region) {
   return display_region;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::do_remove_display_region
-//       Access: Private
-//  Description: Internal implementation of remove_display_region.
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Internal implementation of remove_display_region.  Assumes the lock is
+ * already held.
+ */
 bool GraphicsOutput::
 do_remove_display_region(DisplayRegion *display_region) {
   nassertr(display_region != _overlay_display_region, false);
@@ -1713,12 +1464,9 @@ do_remove_display_region(DisplayRegion *display_region) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::do_determine_display_regions
-//       Access: Private
-//  Description: Re-sorts the list of active DisplayRegions within
-//               the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Re-sorts the list of active DisplayRegions within the window.
+ */
 void GraphicsOutput::
 do_determine_display_regions(GraphicsOutput::CData *cdata) {
   cdata->_active_display_regions_stale = false;
@@ -1744,15 +1492,11 @@ do_determine_display_regions(GraphicsOutput::CData *cdata) {
   stable_sort(cdata->_active_display_regions.begin(), cdata->_active_display_regions.end(), IndirectLess<DisplayRegion>());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::parse_color_mask
-//       Access: Private, Static
-//  Description: Parses one of the keywords in the
-//               red-blue-stereo-colors Config.prc variable, and
-//               returns the corresponding bitmask.
-//
-//               These bitmask values are taken from ColorWriteAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses one of the keywords in the red-blue-stereo-colors Config.prc variable,
+ * and returns the corresponding bitmask.  These bitmask values are taken from
+ * ColorWriteAttrib.
+ */
 unsigned int GraphicsOutput::
 parse_color_mask(const string &word) {
   unsigned int result = 0;
@@ -1794,11 +1538,9 @@ parse_color_mask(const string &word) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsOutput::CData::
 CData() {
   // The default is *not* active, so the entire pipeline stage is
@@ -1809,11 +1551,9 @@ CData() {
   _active_display_regions_stale = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsOutput::CData::
 CData(const GraphicsOutput::CData &copy) :
   _textures(copy._textures),
@@ -1824,20 +1564,17 @@ CData(const GraphicsOutput::CData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *GraphicsOutput::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::FrameMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, GraphicsOutput::FrameMode fm) {
   switch (fm) {

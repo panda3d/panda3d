@@ -1,16 +1,15 @@
-// Filename: eggCurve.cxx
-// Created by:  drose (15Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCurve.cxx
+ * @author drose
+ * @date 2000-02-15
+ */
 
 #include "eggCurve.h"
 
@@ -20,13 +19,10 @@
 TypeHandle EggCurve::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCurve::string_curve_type
-//       Access: Public, Static
-//  Description: Returns the CurveType value associated with the given
-//               string representation, or CT_invalid if the string
-//               does not match any known CurveType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CurveType value associated with the given string representation,
+ * or CT_invalid if the string does not match any known CurveType value.
+ */
 EggCurve::CurveType EggCurve::
 string_curve_type(const string &string) {
   if (cmp_nocase_uh(string, "xyz") == 0) {
@@ -40,10 +36,9 @@ string_curve_type(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggCurve::CurveType t) {
   switch (t) {
   case EggCurve::CT_none:
@@ -59,4 +54,3 @@ ostream &operator << (ostream &out, EggCurve::CurveType t) {
   nassertr(false, out);
   return out << "(**invalid**)";
 }
-

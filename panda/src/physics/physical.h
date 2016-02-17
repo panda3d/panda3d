@@ -1,16 +1,15 @@
-// Filename: physical.h
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physical.h
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #ifndef PHYSICAL_H
 #define PHYSICAL_H
@@ -31,12 +30,10 @@
 class PhysicalNode;
 class PhysicsManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Physical
-// Description : Defines a set of physically modeled attributes.
-//               If you want physics applied to your class, derive
-//               it from this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a set of physically modeled attributes.  If you want physics applied
+ * to your class, derive it from this.
+ */
 class EXPCL_PANDAPHYSICS Physical : public TypedReferenceCount {
 public:
   //typedef pvector<PT(PhysicsObject)> PhysicsObjectVector;
@@ -73,7 +70,7 @@ PUBLISHED:
 
   INLINE void set_viscosity(PN_stdfloat viscosity);
   INLINE PN_stdfloat get_viscosity() const;
-  
+
   const PhysicsObjectCollection get_objects() const;
 
   virtual void output(ostream &out = cout) const;

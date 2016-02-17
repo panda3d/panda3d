@@ -1,16 +1,15 @@
-// Filename: daeCharacter.cxx
-// Created by:  pro-rsoft (24Nov08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file daeCharacter.cxx
+ * @author rdb
+ * @date 2008-11-24
+ */
 
 #include "daeCharacter.h"
 #include "config_daeegg.h"
@@ -35,11 +34,9 @@
 
 TypeHandle DaeCharacter::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DaeCharacter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DaeCharacter::
 DaeCharacter(EggGroup *node_group, const FCDControllerInstance *instance) :
   _node_group(node_group),
@@ -63,15 +60,11 @@ DaeCharacter(EggGroup *node_group, const FCDControllerInstance *instance) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DaeCharacter::bind_joints
-//       Access: Public
-//  Description: Binds the joints to the character.  This means
-//               changing them to the bind pose.  It is necessary
-//               to call this before process_skin_geometry.
-//
-//               Returns the root group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Binds the joints to the character.  This means changing them to the bind
+ * pose.  It is necessary to call this before process_skin_geometry.  Returns
+ * the root group.
+ */
 void DaeCharacter::
 bind_joints(JointMap &joint_map) {
   _joints.clear();
@@ -119,15 +112,11 @@ bind_joints(JointMap &joint_map) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DaeCharacter::adjust_joints
-//       Access: Public
-//  Description: Traverses through the character hierarchy in order
-//               to bind the mesh to the character.  This involves
-//               reorienting the joints to match the bind pose.
-//
-//               It is important that this is called only once.
-////////////////////////////////////////////////////////////////////
+/**
+ * Traverses through the character hierarchy in order to bind the mesh to the
+ * character.  This involves reorienting the joints to match the bind pose.  It
+ * is important that this is called only once.
+ */
 void DaeCharacter::
 adjust_joints(FCDSceneNode *node, const JointMap &joint_map,
               const LMatrix4d &transform) {
@@ -176,11 +165,9 @@ adjust_joints(FCDSceneNode *node, const JointMap &joint_map,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DaeCharacter::influence_vertex
-//       Access: Public
-//  Description: Adds the influences for the given vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the influences for the given vertex.
+ */
 void DaeCharacter::
 influence_vertex(int index, EggVertex *vertex) {
   const FCDSkinControllerVertex *influence = _skin_controller->GetVertexInfluence(index);
@@ -200,12 +187,9 @@ influence_vertex(int index, EggVertex *vertex) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DaeCharacter::collect_keys
-//       Access: Public
-//  Description: Collects all animation keys of animations applied
-//               to this character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects all animation keys of animations applied to this character.
+ */
 void DaeCharacter::
 collect_keys(pset<float> &keys) {
 #if FCOLLADA_VERSION < 0x00030005
@@ -220,12 +204,9 @@ collect_keys(pset<float> &keys) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DaeCharacter::r_collect_keys
-//       Access: Public
-//  Description: Collects all animation keys found for the given
-//               node tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects all animation keys found for the given node tree.
+ */
 void DaeCharacter::
 r_collect_keys(FCDSceneNode* node, pset<float> &keys) {
   FCDAnimatedList animateds;
@@ -255,11 +236,9 @@ r_collect_keys(FCDSceneNode* node, pset<float> &keys) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DaeCharacter::build_table
-//       Access: Public
-//  Description: Processes a joint node and its transforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a joint node and its transforms.
+ */
 void DaeCharacter::
 build_table(EggTable *parent, FCDSceneNode* node, const pset<float> &keys) {
   nassertv(node != NULL);

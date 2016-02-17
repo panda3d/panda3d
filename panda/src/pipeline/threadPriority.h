@@ -1,16 +1,15 @@
-// Filename: threadPriority.h
-// Created by:  drose (08Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadPriority.h
+ * @author drose
+ * @date 2002-08-08
+ */
 
 #ifndef THREADPRIORITY_H
 #define THREADPRIORITY_H
@@ -18,10 +17,10 @@
 #include "pandabase.h"
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-// An enumerated type used by Thread to specify a suggested relative
-// priority for a particular thread.
-////////////////////////////////////////////////////////////////////
+/*
+ * An enumerated type used by Thread to specify a suggested relative priority
+ * for a particular thread.
+ */
 enum ThreadPriority {
   TP_low,
   TP_normal,

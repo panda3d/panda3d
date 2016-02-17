@@ -1,16 +1,15 @@
-// Filename: config_net.cxx
-// Created by:  drose (25Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_net.cxx
+ * @author drose
+ * @date 2000-02-25
+ */
 
 #include "config_net.h"
 
@@ -108,7 +107,7 @@ get_net_max_block() {
                 "and gives the net subsystem a chance to detect things "
                 "like explicitly-closed connections in another thread; it "
                 "does not affect the blocking behavior at the high "
-                "level.")); 
+                "level."));
   }
 
   return *net_max_block;
@@ -144,14 +143,12 @@ ConfigVariableEnum<ThreadPriority> net_thread_priority
           "or writers."));
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libnet
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libnet() {
   static bool initialized = false;

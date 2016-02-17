@@ -1,16 +1,15 @@
-// Filename: fltRecord.h
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltRecord.h
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #ifndef FLTRECORD_H
 #define FLTRECORD_H
@@ -29,14 +28,11 @@ class FltRecordReader;
 class FltRecordWriter;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltRecord
-// Description : The base class for all kinds of records in a MultiGen
-//               OpenFlight file.  A flt file consists of a hierarchy
-//               of "beads" of various kinds, each of which may be
-//               followed by n ancillary records, written sequentially
-//               to the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for all kinds of records in a MultiGen OpenFlight file.  A flt
+ * file consists of a hierarchy of "beads" of various kinds, each of which may
+ * be followed by n ancillary records, written sequentially to the file.
+ */
 class FltRecord : public TypedReferenceCount {
 public:
   FltRecord(FltHeader *header);
@@ -67,7 +63,7 @@ public:
   void clear_comment();
   void set_comment(const string &comment);
 
-  void check_remaining_size(const DatagramIterator &di, 
+  void check_remaining_size(const DatagramIterator &di,
                             const string &name = string()) const;
 
   virtual void apply_converted_filenames();
@@ -125,5 +121,3 @@ INLINE ostream &operator << (ostream &out, const FltRecord &record);
 #include "fltRecord.I"
 
 #endif
-
-

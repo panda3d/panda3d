@@ -1,16 +1,15 @@
-// Filename: xFileNode.h
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileNode.h
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #ifndef XFILENODE_H
 #define XFILENODE_H
@@ -34,11 +33,9 @@ class XFileDataNode;
 class XFileDataNodeTemplate;
 class Filename;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileNode
-// Description : A single node of an X file.  This may be either a
-//               template or a data node.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single node of an X file.  This may be either a template or a data node.
+ */
 class XFileNode : public TypedObject, public Namable,
                   virtual public ReferenceCount {
 public:
@@ -72,7 +69,7 @@ public:
 
   typedef pmap<const XFileDataDef *, XFileDataObject *> PrevData;
 
-  virtual bool repack_data(XFileDataObject *object, 
+  virtual bool repack_data(XFileDataObject *object,
                            const XFileParseDataList &parse_data_list,
                            PrevData &prev_data,
                            size_t &index, size_t &sub_index) const;
@@ -93,7 +90,7 @@ public:
   XFileDataNode *add_Material(const string &name, const LColor &face_color,
                               double power, const LRGBColor &specular_color,
                               const LRGBColor &emissive_color);
-  XFileDataNode *add_TextureFilename(const string &name, 
+  XFileDataNode *add_TextureFilename(const string &name,
                                      const Filename &filename);
   XFileDataNode *add_Frame(const string &name);
   XFileDataNode *add_FrameTransformMatrix(const LMatrix4d &mat);
@@ -103,10 +100,10 @@ public:
 
 protected:
   XFile *_x_file;
-  
+
   typedef pvector< PT(XFileNode) > Children;
   Children _children;
-  
+
   typedef pvector<XFileDataNode *> Objects;
   Objects _objects;
 
@@ -138,6 +135,3 @@ private:
 #include "xFileNode.I"
 
 #endif
-  
-
-

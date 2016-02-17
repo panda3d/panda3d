@@ -1,16 +1,15 @@
-// Filename: flock.h
-// Created by: Deepak, John, Navin (24Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file flock.h
+ * @author Deepak, John, Navin
+ * @date 2009-10-24
+ */
 
 #ifndef _FLOCK_H
 #define _FLOCK_H
@@ -20,11 +19,10 @@
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Flock
-// Description : This class is used to define the flock attributes and the AI characters
-//               which are part of the flock.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to define the flock attributes and the AI characters which
+ * are part of the flock.
+ */
 class EXPCL_PANDAAI Flock {
 private:
   unsigned int _flock_id;

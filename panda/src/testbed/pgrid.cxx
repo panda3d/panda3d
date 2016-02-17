@@ -1,16 +1,15 @@
-// Filename: pgrid.cxx
-// Created by:  drose (03Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgrid.cxx
+ * @author drose
+ * @date 2002-04-03
+ */
 
 #include "pandaFramework.h"
 #include "pystub.h"
@@ -209,7 +208,7 @@ get_command_line_filenames(int argc, char *argv[],
 }
 
 void
-load_gridded_models(WindowFramework *window, 
+load_gridded_models(WindowFramework *window,
                     GriddedFilenames &filenames,
                     GriddedInfoArray &info_arr) {
   // Load up all the files indicated in the list of gridded filenames

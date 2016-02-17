@@ -1,31 +1,26 @@
-// Filename: eggCharacterDb.cxx
-// Created by:  drose (05Oct06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCharacterDb.cxx
+ * @author drose
+ * @date 2006-10-05
+ */
 
 #include "eggCharacterDb.h"
 #include "eggCharacterData.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterDb::Constructor
-//       Access: Public
-//  Description: Constructs a database for storing the interim work
-//               for the indicated EggCharacterData.  The parameter
-//               max_ram_mb indicates the maximum amount of RAM (in
-//               MB) that the database should consume; if it the
-//               database would roughly fit within this limit, it will
-//               be stored in RAM; otherwise, it will be written to
-//               disk (if Berkeley DB is available).
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a database for storing the interim work for the indicated
+ * EggCharacterData.  The parameter max_ram_mb indicates the maximum amount of
+ * RAM (in MB) that the database should consume; if it the database would
+ * roughly fit within this limit, it will be stored in RAM; otherwise, it will
+ * be written to disk (if Berkeley DB is available).
+ */
 EggCharacterDb::
 EggCharacterDb() {
   /*
@@ -44,16 +39,14 @@ EggCharacterDb() {
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterDb::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggCharacterDb::
 ~EggCharacterDb() {
   /*
 #ifdef HAVE_BDB
-  if (_db != (Db *)NULL){ 
+  if (_db != (Db *)NULL){
     _db->close(0);
     delete _db;
     _db = NULL;
@@ -66,14 +59,11 @@ EggCharacterDb::
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterDb::get_matrix
-//       Access: Public
-//  Description: Looks up the data for the indicated joint, type, and
-//               frame, and fills it in result (and returns true) if
-//               it is found.  Returns false if this data has not been
-//               stored in the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the data for the indicated joint, type, and frame, and fills it in
+ * result (and returns true) if it is found.  Returns false if this data has not
+ * been stored in the database.
+ */
 bool EggCharacterDb::
 get_matrix(const EggJointPointer *joint, TableType type,
            int frame, LMatrix4d &mat) const {
@@ -81,7 +71,7 @@ get_matrix(const EggJointPointer *joint, TableType type,
 
   /*
 #ifdef HAVE_BDB
-  if (_db != (Db *)NULL){ 
+  if (_db != (Db *)NULL){
     Dbt db_key(&key, sizeof(Key));
     Dbt db_data(&mat, sizeof(LMatrix4d));
     db_data.set_ulen(sizeof(LMatrix4d));
@@ -107,15 +97,11 @@ get_matrix(const EggJointPointer *joint, TableType type,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterDb::set_matrix
-//       Access: Public
-//  Description: Stores the matrix for the indicated joint, type, and
-//               frame in the database.  It is an error to call this
-//               more than once for any given key combination (not for
-//               any technical reason, but because we don't expect
-//               this to happen).
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the matrix for the indicated joint, type, and frame in the database.
+ * It is an error to call this more than once for any given key combination (not
+ * for any technical reason, but because we don't expect this to happen).
+ */
 void EggCharacterDb::
 set_matrix(const EggJointPointer *joint, TableType type,
            int frame, const LMatrix4d &mat) {
@@ -123,7 +109,7 @@ set_matrix(const EggJointPointer *joint, TableType type,
 
   /*
 #ifdef HAVE_BDB
-  if (_db != (Db *)NULL){ 
+  if (_db != (Db *)NULL){
     Dbt db_key(&key, sizeof(Key));
     Dbt db_data((void *)&mat, sizeof(LMatrix4d));
     int result = _db->put(NULL, &db_key, &db_data, DB_NOOVERWRITE);

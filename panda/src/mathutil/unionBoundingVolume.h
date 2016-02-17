@@ -1,16 +1,15 @@
-// Filename: unionBoundingVolume.h
-// Created by:  drose (08Feb12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file unionBoundingVolume.h
+ * @author drose
+ * @date 2012-02-08
+ */
 
 #ifndef UNIONBOUNDINGVOLUME_H
 #define UNIONBOUNDINGVOLUME_H
@@ -20,15 +19,11 @@
 #include "geometricBoundingVolume.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : UnionBoundingVolume
-// Description : This special bounding volume is the union of all of
-//               its constituent bounding volumes.
-//
-//               A point is defined to be within a UnionBoundingVolume
-//               if it is within any one or more of its component
-//               bounding volumes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special bounding volume is the union of all of its constituent bounding
+ * volumes.  A point is defined to be within a UnionBoundingVolume if it is
+ * within any one or more of its component bounding volumes.
+ */
 class EXPCL_PANDA_MATHUTIL UnionBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL UnionBoundingVolume();

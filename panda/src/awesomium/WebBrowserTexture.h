@@ -1,16 +1,15 @@
-// Filename: WebBrowserTexture.h
-// Created by: Bei Yang (03Aug2010)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file WebBrowserTexture.h
+ * @author Bei Yang
+ * @date 2010-08-03
+ */
 
 #ifndef WebBrowserTexture_H
 #define WebBrowserTexture_H
@@ -20,17 +19,13 @@
 #include "awWebView.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebBrowserTexture
-// Description : A Wrapper class for Awesomium webview.  This
-//               implements most of Awesomium's features and
-//               updates on the cull_traverser callback much
-//               much like a movie texture.
-//               
-//               The use of class means that you will have to
-//               follow Awesomium license agreement give below
-//               http://www.khrona.com/products/awesomium/licensing/
-////////////////////////////////////////////////////////////////////
+/**
+ * A Wrapper class for Awesomium webview.  This implements most of Awesomium's
+ * features and updates on the cull_traverser callback much much like a movie
+ * texture.  The use of class means that you will have to follow Awesomium
+ * license agreement give below
+ * http://www.khrona.com/products/awesomium/licensing
+ */
 class EXPCL_PANDAAWESOMIUM WebBrowserTexture : public Texture {
 protected:
     AwWebView* _aw_web_view;

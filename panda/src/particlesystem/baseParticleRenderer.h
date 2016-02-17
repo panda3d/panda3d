@@ -1,16 +1,15 @@
-// Filename: baseParticleRenderer.h
-// Created by:  charles (20Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file baseParticleRenderer.h
+ * @author charles
+ * @date 2000-06-20
+ */
 
 #ifndef BASEPARTICLERENDERER_H
 #define BASEPARTICLERENDERER_H
@@ -27,10 +26,9 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseParticleRenderer
-// Description : Pure virtual particle renderer base class
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure virtual particle renderer base class
+ */
 class EXPCL_PANDAPHYSICS BaseParticleRenderer : public ReferenceCount {
 PUBLISHED:
   enum ParticleRendererAlphaMode {
@@ -115,4 +113,3 @@ private:
 #include "baseParticleRenderer.I"
 
 #endif // BASEPARTICLERENDERER_H
-

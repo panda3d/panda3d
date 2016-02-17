@@ -1,16 +1,15 @@
-// Filename: somethingToEggConverter.h
-// Created by:  drose (17Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file somethingToEggConverter.h
+ * @author drose
+ * @date 2001-04-17
+ */
 
 #ifndef SOMETHINGTOEGGCONVERTER_H
 #define SOMETHINGTOEGGCONVERTER_H
@@ -29,16 +28,12 @@ class EggData;
 class EggGroupNode;
 class LoaderOptions;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SomethingToEggConverter
-// Description : This is a base class for a family of converter
-//               classes that manage a conversion from some file type
-//               to egg format.
-//
-//               Classes of this type can be used to implement xxx2egg
-//               converter programs, as well as LoaderFileTypeXXX
-//               run-time loaders.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for a family of converter classes that manage a
+ * conversion from some file type to egg format.  Classes of this type can be
+ * used to implement xxx2egg converter programs, as well as LoaderFileTypeXXX
+ * run-time loaders.
+ */
 class SomethingToEggConverter {
 public:
   SomethingToEggConverter();
@@ -93,7 +88,7 @@ public:
   INLINE void clear_output_frame_rate();
 
   INLINE static double get_default_frame_rate();
-  
+
   INLINE void set_merge_externals(bool merge_externals);
   INLINE bool get_merge_externals() const;
 
@@ -151,5 +146,3 @@ protected:
 #include "somethingToEggConverter.I"
 
 #endif
-
-

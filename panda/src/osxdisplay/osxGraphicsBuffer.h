@@ -1,15 +1,13 @@
-// Filename: osxGraphicsBuffer.h
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsBuffer.h
+ */
 
 #ifndef OSXGRAPHICSBUFFER_H
 #define OSXGRAPHICSBUFFER_H
@@ -23,11 +21,9 @@
 #include "graphicsBuffer.h"
 #include "glgsg.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : osxGraphicsBuffer
-// Description : An offscreen buffer in the OSX environment.  This
-//               creates an AGLPbuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen buffer in the OSX environment.  This creates an AGLPbuffer.
+ */
 class osxGraphicsBuffer : public GraphicsBuffer {
 public:
   osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,

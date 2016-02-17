@@ -1,27 +1,24 @@
-// Filename: vrpnTrackerDevice.cxx
-// Created by:  drose (25Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrpnTrackerDevice.cxx
+ * @author drose
+ * @date 2001-01-25
+ */
 
 #include "vrpnTrackerDevice.h"
 #include "vrpnClient.h"
 
 TypeHandle VrpnTrackerDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTrackerDevice::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnTrackerDevice::
 VrpnTrackerDevice(VrpnClient *client, const string &device_name,
                   int sensor, VrpnTrackerDevice::DataType data_type,
@@ -33,11 +30,9 @@ VrpnTrackerDevice(VrpnClient *client, const string &device_name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTrackerDevice::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnTrackerDevice::
 ~VrpnTrackerDevice() {
   disconnect();

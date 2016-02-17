@@ -1,53 +1,43 @@
-// Filename: mutexWin32Impl.I
-// Created by:  drose (07Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mutexWin32Impl.I
+ * @author drose
+ * @date 2006-02-07
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexWin32Impl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE MutexWin32Impl::
 ~MutexWin32Impl() {
   DeleteCriticalSection(&_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexWin32Impl::acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void MutexWin32Impl::
 acquire() {
   EnterCriticalSection(&_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexWin32Impl::try_acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool MutexWin32Impl::
 try_acquire() {
   return (TryEnterCriticalSection(&_lock) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexWin32Impl::release
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void MutexWin32Impl::
 release() {
   LeaveCriticalSection(&_lock);

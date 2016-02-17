@@ -1,16 +1,15 @@
-// Filename: linearCylinderVortexForce.cxx
-// Created by:  charles (24Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearCylinderVortexForce.cxx
+ * @author charles
+ * @date 2000-07-24
+ */
 
 #include "config_physics.h"
 #include "linearCylinderVortexForce.h"
@@ -19,11 +18,9 @@
 
 TypeHandle LinearCylinderVortexForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearCylinderVortexForce
-//       Access: Public
-//  Description: Simple Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple Constructor
+ */
 LinearCylinderVortexForce::
 LinearCylinderVortexForce(PN_stdfloat radius, PN_stdfloat length, PN_stdfloat coef,
                     PN_stdfloat a, bool md) :
@@ -31,11 +28,9 @@ LinearCylinderVortexForce(PN_stdfloat radius, PN_stdfloat length, PN_stdfloat co
   _radius(radius), _length(length), _coef(coef) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearCylinderVortexForce
-//       Access: Public
-//  Description: copy Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy Constructor
+ */
 LinearCylinderVortexForce::
 LinearCylinderVortexForce(const LinearCylinderVortexForce &copy) :
   LinearForce(copy) {
@@ -44,31 +39,24 @@ LinearCylinderVortexForce(const LinearCylinderVortexForce &copy) :
   _coef = copy._coef;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LinearCylinderVortexForce
-//       Access: Public
-//  Description: Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 LinearCylinderVortexForce::
 ~LinearCylinderVortexForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public, Virtual
-//  Description: child copier
-////////////////////////////////////////////////////////////////////
+/**
+ * child copier
+ */
 LinearForce *LinearCylinderVortexForce::
 make_copy() {
   return new LinearCylinderVortexForce(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_child_vector
-//       Access: Private, Virtual
-//  Description: returns the centripetal force vector for the
-//               passed-in object
-////////////////////////////////////////////////////////////////////
+/**
+ * returns the centripetal force vector for the passed-in object
+ */
 LVector3 LinearCylinderVortexForce::
 get_child_vector(const PhysicsObject *po) {
   // get the force-space transform- this MUST be the relative matrix
@@ -127,12 +115,9 @@ get_child_vector(const PhysicsObject *po) {
   return centripetal;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearCylinderVortexForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -140,12 +125,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearCylinderVortexForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

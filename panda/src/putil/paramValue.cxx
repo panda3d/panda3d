@@ -1,16 +1,15 @@
-// Filename: paramValue.cxx
-// Created by:  drose (08Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file paramValue.cxx
+ * @author drose
+ * @date 1999-02-08
+ */
 
 #include "paramValue.h"
 #include "dcast.h"
@@ -44,29 +43,23 @@ template class ParamValue<LMatrix4f>;
 TypeHandle ParamValueBase::_type_handle;
 TypeHandle ParamTypedRefCount::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamValueBase::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParamValueBase::
 ~ParamValueBase() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamTypedRefCount::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParamTypedRefCount::
 ~ParamTypedRefCount() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamTypedRefCount::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ParamTypedRefCount::
 output(ostream &out) const {
   if (_value == (TypedReferenceCount *)NULL) {

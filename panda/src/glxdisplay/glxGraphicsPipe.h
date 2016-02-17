@@ -1,16 +1,15 @@
-// Filename: glxGraphicsPipe.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glxGraphicsPipe.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef GLXGRAPHICSPIPE_H
 #define GLXGRAPHICSPIPE_H
@@ -71,12 +70,10 @@ class FrameBufferProperties;
 
 #endif  // CPPPARSER
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on an X-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on an X-based (e.g.  Unix) client.
+ */
 class glxGraphicsPipe : public x11GraphicsPipe {
 public:
   glxGraphicsPipe(const string &display = string());
@@ -84,7 +81,7 @@ public:
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
-  
+
 protected:
   virtual PT(GraphicsOutput) make_output(const string &name,
                                          const FrameBufferProperties &fb_prop,

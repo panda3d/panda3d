@@ -1,16 +1,15 @@
-// Filename: eggGroupNode.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroupNode.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGGROUPNODE_H
 #define EGGGROUPNODE_H
@@ -35,19 +34,14 @@ class EggVertex;
 class EggVertexPool;
 class DSearchPath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroupNode
-// Description : A base class for nodes in the hierarchy that are not
-//               leaf nodes.  (See also EggGroup, which is
-//               specifically the "<Group>" node in egg.)
-//
-//               An EggGroupNode is an STL-style container of pointers
-//               to EggNodes, like a vector.  Functions
-//               push_back()/pop_back() and insert()/erase() are
-//               provided to manipulate the list.  The list may also
-//               be operated on (read-only) via iterators and
-//               begin()/end().
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for nodes in the hierarchy that are not leaf nodes.  (See also
+ * EggGroup, which is specifically the "<Group>" node in egg.)  An EggGroupNode
+ * is an STL-style container of pointers to EggNodes, like a vector.  Functions
+ * push_back()/pop_back() and insert()/erase() are provided to manipulate the
+ * list.  The list may also be operated on (read-only) via iterators and
+ * begin()/end().
+ */
 class EXPCL_PANDAEGG EggGroupNode : public EggNode {
 
   // This is a bit of private interface stuff that must be here as a
@@ -162,7 +156,7 @@ PUBLISHED:
   virtual bool has_normals() const;
 
 public:
-  void rebuild_vertex_pools(EggVertexPools &vertex_pools, 
+  void rebuild_vertex_pools(EggVertexPools &vertex_pools,
                             unsigned int max_vertices,
                             bool recurse);
 
@@ -180,7 +174,7 @@ protected:
   CoordinateSystem find_coordsys_entry();
   int find_textures(EggTextureCollection *collection);
   int find_materials(EggMaterialCollection *collection);
-  bool r_load_externals(const DSearchPath &searchpath, 
+  bool r_load_externals(const DSearchPath &searchpath,
                         CoordinateSystem coordsys,
                         BamCacheRecord *record);
 
@@ -260,4 +254,3 @@ private:
 #include "eggGroupNode.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: isoPlacer.cxx
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file isoPlacer.cxx
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #include "isoPlacer.h"
 #include "qtessSurface.h"
@@ -19,11 +18,9 @@
 #include "pvector.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IsoPlacer::get_scores
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IsoPlacer::
 get_scores(int subdiv, int across, double ratio,
            NurbsSurfaceResult *surf, bool s) {
@@ -105,11 +102,9 @@ get_scores(int subdiv, int across, double ratio,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IsoPlacer::place
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IsoPlacer::
 place(int count, pvector<double> &iso_points) {
   int i;
@@ -138,7 +133,7 @@ place(int count, pvector<double> &iso_points) {
     // A point must be measurably higher than both its neighbors, as
     // well as at least 50% more curvy than the average curvature, to
     // qualify as a bend point.
-    if (_cscore[i] > _cscore[i-1]+0.001 && 
+    if (_cscore[i] > _cscore[i-1]+0.001 &&
         _cscore[i] > _cscore[i+1]+0.001 &&
         _cscore[i] > 1.5 * avg_curve) {
       bpoints.push_back(i);
@@ -234,5 +229,3 @@ place(int count, pvector<double> &iso_points) {
   // Oh, wait.  The last segment is actually drawn all the way to 1.
   iso_points.back() = 1.0;
 }
-    
-

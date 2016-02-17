@@ -1,16 +1,15 @@
-// Filename: eggNode.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggNode.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGNODE_H
 #define EGGNODE_H
@@ -28,13 +27,11 @@ class EggGroupNode;
 class EggRenderMode;
 class EggTextureCollection;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggNode
-// Description : A base class for things that may be directly added
-//               into the egg hierarchy.  This includes groups,
-//               joints, polygons, vertex pools, etc., but does not
-//               include things like vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for things that may be directly added into the egg hierarchy.
+ * This includes groups, joints, polygons, vertex pools, etc., but does not
+ * include things like vertices.
+ */
 class EXPCL_PANDAEGG EggNode : public EggNamedObject {
 PUBLISHED:
   INLINE EggNode(const string &name = "");

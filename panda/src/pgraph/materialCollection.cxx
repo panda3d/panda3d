@@ -1,56 +1,47 @@
-// Filename: materialCollection.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file materialCollection.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "materialCollection.h"
 
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MaterialCollection::
 MaterialCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MaterialCollection::
 MaterialCollection(const MaterialCollection &copy) :
   _materials(copy._materials)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MaterialCollection::
 operator = (const MaterialCollection &copy) {
   _materials = copy._materials;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::add_material
-//       Access: Published
-//  Description: Adds a new Material to the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new Material to the collection.
+ */
 void MaterialCollection::
 add_material(Material *node_material) {
   // If the pointer to our internal array is shared by any other
@@ -67,13 +58,10 @@ add_material(Material *node_material) {
   _materials.push_back(node_material);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::remove_material
-//       Access: Published
-//  Description: Removes the indicated Material from the collection.
-//               Returns true if the material was removed, false if it was
-//               not a member of the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated Material from the collection.  Returns true if the
+ * material was removed, false if it was not a member of the collection.
+ */
 bool MaterialCollection::
 remove_material(Material *node_material) {
   int material_index = -1;
@@ -103,14 +91,11 @@ remove_material(Material *node_material) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::add_materials_from
-//       Access: Published
-//  Description: Adds all the Materials indicated in the other
-//               collection to this material.  The other materials are simply
-//               appended to the end of the materials in this list;
-//               duplicates are not automatically removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all the Materials indicated in the other collection to this material.
+ * The other materials are simply appended to the end of the materials in this
+ * list; duplicates are not automatically removed.
+ */
 void MaterialCollection::
 add_materials_from(const MaterialCollection &other) {
   int other_num_materials = other.get_num_materials();
@@ -120,12 +105,10 @@ add_materials_from(const MaterialCollection &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::remove_materials_from
-//       Access: Published
-//  Description: Removes from this collection all of the Materials
-//               listed in the other collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from this collection all of the Materials listed in the other
+ * collection.
+ */
 void MaterialCollection::
 remove_materials_from(const MaterialCollection &other) {
   Materials new_materials;
@@ -139,14 +122,11 @@ remove_materials_from(const MaterialCollection &other) {
   _materials = new_materials;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::remove_duplicate_materials
-//       Access: Published
-//  Description: Removes any duplicate entries of the same Materials
-//               on this collection.  If a Material appears multiple
-//               times, the first appearance is retained; subsequent
-//               appearances are removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any duplicate entries of the same Materials on this collection.  If a
+ * Material appears multiple times, the first appearance is retained; subsequent
+ * appearances are removed.
+ */
 void MaterialCollection::
 remove_duplicate_materials() {
   Materials new_materials;
@@ -168,12 +148,10 @@ remove_duplicate_materials() {
   _materials = new_materials;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::has_material
-//       Access: Published
-//  Description: Returns true if the indicated Material appears in
-//               this collection, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated Material appears in this collection, false
+ * otherwise.
+ */
 bool MaterialCollection::
 has_material(Material *material) const {
   for (int i = 0; i < get_num_materials(); i++) {
@@ -184,23 +162,18 @@ has_material(Material *material) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::clear
-//       Access: Published
-//  Description: Removes all Materials from the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all Materials from the collection.
+ */
 void MaterialCollection::
 clear() {
   _materials.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::find_material
-//       Access: Published
-//  Description: Returns the material in the collection with the
-//               indicated name, if any, or NULL if no material has
-//               that name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the material in the collection with the indicated name, if any, or
+ * NULL if no material has that name.
+ */
 Material *MaterialCollection::
 find_material(const string &name) const {
   int num_materials = get_num_materials();
@@ -213,21 +186,17 @@ find_material(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::get_num_materials
-//       Access: Published
-//  Description: Returns the number of Materials in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of Materials in the collection.
+ */
 int MaterialCollection::
 get_num_materials() const {
   return _materials.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::get_material
-//       Access: Published
-//  Description: Returns the nth Material in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth Material in the collection.
+ */
 Material *MaterialCollection::
 get_material(int index) const {
   nassertr(index >= 0 && index < (int)_materials.size(), NULL);
@@ -235,13 +204,10 @@ get_material(int index) const {
   return _materials[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::operator []
-//       Access: Published
-//  Description: Returns the nth Material in the collection.  This is
-//               the same as get_material(), but it may be a more
-//               convenient way to access it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth Material in the collection.  This is the same as
+ * get_material(), but it may be a more convenient way to access it.
+ */
 Material *MaterialCollection::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_materials.size(), NULL);
@@ -249,23 +215,19 @@ operator [] (int index) const {
   return _materials[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::size
-//       Access: Published
-//  Description: Returns the number of materials in the collection.  This
-//               is the same thing as get_num_materials().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of materials in the collection.  This is the same thing as
+ * get_num_materials().
+ */
 int MaterialCollection::
 size() const {
   return _materials.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::output
-//       Access: Published
-//  Description: Writes a brief one-line description of the
-//               MaterialCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief one-line description of the MaterialCollection to the
+ * indicated output stream.
+ */
 void MaterialCollection::
 output(ostream &out) const {
   if (get_num_materials() == 1) {
@@ -275,12 +237,10 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::write
-//       Access: Published
-//  Description: Writes a complete multi-line description of the
-//               MaterialCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a complete multi-line description of the MaterialCollection to the
+ * indicated output stream.
+ */
 void MaterialCollection::
 write(ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_materials(); i++) {

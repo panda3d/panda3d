@@ -1,16 +1,15 @@
-// Filename: wdxGraphicsBuffer9.cxx
-// Created by:  drose (08Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wdxGraphicsBuffer9.cxx
+ * @author drose
+ * @date 2004-02-08
+ */
 
 #include "wdxGraphicsPipe9.h"
 #include "wdxGraphicsBuffer9.h"
@@ -23,11 +22,9 @@
 TypeHandle wdxGraphicsBuffer9::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 wdxGraphicsBuffer9::
 wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
                    const string &name,
@@ -69,11 +66,9 @@ wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 wdxGraphicsBuffer9::
 ~wdxGraphicsBuffer9() {
 
@@ -116,15 +111,12 @@ wdxGraphicsBuffer9::
   this -> close_buffer ( );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool wdxGraphicsBuffer9::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
@@ -151,13 +143,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void wdxGraphicsBuffer9::
 end_frame(FrameMode mode, Thread *current_thread) {
 
@@ -177,12 +166,10 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::save_bitplanes
-//       Access: Public
-//  Description: After rendering, d3d_device will need to be restored
-//               to its initial state.  This function saves the state.
-////////////////////////////////////////////////////////////////////
+/**
+ * After rendering, d3d_device will need to be restored to its initial state.
+ * This function saves the state.
+ */
 bool wdxGraphicsBuffer9::
 save_bitplanes() {
   HRESULT hr;
@@ -210,12 +197,10 @@ save_bitplanes() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::restore_bitplanes
-//       Access: Public
-//  Description: After rendering, d3d_device will need to be restored
-//               to its initial state.  This function restores the state.
-////////////////////////////////////////////////////////////////////
+/**
+ * After rendering, d3d_device will need to be restored to its initial state.
+ * This function restores the state.
+ */
 void wdxGraphicsBuffer9::
 restore_bitplanes() {
   DXGraphicsStateGuardian9 *dxgsg;
@@ -256,12 +241,9 @@ restore_bitplanes() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::rebuild_bitplanes
-//       Access: Public
-//  Description: If necessary, reallocates (or allocates) the
-//               bitplanes for the buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * If necessary, reallocates (or allocates) the bitplanes for the buffer.
+ */
 bool wdxGraphicsBuffer9::
 rebuild_bitplanes() {
   HRESULT hr;
@@ -582,15 +564,11 @@ rebuild_bitplanes() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::select_target_tex_page
-//       Access: Public, Virtual
-//  Description: Called internally when the window is in
-//               render-to-a-texture mode and we are in the process of
-//               rendering the six faces of a cube map.  This should
-//               do whatever needs to be done to switch the buffer to
-//               the indicated face.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the window is in render-to-a-texture mode and we are
+ * in the process of rendering the six faces of a cube map.  This should do
+ * whatever needs to be done to switch the buffer to the indicated face.
+ */
 void wdxGraphicsBuffer9::
 select_target_tex_page(int page) {
 
@@ -710,16 +688,11 @@ select_target_tex_page(int page) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via request_properties()
+ * This function is called only within the window thread.
+ */
 void wdxGraphicsBuffer9::
 process_events() {
   GraphicsBuffer::process_events();
@@ -734,12 +707,9 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void wdxGraphicsBuffer9::
 close_buffer() {
 
@@ -756,13 +726,10 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool wdxGraphicsBuffer9::
 open_buffer() {
 
@@ -809,11 +776,9 @@ open_buffer() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::process_1_event
-//       Access: Private, Static
-//  Description: Handles one event from the message queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles one event from the message queue.
+ */
 void wdxGraphicsBuffer9::
 process_1_event() {
   MSG msg;
@@ -833,13 +798,10 @@ process_1_event() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::share_depth_buffer
-//       Access: Published
-//  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly
-//               the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Will attempt to use the depth buffer of the input graphics_output.  The
+ * buffer sizes must be exactly the same.
+ */
 bool wdxGraphicsBuffer9::
 share_depth_buffer(GraphicsOutput *graphics_output) {
 
@@ -884,11 +846,9 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::unshare_depth_buffer
-//       Access: Published
-//  Description: Discontinue sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Discontinue sharing the depth buffer.
+ */
 void wdxGraphicsBuffer9::
 unshare_depth_buffer() {
   if (_shared_depth_buffer) {
@@ -903,11 +863,9 @@ unshare_depth_buffer() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::register_shared_depth_buffer
-//       Access: Public
-//  Description: Register/save who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Register/save who is sharing the depth buffer.
+ */
 void wdxGraphicsBuffer9::
 register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   wdxGraphicsBuffer9 *input_graphics_output;
@@ -919,11 +877,9 @@ register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::unregister_shared_depth_buffer
-//       Access: Public
-//  Description: Unregister who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unregister who is sharing the depth buffer.
+ */
 void wdxGraphicsBuffer9::
 unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   wdxGraphicsBuffer9 *input_graphics_output;

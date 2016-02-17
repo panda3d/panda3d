@@ -1,16 +1,15 @@
-// Filename: collisionFloorMesh.h
-// Created by:  zpavlov (28Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionFloorMesh.h
+ * @author zpavlov
+ * @date 2007-06-28
+ */
 
 #ifndef COLLISIONFLOORMESH_H
 #define COLLISIONFLOORMESH_H
@@ -24,11 +23,10 @@
 
 class GeomNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionFloorMesh
-// Description : This object represents a solid made entirely of triangles, which
-//               will only be tested again z axis aligned rays
-////////////////////////////////////////////////////////////////////
+/**
+ * This object represents a solid made entirely of triangles, which will only be
+ * tested again z axis aligned rays
+ */
 class EXPCL_PANDA_COLLIDE CollisionFloorMesh : public CollisionSolid {
 public:
   typedef struct {

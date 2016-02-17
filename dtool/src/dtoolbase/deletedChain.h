@@ -1,16 +1,15 @@
-// Filename: deletedChain.h
-// Created by:  drose (01Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file deletedChain.h
+ * @author drose
+ * @date 2006-04-01
+ */
 
 #ifndef DELETEDCHAIN_H
 #define DELETEDCHAIN_H
@@ -19,29 +18,19 @@
 #include "deletedBufferChain.h"
 #include <assert.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : DeletedChain
-// Description : This template class can be used to provide faster
-//               allocation/deallocation for many Panda objects.  It
-//               works by maintaining a linked list of deleted objects
-//               that are all of the same type; when a new object is
-//               allocated that matches that type, the same space is
-//               just reused.
-//
-//               This class is actually a layer on top of
-//               DeletedBufferChain, which handles the actual
-//               allocation.  This class just provides the
-//               typecasting.
-//
-//               Of course, this trick of maintaining the deleted
-//               object chain won't work in the presence of
-//               polymorphism, where you might have many classes that
-//               derive from a base class, and all of them have a
-//               different size--unless you instantiate a DeletedChain
-//               for *every* kind of derived class.  The
-//               ALLOC_DELETED_CHAIN macro, below, is designed to make
-//               this easy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class can be used to provide faster allocation/deallocation for
+ * many Panda objects.  It works by maintaining a linked list of deleted objects
+ * that are all of the same type; when a new object is allocated that matches
+ * that type, the same space is just reused.  This class is actually a layer on
+ * top of DeletedBufferChain, which handles the actual allocation.  This class
+ * just provides the typecasting.  Of course, this trick of maintaining the
+ * deleted object chain won't work in the presence of polymorphism, where you
+ * might have many classes that derive from a base class, and all of them have a
+ * different size--unless you instantiate a DeletedChain for *every* kind of
+ * derived class.  The ALLOC_DELETED_CHAIN macro, below, is designed to make
+ * this easy.
+ */
 template<class Type>
 class DeletedChain {
 public:
@@ -59,23 +48,17 @@ private:
   DeletedBufferChain *_chain;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : StaticDeletedChain
-// Description : This template class is used to conveniently
-//               declare a single instance of the DeletedChain
-//               template object, above, for a particular type.
-//
-//               It relies on the fact that the compiler and linker
-//               should unify all references to this static pointer
-//               for a given type, as per the C++ spec. However, this
-//               sometimes fails; and if the compiler fails to do
-//               this, it mostly won't be a big deal; it just means
-//               there will be multiple unrelated chains of deleted
-//               objects for a particular type.  This is only a
-//               problem if the code structure causes objects to be
-//               allocated from one chain and freed to another, which
-//               can lead to leaks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class is used to conveniently declare a single instance of the
+ * DeletedChain template object, above, for a particular type.  It relies on the
+ * fact that the compiler and linker should unify all references to this static
+ * pointer for a given type, as per the C++ spec.  However, this sometimes
+ * fails; and if the compiler fails to do this, it mostly won't be a big deal;
+ * it just means there will be multiple unrelated chains of deleted objects for
+ * a particular type.  This is only a problem if the code structure causes
+ * objects to be allocated from one chain and freed to another, which can lead
+ * to leaks.
+ */
 template<class Type>
 class StaticDeletedChain {
 public:
@@ -151,4 +134,3 @@ public:
 #include "deletedChain.T"
 
 #endif
-

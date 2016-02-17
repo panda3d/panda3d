@@ -1,16 +1,15 @@
-// Filename: glxGraphicsBuffer.cxx
-// Created by:  drose (09Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glxGraphicsBuffer.cxx
+ * @author drose
+ * @date 2004-02-09
+ */
 
 #include "glxGraphicsBuffer.h"
 #include "glxGraphicsStateGuardian.h"
@@ -23,13 +22,11 @@
 
 TypeHandle glxGraphicsBuffer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 glxGraphicsBuffer::
-glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -48,25 +45,20 @@ glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   _screenshot_buffer_type = _draw_buffer_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 glxGraphicsBuffer::
 ~glxGraphicsBuffer() {
   nassertv(_pbuffer == None);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool glxGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -100,18 +92,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void glxGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -129,12 +118,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void glxGraphicsBuffer::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -146,7 +132,7 @@ close_buffer() {
       glxgsg->_glXDestroyPbuffer(_display, _pbuffer);
       _pbuffer = None;
     }
-    
+
     _gsg.clear();
   }
 
@@ -154,13 +140,10 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the buffer right now.  Called from the window
-//               thread.  Returns true if the buffer is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the buffer right now.  Called from the window thread.  Returns true if
+ * the buffer is successfully opened, or false if there was a problem.
+ */
 bool glxGraphicsBuffer::
 open_buffer() {
   glxGraphicsPipe *glx_pipe;
@@ -237,7 +220,7 @@ open_buffer() {
     return false;
   }
   _fb_properties = glxgsg->get_fb_properties();
-  
+
   _is_valid = true;
   return true;
 }

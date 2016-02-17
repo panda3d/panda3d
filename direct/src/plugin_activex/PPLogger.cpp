@@ -1,16 +1,15 @@
-// Filename: PPLogger.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PPLogger.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #include "stdafx.h"
 
@@ -30,7 +29,7 @@ PPLogger::~PPLogger( )
 {
 }
 
-void PPLogger::Open( const std::string &rootDir ) 
+void PPLogger::Open( const std::string &rootDir )
 {
   if (!m_isOpen) {
     // Note that this logfile name may not be specified at runtime.  It
@@ -43,7 +42,7 @@ void PPLogger::Open( const std::string &rootDir )
       log_directory = P3D_PLUGIN_LOG_DIRECTORY;
     }
 #endif
-    
+
     // Failing that, we write logfiles to Panda3D/log.
     if (log_directory.empty()) {
       log_directory = rootDir + "/log";
@@ -57,9 +56,9 @@ void PPLogger::Open( const std::string &rootDir )
 #endif
         log_directory += "/";
     }
-    
+
     // Construct the logfile pathname.
-    
+
     std::string log_basename;
 #ifdef P3D_PLUGIN_LOG_BASENAME1
     if (log_basename.empty()) {

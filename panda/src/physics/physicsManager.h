@@ -1,16 +1,15 @@
-// Filename: physicsManager.h
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicsManager.h
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #ifndef PHYSICSMANAGER_H
 #define PHYSICSMANAGER_H
@@ -30,12 +29,10 @@
 
 #include "configVariableInt.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysicsManager
-// Description : Physics don't get much higher-level than this.
-//               Attach as many Physicals (particle systems, etc..)
-//               as you want, pick an integrator and go.
-////////////////////////////////////////////////////////////////////
+/**
+ * Physics don't get much higher-level than this.  Attach as many Physicals
+ * (particle systems, etc..) as you want, pick an integrator and go.
+ */
 class EXPCL_PANDAPHYSICS PhysicsManager {
 public:
   // NOTE that the physicals container is NOT reference counted.
@@ -66,7 +63,7 @@ PUBLISHED:
 
   INLINE void set_viscosity(PN_stdfloat viscosity);
   INLINE PN_stdfloat get_viscosity() const;
-  
+
   void remove_physical(Physical *p);
   void remove_physical_node(PhysicalNode *p);
   void remove_linear_force(LinearForce *f);
@@ -74,7 +71,7 @@ PUBLISHED:
   void do_physics(PN_stdfloat dt);
   void do_physics(PN_stdfloat dt, Physical *p);
   void init_random_seed();
-  
+
   virtual void output(ostream &out) const;
   virtual void write_physicals(ostream &out, unsigned int indent=0) const;
   virtual void write_linear_forces(ostream &out, unsigned int indent=0) const;

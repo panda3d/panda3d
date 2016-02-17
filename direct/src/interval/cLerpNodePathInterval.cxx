@@ -1,16 +1,15 @@
-// Filename: cLerpNodePathInterval.cxx
-// Created by:  drose (27Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cLerpNodePathInterval.cxx
+ * @author drose
+ * @date 2002-08-27
+ */
 
 #include "cLerpNodePathInterval.h"
 #include "lerp_helpers.h"
@@ -24,39 +23,26 @@
 
 TypeHandle CLerpNodePathInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::Constructor
-//       Access: Published
-//  Description: Constructs a lerp interval that will lerp some
-//               properties on the indicated node, possibly relative
-//               to the indicated other node (if other is nonempty).
-//
-//               You must call set_end_pos(), etc. for the various
-//               properties you wish to lerp before the first call to
-//               priv_initialize().  If you want to set a starting value
-//               for any of the properties, you may call
-//               set_start_pos(), etc.; otherwise, the starting value
-//               is taken from the actual node's value at the time the
-//               lerp is performed.
-//
-//               The starting values may be explicitly specified or
-//               omitted.  The value of bake_in_start determines the
-//               behavior if the starting values are omitted.  If
-//               bake_in_start is true, the values are obtained the
-//               first time the lerp runs, and thenceforth are stored
-//               within the interval.  If bake_in_start is false, the
-//               starting value is computed each frame, based on
-//               assuming the current value represents the value set
-//               from the last time the interval was run.  This
-//               "smart" behavior allows code to manipulate the object
-//               event while it is being lerped, and the lerp
-//               continues to apply in a sensible way.
-//
-//               If fluid is true, the prev_transform is not adjusted
-//               by the lerp; otherwise, it is reset.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a lerp interval that will lerp some properties on the indicated
+ * node, possibly relative to the indicated other node (if other is nonempty).
+ * You must call set_end_pos(), etc.  for the various properties you wish to
+ * lerp before the first call to priv_initialize().  If you want to set a
+ * starting value for any of the properties, you may call set_start_pos(), etc.;
+ * otherwise, the starting value is taken from the actual node's value at the
+ * time the lerp is performed.  The starting values may be explicitly specified
+ * or omitted.  The value of bake_in_start determines the behavior if the
+ * starting values are omitted.  If bake_in_start is true, the values are
+ * obtained the first time the lerp runs, and thenceforth are stored within the
+ * interval.  If bake_in_start is false, the starting value is computed each
+ * frame, based on assuming the current value represents the value set from the
+ * last time the interval was run.  This "smart" behavior allows code to
+ * manipulate the object event while it is being lerped, and the lerp continues
+ * to apply in a sensible way.  If fluid is true, the prev_transform is not
+ * adjusted by the lerp; otherwise, it is reset.
+ */
 CLerpNodePathInterval::
-CLerpNodePathInterval(const string &name, double duration, 
+CLerpNodePathInterval(const string &name, double duration,
                       CLerpInterval::BlendType blend_type,
                       bool bake_in_start, bool fluid,
                       const NodePath &node, const NodePath &other) :
@@ -77,14 +63,11 @@ CLerpNodePathInterval(const string &name, double duration,
   _prev_d = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::initialize
-//       Access: Published, Virtual
-//  Description: This replaces the first call to priv_step(), and indicates
-//               that the interval has just begun.  This may be
-//               overridden by derived classes that need to do some
-//               explicit initialization on the first call.
-////////////////////////////////////////////////////////////////////
+/**
+ * This replaces the first call to priv_step(), and indicates that the interval
+ * has just begun.  This may be overridden by derived classes that need to do
+ * some explicit initialization on the first call.
+ */
 void CLerpNodePathInterval::
 priv_initialize(double t) {
   check_stopped(get_class_type(), "priv_initialize");
@@ -94,14 +77,11 @@ priv_initialize(double t) {
   priv_step(t);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::instant
-//       Access: Published, Virtual
-//  Description: This is called in lieu of priv_initialize() .. priv_step()
-//               .. priv_finalize(), when everything is to happen within
-//               one frame.  The interval should initialize itself,
-//               then leave itself in the final state.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in lieu of priv_initialize() .. priv_step() ..
+ * priv_finalize(), when everything is to happen within one frame.  The interval
+ * should initialize itself, then leave itself in the final state.
+ */
 void CLerpNodePathInterval::
 priv_instant() {
   check_stopped(get_class_type(), "priv_instant");
@@ -112,13 +92,10 @@ priv_instant() {
   _state = S_final;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the normal
+ * case) or decrease (e.g.  if the interval is being played by a slider).
+ */
 void CLerpNodePathInterval::
 priv_step(double t) {
   check_started(get_class_type(), "priv_step");
@@ -140,7 +117,7 @@ priv_step(double t) {
       // that node.
       transform = _node.get_transform(_other);
     }
-    
+
     LPoint3 pos;
     LVecBase3 hpr;
     LQuaternion quat;
@@ -406,7 +383,7 @@ priv_step(double t) {
       // relative to some other node's color.
       state = _node.get_state(_other);
     }
-    
+
     // Unlike in the transform case above, we can go ahead and modify
     // the state immediately with each attribute change, since these
     // attributes don't interrelate.
@@ -455,7 +432,7 @@ priv_step(double t) {
       }
 
       state = state->add_attrib(ColorScaleAttrib::make(color_scale), _override);
-    }    
+    }
 
     if ((_flags & (F_end_tex_offset | F_end_tex_rotate | F_end_tex_scale)) != 0) {
       // We have a UV lerp.
@@ -478,7 +455,7 @@ priv_step(double t) {
           lerp_value(tex_offset, d, _start_tex_offset, _end_tex_offset);
         } else {
           tex_offset = transform->get_pos2d();
-          lerp_value_from_prev(tex_offset, d, _prev_d, tex_offset, 
+          lerp_value_from_prev(tex_offset, d, _prev_d, tex_offset,
                                _end_tex_offset);
         }
 
@@ -492,7 +469,7 @@ priv_step(double t) {
           lerp_value(tex_rotate, d, _start_tex_rotate, _end_tex_rotate);
         } else {
           tex_rotate = transform->get_rotate2d();
-          lerp_value_from_prev(tex_rotate, d, _prev_d, tex_rotate, 
+          lerp_value_from_prev(tex_rotate, d, _prev_d, tex_rotate,
                                _end_tex_rotate);
         }
 
@@ -506,7 +483,7 @@ priv_step(double t) {
           lerp_value(tex_scale, d, _start_tex_scale, _end_tex_scale);
         } else {
           tex_scale = transform->get_scale2d();
-          lerp_value_from_prev(tex_scale, d, _prev_d, tex_scale, 
+          lerp_value_from_prev(tex_scale, d, _prev_d, tex_scale,
                                _end_tex_scale);
         }
 
@@ -515,7 +492,7 @@ priv_step(double t) {
 
       // Apply the modified transform back to the state.
       state = state->set_attrib(tma->add_stage(_texture_stage, transform, _override));
-    }    
+    }
 
 
     // Now apply the new state back to the node.
@@ -528,14 +505,11 @@ priv_step(double t) {
   _curr_t = t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::reverse_initialize
-//       Access: Published, Virtual
-//  Description: Similar to priv_initialize(), but this is called when the
-//               interval is being played backwards; it indicates that
-//               the interval should start at the finishing state and
-//               undo any intervening intervals.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to priv_initialize(), but this is called when the interval is being
+ * played backwards; it indicates that the interval should start at the
+ * finishing state and undo any intervening intervals.
+ */
 void CLerpNodePathInterval::
 priv_reverse_initialize(double t) {
   check_stopped(get_class_type(), "priv_reverse_initialize");
@@ -545,15 +519,11 @@ priv_reverse_initialize(double t) {
   priv_step(t);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::reverse_instant
-//       Access: Published, Virtual
-//  Description: This is called in lieu of priv_reverse_initialize()
-//               .. priv_step() .. priv_reverse_finalize(), when everything is
-//               to happen within one frame.  The interval should
-//               initialize itself, then leave itself in the initial
-//               state.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in lieu of priv_reverse_initialize() .. priv_step() ..
+ * priv_reverse_finalize(), when everything is to happen within one frame.  The
+ * interval should initialize itself, then leave itself in the initial state.
+ */
 void CLerpNodePathInterval::
 priv_reverse_instant() {
   check_stopped(get_class_type(), "priv_reverse_initialize");
@@ -564,11 +534,9 @@ priv_reverse_instant() {
   _state = S_initial;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLerpNodePathInterval::
 output(ostream &out) const {
   out << get_name() << ":";
@@ -632,14 +600,11 @@ output(ostream &out) const {
   out << " dur " << get_duration();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::setup_slerp
-//       Access: Private
-//  Description: Sets up a spherical lerp from _start_quat to
-//               _end_quat.  This precomputes some important values
-//               (like the angle between the quaternions) and sets up
-//               the _slerp method pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up a spherical lerp from _start_quat to _end_quat.  This precomputes
+ * some important values (like the angle between the quaternions) and sets up
+ * the _slerp method pointer.
+ */
 void CLerpNodePathInterval::
 setup_slerp() {
   if (_start_quat.dot(_end_quat) < 0.0f) {
@@ -671,7 +636,7 @@ setup_slerp() {
     _slerp_denom = csin(_slerp_angle);
 
     _slerp = &CLerpNodePathInterval::slerp_angle_180;
-    
+
   } else {
     // Otherwise, use the original Shoemake equation for spherical
     // lerp.
@@ -683,13 +648,10 @@ setup_slerp() {
   _flags |= F_slerp_setup;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::slerp_basic
-//       Access: Private
-//  Description: Implements Ken Shoemake's spherical lerp equation.
-//               This is appropriate when the angle between the
-//               quaternions is not near one extreme or the other.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements Ken Shoemake's spherical lerp equation.  This is appropriate when
+ * the angle between the quaternions is not near one extreme or the other.
+ */
 void CLerpNodePathInterval::
 slerp_basic(LQuaternion &result, PN_stdfloat t) const {
   nassertv(_slerp_denom != 0.0f);
@@ -708,13 +670,10 @@ slerp_basic(LQuaternion &result, PN_stdfloat t) const {
   nassertv(!result.is_nan());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::slerp_angle_0
-//       Access: Private
-//  Description: Implements Don Hatch's modified spherical lerp
-//               equation, appropriate for when the angle between the
-//               quaternions approaches zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements Don Hatch's modified spherical lerp equation, appropriate for when
+ * the angle between the quaternions approaches zero.
+ */
 void CLerpNodePathInterval::
 slerp_angle_0(LQuaternion &result, PN_stdfloat t) const {
   nassertv(_slerp_denom != 0.0f);
@@ -734,13 +693,11 @@ slerp_angle_0(LQuaternion &result, PN_stdfloat t) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpNodePathInterval::slerp_angle_180
-//       Access: Private
-//  Description: Implements a two-part slerp, to an intermediate point
-//               and out again, appropriate for when the angle between
-//               the quaternions approaches 180 degrees.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a two-part slerp, to an intermediate point and out again,
+ * appropriate for when the angle between the quaternions approaches 180
+ * degrees.
+ */
 void CLerpNodePathInterval::
 slerp_angle_180(LQuaternion &result, PN_stdfloat t) const {
   nassertv(_slerp_denom != 0.0f);
@@ -757,10 +714,10 @@ slerp_angle_180(LQuaternion &result, PN_stdfloat t) const {
       interval_cat.spam()
         << "slerp_angle_180, first half (t = " << t << "), angle = "
         << _slerp_angle << "\n_start_quat = " << _start_quat
-        << ", _slerp_c = " << _slerp_c << ", denom = " 
+        << ", _slerp_c = " << _slerp_c << ", denom = "
         << _slerp_denom << "\n";
     }
-    
+
     result = (csin(tia) * _start_quat + csin(ta) * _slerp_c) / _slerp_denom;
 
   } else {
@@ -775,10 +732,10 @@ slerp_angle_180(LQuaternion &result, PN_stdfloat t) const {
       interval_cat.spam()
         << "slerp_angle_180, second half (t = " << t << "), angle = "
         << _slerp_angle << "\n_slerp_c = " << _slerp_c
-        << ", _end_quat = " << _end_quat << ", denom = " 
+        << ", _end_quat = " << _end_quat << ", denom = "
         << _slerp_denom << "\n";
     }
-    
+
     result = (csin(tia) * _slerp_c + csin(ta) * _end_quat) / _slerp_denom;
   }
 

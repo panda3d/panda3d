@@ -1,16 +1,15 @@
-// Filename: winStatsMonitor.cxx
-// Created by:  drose (02Dec03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winStatsMonitor.cxx
+ * @author drose
+ * @date 2003-12-02
+ */
 
 #include "winStatsMonitor.h"
 #include "winStatsServer.h"
@@ -25,11 +24,9 @@
 bool WinStatsMonitor::_window_class_registered = false;
 const char * const WinStatsMonitor::_window_class_name = "monitor";
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinStatsMonitor::
 WinStatsMonitor(WinStatsServer *server) : PStatMonitor(server) {
   _window = 0;
@@ -42,11 +39,9 @@ WinStatsMonitor(WinStatsServer *server) : PStatMonitor(server) {
   _pause = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinStatsMonitor::
 ~WinStatsMonitor() {
   Graphs::iterator gi;
@@ -72,63 +67,50 @@ WinStatsMonitor::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::get_monitor_name
-//       Access: Public, Virtual
-//  Description: Should be redefined to return a descriptive name for
-//               the type of PStatsMonitor this is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be redefined to return a descriptive name for the type of
+ * PStatsMonitor this is.
+ */
 string WinStatsMonitor::
 get_monitor_name() {
   return "WinStats";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::initialized
-//       Access: Public, Virtual
-//  Description: Called after the monitor has been fully set up.  At
-//               this time, it will have a valid _client_data pointer,
-//               and things like is_alive() and close() will be
-//               meaningful.  However, we may not yet know who we're
-//               connected to (is_client_known() may return false),
-//               and we may not know anything about the threads or
-//               collectors we're about to get data on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the monitor has been fully set up.  At this time, it will have a
+ * valid _client_data pointer, and things like is_alive() and close() will be
+ * meaningful.  However, we may not yet know who we're connected to
+ * (is_client_known() may return false), and we may not know anything about the
+ * threads or collectors we're about to get data on.
+ */
 void WinStatsMonitor::
 initialized() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::got_hello
-//       Access: Public, Virtual
-//  Description: Called when the "hello" message has been received
-//               from the client.  At this time, the client's hostname
-//               and program name will be known.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the "hello" message has been received from the client.  At this
+ * time, the client's hostname and program name will be known.
+ */
 void WinStatsMonitor::
 got_hello() {
   create_window();
   open_strip_chart(0, 0, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::got_bad_version
-//       Access: Public, Virtual
-//  Description: Like got_hello(), this is called when the "hello"
-//               message has been received from the client.  At this
-//               time, the client's hostname and program name will be
-//               known.  However, the client appears to be an
-//               incompatible version and the connection will be
-//               terminated; the monitor should issue a message to
-//               that effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Like got_hello(), this is called when the "hello" message has been received
+ * from the client.  At this time, the client's hostname and program name will
+ * be known.  However, the client appears to be an incompatible version and the
+ * connection will be terminated; the monitor should issue a message to that
+ * effect.
+ */
 void WinStatsMonitor::
 got_bad_version(int client_major, int client_minor,
                 int server_major, int server_minor) {
   ostringstream str;
-  str << "Unable to honor connection attempt from " 
-      << get_client_progname() << " on " << get_client_hostname() 
-      << ": unsupported PStats version " 
+  str << "Unable to honor connection attempt from "
+      << get_client_progname() << " on " << get_client_hostname()
+      << ": unsupported PStats version "
       << client_major << "." << client_minor;
 
   if (server_minor == 0) {
@@ -138,23 +120,19 @@ got_bad_version(int client_major, int client_minor,
     str << " (server understands versions " << server_major
         << ".0 through " << server_major << "." << server_minor << ").";
   }
-    
+
   string message = str.str();
-  MessageBox(NULL, message.c_str(), "Bad version", 
+  MessageBox(NULL, message.c_str(), "Bad version",
              MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::new_collector
-//       Access: Public, Virtual
-//  Description: Called whenever a new Collector definition is
-//               received from the client.  Generally, the client will
-//               send all of its collectors over shortly after
-//               connecting, but there's no guarantee that they will
-//               all be received before the first frames are received.
-//               The monitor should be prepared to accept new Collector
-//               definitions midstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a new Collector definition is received from the client.
+ * Generally, the client will send all of its collectors over shortly after
+ * connecting, but there's no guarantee that they will all be received before
+ * the first frames are received.  The monitor should be prepared to accept new
+ * Collector definitions midstream.
+ */
 void WinStatsMonitor::
 new_collector(int collector_index) {
   Graphs::iterator gi;
@@ -170,17 +148,13 @@ new_collector(int collector_index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::new_thread
-//       Access: Public, Virtual
-//  Description: Called whenever a new Thread definition is
-//               received from the client.  Generally, the client will
-//               send all of its threads over shortly after
-//               connecting, but there's no guarantee that they will
-//               all be received before the first frames are received.
-//               The monitor should be prepared to accept new Thread
-//               definitions midstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a new Thread definition is received from the client.
+ * Generally, the client will send all of its threads over shortly after
+ * connecting, but there's no guarantee that they will all be received before
+ * the first frames are received.  The monitor should be prepared to accept new
+ * Thread definitions midstream.
+ */
 void WinStatsMonitor::
 new_thread(int thread_index) {
   WinStatsChartMenu *chart_menu = new WinStatsChartMenu(this, thread_index);
@@ -189,15 +163,11 @@ new_thread(int thread_index) {
   DrawMenuBar(_window);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::new_data
-//       Access: Public, Virtual
-//  Description: Called as each frame's data is made available.  There
-//               is no guarantee the frames will arrive in order, or
-//               that all of them will arrive at all.  The monitor
-//               should be prepared to accept frames received
-//               out-of-order or missing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as each frame's data is made available.  There is no guarantee the
+ * frames will arrive in order, or that all of them will arrive at all.  The
+ * monitor should be prepared to accept frames received out-of-order or missing.
+ */
 void WinStatsMonitor::
 new_data(int thread_index, int frame_number) {
   Graphs::iterator gi;
@@ -208,14 +178,11 @@ new_data(int thread_index, int frame_number) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::lost_connection
-//       Access: Public, Virtual
-//  Description: Called whenever the connection to the client has been
-//               lost.  This is a permanent state change.  The monitor
-//               should update its display to represent this, and may
-//               choose to close down automatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the connection to the client has been lost.  This is a
+ * permanent state change.  The monitor should update its display to represent
+ * this, and may choose to close down automatically.
+ */
 void WinStatsMonitor::
 lost_connection() {
   nout << "Lost connection to " << get_client_hostname() << "\n";
@@ -226,13 +193,10 @@ lost_connection() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::idle
-//       Access: Public, Virtual
-//  Description: If has_idle() returns true, this will be called
-//               periodically to allow the monitor to update its
-//               display or whatever it needs to do.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_idle() returns true, this will be called periodically to allow the
+ * monitor to update its display or whatever it needs to do.
+ */
 void WinStatsMonitor::
 idle() {
   // Check if any of our chart menus need updating.
@@ -247,7 +211,7 @@ idle() {
   if (frame_rate != 0.0f) {
     char buffer[128];
     sprintf(buffer, "%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
-  
+
     MENUITEMINFO mii;
     memset(&mii, 0, sizeof(mii));
     mii.cbSize = sizeof(mii);
@@ -258,22 +222,18 @@ idle() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::has_idle
-//       Access: Public, Virtual
-//  Description: Should be redefined to return true if you want to
-//               redefine idle() and expect it to be called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be redefined to return true if you want to redefine idle() and expect
+ * it to be called.
+ */
 bool WinStatsMonitor::
 has_idle() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::user_guide_bars_changed
-//       Access: Public, Virtual
-//  Description: Called when the user guide bars have been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user guide bars have been changed.
+ */
 void WinStatsMonitor::
 user_guide_bars_changed() {
   Graphs::iterator gi;
@@ -283,24 +243,20 @@ user_guide_bars_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::get_window
-//       Access: Public
-//  Description: Returns the window handle to the monitor's window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the window handle to the monitor's window.
+ */
 HWND WinStatsMonitor::
 get_window() const {
   return _window;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::open_strip_chart
-//       Access: Public
-//  Description: Opens a new strip chart showing the indicated data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a new strip chart showing the indicated data.
+ */
 void WinStatsMonitor::
 open_strip_chart(int thread_index, int collector_index, bool show_level) {
-  WinStatsStripChart *graph = 
+  WinStatsStripChart *graph =
     new WinStatsStripChart(this, thread_index, collector_index, show_level);
   add_graph(graph);
 
@@ -309,11 +265,9 @@ open_strip_chart(int thread_index, int collector_index, bool show_level) {
   graph->set_pause(_pause);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::open_piano_roll
-//       Access: Public
-//  Description: Opens a new piano roll showing the indicated data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a new piano roll showing the indicated data.
+ */
 void WinStatsMonitor::
 open_piano_roll(int thread_index) {
   WinStatsPianoRoll *graph = new WinStatsPianoRoll(this, thread_index);
@@ -324,13 +278,10 @@ open_piano_roll(int thread_index) {
   graph->set_pause(_pause);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::lookup_menu
-//       Access: Public
-//  Description: Returns the MenuDef properties associated with the
-//               indicated menu ID.  This specifies what we expect to
-//               do when the given menu has been selected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the MenuDef properties associated with the indicated menu ID.  This
+ * specifies what we expect to do when the given menu has been selected.
+ */
 const WinStatsMonitor::MenuDef &WinStatsMonitor::
 lookup_menu(int menu_id) const {
   static MenuDef invalid(0, 0, false);
@@ -339,15 +290,11 @@ lookup_menu(int menu_id) const {
   return _menu_by_id[menu_index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::get_menu_id
-//       Access: Public
-//  Description: Returns the menu ID that is reserved for the
-//               indicated MenuDef properties.  If this is the first
-//               time these particular properties have been requested,
-//               a new menu ID is returned; otherwise, the existing
-//               menu ID is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the menu ID that is reserved for the indicated MenuDef properties.
+ * If this is the first time these particular properties have been requested, a
+ * new menu ID is returned; otherwise, the existing menu ID is returned.
+ */
 int WinStatsMonitor::
 get_menu_id(const MenuDef &menu_def) {
   MenuByDef::iterator mi;
@@ -364,14 +311,11 @@ get_menu_id(const MenuDef &menu_def) {
   return menu_id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::set_time_units
-//       Access: Public
-//  Description: Called when the user selects a new time units from
-//               the monitor pulldown menu, this should adjust the
-//               units for all graphs to the indicated mask if it is a
-//               time-based graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a new time units from the monitor pulldown menu,
+ * this should adjust the units for all graphs to the indicated mask if it is a
+ * time-based graph.
+ */
 void WinStatsMonitor::
 set_time_units(int unit_mask) {
   _time_units = unit_mask;
@@ -389,22 +333,19 @@ set_time_units(int unit_mask) {
   mii.cbSize = sizeof(mii);
   mii.fMask = MIIM_STATE;
 
-  mii.fState = ((_time_units & PStatGraph::GBU_ms) != 0) ? 
+  mii.fState = ((_time_units & PStatGraph::GBU_ms) != 0) ?
     MFS_CHECKED : MFS_UNCHECKED;
   SetMenuItemInfo(_options_menu, MI_time_ms, FALSE, &mii);
 
-  mii.fState = ((_time_units & PStatGraph::GBU_hz) != 0) ? 
+  mii.fState = ((_time_units & PStatGraph::GBU_hz) != 0) ?
     MFS_CHECKED : MFS_UNCHECKED;
   SetMenuItemInfo(_options_menu, MI_time_hz, FALSE, &mii);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::set_scroll_speed
-//       Access: Public
-//  Description: Called when the user selects a new scroll speed from
-//               the monitor pulldown menu, this should adjust the
-//               speeds for all graphs to the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a new scroll speed from the monitor pulldown
+ * menu, this should adjust the speeds for all graphs to the indicated value.
+ */
 void WinStatsMonitor::
 set_scroll_speed(double scroll_speed) {
   _scroll_speed = scroll_speed;
@@ -443,12 +384,9 @@ set_scroll_speed(double scroll_speed) {
   SetMenuItemInfo(_speed_menu, MI_speed_12, FALSE, &mii);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::set_pause
-//       Access: Public
-//  Description: Called when the user selects a pause on or pause off
-//               option from the menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a pause on or pause off option from the menu.
+ */
 void WinStatsMonitor::
 set_pause(bool pause) {
   _pause = pause;
@@ -470,22 +408,17 @@ set_pause(bool pause) {
   SetMenuItemInfo(_speed_menu, MI_pause, FALSE, &mii);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::add_graph
-//       Access: Private
-//  Description: Adds the newly-created graph to the list of managed
-//               graphs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the newly-created graph to the list of managed graphs.
+ */
 void WinStatsMonitor::
 add_graph(WinStatsGraph *graph) {
   _graphs.insert(graph);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::remove_graph
-//       Access: Private
-//  Description: Deletes the indicated graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes the indicated graph.
+ */
 void WinStatsMonitor::
 remove_graph(WinStatsGraph *graph) {
   Graphs::iterator gi = _graphs.find(graph);
@@ -495,11 +428,9 @@ remove_graph(WinStatsGraph *graph) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::create_window
-//       Access: Private
-//  Description: Creates the window for this monitor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the window for this monitor.
+ */
 void WinStatsMonitor::
 create_window() {
   if (_window) {
@@ -521,10 +452,10 @@ create_window() {
   }
 
   _window_title = get_client_progname() + " on " + get_client_hostname();
-  DWORD window_style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | 
+  DWORD window_style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN |
     WS_CLIPSIBLINGS | WS_VISIBLE;
 
-  _window = 
+  _window =
     CreateWindow(_window_class_name, _window_title.c_str(), window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                  NULL, _menu_bar, application, 0);
@@ -541,11 +472,9 @@ create_window() {
   SetForegroundWindow(_window);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::setup_options_menu
-//       Access: Private
-//  Description: Creates the "Options" pulldown menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the "Options" pulldown menu.
+ */
 void WinStatsMonitor::
 setup_options_menu() {
   _options_menu = CreatePopupMenu();
@@ -555,19 +484,19 @@ setup_options_menu() {
   mii.cbSize = sizeof(mii);
 
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
-  mii.fType = MFT_STRING; 
+  mii.fType = MFT_STRING;
   mii.hSubMenu = _options_menu;
 
   // One day, when there is more than one option here, we will
   // actually present this to the user as the "Options" menu.  For
   // now, the only option we have is time units.
-  //mii.dwTypeData = "Options"; 
-  mii.dwTypeData = "Units"; 
+  //mii.dwTypeData = "Options";
+  mii.dwTypeData = "Units";
   InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
 
-  
+
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
-  mii.fType = MFT_STRING | MFT_RADIOCHECK; 
+  mii.fType = MFT_STRING | MFT_RADIOCHECK;
   mii.hbmpChecked = NULL;
   mii.hbmpUnchecked = NULL;
   mii.fState = MFS_UNCHECKED;
@@ -582,11 +511,9 @@ setup_options_menu() {
   set_time_units(PStatGraph::GBU_ms);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::setup_speed_menu
-//       Access: Private
-//  Description: Creates the "Speed" pulldown menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the "Speed" pulldown menu.
+ */
 void WinStatsMonitor::
 setup_speed_menu() {
   _speed_menu = CreatePopupMenu();
@@ -596,14 +523,14 @@ setup_speed_menu() {
   mii.cbSize = sizeof(mii);
 
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
-  mii.fType = MFT_STRING; 
+  mii.fType = MFT_STRING;
   mii.hSubMenu = _speed_menu;
-  mii.dwTypeData = "Speed"; 
+  mii.dwTypeData = "Speed";
   InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
 
-  
+
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
-  mii.fType = MFT_STRING | MFT_RADIOCHECK; 
+  mii.fType = MFT_STRING | MFT_RADIOCHECK;
   mii.hbmpChecked = NULL;
   mii.hbmpUnchecked = NULL;
   mii.fState = MFS_UNCHECKED;
@@ -627,12 +554,12 @@ setup_speed_menu() {
   mii.dwTypeData = "12";
   InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
 
-  mii.fMask = MIIM_FTYPE; 
-  mii.fType = MFT_SEPARATOR; 
+  mii.fMask = MIIM_FTYPE;
+  mii.fType = MFT_SEPARATOR;
   InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
 
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
-  mii.fType = MFT_STRING; 
+  mii.fType = MFT_STRING;
   mii.wID = MI_pause;
   mii.dwTypeData = "pause";
   InsertMenuItem(_speed_menu, GetMenuItemCount(_speed_menu), TRUE, &mii);
@@ -641,15 +568,12 @@ setup_speed_menu() {
   set_pause(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::setup_frame_rate_label
-//       Access: Private
-//  Description: Creates the frame rate label on the right end of the
-//               menu bar.  This is used as a text label to display
-//               the main thread's frame rate to the user, although it
-//               is implemented as a right-justified toplevel menu
-//               item that doesn't open to anything.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the frame rate label on the right end of the menu bar.  This is used
+ * as a text label to display the main thread's frame rate to the user, although
+ * it is implemented as a right-justified toplevel menu item that doesn't open
+ * to anything.
+ */
 void WinStatsMonitor::
 setup_frame_rate_label() {
   MENUITEMINFO mii;
@@ -657,18 +581,16 @@ setup_frame_rate_label() {
   mii.cbSize = sizeof(mii);
 
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
-  mii.fType = MFT_STRING | MFT_RIGHTJUSTIFY; 
+  mii.fType = MFT_STRING | MFT_RIGHTJUSTIFY;
   mii.wID = MI_frame_rate_label;
-  mii.dwTypeData = ""; 
+  mii.dwTypeData = "";
   InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::register_window_class
-//       Access: Private, Static
-//  Description: Registers the window class for the monitor window, if
-//               it has not already been registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the window class for the monitor window, if it has not already been
+ * registered.
+ */
 void WinStatsMonitor::
 register_window_class(HINSTANCE application) {
   if (_window_class_registered) {
@@ -688,7 +610,7 @@ register_window_class(HINSTANCE application) {
 
   // Reserve space to associate the this pointer with the window.
   wc.cbWndExtra = sizeof(WinStatsMonitor *);
-  
+
   if (!RegisterClass(&wc)) {
     nout << "Could not register monitor window class!\n";
     exit(1);
@@ -697,11 +619,9 @@ register_window_class(HINSTANCE application) {
   _window_class_registered = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::static_window_proc
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LONG WINAPI WinStatsMonitor::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsMonitor *self = (WinStatsMonitor *)GetWindowLongPtr(hwnd, 0);
@@ -712,11 +632,9 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::window_proc
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LONG WinStatsMonitor::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
@@ -739,11 +657,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::handle_menu_command
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void WinStatsMonitor::
 handle_menu_command(int menu_id) {
   switch (menu_id) {

@@ -1,16 +1,15 @@
-// Filename: portalNode.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file portalNode.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "portalNode.h"
 
@@ -34,14 +33,11 @@
 TypeHandle PortalNode::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::Constructor
-//       Access: Public
-//  Description: Default constructor, just an empty node, no geo
-//               This is used to read portal from model. You can also
-//               use this from python to create an empty portal. Then
-//               you can set the vertices yourself, with addVertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default constructor, just an empty node, no geo This is used to read portal
+ * from model.  You can also use this from python to create an empty portal.
+ * Then you can set the vertices yourself, with addVertex.
+ */
 PortalNode::
 PortalNode(const string &name) :
   PandaNode(name),
@@ -57,12 +53,10 @@ PortalNode(const string &name) :
   _max_depth = 10;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::Constructor
-//       Access: Public
-//  Description: Create a default rectangle as portal. Use this
-//               to create an arbitrary portal and setup from Python
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a default rectangle as portal.  Use this to create an arbitrary portal
+ * and setup from Python
+ */
 PortalNode::
 PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale) :
   PandaNode(name),
@@ -83,11 +77,9 @@ PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale) :
   _max_depth = 10;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PortalNode::
 PortalNode(const PortalNode &copy) :
   PandaNode(copy),
@@ -104,45 +96,35 @@ PortalNode(const PortalNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PortalNode::
 ~PortalNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PortalNode::
 make_copy() const {
   return new PortalNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::preserve_name
-//       Access: Public, Virtual
-//  Description: Returns true if the node's name has extrinsic meaning
-//               and must be preserved across a flatten operation,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node's name has extrinsic meaning and must be preserved
+ * across a flatten operation, false otherwise.
+ */
 bool PortalNode::
 preserve_name() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::enable_clipping_planes
-//       Access: Public, Virtual
-//  Description: initialize the clipping planes and renderstate
-////////////////////////////////////////////////////////////////////
+/**
+ * initialize the clipping planes and renderstate
+ */
 void PortalNode::
 enable_clipping_planes() {
   _top_plane_node = new PlaneNode("top");
@@ -166,34 +148,24 @@ enable_clipping_planes() {
   _clip_state = RenderState::make(plane_attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this node by the indicated matrix, if it means
+ * anything to do so.  For most kinds of nodes, this does nothing.
+ */
 void PortalNode::
 xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::combine_with
-//       Access: Public, Virtual
-//  Description: Collapses this node with the other node, if possible,
-//               and returns a pointer to the combined node, or NULL
-//               if the two nodes cannot safely be combined.
-//
-//               The return value may be this, other, or a new node
-//               altogether.
-//
-//               This function is called from GraphReducer::flatten(),
-//               and need not deal with children; its job is just to
-//               decide whether to collapse the two nodes and what the
-//               collapsed node should look like.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collapses this node with the other node, if possible, and returns a pointer
+ * to the combined node, or NULL if the two nodes cannot safely be combined.
+ * The return value may be this, other, or a new node altogether.  This function
+ * is called from GraphReducer::flatten(), and need not deal with children; its
+ * job is just to decide whether to collapse the two nodes and what the
+ * collapsed node should look like.
+ */
 PandaNode *PortalNode::
 combine_with(PandaNode *other) {
   if (is_exact_type(get_class_type()) &&
@@ -212,19 +184,13 @@ combine_with(PandaNode *other) {
   return PandaNode::combine_with(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform reduced frustum
-//               culling. Basically, once the scenegraph comes across
-//               a portal node, it calculates a CulltraverserData with
-//               which cell, this portal leads out to and the new
-//               frustum.  Then it traverses that child
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform reduced
+ * frustum culling.  Basically, once the scenegraph comes across a portal node,
+ * it calculates a CulltraverserData with which cell, this portal leads out to
+ * and the new frustum.  Then it traverses that child  The return value is true
+ * if this node should be visible, or false if it should be culled.
+ */
 bool PortalNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   Thread *current_thread = trav->get_current_thread();
@@ -330,42 +296,32 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool PortalNode::
 is_renderable() const {
   return true;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::output
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the node to the
-//               indicated output stream.  This is invoked by the <<
-//               operator.  It may be overridden in derived classes to
-//               include some information relevant to the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the node to the indicated output stream.  This
+ * is invoked by the << operator.  It may be overridden in derived classes to
+ * include some information relevant to the class.
+ */
 void PortalNode::
 output(ostream &out) const {
   PandaNode::output(out);
 }
 
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::draw
-//       Access: Public
-//  Description: Draws the vertices of this portal rectangle to the
-//               screen with a line
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the vertices of this portal rectangle to the screen with a line
+ */
 void PortalNode::
 draw() const {
   move_to(get_vertex(0));
@@ -375,14 +331,11 @@ draw() const {
 }
 */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Called when needed to recompute the node's
-//               _internal_bound object.  Nodes that contain anything
-//               of substance should redefine this to do the right
-//               thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when needed to recompute the node's _internal_bound object.  Nodes
+ * that contain anything of substance should redefine this to do the right
+ * thing.
+ */
 void PortalNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -405,14 +358,11 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::get_last_pos_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering the ghosted
-//               portal rectangle that represents the previous frame's
-//               position, for those collision nodes that indicate a
-//               velocity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering the ghosted portal rectangle that
+ * represents the previous frame's position, for those collision nodes that
+ * indicate a velocity.
+ */
 CPT(RenderState) PortalNode::
 get_last_pos_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -428,23 +378,18 @@ get_last_pos_state() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               PortalNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type PortalNode.
+ */
 void PortalNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void PortalNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
@@ -457,13 +402,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int PortalNode::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
@@ -471,14 +413,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type PortalNode is encountered
-//               in the Bam file.  It should create the PortalNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * PortalNode is encountered in the Bam file.  It should create the PortalNode
+ * and extract its information from the file.
+ */
 TypedWritable *PortalNode::
 make_from_bam(const FactoryParams &params) {
   PortalNode *node = new PortalNode("");
@@ -491,13 +430,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PortalNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new PortalNode.
+ */
 void PortalNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);

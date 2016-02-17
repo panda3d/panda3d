@@ -1,16 +1,15 @@
-// Filename: linearNoiseForce.h
-// Created by:  charles (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearNoiseForce.h
+ * @author charles
+ * @date 2000-06-13
+ */
 
 #ifndef LINEARNOISEFORCE_H
 #define LINEARNOISEFORCE_H
@@ -19,16 +18,15 @@
 #include "linearRandomForce.h"
 #include "configVariableInt.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearNoiseForce
-// Description : Repeating noise force vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Repeating noise force vector.
+ */
 class EXPCL_PANDAPHYSICS LinearNoiseForce : public LinearRandomForce {
 PUBLISHED:
   LinearNoiseForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearNoiseForce(const LinearNoiseForce &copy);
   virtual ~LinearNoiseForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

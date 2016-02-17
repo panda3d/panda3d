@@ -1,16 +1,15 @@
-// Filename: cInterval.h
-// Created by:  drose (27Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cInterval.h
+ * @author drose
+ * @date 2002-08-27
+ */
 
 #ifndef CINTERVAL_H
 #define CINTERVAL_H
@@ -23,19 +22,15 @@
 
 class CIntervalManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CInterval
-// Description : The base class for timeline components.  A CInterval
-//               represents a single action, event, or collection of
-//               nested intervals that will be performed at some
-//               specific time or over a period of time.
-//
-//               This is essentially similar to the Python "Interval"
-//               class, but it is implemented in C++ (hence the name).
-//               Intervals that may be implemented in C++ will inherit
-//               from this class; Intervals that must be implemented
-//               in Python will inherit from the similar Python class.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for timeline components.  A CInterval represents a single
+ * action, event, or collection of nested intervals that will be performed at
+ * some specific time or over a period of time.  This is essentially similar to
+ * the Python "Interval" class, but it is implemented in C++ (hence the name).
+ * Intervals that may be implemented in C++ will inherit from this class;
+ * Intervals that must be implemented in Python will inherit from the similar
+ * Python class.
+ */
 class EXPCL_DIRECT CInterval : public TypedReferenceCount {
 public:
   CInterval(const string &name, double duration, bool open_ended);
@@ -172,7 +167,7 @@ protected:
   double _play_rate;
   bool _do_loop;
   int _loop_count;
-  
+
 private:
   bool _open_ended;
   bool _dirty;
@@ -186,7 +181,7 @@ private:
 
   static PStatCollector _root_pcollector;
   PStatCollector _ival_pcollector;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -213,6 +208,3 @@ EXPCL_DIRECT ostream &operator << (ostream &out, CInterval::State state);
 #include "cInterval.I"
 
 #endif
-
-
-

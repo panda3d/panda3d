@@ -1,16 +1,15 @@
-// Filename: material.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file material.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef MATERIAL_H
 #define MATERIAL_H
@@ -25,24 +24,17 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Material
-// Description : Defines the way an object appears in the presence of
-//               lighting.  A material is only necessary if lighting
-//               is to be enabled; otherwise, the material isn't used.
-//
-//               There are two workflows that are supported: the
-//               "classic" workflow of providing separate ambient,
-//               diffuse and specular colors, and the "metalness"
-//               workflow, in which a base color is specified along
-//               with a "metallic" value that indicates whether the
-//               material is a metal or a dielectric.
-//
-//               The size of the specular highlight can be specified
-//               by either specifying the specular exponent (shininess)
-//               or by specifying a roughness value that in perceptually
-//               linear in the range of 0-1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the way an object appears in the presence of lighting.  A material is
+ * only necessary if lighting is to be enabled; otherwise, the material isn't
+ * used.  There are two workflows that are supported: the "classic" workflow of
+ * providing separate ambient, diffuse and specular colors, and the "metalness"
+ * workflow, in which a base color is specified along with a "metallic" value
+ * that indicates whether the material is a metal or a dielectric.  The size of
+ * the specular highlight can be specified by either specifying the specular
+ * exponent (shininess) or by specifying a roughness value that in perceptually
+ * linear in the range of 0-1.
+ */
 class EXPCL_PANDA_GOBJ Material : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   INLINE explicit Material(const string &name = "");

@@ -1,16 +1,15 @@
-// Filename: pandaFileStream.h
-// Created by:  drose (08Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pandaFileStream.h
+ * @author drose
+ * @date 2008-09-08
+ */
 
 #ifndef PANDAFILESTREAM_H
 #define PANDAFILESTREAM_H
@@ -21,15 +20,12 @@
 
 #include "pandaFileStreamBuf.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IFileStream
-// Description : Implements a C++ stream object suitable for reading
-//               from files on disk.  This is similar to ifstream, but
-//               it provides low-level support for Panda's
-//               simple-threading implementation (using this interface
-//               will block only the current thread, rather than the
-//               entire process, on I/O waits).
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a C++ stream object suitable for reading from files on disk.  This
+ * is similar to ifstream, but it provides low-level support for Panda's simple-
+ * threading implementation (using this interface will block only the current
+ * thread, rather than the entire process, on I/O waits).
+ */
 class EXPCL_DTOOL IFileStream : public istream {
 PUBLISHED:
   INLINE IFileStream();
@@ -52,15 +48,12 @@ private:
   PandaFileStreamBuf _buf;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : OFileStream
-// Description : Implements a C++ stream object suitable for writing
-//               to files on disk.  This is similar to ofstream, but
-//               it provides low-level support for Panda's
-//               simple-threading implementation (using this interface
-//               will block only the current thread, rather than the
-//               entire process, on I/O waits).
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a C++ stream object suitable for writing to files on disk.  This
+ * is similar to ofstream, but it provides low-level support for Panda's simple-
+ * threading implementation (using this interface will block only the current
+ * thread, rather than the entire process, on I/O waits).
+ */
 class EXPCL_DTOOL OFileStream : public ostream {
 PUBLISHED:
   INLINE OFileStream();
@@ -83,15 +76,12 @@ private:
   PandaFileStreamBuf _buf;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : FileStream
-// Description : Implements a C++ stream object suitable for reading
-//               from and/or writing to files on disk.  This is
-//               similar to fstream, but it provides low-level support
-//               for Panda's simple-threading implementation (using
-//               this interface will block only the current thread,
-//               rather than the entire process, on I/O waits).
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a C++ stream object suitable for reading from and/or writing to
+ * files on disk.  This is similar to fstream, but it provides low-level support
+ * for Panda's simple-threading implementation (using this interface will block
+ * only the current thread, rather than the entire process, on I/O waits).
+ */
 class EXPCL_DTOOL FileStream : public iostream {
 PUBLISHED:
   INLINE FileStream();

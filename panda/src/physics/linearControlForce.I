@@ -1,72 +1,59 @@
-// Filename: linearControlForce.I
-// Created by: Dave Schuyler (2006)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearControlForce.I
+ * @author Dave Schuyler
+ * @date 2006
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: clear_physics_object
-//       Access: Public
-//  Description: encapsulating wrapper
-////////////////////////////////////////////////////////////////////
+/**
+ * encapsulating wrapper
+ */
 INLINE void LinearControlForce::
 clear_physics_object() {
   _physics_object = (const PhysicsObject*)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_physics_object
-//       Access: Public
-//  Description: encapsulating wrapper
-////////////////////////////////////////////////////////////////////
+/**
+ * encapsulating wrapper
+ */
 INLINE void LinearControlForce::
 set_physics_object(const PhysicsObject *po) {
   _physics_object = po;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_physics_object
-//       Access: Public
-//  Description: piecewise encapsulating wrapper
-////////////////////////////////////////////////////////////////////
+/**
+ * piecewise encapsulating wrapper
+ */
 INLINE CPT(PhysicsObject) LinearControlForce::
 get_physics_object() const {
   return _physics_object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_vector
-//       Access: Public
-//  Description: encapsulating wrapper
-////////////////////////////////////////////////////////////////////
+/**
+ * encapsulating wrapper
+ */
 INLINE void LinearControlForce::
 set_vector(const LVector3& v) {
   _fvec = v;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_vector
-//       Access: Public
-//  Description: piecewise encapsulating wrapper
-////////////////////////////////////////////////////////////////////
+/**
+ * piecewise encapsulating wrapper
+ */
 INLINE void LinearControlForce::
 set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _fvec.set(x, y, z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_local_vector
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LVector3 LinearControlForce::
 get_local_vector() const {
   return _fvec;

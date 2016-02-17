@@ -1,19 +1,26 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ringbuffer.h
+ */
+
+
 #ifndef __RINGBUFFER_GM_H__
 #define __RINGBUFFER_GM_H__
 
 #include "membuffer.h"
 
 // RHH
-////////////////////////////////////////////////////////////////////
-//       Class : GmRingBuffer
-// Description : This is an implemention of the membuffer with ring
-//               buffer interface on it.
-//
-//               Main target right know is base class for network
-//               stream buffering both input and output
-//
-//               See also BufferedReader_Gm and BufferedWriter_Gm.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an implemention of the membuffer with ring buffer interface on it.
+ * Main target right know is base class for network stream buffering both input
+ * and output  See also BufferedReader_Gm and BufferedWriter_Gm.
+ */
 class EXPCL_PANDA_NATIVENET RingBuffer : protected MemBuffer {
 protected:
   size_t _StartPos;
@@ -42,4 +49,3 @@ public:
 #include "ringbuffer.I"
 
 #endif //__RINGBUFFER_GM_H__
-

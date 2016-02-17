@@ -1,16 +1,15 @@
-// Filename: datagramUDPHeader.cxx
-// Created by:  drose (08Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagramUDPHeader.cxx
+ * @author drose
+ * @date 2000-02-08
+ */
 
 #include "datagramUDPHeader.h"
 #include "netDatagram.h"
@@ -19,12 +18,10 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::Constructor
-//       Access: Public
-//  Description: This constructor creates a header based on an
-//               already-constructed NetDatagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor creates a header based on an already-constructed
+ * NetDatagram.
+ */
 DatagramUDPHeader::
 DatagramUDPHeader(const NetDatagram &datagram) {
   const string &str = datagram.get_message();
@@ -38,24 +35,18 @@ DatagramUDPHeader(const NetDatagram &datagram) {
   nassertv((int)_header.get_length() == datagram_udp_header_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::Constructor
-//       Access: Public
-//  Description: This constructor decodes a header from a block of
-//               data of length datagram_udp_header_size, presumably
-//               just read from a socket.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor decodes a header from a block of data of length
+ * datagram_udp_header_size, presumably just read from a socket.
+ */
 DatagramUDPHeader::
 DatagramUDPHeader(const void *data) : _header(data, datagram_udp_header_size) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::verify_datagram
-//       Access: Public
-//  Description: Verifies that the indicated datagram has the
-//               appropriate length and checksum.  Returns true if it
-//               matches, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the indicated datagram has the appropriate length and checksum.
+ * Returns true if it matches, false otherwise.
+ */
 bool DatagramUDPHeader::
 verify_datagram(const NetDatagram &datagram) const {
   const string &str = datagram.get_message();

@@ -1,16 +1,15 @@
-// Filename: fltGroup.cxx
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltGroup.cxx
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #include "fltGroup.h"
 #include "fltRecordReader.h"
@@ -19,11 +18,9 @@
 
 TypeHandle FltGroup::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGroup::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltGroup::
 FltGroup(FltHeader *header) : FltBeadID(header) {
   _relative_priority = 0;
@@ -34,14 +31,11 @@ FltGroup(FltHeader *header) : FltBeadID(header) {
   _layer_id = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGroup::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltGroup::
 extract_record(FltRecordReader &reader) {
   if (!FltBeadID::extract_record(reader)) {
@@ -67,14 +61,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGroup::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltGroup::
 build_record(FltRecordWriter &writer) const {
   if (!FltBeadID::build_record(writer)) {

@@ -1,16 +1,15 @@
-// Filename: collisionHandlerPusher.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandlerPusher.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "collisionHandlerPusher.h"
 #include "collisionNode.h"
@@ -22,13 +21,11 @@
 
 TypeHandle CollisionHandlerPusher::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShoveData
-// Description : The ShoveData class is used within
-//               CollisionHandlerPusher::handle_entries(), to track
-//               multiple shoves onto a given collider.  It's not
-//               exported outside this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ShoveData class is used within CollisionHandlerPusher::handle_entries(),
+ * to track multiple shoves onto a given collider.  It's not exported outside
+ * this file.
+ */
 class ShoveData {
 public:
   LVector3 _vector;
@@ -37,36 +34,28 @@ public:
   CollisionEntry *_entry;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerPusher::
 CollisionHandlerPusher() {
   _horizontal = pushers_horizontal;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerPusher::
 ~CollisionHandlerPusher() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::handle_entries
-//       Access: Protected, Virtual
-//  Description: Called by the parent class after all collisions have
-//               been detected, this manages the various collisions
-//               and moves around the nodes as necessary.
-//
-//               The return value is normally true, but it may be
-//               false to indicate the CollisionTraverser should
-//               disable this handler from being called in the future.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the parent class after all collisions have been detected, this
+ * manages the various collisions and moves around the nodes as necessary.  The
+ * return value is normally true, but it may be false to indicate the
+ * CollisionTraverser should disable this handler from being called in the
+ * future.
+ */
 bool CollisionHandlerPusher::
 handle_entries() {
   bool okflag = true;
@@ -261,23 +250,19 @@ handle_entries() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::apply_net_shove
-//       Access: Protected, Virtual
-//  Description: This is an optional hook for derived classes to do
-//               some work with the ColliderDef and the force vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an optional hook for derived classes to do some work with the
+ * ColliderDef and the force vector.
+ */
 void CollisionHandlerPusher::
 apply_net_shove(ColliderDef &def, const LVector3 &net_shove,
     const LVector3 &force_normal) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::apply_linear_force
-//       Access: Protected, Virtual
-//  Description: This is an optional hook for derived classes to do
-//               some work with the ColliderDef and the force vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an optional hook for derived classes to do some work with the
+ * ColliderDef and the force vector.
+ */
 void CollisionHandlerPusher::
 apply_linear_force(ColliderDef &def, const LVector3 &force_normal) {
 }

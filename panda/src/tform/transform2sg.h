@@ -1,16 +1,15 @@
-// Filename: transform2sg.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transform2sg.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef TRANSFORM2SG_H
 #define TRANSFORM2SG_H
@@ -20,13 +19,10 @@
 #include "dataNode.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Transform2SG
-// Description : input: Transform (matrix)
-//
-//               output: none, but applies the matrix as the transform
-//               transition for a given arc of the scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * input: Transform (matrix)  output: none, but applies the matrix as the
+ * transform transition for a given arc of the scene graph.
+ */
 class EXPCL_PANDA_TFORM Transform2SG : public DataNode {
 PUBLISHED:
   Transform2SG(const string &name);
@@ -66,4 +62,3 @@ private:
 };
 
 #endif
-

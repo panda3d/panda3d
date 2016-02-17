@@ -1,16 +1,15 @@
-// Filename: encryptStreamBuf.h
-// Created by:  drose (01Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file encryptStreamBuf.h
+ * @author drose
+ * @date 2004-09-01
+ */
 
 #ifndef ENCRYPTSTREAMBUF_H
 #define ENCRYPTSTREAMBUF_H
@@ -22,11 +21,9 @@
 
 #include "openssl/evp.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EncryptStreamBuf
-// Description : The streambuf object that implements
-//               IDecompressStream and OCompressStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements IDecompressStream and OCompressStream.
+ */
 class EXPCL_DTOOLCONFIG EncryptStreamBuf : public streambuf {
 public:
   EncryptStreamBuf();
@@ -66,7 +63,7 @@ private:
   string _algorithm;
   int _key_length;
   int _iteration_count;
-  
+
   bool _read_valid;
   EVP_CIPHER_CTX _read_ctx;
   size_t _read_block_size;

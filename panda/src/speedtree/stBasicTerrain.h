@@ -1,16 +1,15 @@
-// Filename: stBasicTerrain.h
-// Created by:  drose (12Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stBasicTerrain.h
+ * @author drose
+ * @date 2010-10-12
+ */
 
 #ifndef STBASICTERRAIN_H
 #define STBASICTERRAIN_H
@@ -20,13 +19,11 @@
 #include "luse.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : STBasicTerrain
-// Description : A specific implementation of STTerrain that supports
-//               basic heightmaps loaded from an image file, as
-//               described in a terrain.txt file similar to those
-//               provided with the SpeedTree example application.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific implementation of STTerrain that supports basic heightmaps loaded
+ * from an image file, as described in a terrain.txt file similar to those
+ * provided with the SpeedTree example application.
+ */
 class EXPCL_PANDASPEEDTREE STBasicTerrain : public STTerrain {
 PUBLISHED:
   STBasicTerrain();
@@ -62,7 +59,7 @@ protected:
   INLINE PN_stdfloat interpolate(PN_stdfloat a, PN_stdfloat b, PN_stdfloat t);
 
 private:
-  static void read_quoted_filename(Filename &result, istream &in, 
+  static void read_quoted_filename(Filename &result, istream &in,
                                    const Filename &dirname);
 
 protected:

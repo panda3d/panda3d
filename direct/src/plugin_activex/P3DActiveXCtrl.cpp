@@ -1,16 +1,15 @@
-// Filename: P3DActiveXCtrl.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file P3DActiveXCtrl.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 // P3DActiveXCtrl.cpp : Implementation of the CP3DActiveXCtrl ActiveX Control class.
 
@@ -281,7 +280,7 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
 
 void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
 {
-	m_instance.Stop();
+  m_instance.Stop();
 
     // Make sure the init thread has finished.
     if (_state == S_loading) {
@@ -290,7 +289,7 @@ void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
       nout << "Done waiting for thread stop\n" << flush;
     }
 
-	COleControl::OnClose( dwSaveOption );
+  COleControl::OnClose( dwSaveOption );
 }
 
 
@@ -622,4 +621,3 @@ timer_callback(HWND hwnd, UINT msg, UINT_PTR id, DWORD time) {
   // Just invalidate the region and make it draw again.
   ::InvalidateRect(hwnd, NULL, FALSE);
 }
-

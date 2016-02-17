@@ -1,16 +1,15 @@
-// Filename: animPreloadTable.h
-// Created by:  drose (05Aug08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animPreloadTable.h
+ * @author drose
+ * @date 2008-08-05
+ */
 
 #ifndef ANIMPRELOADTABLE_H
 #define ANIMPRELOADTABLE_H
@@ -26,16 +25,12 @@ class Datagram;
 class DatagramIterator;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimPreloadTable
-// Description : This table records data about a list of animations
-//               for a particular model, such as number of frames and
-//               frame rate.  It's used for implementating
-//               asynchronous binding.
-//
-//               This table is normally built by an offline tool, such
-//               as egg-optchar.
-////////////////////////////////////////////////////////////////////
+/**
+ * This table records data about a list of animations for a particular model,
+ * such as number of frames and frame rate.  It's used for implementating
+ * asynchronous binding.  This table is normally built by an offline tool, such
+ * as egg-optchar.
+ */
 class EXPCL_PANDA_CHAN AnimPreloadTable : public CopyOnWriteObject {
 public:
   class AnimRecord {
@@ -113,5 +108,3 @@ inline ostream &operator << (ostream &out, const AnimPreloadTable &anim) {
 #include "animPreloadTable.I"
 
 #endif
-
-

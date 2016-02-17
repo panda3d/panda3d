@@ -1,16 +1,15 @@
-// Filename: eggMaterialCollection.h
-// Created by:  drose (30Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMaterialCollection.h
+ * @author drose
+ * @date 2001-04-30
+ */
 
 #ifndef EGGMATERIALCOLLECTION_H
 #define EGGMATERIALCOLLECTION_H
@@ -23,14 +22,11 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMaterialCollection
-// Description : This is a collection of materials by MRef name.  It
-//               can extract the materials from an egg file and sort
-//               them all together; it can also manage the creation of
-//               unique materials and the assignment of unique MRef
-//               names.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a collection of materials by MRef name.  It can extract the materials
+ * from an egg file and sort them all together; it can also manage the creation
+ * of unique materials and the assignment of unique MRef names.
+ */
 class EXPCL_PANDAEGG EggMaterialCollection {
 
   // This is a bit of private interface stuff that must be here as a

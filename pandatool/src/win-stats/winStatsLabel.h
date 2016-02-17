@@ -1,16 +1,15 @@
-// Filename: winStatsLabel.h
-// Created by:  drose (07Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winStatsLabel.h
+ * @author drose
+ * @date 2004-01-07
+ */
 
 #ifndef WINSTATSLABEL_H
 #define WINSTATSLABEL_H
@@ -22,13 +21,11 @@
 class WinStatsMonitor;
 class WinStatsGraph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsLabel
-// Description : A text label that will draw in color appropriate for
-//               a particular collector.  It also responds when the
-//               user double-clicks on it.  This is handy for putting
-//               colored labels on strip charts.
-////////////////////////////////////////////////////////////////////
+/**
+ * A text label that will draw in color appropriate for a particular collector.
+ * It also responds when the user double-clicks on it.  This is handy for
+ * putting colored labels on strip charts.
+ */
 class WinStatsLabel {
 public:
   WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
@@ -85,4 +82,3 @@ private:
 };
 
 #endif
-

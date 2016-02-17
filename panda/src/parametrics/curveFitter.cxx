@@ -1,16 +1,15 @@
-// Filename: curveFitter.cxx
-// Created by:  drose (17Sep98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file curveFitter.cxx
+ * @author drose
+ * @date 1998-09-17
+ */
 
 #include "pandabase.h"
 #include "pointerTo.h"
@@ -24,42 +23,34 @@
 
 TypeHandle CurveFitter::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CurveFitter::
 CurveFitter() {
   _got_xyz = false;
   _got_hpr = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CurveFitter::
 ~CurveFitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::reset
-//       Access: Public
-//  Description: Removes all the data points previously added to the
-//               CurveFitter, and initializes it for a new curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the data points previously added to the CurveFitter, and
+ * initializes it for a new curve.
+ */
 void CurveFitter::
 reset() {
   _data.erase(_data.begin(), _data.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::add_xyz
-//       Access: Public
-//  Description: Adds a single sample xyz.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single sample xyz.
+ */
 void CurveFitter::
 add_xyz(PN_stdfloat t, const LVecBase3 &xyz) {
   DataPoint dp;
@@ -69,11 +60,9 @@ add_xyz(PN_stdfloat t, const LVecBase3 &xyz) {
   _got_xyz = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::add_hpr
-//       Access: Public
-//  Description: Adds a single sample hpr.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single sample hpr.
+ */
 void CurveFitter::
 add_hpr(PN_stdfloat t, const LVecBase3 &hpr) {
   DataPoint dp;
@@ -83,11 +72,9 @@ add_hpr(PN_stdfloat t, const LVecBase3 &hpr) {
   _got_hpr = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::add_xyz_hpr
-//       Access: Public
-//  Description: Adds a single sample xyz & hpr simultaneously.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single sample xyz & hpr simultaneously.
+ */
 void CurveFitter::
 add_xyz_hpr(PN_stdfloat t, const LVecBase3 &xyz, const LVecBase3 &hpr) {
   DataPoint dp;
@@ -99,69 +86,55 @@ add_xyz_hpr(PN_stdfloat t, const LVecBase3 &xyz, const LVecBase3 &hpr) {
   _got_hpr = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::get_num_samples
-//       Access: Public
-//  Description: Returns the number of sample points that have been
-//               added.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of sample points that have been added.
+ */
 int CurveFitter::
 get_num_samples() const {
   return _data.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::get_sample_t
-//       Access: Public
-//  Description: Returns the parametric value of the nth sample added.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the parametric value of the nth sample added.
+ */
 PN_stdfloat CurveFitter::
 get_sample_t(int n) const {
   nassertr(n >= 0 && n < (int)_data.size(), 0.0f);
   return _data[n]._t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::get_sample_xyz
-//       Access: Public
-//  Description: Returns the point in space of the nth sample added.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point in space of the nth sample added.
+ */
 LVecBase3 CurveFitter::
 get_sample_xyz(int n) const {
   nassertr(n >= 0 && n < (int)_data.size(), LVecBase3::zero());
   return _data[n]._xyz;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::get_sample_hpr
-//       Access: Public
-//  Description: Returns the orientation of the nth sample added.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the orientation of the nth sample added.
+ */
 LVecBase3 CurveFitter::
 get_sample_hpr(int n) const {
   nassertr(n >= 0 && n < (int)_data.size(), LVecBase3::zero());
   return _data[n]._hpr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::get_sample_tangent
-//       Access: Public
-//  Description: Returns the tangent associated with the nth sample
-//               added.  This is only meaningful if compute_tangents()
-//               has already been called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the tangent associated with the nth sample added.  This is only
+ * meaningful if compute_tangents() has already been called.
+ */
 LVecBase3 CurveFitter::
 get_sample_tangent(int n) const {
   nassertr(n >= 0 && n < (int)_data.size(), LVecBase3::zero());
   return _data[n]._tangent;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::remove_samples
-//       Access: Public
-//  Description: Eliminates all samples from index begin, up to but not
-//               including index end, from the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Eliminates all samples from index begin, up to but not including index end,
+ * from the database.
+ */
 void CurveFitter::
 remove_samples(int begin, int end) {
   begin = max(0, min((int)_data.size(), begin));
@@ -172,14 +145,11 @@ remove_samples(int begin, int end) {
   _data.erase(_data.begin() + begin, _data.begin() + end);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::sample
-//       Access: Public
-//  Description: Generates a series of data points by sampling the
-//               given curve (or xyz/hpr curves) the indicated number
-//               of times.  The sampling is made evenly in parametric
-//               time, and then the timewarps, if any, are applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a series of data points by sampling the given curve (or xyz/hpr
+ * curves) the indicated number of times.  The sampling is made evenly in
+ * parametric time, and then the timewarps, if any, are applied.
+ */
 void CurveFitter::
 sample(ParametricCurveCollection *curves, int count) {
   nassertv(curves != (ParametricCurveCollection *)NULL);
@@ -208,13 +178,11 @@ sample(ParametricCurveCollection *curves, int count) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::wrap_hpr
-//       Access: Public
-//  Description: Resets each HPR data point so that the maximum delta
-//               between any two consecutive points is 180 degrees,
-//               which should prevent incorrect HPR wrapping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets each HPR data point so that the maximum delta between any two
+ * consecutive points is 180 degrees, which should prevent incorrect HPR
+ * wrapping.
+ */
 void CurveFitter::
 wrap_hpr() {
   Data::iterator di;
@@ -241,25 +209,20 @@ wrap_hpr() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::sort_points
-//       Access: Public
-//  Description: Sorts all the data points in order by parametric
-//               time, in case they were added in an incorrect order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts all the data points in order by parametric time, in case they were
+ * added in an incorrect order.
+ */
 void CurveFitter::
 sort_points() {
   sort(_data.begin(), _data.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::desample
-//       Access: Public
-//  Description: Removes sample points in order to reduce the
-//               complexity of a sampled curve.  Keeps one out of
-//               every factor samples.  Also keeps the first and the
-//               last samples.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes sample points in order to reduce the complexity of a sampled curve.
+ * Keeps one out of every factor samples.  Also keeps the first and the last
+ * samples.
+ */
 void CurveFitter::
 desample(PN_stdfloat factor) {
   int in, out;
@@ -281,15 +244,11 @@ desample(PN_stdfloat factor) {
   _data.erase(_data.begin() + out, _data.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::compute_tangents
-//       Access: Public
-//  Description: Once a set of points has been built, and prior to
-//               calling MakeHermite() or MakeNurbs(),
-//               ComputeTangents() must be called to set up the
-//               tangents correctly (unless the tangents were defined
-//               as the points were added).
-////////////////////////////////////////////////////////////////////
+/**
+ * Once a set of points has been built, and prior to calling MakeHermite() or
+ * MakeNurbs(), ComputeTangents() must be called to set up the tangents
+ * correctly (unless the tangents were defined as the points were added).
+ */
 void CurveFitter::
 compute_tangents(PN_stdfloat scale) {
   // If the head and tail points match up, close the curve.
@@ -358,12 +317,9 @@ compute_tangents(PN_stdfloat scale) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::make_hermite
-//       Access: Public
-//  Description: Converts the current set of data points into a
-//               Hermite curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the current set of data points into a Hermite curve.
+ */
 PT(ParametricCurveCollection) CurveFitter::
 make_hermite() const {
   PT(ParametricCurveCollection) result = new ParametricCurveCollection;
@@ -401,13 +357,10 @@ make_hermite() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::make_nurbs
-//       Access: Public
-//  Description: Converts the current set of data points into a
-//               NURBS curve.  This gives a smoother curve than
-//               produced by MakeHermite().
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the current set of data points into a NURBS curve.  This gives a
+ * smoother curve than produced by MakeHermite().
+ */
 PT(ParametricCurveCollection) CurveFitter::
 make_nurbs() const {
   // We start with the HermiteCurves produced above, then convert them
@@ -457,21 +410,17 @@ make_nurbs() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CurveFitter::
 output(ostream &out) const {
   out << "CurveFitter, " << _data.size() << " samples.\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CurveFitter::
 write(ostream &out) const {
   out << "CurveFitter, " << _data.size() << " samples:\n";
@@ -480,4 +429,3 @@ write(ostream &out) const {
     out << "  " << (*di) << "\n";
   }
 }
-

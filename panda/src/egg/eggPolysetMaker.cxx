@@ -1,52 +1,43 @@
-// Filename: eggPolysetMaker.cxx
-// Created by:  drose (20Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPolysetMaker.cxx
+ * @author drose
+ * @date 2001-06-20
+ */
 
 #include "eggPolysetMaker.h"
 #include "eggPolygon.h"
 
 TypeHandle EggPolysetMaker::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolysetMaker::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggPolysetMaker::
 EggPolysetMaker() {
   _properties = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolysetMaker::set_properties
-//       Access: Public
-//  Description: Sets the set of properties that determines which
-//               polygons are allowed to be grouped together into a
-//               single polyset.  This is the bitwise 'or' of all the
-//               properties that matter.  If this is 0, all polygons
-//               (within a given group) will be lumped into a common
-//               polyset regardless of their properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the set of properties that determines which polygons are allowed to be
+ * grouped together into a single polyset.  This is the bitwise 'or' of all the
+ * properties that matter.  If this is 0, all polygons (within a given group)
+ * will be lumped into a common polyset regardless of their properties.
+ */
 void EggPolysetMaker::
 set_properties(int properties) {
   _properties = properties;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolysetMaker::get_bin_number
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int EggPolysetMaker::
 get_bin_number(const EggNode *node) {
   if (node->is_of_type(EggPolygon::get_class_type())) {
@@ -57,11 +48,9 @@ get_bin_number(const EggNode *node) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolysetMaker::sorts_less
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggPolysetMaker::
 sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
   nassertr((BinNumber)bin_number == BN_polyset, false);

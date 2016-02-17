@@ -1,16 +1,15 @@
-// Filename: typedWritable.h
-// Created by:  jason (08Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typedWritable.h
+ * @author jason
+ * @date 2000-06-08
+ */
 
 #ifndef TYPEDWRITABLE_H
 #define TYPEDWRITABLE_H
@@ -27,13 +26,10 @@ class Datagram;
 class DatagramIterator;
 class ReferenceCount;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypedWritable
-// Description : Base class for objects that can be written to and
-//               read from Bam files.
-//
-//               See also TypedObject for detailed instructions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Base class for objects that can be written to and read from Bam files.  See
+ * also TypedObject for detailed instructions.
+ */
 class EXPCL_PANDA_PUTIL TypedWritable : public TypedObject {
 public:
   static TypedWritable* const Null;

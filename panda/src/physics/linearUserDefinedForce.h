@@ -1,32 +1,27 @@
-// Filename: linearUserDefinedForce.h
-// Created by:  charles (31Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearUserDefinedForce.h
+ * @author charles
+ * @date 2000-07-31
+ */
 
 #ifndef LINEARUSERDEFINEDFORCE_H
 #define LINEARUSERDEFINEDFORCE_H
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearUserDefinedForce
-// Description : a programmable force that takes an evaluator fn.
-//
-//        NOTE : AS OF Interrogate => Squeak, this class does NOT
-//               get FFI'd due to the function pointer bug, and is
-//               currently NOT getting interrogated.  Change this
-//               in the makefile when the time is right or this class
-//               becomes needed...
-////////////////////////////////////////////////////////////////////
+/**
+ * a programmable force that takes an evaluator fn.  NOTE : AS OF Interrogate =>
+ * Squeak, this class does NOT get FFI'd due to the function pointer bug, and is
+ * currently NOT getting interrogated.  Change this in the makefile when the
+ * time is right or this class becomes needed...
+ */
 class EXPCL_PANDAPHYSICS LinearUserDefinedForce : public LinearForce {
 PUBLISHED:
   LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = NULL,
@@ -36,7 +31,7 @@ PUBLISHED:
   virtual ~LinearUserDefinedForce();
 
   INLINE void set_proc(LVector3 (*proc)(const PhysicsObject *));
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

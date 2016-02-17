@@ -1,14 +1,13 @@
-// Filename: interfaceMakerPythonNative.cxx
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMakerPythonNative.cxx
+ */
 
 #include "interfaceMakerPythonNative.h"
 #include "interrogateBuilder.h"
@@ -45,10 +44,9 @@ extern std::string EXPORT_IMPORT_PREFIX;
 
 #define CLASS_PREFIX "Dtool_"
 
-////////////////////////////////////////////////////////////////////
-// Name Remapper...
-//      Snagged from ffi py code....
-////////////////////////////////////////////////////////////////////
+/*
+ * Name Remapper... Snagged from ffi py code....
+ */
 struct RenameSet {
   const char *_from;
   const char *_to;
@@ -286,20 +284,14 @@ std::string methodNameFromCppName(FunctionRemap *remap, const std::string &class
   return methodNameFromCppName(cppName, className, mangle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::get_slotted_function_def
-//       Access: Private, Static
-//  Description: Determines whether this method should be mapped to
-//               one of Python's special slotted functions, those
-//               hard-coded functions that are assigned to particular
-//               function pointers within the object structure, for
-//               special functions like __getitem__ and __len__.
-//
-//               Returns true if it has such a mapping, false if it is
-//               just a normal method.  If it returns true, the
-//               SlottedFunctionDef structure is filled in with the
-//               important details.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines whether this method should be mapped to one of Python's special
+ * slotted functions, those hard-coded functions that are assigned to particular
+ * function pointers within the object structure, for special functions like
+ * __getitem__ and __len__.  Returns true if it has such a mapping, false if it
+ * is just a normal method.  If it returns true, the SlottedFunctionDef
+ * structure is filled in with the important details.
+ */
 bool InterfaceMakerPythonNative::
 get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
                          SlottedFunctionDef &def) {
@@ -625,13 +617,10 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_function_slot
-//       Access: Private, Static
-//  Description: Determines whether the slot occurs in the map of
-//               slotted functions, and if so, writes out a pointer
-//               to its wrapper.  If not, writes out def (usually 0).
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines whether the slot occurs in the map of slotted functions, and if
+ * so, writes out a pointer to its wrapper.  If not, writes out def (usually 0).
+ */
 void InterfaceMakerPythonNative::
 write_function_slot(ostream &out, int indent_level, const SlottedFunctions &slots,
                     const string &slot, const string &default_) {
@@ -702,9 +691,9 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_python_instance
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InterfaceMakerPythonNative::
 write_python_instance(ostream &out, int indent_level, const string &return_expr,
                       bool owns_memory, const InterrogateType &itype, bool is_const) {
@@ -745,33 +734,26 @@ write_python_instance(ostream &out, int indent_level, const string &return_expr,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMakerPythonNative::
 InterfaceMakerPythonNative(InterrogateModuleDef *def) :
   InterfaceMakerPython(def)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMakerPythonNative::
 ~InterfaceMakerPythonNative() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_prototypes
-//       Access: Public, Virtual
-//  Description: Generates the list of function prototypes
-//               corresponding to the functions that will be output in
-//               write_functions().
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of function prototypes corresponding to the functions that
+ * will be output in write_functions().
+ */
 void InterfaceMakerPythonNative::
 write_prototypes(ostream &out_code, ostream *out_h) {
   Functions::iterator fi;
@@ -899,11 +881,10 @@ write_prototypes(ostream &out_code, ostream *out_h) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_prototypes_class_external
-//  Description: Output enough enformation to a declartion of a externally
-//                 generated dtool type object
-////////////////////////////////////////////////////////////////////
+/**
+ * Output enough enformation to a declartion of a externally generated dtool
+ * type object
+ */
 void InterfaceMakerPythonNative::
 write_prototypes_class_external(ostream &out, Object *obj) {
   std::string class_name = make_safe_name(obj->_itype.get_scoped_name());
@@ -921,9 +902,9 @@ write_prototypes_class_external(ostream &out, Object *obj) {
   out << "Define_Module_Class_Forward(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_prototypes_class
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InterfaceMakerPythonNative::
 write_prototypes_class(ostream &out_code, ostream *out_h, Object *obj) {
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
@@ -951,13 +932,10 @@ write_prototypes_class(ostream &out_code, ostream *out_h, Object *obj) {
   write_class_declarations(out_code, out_h, obj);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_functions
-//       Access: Public, Virtual
-//  Description: Generates the list of functions that are appropriate
-//               for this interface.  This function is called *before*
-//               write_prototypes(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of functions that are appropriate for this interface.
+ * This function is called *before* write_prototypes(), above.
+ */
 void InterfaceMakerPythonNative::
 write_functions(ostream &out) {
   out << "//********************************************************************\n";
@@ -998,13 +976,10 @@ write_functions(ostream &out) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_class_details
-//       Access: Private
-//  Description: Writes out all of the wrapper methods necessary to
-//               export the given object.  This is called by
-//               write_functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out all of the wrapper methods necessary to export the given object.
+ * This is called by write_functions.
+ */
 void InterfaceMakerPythonNative::
 write_class_details(ostream &out, Object *obj) {
   Functions::iterator fi;
@@ -1129,10 +1104,9 @@ write_class_details(ostream &out, Object *obj) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_class_declarations
-//
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InterfaceMakerPythonNative::
 write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   const InterrogateType &itype = obj->_itype;
@@ -1193,12 +1167,9 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_sub_module
-//       Access: Public, Virtual
-//  Description: Generates whatever additional code is required to
-//               support a module file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates whatever additional code is required to support a module file.
+ */
 void InterfaceMakerPythonNative::
 write_sub_module(ostream &out, Object *obj) {
   //Object * obj = _objects[_embeded_index] ;
@@ -1254,9 +1225,9 @@ write_sub_module(ostream &out, Object *obj) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_module_support
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InterfaceMakerPythonNative::
 write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   out << "//********************************************************************\n";
@@ -1443,9 +1414,9 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_module
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InterfaceMakerPythonNative::
 write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   InterfaceMakerPython::write_module(out, out_h, def);
@@ -1496,9 +1467,9 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       << "#endif\n"
       << "\n";
 }
-////////////////////////////////////////////////////////////////////
-//     Function: write_module_class
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InterfaceMakerPythonNative::
 write_module_class(ostream &out, Object *obj) {
   bool has_local_repr = false;
@@ -3128,30 +3099,23 @@ write_module_class(ostream &out, Object *obj) {
   out << "}\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::synthesize_this_parameter
-//       Access: Public, Virtual
-//  Description: This method should be overridden and redefined to
-//               return true for interfaces that require the implicit
-//               "this" parameter, if present, to be passed as the
-//               first parameter to any wrapper functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should be overridden and redefined to return true for interfaces
+ * that require the implicit "this" parameter, if present, to be passed as the
+ * first parameter to any wrapper functions.
+ */
 bool InterfaceMakerPythonNative::
 synthesize_this_parameter() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::separate_overloading
-//       Access: Public, Virtual
-//  Description: This method should be overridden and redefined to
-//               return true for interfaces that require overloaded
-//               instances of a function to be defined as separate
-//               functions (each with its own hashed name), or false
-//               for interfaces that can support overloading natively,
-//               and thus only require one wrapper function per each
-//               overloaded input function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should be overridden and redefined to return true for interfaces
+ * that require overloaded instances of a function to be defined as separate
+ * functions (each with its own hashed name), or false for interfaces that can
+ * support overloading natively, and thus only require one wrapper function per
+ * each overloaded input function.
+ */
 bool InterfaceMakerPythonNative::
 separate_overloading() {
   // We used to return true here.  Nowadays, some of the default
@@ -3162,55 +3126,43 @@ separate_overloading() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::get_wrapper_prefix
-//       Access: Protected, Virtual
-//  Description: Returns the prefix string used to generate wrapper
-//               function names.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the prefix string used to generate wrapper function names.
+ */
 string InterfaceMakerPythonNative::
 get_wrapper_prefix() {
   return "Dtool_";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::get_unique_prefix
-//       Access: Protected, Virtual
-//  Description: Returns the prefix string used to generate unique
-//               symbolic names, which are not necessarily C-callable
-//               function names.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the prefix string used to generate unique symbolic names, which are
+ * not necessarily C-callable function names.
+ */
 string InterfaceMakerPythonNative::
 get_unique_prefix() {
   return "Dtool_";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::record_function_wrapper
-//       Access: Protected, Virtual
-//  Description: Associates the function wrapper with its function in
-//               the appropriate structures in the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the function wrapper with its function in the appropriate
+ * structures in the database.
+ */
 void InterfaceMakerPythonNative::
 record_function_wrapper(InterrogateFunction &ifunc, FunctionWrapperIndex wrapper_index) {
   ifunc._python_wrappers.push_back(wrapper_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_prototype_for
-//       Access: Private
-//  Description: Writes the prototype for the indicated function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the prototype for the indicated function.
+ */
 void InterfaceMakerPythonNative::
 write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
   std::string fname = "PyObject *" + func->_name + "(PyObject *self, PyObject *args)";
   write_prototype_for_name(out, func, fname);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_prototype_for_name
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void InterfaceMakerPythonNative::
 write_prototype_for_name(ostream &out, InterfaceMaker::Function *func, const std::string &function_namename) {
   Function::Remaps::const_iterator ri;
@@ -3228,12 +3180,10 @@ write_prototype_for_name(ostream &out, InterfaceMaker::Function *func, const std
 //  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_function_for_top
-//       Access: Private
-//  Description: Writes the definition for a function that will call
-//               the indicated C++ function or method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the definition for a function that will call the indicated C++
+ * function or method.
+ */
 void InterfaceMakerPythonNative::
 write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker::Function *func) {
 
@@ -3330,12 +3280,10 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   out << "#endif\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_function_for_name
-//       Access: Private
-//  Description: Writes the definition for a function that will call
-//               the indicated C++ function or method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the definition for a function that will call the indicated C++
+ * function or method.
+ */
 void InterfaceMakerPythonNative::
 write_function_for_name(ostream &out, Object *obj,
                         const Function::Remaps &remaps,
@@ -3604,35 +3552,22 @@ write_function_for_name(ostream &out, Object *obj,
   out << "}\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_coerce_constructor
-//       Access: Private
-//  Description: Writes the definition for a coerce constructor: a
-//               special constructor that is called to implicitly
-//               cast a tuple or other type to a desired type.  This
-//               is done by calling the appropriate constructor or
-//               static make() function.  Constructors marked with
-//               the "explicit" keyword aren't considered, just like
-//               in C++.
-//
-//               There are usually two coerce constructors: one for
-//               const pointers, one for non-const pointers.  This
-//               is due to the possibility that a static make()
-//               function may return a const pointer.
-//
-//               There are two variants of this: if the class in
-//               question is a ReferenceCount, the coerce constructor
-//               takes a reference to a PointerTo or ConstPointerTo
-//               to store the converted pointer in.  Otherwise, it
-//               is a regular pointer, and an additional boolean
-//               indicates whether the caller is supposed to call
-//               "delete" on the coerced pointer or not.
-//
-//               In all cases, the coerce constructor returns a bool
-//               indicating whether the conversion was possible.
-//               It does not raise exceptions when none of the
-//               constructors matched, but just returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the definition for a coerce constructor: a special constructor that is
+ * called to implicitly cast a tuple or other type to a desired type.  This is
+ * done by calling the appropriate constructor or static make() function.
+ * Constructors marked with the "explicit" keyword aren't considered, just like
+ * in C++.  There are usually two coerce constructors: one for const pointers,
+ * one for non-const pointers.  This is due to the possibility that a static
+ * make() function may return a const pointer.  There are two variants of this:
+ * if the class in question is a ReferenceCount, the coerce constructor takes a
+ * reference to a PointerTo or ConstPointerTo to store the converted pointer in.
+ * Otherwise, it is a regular pointer, and an additional boolean indicates
+ * whether the caller is supposed to call "delete" on the coerced pointer or
+ * not.  In all cases, the coerce constructor returns a bool indicating whether
+ * the conversion was possible.  It does not raise exceptions when none of the
+ * constructors matched, but just returns false.
+ */
 void InterfaceMakerPythonNative::
 write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
   std::map<int, std::set<FunctionRemap *> > map_sets;
@@ -3877,41 +3812,24 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
   out << "}\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::collapse_default_remaps
-//       Access: Private
-//  Description: Special case optimization: if the last map is a subset
-//               of the map before it, and the last parameter is only a
-//               simple parameter type (that we have special default
-//               argument handling for), we can merge the cases.
-//               When this happens, we can make use of a special
-//               feature of PyArg_ParseTuple for handling of these
-//               last few default arguments.  This doesn't work well
-//               for all types of default expressions, though, hence the
-//               need for this elaborate checking mechanism down here,
-//               which goes in parallel with the actual optional arg
-//               handling logic in write_function_instance.
-//
-//               This isn't just to help reduce the amount of generated
-//               code; it also enables arbitrary selection of keyword
-//               arguments for many functions, ie. for this function:
-//
-//                 int func(int a=0, int b=0, bool c=false, string d="");
-//
-//               Thanks to this mechanism, we can call it like so:
-//
-//                 func(c=True, d=".")
-//
-//               The return value is the minimum of the number
-//               of maximum arguments.
-//
-//               Sorry, let me try that again: it returns the
-//               largest number of arguments for which the overloads
-//               will be separated out rather than handled via the
-//               special default handling mechanism.  Or something.
-//
-//               Please don't hate me.
-////////////////////////////////////////////////////////////////////
+/**
+ * Special case optimization: if the last map is a subset of the map before it,
+ * and the last parameter is only a simple parameter type (that we have special
+ * default argument handling for), we can merge the cases.  When this happens,
+ * we can make use of a special feature of PyArg_ParseTuple for handling of
+ * these last few default arguments.  This doesn't work well for all types of
+ * default expressions, though, hence the need for this elaborate checking
+ * mechanism down here, which goes in parallel with the actual optional arg
+ * handling logic in write_function_instance.  This isn't just to help reduce
+ * the amount of generated code; it also enables arbitrary selection of keyword
+ * arguments for many functions, ie.  for this function:  int func(int a=0, int
+ * b=0, bool c=false, string d="");  Thanks to this mechanism, we can call it
+ * like so:  func(c=True, d=".")  The return value is the minimum of the number
+ * of maximum arguments.  Sorry, let me try that again: it returns the largest
+ * number of arguments for which the overloads will be separated out rather than
+ * handled via the special default handling mechanism.  Or something.  Please
+ * don't hate me.
+ */
 int InterfaceMakerPythonNative::
 collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
                         int max_required_args) {
@@ -4032,10 +3950,9 @@ abort_iteration:
   return max_required_args;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetParnetDepth
-// Support Function used to Sort the name based overrides.. For know must be complex to simple
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int get_type_sort(CPPType *type) {
   int answer = 0;
 //  printf("    %s\n",type->get_local_name().c_str());
@@ -4097,9 +4014,9 @@ int get_type_sort(CPPType *type) {
   return answer;
 }
 
-////////////////////////////////////////////////////////////////////
-//  The Core sort function for remap calling orders..
-////////////////////////////////////////////////////////////////////
+/*
+ * The Core sort function for remap calling orders..
+ */
 bool RemapCompareLess(FunctionRemap *in1, FunctionRemap *in2) {
   assert(in1 != NULL);
   assert(in2 != NULL);
@@ -4130,62 +4047,35 @@ bool RemapCompareLess(FunctionRemap *in1, FunctionRemap *in2) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_function_forset
-//       Access: Private
-//  Description: Writes out a set of function wrappers that handle
-//               all instances of a particular function with the
-//               same number of parameters.
-//               (Actually, in some cases relating to default
-//               argument handling, this may be called with remaps
-//               taking a range of parameters.)
-//
-//               min_num_args and max_num_args are the range of
-//               parameter counts to respect for these functions.
-//               This is important for default argument handling.
-//
-//               expected_params is a reference to a string that
-//               will be filled in with a list of overloads that
-//               this function takes, for displaying in the doc
-//               string and error messages.
-//
-//               If coercion_allowed is true, it will attempt
-//               to convert arguments to the appropriate parameter
-//               type using the appropriate Dtool_Coerce function.
-//               This means it may write some remaps twice: once
-//               without coercion, and then it may go back and
-//               write it a second time to try parameter coercion.
-//
-//               If report_errors is true, it will print an error
-//               and exit when one has occurred, instead of falling
-//               back to the next overload.  This is automatically
-//               disabled when more than one function is passed.
-//
-//               args_type indicates whether this function takes
-//               no args, a single PyObject* arg, an args tuple,
-//               or an args tuple and kwargs dictionary.
-//
-//               return_flags indicates which value should be
-//               returned from the wrapper function and what should
-//               be returned on error.
-//
-//               If check_exceptions is false, it will not check
-//               if the function raised an exception, except if
-//               it took PyObject* arguments.  This should NEVER
-//               be false for C++ functions that call Python code,
-//               since that would block a meaningful exception
-//               like SystemExit or KeyboardInterrupt.
-//
-//               If verify_const is set, it will write out a check
-//               to make sure that non-const functions aren't called
-//               for a const "this".  This is usually only false when
-//               write_function_for_name has already done this check
-//               (which it does when *all* remaps are non-const).
-//
-//               If first_pexpr is not empty, it represents the
-//               preconverted value of the first parameter.  This
-//               is a special-case hack for one of the slot functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out a set of function wrappers that handle all instances of a
+ * particular function with the same number of parameters.  (Actually, in some
+ * cases relating to default argument handling, this may be called with remaps
+ * taking a range of parameters.)  min_num_args and max_num_args are the range
+ * of parameter counts to respect for these functions.  This is important for
+ * default argument handling.  expected_params is a reference to a string that
+ * will be filled in with a list of overloads that this function takes, for
+ * displaying in the doc string and error messages.  If coercion_allowed is
+ * true, it will attempt to convert arguments to the appropriate parameter type
+ * using the appropriate Dtool_Coerce function.  This means it may write some
+ * remaps twice: once without coercion, and then it may go back and write it a
+ * second time to try parameter coercion.  If report_errors is true, it will
+ * print an error and exit when one has occurred, instead of falling back to the
+ * next overload.  This is automatically disabled when more than one function is
+ * passed.  args_type indicates whether this function takes no args, a single
+ * PyObject* arg, an args tuple, or an args tuple and kwargs dictionary.
+ * return_flags indicates which value should be returned from the wrapper
+ * function and what should be returned on error.  If check_exceptions is false,
+ * it will not check if the function raised an exception, except if it took
+ * PyObject* arguments.  This should NEVER be false for C++ functions that call
+ * Python code, since that would block a meaningful exception like SystemExit or
+ * KeyboardInterrupt.  If verify_const is set, it will write out a check to make
+ * sure that non-const functions aren't called for a const "this".  This is
+ * usually only false when write_function_for_name has already done this check
+ * (which it does when *all* remaps are non-const).  If first_pexpr is not
+ * empty, it represents the preconverted value of the first parameter.  This is
+ * a special-case hack for one of the slot functions.
+ */
 void InterfaceMakerPythonNative::
 write_function_forset(ostream &out,
                       const std::set<FunctionRemap *> &remapsin,
@@ -4468,40 +4358,23 @@ write_function_forset(ostream &out,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_function_instance
-//       Access: Private
-//  Description: Writes out the code to handle a a single instance
-//               of an overloaded function.  This will convert all
-//               of the arguments from PyObject* to the appropriate
-//               C++ type, call the C++ function, possibly check
-//               for errors, and construct a Python wrapper for the
-//               return value.
-//
-//               return_flags indicates which value should be
-//               returned from the wrapper function and what should
-//               be returned on error.
-//
-//               If coercion_possible is true, it will attempt
-//               to convert arguments to the appropriate parameter
-//               type using the appropriate Dtool_Coerce function.
-//
-//               If report_errors is true, it will print an error
-//               and exit when one has occurred, instead of falling
-//               back to the next overload.  This should be done
-//               if it is the only overload.
-//
-//               If check_exceptions is false, it will not check
-//               if the function raised an exception, except if
-//               it took PyObject* arguments.  This should NEVER
-//               be false for C++ functions that call Python code,
-//               since that would block a meaningful exception
-//               like SystemExit or KeyboardInterrupt.
-//
-//               If first_pexpr is not empty, it represents the
-//               preconverted value of the first parameter.  This
-//               is a special-case hack for one of the slot functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the code to handle a a single instance of an overloaded function.
+ * This will convert all of the arguments from PyObject* to the appropriate C++
+ * type, call the C++ function, possibly check for errors, and construct a
+ * Python wrapper for the return value.  return_flags indicates which value
+ * should be returned from the wrapper function and what should be returned on
+ * error.  If coercion_possible is true, it will attempt to convert arguments to
+ * the appropriate parameter type using the appropriate Dtool_Coerce function.
+ * If report_errors is true, it will print an error and exit when one has
+ * occurred, instead of falling back to the next overload.  This should be done
+ * if it is the only overload.  If check_exceptions is false, it will not check
+ * if the function raised an exception, except if it took PyObject* arguments.
+ * This should NEVER be false for C++ functions that call Python code, since
+ * that would block a meaningful exception like SystemExit or KeyboardInterrupt.
+ * If first_pexpr is not empty, it represents the preconverted value of the
+ * first parameter.  This is a special-case hack for one of the slot functions.
+ */
 void InterfaceMakerPythonNative::
 write_function_instance(ostream &out, FunctionRemap *remap,
                         int min_num_args, int max_num_args,
@@ -5974,12 +5847,10 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::error_return
-//       Access: Private
-//  Description: Outputs the correct return statement that should be
-//               used in case of error based on the ReturnFlags.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the correct return statement that should be used in case of error
+ * based on the ReturnFlags.
+ */
 void InterfaceMakerPythonNative::
 error_return(ostream &out, int indent_level, int return_flags) {
   //if (return_flags & RF_coerced) {
@@ -6005,13 +5876,11 @@ error_return(ostream &out, int indent_level, int return_flags) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::error_raise_return
-//       Access: Private
-//  Description: Similar to error_return, except raises an exception
-//               before returning.  If format_args are not the empty
-//               string, uses PyErr_Format instead of PyErr_SetString.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to error_return, except raises an exception before returning.  If
+ * format_args are not the empty string, uses PyErr_Format instead of
+ * PyErr_SetString.
+ */
 void InterfaceMakerPythonNative::
 error_raise_return(ostream &out, int indent_level, int return_flags,
                    const string &exc_type, const string &message,
@@ -6061,12 +5930,10 @@ error_raise_return(ostream &out, int indent_level, int return_flags,
   error_return(out, indent_level, return_flags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::pack_return_value
-//       Access: Private
-//  Description: Outputs a command to pack the indicated expression,
-//               of the return_type type, as a Python return value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a command to pack the indicated expression, of the return_type type,
+ * as a Python return value.
+ */
 void InterfaceMakerPythonNative::
 pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
                   string return_expr) {
@@ -6286,12 +6153,9 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonName::write_make_seq
-//       Access: Public
-//  Description: Generates the synthetic method described by the
-//               MAKE_SEQ() macro.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the synthetic method described by the MAKE_SEQ() macro.
+ */
 void InterfaceMakerPythonNative::
 write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                const std::string &cClassName, MakeSeq *make_seq) {
@@ -6379,12 +6243,9 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonName::write_getset
-//       Access: Public
-//  Description: Generates the synthetic method described by the
-//               MAKE_PROPERTY() macro.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the synthetic method described by the MAKE_PROPERTY() macro.
+ */
 void InterfaceMakerPythonNative::
 write_getset(ostream &out, Object *obj, Property *property) {
 
@@ -6470,13 +6331,10 @@ write_getset(ostream &out, Object *obj, Property *property) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::record_object
-//       Access: Protected
-//  Description: Records the indicated type, which may be a struct
-//               type, along with all of its associated methods, if
-//               any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated type, which may be a struct type, along with all of its
+ * associated methods, if any.
+ */
 InterfaceMaker::Object *InterfaceMakerPythonNative::
 record_object(TypeIndex type_index) {
   if (type_index == 0) {
@@ -6626,15 +6484,11 @@ record_object(TypeIndex type_index) {
   }
   return object;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::generate_wrappers
-//       Access: Public, Virtual
-//  Description: Walks through the set of functions in the database
-//               and generates wrappers for each function, storing
-//               these in the database.  No actual code should be
-//               output yet; this just updates the database with the
-//               wrapper information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the set of functions in the database and generates wrappers for
+ * each function, storing these in the database.  No actual code should be
+ * output yet; this just updates the database with the wrapper information.
+ */
 void InterfaceMakerPythonNative::
 generate_wrappers() {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
@@ -6687,10 +6541,9 @@ generate_wrappers() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_cpp_type_legal
-// is the cpp object  supported by by the dtool_py interface..
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 is_cpp_type_legal(CPPType *in_ctype) {
   if (in_ctype == NULL) {
@@ -6734,9 +6587,9 @@ is_cpp_type_legal(CPPType *in_ctype) {
 
   return false;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: isExportThisRun
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 isExportThisRun(CPPType *ctype) {
   if (builder.in_forcetype(ctype->get_local_name(&parser))) {
@@ -6754,9 +6607,9 @@ isExportThisRun(CPPType *ctype) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: isExportThisRun
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 isExportThisRun(Function *func) {
   if (func == NULL || !is_function_legal(func)) {
@@ -6772,9 +6625,9 @@ isExportThisRun(Function *func) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_remap_legal
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 is_remap_legal(FunctionRemap *remap) {
   if (remap == NULL) {
@@ -6812,11 +6665,9 @@ is_remap_legal(FunctionRemap *remap) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: has_coerce_constructor
-//            Returns 1 if coerce constructor
-//            returns const, 2 if non-const.
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int InterfaceMakerPythonNative::
 has_coerce_constructor(CPPStructType *type) {
   if (type == NULL) {
@@ -6879,9 +6730,9 @@ has_coerce_constructor(CPPStructType *type) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_remap_coercion_possible
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 is_remap_coercion_possible(FunctionRemap *remap) {
   if (remap == NULL) {
@@ -6916,9 +6767,9 @@ is_remap_coercion_possible(FunctionRemap *remap) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_function_legal
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 is_function_legal(Function *func) {
   Function::Remaps::const_iterator ri;
@@ -6935,9 +6786,9 @@ is_function_legal(Function *func) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IsRunTimeTyped
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 IsRunTimeTyped(const InterrogateType &itype) {
   TypeIndex ptype_id = itype.get_outer_class();
@@ -6955,10 +6806,9 @@ IsRunTimeTyped(const InterrogateType &itype) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DoesInheritFromIsClass
-// Helper function to check cpp class inharatience..
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
   if (inclass == NULL) {
@@ -6987,10 +6837,9 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HasAGetClassTypeFunction
-// does the class have a supportable GetClassType which returns a TypeHandle.
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool InterfaceMakerPythonNative::
 HasAGetClassTypeFunction(CPPType *type) {
   while (type->get_subtype() == CPPDeclaration::ST_typedef) {
@@ -7007,20 +6856,13 @@ HasAGetClassTypeFunction(CPPType *type) {
   return scope->_functions.find("get_class_type") != scope->_functions.end();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::NeedsAStrFunction
-//       Access: Private
-//  Description: Returns -1 if the class does not define write() (and
-//               therefore cannot support a __str__ function).
-//
-//               Returns 1 if the class defines write(ostream).
-//
-//               Returns 2 if the class defines write(ostream, int).
-//
-//               Note that if you want specific behavior for Python
-//               str(), you should just define a __str__ function,
-//               which maps directly to the appropriate type slot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns -1 if the class does not define write() (and therefore cannot support
+ * a __str__ function).  Returns 1 if the class defines write(ostream).  Returns
+ * 2 if the class defines write(ostream, int).  Note that if you want specific
+ * behavior for Python str(), you should just define a __str__ function, which
+ * maps directly to the appropriate type slot.
+ */
 int InterfaceMakerPythonNative::
 NeedsAStrFunction(const InterrogateType &itype_class) {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
@@ -7076,24 +6918,15 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::NeedsAReprFunction
-//       Access: Private
-//  Description: Returns -1 if the class does not define output() or
-//               python_repr() (and therefore cannot support a
-//               __repr__ function).
-//
-//               Returns 1 if the class defines python_repr(ostream, string).
-//
-//               Returns 2 if the class defines output(ostream).
-//
-//               Returns 3 if the class defines an extension
-//               function for python_repr(ostream, string).
-//
-//               Note that defining python_repr is deprecated in
-//               favor of defining a __repr__ that returns a string,
-//               which maps directly to the appropriate type slot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns -1 if the class does not define output() or python_repr() (and
+ * therefore cannot support a __repr__ function).  Returns 1 if the class
+ * defines python_repr(ostream, string).  Returns 2 if the class defines
+ * output(ostream).  Returns 3 if the class defines an extension function for
+ * python_repr(ostream, string).  Note that defining python_repr is deprecated
+ * in favor of defining a __repr__ that returns a string, which maps directly to
+ * the appropriate type slot.
+ */
 int InterfaceMakerPythonNative::
 NeedsAReprFunction(const InterrogateType &itype_class) {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
@@ -7182,12 +7015,9 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::NeedsARichCompareFunction
-//       Access: Private
-//  Description: Returns true if the class defines a rich comparison
-//               operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the class defines a rich comparison operator.
+ */
 bool InterfaceMakerPythonNative::
 NeedsARichCompareFunction(const InterrogateType &itype_class) {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
@@ -7220,14 +7050,11 @@ NeedsARichCompareFunction(const InterrogateType &itype_class) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::output_quoted
-//       Access: Private
-//  Description: Outputs the indicated string as a single quoted,
-//               multi-line string to the generated C++ source code.
-//               The output point is left on the last line of the
-//               string, following the trailing quotation mark.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the indicated string as a single quoted, multi-line string to the
+ * generated C++ source code.  The output point is left on the last line of the
+ * string, following the trailing quotation mark.
+ */
 void InterfaceMakerPythonNative::
 output_quoted(ostream &out, int indent_level, const std::string &str,
               bool first_line) {

@@ -1,22 +1,18 @@
-// Filename: mayaEggLoader.cxx
-// Created by:  jyelon (20Jul05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-//
-// This file contains the code for class MayaEggLoader.  This class
-// does the actual work of copying an EggData tree into the maya scene.
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaEggLoader.cxx
+ * @author jyelon
+ * @date 2005-07-20
+ *
+ * This file contains the code for class MayaEggLoader.  This class
+ * does the actual work of copying an EggData tree into the maya scene.
+ */
 
 #include "pandatoolbase.h"
 #include "notifyCategoryProxy.h"
@@ -205,11 +201,9 @@ MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName
   return stat;
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaEggTex
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaEggTex
+ */
 
 class MayaEggTex
 {
@@ -323,11 +317,9 @@ MayaEggTex *MayaEggLoader::GetTex(EggTexture* etex)
   return res;
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaEggGroup
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaEggGroup
+ */
 
 class MayaEggGroup
 {
@@ -412,11 +404,9 @@ MayaEggGroup *MayaEggLoader::FindGroup(EggGroup *group)
   return _group_tab[group];
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaEggJoint
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaEggJoint
+ */
 
 class MayaEggJoint
 {
@@ -632,11 +622,9 @@ void MayaEggJoint::CreateMayaBone(MayaEggGroup *eggParent)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaEggGeom : base abstract class of MayaEggMesh and MayaEggNurbsSurface
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaEggGeom : base abstract class of MayaEggMesh and MayaEggNurbsSurface
+ */
 
 typedef pair<double, EggGroup *> MayaEggWeight;
 
@@ -924,11 +912,9 @@ void MayaEggGeom::AddEggFlag(MString fieldName) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaEggMesh
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaEggMesh
+ */
 typedef phash_map<LTexCoordd, int>             TVertTable;
 typedef phash_map<LColor, int>                CVertTable;
 
@@ -1060,11 +1046,9 @@ void MayaEggMesh::ConnectTextures(void)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaEggNurbsSurface
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaEggNurbsSurface
+ */
 class MayaEggNurbsSurface : public MayaEggGeom
 {
 public:
@@ -1173,11 +1157,9 @@ void MayaEggNurbsSurface::PrintData(void)
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaAnim:
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaAnim:
+ */
 class MayaAnim
 {
 public:
@@ -1211,11 +1193,9 @@ void MayaAnim::PrintData(void)
   _pool->write(mayaloader_cat.debug(), 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// MayaEggLoader functions
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MayaEggLoader functions
+ */
 
 void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
 {
@@ -1356,14 +1336,10 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// TraverseEggData
-//
-// We have an EggData in memory, and now we're going to copy that
-// over into the maya scene graph.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * TraverseEggData We have an EggData in memory, and now we're going to copy
+ * that over into the maya scene graph.
+ */
 
 void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string delim)
 {
@@ -2232,11 +2208,9 @@ MObject MayaEggLoader::GetDependencyNode(string givenName)
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// The two global functions that form the API of this module.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * The two global functions that form the API of this module.
+ */
 
 bool MayaLoadEggData(EggData *data, bool merge, bool model, bool anim, bool respect_normals)
 {
@@ -2250,4 +2224,3 @@ bool MayaLoadEggFile(const char *name, bool merge, bool model, bool anim, bool r
   MayaEggLoader loader;
   return loader.ConvertEggFile(name, merge, model, anim, respect_normals);
 }
-

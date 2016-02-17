@@ -1,26 +1,23 @@
-// Filename: fltEyepoint.cxx
-// Created by:  drose (26Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltEyepoint.cxx
+ * @author drose
+ * @date 2000-08-26
+ */
 
 #include "fltEyepoint.h"
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltEyepoint::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltEyepoint::
 FltEyepoint() {
   _rotation_center.set(0.0, 0.0, 0.0);
@@ -43,11 +40,9 @@ FltEyepoint() {
   _image_zoom = 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltEyepoint::extract_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltEyepoint::
 extract_record(FltRecordReader &reader) {
   DatagramIterator &iterator = reader.get_iterator();
@@ -92,11 +87,9 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltEyepoint::build_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltEyepoint::
 build_record(FltRecordWriter &writer) const {
   Datagram &datagram = writer.update_datagram();

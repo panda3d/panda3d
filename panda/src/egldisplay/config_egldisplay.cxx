@@ -1,16 +1,15 @@
-// Filename: config_egldisplay.cxx
-// Created by:  cary (07Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_egldisplay.cxx
+ * @author cary
+ * @date 1999-10-07
+ */
 
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
@@ -62,14 +61,12 @@ ConfigVariableInt x_wheel_right_button
           "mouse button number does the system report when one scrolls "
           "to the right?"));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libegldisplay
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libegldisplay() {
   static bool initialized = false;
@@ -94,10 +91,9 @@ init_libegldisplay() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_egl_error_string
-//  Description: Returns the given EGL error as string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the given EGL error as string.
+ */
 const string get_egl_error_string(int error) {
   switch (error) {
     case 0x3000: return "EGL_SUCCESS"; break;

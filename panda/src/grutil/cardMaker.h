@@ -1,16 +1,15 @@
-// Filename: cardMaker.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cardMaker.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef CARDMAKER_H
 #define CARDMAKER_H
@@ -23,12 +22,10 @@
 #include "namable.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CardMaker
-// Description : This class generates 2-d "cards", that is,
-//               rectangular polygons, particularly useful for showing
-//               textures etc. in the 2-d scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class generates 2-d "cards", that is, rectangular polygons, particularly
+ * useful for showing textures etc.  in the 2-d scene graph.
+ */
 class EXPCL_PANDA_GRUTIL CardMaker : public Namable {
 PUBLISHED:
   INLINE CardMaker(const string &name);
@@ -79,4 +76,3 @@ private:
 #include "cardMaker.I"
 
 #endif
-

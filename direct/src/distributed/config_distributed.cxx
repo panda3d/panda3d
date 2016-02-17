@@ -1,16 +1,15 @@
-// Filename: config_distributed.cxx
-// Created by:  drose (19May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_distributed.cxx
+ * @author drose
+ * @date 2004-05-19
+ */
 
 #include "config_distributed.h"
 #include "dconfig.h"
@@ -47,14 +46,12 @@ ConfigVariableBool handle_datagrams_internally
           "for performance reasons.  When it is false, all datagrams "
           "are handled by the Python implementation."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdistributed
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libdistributed() {
   static bool initialized = false;
@@ -64,4 +61,3 @@ init_libdistributed() {
   initialized = true;
 
 }
-

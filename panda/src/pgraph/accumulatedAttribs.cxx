@@ -1,16 +1,15 @@
-// Filename: accumulatedAttribs.cxx
-// Created by:  drose (30Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file accumulatedAttribs.cxx
+ * @author drose
+ * @date 2003-01-30
+ */
 
 #include "accumulatedAttribs.h"
 #include "sceneGraphReducer.h"
@@ -24,11 +23,9 @@
 #include "config_pgraph.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AccumulatedAttribs::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AccumulatedAttribs::
 AccumulatedAttribs() {
   _transform = TransformState::make_identity();
@@ -41,11 +38,9 @@ AccumulatedAttribs() {
   _other = RenderState::make_empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AccumulatedAttribs::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AccumulatedAttribs::
 AccumulatedAttribs(const AccumulatedAttribs &copy) :
   _transform(copy._transform),
@@ -65,11 +60,9 @@ AccumulatedAttribs(const AccumulatedAttribs &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AccumulatedAttribs::Copy Assignment
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void AccumulatedAttribs::
 operator = (const AccumulatedAttribs &copy) {
   _transform = copy._transform;
@@ -88,11 +81,9 @@ operator = (const AccumulatedAttribs &copy) {
   _other = copy._other;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AccumulatedAttribs::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void AccumulatedAttribs::
 write(ostream &out, int attrib_types, int indent_level) const {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
@@ -138,13 +129,10 @@ write(ostream &out, int attrib_types, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AccumulatedAttribs::collect
-//       Access: Public
-//  Description: Collects the state and transform from the indicated
-//               node and adds it to the accumulator, removing it from
-//               the node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects the state and transform from the indicated node and adds it to the
+ * accumulator, removing it from the node.
+ */
 void AccumulatedAttribs::
 collect(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
@@ -159,23 +147,20 @@ collect(PandaNode *node, int attrib_types) {
   node->set_state(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AccumulatedAttribs::collect
-//       Access: Public
-//  Description: Collects the state and transform from the indicated
-//               node and adds it to the accumulator, removing it from
-//               the state (and returning a new state).
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects the state and transform from the indicated node and adds it to the
+ * accumulator, removing it from the state (and returning a new state).
+ */
 CPT(RenderState) AccumulatedAttribs::
 collect(const RenderState *state, int attrib_types) {
   CPT(RenderState) new_state = state;
 
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
-    const RenderAttrib *node_attrib = 
+    const RenderAttrib *node_attrib =
       new_state->get_attrib(ColorAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int color_override = new_state->get_override(ColorAttrib::get_class_slot());
-      if (color_override >= _color_override || 
+      if (color_override >= _color_override ||
           _color == (const RenderAttrib *)NULL) {
         // The node has a color attribute; apply it.
         if (_color == (const RenderAttrib *)NULL) {
@@ -190,7 +175,7 @@ collect(const RenderState *state, int attrib_types) {
   }
 
   if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
-    const RenderAttrib *node_attrib = 
+    const RenderAttrib *node_attrib =
       new_state->get_attrib(ColorScaleAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int color_scale_override = new_state->get_override(ColorScaleAttrib::get_class_slot());
@@ -208,7 +193,7 @@ collect(const RenderState *state, int attrib_types) {
   }
 
   if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
-    const RenderAttrib *node_attrib = 
+    const RenderAttrib *node_attrib =
       new_state->get_attrib(TexMatrixAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int tex_matrix_override = new_state->get_override(TexMatrixAttrib::get_class_slot());
@@ -226,11 +211,11 @@ collect(const RenderState *state, int attrib_types) {
 
     // We also need to accumulate the texture state if we are
     // accumulating texture matrix.
-    const RenderAttrib *tex_attrib = 
+    const RenderAttrib *tex_attrib =
       new_state->get_attrib(TextureAttrib::get_class_slot());
     if (tex_attrib != (const RenderAttrib *)NULL) {
       int texture_override = new_state->get_override(TextureAttrib::get_class_slot());
-      if (texture_override >= _texture_override || 
+      if (texture_override >= _texture_override ||
           _texture == (const RenderAttrib *)NULL) {
         if (_texture == (const RenderAttrib *)NULL) {
           _texture = tex_attrib;
@@ -247,11 +232,11 @@ collect(const RenderState *state, int attrib_types) {
   }
 
   if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
-    const RenderAttrib *node_attrib = 
+    const RenderAttrib *node_attrib =
       new_state->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int clip_plane_override = new_state->get_override(ClipPlaneAttrib::get_class_slot());
-      if (clip_plane_override >= _clip_plane_override || 
+      if (clip_plane_override >= _clip_plane_override ||
           _clip_plane == (const RenderAttrib *)NULL) {
         if (_clip_plane == (const RenderAttrib *)NULL) {
           _clip_plane = node_attrib;
@@ -265,7 +250,7 @@ collect(const RenderState *state, int attrib_types) {
   }
 
   if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
-    const RenderAttrib *node_attrib = 
+    const RenderAttrib *node_attrib =
       new_state->get_attrib(CullFaceAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int cull_face_override = new_state->get_override(CullFaceAttrib::get_class_slot());
@@ -292,15 +277,11 @@ collect(const RenderState *state, int attrib_types) {
   return new_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AccumulatedAttribs::apply_to_node
-//       Access: Public
-//  Description: Stores the indicated attributes in the node's
-//               transform and state information; does not attempt to
-//               apply the properties to the vertices.  Clears the
-//               attributes from the accumulator for future
-//               traversals.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated attributes in the node's transform and state
+ * information; does not attempt to apply the properties to the vertices.
+ * Clears the attributes from the accumulator for future traversals.
+ */
 void AccumulatedAttribs::
 apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {

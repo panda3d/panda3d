@@ -1,16 +1,15 @@
-// Filename: typedWritable.cxx
-// Created by:  jason (08Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typedWritable.cxx
+ * @author jason
+ * @date 2000-06-08
+ */
 
 #include "typedWritable.h"
 #include "bamWriter.h"
@@ -23,11 +22,9 @@
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TypedWritable::
 ~TypedWritable() {
   // Remove the object pointer from the BamWriters that reference it.
@@ -50,120 +47,89 @@ TypedWritable::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void TypedWritable::
 write_datagram(BamWriter *, Datagram &) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::update_bam_nested
-//       Access: Public, Virtual
-//  Description: Called by the BamWriter when this object has not
-//               itself been modified recently, but it should check
-//               its nested objects for updates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamWriter when this object has not itself been modified
+ * recently, but it should check its nested objects for updates.
+ */
 void TypedWritable::
 update_bam_nested(BamWriter *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-//
-//               This is the callback function that is made by the
-//               BamReader at some later point, after all of the
-//               required pointers have been filled in.  It is
-//               necessary because there might be forward references
-//               in a bam file; when we call read_pointer() in
-//               fillin(), the object may not have been read from the
-//               file yet, so we do not have a pointer available at
-//               that time.  Thus, instead of returning a pointer,
-//               read_pointer() simply reserves a later callback.
-//               This function provides that callback.  The calling
-//               object is responsible for keeping track of the number
-//               of times it called read_pointer() and extracting the
-//               same number of pointers out of the supplied vector,
-//               and storing them appropriately within the object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.  This is the
+ * callback function that is made by the BamReader at some later point, after
+ * all of the required pointers have been filled in.  It is necessary because
+ * there might be forward references in a bam file; when we call read_pointer()
+ * in fillin(), the object may not have been read from the file yet, so we do
+ * not have a pointer available at that time.  Thus, instead of returning a
+ * pointer, read_pointer() simply reserves a later callback.  This function
+ * provides that callback.  The calling object is responsible for keeping track
+ * of the number of times it called read_pointer() and extracting the same
+ * number of pointers out of the supplied vector, and storing them appropriately
+ * within the object.
+ */
 int TypedWritable::
 complete_pointers(TypedWritable **, BamReader *) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::require_fully_complete
-//       Access: Public, Virtual
-//  Description: Some objects require all of their nested pointers to
-//               have been completed before the objects themselves can
-//               be completed.  If this is the case, override this
-//               method to return true, and be careful with circular
-//               references (which would make the object unreadable
-//               from a bam file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Some objects require all of their nested pointers to have been completed
+ * before the objects themselves can be completed.  If this is the case,
+ * override this method to return true, and be careful with circular references
+ * (which would make the object unreadable from a bam file).
+ */
 bool TypedWritable::
 require_fully_complete() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is intended to be called by
-//               each class's make_from_bam() method to read in all of
-//               the relevant data from the BamFile for the new
-//               object.  It is also called directly by the BamReader
-//               to re-read the data for an object that has been
-//               placed on the stream for an update.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is intended to be called by each class's
+ * make_from_bam() method to read in all of the relevant data from the BamFile
+ * for the new object.  It is also called directly by the BamReader to re-read
+ * the data for an object that has been placed on the stream for an update.
+ */
 void TypedWritable::
 fillin(DatagramIterator &, BamReader *) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void TypedWritable::
 finalize(BamReader *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::as_reference_count
-//       Access: Public, Virtual
-//  Description: Returns the pointer cast to a ReferenceCount pointer,
-//               if it is in fact of that type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer cast to a ReferenceCount pointer, if it is in fact of
+ * that type.
+ */
 ReferenceCount *TypedWritable::
 as_reference_count() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::encode_to_bam_stream
-//       Access: Published
-//  Description: Converts the TypedWritable object into a single
-//               stream of data using a BamWriter, and stores that
-//               data in the indicated string.  Returns true on
-//               success, false on failure.
-//
-//               This is a convenience method particularly useful for
-//               cases when you are only serializing a single object.
-//               If you have many objects to process, it is more
-//               efficient to use the same BamWriter to serialize all
-//               of them together.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the TypedWritable object into a single stream of data using a
+ * BamWriter, and stores that data in the indicated string.  Returns true on
+ * success, false on failure.  This is a convenience method particularly useful
+ * for cases when you are only serializing a single object.  If you have many
+ * objects to process, it is more efficient to use the same BamWriter to
+ * serialize all of them together.
+ */
 bool TypedWritable::
 encode_to_bam_stream(string &data, BamWriter *writer) const {
   data.clear();
@@ -207,33 +173,20 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::decode_raw_from_bam_stream
-//       Access: Published, Static
-//  Description: Reads the string created by a previous call to
-//               encode_to_bam_stream(), and extracts the single
-//               object on that string.  Returns true on success,
-//               false on on error.
-//
-//               This variant sets the TypedWritable and
-//               ReferenceCount pointers separately; both are pointers
-//               to the same object.  The reference count is not
-//               incremented; it is the caller's responsibility to
-//               manage the reference count.
-//
-//               Note that this method cannot be used to retrieve
-//               objects that do not inherit from ReferenceCount,
-//               because these objects cannot persist beyond the
-//               lifetime of the BamReader that reads them.  To
-//               retrieve these objects from a bam stream, you must
-//               construct a BamReader directly.
-//
-//               If you happen to know that the particular object in
-//               question inherits from TypedWritableReferenceCount or
-//               PandaNode, consider calling the variant of
-//               decode_from_bam_stream() defined for those methods,
-//               which presents a simpler interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the string created by a previous call to encode_to_bam_stream(), and
+ * extracts the single object on that string.  Returns true on success, false on
+ * on error.  This variant sets the TypedWritable and ReferenceCount pointers
+ * separately; both are pointers to the same object.  The reference count is not
+ * incremented; it is the caller's responsibility to manage the reference count.
+ * Note that this method cannot be used to retrieve objects that do not inherit
+ * from ReferenceCount, because these objects cannot persist beyond the lifetime
+ * of the BamReader that reads them.  To retrieve these objects from a bam
+ * stream, you must construct a BamReader directly.  If you happen to know that
+ * the particular object in question inherits from TypedWritableReferenceCount
+ * or PandaNode, consider calling the variant of decode_from_bam_stream()
+ * defined for those methods, which presents a simpler interface.
+ */
 bool TypedWritable::
 decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
                            const string &data, BamReader *reader) {
@@ -310,14 +263,11 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::add_bam_writer
-//       Access: Private
-//  Description: Called by the BamWriter to add itself to this
-//               TypedWritable's list of BamWriters, so that it can
-//               receive notification whenever this object destructs.
-//               This method may be safely called from any thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamWriter to add itself to this TypedWritable's list of
+ * BamWriters, so that it can receive notification whenever this object
+ * destructs.  This method may be safely called from any thread.
+ */
 void TypedWritable::
 add_bam_writer(BamWriter *writer) {
   nassertv(writer != (BamWriter *)NULL);
@@ -338,12 +288,10 @@ add_bam_writer(BamWriter *writer) {
     compare_and_exchange_ptr(_bam_writers, (void *)begin, (void *)new_link));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::remove_bam_writer
-//       Access: Private
-//  Description: The converse of add_bam_writer.
-//               This method may be safely called from any thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The converse of add_bam_writer.  This method may be safely called from any
+ * thread.
+ */
 void TypedWritable::
 remove_bam_writer(BamWriter *writer) {
   nassertv(writer != (BamWriter *)NULL);

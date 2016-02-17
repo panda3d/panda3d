@@ -1,16 +1,15 @@
-// Filename: p3dDownload.h
-// Created by:  drose (11Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dDownload.h
+ * @author drose
+ * @date 2009-06-11
+ */
 
 #ifndef P3DDOWNLOAD_H
 #define P3DDOWNLOAD_H
@@ -21,14 +20,11 @@ class P3DInstance;
 
 #include <time.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DDownload
-// Description : This represents a request to download a single file
-//               from a URL, with no particular destination.  It is
-//               intended to be used as an abstract base class; to use
-//               it, subclass it and redefine the appropriate callback
-//               methods.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a request to download a single file from a URL, with no
+ * particular destination.  It is intended to be used as an abstract base class;
+ * to use it, subclass it and redefine the appropriate callback methods.
+ */
 class P3DDownload : public P3DReferenceCount {
 public:
   P3DDownload();
@@ -58,10 +54,10 @@ public:
   inline int get_download_id() const;
 
   bool feed_url_stream(P3D_result_code result_code,
-                       int http_status_code, 
+                       int http_status_code,
                        size_t total_expected_data,
-                       const unsigned char *this_data, 
-                       size_t this_data_size);  
+                       const unsigned char *this_data,
+                       size_t this_data_size);
 
 protected:
   virtual bool receive_data(const unsigned char *this_data,

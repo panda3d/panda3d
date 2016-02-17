@@ -1,16 +1,15 @@
-// Filename: configVariableManager.h
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableManager.h
+ * @author drose
+ * @date 2004-10-15
+ */
 
 #ifndef CONFIGVARIABLEMANAGER_H
 #define CONFIGVARIABLEMANAGER_H
@@ -24,13 +23,10 @@
 
 class ConfigVariableCore;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableManager
-// Description : A global object that maintains the set of
-//               ConfigVariables (actually, ConfigVariableCores)
-//               everywhere in the world, and keeps them in sorted
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * A global object that maintains the set of ConfigVariables (actually,
+ * ConfigVariableCores) everywhere in the world, and keeps them in sorted order.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableManager {
 protected:
   ConfigVariableManager();
@@ -38,10 +34,10 @@ protected:
 
 PUBLISHED:
   ConfigVariableCore *make_variable(const string &name);
-  ConfigVariableCore *make_variable_template(const string &pattern, 
+  ConfigVariableCore *make_variable_template(const string &pattern,
                                              ConfigFlags::ValueType type,
                                              const string &default_value,
-                                             const string &description = string(), 
+                                             const string &description = string(),
                                              int flags = 0);
 
 
@@ -85,4 +81,3 @@ INLINE ostream &operator << (ostream &out, const ConfigVariableManager &variable
 #include "configVariableManager.I"
 
 #endif
-

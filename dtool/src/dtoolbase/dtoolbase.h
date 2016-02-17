@@ -1,8 +1,4 @@
-/* Filename: dtoolbase.h
- * Created by:  drose (12Sep00)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file dtoolbase.h
+ * @author drose
+ * @date 2000-09-12
+ */
 
 /* This file is included at the beginning of every header file and/or
    C or C++ file.  It must be compilable for C as well as C++ files,
@@ -393,7 +392,7 @@ typedef struct _object PyObject;
 /* Determine our memory-allocation requirements. */
 #if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
 /* In this case we have some custom memory management requirements. */
-#else 
+#else
 /* Otherwise, if we have no custom memory management needs at all, we
    might as well turn it all off and go straight to the OS-level
    calls. */

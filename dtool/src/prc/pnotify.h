@@ -1,16 +1,15 @@
-// Filename: pnotify.h
-// Created by:  drose (28Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnotify.h
+ * @author drose
+ * @date 2000-02-28
+ */
 
 #ifndef NOTIFY_H
 #define NOTIFY_H
@@ -21,20 +20,15 @@
 
 class NotifyCategory;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Notify
-// Description : An object that handles general error reporting to the
-//               user.  It contains a pointer to an ostream, initially
-//               cerr, which can be reset at will to point to
-//               different output devices, according to the needs of
-//               the application.  All output generated within Panda
-//               should vector through the Notify ostream.
-//
-//               This also includes a collection of Categories and
-//               Severities, which may be independently enabled or
-//               disabled, so that error messages may be squelched or
-//               respected according to the wishes of the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object that handles general error reporting to the user.  It contains a
+ * pointer to an ostream, initially cerr, which can be reset at will to point to
+ * different output devices, according to the needs of the application.  All
+ * output generated within Panda should vector through the Notify ostream.  This
+ * also includes a collection of Categories and Severities, which may be
+ * independently enabled or disabled, so that error messages may be squelched or
+ * respected according to the wishes of the user.
+ */
 class EXPCL_DTOOLCONFIG Notify {
 PUBLISHED:
   Notify();

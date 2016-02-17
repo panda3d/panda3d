@@ -1,16 +1,15 @@
-// Filename: x11GraphicsWindow.h
-// Created by:  rdb (07Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file x11GraphicsWindow.h
+ * @author rdb
+ * @date 2009-07-07
+ */
 
 #ifndef X11GRAPHICSWINDOW_H
 #define X11GRAPHICSWINDOW_H
@@ -26,10 +25,9 @@ typedef unsigned short Rotation;
 typedef unsigned short SizeID;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : x11GraphicsWindow
-// Description : Interfaces to the X11 window system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interfaces to the X11 window system.
+ */
 class x11GraphicsWindow : public GraphicsWindow {
 public:
   x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,

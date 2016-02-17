@@ -1,16 +1,15 @@
-// Filename: projectionScreen.cxx
-// Created by:  drose (11Dec01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file projectionScreen.cxx
+ * @author drose
+ * @date 2001-12-11
+ */
 
 #include "projectionScreen.h"
 #include "geomNode.h"
@@ -27,11 +26,9 @@
 
 TypeHandle ProjectionScreen::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ProjectionScreen::
 ProjectionScreen(const string &name) : PandaNode(name)
 {
@@ -50,20 +47,16 @@ ProjectionScreen(const string &name) : PandaNode(name)
   _auto_recompute = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ProjectionScreen::
 ~ProjectionScreen() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ProjectionScreen::
 ProjectionScreen(const ProjectionScreen &copy) :
   PandaNode(copy),
@@ -79,44 +72,30 @@ ProjectionScreen(const ProjectionScreen &copy) :
   _stale = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *ProjectionScreen::
 make_copy() const {
   return new ProjectionScreen(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool ProjectionScreen::
 cull_callback(CullTraverser *, CullTraverserData &data) {
   if (_auto_recompute) {
@@ -125,18 +104,13 @@ cull_callback(CullTraverser *, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::set_projector
-//       Access: Published
-//  Description: Specifies the LensNode that is to serve as the
-//               projector for this screen.  The relative position of
-//               the LensNode to the ProjectionScreen, as well as the
-//               properties of the lens associated with the LensNode,
-//               determines the UV's that will be assigned to the
-//               geometry within the ProjectionScreen.
-//
-//               The NodePath must refer to a LensNode (or a Camera).
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the LensNode that is to serve as the projector for this screen.
+ * The relative position of the LensNode to the ProjectionScreen, as well as the
+ * properties of the lens associated with the LensNode, determines the UV's that
+ * will be assigned to the geometry within the ProjectionScreen.  The NodePath
+ * must refer to a LensNode (or a Camera).
+ */
 void ProjectionScreen::
 set_projector(const NodePath &projector) {
   _projector_node = (LensNode *)NULL;
@@ -148,42 +122,29 @@ set_projector(const NodePath &projector) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::generate_screen
-//       Access: Published
-//  Description: Synthesizes a polygon mesh based on the projection
-//               area of the indicated projector.  This generates and
-//               returns a new GeomNode but does not automatically
-//               parent it to the ProjectionScreen node; see
-//               regenerate_screen().
-//
-//               The specified projector need not be the same as the
-//               projector given to the ProjectionScreen with
-//               set_projector() (although this is often what you
-//               want).
-//
-//               num_x_verts and num_y_verts specify the number of
-//               vertices to make in the grid across the horizontal
-//               and vertical dimension of the projector,
-//               respectively; distance represents the approximate
-//               distance of the screen from the lens center.
-//
-//               The fill_ratio parameter specifies the fraction of
-//               the image to cover.  If it is 1.0, the entire image
-//               is shown full-size; if it is 0.9, 10% of the image
-//               around the edges is not part of the grid (and the
-//               grid is drawn smaller by the same 10%).  This is
-//               intended to work around graphics drivers that tend to
-//               show dark edges or other unsatisfactory artifacts
-//               around the edges of textures: render the texture
-//               larger than necessary by a certain fraction, and make
-//               the screen smaller by the inverse fraction.
-////////////////////////////////////////////////////////////////////
+/**
+ * Synthesizes a polygon mesh based on the projection area of the indicated
+ * projector.  This generates and returns a new GeomNode but does not
+ * automatically parent it to the ProjectionScreen node; see
+ * regenerate_screen().  The specified projector need not be the same as the
+ * projector given to the ProjectionScreen with set_projector() (although this
+ * is often what you want).  num_x_verts and num_y_verts specify the number of
+ * vertices to make in the grid across the horizontal and vertical dimension of
+ * the projector, respectively; distance represents the approximate distance of
+ * the screen from the lens center.  The fill_ratio parameter specifies the
+ * fraction of the image to cover.  If it is 1.0, the entire image is shown
+ * full-size; if it is 0.9, 10% of the image around the edges is not part of the
+ * grid (and the grid is drawn smaller by the same 10%).  This is intended to
+ * work around graphics drivers that tend to show dark edges or other
+ * unsatisfactory artifacts around the edges of textures: render the texture
+ * larger than necessary by a certain fraction, and make the screen smaller by
+ * the inverse fraction.
+ */
 PT(GeomNode) ProjectionScreen::
 generate_screen(const NodePath &projector, const string &screen_name,
                 int num_x_verts, int num_y_verts, PN_stdfloat distance,
                 PN_stdfloat fill_ratio) {
-  nassertr(!projector.is_empty() && 
+  nassertr(!projector.is_empty() &&
            projector.node()->is_of_type(LensNode::get_class_type()),
            NULL);
   LensNode *projector_node = DCAST(LensNode, projector.node());
@@ -211,24 +172,24 @@ generate_screen(const NodePath &projector, const string &screen_name,
      Geom::UH_dynamic);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
-  
+
   for (int yi = 0; yi < num_y_verts; yi++) {
     for (int xi = 0; xi < num_x_verts; xi++) {
       LPoint2 film = LPoint2((PN_stdfloat)xi * x_scale - 1.0f,
                              (PN_stdfloat)yi * y_scale - 1.0f);
-      
+
       // Reduce the image by the fill ratio.
       film *= fill_ratio;
-      
+
       LPoint3 near_point, far_point;
       lens->extrude(film, near_point, far_point);
       LPoint3 point = near_point + t * (far_point - near_point);
-      
+
       // Normals aren't often needed on projection screens, but you
       // never know.
       LVector3 norm;
       lens->extrude_vec(film, norm);
-      
+
       vertex.add_data3(point * rel_mat);
       normal.add_data3(-normalize(norm * rel_mat));
     }
@@ -253,7 +214,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
 
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  
+
   geom_node->add_geom(geom);
 
   _stale = true;
@@ -261,13 +222,10 @@ generate_screen(const NodePath &projector, const string &screen_name,
   return geom_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::regenerate_screen
-//       Access: Published
-//  Description: Removes all the children from the ProjectionScreen
-//               node, and adds the newly generated child returned by
-//               generate_screen().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the children from the ProjectionScreen node, and adds the newly
+ * generated child returned by generate_screen().
+ */
 void ProjectionScreen::
 regenerate_screen(const NodePath &projector, const string &screen_name,
                   int num_x_verts, int num_y_verts, PN_stdfloat distance,
@@ -276,35 +234,27 @@ regenerate_screen(const NodePath &projector, const string &screen_name,
   remove_all_children();
 
   // And attach a new child.
-  PT(GeomNode) geom_node = 
-    generate_screen(projector, screen_name, num_x_verts, num_y_verts, 
+  PT(GeomNode) geom_node =
+    generate_screen(projector, screen_name, num_x_verts, num_y_verts,
                     distance, fill_ratio);
   add_child(geom_node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::make_flat_mesh
-//       Access: Published
-//  Description: Generates a deep copy of the hierarchy at the
-//               ProjectionScreen node and below, with vertices
-//               flattened into two dimensions as if they were seen by
-//               the indicated camera node.
-//
-//               This is useful for rendering an image as seen through
-//               a non-linear lens.  The resulting mesh will have
-//               vertices in the range [-1, 1] in both x and y, and
-//               may be then rendered with an ordinary orthographic
-//               lens, to generate the effect of seeing the image
-//               through the specified non-linear lens.
-//
-//               The returned node has no parent; it is up to the
-//               caller to parent it somewhere or store it so that it
-//               does not get dereferenced and deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a deep copy of the hierarchy at the ProjectionScreen node and
+ * below, with vertices flattened into two dimensions as if they were seen by
+ * the indicated camera node.  This is useful for rendering an image as seen
+ * through a non-linear lens.  The resulting mesh will have vertices in the
+ * range [-1, 1] in both x and y, and may be then rendered with an ordinary
+ * orthographic lens, to generate the effect of seeing the image through the
+ * specified non-linear lens.  The returned node has no parent; it is up to the
+ * caller to parent it somewhere or store it so that it does not get
+ * dereferenced and deleted.
+ */
 PT(PandaNode) ProjectionScreen::
 make_flat_mesh(const NodePath &this_np, const NodePath &camera) {
   nassertr(!this_np.is_empty() && this_np.node() == this, NULL);
-  nassertr(!camera.is_empty() && 
+  nassertr(!camera.is_empty() &&
            camera.node()->is_of_type(LensNode::get_class_type()),
            NULL);
   LensNode *camera_node = DCAST(LensNode, camera.node());
@@ -322,54 +272,40 @@ make_flat_mesh(const NodePath &this_np, const NodePath &camera) {
   return top;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::recompute
-//       Access: Published
-//  Description: Recomputes all the UV's for geometry below the
-//               ProjectionScreen node, as if the texture were
-//               projected from the associated projector.
-//
-//               This function is normally called automatically
-//               whenever the relevant properties change, so it should
-//               not normally need to be called directly by the user.
-//               However, it does no harm to call this if there is any
-//               doubt.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes all the UV's for geometry below the ProjectionScreen node, as if
+ * the texture were projected from the associated projector.  This function is
+ * normally called automatically whenever the relevant properties change, so it
+ * should not normally need to be called directly by the user.  However, it does
+ * no harm to call this if there is any doubt.
+ */
 void ProjectionScreen::
 recompute() {
   NodePath this_np(NodePath::any_path(this));
   do_recompute(this_np);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::recompute_if_stale
-//       Access: Published
-//  Description: Calls recompute() only if the relative transform
-//               between the ProjectionScreen and the projector has
-//               changed, or if any other relevant property has
-//               changed.  Returns true if recomputed, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls recompute() only if the relative transform between the ProjectionScreen
+ * and the projector has changed, or if any other relevant property has changed.
+ * Returns true if recomputed, false otherwise.
+ */
 bool ProjectionScreen::
 recompute_if_stale() {
   NodePath this_np(NodePath::any_path(this));
   return recompute_if_stale(this_np);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::recompute_if_stale
-//       Access: Published
-//  Description: Calls recompute() only if the relative transform
-//               between the ProjectionScreen and the projector has
-//               changed, or if any other relevant property has
-//               changed.  Returns true if recomputed, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls recompute() only if the relative transform between the ProjectionScreen
+ * and the projector has changed, or if any other relevant property has changed.
+ * Returns true if recomputed, false otherwise.
+ */
 bool ProjectionScreen::
 recompute_if_stale(const NodePath &this_np) {
   nassertr(!this_np.is_empty() && this_np.node() == this, false);
 
-  if (_projector_node != (LensNode *)NULL && 
+  if (_projector_node != (LensNode *)NULL &&
       _projector_node->get_lens() != (Lens *)NULL) {
     UpdateSeq lens_change = _projector_node->get_lens()->get_last_change();
     if (_stale || lens_change != _projector_lens_change) {
@@ -392,14 +328,12 @@ recompute_if_stale(const NodePath &this_np) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::do_recompute
-//       Access: Private
-//  Description: Starts the recomputation process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the recomputation process.
+ */
 void ProjectionScreen::
 do_recompute(const NodePath &this_np) {
-  if (_projector_node != (LensNode *)NULL && 
+  if (_projector_node != (LensNode *)NULL &&
       _projector_node->get_lens() != (Lens *)NULL) {
 
     recompute_node(this_np, _rel_top_mat, _computed_rel_top_mat);
@@ -411,14 +345,11 @@ do_recompute(const NodePath &this_np) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::recompute_node
-//       Access: Private
-//  Description: Recurses over all geometry at the indicated node and
-//               below, looking for GeomNodes that want to have new
-//               UV's computed.  When a new transform space is
-//               encountered, a new relative matrix is computed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recurses over all geometry at the indicated node and below, looking for
+ * GeomNodes that want to have new UV's computed.  When a new transform space is
+ * encountered, a new relative matrix is computed.
+ */
 void ProjectionScreen::
 recompute_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
                bool &computed_rel_mat) {
@@ -448,13 +379,10 @@ recompute_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::recompute_child
-//       Access: Private
-//  Description: Works in conjunction with recompute_node() to recurse
-//               over the whole graph.  This is called on each child
-//               of a given node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Works in conjunction with recompute_node() to recurse over the whole graph.
+ * This is called on each child of a given node.
+ */
 void ProjectionScreen::
 recompute_child(const WorkingNodePath &np, LMatrix4 &rel_mat,
                 bool &computed_rel_mat) {
@@ -473,7 +401,7 @@ recompute_child(const WorkingNodePath &np, LMatrix4 &rel_mat,
     }
 
     recompute_node(np, new_rel_mat, computed_new_rel_mat);
-    
+
   } else {
     // This child has no transform, so we can use the same transform
     // space from before.
@@ -481,13 +409,11 @@ recompute_child(const WorkingNodePath &np, LMatrix4 &rel_mat,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::recompute_geom_node
-//       Access: Private
-//  Description: Recomputes the UV's just for the indicated GeomNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the UV's just for the indicated GeomNode.
+ */
 void ProjectionScreen::
-recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat, 
+recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
                     bool &computed_rel_mat) {
   GeomNode *node = DCAST(GeomNode, np.node());
   if (!computed_rel_mat) {
@@ -512,7 +438,7 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
   int num_geoms = node->get_num_geoms();
   for (int i = 0; i < num_geoms; i++) {
     PT(Geom) geom = node->modify_geom(i);
-    distort_cat.debug() 
+    distort_cat.debug()
       << "  " << *node << " got geom " << geom
       << ", cache_ref = " << geom->get_cache_ref_count() << "\n";
     geom->test_ref_count_integrity();
@@ -520,23 +446,21 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::recompute_geom
-//       Access: Private
-//  Description: Recomputes the UV's just for the indicated Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the UV's just for the indicated Geom.
+ */
 void ProjectionScreen::
 recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   static const LMatrix4 lens_to_uv
     (0.5f, 0.0f, 0.0f, 0.0f,
-     0.0f, 0.5f, 0.0f, 0.0f, 
-     0.0f, 0.0f, 1.0f, 0.0f, 
+     0.0f, 0.5f, 0.0f, 0.0f,
+     0.0f, 0.0f, 1.0f, 0.0f,
      0.5f, 0.5f, 0.0f, 1.0f);
 
   static const LMatrix4 lens_to_uv_inverted
     (0.5f, 0.0f, 0.0f, 0.0f,
-     0.0f,-0.5f, 0.0f, 0.0f, 
-     0.0f, 0.0f, 1.0f, 0.0f, 
+     0.0f,-0.5f, 0.0f, 0.0f,
+     0.0f, 0.0f, 1.0f, 0.0f,
      0.5f, 0.5f, 0.0f, 1.0f);
 
   Thread *current_thread = Thread::get_current_thread();
@@ -575,19 +499,19 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   GeomVertexWriter texcoord(modify_vdata, _texcoord_name, current_thread);
   GeomVertexWriter color(modify_vdata, current_thread);
   GeomVertexReader vertex(animated_vdata, InternalName::get_vertex(), current_thread);
-  
+
   if (_vignette_on) {
     color.set_column(InternalName::get_color());
   }
-  
+
   while (!vertex.is_at_end()) {
     LVertex vert = vertex.get_data3();
-    
+
     // For each vertex, project to the film plane.
     LPoint3 vert3d = vert * rel_mat;
     LPoint3 film(0.0f, 0.0f, 0.0f);
     bool good = lens->project(vert3d, film);
-    
+
     // Now the lens gives us coordinates in the range [-1, 1].
     // Rescale these to [0, 1].
     LPoint3 uvw = film * to_uv;
@@ -610,7 +534,7 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
       }
     }
     texcoord.set_data3(uvw);
-    
+
     // If we have vignette color in effect, color the vertex according
     // to whether it fell in front of the lens or not.
     if (_vignette_on) {
@@ -623,15 +547,12 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::make_mesh_node
-//       Access: Private
-//  Description: Recurses over all geometry at the indicated node and
-//               below, and generates a corresponding node hierarchy
-//               with all the geometry copied, but flattened into 2-d,
-//               as seen from the indicated camera.  Returns the newly
-//               created node, or NULL if no node was created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recurses over all geometry at the indicated node and below, and generates a
+ * corresponding node hierarchy with all the geometry copied, but flattened into
+ * 2-d, as seen from the indicated camera.  Returns the newly created node, or
+ * NULL if no node was created.
+ */
 PandaNode *ProjectionScreen::
 make_mesh_node(PandaNode *result_parent, const WorkingNodePath &np,
                const NodePath &camera,
@@ -657,12 +578,10 @@ make_mesh_node(PandaNode *result_parent, const WorkingNodePath &np,
   return new_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::make_mesh_children
-//       Access: Private
-//  Description: Walks over the list of children for the indicated
-//               node, calling make_mesh_node() on each one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks over the list of children for the indicated node, calling
+ * make_mesh_node() on each one.
+ */
 void ProjectionScreen::
 make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
                    const NodePath &camera,
@@ -697,13 +616,10 @@ make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::make_mesh_geom_node
-//       Access: Private
-//  Description: Makes a new GeomNode, just like the given one, except
-//               flattened into two dimensions as seen by the
-//               indicated camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new GeomNode, just like the given one, except flattened into two
+ * dimensions as seen by the indicated camera.
+ */
 PT(GeomNode) ProjectionScreen::
 make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
                     LMatrix4 &rel_mat, bool &computed_rel_mat) {
@@ -721,7 +637,7 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
   int num_geoms = node->get_num_geoms();
   for (int i = 0; i < num_geoms; i++) {
     const Geom *geom = node->get_geom(i);
-    PT(Geom) new_geom = 
+    PT(Geom) new_geom =
       make_mesh_geom(geom, lens_node->get_lens(), rel_mat);
     if (new_geom != (Geom *)NULL) {
       new_node->add_geom(new_geom, node->get_geom_state(i));
@@ -731,20 +647,17 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
   return new_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::make_mesh_geom
-//       Access: Private
-//  Description: Makes a new Geom, just like the given one, except
-//               flattened into two dimensions as seen by the
-//               indicated lens.  Any triangle in the original mesh
-//               that involves an unprojectable vertex is eliminated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new Geom, just like the given one, except flattened into two
+ * dimensions as seen by the indicated lens.  Any triangle in the original mesh
+ * that involves an unprojectable vertex is eliminated.
+ */
 PT(Geom) ProjectionScreen::
 make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
   static const LMatrix4 lens_to_uv
     (0.5f, 0.0f, 0.0f, 0.0f,
-     0.0f, 0.5f, 0.0f, 0.0f, 
-     0.0f, 0.0f, 1.0f, 0.0f, 
+     0.0f, 0.5f, 0.0f, 0.0f,
+     0.0f, 0.0f, 1.0f, 0.0f,
      0.5f, 0.5f, 0.0f, 1.0f);
   static const LMatrix4 uv_to_lens = invert(lens_to_uv);
 
@@ -756,7 +669,7 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
   GeomVertexRewriter vertex(vdata, InternalName::get_vertex());
   while (!vertex.is_at_end()) {
     LVertex vert = vertex.get_data3();
-    
+
     // Project each vertex into the film plane, but use three
     // dimensions so the Z coordinate remains meaningful.
     LPoint3 vert3d = vert * rel_mat;
@@ -764,11 +677,11 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
     bool good = lens->project(vert3d, film);
 
     if (good && _has_undist_lut) {
-    
+
       // Now the lens gives us coordinates in the range [-1, 1].
       // Rescale these to [0, 1].
       LPoint3 uvw = film * lens_to_uv;
-      
+
       LPoint3f p;
       if (!_undist_lut.calc_bilinear_point(p, uvw[0], 1.0 - uvw[1])) {
         // Point is missing.
@@ -783,7 +696,7 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
     }
 
     vertex.set_data3(film);
-  }      
-  
+  }
+
   return new_geom;
 }

@@ -1,16 +1,15 @@
-// Filename: lvecBase4_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvecBase4_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
 class FLOATNAME(LVecBase2);
 class FLOATNAME(LVecBase3);
@@ -18,11 +17,9 @@ class FLOATNAME(LPoint3);
 class FLOATNAME(LVector3);
 class FLOATNAME(UnalignedLVecBase4);
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVecBase4
-// Description : This is the base class for all three-component
-//               vectors and points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all three-component vectors and points.
+ */
 class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;
@@ -206,18 +203,13 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : UnalignedLVecBase4
-// Description : This is an "unaligned" LVecBase4.  It has no
-//               functionality other than to store numbers, and it
-//               will pack them in as tightly as possible, avoiding
-//               any SSE2 alignment requirements shared by the primary
-//               LVecBase4 class.
-//
-//               Use it only when you need to pack numbers tightly
-//               without respect to alignment, and then copy it to a
-//               proper LVecBase4 to get actual use from it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an "unaligned" LVecBase4.  It has no functionality other than to
+ * store numbers, and it will pack them in as tightly as possible, avoiding any
+ * SSE2 alignment requirements shared by the primary LVecBase4 class.  Use it
+ * only when you need to pack numbers tightly without respect to alignment, and
+ * then copy it to a proper LVecBase4 to get actual use from it.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLVecBase4) {
 PUBLISHED:
   enum {

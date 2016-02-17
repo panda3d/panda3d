@@ -1,16 +1,15 @@
-// Filename: dcast.h
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcast.h
+ * @author drose
+ * @date 2001-08-06
+ */
 
 #ifndef DCAST_H
 #define DCAST_H
@@ -68,7 +67,7 @@ INLINE const WantType *_dcast_ref(WantType *&, const TypedObject *ptr);
 #ifdef DO_DCAST
 // _dcast_verify performs the actual verification.
 EXPCL_PANDAEXPRESS bool
-_dcast_verify(TypeHandle want_handle, size_t want_size, 
+_dcast_verify(TypeHandle want_handle, size_t want_size,
               const TypedObject *ptr);
 #endif  // DO_DCAST
 

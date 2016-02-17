@@ -1,16 +1,15 @@
-// Filename: windowHandle.h
-// Created by:  drose (30Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file windowHandle.h
+ * @author drose
+ * @date 2009-09-30
+ */
 
 #ifndef WINDOWHANDLE_H
 #define WINDOWHANDLE_H
@@ -20,23 +19,15 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WindowHandle
-// Description : This object represents a window on the desktop, not
-//               necessarily a Panda window.  This structure can be
-//               assigned to a WindowProperties to indicate a parent
-//               window.
-//
-//               It also has callbacks so the Panda window can
-//               communicate with its parent window, which is
-//               particularly important when running embedded in a
-//               browser.
-//
-//               To create a WindowHandle, you would usually call one
-//               of the NativeWindowHandle::make_*() methods,
-//               depending on the kind of native window handle object
-//               you already have.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object represents a window on the desktop, not necessarily a Panda
+ * window.  This structure can be assigned to a WindowProperties to indicate a
+ * parent window.  It also has callbacks so the Panda window can communicate
+ * with its parent window, which is particularly important when running embedded
+ * in a browser.  To create a WindowHandle, you would usually call one of the
+ * NativeWindowHandle::make_*() methods, depending on the kind of native window
+ * handle object you already have.
+ */
 class EXPCL_PANDA_DISPLAY WindowHandle : public TypedReferenceCount {
 PUBLISHED:
   class OSHandle;
@@ -89,7 +80,7 @@ PUBLISHED:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };

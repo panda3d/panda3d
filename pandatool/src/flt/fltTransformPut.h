@@ -1,16 +1,15 @@
-// Filename: fltTransformPut.h
-// Created by:  drose (29Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTransformPut.h
+ * @author drose
+ * @date 2000-08-29
+ */
 
 #ifndef FLTTRANSFORMPUT_H
 #define FLTTRANSFORMPUT_H
@@ -19,12 +18,10 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformPut
-// Description : A "put", which is a MultiGen concept of defining a
-//               transformation by mapping three arbitrary points to
-//               three new arbitrary points.
-////////////////////////////////////////////////////////////////////
+/**
+ * A "put", which is a MultiGen concept of defining a transformation by mapping
+ * three arbitrary points to three new arbitrary points.
+ */
 class FltTransformPut : public FltTransformRecord {
 public:
   FltTransformPut(FltHeader *header);
@@ -76,5 +73,3 @@ private:
 };
 
 #endif
-
-

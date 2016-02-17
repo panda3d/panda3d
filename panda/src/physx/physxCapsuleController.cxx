@@ -1,26 +1,23 @@
-// Filename: physxCapsuleController.cxx
-// Created by:  enn0x (24Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxCapsuleController.cxx
+ * @author enn0x
+ * @date 2009-09-24
+ */
 
 #include "physxCapsuleController.h"
 
 TypeHandle PhysxCapsuleController::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleController::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxCapsuleController::
 link(NxController *controllerPtr) {
 
@@ -39,11 +36,9 @@ link(NxController *controllerPtr) {
   actor->link_controller(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleController::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxCapsuleController::
 unlink() {
 
@@ -58,11 +53,9 @@ unlink() {
   scene->_controllers.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleController::set_radius
-//       Access: Published
-//  Description: Resets the controller's radius.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the controller's radius.
+ */
 void PhysxCapsuleController::
 set_radius(float radius) {
 
@@ -70,11 +63,9 @@ set_radius(float radius) {
   _ptr->setRadius(radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleController::set_height
-//       Access: Published
-//  Description: Resets the controller's height.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the controller's height.
+ */
 void PhysxCapsuleController::
 set_height(float height) {
 
@@ -82,11 +73,9 @@ set_height(float height) {
   _ptr->setHeight(height);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleController::get_radius
-//       Access: Published
-//  Description: Returns the controller's radius.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the controller's radius.
+ */
 float PhysxCapsuleController::
 get_radius() const {
 
@@ -94,15 +83,12 @@ get_radius() const {
   return _ptr->getRadius();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleController::get_height
-//       Access: Published
-//  Description: Returns the controller's height.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the controller's height.
+ */
 float PhysxCapsuleController::
 get_height() const {
 
   nassertr(_error_type == ET_ok, 0.0f);
   return _ptr->getHeight();
 }
-

@@ -1,16 +1,15 @@
-// Filename: eggXfmAnimData.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggXfmAnimData.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef EGGXFMANIMDATA_H
 #define EGGXFMANIMDATA_H
@@ -21,14 +20,12 @@
 #include "eggXfmSAnim.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggXfmAnimData
-// Description : Corresponding to an <Xfm$Anim> entry, this stores a
-//               two-dimensional table with up to nine columns, one
-//               for each component of a transformation.  This is an
-//               older syntax of egg anim table, not often used
-//               currently--it's replaced by EggXfmSAnim.
-////////////////////////////////////////////////////////////////////
+/**
+ * Corresponding to an <Xfm$Anim> entry, this stores a two-dimensional table
+ * with up to nine columns, one for each component of a transformation.  This is
+ * an older syntax of egg anim table, not often used currently--it's replaced by
+ * EggXfmSAnim.
+ */
 class EXPCL_PANDAEGG EggXfmAnimData : public EggAnimData {
 PUBLISHED:
   INLINE EggXfmAnimData(const string &name = "",
@@ -92,4 +89,3 @@ private:
 #include "eggXfmAnimData.I"
 
 #endif
-

@@ -1,21 +1,19 @@
-// Filename: lvector4_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvector4_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVector4
-// Description : This is a four-component vector distance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a four-component vector distance.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4)() DEFAULT_CTOR;

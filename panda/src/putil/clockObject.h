@@ -1,16 +1,15 @@
-// Filename: clockObject.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clockObject.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef CLOCKOBJECT_H
 #define CLOCKOBJECT_H
@@ -37,32 +36,21 @@ PUBLISHED:
   ulong tv[2];
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClockObject
-// Description : A ClockObject keeps track of elapsed real time and
-//               discrete time.  In normal mode, get_frame_time()
-//               returns the time as of the last time tick() was
-//               called.  This is the "discrete" time, and is usually
-//               used to get the time as of, for instance, the
-//               beginning of the current frame.
-//
-//               In other modes, as set by set_mode() or the
-//               clock-mode config variable, get_frame_time() may
-//               return other values to simulate different timing
-//               effects, for instance to perform non-real-time
-//               animation.  See set_mode().
-//
-//               In all modes, get_real_time() always returns the
-//               elapsed real time in seconds since the ClockObject
-//               was constructed, or since it was last reset.
-//
-//               You can create your own ClockObject whenever you want
-//               to have your own local timer.  There is also a
-//               default, global ClockObject intended to represent
-//               global time for the application; this is normally set
-//               up to tick every frame so that its get_frame_time()
-//               will return the time for the current frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ClockObject keeps track of elapsed real time and discrete time.  In normal
+ * mode, get_frame_time() returns the time as of the last time tick() was
+ * called.  This is the "discrete" time, and is usually used to get the time as
+ * of, for instance, the beginning of the current frame.  In other modes, as set
+ * by set_mode() or the clock-mode config variable, get_frame_time() may return
+ * other values to simulate different timing effects, for instance to perform
+ * non-real-time animation.  See set_mode().  In all modes, get_real_time()
+ * always returns the elapsed real time in seconds since the ClockObject was
+ * constructed, or since it was last reset.  You can create your own ClockObject
+ * whenever you want to have your own local timer.  There is also a default,
+ * global ClockObject intended to represent global time for the application;
+ * this is normally set up to tick every frame so that its get_frame_time() will
+ * return the time for the current frame.
+ */
 class EXPCL_PANDA_PUTIL ClockObject : public ReferenceCount {
 PUBLISHED:
   enum Mode {
@@ -205,4 +193,3 @@ operator >> (istream &in, ClockObject::Mode &mode);
 #include "clockObject.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: geometricBoundingVolume.h
-// Created by:  drose (07Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geometricBoundingVolume.h
+ * @author drose
+ * @date 1999-10-07
+ */
 
 #ifndef GEOMETRICBOUNDINGVOLUME_H
 #define GEOMETRICBOUNDINGVOLUME_H
@@ -22,12 +21,10 @@
 #include "luse.h"
 #include "lmatrix.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeometricBoundingVolume
-// Description : This is another abstract class, for a general class
-//               of bounding volumes that actually enclose points in
-//               3-d space, such as BSP's and bounding spheres.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is another abstract class, for a general class of bounding volumes that
+ * actually enclose points in 3-d space, such as BSP's and bounding spheres.
+ */
 class EXPCL_PANDA_MATHUTIL GeometricBoundingVolume : public BoundingVolume {
 public:
   INLINE_MATHUTIL GeometricBoundingVolume();

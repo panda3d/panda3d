@@ -1,26 +1,23 @@
-// Filename: dcSwitchParameter.cxx
-// Created by:  drose (18Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcSwitchParameter.cxx
+ * @author drose
+ * @date 2004-06-18
+ */
 
 #include "dcSwitchParameter.h"
 #include "dcSwitch.h"
 #include "hashGenerator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitchParameter::
 DCSwitchParameter(const DCSwitch *dswitch) :
   _dswitch(dswitch)
@@ -51,12 +48,12 @@ DCSwitchParameter(const DCSwitch *dswitch) :
 
     // Consider each case for fixed size, etc.
     for (int i = 0; i < num_cases; i++) {
-      const DCSwitch::SwitchFields *fields = 
+      const DCSwitch::SwitchFields *fields =
         (const DCSwitch::SwitchFields *)_dswitch->get_case(i);
-                                     
-      if (!fields->has_fixed_byte_size() || 
+
+      if (!fields->has_fixed_byte_size() ||
           fields->get_fixed_byte_size() != _fixed_byte_size) {
-        
+
         // Nope, we have a variable byte size.
         _has_fixed_byte_size = false;
       }
@@ -67,24 +64,22 @@ DCSwitchParameter(const DCSwitch *dswitch) :
   }
 
   // Also consider the default case, if there is one.
-  const DCSwitch::SwitchFields *fields = 
+  const DCSwitch::SwitchFields *fields =
     (DCSwitch::SwitchFields *)_dswitch->get_default_case();
   if (fields != (DCSwitch::SwitchFields *)NULL) {
-    if (!fields->has_fixed_byte_size() || 
+    if (!fields->has_fixed_byte_size() ||
         fields->get_fixed_byte_size() != _fixed_byte_size) {
       _has_fixed_byte_size = false;
     }
-    
+
     _has_range_limits = _has_range_limits || fields->has_range_limits();
     _has_default_value = _has_default_value || fields->_has_default_value;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitchParameter::
 DCSwitchParameter(const DCSwitchParameter &copy) :
   DCParameter(copy),
@@ -92,92 +87,72 @@ DCSwitchParameter(const DCSwitchParameter &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::as_switch_parameter
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitchParameter *DCSwitchParameter::
 as_switch_parameter() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::as_switch_parameter
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const DCSwitchParameter *DCSwitchParameter::
 as_switch_parameter() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::make_copy
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCParameter *DCSwitchParameter::
 make_copy() const {
   return new DCSwitchParameter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::is_valid
-//       Access: Published, Virtual
-//  Description: Returns false if the type is an invalid type
-//               (e.g. declared from an undefined typedef), true if
-//               it is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns false if the type is an invalid type (e.g.  declared from an
+ * undefined typedef), true if it is valid.
+ */
 bool DCSwitchParameter::
 is_valid() const {
   return true; //_dswitch->is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::get_switch
-//       Access: Published
-//  Description: Returns the switch object this parameter represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the switch object this parameter represents.
+ */
 const DCSwitch *DCSwitchParameter::
 get_switch() const {
   return _dswitch;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::get_nested_field
-//       Access: Public, Virtual
-//  Description: Returns the DCPackerInterface object that represents
-//               the nth nested field.  This may return NULL if there
-//               is no such field (but it shouldn't do this if n is in
-//               the range 0 <= n < get_num_nested_fields()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface object that represents the nth nested field.
+ * This may return NULL if there is no such field (but it shouldn't do this if n
+ * is in the range 0 <= n < get_num_nested_fields()).
+ */
 DCPackerInterface *DCSwitchParameter::
 get_nested_field(int) const {
   return _dswitch->get_key_parameter();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::apply_switch
-//       Access: Public
-//  Description: Returns the DCPackerInterface that presents the
-//               alternative fields for the case indicated by the
-//               given packed value string, or NULL if the value
-//               string does not match one of the expected cases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface that presents the alternative fields for the
+ * case indicated by the given packed value string, or NULL if the value string
+ * does not match one of the expected cases.
+ */
 const DCPackerInterface *DCSwitchParameter::
 apply_switch(const char *value_data, size_t length) const {
   return _dswitch->apply_switch(value_data, length);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::output_instance
-//       Access: Public, Virtual
-//  Description: Formats the parameter in the C++-like dc syntax as a
-//               typename and identifier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the parameter in the C++-like dc syntax as a typename and identifier.
+ */
 void DCSwitchParameter::
-output_instance(ostream &out, bool brief, const string &prename, 
+output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
     output_typedef_name(out, brief, prename, name, postname);
@@ -187,15 +162,12 @@ output_instance(ostream &out, bool brief, const string &prename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::write_instance
-//       Access: Public, Virtual
-//  Description: Formats the parameter in the C++-like dc syntax as a
-//               typename and identifier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the parameter in the C++-like dc syntax as a typename and identifier.
+ */
 void DCSwitchParameter::
 write_instance(ostream &out, bool brief, int indent_level,
-               const string &prename, const string &name, 
+               const string &prename, const string &name,
                const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
     write_typedef_name(out, brief, indent_level, prename, name, postname);
@@ -205,27 +177,21 @@ write_instance(ostream &out, bool brief, int indent_level,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::generate_hash
-//       Access: Public, Virtual
-//  Description: Accumulates the properties of this type into the
-//               hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accumulates the properties of this type into the hash.
+ */
 void DCSwitchParameter::
 generate_hash(HashGenerator &hashgen) const {
   DCParameter::generate_hash(hashgen);
   _dswitch->generate_hash(hashgen);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::pack_default_value
-//       Access: Public, Virtual
-//  Description: Packs the switchParameter's specified default value (or a
-//               sensible default if no value is specified) into the
-//               stream.  Returns true if the default value is packed,
-//               false if the switchParameter doesn't know how to pack its
-//               default value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the switchParameter's specified default value (or a sensible default if
+ * no value is specified) into the stream.  Returns true if the default value is
+ * packed, false if the switchParameter doesn't know how to pack its default
+ * value.
+ */
 bool DCSwitchParameter::
 pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   if (has_default_value()) {
@@ -235,25 +201,20 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   return _dswitch->pack_default_value(pack_data, pack_error);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::do_check_match
-//       Access: Protected, Virtual
-//  Description: Returns true if the other interface is bitwise the
-//               same as this one--that is, a uint32 only matches a
-//               uint32, etc. Names of components, and range limits,
-//               are not compared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the other interface is bitwise the same as this one--that is,
+ * a uint32 only matches a uint32, etc.  Names of components, and range limits,
+ * are not compared.
+ */
 bool DCSwitchParameter::
 do_check_match(const DCPackerInterface *other) const {
   return other->do_check_match_switch_parameter(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitchParameter::do_check_match_switch_parameter
-//       Access: Protected, Virtual
-//  Description: Returns true if this field matches the indicated
-//               switch parameter, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this field matches the indicated switch parameter, false
+ * otherwise.
+ */
 bool DCSwitchParameter::
 do_check_match_switch_parameter(const DCSwitchParameter *other) const {
   return _dswitch->do_check_match_switch(other->_dswitch);

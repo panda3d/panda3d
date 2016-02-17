@@ -1,26 +1,23 @@
-// Filename: deletedBufferChain.cxx
-// Created by:  drose (20Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file deletedBufferChain.cxx
+ * @author drose
+ * @date 2007-07-20
+ */
 
 #include "deletedBufferChain.h"
 #include "memoryHook.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::Constructor
-//       Access: Protected
-//  Description: Use the global MemoryHook to get a new
-//               DeletedBufferChain of the appropriate size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use the global MemoryHook to get a new DeletedBufferChain of the appropriate
+ * size.
+ */
 DeletedBufferChain::
 DeletedBufferChain(size_t buffer_size) {
   _deleted_chain = NULL;
@@ -31,13 +28,10 @@ DeletedBufferChain(size_t buffer_size) {
   _buffer_size = max(_buffer_size, sizeof(ObjectNode));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::allocate
-//       Access: Public
-//  Description: Allocates the memory for a new buffer of the
-//               indicated size (which must be no greater than the
-//               fixed size associated with the DeletedBufferChain).
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates the memory for a new buffer of the indicated size (which must be no
+ * greater than the fixed size associated with the DeletedBufferChain).
+ */
 void *DeletedBufferChain::
 allocate(size_t size, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
@@ -93,12 +87,9 @@ allocate(size_t size, TypeHandle type_handle) {
 #endif  // USE_DELETED_CHAIN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::deallocate
-//       Access: Public
-//  Description: Frees the memory for a buffer previously allocated
-//               via allocate().
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the memory for a buffer previously allocated via allocate().
+ */
 void DeletedBufferChain::
 deallocate(void *ptr, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN

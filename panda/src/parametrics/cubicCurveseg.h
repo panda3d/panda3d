@@ -1,16 +1,15 @@
-// Filename: cubicCurveseg.h
-// Created by:  drose (04Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cubicCurveseg.h
+ * @author drose
+ * @date 2001-03-04
+ */
 
 #ifndef CUBICCURVESEG_H
 #define CUBICCURVESEG_H
@@ -31,30 +30,21 @@
 #define RT_KEEP_ORIG  0x100
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : CubicCurveseg
-// Description : A CubicCurveseg is any curve that can be completely
-//               described by four 4-valued basis vectors, one for
-//               each dimension in three-space, and one for the
-//               homogeneous coordinate.  This includes Beziers,
-//               Hermites, and NURBS.
-//
-//               This class encapsulates a single curve segment of the
-//               cubic curve.  Normally, when we think of Bezier and
-//               Hermite curves, we think of a piecewise collection of
-//               such segments.
-//
-//               Although this class includes methods such as
-//               hermite_basis() and nurbs_basis(), to generate a
-//               Hermite and NURBS curve segment, respectively, only
-//               the final basis vectors are stored: the product of
-//               the basis matrix of the corresponding curve type, and
-//               its geometry vectors.  This is the minimum
-//               information needed to evaluate the curve.  However,
-//               the individual CV's that were used to compute these
-//               basis vectors are not retained; this might be handled
-//               in a subclass (for instance, HermiteCurve).
-////////////////////////////////////////////////////////////////////
+/**
+ * A CubicCurveseg is any curve that can be completely described by four
+ * 4-valued basis vectors, one for each dimension in three-space, and one for
+ * the homogeneous coordinate.  This includes Beziers, Hermites, and NURBS.
+ * This class encapsulates a single curve segment of the cubic curve.  Normally,
+ * when we think of Bezier and Hermite curves, we think of a piecewise
+ * collection of such segments.  Although this class includes methods such as
+ * hermite_basis() and nurbs_basis(), to generate a Hermite and NURBS curve
+ * segment, respectively, only the final basis vectors are stored: the product
+ * of the basis matrix of the corresponding curve type, and its geometry
+ * vectors.  This is the minimum information needed to evaluate the curve.
+ * However, the individual CV's that were used to compute these basis vectors
+ * are not retained; this might be handled in a subclass (for instance,
+ * HermiteCurve).
+ */
 class EXPCL_PANDA_PARAMETRICS CubicCurveseg : public ParametricCurve {
 PUBLISHED:
   virtual bool get_point(PN_stdfloat t, LVecBase3 &point) const;

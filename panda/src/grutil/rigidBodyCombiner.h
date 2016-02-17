@@ -1,16 +1,15 @@
-// Filename: rigidBodyCombiner.h
-// Created by:  drose (22Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rigidBodyCombiner.h
+ * @author drose
+ * @date 2007-02-22
+ */
 
 #ifndef RIGIDBODYCOMBINER_H
 #define RIGIDBODYCOMBINER_H
@@ -23,32 +22,20 @@
 
 class NodePath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RigidBodyCombiner
-// Description : This is a special node that combines multiple
-//               independently-moving rigid nodes into one Geom
-//               internally (or as few Geoms as possible), for the
-//               purposes of improving rendering performance.
-//
-//               To use it, parent a number of moving objects to this
-//               node and call collect().  A child node is identified
-//               as "moving" if (a) it has a non-identity transform
-//               initially, or (b) it is a ModelNode with the
-//               preserve_transform flag set.  Any other nodes will be
-//               considered static, and later transforms applied to
-//               them will not be identified.
-//
-//               You should call collect() only at startup or if you
-//               change the set of children; it is a relatively
-//               expensive call.
-//
-//               Once you call collect(), you may change the
-//               transforms on the child nodes freely without having
-//               to call collect() again.
-//
-//               RenderEffects such as Billboards are not supported
-//               below this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special node that combines multiple independently-moving rigid
+ * nodes into one Geom internally (or as few Geoms as possible), for the
+ * purposes of improving rendering performance.  To use it, parent a number of
+ * moving objects to this node and call collect().  A child node is identified
+ * as "moving" if (a) it has a non-identity transform initially, or (b) it is a
+ * ModelNode with the preserve_transform flag set.  Any other nodes will be
+ * considered static, and later transforms applied to them will not be
+ * identified.  You should call collect() only at startup or if you change the
+ * set of children; it is a relatively expensive call.  Once you call collect(),
+ * you may change the transforms on the child nodes freely without having to
+ * call collect() again.  RenderEffects such as Billboards are not supported
+ * below this node.
+ */
 class EXPCL_PANDA_GRUTIL RigidBodyCombiner : public PandaNode {
 PUBLISHED:
   RigidBodyCombiner(const string &name);
@@ -67,9 +54,9 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 private:
-  void r_collect(PandaNode *node, const RenderState *state, 
+  void r_collect(PandaNode *node, const RenderState *state,
                  const VertexTransform *transform);
-  PT(GeomVertexData) convert_vd(const VertexTransform *transform, 
+  PT(GeomVertexData) convert_vd(const VertexTransform *transform,
                                 const GeomVertexData *orig);
 
   PT(PandaNode) _internal_root;
@@ -79,7 +66,7 @@ private:
 
   class VDUnifier {
   public:
-    INLINE VDUnifier(const VertexTransform *transform, 
+    INLINE VDUnifier(const VertexTransform *transform,
                      const GeomVertexData *orig);
     INLINE bool operator < (const VDUnifier &other) const;
 

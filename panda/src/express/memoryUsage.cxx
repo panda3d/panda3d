@@ -1,16 +1,15 @@
-// Filename: memoryUsage.cxx
-// Created by:  drose (25May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memoryUsage.cxx
+ * @author drose
+ * @date 2000-05-25
+ */
 
 #include "memoryUsage.h"
 
@@ -47,11 +46,9 @@ double MemoryUsage::AgeHistogram::_cutoff[MemoryUsage::AgeHistogram::num_buckets
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::TypeHistogram::add_info
-//       Access: Public
-//  Description: Adds a single entry to the histogram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single entry to the histogram.
+ */
 void MemoryUsage::TypeHistogram::
 add_info(TypeHandle type, MemoryInfo *info) {
   _counts[type].add_info(info);
@@ -62,7 +59,7 @@ add_info(TypeHandle type, MemoryInfo *info) {
 // below, to sort the types in descending order by counts.
 class TypeHistogramCountSorter {
 public:
-  TypeHistogramCountSorter(const MemoryUsagePointerCounts &count, 
+  TypeHistogramCountSorter(const MemoryUsagePointerCounts &count,
                            TypeHandle type) :
     _count(count),
     _type(type)
@@ -75,11 +72,9 @@ public:
   TypeHandle _type;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::TypeHistogram::show
-//       Access: Public
-//  Description: Shows the contents of the histogram to nout.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows the contents of the histogram to nout.
+ */
 void MemoryUsage::TypeHistogram::
 show() const {
   // First, copy the relevant information to a vector so we can sort
@@ -106,31 +101,25 @@ show() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::TypeHistogram::clear
-//       Access: Public
-//  Description: Resets the histogram in preparation for new data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the histogram in preparation for new data.
+ */
 void MemoryUsage::TypeHistogram::
 clear() {
   _counts.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::AgeHistogram::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MemoryUsage::AgeHistogram::
 AgeHistogram() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::AgeHistogram::add_info
-//       Access: Public
-//  Description: Adds a single entry to the histogram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single entry to the histogram.
+ */
 void MemoryUsage::AgeHistogram::
 add_info(double age, MemoryInfo *info) {
   int bucket = choose_bucket(age);
@@ -138,11 +127,9 @@ add_info(double age, MemoryInfo *info) {
   _counts[bucket].add_info(info);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::AgeHistogram::show
-//       Access: Public
-//  Description: Shows the contents of the histogram to nout.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows the contents of the histogram to nout.
+ */
 void MemoryUsage::AgeHistogram::
 show() const {
   for (int i = 0; i < num_buckets - 1; i++) {
@@ -155,11 +142,9 @@ show() const {
   nout << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::AgeHistogram::clear
-//       Access: Public
-//  Description: Resets the histogram in preparation for new data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the histogram in preparation for new data.
+ */
 void MemoryUsage::AgeHistogram::
 clear() {
   for (int i = 0; i < num_buckets; i++) {
@@ -167,11 +152,9 @@ clear() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::AgeHistogram::choose_bucket
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int MemoryUsage::AgeHistogram::
 choose_bucket(double age) const {
   for (int i = num_buckets - 1; i >= 0; i--) {
@@ -184,13 +167,10 @@ choose_bucket(double age) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::heap_alloc_single
-//       Access: Public, Virtual
-//  Description: Allocates a block of memory from the heap, similar to
-//               malloc().  This will never return NULL; it will abort
-//               instead if memory is not available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a block of memory from the heap, similar to malloc().  This will
+ * never return NULL; it will abort instead if memory is not available.
+ */
 void *MemoryUsage::
 heap_alloc_single(size_t size) {
   void *ptr;
@@ -224,12 +204,9 @@ heap_alloc_single(size_t size) {
   return ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::heap_free_single
-//       Access: Public, Virtual
-//  Description: Releases a block of memory previously allocated via
-//               heap_alloc_single.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases a block of memory previously allocated via heap_alloc_single.
+ */
 void MemoryUsage::
 heap_free_single(void *ptr) {
   if (_recursion_protect) {
@@ -256,13 +233,10 @@ heap_free_single(void *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::heap_alloc_array
-//       Access: Public, Virtual
-//  Description: Allocates a block of memory from the heap, similar to
-//               malloc().  This will never return NULL; it will abort
-//               instead if memory is not available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a block of memory from the heap, similar to malloc().  This will
+ * never return NULL; it will abort instead if memory is not available.
+ */
 void *MemoryUsage::
 heap_alloc_array(size_t size) {
   void *ptr;
@@ -296,12 +270,9 @@ heap_alloc_array(size_t size) {
   return ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::heap_realloc_array
-//       Access: Public, Virtual
-//  Description: Resizes a block of memory previously returned from
-//               heap_alloc_array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes a block of memory previously returned from heap_alloc_array.
+ */
 void *MemoryUsage::
 heap_realloc_array(void *ptr, size_t size) {
   if (_recursion_protect) {
@@ -334,12 +305,9 @@ heap_realloc_array(void *ptr, size_t size) {
   return ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::heap_free_array
-//       Access: Public, Virtual
-//  Description: Releases a block of memory previously allocated via
-//               heap_alloc_array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases a block of memory previously allocated via heap_alloc_array.
+ */
 void MemoryUsage::
 heap_free_array(void *ptr) {
   if (_recursion_protect) {
@@ -366,17 +334,13 @@ heap_free_array(void *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::mark_pointer
-//       Access: Public, Virtual
-//  Description: This special method exists only to provide a callback
-//               hook into MemoryUsage.  It indicates that the
-//               indicated pointer, allocated from somewhere other
-//               than a call to heap_alloc(), now contains a pointer
-//               to the indicated ReferenceCount object.  If orig_size
-//               is 0, it indicates that the ReferenceCount object has
-//               been destroyed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special method exists only to provide a callback hook into MemoryUsage.
+ * It indicates that the indicated pointer, allocated from somewhere other than
+ * a call to heap_alloc(), now contains a pointer to the indicated
+ * ReferenceCount object.  If orig_size is 0, it indicates that the
+ * ReferenceCount object has been destroyed.
+ */
 void MemoryUsage::
 mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
   if (_recursion_protect || !_track_memory_usage) {
@@ -385,7 +349,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
 
   if (express_cat.is_spam()) {
     express_cat.spam()
-      << "Marking pointer " << ptr << ", size " << size 
+      << "Marking pointer " << ptr << ", size " << size
       << ", ref_ptr = " << ref_ptr << "\n";
   }
 
@@ -407,10 +371,10 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
       info->_static_type = ReferenceCount::get_class_type();
       info->_dynamic_type = ReferenceCount::get_class_type();
       info->_flags |= MemoryInfo::F_reconsider_dynamic_type;
-      
+
       if (ref_ptr != ptr) {
         _recursion_protect = true;
-        
+
         pair<Table::iterator, bool> insert_result =
           _table.insert(Table::value_type((void *)ref_ptr, info));
         assert(insert_result.first != _table.end());
@@ -419,7 +383,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
             << "Attempt to mark pointer " << ptr << " as ReferenceCount "
             << ref_ptr << ", which was already allocated.\n";
         }
-        
+
         _recursion_protect = false;
       }
     }
@@ -431,17 +395,14 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
 }
 
 #if (defined(WIN32_VC) || defined (WIN64_VC))&& defined(_DEBUG)
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::win32_malloc_hook
-//       Access: Public, Static
-//  Description: This callback is attached to the Win32 debug malloc
-//               system to be called whenever a pointer is allocated,
-//               reallocated, or freed.  It's used to track the total
-//               memory allocated via calls to malloc().
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback is attached to the Win32 debug malloc system to be called
+ * whenever a pointer is allocated, reallocated, or freed.  It's used to track
+ * the total memory allocated via calls to malloc().
+ */
 int MemoryUsage::
-win32_malloc_hook(int alloc_type, void *ptr, 
-                  size_t size, int block_use, long request, 
+win32_malloc_hook(int alloc_type, void *ptr,
+                  size_t size, int block_use, long request,
                   const unsigned char *filename, int line) {
   MemoryUsage *mu = get_global_ptr();
   int increment = 0;
@@ -449,16 +410,16 @@ win32_malloc_hook(int alloc_type, void *ptr,
   case _HOOK_ALLOC:
     increment = size;
     break;
-    
+
   case _HOOK_REALLOC:
     increment = size - _msize(ptr);
     break;
-    
+
   case _HOOK_FREE:
     increment = - ((int)_msize(ptr));
     break;
   }
-  
+
   mu->_total_size += increment;
   return true;
 }
@@ -466,11 +427,9 @@ win32_malloc_hook(int alloc_type, void *ptr,
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MemoryUsage::
 MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
   // We must get these variables here instead of in
@@ -534,15 +493,12 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
   _total_size = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::overflow_heap_size
-//       Access: Protected, Virtual
-//  Description: This callback method is called whenever the total
-//               allocated heap size exceeds _max_heap_size.  It's
-//               mainly intended for reporting memory leaks, on the
-//               assumption that once we cross some specified
-//               threshold, we're just leaking memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback method is called whenever the total allocated heap size exceeds
+ * _max_heap_size.  It's mainly intended for reporting memory leaks, on the
+ * assumption that once we cross some specified threshold, we're just leaking
+ * memory.
+ */
 void MemoryUsage::
 overflow_heap_size() {
   MemoryHook::overflow_heap_size();
@@ -564,12 +520,9 @@ overflow_heap_size() {
   _report_memory_usage = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_record_pointer
-//       Access: Private
-//  Description: Indicates that the given pointer has been recently
-//               allocated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the given pointer has been recently allocated.
+ */
 void MemoryUsage::
 ns_record_pointer(ReferenceCount *ptr) {
   if (_track_memory_usage) {
@@ -578,7 +531,7 @@ ns_record_pointer(ReferenceCount *ptr) {
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, (MemoryInfo *)NULL));
-    
+
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
 
@@ -618,15 +571,12 @@ ns_record_pointer(ReferenceCount *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_update_type
-//       Access: Private
-//  Description: Associates the indicated type with the given pointer.
-//               This should be called by functions (e.g. the
-//               constructor) that know more specifically what type of
-//               thing we've got; otherwise, the MemoryUsage database
-//               will know only that it's a "ReferenceCount".
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the indicated type with the given pointer.  This should be called
+ * by functions (e.g.  the constructor) that know more specifically what type of
+ * thing we've got; otherwise, the MemoryUsage database will know only that it's
+ * a "ReferenceCount".
+ */
 void MemoryUsage::
 ns_update_type(ReferenceCount *ptr, TypeHandle type) {
   if (_track_memory_usage) {
@@ -651,16 +601,12 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_update_type
-//       Access: Private
-//  Description: Associates the indicated type with the given pointer.
-//               This flavor of update_type() also passes in the
-//               pointer as a TypedObject, and useful for objects that
-//               are, in fact, TypedObjects.  Once the MemoryUsage
-//               database has the pointer as a TypedObject it doesn't
-//               need any more help.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the indicated type with the given pointer.  This flavor of
+ * update_type() also passes in the pointer as a TypedObject, and useful for
+ * objects that are, in fact, TypedObjects.  Once the MemoryUsage database has
+ * the pointer as a TypedObject it doesn't need any more help.
+ */
 void MemoryUsage::
 ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
   if (_track_memory_usage) {
@@ -684,12 +630,9 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_remove_pointer
-//       Access: Private
-//  Description: Indicates that the given pointer has been recently
-//               freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the given pointer has been recently freed.
+ */
 void MemoryUsage::
 ns_remove_pointer(ReferenceCount *ptr) {
   if (_track_memory_usage) {
@@ -758,13 +701,10 @@ ns_remove_pointer(ReferenceCount *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_record_void_pointer
-//       Access: Private
-//  Description: Records a pointer that's not even necessarily a
-//               ReferenceCount object (but for which we know the size
-//               of the allocated structure).
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a pointer that's not even necessarily a ReferenceCount object (but
+ * for which we know the size of the allocated structure).
+ */
 void MemoryUsage::
 ns_record_void_pointer(void *ptr, size_t size) {
   if (_track_memory_usage) {
@@ -817,12 +757,9 @@ ns_record_void_pointer(void *ptr, size_t size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_remove_void_pointer
-//       Access: Private
-//  Description: Removes a pointer previously recorded via
-//               record_void_pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a pointer previously recorded via record_void_pointer.
+ */
 void MemoryUsage::
 ns_remove_void_pointer(void *ptr) {
   if (_track_memory_usage) {
@@ -883,23 +820,19 @@ ns_remove_void_pointer(void *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_num_pointers
-//       Access: Private
-//  Description: Returns the number of pointers currently active.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of pointers currently active.
+ */
 int MemoryUsage::
 ns_get_num_pointers() {
   nassertr(_track_memory_usage, 0);
   return _count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_pointers
-//       Access: Private
-//  Description: Fills the indicated MemoryUsagePointers with the set
-//               of all pointers currently active.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated MemoryUsagePointers with the set of all pointers
+ * currently active.
+ */
 void MemoryUsage::
 ns_get_pointers(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
@@ -921,13 +854,10 @@ ns_get_pointers(MemoryUsagePointers &result) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_pointers_of_type
-//       Access: Private
-//  Description: Fills the indicated MemoryUsagePointers with the set
-//               of all pointers of the indicated type currently
-//               active.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated MemoryUsagePointers with the set of all pointers of the
+ * indicated type currently active.
+ */
 void MemoryUsage::
 ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   nassertv(_track_memory_usage);
@@ -953,13 +883,10 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_pointers_of_age
-//       Access: Private
-//  Description: Fills the indicated MemoryUsagePointers with the set
-//               of all pointers that were allocated within the range
-//               of the indicated number of seconds ago.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated MemoryUsagePointers with the set of all pointers that
+ * were allocated within the range of the indicated number of seconds ago.
+ */
 void MemoryUsage::
 ns_get_pointers_of_age(MemoryUsagePointers &result,
                        double from, double to) {
@@ -985,29 +912,19 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_pointers_with_zero_count
-//       Access: Private
-//  Description: Fills the indicated MemoryUsagePointers with the set
-//               of all currently active pointers (that is, pointers
-//               allocated since the last call to freeze(), and not
-//               yet freed) that have a zero reference count.
-//
-//               Generally, an undeleted pointer with a zero reference
-//               count means its reference count has never been
-//               incremented beyond zero (since once it has been
-//               incremented, the only way it can return to zero would
-//               free the pointer).  This may include objects that are
-//               allocated statically or on the stack, which are never
-//               intended to be deleted.  Or, it might represent a
-//               programmer or compiler error.
-//
-//               This function has the side-effect of incrementing
-//               each of their reference counts by one, thus
-//               preventing them from ever being freed--but since they
-//               hadn't been freed anyway, probably no additional harm
-//               is done.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated MemoryUsagePointers with the set of all currently active
+ * pointers (that is, pointers allocated since the last call to freeze(), and
+ * not yet freed) that have a zero reference count.  Generally, an undeleted
+ * pointer with a zero reference count means its reference count has never been
+ * incremented beyond zero (since once it has been incremented, the only way it
+ * can return to zero would free the pointer).  This may include objects that
+ * are allocated statically or on the stack, which are never intended to be
+ * deleted.  Or, it might represent a programmer or compiler error.  This
+ * function has the side-effect of incrementing each of their reference counts
+ * by one, thus preventing them from ever being freed--but since they hadn't
+ * been freed anyway, probably no additional harm is done.
+ */
 void MemoryUsage::
 ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
@@ -1021,7 +938,7 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   InfoSet::iterator si;
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
-    if (info->_freeze_index == _freeze_index && 
+    if (info->_freeze_index == _freeze_index &&
         info->_ref_ptr != (ReferenceCount *)NULL) {
       if (info->_ref_ptr->get_ref_count() == 0) {
         info->_ref_ptr->ref();
@@ -1032,16 +949,12 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_freeze
-//       Access: Private
-//  Description: 'Freezes' all pointers currently stored so that they
-//               are no longer reported; only newly allocate pointers
-//               from this point on will appear in future information
-//               requests.  This makes it easier to differentiate
-//               between continuous leaks and one-time memory
-//               allocations.
-////////////////////////////////////////////////////////////////////
+/**
+ * 'Freezes' all pointers currently stored so that they are no longer reported;
+ * only newly allocate pointers from this point on will appear in future
+ * information requests.  This makes it easier to differentiate between
+ * continuous leaks and one-time memory allocations.
+ */
 void MemoryUsage::
 ns_freeze() {
   _count = 0;
@@ -1051,12 +964,9 @@ ns_freeze() {
   _freeze_index++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_show_current_types
-//       Access: Private
-//  Description: Shows the breakdown of types of all of the
-//               active pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows the breakdown of types of all of the active pointers.
+ */
 void MemoryUsage::
 ns_show_current_types() {
   nassertv(_track_memory_usage);
@@ -1078,24 +988,18 @@ ns_show_current_types() {
   _recursion_protect = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_show_trend_types
-//       Access: Private
-//  Description: Shows the breakdown of types of all of the
-//               pointers allocated and freed since the last call to
-//               freeze().
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows the breakdown of types of all of the pointers allocated and freed since
+ * the last call to freeze().
+ */
 void MemoryUsage::
 ns_show_trend_types() {
   _trend_types.show();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_show_current_ages
-//       Access: Private
-//  Description: Shows the breakdown of ages of all of the
-//               active pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows the breakdown of ages of all of the active pointers.
+ */
 void MemoryUsage::
 ns_show_current_ages() {
   nassertv(_track_memory_usage);
@@ -1116,27 +1020,21 @@ ns_show_current_ages() {
   _recursion_protect = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_show_trend_ages
-//       Access: Private
-//  Description: Shows the breakdown of ages of all of the
-//               pointers allocated and freed since the last call to
-//               freeze().
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows the breakdown of ages of all of the pointers allocated and freed since
+ * the last call to freeze().
+ */
 void MemoryUsage::
 ns_show_trend_ages() {
   _trend_ages.show();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::consolidate_void_ptr
-//       Access: Private
-//  Description: If the size information has not yet been determined
-//               for this pointer, checks to see if it has possibly
-//               been recorded under the TypedObject pointer (this
-//               will happen when the class inherits from TypedObject
-//               before ReferenceCount, e.g. TypedReferenceCount).
-////////////////////////////////////////////////////////////////////
+/**
+ * If the size information has not yet been determined for this pointer, checks
+ * to see if it has possibly been recorded under the TypedObject pointer (this
+ * will happen when the class inherits from TypedObject before ReferenceCount,
+ * e.g.  TypedReferenceCount).
+ */
 void MemoryUsage::
 consolidate_void_ptr(MemoryInfo *info) {
   if (info->is_size_known()) {
@@ -1148,7 +1046,7 @@ consolidate_void_ptr(MemoryInfo *info) {
     // We don't have a typed pointer for this thing yet.
     return;
   }
-  
+
   TypedObject *typed_ptr = info->_typed_ptr;
 
   if ((void *)typed_ptr == (void *)info->_ref_ptr) {
@@ -1195,13 +1093,10 @@ consolidate_void_ptr(MemoryInfo *info) {
   (*ti).second = info;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::refresh_info_set
-//       Access: Private
-//  Description: Recomputes the _info_set table, if necessary.  This
-//               table stores a unique entry for each MemoryInfo
-//               object in _table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the _info_set table, if necessary.  This table stores a unique
+ * entry for each MemoryInfo object in _table.
+ */
 void MemoryUsage::
 refresh_info_set() {
   if (!_info_set_dirty) {
@@ -1211,7 +1106,7 @@ refresh_info_set() {
   // We have to protect modifications to the table from recursive
   // calls by toggling _recursion_protect while we adjust it.
   _recursion_protect = true;
-  
+
   _info_set.clear();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {

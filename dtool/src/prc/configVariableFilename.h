@@ -1,16 +1,15 @@
-// Filename: configVariableFilename.h
-// Created by:  drose (22Nov04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableFilename.h
+ * @author drose
+ * @date 2004-11-22
+ */
 
 #ifndef CONFIGVARIABLEFILENAME_H
 #define CONFIGVARIABLEFILENAME_H
@@ -18,15 +17,13 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 #include "filename.h"
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableFilename
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a Filename type.  It is almost the
-//               same thing as ConfigVariableString, except it handles
-//               an implicit Filename::expand_from() operation so that
-//               the user may put OS-specific filenames, or filenames
-//               based on environment variables, in the prc file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a Filename type.
+ * It is almost the same thing as ConfigVariableString, except it handles an
+ * implicit Filename::expand_from() operation so that the user may put OS-
+ * specific filenames, or filenames based on environment variables, in the prc
+ * file.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableFilename : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableFilename(const string &name);

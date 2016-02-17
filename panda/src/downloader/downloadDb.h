@@ -1,17 +1,16 @@
-// Filename: downloadDb.h
-// Created by:  shochet (06Sep00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#ifndef DOWNLOADDB_H
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file downloadDb.h
+ * @author shochet
+ * @date 2000-09-06
+ */
+
 #define DOWNLOADDB_H
 
 #include "pandabase.h"
@@ -33,9 +32,9 @@ typedef PN_stdfloat Phase;
 class Ramfile;
 
 /*
-////////////////////////////////////////////////////////////////////
-//  Database Format
-////////////////////////////////////////////////////////////////////
+/*
+ * Database Format
+ */
 magic_number
 number_of_multifiles
 header_length multifile_name phase version size status num_files
@@ -53,17 +52,13 @@ MultifileRecord is a Vector<FileRecord>
 */
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DownloadDb
-// Description : A listing of files within multifiles for management
-//               of client-side synchronization with a server-provided
-//               set of files.
-//
-//               This class manages one copy of the database for the
-//               client, representing the files on the client system,
-//               and another copy for the server, representing the
-//               files the server has available.
-////////////////////////////////////////////////////////////////////
+/**
+ * A listing of files within multifiles for management of client-side
+ * synchronization with a server-provided set of files.  This class manages one
+ * copy of the database for the client, representing the files on the client
+ * system, and another copy for the server, representing the files the server
+ * has available.
+ */
 class EXPCL_PANDAEXPRESS DownloadDb {
 PUBLISHED:
   // Status of a multifile is stored in this enum

@@ -1,16 +1,15 @@
-// Filename: odeGeom_ext.cxx
-// Created by:  rdb (11Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeGeom_ext.cxx
+ * @author rdb
+ * @date 2013-12-11
+ */
 
 #include "odeGeom_ext.h"
 
@@ -46,12 +45,10 @@ extern Dtool_PyTypedObject Dtool_OdeSphereGeom;
 extern Dtool_PyTypedObject Dtool_OdeTriMeshGeom;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeGeom::convert
-//       Access: Published
-//  Description: Do a sort of pseudo-downcast on this space in
-//               order to expose its specialized functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do a sort of pseudo-downcast on this space in order to expose its specialized
+ * functions.
+ */
 PyObject *Extension<OdeGeom>::
 convert() const {
   Dtool_PyTypedObject *class_type;

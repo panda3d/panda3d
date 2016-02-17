@@ -1,16 +1,15 @@
-// Filename: nurbsSurfaceResult.h
-// Created by:  drose (10Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsSurfaceResult.h
+ * @author drose
+ * @date 2003-10-10
+ */
 
 #ifndef NURBSSURFACERESULT_H
 #define NURBSSURFACERESULT_H
@@ -22,13 +21,11 @@
 
 class NurbsVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsSurfaceResult
-// Description : The result of a NurbsSurfaceEvaluator.  This object
-//               represents a surface in a particular coordinate space.
-//               It can return the point and/or normal to the surface
-//               at any point.
-////////////////////////////////////////////////////////////////////
+/**
+ * The result of a NurbsSurfaceEvaluator.  This object represents a surface in a
+ * particular coordinate space.  It can return the point and/or normal to the
+ * surface at any point.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsSurfaceResult : public ReferenceCount {
 public:
   NurbsSurfaceResult(const NurbsBasisVector &u_basis,
@@ -99,4 +96,3 @@ private:
 #include "nurbsSurfaceResult.I"
 
 #endif
-

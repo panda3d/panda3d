@@ -1,16 +1,15 @@
-// Filename: configDeclaration.h
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configDeclaration.h
+ * @author drose
+ * @date 2004-10-15
+ */
 
 #ifndef CONFIGDECLARATION_H
 #define CONFIGDECLARATION_H
@@ -25,14 +24,11 @@
 
 class ConfigVariableCore;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigDeclaration
-// Description : A single declaration of a config variable, typically
-//               defined as one line in a .prc file,
-//               e.g. "show-frame-rate-meter 1".  This is really just
-//               a pairing of a string name (actually, a
-//               ConfigVariableCore pointer) to a string value.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single declaration of a config variable, typically defined as one line in a
+ * .prc file, e.g.  "show-frame-rate-meter 1".  This is really just a pairing of
+ * a string name (actually, a ConfigVariableCore pointer) to a string value.
+ */
 class EXPCL_DTOOLCONFIG ConfigDeclaration : public ConfigFlags {
 private:
   ConfigDeclaration(ConfigPage *page, ConfigVariableCore *variable,

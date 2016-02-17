@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeTIFF.h
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeTIFF.h
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #ifndef PNMFILETYPETIFF_H
 #define PNMFILETYPETIFF_H
@@ -28,10 +27,9 @@
 
 #define TIFF_COLORMAP_MAXCOLORS 1024
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeTIFF
-// Description : For reading and writing TIFF files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing TIFF files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeTIFF : public PNMFileType {
 public:
   PNMFileTypeTIFF();

@@ -1,16 +1,15 @@
-// Filename: test_physics.cxx
-// Created by:  charles (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_physics.cxx
+ * @author charles
+ * @date 2000-06-13
+ */
 
 #include <iostream>
 #include "physical.h"
@@ -52,7 +51,7 @@ int main(int argc, char **argv) {
   // get on with life
 
   b.add_linear_force(new LinearJitterForce(0.1f));
-  
+
   int i=0;
   for (PhysicsObject::Vector::const_iterator co=b.get_object_vector().begin();
        co != b.get_object_vector().end();
@@ -86,4 +85,3 @@ int main(int argc, char **argv) {
 
   return 0;
 }
-

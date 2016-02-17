@@ -1,16 +1,15 @@
-// Filename: bamReader.cxx
-// Created by:  jason (12Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamReader.cxx
+ * @author jason
+ * @date 2000-06-12
+ */
 
 #include "pandabase.h"
 #include "pnotify.h"
@@ -33,11 +32,9 @@ const int BamReader::_cur_major = _bam_major_ver;
 const int BamReader::_cur_minor = _bam_minor_ver;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamReader::
 BamReader(DatagramGenerator *source)
   : _source(source)
@@ -53,24 +50,19 @@ BamReader(DatagramGenerator *source)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamReader::
 ~BamReader() {
   nassertv(_num_extra_objects == 0);
   nassertv(_nesting_level == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::set_source
-//       Access: Published
-//  Description: Changes the source of future datagrams for this
-//               BamReader.  This also implicitly calls init() if it
-//               has not already been called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the source of future datagrams for this BamReader.  This also
+ * implicitly calls init() if it has not already been called.
+ */
 void BamReader::
 set_source(DatagramGenerator *source) {
   _source = source;
@@ -80,16 +72,11 @@ set_source(DatagramGenerator *source) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::init
-//       Access: Published
-//  Description: Initializes the BamReader prior to reading any
-//               objects from its source.  This includes reading the
-//               Bam header.
-//
-//               This returns true if the BamReader successfully
-//               initialized, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the BamReader prior to reading any objects from its source.  This
+ * includes reading the Bam header.  This returns true if the BamReader
+ * successfully initialized, false otherwise.
+ */
 bool BamReader::
 init() {
   nassertr(_source != NULL, false);
@@ -114,7 +101,7 @@ init() {
 
   // If the major version is different, or the minor version is
   // *newer*, we can't safely load the file.
-  if (_file_major != _bam_major_ver || 
+  if (_file_major != _bam_major_ver ||
       _file_minor < _bam_first_minor_ver ||
       _file_minor > _bam_minor_ver) {
     bam_cat.error()
@@ -151,33 +138,21 @@ init() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::set_aux_data
-//       Access: Published
-//  Description: Associates an arbitrary block of data with the
-//               indicated object (or NULL), and the indicated name.
-//
-//               This is intended to provide a place for temporary
-//               storage for objects reading themselves from the bam
-//               file.  To use it, inherit from BamReader::AuxData and
-//               store whatever data you like there.  Then associate
-//               your AuxData with the object as it is being read with
-//               set_aux_data().  You may later set the aux data to
-//               NULL to remove it; or it will automatically be
-//               removed (and deleted) after finalize() is called for
-//               the object in question.
-//
-//               If the TypedWritable pointer is NULL, the the aux
-//               data is stored globally for the BamReader in general.
-//               This pointer is available to any bam objects, and
-//               will not be automatically removed until the BamReader
-//               itself destructs.
-//
-//               In either case, the name is just an arbitrary
-//               user-defined key.  If there is already a data pointer
-//               stored for the obj/name pair, that data pointer will
-//               be replaced (and deleted).
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates an arbitrary block of data with the indicated object (or NULL),
+ * and the indicated name.  This is intended to provide a place for temporary
+ * storage for objects reading themselves from the bam file.  To use it, inherit
+ * from BamReader::AuxData and store whatever data you like there.  Then
+ * associate your AuxData with the object as it is being read with
+ * set_aux_data().  You may later set the aux data to NULL to remove it; or it
+ * will automatically be removed (and deleted) after finalize() is called for
+ * the object in question.  If the TypedWritable pointer is NULL, the the aux
+ * data is stored globally for the BamReader in general.  This pointer is
+ * available to any bam objects, and will not be automatically removed until the
+ * BamReader itself destructs.  In either case, the name is just an arbitrary
+ * user-defined key.  If there is already a data pointer stored for the obj/name
+ * pair, that data pointer will be replaced (and deleted).
+ */
 void BamReader::
 set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
   if (data == (void *)NULL) {
@@ -195,13 +170,11 @@ set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_aux_data
-//       Access: Published
-//  Description: Returns the pointer previously associated with the
-//               bam reader by a previous call to set_aux_data(), or
-//               NULL if data with the indicated key has not been set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer previously associated with the bam reader by a previous
+ * call to set_aux_data(), or NULL if data with the indicated key has not been
+ * set.
+ */
 BamReader::AuxData *BamReader::
 get_aux_data(TypedWritable *obj, const string &name) const {
   AuxDataTable::const_iterator ti = _aux_data.find(obj);
@@ -217,34 +190,22 @@ get_aux_data(TypedWritable *obj, const string &name) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_object
-//       Access: Published
-//  Description: Reads a single object from the Bam file.  If the
-//               object type is known, a new object of the appropriate
-//               type is created and returned; otherwise, NULL is
-//               returned.  NULL is also returned when the end of the
-//               file is reached.  is_eof() may be called to
-//               differentiate between these two cases.
-//
-//               This may be called repeatedly to extract out all the
-//               objects in the Bam file, but typically (especially
-//               for scene graph files, indicated with the .bam
-//               extension), only one object is retrieved directly
-//               from the Bam file: the root of the scene graph.  The
-//               remaining objects will all be retrieved recursively
-//               by the first object.
-//
-//               Note that the object returned may not yet be
-//               complete.  In particular, some of its pointers may
-//               not be filled in; you must call resolve() to fill in
-//               all the available pointers before you can safely use
-//               any objects returned by read_object().
-//
-//               This flavor of read_object() requires the caller to
-//               know what type of object it has received in order to
-//               properly manage the reference counts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single object from the Bam file.  If the object type is known, a new
+ * object of the appropriate type is created and returned; otherwise, NULL is
+ * returned.  NULL is also returned when the end of the file is reached.
+ * is_eof() may be called to differentiate between these two cases.  This may be
+ * called repeatedly to extract out all the objects in the Bam file, but
+ * typically (especially for scene graph files, indicated with the .bam
+ * extension), only one object is retrieved directly from the Bam file: the root
+ * of the scene graph.  The remaining objects will all be retrieved recursively
+ * by the first object.  Note that the object returned may not yet be complete.
+ * In particular, some of its pointers may not be filled in; you must call
+ * resolve() to fill in all the available pointers before you can safely use any
+ * objects returned by read_object().  This flavor of read_object() requires the
+ * caller to know what type of object it has received in order to properly
+ * manage the reference counts.
+ */
 TypedWritable *BamReader::
 read_object() {
   TypedWritable *ptr;
@@ -257,18 +218,13 @@ read_object() {
   return ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_object
-//       Access: Published
-//  Description: Reads a single object from the Bam file.  
-//
-//               This flavor of read_object() returns both a
-//               TypedWritable and a ReferenceCount pointer to the
-//               same object, so the reference count may be tracked
-//               reliably, without having to know precisely what type
-//               of object we have.  It returns true on success, or
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single object from the Bam file.  This flavor of read_object()
+ * returns both a TypedWritable and a ReferenceCount pointer to the same object,
+ * so the reference count may be tracked reliably, without having to know
+ * precisely what type of object we have.  It returns true on success, or false
+ * on failure.
+ */
 bool BamReader::
 read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   ptr = NULL;
@@ -337,24 +293,16 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::resolve
-//       Access: Published
-//  Description: This may be called at any time during processing of
-//               the Bam file to resolve all the known pointers so
-//               far.  It is usually called at the end of the
-//               processing, after all objects have been read, which
-//               is generally the best time to call it.
-//
-//               This must be called at least once after reading a
-//               particular object via get_object() in order to
-//               validate that object.
-//
-//               The return value is true if all objects have been
-//               resolved, or false if some objects are still
-//               outstanding (in which case you will need to call
-//               resolve() again later).
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be called at any time during processing of the Bam file to resolve
+ * all the known pointers so far.  It is usually called at the end of the
+ * processing, after all objects have been read, which is generally the best
+ * time to call it.  This must be called at least once after reading a
+ * particular object via get_object() in order to validate that object.  The
+ * return value is true if all objects have been resolved, or false if some
+ * objects are still outstanding (in which case you will need to call resolve()
+ * again later).
+ */
 bool BamReader::
 resolve() {
   bool all_completed;
@@ -367,7 +315,7 @@ resolve() {
     }
     all_completed = true;
     any_completed_this_pass = false;
-    
+
     ObjectPointers::iterator oi;
     oi = _object_pointers.begin();
     while (oi != _object_pointers.end()) {
@@ -378,14 +326,14 @@ resolve() {
       nassertr(ci != _created_objs.end(), false);
 
       CreatedObj &created_obj = (*ci).second;
-      
+
       TypedWritable *object_ptr = created_obj._ptr;
 
       // Update _now_creating, so a call to get_int_tag() from within
       // complete_pointers() will come to the right place.
       CreatedObjs::iterator was_creating = _now_creating;
       _now_creating = ci;
-      
+
       if (resolve_object_pointers(object_ptr, pref)) {
         // Now remove this object from the list of things that need
         // completion.  We have to be a bit careful when deleting things
@@ -394,7 +342,7 @@ resolve() {
         ++oi;
         _object_pointers.erase(old);
         any_completed_this_pass = true;
-        
+
         // Does the pointer need to change?
         if (created_obj._change_this_ref != NULL) {
           // Reference-counting variant.
@@ -442,7 +390,7 @@ resolve() {
           created_obj._change_this = NULL;
           created_obj._change_this_ref = NULL;
         }
-        
+
       } else {
         // Couldn't complete this object yet; it'll wait for next time.
         ++oi;
@@ -469,7 +417,7 @@ resolve() {
     // calling resolve(), but for now we expect resolve() to always
     // succeed.
     ObjectPointers::const_iterator oi;
-    for (oi = _object_pointers.begin(); 
+    for (oi = _object_pointers.begin();
          oi != _object_pointers.end();
          ++oi) {
       int object_id = (*oi).first;
@@ -486,19 +434,13 @@ resolve() {
   return all_completed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::change_pointer
-//       Access: Published
-//  Description: Indicates that an object recently read from the bam
-//               stream should be replaced with a new object.  Any
-//               future occurrences of the original object in the
-//               stream will henceforth return the new object instead.
-//
-//               The return value is true if the replacement was
-//               successfully made, or false if the object was not
-//               read from the stream (or if change_pointer had
-//               already been called on it).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that an object recently read from the bam stream should be replaced
+ * with a new object.  Any future occurrences of the original object in the
+ * stream will henceforth return the new object instead.  The return value is
+ * true if the replacement was successfully made, or false if the object was not
+ * read from the stream (or if change_pointer had already been called on it).
+ */
 bool BamReader::
 change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_pointer) {
   if (orig_pointer == new_pointer) {
@@ -512,14 +454,14 @@ change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_point
 
   if (bam_cat.is_spam()) {
     bam_cat.spam()
-      << "change_pointer(" << (void *)orig_pointer << ", " 
+      << "change_pointer(" << (void *)orig_pointer << ", "
       << (void *)new_pointer << ") (" << new_pointer->get_type() << ")\n";
   }
 
   const vector_int &old_refs = (*ci).second;
   vector_int &new_refs = _created_objs_by_pointer[new_pointer];
 
-  for (vector_int::const_iterator oi = old_refs.begin(); 
+  for (vector_int::const_iterator oi = old_refs.begin();
        oi != old_refs.end();
        ++oi) {
     int object_id = (*oi);
@@ -546,11 +488,9 @@ change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_point
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_handle
-//       Access: Published
-//  Description: Reads a TypeHandle out of the Datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a TypeHandle out of the Datagram.
+ */
 TypeHandle BamReader::
 read_handle(DatagramIterator &scan) {
   // We encode TypeHandles within the Bam file by writing a unique
@@ -597,7 +537,7 @@ read_handle(DatagramIterator &scan) {
 
     type = TypeRegistry::ptr()->register_dynamic_type(name);
     bam_cat.warning()
-      << "Bam file '" << get_filename() << "' contains objects of unknown type: " 
+      << "Bam file '" << get_filename() << "' contains objects of unknown type: "
       << type << "\n";
     new_type = true;
     _new_types.insert(type);
@@ -631,33 +571,22 @@ read_handle(DatagramIterator &scan) {
   return type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_pointer
-//       Access: Public
-//  Description: The interface for reading a pointer to another object
-//               from a Bam file.  Objects reading themselves from a
-//               Bam file should call this when they expect to read a
-//               pointer to some other object.  This function reads
-//               whatever is stored in the bam file to represent the
-//               pointer, and advances the datagram iterator
-//               accordingly.
-//
-//               Rather than returning a pointer immediately, this
-//               function reads the internal pointer information from
-//               the datagram and queues up the request.  The pointer
-//               itself may not be available until later (it may be a
-//               pointer to an object that appears later in the Bam
-//               file).  Later, when all pointers are available, the
-//               complete_pointers() callback function will be called
-//               with an array of actual pointers, one for each time
-//               read_pointer() was called.  It is then the calling
-//               object's responsibility to store these pointers in the
-//               object properly.
-//
-//               We don't know what the final pointer will be yet,
-//               but we do know whether it was NULL, so this method
-//               returns true if the pointer is non-NULL, false if NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * The interface for reading a pointer to another object from a Bam file.
+ * Objects reading themselves from a Bam file should call this when they expect
+ * to read a pointer to some other object.  This function reads whatever is
+ * stored in the bam file to represent the pointer, and advances the datagram
+ * iterator accordingly.  Rather than returning a pointer immediately, this
+ * function reads the internal pointer information from the datagram and queues
+ * up the request.  The pointer itself may not be available until later (it may
+ * be a pointer to an object that appears later in the Bam file).  Later, when
+ * all pointers are available, the complete_pointers() callback function will be
+ * called with an array of actual pointers, one for each time read_pointer() was
+ * called.  It is then the calling object's responsibility to store these
+ * pointers in the object properly.  We don't know what the final pointer will
+ * be yet, but we do know whether it was NULL, so this method returns true if
+ * the pointer is non-NULL, false if NULL.
+ */
 bool BamReader::
 read_pointer(DatagramIterator &scan) {
   Thread::consider_yield();
@@ -697,13 +626,10 @@ read_pointer(DatagramIterator &scan) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_pointers
-//       Access: Public
-//  Description: A convenience function to read a contiguous list of
-//               pointers.  This is equivalent to calling
-//               read_pointer() count times.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function to read a contiguous list of pointers.  This is
+ * equivalent to calling read_pointer() count times.
+ */
 void BamReader::
 read_pointers(DatagramIterator &scan, int count) {
   for (int i = 0; i < count; i++) {
@@ -711,30 +637,23 @@ read_pointers(DatagramIterator &scan, int count) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::skip_pointer
-//       Access: Public
-//  Description: Reads and discards a pointer value from the Bam file.
-//               This pointer will not be counted among the pointers
-//               read for a given object, and will not be in the list
-//               of pointers passed to complete_pointers().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads and discards a pointer value from the Bam file.  This pointer will not
+ * be counted among the pointers read for a given object, and will not be in the
+ * list of pointers passed to complete_pointers().
+ */
 void BamReader::
 skip_pointer(DatagramIterator &scan) {
   read_object_id(scan);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_file_data
-//       Access: Public
-//  Description: Reads a block of auxiliary file data from the Bam
-//               file.  This can be a block of arbitrary size, and it
-//               is assumed it may be quite large.  Rather than
-//               reading the entire block into memory, a file
-//               reference is returned to locate the block on disk.
-//               The data must have been written by a matching call to
-//               write_file_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a block of auxiliary file data from the Bam file.  This can be a block
+ * of arbitrary size, and it is assumed it may be quite large.  Rather than
+ * reading the entire block into memory, a file reference is returned to locate
+ * the block on disk.  The data must have been written by a matching call to
+ * write_file_data().
+ */
 void BamReader::
 read_file_data(SubfileInfo &info) {
   // write_file_data() actually writes the blocks in datagrams prior
@@ -748,15 +667,12 @@ read_file_data(SubfileInfo &info) {
   _file_data_records.pop_front();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_cdata
-//       Access: Public
-//  Description: Reads in the indicated CycleData object.  This should
-//               be used by classes that store some or all of their
-//               data within a CycleData subclass, in support of
-//               pipelining.  This will call the virtual
-//               CycleData::fillin() method to do the actual reading.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in the indicated CycleData object.  This should be used by classes that
+ * store some or all of their data within a CycleData subclass, in support of
+ * pipelining.  This will call the virtual CycleData::fillin() method to do the
+ * actual reading.
+ */
 void BamReader::
 read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler) {
   PipelineCyclerBase *old_cycler = _reading_cycler;
@@ -767,12 +683,10 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler) {
   _reading_cycler = old_cycler;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_cdata
-//       Access: Public
-//  Description: This flavor of read_cdata allows passing an
-//               additional parameter to cdata->fillin().
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of read_cdata allows passing an additional parameter to
+ * cdata->fillin().
+ */
 void BamReader::
 read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
            void *extra_data) {
@@ -784,21 +698,15 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
   _reading_cycler = old_cycler;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::set_int_tag
-//       Access: Public
-//  Description: Allows the creating object to store a temporary data
-//               value on the BamReader.  This method may be called
-//               during an object's fillin() method; it will associate
-//               an integer value with an arbitrary string key (which
-//               is in turn associated with the calling object only).
-//               Later, in the complete_pointers() method, the same
-//               object may query this data again via get_int_tag().
-//
-//               The tag string need not be unique between different
-//               objects, but it should be unique between an object
-//               and its CData object(s).
-////////////////////////////////////////////////////////////////////
+/**
+ * Allows the creating object to store a temporary data value on the BamReader.
+ * This method may be called during an object's fillin() method; it will
+ * associate an integer value with an arbitrary string key (which is in turn
+ * associated with the calling object only). Later, in the complete_pointers()
+ * method, the same object may query this data again via get_int_tag().  The tag
+ * string need not be unique between different objects, but it should be unique
+ * between an object and its CData object(s).
+ */
 void BamReader::
 set_int_tag(const string &tag, int value) {
   nassertv(_now_creating != _created_objs.end());
@@ -808,12 +716,10 @@ set_int_tag(const string &tag, int value) {
   pref._int_tags[tag] = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_int_tag
-//       Access: Public
-//  Description: Returns the value previously set via set_int_tag().
-//               It is an error if no value has been set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value previously set via set_int_tag(). It is an error if no
+ * value has been set.
+ */
 int BamReader::
 get_int_tag(const string &tag) const {
   nassertr(_now_creating != _created_objs.end(), 0);
@@ -828,26 +734,17 @@ get_int_tag(const string &tag) const {
   return (*iti).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::set_aux_tag
-//       Access: Public
-//  Description: Allows the creating object to store a temporary data
-//               value on the BamReader.  This method may be called
-//               during an object's fillin() method; it will associate
-//               a newly-allocated BamReaderAuxData construct with an
-//               arbitrary string key (which is in turn associated
-//               with the calling object only).  Later, in the
-//               complete_pointers() method, the same object may query
-//               this data again via get_aux_tag().
-//
-//               The BamReader will maintain the reference count on
-//               the BamReaderAuxData, and destruct it when it is
-//               cleaned up.
-//
-//               The tag string need not be unique between different
-//               objects, but it should be unique between an object
-//               and its CData object(s).
-////////////////////////////////////////////////////////////////////
+/**
+ * Allows the creating object to store a temporary data value on the BamReader.
+ * This method may be called during an object's fillin() method; it will
+ * associate a newly-allocated BamReaderAuxData construct with an arbitrary
+ * string key (which is in turn associated with the calling object only).
+ * Later, in the complete_pointers() method, the same object may query this data
+ * again via get_aux_tag().  The BamReader will maintain the reference count on
+ * the BamReaderAuxData, and destruct it when it is cleaned up.  The tag string
+ * need not be unique between different objects, but it should be unique between
+ * an object and its CData object(s).
+ */
 void BamReader::
 set_aux_tag(const string &tag, BamReaderAuxData *value) {
   nassertv(_now_creating != _created_objs.end());
@@ -857,12 +754,10 @@ set_aux_tag(const string &tag, BamReaderAuxData *value) {
   pref._aux_tags[tag] = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_aux_tag
-//       Access: Public
-//  Description: Returns the value previously set via set_aux_tag().
-//               It is an error if no value has been set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value previously set via set_aux_tag(). It is an error if no
+ * value has been set.
+ */
 BamReaderAuxData *BamReader::
 get_aux_tag(const string &tag) const {
   nassertr(_now_creating != _created_objs.end(), NULL);
@@ -877,19 +772,13 @@ get_aux_tag(const string &tag) const {
   return (*ati).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::register_finalize
-//       Access: Public
-//  Description: Should be called by an object reading itself from the
-//               Bam file to indicate that this particular object
-//               would like to receive the finalize() callback when
-//               all the objects and pointers in the Bam file are
-//               completely read.
-//
-//               This provides a hook for objects that need to do any
-//               additional finalization work after all of their
-//               related pointers are guaranteed to be filled in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called by an object reading itself from the Bam file to indicate
+ * that this particular object would like to receive the finalize() callback
+ * when all the objects and pointers in the Bam file are completely read.  This
+ * provides a hook for objects that need to do any additional finalization work
+ * after all of their related pointers are guaranteed to be filled in.
+ */
 void BamReader::
 register_finalize(TypedWritable *whom) {
   nassertv(whom != (TypedWritable *)NULL);
@@ -903,24 +792,16 @@ register_finalize(TypedWritable *whom) {
   _finalize_list.insert(whom);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::register_change_this
-//       Access: Public
-//  Description: Called by an object reading itself from the bam file
-//               to indicate that the object pointer that will be
-//               returned is temporary, and will eventually need to be
-//               replaced with another pointer.
-//
-//               The supplied function pointer will later be called on
-//               the object, immediately after complete_pointers() is
-//               called; it should return the new and final pointer.
-//
-//               We use a static function pointer instead of a virtual
-//               function (as in finalize()), to allow the function to
-//               destruct the old pointer if necessary.  (It is
-//               invalid to destruct the this pointer within a virtual
-//               function.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by an object reading itself from the bam file to indicate that the
+ * object pointer that will be returned is temporary, and will eventually need
+ * to be replaced with another pointer.  The supplied function pointer will
+ * later be called on the object, immediately after complete_pointers() is
+ * called; it should return the new and final pointer.  We use a static function
+ * pointer instead of a virtual function (as in finalize()), to allow the
+ * function to destruct the old pointer if necessary.  (It is invalid to
+ * destruct the this pointer within a virtual function.)
+ */
 void BamReader::
 register_change_this(ChangeThisFunc func, TypedWritable *object) {
   nassertv(_now_creating != _created_objs.end());
@@ -942,24 +823,16 @@ register_change_this(ChangeThisFunc func, TypedWritable *object) {
   created_obj._change_this_ref = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::register_change_this
-//       Access: Public
-//  Description: Called by an object reading itself from the bam file
-//               to indicate that the object pointer that will be
-//               returned is temporary, and will eventually need to be
-//               replaced with another pointer.
-//
-//               The supplied function pointer will later be called on
-//               the object, immediately after complete_pointers() is
-//               called; it should return the new and final pointer.
-//
-//               We use a static function pointer instead of a virtual
-//               function (as in finalize()), to allow the function to
-//               destruct the old pointer if necessary.  (It is
-//               invalid to destruct the this pointer within a virtual
-//               function.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by an object reading itself from the bam file to indicate that the
+ * object pointer that will be returned is temporary, and will eventually need
+ * to be replaced with another pointer.  The supplied function pointer will
+ * later be called on the object, immediately after complete_pointers() is
+ * called; it should return the new and final pointer.  We use a static function
+ * pointer instead of a virtual function (as in finalize()), to allow the
+ * function to destruct the old pointer if necessary.  (It is invalid to
+ * destruct the this pointer within a virtual function.)
+ */
 void BamReader::
 register_change_this(ChangeThisRefFunc func, TypedWritableReferenceCount *object) {
   nassertv(_now_creating != _created_objs.end());
@@ -982,14 +855,11 @@ register_change_this(ChangeThisRefFunc func, TypedWritableReferenceCount *object
   created_obj._change_this_ref = func;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::finalize_now
-//       Access: Public
-//  Description: Forces the finalization of a particular object.  This
-//               may be called by any of the objects during
-//               finalization, to guarantee finalization ordering
-//               where it is important.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the finalization of a particular object.  This may be called by any of
+ * the objects during finalization, to guarantee finalization ordering where it
+ * is important.
+ */
 void BamReader::
 finalize_now(TypedWritable *whom) {
   if (whom == (TypedWritable *)NULL) {
@@ -1008,27 +878,17 @@ finalize_now(TypedWritable *whom) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_pta
-//       Access: Public
-//  Description: This function works in conjection with
-//               register_pta(), below, to read a PointerToArray (PTA)
-//               from the Bam file, and unify references to the same
-//               PTA.
-//
-//               The first time get_pta() encounters a particular PTA,
-//               it will return NULL.  This is the indication that the
-//               caller should then read in the data associated with
-//               the PTA, and subsequently call register_pta() with
-//               the address of the filled-in array.
-//
-//               The next time (and all subsequent times) that
-//               get_pta() encounters this same PTA, it will return
-//               the pointer that was passed with register_pta().
-//
-//               Also see the READ_PTA() macro, which consolidates all
-//               the work that must be done to read a PTA.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function works in conjection with register_pta(), below, to read a
+ * PointerToArray (PTA) from the Bam file, and unify references to the same PTA.
+ * The first time get_pta() encounters a particular PTA, it will return NULL.
+ * This is the indication that the caller should then read in the data
+ * associated with the PTA, and subsequently call register_pta() with the
+ * address of the filled-in array.  The next time (and all subsequent times)
+ * that get_pta() encounters this same PTA, it will return the pointer that was
+ * passed with register_pta().  Also see the READ_PTA() macro, which
+ * consolidates all the work that must be done to read a PTA.
+ */
 void *BamReader::
 get_pta(DatagramIterator &scan) {
   nassertr(_pta_id == -1, (void *)NULL);
@@ -1054,19 +914,13 @@ get_pta(DatagramIterator &scan) {
   return (*pi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::register_pta
-//       Access: Public
-//  Description: The second part of read_pta(), this should be called
-//               with the pointer to the array that was read in after
-//               read_pta() returned NULL.  This associates the
-//               pointer with the ID that was previously read, so that
-//               future calls to read_pta() will return the same
-//               pointer.
-//
-//               Also see the READ_PTA() macro, which consolidates all
-//               the work that must be done to read a PTA.
-////////////////////////////////////////////////////////////////////
+/**
+ * The second part of read_pta(), this should be called with the pointer to the
+ * array that was read in after read_pta() returned NULL.  This associates the
+ * pointer with the ID that was previously read, so that future calls to
+ * read_pta() will return the same pointer.  Also see the READ_PTA() macro,
+ * which consolidates all the work that must be done to read a PTA.
+ */
 void BamReader::
 register_pta(void *ptr) {
   if (_pta_id != -1) {
@@ -1076,14 +930,11 @@ register_pta(void *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::free_object_ids
-//       Access: Private
-//  Description: Handles a record that begins with the _remove_flag
-//               TypeHandle; this contains a list of object ID's that
-//               will no longer be used in this file and can safely be
-//               removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles a record that begins with the _remove_flag TypeHandle; this contains
+ * a list of object ID's that will no longer be used in this file and can safely
+ * be removed.
+ */
 void BamReader::
 free_object_ids(DatagramIterator &scan) {
   // We have to fully complete any objects before we remove them.
@@ -1115,11 +966,9 @@ free_object_ids(DatagramIterator &scan) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_object_id
-//       Access: Private
-//  Description: Reads an object id from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an object id from the datagram.
+ */
 int BamReader::
 read_object_id(DatagramIterator &scan) {
   int object_id;
@@ -1137,11 +986,9 @@ read_object_id(DatagramIterator &scan) {
   return object_id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::read_pta_id
-//       Access: Private
-//  Description: Reads an pta id from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an pta id from the datagram.
+ */
 int BamReader::
 read_pta_id(DatagramIterator &scan) {
   int pta_id;
@@ -1159,13 +1006,10 @@ read_pta_id(DatagramIterator &scan) {
   return pta_id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::p_read_object
-//       Access: Private
-//  Description: The private implementation of read_object(); this
-//               reads an object from the file and returns its object
-//               ID.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of read_object(); this reads an object from the
+ * file and returns its object ID.
+ */
 int BamReader::
 p_read_object() {
   Datagram dg;
@@ -1239,7 +1083,7 @@ p_read_object() {
   // definition, defining the object's type, followed by an object ID
   // index, defining the particular instance (e.g. pointer) of this
   // object.
-  
+
   TypeHandle type = read_handle(scan);
 
   int object_id = read_object_id(scan);
@@ -1304,7 +1148,7 @@ p_read_object() {
       // Define the parameters for passing to the object factory.
       FactoryParams fparams;
       fparams.add_param(new BamReaderParam(scan, this));
-      
+
       // As above, we update and preserve _now_creating during this
       // call.
       CreatedObjs::iterator was_creating = _now_creating;
@@ -1312,7 +1156,7 @@ p_read_object() {
       TypedWritable *object =
         _factory->make_instance_more_general(type, fparams);
       _now_creating = was_creating;
-      
+
       // And now we can store the new object pointer in the map.
       nassertr(created_obj._ptr == object || created_obj._ptr == NULL, object_id);
       if (object == NULL) {
@@ -1335,7 +1179,7 @@ p_read_object() {
           created_obj.set_ptr(object_ref, object_ref);
           created_obj._change_this = NULL;
           created_obj._change_this_ref = NULL;
-          
+
           // Remove the pointer from the finalize list (the new
           // pointer presumably doesn't require finalizing).
           if (new_ptr != object) {
@@ -1343,7 +1187,7 @@ p_read_object() {
           }
           object = new_ptr;
         }
-        
+
       } else if (created_obj._change_this != NULL) {
         // Non-reference-counting variant.
         ObjectPointers::const_iterator ri = _object_pointers.find(object_id);
@@ -1359,7 +1203,7 @@ p_read_object() {
           object = new_ptr;
         }
       }
-      
+
       _created_objs_by_pointer[created_obj._ptr].push_back(object_id);
 
       // Just some sanity checks
@@ -1380,7 +1224,7 @@ p_read_object() {
               << " but a " << object->get_type()                \
               << " was created instead." << endl;
           }
-          
+
         } else {
           // This was a normal type that we should have known how to
           // create.  Report the error.
@@ -1389,7 +1233,7 @@ p_read_object() {
             << " but a " << object->get_type()                  \
             << " was created instead." << endl;
         }
-        
+
       } else {
         if (bam_cat.is_spam()) {
           bam_cat.spam()
@@ -1409,29 +1253,26 @@ p_read_object() {
   return object_id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::resolve_object_pointers
-//       Access: Private
-//  Description: Checks whether all of the pointers a particular
-//               object is waiting for have been filled in yet.  If
-//               they have, calls complete_pointers() on the object
-//               and returns true; otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether all of the pointers a particular object is waiting for have
+ * been filled in yet.  If they have, calls complete_pointers() on the object
+ * and returns true; otherwise, returns false.
+ */
 bool BamReader::
-resolve_object_pointers(TypedWritable *object, 
+resolve_object_pointers(TypedWritable *object,
                         BamReader::PointerReference &pref) {
   // Some objects further require all of their nested objects to have
   // been completed (i.e. complete_pointers has been called on each
   // nested object) before they can themselves be completed.
   bool require_fully_complete = object->require_fully_complete();
 
-  // First do the PipelineCycler objects.    
+  // First do the PipelineCycler objects.
   CyclerPointers::iterator ci;
   ci = pref._cycler_pointers.begin();
   while (ci != pref._cycler_pointers.end()) {
     PipelineCyclerBase *cycler = (*ci).first;
     const vector_int &pointer_ids = (*ci).second;
-      
+
     if (resolve_cycler_pointers(cycler, pointer_ids, require_fully_complete)) {
       // Now remove this cycler from the list of things that need
       // completion.  We have to be a bit careful when deleting things
@@ -1439,7 +1280,7 @@ resolve_object_pointers(TypedWritable *object,
       CyclerPointers::iterator old = ci;
       ++ci;
       pref._cycler_pointers.erase(old);
-      
+
     } else {
       // Couldn't complete this cycler yet; it'll wait for next time.
       ++ci;
@@ -1455,7 +1296,7 @@ resolve_object_pointers(TypedWritable *object,
     }
     return false;
   }
-  
+
   // Now make sure we have all of the pointers this object is
   // waiting for.  If any of the pointers has not yet been read
   // in, we can't resolve this object--we can't do anything for a
@@ -1467,14 +1308,14 @@ resolve_object_pointers(TypedWritable *object,
   references.reserve(pref._objects.size());
 
   vector_int::const_iterator pi;
-  for (pi = pref._objects.begin(); 
-       pi != pref._objects.end() && is_complete; 
+  for (pi = pref._objects.begin();
+       pi != pref._objects.end() && is_complete;
        ++pi) {
     int child_id = (*pi);
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
       references.push_back((TypedWritable *)NULL);
-      
+
     } else {
       // See if we have the pointer available now.
       CreatedObjs::const_iterator oi = _created_objs.find(child_id);
@@ -1491,11 +1332,11 @@ resolve_object_pointers(TypedWritable *object,
           // It's been created, but the pointer might still change.
           is_complete = false;
         } else {
-          if (require_fully_complete && 
+          if (require_fully_complete &&
               _object_pointers.find(child_id) != _object_pointers.end()) {
             // It's not yet complete itself.
             is_complete = false;
-            
+
           } else {
             // Yes, it's ready.
             references.push_back(child_obj._ptr);
@@ -1504,7 +1345,7 @@ resolve_object_pointers(TypedWritable *object,
       }
     }
   }
-      
+
   if (is_complete) {
     // Okay, here's the complete list of pointers for you!
     nassertr(references.size() == pref._objects.size(), false);
@@ -1538,14 +1379,11 @@ resolve_object_pointers(TypedWritable *object,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::resolve_cycler_pointers
-//       Access: Private
-//  Description: Checks whether all of the pointers a particular
-//               PipelineCycler is waiting for have been filled in
-//               yet.  If they have, calls complete_pointers() on the
-//               cycler and returns true; otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether all of the pointers a particular PipelineCycler is waiting for
+ * have been filled in yet.  If they have, calls complete_pointers() on the
+ * cycler and returns true; otherwise, returns false.
+ */
 bool BamReader::
 resolve_cycler_pointers(PipelineCyclerBase *cycler,
                         const vector_int &pointer_ids,
@@ -1555,18 +1393,18 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
   // in, we can't resolve this cycler--we can't do anything for a
   // given cycler until we have *all* outstanding pointers for
   // that cycler.
-  
+
   bool is_complete = true;
   vector_typedWritable references;
-  
+
   vector_int::const_iterator pi;
   for (pi = pointer_ids.begin(); pi != pointer_ids.end() && is_complete; ++pi) {
     int child_id = (*pi);
-    
+
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
       references.push_back((TypedWritable *)NULL);
-      
+
     } else {
       // See if we have the pointer available now.
       CreatedObjs::const_iterator oi = _created_objs.find(child_id);
@@ -1581,11 +1419,11 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
           is_complete = false;
 
         } else {
-          if (require_fully_complete && 
+          if (require_fully_complete &&
               _object_pointers.find(child_id) != _object_pointers.end()) {
             // It's not yet complete itself.
             is_complete = false;
-            
+
           } else {
             // Yes, it's ready.
             references.push_back(child_obj._ptr);
@@ -1594,7 +1432,7 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
       }
     }
   }
-      
+
   if (is_complete) {
     // Okay, here's the complete list of pointers for you!
     CycleData *cdata = cycler->write(Thread::get_current_thread());
@@ -1617,13 +1455,10 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::finalize
-//       Access: Private
-//  Description: Should be called after all objects have been read,
-//               this will finalize all the objects that registered
-//               themselves for the finalize callback.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called after all objects have been read, this will finalize all the
+ * objects that registered themselves for the finalize callback.
+ */
 void BamReader::
 finalize() {
   if (bam_cat.is_debug()) {
@@ -1654,7 +1489,7 @@ finalize() {
       if (_aux_data.size() > 1) {
         // Move the NULL data to the new table; remove the rest.
         AuxDataTable new_aux_data;
-        AuxDataTable::iterator nti = 
+        AuxDataTable::iterator nti =
           new_aux_data.insert(AuxDataTable::value_type((TypedWritable *)NULL, AuxDataNames())).first;
         (*nti).second.swap((*ti).second);
         _aux_data.swap(new_aux_data);
@@ -1666,12 +1501,9 @@ finalize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::AuxData::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamReader::AuxData::
 ~AuxData() {
 }
-

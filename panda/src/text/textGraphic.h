@@ -1,16 +1,15 @@
-// Filename: textGraphic.h
-// Created by:  drose (18Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textGraphic.h
+ * @author drose
+ * @date 2006-08-18
+ */
 
 #ifndef TEXTGRAPHIC_H
 #define TEXTGRAPHIC_H
@@ -20,26 +19,18 @@
 #include "config_text.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextGraphic
-// Description : This defines a special model that has been
-//               constructed for the purposes of embedding an
-//               arbitrary graphic image within a text paragraph.
-//
-//               It can be any arbitrary model, though it should be
-//               built along the same scale as the text, and it should
-//               probably be at least mostly two-dimensional.
-//               Typically, this means it should be constructed in the
-//               X-Z plane, and it should have a maximum vertical (Z)
-//               height of 1.0.
-//
-//               The frame specifies an arbitrary bounding volume in
-//               the form (left, right, bottom, top).  This indicates
-//               the amount of space that will be reserved within the
-//               paragraph.  The actual model is not actually required
-//               to fit within this rectangle, but if it does not, it
-//               may visually overlap with nearby text.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a special model that has been constructed for the purposes of
+ * embedding an arbitrary graphic image within a text paragraph.  It can be any
+ * arbitrary model, though it should be built along the same scale as the text,
+ * and it should probably be at least mostly two-dimensional.  Typically, this
+ * means it should be constructed in the X-Z plane, and it should have a maximum
+ * vertical (Z) height of 1.0.  The frame specifies an arbitrary bounding volume
+ * in the form (left, right, bottom, top).  This indicates the amount of space
+ * that will be reserved within the paragraph.  The actual model is not actually
+ * required to fit within this rectangle, but if it does not, it may visually
+ * overlap with nearby text.
+ */
 class EXPCL_PANDA_TEXT TextGraphic {
 PUBLISHED:
   INLINE TextGraphic();

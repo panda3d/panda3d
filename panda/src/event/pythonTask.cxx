@@ -1,16 +1,15 @@
-// Filename: pythonTask.cxx
-// Created by:  drose (16Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pythonTask.cxx
+ * @author drose
+ * @date 2008-09-16
+ */
 
 #include "pythonTask.h"
 #include "pnotify.h"
@@ -30,11 +29,9 @@ ConfigureFn(config_pythonTask) {
 extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PythonTask::
 PythonTask(PyObject *function, const string &name) :
   AsyncTask(name)
@@ -61,11 +58,9 @@ PythonTask(PyObject *function, const string &name) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PythonTask::
 ~PythonTask() {
   Py_DECREF(_function);
@@ -76,13 +71,10 @@ PythonTask::
   Py_XDECREF(_upon_death);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::set_function
-//       Access: Published
-//  Description: Replaces the function that is called when the task
-//               runs.  The parameter should be a Python callable
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the function that is called when the task runs.  The parameter
+ * should be a Python callable object.
+ */
 void PythonTask::
 set_function(PyObject *function) {
   Py_XDECREF(_function);
@@ -94,25 +86,20 @@ set_function(PyObject *function) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::get_function
-//       Access: Published
-//  Description: Returns the function that is called when the task
-//               runs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the function that is called when the task runs.
+ */
 PyObject *PythonTask::
 get_function() {
   Py_INCREF(_function);
   return _function;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::set_args
-//       Access: Published
-//  Description: Replaces the argument list that is passed to the task
-//               function.  The parameter should be a tuple or list of
-//               arguments, or None to indicate the empty list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the argument list that is passed to the task function.  The
+ * parameter should be a tuple or list of arguments, or None to indicate the
+ * empty list.
+ */
 void PythonTask::
 set_args(PyObject *args, bool append_task) {
   Py_XDECREF(_args);
@@ -135,12 +122,9 @@ set_args(PyObject *args, bool append_task) {
   _append_task = append_task;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::get_args
-//       Access: Published
-//  Description: Returns the argument list that is passed to the task
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the argument list that is passed to the task function.
+ */
 PyObject *PythonTask::
 get_args() {
   if (_append_task) {
@@ -170,13 +154,10 @@ get_args() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::set_upon_death
-//       Access: Published
-//  Description: Replaces the function that is called when the task
-//               finishes.  The parameter should be a Python callable
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the function that is called when the task finishes.  The parameter
+ * should be a Python callable object.
+ */
 void PythonTask::
 set_upon_death(PyObject *upon_death) {
   Py_XDECREF(_upon_death);
@@ -188,30 +169,22 @@ set_upon_death(PyObject *upon_death) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::get_upon_death
-//       Access: Published
-//  Description: Returns the function that is called when the task
-//               finishes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the function that is called when the task finishes.
+ */
 PyObject *PythonTask::
 get_upon_death() {
   Py_INCREF(_upon_death);
   return _upon_death;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::set_owner
-//       Access: Published
-//  Description: Specifies a Python object that serves as the "owner"
-//               for the task.  This owner object must have two
-//               methods: _addTask() and _clearTask(), which will be
-//               called with one parameter, the task object.
-//
-//               owner._addTask() is called when the task is added
-//               into the active task list, and owner._clearTask() is
-//               called when it is removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a Python object that serves as the "owner" for the task.  This
+ * owner object must have two methods: _addTask() and _clearTask(), which will
+ * be called with one parameter, the task object.  owner._addTask() is called
+ * when the task is added into the active task list, and owner._clearTask() is
+ * called when it is removed.
+ */
 void PythonTask::
 set_owner(PyObject *owner) {
   if (_owner != NULL && _owner != Py_None && _state != S_inactive) {
@@ -227,26 +200,21 @@ set_owner(PyObject *owner) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::get_owner
-//       Access: Published
-//  Description: Returns the "owner" object.  See set_owner().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "owner" object.  See set_owner().
+ */
 PyObject *PythonTask::
 get_owner() {
   Py_INCREF(_owner);
   return _owner;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::__setattr__
-//       Access: Published
-//  Description: Maps from an expression like "task.attr_name = v".
-//               This is customized here so we can support some
-//               traditional task interfaces that supported directly
-//               assigning certain values.  We also support adding
-//               arbitrary data to the Task object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from an expression like "task.attr_name = v". This is customized here so
+ * we can support some traditional task interfaces that supported directly
+ * assigning certain values.  We also support adding arbitrary data to the Task
+ * object.
+ */
 int PythonTask::
 __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
   if (PyObject_GenericSetAttr(self, attr, v) == 0) {
@@ -276,15 +244,12 @@ __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
   return PyDict_SetItem(__dict__, attr, v);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::__delattr__
-//       Access: Published
-//  Description: Maps from an expression like "del task.attr_name".
-//               This is customized here so we can support some
-//               traditional task interfaces that supported directly
-//               assigning certain values.  We also support adding
-//               arbitrary data to the Task object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from an expression like "del task.attr_name". This is customized here so
+ * we can support some traditional task interfaces that supported directly
+ * assigning certain values.  We also support adding arbitrary data to the Task
+ * object.
+ */
 int PythonTask::
 __delattr__(PyObject *self, PyObject *attr) {
   if (PyObject_GenericSetAttr(self, attr, NULL) == 0) {
@@ -314,15 +279,11 @@ __delattr__(PyObject *self, PyObject *attr) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::__getattr__
-//       Access: Published
-//  Description: Maps from an expression like "task.attr_name".
-//               This is customized here so we can support some
-//               traditional task interfaces that supported directly
-//               querying certain values.  We also support adding
-//               arbitrary data to the Task object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from an expression like "task.attr_name". This is customized here so we
+ * can support some traditional task interfaces that supported directly querying
+ * certain values.  We also support adding arbitrary data to the Task object.
+ */
 PyObject *PythonTask::
 __getattr__(PyObject *attr) const {
   // Note that with the new Interrogate behavior, this method
@@ -352,11 +313,9 @@ __getattr__(PyObject *attr) const {
   return item;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::__traverse__
-//       Access: Published
-//  Description: Called by Python to implement cycle detection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Python to implement cycle detection.
+ */
 int PythonTask::
 __traverse__(visitproc visit, void *arg) {
   Py_VISIT(_function);
@@ -368,11 +327,9 @@ __traverse__(visitproc visit, void *arg) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::__clear__
-//       Access: Published
-//  Description: Called by Python to implement cycle breaking.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Python to implement cycle breaking.
+ */
 int PythonTask::
 __clear__() {
   Py_CLEAR(_function);
@@ -384,29 +341,21 @@ __clear__() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::is_runnable
-//       Access: Protected, Virtual
-//  Description: Override this function to return true if the task can
-//               be successfully executed, false if it cannot.  Mainly
-//               intended as a sanity check when attempting to add the
-//               task to a task manager.
-//
-//               This function is called with the lock held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Override this function to return true if the task can be successfully
+ * executed, false if it cannot.  Mainly intended as a sanity check when
+ * attempting to add the task to a task manager.  This function is called with
+ * the lock held.
+ */
 bool PythonTask::
 is_runnable() {
   return _function != Py_None;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::do_task
-//       Access: Protected, Virtual
-//  Description: Override this function to do something useful for the
-//               task.
-//
-//               This function is called with the lock *not* held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Override this function to do something useful for the task.  This function is
+ * called with the lock *not* held.
+ */
 AsyncTask::DoneStatus PythonTask::
 do_task() {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
@@ -424,13 +373,10 @@ do_task() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::do_python_task
-//       Access: Protected
-//  Description: The Python calls that implement do_task().  This
-//               function is separate so we can acquire the Python
-//               interpretor lock while it runs.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Python calls that implement do_task().  This function is separate so we
+ * can acquire the Python interpretor lock while it runs.
+ */
 AsyncTask::DoneStatus PythonTask::
 do_python_task() {
   PyObject *result = NULL;
@@ -438,7 +384,7 @@ do_python_task() {
   if (_generator == (PyObject *)NULL) {
     // We are calling the function directly.
     PyObject *args = get_args();
-    result = 
+    result =
       Thread::get_current_thread()->call_python_func(_function, args);
     Py_DECREF(args);
 
@@ -557,38 +503,26 @@ do_python_task() {
   return DS_interrupt;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::upon_birth
-//       Access: Protected, Virtual
-//  Description: Override this function to do something useful when the
-//               task has been added to the active queue.
-//
-//               This function is called with the lock *not* held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Override this function to do something useful when the task has been added to
+ * the active queue.  This function is called with the lock *not* held.
+ */
 void PythonTask::
 upon_birth(AsyncTaskManager *manager) {
   AsyncTask::upon_birth(manager);
   register_to_owner();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::upon_death
-//       Access: Protected, Virtual
-//  Description: Override this function to do something useful when the
-//               task has been removed from the active queue.  The
-//               parameter clean_exit is true if the task has been
-//               removed because it exited normally (returning
-//               DS_done), or false if it was removed for some other
-//               reason (e.g. AsyncTaskManager::remove()).  By the
-//               time this method is called, _manager has been
-//               cleared, so the parameter manager indicates the
-//               original AsyncTaskManager that owned this task.
-//
-//               The normal behavior is to throw the done_event only
-//               if clean_exit is true.
-//
-//               This function is called with the lock *not* held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Override this function to do something useful when the task has been removed
+ * from the active queue.  The parameter clean_exit is true if the task has been
+ * removed because it exited normally (returning DS_done), or false if it was
+ * removed for some other reason (e.g.  AsyncTaskManager::remove()).  By the
+ * time this method is called, _manager has been cleared, so the parameter
+ * manager indicates the original AsyncTaskManager that owned this task.  The
+ * normal behavior is to throw the done_event only if clean_exit is true.  This
+ * function is called with the lock *not* held.
+ */
 void PythonTask::
 upon_death(AsyncTaskManager *manager, bool clean_exit) {
   AsyncTask::upon_death(manager, clean_exit);
@@ -599,9 +533,9 @@ upon_death(AsyncTaskManager *manager, bool clean_exit) {
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 #endif
-    
+
     call_function(_upon_death);
-    
+
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
 #endif
@@ -609,11 +543,9 @@ upon_death(AsyncTaskManager *manager, bool clean_exit) {
   unregister_from_owner();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::register_to_owner
-//       Access: Private
-//  Description: Tells the owner we are now his task.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the owner we are now his task.
+ */
 void PythonTask::
 register_to_owner() {
   if (_owner != Py_None && !_registered_to_owner) {
@@ -622,21 +554,19 @@ register_to_owner() {
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 #endif
-    
+
     _registered_to_owner = true;
     call_owner_method("_addTask");
-    
+
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
 #endif
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::unregister_from_owner
-//       Access: Private
-//  Description: Tells the owner we are no longer his task.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the owner we are no longer his task.
+ */
 void PythonTask::
 unregister_from_owner() {
   // make sure every call to _clearTask corresponds to a call to _addTask
@@ -646,23 +576,20 @@ unregister_from_owner() {
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 #endif
-    
+
     _registered_to_owner = false;
     call_owner_method("_clearTask");
-    
+
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
 #endif
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::call_owner_method
-//       Access: Private
-//  Description: Calls the indicated method name on the given object,
-//               if defined, passing in the task object as the only
-//               parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the indicated method name on the given object, if defined, passing in
+ * the task object as the only parameter.
+ */
 void PythonTask::
 call_owner_method(const char *method_name) {
   if (_owner != Py_None) {
@@ -688,22 +615,20 @@ call_owner_method(const char *method_name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::call_function
-//       Access: Private
-//  Description: Calls the indicated Python function, passing in the
-//               task object as the only parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the indicated Python function, passing in the task object as the only
+ * parameter.
+ */
 void PythonTask::
 call_function(PyObject *function) {
   if (function != Py_None) {
     this->ref();
-    PyObject *self = 
+    PyObject *self =
       DTool_CreatePyInstanceTyped(this, Dtool_TypedReferenceCount,
                                   true, false, get_type_index());
     PyObject *args = Py_BuildValue("(O)", self);
     Py_DECREF(self);
-    
+
     PyObject *result = PyObject_CallObject(function, args);
     Py_XDECREF(result);
     Py_DECREF(args);

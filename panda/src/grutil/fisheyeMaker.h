@@ -1,16 +1,15 @@
-// Filename: fisheyeMaker.h
-// Created by:  drose (3Oct05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fisheyeMaker.h
+ * @author drose
+ * @date 2005-10-03
+ */
 
 #ifndef FISHEYEMAKER_H
 #define FISHEYEMAKER_H
@@ -23,19 +22,14 @@
 
 class GeomVertexWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FisheyeMaker
-// Description : This class is similar to CardMaker, but instead of
-//               generating ordinary cards, it generates a circular
-//               rose that represents the projection of a 3-D scene
-//               through a fisheye lens.  The texture coordinates of
-//               the rose are defined so that each 2-D vertex has a
-//               3-D UVW that reflects the corresponding position in
-//               3-D space of that particular vertex.
-//
-//               This class is particularly suited for converting cube
-//               maps to sphere maps.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is similar to CardMaker, but instead of generating ordinary cards,
+ * it generates a circular rose that represents the projection of a 3-D scene
+ * through a fisheye lens.  The texture coordinates of the rose are defined so
+ * that each 2-D vertex has a 3-D UVW that reflects the corresponding position
+ * in 3-D space of that particular vertex.  This class is particularly suited
+ * for converting cube maps to sphere maps.
+ */
 class EXPCL_PANDA_GRUTIL FisheyeMaker : public Namable {
 PUBLISHED:
   INLINE FisheyeMaker(const string &name);
@@ -67,4 +61,3 @@ private:
 #include "fisheyeMaker.I"
 
 #endif
-

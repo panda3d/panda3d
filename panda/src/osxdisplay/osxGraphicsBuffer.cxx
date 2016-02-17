@@ -1,15 +1,13 @@
-// Filename: osxGraphicsBuffer.cxx
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsBuffer.cxx
+ */
 
 #include "osxGraphicsBuffer.h"
 #include "osxGraphicsStateGuardian.h"
@@ -22,11 +20,9 @@
 
 TypeHandle osxGraphicsBuffer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 osxGraphicsBuffer::
 osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -47,25 +43,20 @@ osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   _screenshot_buffer_type = _draw_buffer_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsBuffer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 osxGraphicsBuffer::
 ~osxGraphicsBuffer() {
   nassertv(_pbuffer == NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsBuffer::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool osxGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector);
@@ -107,13 +98,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void osxGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -131,12 +119,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void osxGraphicsBuffer::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -150,13 +135,10 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the buffer right now.  Called from the window
-//               thread.  Returns true if the buffer is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the buffer right now.  Called from the window thread.  Returns true if
+ * the buffer is successfully opened, or false if there was a problem.
+ */
 bool osxGraphicsBuffer::
 open_buffer() {
   if (_gsg == 0) {
@@ -216,4 +198,3 @@ open_buffer() {
   _is_valid = true;
   return true;
 }
-

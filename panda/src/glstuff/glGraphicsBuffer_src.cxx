@@ -1,26 +1,23 @@
-// Filename: glGraphicsBuffer_src.cxx
-// Created by:  jyelon (15Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGraphicsBuffer_src.cxx
+ * @author jyelon
+ * @date 2006-01-15
+ */
 
 #include "depthWriteAttrib.h"
 
 TypeHandle CLP(GraphicsBuffer)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(GraphicsBuffer)::
 CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
@@ -59,11 +56,9 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   _bound_tex_page = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(GraphicsBuffer)::
 ~CLP(GraphicsBuffer)() {
   // unshare shared depth buffer if any
@@ -87,16 +82,11 @@ CLP(GraphicsBuffer)::
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsBuffer::clear
-//       Access: Public, Virtual
-//  Description: Clears the entire framebuffer before rendering,
-//               according to the settings of get_color_clear_active()
-//               and get_depth_clear_active() (inherited from
-//               DrawableRegion).
-//
-//               This function is called only within the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the entire framebuffer before rendering, according to the settings of
+ * get_color_clear_active() and get_depth_clear_active() (inherited from
+ * DrawableRegion).  This function is called only within the draw thread.
+ */
 void CLP(GraphicsBuffer)::
 clear(Thread *current_thread) {
   if (!is_any_clear_active()) {
@@ -201,15 +191,12 @@ clear(Thread *current_thread) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool CLP(GraphicsBuffer)::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
@@ -287,13 +274,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::check_fbo
-//       Access: Private
-//  Description: Calls 'glCheckFramebufferStatus'.  On error,
-//               prints out an appropriate error message and unbinds
-//               the fbo.  Returns true for OK or false for error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls 'glCheckFramebufferStatus'.  On error, prints out an appropriate error
+ * message and unbinds the fbo.  Returns true for OK or false for error.
+ */
 bool CLP(GraphicsBuffer)::
 check_fbo() {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -340,13 +324,10 @@ check_fbo() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::rebuild_bitplanes
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               to allocate/reallocate the fbo and all the associated
-//               renderbuffers, just before rendering a frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread to allocate/reallocate
+ * the fbo and all the associated renderbuffers, just before rendering a frame.
+ */
 void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
   check_host_valid();
@@ -675,12 +656,9 @@ rebuild_bitplanes() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::bind_slot
-//       Access: Private
-//  Description: Attaches either a texture or a renderbuffer to the
-//               specified bitplane.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches either a texture or a renderbuffer to the specified bitplane.
+ */
 void CLP(GraphicsBuffer)::
 bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -1014,13 +992,10 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::bind_slot_multisample
-//       Access: Private
-//  Description: Attaches incoming Texture or renderbuffer to the
-//               required bitplanes for the 2 FBOs comprising a
-//               multisample graphics buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches incoming Texture or renderbuffer to the required bitplanes for the 2
+ * FBOs comprising a multisample graphics buffer.
+ */
 void CLP(GraphicsBuffer)::
 bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -1143,12 +1118,9 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
   glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::attach_tex
-//       Access: Private
-//  Description: This function attaches the given texture to the
-//               given attachment point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function attaches the given texture to the given attachment point.
+ */
 void CLP(GraphicsBuffer)::
 attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -1210,15 +1182,11 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::generate_mipmaps
-//       Access: Private
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.
-//               If we've just rendered into level zero of a mipmapped
-//               texture, then all subsequent mipmap levels will now
-//               be calculated.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  If we've just rendered into level zero of a
+ * mipmapped texture, then all subsequent mipmap levels will now be calculated.
+ */
 void CLP(GraphicsBuffer)::
 generate_mipmaps() {
   if (gl_ignore_mipmaps && !gl_force_mipmaps) {
@@ -1242,13 +1210,10 @@ generate_mipmaps() {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void CLP(GraphicsBuffer)::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -1283,11 +1248,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::set_size
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(GraphicsBuffer)::
 set_size(int x, int y) {
   if (_size.get_x() != x || _size.get_y() != y) {
@@ -1297,15 +1260,12 @@ set_size(int x, int y) {
   set_size_and_recalc(x, y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::select_target_tex_page
-//       Access: Public, Virtual
-//  Description: Called internally when the window is in
-//               render-to-a-texture mode and we are in the process of
-//               rendering the six faces of a cube map, or any other
-//               multi-page texture.  This should do whatever needs
-//               to be done to switch the buffer to the indicated page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the window is in render-to-a-texture mode and we are
+ * in the process of rendering the six faces of a cube map, or any other multi-
+ * page texture.  This should do whatever needs to be done to switch the buffer
+ * to the indicated page.
+ */
 void CLP(GraphicsBuffer)::
 select_target_tex_page(int page) {
   nassertv(page >= 0 && page < _fbo.size());
@@ -1334,13 +1294,10 @@ select_target_tex_page(int page) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool CLP(GraphicsBuffer)::
 open_buffer() {
   report_my_gl_errors();
@@ -1529,12 +1486,9 @@ open_buffer() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void CLP(GraphicsBuffer)::
 close_buffer() {
   _rb_data_size_bytes = 0;
@@ -1588,13 +1542,10 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::share_depth_buffer
-//       Access: Published
-//  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly
-//               the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Will attempt to use the depth buffer of the input graphics_output.  The
+ * buffer sizes must be exactly the same.
+ */
 bool CLP(GraphicsBuffer)::
 share_depth_buffer(GraphicsOutput *graphics_output) {
 
@@ -1649,11 +1600,9 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::unshare_depth_buffer
-//       Access: Published
-//  Description: Discontinue sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Discontinue sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 unshare_depth_buffer() {
   if (_shared_depth_buffer) {
@@ -1665,25 +1614,20 @@ unshare_depth_buffer() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::get_supports_render_texture
-//       Access: Published, Virtual
-//  Description: Returns true if this particular GraphicsOutput can
-//               render directly into a texture, or false if it must
-//               always copy-to-texture at the end of each frame to
-//               achieve this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GraphicsOutput can render directly into a
+ * texture, or false if it must always copy-to-texture at the end of each frame
+ * to achieve this effect.
+ */
 bool CLP(GraphicsBuffer)::
 get_supports_render_texture() const {
   // FBO-based buffers, by their nature, can always bind-to-texture.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::register_shared_depth_buffer
-//       Access: Public
-//  Description: Register/save who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Register/save who is sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   CLP(GraphicsBuffer) *input_graphics_output;
@@ -1695,11 +1639,9 @@ register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::unregister_shared_depth_buffer
-//       Access: Public
-//  Description: Unregister who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unregister who is sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   CLP(GraphicsBuffer) *input_graphics_output;
@@ -1711,11 +1653,9 @@ unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::unregister_shared_depth_buffer
-//       Access: Public
-//  Description: Unregister who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unregister who is sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 report_my_errors(int line, const char *file) {
   if (_gsg == 0) {
@@ -1730,12 +1670,9 @@ report_my_errors(int line, const char *file) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::check_host_valid
-//       Access: Public
-//  Description: If the host window has been closed, then
-//               this buffer is dead too.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the host window has been closed, then this buffer is dead too.
+ */
 void CLP(GraphicsBuffer)::
 check_host_valid() {
   if ((_host == 0)||(!_host->is_valid())) {
@@ -1754,13 +1691,10 @@ check_host_valid() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::resolve_multisamples
-//       Access: Private
-//  Description: After the frame has been rendered into the
-//               multisample buffer, filters it down into the final
-//               render buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * After the frame has been rendered into the multisample buffer, filters it
+ * down into the final render buffer.
+ */
 void CLP(GraphicsBuffer)::
 resolve_multisamples() {
   nassertv(_fbo.size() > 0);

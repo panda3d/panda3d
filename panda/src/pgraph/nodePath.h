@@ -1,19 +1,20 @@
-// Filename: nodePath.h
-// Created by:  drose (25Feb02)
-// Updated by:  fperazzi, PandaSE (06Apr10) (added more overloads
-//   for set_shader_input)
-// Updated by: weifengh, PandaSE(30Apr10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePath.h
+ * @author drose
+ * @date 2002-02-25
+ * @author fperazzi, PandaSE
+ * @date 2010-04-06
+ *   for set_shader_input)
+ * @author weifengh, PandaSE
+ * @date 2010-04-30
+ */
 
 #ifndef NODEPATH_H
 #define NODEPATH_H
@@ -142,26 +143,18 @@ class ShaderInput;
 //
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodePath
-// Description : NodePath is the fundamental system for disambiguating
-//               instances, and also provides a higher-level interface
-//               for manipulating the scene graph.
-//
-//               A NodePath is a list of connected nodes from the root
-//               of the graph to any sub-node.  Each NodePath
-//               therefore uniquely describes one instance of a node.
-//
-//               NodePaths themselves are lightweight objects that may
-//               easily be copied and passed by value.  Their data is
-//               stored as a series of NodePathComponents that are
-//               stored on the nodes.  Holding a NodePath will keep a
-//               reference count to all the nodes in the path.
-//               However, if any node in the path is removed or
-//               reparented (perhaps through a different NodePath),
-//               the NodePath will automatically be updated to reflect
-//               the changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * NodePath is the fundamental system for disambiguating instances, and also
+ * provides a higher-level interface for manipulating the scene graph.  A
+ * NodePath is a list of connected nodes from the root of the graph to any sub-
+ * node.  Each NodePath therefore uniquely describes one instance of a node.
+ * NodePaths themselves are lightweight objects that may easily be copied and
+ * passed by value.  Their data is stored as a series of NodePathComponents that
+ * are stored on the nodes.  Holding a NodePath will keep a reference count to
+ * all the nodes in the path.  However, if any node in the path is removed or
+ * reparented (perhaps through a different NodePath), the NodePath will
+ * automatically be updated to reflect the changes.
+ */
 class EXPCL_PANDA_PGRAPH NodePath {
 PUBLISHED:
   // This enumeration is returned by get_error_type() for an empty

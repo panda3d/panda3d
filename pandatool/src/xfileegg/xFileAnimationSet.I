@@ -1,23 +1,19 @@
-// Filename: xFileAnimationSet.I
-// Created by:  drose (04Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileAnimationSet.I
+ * @author drose
+ * @date 2004-10-04
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::FrameEntry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE XFileAnimationSet::FrameEntry::
 FrameEntry() :
   _scale(1.0, 1.0, 1.0),
@@ -27,13 +23,10 @@ FrameEntry() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::FrameEntry::get_mat
-//       Access: Public
-//  Description: Returns the frame's data as a matrix, composing the
-//               matrix first if necessary, as indicated by the
-//               FrameData's _flags member.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the frame's data as a matrix, composing the matrix first if
+ * necessary, as indicated by the FrameData's _flags member.
+ */
 INLINE const LMatrix4d &XFileAnimationSet::FrameEntry::
 get_mat(int flags) const {
   if ((flags & FDF_mat) == 0) {
@@ -43,11 +36,9 @@ get_mat(int flags) const {
   return _mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::FrameData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE XFileAnimationSet::FrameData::
 FrameData() :
   _flags(0)

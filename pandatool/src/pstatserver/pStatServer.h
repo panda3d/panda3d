@@ -1,16 +1,15 @@
-// Filename: pStatServer.h
-// Created by:  drose (09Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatServer.h
+ * @author drose
+ * @date 2000-07-09
+ */
 
 #ifndef PSTATSERVER_H
 #define PSTATSERVER_H
@@ -24,20 +23,14 @@
 
 class PStatReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatServer
-// Description : The overall manager of the network connections.  This
-//               class gets the ball rolling; to use this package, you
-//               need to derive from this and define make_monitor() to
-//               allocate and return a PStatMonitor of the suitable
-//               type.
-//
-//               Then create just one PStatServer object and call
-//               listen() with the port(s) you would like to listen
-//               on.  It will automatically create PStatMonitors as
-//               connections are established and mark the connections
-//               closed as they are lost.
-////////////////////////////////////////////////////////////////////
+/**
+ * The overall manager of the network connections.  This class gets the ball
+ * rolling; to use this package, you need to derive from this and define
+ * make_monitor() to allocate and return a PStatMonitor of the suitable type.
+ * Then create just one PStatServer object and call listen() with the port(s)
+ * you would like to listen on.  It will automatically create PStatMonitors as
+ * connections are established and mark the connections closed as they are lost.
+ */
 class PStatServer : public ConnectionManager {
 public:
   PStatServer();
@@ -65,7 +58,7 @@ public:
   virtual bool is_thread_safe();
 
 protected:
-  virtual void connection_reset(const PT(Connection) &connection, 
+  virtual void connection_reset(const PT(Connection) &connection,
                                 bool okflag);
 
 private:

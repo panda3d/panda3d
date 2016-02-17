@@ -1,17 +1,15 @@
-// Filename: panda3dWinMain.cxx
-// Created by:  drose (23Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file panda3dWinMain.cxx
+ * @author drose
+ * @date 2009-10-23
+ */
 
 #include "panda3d.h"
 
@@ -51,12 +49,12 @@ parse_unquoted_arg(char *&p) {
   return strdup(result.c_str());
 }
 
-int WINAPI 
+int WINAPI
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 
   vector<char *> argv;
-  
+
   char *p = command_line;
   while (*p != '\0') {
     if (*p == '"') {

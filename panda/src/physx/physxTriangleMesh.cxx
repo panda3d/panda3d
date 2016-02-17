@@ -1,27 +1,24 @@
-// Filename: physxTriangleMesh.cxx
-// Created by:  enn0x (14Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxTriangleMesh.cxx
+ * @author enn0x
+ * @date 2009-10-14
+ */
 
 #include "physxTriangleMesh.h"
 #include "physxMeshPool.h"
 
 TypeHandle PhysxTriangleMesh::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMesh::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriangleMesh::
 link(NxTriangleMesh *meshPtr) {
 
@@ -31,11 +28,9 @@ link(NxTriangleMesh *meshPtr) {
   _error_type = ET_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMesh::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriangleMesh::
 unlink() {
 
@@ -44,11 +39,9 @@ unlink() {
   PhysxManager::get_global_ptr()->_triangle_meshes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMesh::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriangleMesh::
 release() {
 
@@ -61,11 +54,9 @@ release() {
   PhysxMeshPool::release_triangle_mesh(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMesh::get_reference_count
-//       Access: Published
-//  Description: Returns the reference count for shared meshes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reference count for shared meshes.
+ */
 unsigned int PhysxTriangleMesh::
 get_reference_count() const {
 
@@ -73,4 +64,3 @@ get_reference_count() const {
 
   return _ptr->getReferenceCount();
 }
-

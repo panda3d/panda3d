@@ -1,16 +1,15 @@
-// Filename: cullPlanes.cxx
-// Created by:  drose (23Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullPlanes.cxx
+ * @author drose
+ * @date 2005-08-23
+ */
 
 #include "cullPlanes.h"
 #include "cullTraverser.h"
@@ -19,11 +18,9 @@
 #include "occluderEffect.h"
 #include "boundingBox.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::make_empty
-//       Access: Public, Static
-//  Description: Returns a pointer to an empty CullPlanes object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to an empty CullPlanes object.
+ */
 CPT(CullPlanes) CullPlanes::
 make_empty() {
   static CPT(CullPlanes) empty;
@@ -37,13 +34,10 @@ make_empty() {
   return empty;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::xform
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the clip planes
-//               modified by the indicated transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the clip planes modified by the indicated transform.
+ */
 CPT(CullPlanes) CullPlanes::
 xform(const LMatrix4 &mat) const {
   PT(CullPlanes) new_planes;
@@ -74,18 +68,12 @@ xform(const LMatrix4 &mat) const {
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::apply_state
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the indicated
-//               attributes applied to the state.
-//
-//               In particular, any new ClipPlanes given in
-//               net_attrib, if it is not NULL, will be added to the
-//               state, unless those ClipPlanes are also listed in
-//               off_attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the indicated attributes applied to the state.  In particular, any
+ * new ClipPlanes given in net_attrib, if it is not NULL, will be added to the
+ * state, unless those ClipPlanes are also listed in off_attrib.
+ */
 CPT(CullPlanes) CullPlanes::
 apply_state(const CullTraverser *trav, const CullTraverserData *data,
             const ClipPlaneAttrib *net_attrib,
@@ -312,20 +300,14 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::do_cull
-//       Access: Public
-//  Description: Tests the indicated bounding volume against all of
-//               the clip planes in this object.  Sets result to an
-//               appropriate union of
-//               BoundingVolume::IntersectionFlags, similar to the
-//               result of BoundingVolume::contains().
-//
-//               Also, if the bounding volume is completely in front
-//               of any of the clip planes, removes those planes both
-//               from this object and from the indicated state,
-//               returning a new CullPlanes object in that case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tests the indicated bounding volume against all of the clip planes in this
+ * object.  Sets result to an appropriate union of
+ * BoundingVolume::IntersectionFlags, similar to the result of
+ * BoundingVolume::contains().  Also, if the bounding volume is completely in
+ * front of any of the clip planes, removes those planes both from this object
+ * and from the indicated state, returning a new CullPlanes object in that case.
+ */
 CPT(CullPlanes) CullPlanes::
 do_cull(int &result, CPT(RenderState) &state,
         const GeometricBoundingVolume *node_gbv) const {
@@ -406,13 +388,10 @@ do_cull(int &result, CPT(RenderState) &state,
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::remove_plane
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the indicated
-//               clip plane removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the indicated clip plane removed.
+ */
 CPT(CullPlanes) CullPlanes::
 remove_plane(const NodePath &clip_plane) const {
   PT(CullPlanes) new_planes;
@@ -429,13 +408,10 @@ remove_plane(const NodePath &clip_plane) const {
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::remove_occluder
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the indicated
-//               occluder removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the indicated occluder removed.
+ */
 CPT(CullPlanes) CullPlanes::
 remove_occluder(const NodePath &occluder) const {
   PT(CullPlanes) new_planes;
@@ -452,11 +428,9 @@ remove_occluder(const NodePath &occluder) const {
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CullPlanes::
 write(ostream &out) const {
   out << "CullPlanes (" << _planes.size() << " planes and "

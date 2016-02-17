@@ -1,16 +1,15 @@
-// Filename: asyncTaskChain.h
-// Created by:  drose (23Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file asyncTaskChain.h
+ * @author drose
+ * @date 2006-08-23
+ */
 
 #ifndef ASYNCTASKCHAIN_H
 #define ASYNCTASKCHAIN_H
@@ -29,31 +28,21 @@
 
 class AsyncTaskManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskChain
-// Description : The AsyncTaskChain is a subset of the
-//               AsyncTaskManager.  Each chain maintains a separate
-//               list of tasks, and will execute them with its own set
-//               of threads.  Each chain may thereby operate
-//               independently of the other chains.
-//
-//               The AsyncTaskChain will spawn a specified number of
-//               threads (possibly 0) to serve the tasks.  If there
-//               are no threads, you must call poll() from time to
-//               time to serve the tasks in the main thread.  Normally
-//               this is done by calling AsyncTaskManager::poll().
-//
-//               Each task will run exactly once each epoch.  Beyond
-//               that, the tasks' sort and priority values control the
-//               order in which they are run: tasks are run in
-//               increasing order by sort value, and within the same
-//               sort value, they are run roughly in decreasing order
-//               by priority value, with some exceptions for
-//               parallelism.  Tasks with different sort values are
-//               never run in parallel together, but tasks with
-//               different priority values might be (if there is more
-//               than one thread).
-////////////////////////////////////////////////////////////////////
+/**
+ * The AsyncTaskChain is a subset of the AsyncTaskManager.  Each chain maintains
+ * a separate list of tasks, and will execute them with its own set of threads.
+ * Each chain may thereby operate independently of the other chains.  The
+ * AsyncTaskChain will spawn a specified number of threads (possibly 0) to serve
+ * the tasks.  If there are no threads, you must call poll() from time to time
+ * to serve the tasks in the main thread.  Normally this is done by calling
+ * AsyncTaskManager::poll().  Each task will run exactly once each epoch.
+ * Beyond that, the tasks' sort and priority values control the order in which
+ * they are run: tasks are run in increasing order by sort value, and within the
+ * same sort value, they are run roughly in decreasing order by priority value,
+ * with some exceptions for parallelism.  Tasks with different sort values are
+ * never run in parallel together, but tasks with different priority values
+ * might be (if there is more than one thread).
+ */
 class EXPCL_PANDA_EVENT AsyncTaskChain : public TypedReferenceCount, public Namable {
 public:
   AsyncTaskChain(AsyncTaskManager *manager, const string &name);
@@ -143,7 +132,7 @@ protected:
       return AsyncTaskChain::get_wake_time(a) > AsyncTaskChain::get_wake_time(b);
     }
   };
-  
+
   class AsyncTaskSortPriority {
   public:
     bool operator () (AsyncTask *a, AsyncTask *b) const {
@@ -191,7 +180,7 @@ protected:
   int _current_frame;
   double _time_in_frame;
   bool _block_till_next_frame;
-  
+
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;
 

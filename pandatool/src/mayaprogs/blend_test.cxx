@@ -1,3 +1,13 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file blend_test.cxx
+ */
 
 #include <iostream>
 #include <fstream>
@@ -94,7 +104,7 @@ get_slider(MString slider_name) {
       cerr << "selected element is not a blend shape\n";
     }
   }
-  
+
   cerr << "Couldn't find slider " << slider_name << "\n";
   exit(1);
 }
@@ -160,7 +170,7 @@ get_mesh(MString mesh_name) {
       cerr << "selected element is not a mesh\n";
     }
   }
-  
+
   cerr << "Couldn't find mesh " << mesh_name << "\n";
   exit(1);
 }

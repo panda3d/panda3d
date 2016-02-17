@@ -1,16 +1,15 @@
-// Filename: subfileInfo.h
-// Created by:  drose (20Jun11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file subfileInfo.h
+ * @author drose
+ * @date 2011-06-20
+ */
 
 #ifndef SUBFILEINFO_H
 #define SUBFILEINFO_H
@@ -19,13 +18,11 @@
 #include "fileReference.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SubfileInfo
-// Description : This class records a particular byte sub-range within
-//               an existing file on disk.  Generally, the filename is
-//               understood as a physical file on disk, and not to be
-//               looked up via the vfs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class records a particular byte sub-range within an existing file on
+ * disk.  Generally, the filename is understood as a physical file on disk, and
+ * not to be looked up via the vfs.
+ */
 class EXPCL_PANDAEXPRESS SubfileInfo {
 PUBLISHED:
   INLINE SubfileInfo();

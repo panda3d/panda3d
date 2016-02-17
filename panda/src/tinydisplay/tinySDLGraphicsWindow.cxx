@@ -1,16 +1,15 @@
-// Filename: tinySDLGraphicsWindow.cxx
-// Created by:  drose (24Apr08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinySDLGraphicsWindow.cxx
+ * @author drose
+ * @date 2008-04-24
+ */
 
 #include "pandabase.h"
 
@@ -26,13 +25,11 @@
 
 TypeHandle TinySDLGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinySDLGraphicsWindow::
-TinySDLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+TinySDLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
@@ -51,24 +48,19 @@ TinySDLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinySDLGraphicsWindow::
 ~TinySDLGraphicsWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool TinySDLGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
@@ -81,18 +73,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   tinygsg->_current_frame_buffer = _frame_buffer;
   tinygsg->reset_if_new();
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void TinySDLGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -110,16 +99,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.  This should cause the window to wait for the flip, if necessary.
+ */
 void TinySDLGraphicsWindow::
 end_flip() {
   if (!_flip_ready) {
@@ -139,14 +123,14 @@ end_flip() {
       }
     }
     ZB_copyFrameBuffer(_frame_buffer, _screen->pixels, _pitch);
-    
+
     if (SDL_MUSTLOCK(_screen)) {
-      SDL_UnlockSurface(_screen); 
+      SDL_UnlockSurface(_screen);
     }
 
   } else {
     // Copy to another surface, then scale it onto the screen.
-    SDL_Surface *temp = 
+    SDL_Surface *temp =
       SDL_CreateRGBSurfaceFrom(_frame_buffer->pbuf, _frame_buffer->xsize, _frame_buffer->ysize,
                                32, _frame_buffer->linesize, 0xff0000, 0x00ff00, 0x0000ff, 0xff000000);
     SDL_SetAlpha(temp, SDL_RLEACCEL, 0);
@@ -158,16 +142,11 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via request_properties()
+ * This function is called only within the window thread.
+ */
 void TinySDLGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
@@ -214,7 +193,7 @@ process_events() {
     case SDL_MOUSEMOTION:
       _input_devices[0].set_pointer_in_window(evt.motion.x, evt.motion.y);
       break;
-     
+
     case SDL_VIDEORESIZE:
       properties.set_size(evt.resize.w, evt.resize.h);
       system_changed_properties(properties);
@@ -222,7 +201,7 @@ process_events() {
       ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
       _pitch = _screen->pitch * 32 / _screen->format->BitsPerPixel;
       break;
-      
+
     case SDL_QUIT:
       // The window was closed by the user.
       close_window();
@@ -233,23 +212,15 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.  The window
+ * properties are applied immediately, rather than waiting until the next frame.
+ * This implies that this method may *only* be called from within the window
+ * thread.  The return value is true if the properties are set, false if they
+ * are ignored.  This is mainly useful for derived classes to implement
+ * extensions to this function.
+ */
 void TinySDLGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
@@ -259,43 +230,31 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::supports_pixel_zoom
-//       Access: Published, Virtual
-//  Description: Returns true if a call to set_pixel_zoom() will be
-//               respected, false if it will be ignored.  If this
-//               returns false, then get_pixel_factor() will always
-//               return 1.0, regardless of what value you specify for
-//               set_pixel_zoom().
-//
-//               This may return false if the underlying renderer
-//               doesn't support pixel zooming, or if you have called
-//               this on a DisplayRegion that doesn't have both
-//               set_clear_color() and set_clear_depth() enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a call to set_pixel_zoom() will be respected, false if it
+ * will be ignored.  If this returns false, then get_pixel_factor() will always
+ * return 1.0, regardless of what value you specify for set_pixel_zoom().  This
+ * may return false if the underlying renderer doesn't support pixel zooming, or
+ * if you have called this on a DisplayRegion that doesn't have both
+ * set_clear_color() and set_clear_depth() enabled.
+ */
 bool TinySDLGraphicsWindow::
 supports_pixel_zoom() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void TinySDLGraphicsWindow::
 close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool TinySDLGraphicsWindow::
 open_window() {
 
@@ -346,12 +305,9 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::create_frame_buffer
-//       Access: Private
-//  Description: Creates a suitable frame buffer for the current
-//               window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable frame buffer for the current window size.
+ */
 void TinySDLGraphicsWindow::
 create_frame_buffer() {
   if (_frame_buffer != NULL) {
@@ -385,12 +341,9 @@ create_frame_buffer() {
   _pitch = _screen->pitch * 32 / _screen->format->BitsPerPixel;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::get_keyboard_button
-//       Access: Private, Static
-//  Description: Maps from an SDL keysym to the corresponding Panda
-//               ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from an SDL keysym to the corresponding Panda ButtonHandle.
+ */
 ButtonHandle TinySDLGraphicsWindow::
 get_keyboard_button(SDLKey sym) {
   switch (sym) {
@@ -534,12 +487,9 @@ get_keyboard_button(SDLKey sym) {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::get_mouse_button
-//       Access: Private, Static
-//  Description: Maps from an SDL mouse button index to the
-//               corresponding Panda ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from an SDL mouse button index to the corresponding Panda ButtonHandle.
+ */
 ButtonHandle TinySDLGraphicsWindow::
 get_mouse_button(Uint8 button) {
   switch (button) {

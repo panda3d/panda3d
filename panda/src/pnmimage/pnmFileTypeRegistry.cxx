@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeRegistry.cxx
-// Created by:  drose (15Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeRegistry.cxx
+ * @author drose
+ * @date 2000-06-15
+ */
 
 #include "pnmFileTypeRegistry.h"
 #include "pnmFileType.h"
@@ -24,30 +23,24 @@
 
 PNMFileTypeRegistry *PNMFileTypeRegistry::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeRegistry::
 PNMFileTypeRegistry() {
   _requires_sort = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeRegistry::
 ~PNMFileTypeRegistry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::register_type
-//       Access: Public
-//  Description: Defines a new PNMFileType in the universe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new PNMFileType in the universe.
+ */
 void PNMFileTypeRegistry::
 register_type(PNMFileType *type) {
   if (pnmimage_cat->is_debug()) {
@@ -89,11 +82,9 @@ register_type(PNMFileType *type) {
   _requires_sort = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::get_num_types
-//       Access: Published
-//  Description: Returns the total number of types registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of types registered.
+ */
 int PNMFileTypeRegistry::
 get_num_types() const {
   if (_requires_sort) {
@@ -102,25 +93,20 @@ get_num_types() const {
   return _types.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::get_type
-//       Access: Published
-//  Description: Returns the nth type registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth type registered.
+ */
 PNMFileType *PNMFileTypeRegistry::
 get_type(int n) const {
   nassertr(n >= 0 && n < (int)_types.size(), NULL);
   return _types[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::get_type_from_extension
-//       Access: Published
-//  Description: Tries to determine what the PNMFileType is likely to
-//               be for a particular image file based on its
-//               extension.  Returns a suitable PNMFileType pointer,
-//               or NULL if no type can be determined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tries to determine what the PNMFileType is likely to be for a particular
+ * image file based on its extension.  Returns a suitable PNMFileType pointer,
+ * or NULL if no type can be determined.
+ */
 PNMFileType *PNMFileTypeRegistry::
 get_type_from_extension(const string &filename) const {
   if (_requires_sort) {
@@ -179,15 +165,11 @@ get_type_from_extension(const string &filename) const {
   return (*ei).second.front();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::get_type_from_magic_number
-//       Access: Published
-//  Description: Tries to determine what the PNMFileType is likely to
-//               be for a particular image file based on its
-//               magic number, the first two bytes read from the
-//               file.  Returns a suitable PNMFileType pointer, or
-//               NULL if no type can be determined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tries to determine what the PNMFileType is likely to be for a particular
+ * image file based on its magic number, the first two bytes read from the file.
+ * Returns a suitable PNMFileType pointer, or NULL if no type can be determined.
+ */
 PNMFileType *PNMFileTypeRegistry::
 get_type_from_magic_number(const string &magic_number) const {
   if (_requires_sort) {
@@ -206,14 +188,11 @@ get_type_from_magic_number(const string &magic_number) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::get_type_by_handle
-//       Access: Published
-//  Description: Returns the PNMFileType instance stored in the
-//               registry for the given TypeHandle, e.g. as retrieved
-//               by a previous call to get_type() on the type
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the PNMFileType instance stored in the registry for the given
+ * TypeHandle, e.g.  as retrieved by a previous call to get_type() on the type
+ * instance.
+ */
 PNMFileType *PNMFileTypeRegistry::
 get_type_by_handle(TypeHandle handle) const {
   Handles::const_iterator hi;
@@ -225,12 +204,10 @@ get_type_by_handle(TypeHandle handle) const {
   return (PNMFileType *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::write
-//       Access: Published
-//  Description: Writes a list of supported image file types to the
-//               indicated output stream, one per line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of supported image file types to the indicated output stream,
+ * one per line.
+ */
 void PNMFileTypeRegistry::
 write(ostream &out, int indent_level) const {
   if (_types.empty()) {
@@ -257,12 +234,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns a pointer to the global PNMFileTypeRegistry
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global PNMFileTypeRegistry object.
+ */
 PNMFileTypeRegistry *PNMFileTypeRegistry::
 get_global_ptr() {
   if (_global_ptr == (PNMFileTypeRegistry *)NULL) {
@@ -271,16 +245,12 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeRegistry::sort_preferences
-//       Access: Private
-//  Description: Sorts the PNMFileType pointers in order according to
-//               user-specified preferences in the config file.  This
-//               allows us to choose a particular PNMFileType over
-//               another for particular extensions when multiple file
-//               types map to the same extension, or for file types
-//               that have no magic number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the PNMFileType pointers in order according to user-specified
+ * preferences in the config file.  This allows us to choose a particular
+ * PNMFileType over another for particular extensions when multiple file types
+ * map to the same extension, or for file types that have no magic number.
+ */
 void PNMFileTypeRegistry::
 sort_preferences() {
   // So, we don't do anything here yet.  One day we will.

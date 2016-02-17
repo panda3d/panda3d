@@ -1,23 +1,19 @@
-// Filename: selectiveChildNode.I
-// Created by:  drose (06Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file selectiveChildNode.I
+ * @author drose
+ * @date 2002-03-06
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: SelectiveChildNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE SelectiveChildNode::
 SelectiveChildNode(const string &name) :
   PandaNode(name),
@@ -25,11 +21,9 @@ SelectiveChildNode(const string &name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SelectiveChildNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SelectiveChildNode::
 SelectiveChildNode(const SelectiveChildNode &copy) :
   PandaNode(copy),
@@ -37,13 +31,10 @@ SelectiveChildNode(const SelectiveChildNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SelectiveChildNode::select_child
-//       Access: Protected
-//  Description: Selects the indicated child for rendering.  This is
-//               normally called during the cull_callback() method,
-//               but it may be called at any time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects the indicated child for rendering.  This is normally called during
+ * the cull_callback() method, but it may be called at any time.
+ */
 INLINE void SelectiveChildNode::
 select_child(int n) {
   nassertv(n >= 0);

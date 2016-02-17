@@ -1,185 +1,139 @@
-// Filename: geomVertexArrayData.I
-// Created by:  drose (17Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexArrayData.I
+ * @author drose
+ * @date 2005-03-17
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_array_format
-//       Access: Published
-//  Description: Returns the format object that describes this array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the format object that describes this array.
+ */
 INLINE const GeomVertexArrayFormat *GeomVertexArrayData::
 get_array_format() const {
   return _array_format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_usage_hint
-//       Access: Published
-//  Description: Returns the usage hint that describes to the
-//               rendering backend how often the vertex data will be
-//               modified and/or rendered.  See geomEnums.h.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the usage hint that describes to the rendering backend how often the
+ * vertex data will be modified and/or rendered.  See geomEnums.h.
+ */
 INLINE GeomVertexArrayData::UsageHint GeomVertexArrayData::
 get_usage_hint() const {
   CDReader cdata(_cycler);
   return cdata->_usage_hint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::has_column
-//       Access: Published
-//  Description: Returns true if the array has the named column,
-//               false otherwise.  This is really just a shortcut for
-//               asking the same thing from the format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the array has the named column, false otherwise.  This is
+ * really just a shortcut for asking the same thing from the format.
+ */
 INLINE bool GeomVertexArrayData::
 has_column(const InternalName *name) const {
   return _array_format->has_column(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_num_rows
-//       Access: Published
-//  Description: Returns the number of rows stored in the array,
-//               based on the number of bytes and the stride.  This
-//               should be the same for all arrays within a given
-//               GeomVertexData object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of rows stored in the array, based on the number of bytes
+ * and the stride.  This should be the same for all arrays within a given
+ * GeomVertexData object.
+ */
 INLINE int GeomVertexArrayData::
 get_num_rows() const {
   return get_handle()->get_num_rows();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::set_num_rows
-//       Access: Published
-//  Description: Sets the length of the array to n rows.
-//
-//               Normally, you would not call this directly, since all
-//               of the arrays in a particular GeomVertexData must
-//               have the same number of rows; instead, call
-//               GeomVertexData::set_num_rows().
-//
-//               The return value is true if the number of rows
-//               was changed, false if the object already contained n
-//               rows (or if there was some error).
-//
-//               The new vertex data is initialized to 0, including
-//               the "color" column (but see
-//               GeomVertexData::set_num_rows()).
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the length of the array to n rows.  Normally, you would not call this
+ * directly, since all of the arrays in a particular GeomVertexData must have
+ * the same number of rows; instead, call GeomVertexData::set_num_rows().  The
+ * return value is true if the number of rows was changed, false if the object
+ * already contained n rows (or if there was some error).  The new vertex data
+ * is initialized to 0, including the "color" column (but see
+ * GeomVertexData::set_num_rows()).  Don't call this in a downstream thread
+ * unless you don't mind it blowing away other changes you might have recently
+ * made in an upstream thread.
+ */
 INLINE bool GeomVertexArrayData::
 set_num_rows(int n) {
   return modify_handle()->set_num_rows(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::unclean_set_num_rows
-//       Access: Published
-//  Description: This method behaves like set_num_rows(), except the
-//               new data is not initialized.  Furthermore, after this
-//               call, *any* of the data in the GeomVertexArrayData
-//               may be uninitialized, including the earlier rows.
-//
-//               Normally, you would not call this directly, since all
-//               of the arrays in a particular GeomVertexData must
-//               have the same number of rows; instead, call
-//               GeomVertexData::unclean_set_num_rows().
-////////////////////////////////////////////////////////////////////
+/**
+ * This method behaves like set_num_rows(), except the new data is not
+ * initialized.  Furthermore, after this call, *any* of the data in the
+ * GeomVertexArrayData may be uninitialized, including the earlier rows.
+ * Normally, you would not call this directly, since all of the arrays in a
+ * particular GeomVertexData must have the same number of rows; instead, call
+ * GeomVertexData::unclean_set_num_rows().
+ */
 INLINE bool GeomVertexArrayData::
 unclean_set_num_rows(int n) {
   return modify_handle()->unclean_set_num_rows(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::reserve_num_rows
-//       Access: Published
-//  Description: This ensures that enough memory space for n rows is
-//               allocated, so that you may increase the number of
-//               rows to n without causing a new memory allocation.
-//               This is a performance optimization only; it is
-//               especially useful when you know ahead of time that
-//               you will be adding n rows to the data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This ensures that enough memory space for n rows is allocated, so that you
+ * may increase the number of rows to n without causing a new memory allocation.
+ * This is a performance optimization only; it is especially useful when you
+ * know ahead of time that you will be adding n rows to the data.
+ */
 INLINE bool GeomVertexArrayData::
 reserve_num_rows(int n) {
   return modify_handle()->reserve_num_rows(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::clear_rows
-//       Access: Published
-//  Description: Removes all of the rows in the array.
-//               Functionally equivalent to set_num_rows(0).
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the rows in the array.  Functionally equivalent to
+ * set_num_rows(0).
+ */
 INLINE void GeomVertexArrayData::
 clear_rows() {
   return modify_handle()->clear_rows();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_data_size_bytes
-//       Access: Published
-//  Description: Returns the number of bytes stored in the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bytes stored in the array.
+ */
 INLINE size_t GeomVertexArrayData::
 get_data_size_bytes() const {
   CDReader cdata(_cycler);
   return cdata->_buffer.get_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_modified
-//       Access: Published
-//  Description: Returns a sequence number which is guaranteed to
-//               change at least every time the array vertex data is
-//               modified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a sequence number which is guaranteed to change at least every time
+ * the array vertex data is modified.
+ */
 INLINE UpdateSeq GeomVertexArrayData::
 get_modified() const {
   CDReader cdata(_cycler);
   return cdata->_modified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::request_resident
-//       Access: Published
-//  Description: Returns true if the vertex data is currently resident
-//               in memory.  If this returns true, the next call to
-//               get_handle()->get_read_pointer() will probably not
-//               block.  If this returns false, the vertex data will
-//               be brought back into memory shortly; try again later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex data is currently resident in memory.  If this
+ * returns true, the next call to get_handle()->get_read_pointer() will probably
+ * not block.  If this returns false, the vertex data will be brought back into
+ * memory shortly; try again later.
+ */
 INLINE bool GeomVertexArrayData::
 request_resident() const {
   CPT(GeomVertexArrayDataHandle) handle = get_handle();
   return handle->request_resident();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_handle
-//       Access: Published
-//  Description: Returns an object that can be used to read the actual
-//               data bytes stored in the array.  Calling this method
-//               locks the data, and will block any other threads
-//               attempting to read or write the data, until the
-//               returned object destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an object that can be used to read the actual data bytes stored in
+ * the array.  Calling this method locks the data, and will block any other
+ * threads attempting to read or write the data, until the returned object
+ * destructs.
+ */
 INLINE CPT(GeomVertexArrayDataHandle) GeomVertexArrayData::
 get_handle(Thread *current_thread) const {
   const CData *cdata = _cycler.read_unlocked(current_thread);
@@ -187,15 +141,12 @@ get_handle(Thread *current_thread) const {
                                        cdata, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::modify_handle
-//       Access: Published
-//  Description: Returns an object that can be used to read or write
-//               the actual data bytes stored in the array.  Calling
-//               this method locks the data, and will block any other
-//               threads attempting to read or write the data, until
-//               the returned object destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an object that can be used to read or write the actual data bytes
+ * stored in the array.  Calling this method locks the data, and will block any
+ * other threads attempting to read or write the data, until the returned object
+ * destructs.
+ */
 INLINE PT(GeomVertexArrayDataHandle) GeomVertexArrayData::
 modify_handle(Thread *current_thread) {
   CData *cdata = _cycler.write_upstream(true, current_thread);
@@ -203,46 +154,36 @@ modify_handle(Thread *current_thread) {
                                        cdata, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_independent_lru
-//       Access: Published, Static
-//  Description: Returns a pointer to the global LRU object that
-//               manages the GeomVertexArrayData's that have not (yet)
-//               been paged out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global LRU object that manages the
+ * GeomVertexArrayData's that have not (yet) been paged out.
+ */
 INLINE SimpleLru *GeomVertexArrayData::
 get_independent_lru() {
   return &_independent_lru;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_small_lru
-//       Access: Published, Static
-//  Description: Returns a pointer to the global LRU object that
-//               manages the GeomVertexArrayData's that are deemed too
-//               small to be paged out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global LRU object that manages the
+ * GeomVertexArrayData's that are deemed too small to be paged out.
+ */
 INLINE SimpleLru *GeomVertexArrayData::
 get_small_lru() {
   return &_small_lru;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_book
-//       Access: Published, Static
-//  Description: Returns the global VertexDataBook that will be
-//               used to allocate vertex data buffers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the global VertexDataBook that will be used to allocate vertex data
+ * buffers.
+ */
 INLINE VertexDataBook &GeomVertexArrayData::
 get_book() {
   return _book;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::set_lru_size
-//       Access: Private
-//  Description: Should be called when the size of the buffer changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called when the size of the buffer changes.
+ */
 INLINE void GeomVertexArrayData::
 set_lru_size(size_t lru_size) {
   SimpleLruPage::set_lru_size(lru_size);
@@ -254,11 +195,9 @@ set_lru_size(size_t lru_size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexArrayData::CData::
 CData() :
   _usage_hint(UH_unspecified),
@@ -266,11 +205,9 @@ CData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexArrayData::CData::
 CData(const GeomVertexArrayData::CData &copy) :
   _usage_hint(copy._usage_hint),
@@ -280,11 +217,9 @@ CData(const GeomVertexArrayData::CData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::Copy Assignment
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void GeomVertexArrayData::CData::
 operator = (const GeomVertexArrayData::CData &copy) {
   _usage_hint = copy._usage_hint;
@@ -292,11 +227,9 @@ operator = (const GeomVertexArrayData::CData &copy) {
   _modified = copy._modified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexArrayDataHandle::
 GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
                           Thread *current_thread,
@@ -321,31 +254,25 @@ GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::Copy Constructor
-//       Access: Private
-//  Description: Don't attempt to copy these objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Don't attempt to copy these objects.
+ */
 INLINE GeomVertexArrayDataHandle::
 GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::Copy Assignment Operator
-//       Access: Private
-//  Description: Don't attempt to copy these objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Don't attempt to copy these objects.
+ */
 INLINE void GeomVertexArrayDataHandle::
 operator = (const GeomVertexArrayDataHandle &) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexArrayDataHandle::
 ~GeomVertexArrayDataHandle() {
 #ifdef _DEBUG
@@ -370,173 +297,134 @@ INLINE GeomVertexArrayDataHandle::
 #endif  // _DEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_current_thread
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Thread *GeomVertexArrayDataHandle::
 get_current_thread() const {
   return _current_thread;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_read_pointer
-//       Access: Public
-//  Description: Returns a readable pointer to the beginning of the
-//               actual data stream, or NULL if the data is not
-//               currently resident.  If the data is not currently
-//               resident, this will implicitly request it to become
-//               resident soon.
-//
-//               If force is true, this method will never return NULL,
-//               but may block until the data is available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a readable pointer to the beginning of the actual data stream, or
+ * NULL if the data is not currently resident.  If the data is not currently
+ * resident, this will implicitly request it to become resident soon.  If force
+ * is true, this method will never return NULL, but may block until the data is
+ * available.
+ */
 INLINE const unsigned char *GeomVertexArrayDataHandle::
 get_read_pointer(bool force) const {
   mark_used();
   return _cdata->_buffer.get_read_pointer(force);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_object
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const GeomVertexArrayData *GeomVertexArrayDataHandle::
 get_object() const {
   return _object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_object
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexArrayData *GeomVertexArrayDataHandle::
 get_object() {
   return _object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_array_format
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const GeomVertexArrayFormat *GeomVertexArrayDataHandle::
 get_array_format() const {
   return _object->_array_format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_usage_hint
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexArrayDataHandle::UsageHint GeomVertexArrayDataHandle::
 get_usage_hint() const {
   return _cdata->_usage_hint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_num_rows
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int GeomVertexArrayDataHandle::
 get_num_rows() const {
   nassertr(_object->_array_format->get_stride() != 0, 0);
   return get_data_size_bytes() / _object->_array_format->get_stride();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::clear_rows
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void GeomVertexArrayDataHandle::
 clear_rows() {
   set_num_rows(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_data_size_bytes
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE size_t GeomVertexArrayDataHandle::
 get_data_size_bytes() const {
   return _cdata->_buffer.get_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_modified
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE UpdateSeq GeomVertexArrayDataHandle::
 get_modified() const {
   return _cdata->_modified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::request_resident
-//       Access: Published
-//  Description: Returns true if the vertex data is currently resident
-//               in memory.  If this returns true, the next call to
-//               get_handle()->get_read_pointer() will probably not
-//               block.  If this returns false, the vertex data will
-//               be brought back into memory shortly; try again later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex data is currently resident in memory.  If this
+ * returns true, the next call to get_handle()->get_read_pointer() will probably
+ * not block.  If this returns false, the vertex data will be brought back into
+ * memory shortly; try again later.
+ */
 INLINE bool GeomVertexArrayDataHandle::
 request_resident() const {
   return (get_read_pointer(false) != (const unsigned char *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::prepare_now
-//       Access: Public
-//  Description: Creates a context for the data on the particular
-//               GSG, if it does not already exist.  Returns the new
-//               (or old) VertexBufferContext.  This assumes that the
-//               GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               datas.  If this is not necessarily the case, you
-//               should use prepare() instead.
-//
-//               Normally, this is not called directly except by the
-//               GraphicsStateGuardian; a data does not need to be
-//               explicitly prepared by the user before it may be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a context for the data on the particular GSG, if it does not already
+ * exist.  Returns the new (or old) VertexBufferContext.  This assumes that the
+ * GraphicsStateGuardian is the currently active rendering context and that it
+ * is ready to accept new datas.  If this is not necessarily the case, you
+ * should use prepare() instead.  Normally, this is not called directly except
+ * by the GraphicsStateGuardian; a data does not need to be explicitly prepared
+ * by the user before it may be rendered.
+ */
 INLINE VertexBufferContext *GeomVertexArrayDataHandle::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) const {
   return _object->prepare_now(prepared_objects, gsg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_data
-//       Access: Published
-//  Description: Returns the entire raw data of the
-//               GeomVertexArrayData object, formatted as a string.
-//               This is primarily for the benefit of high-level
-//               languages such as Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the entire raw data of the GeomVertexArrayData object, formatted as a
+ * string.  This is primarily for the benefit of high-level languages such as
+ * Python.
+ */
 INLINE string GeomVertexArrayDataHandle::
 get_data() const {
   mark_used();
   return string((const char *)_cdata->_buffer.get_read_pointer(true), _cdata->_buffer.get_size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_subdata
-//       Access: Published
-//  Description: Returns a subset of the raw data of the
-//               GeomVertexArrayData object, formatted as a string.
-//               This is primarily for the benefit of high-level
-//               languages such as Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a subset of the raw data of the GeomVertexArrayData object, formatted
+ * as a string.  This is primarily for the benefit of high-level languages such
+ * as Python.
+ */
 INLINE string GeomVertexArrayDataHandle::
 get_subdata(size_t start, size_t size) const {
   mark_used();
@@ -545,11 +433,9 @@ get_subdata(size_t start, size_t size) const {
   return string((const char *)_cdata->_buffer.get_read_pointer(true) + start, size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::mark_used
-//       Access: Published
-//  Description: Marks the array data recently-used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the array data recently-used.
+ */
 void GeomVertexArrayDataHandle::
 mark_used() const {
   _object->set_lru_size(_object->get_lru_size());

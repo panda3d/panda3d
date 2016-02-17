@@ -1,16 +1,15 @@
-// Filename: pgMouseWatcherParameter.h
-// Created by:  drose (05Jul01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgMouseWatcherParameter.h
+ * @author drose
+ * @date 2001-07-05
+ */
 
 #ifndef PGMOUSEWATCHERPARAMETER_H
 #define PGMOUSEWATCHERPARAMETER_H
@@ -20,14 +19,11 @@
 #include "mouseWatcherParameter.h"
 #include "typedWritableReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGMouseWatcherParameter
-// Description : This specialization on MouseWatcherParameter allows
-//               us to tag on additional elements to events for the
-//               gui system, and also inherits from
-//               TypedWritableReferenceCount so we can attach this thing to an
-//               event.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on MouseWatcherParameter allows us to tag on additional
+ * elements to events for the gui system, and also inherits from
+ * TypedWritableReferenceCount so we can attach this thing to an event.
+ */
 class EXPCL_PANDA_PGUI PGMouseWatcherParameter : public TypedWritableReferenceCount, public MouseWatcherParameter {
   // For now, this must inherit from TypedWritableReferenceCount on
   // the left, because MSVC++ wants to make that base class be the one

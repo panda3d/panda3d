@@ -1,29 +1,26 @@
-// Filename: handleStream.h
-// Created by:  drose (05Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file handleStream.h
+ * @author drose
+ * @date 2009-06-05
+ */
 
 #ifndef HANDLESTREAM_H
 #define HANDLESTREAM_H
 
 #include "handleStreamBuf.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HandleStream
-// Description : Implements a C++ stream object suitable for reading
-//               from and writing to Windows' HANDLE objects, or Posix
-//               file descriptors.  This is necessary to map low-level
-//               pipes into an iostream for tinyxml.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a C++ stream object suitable for reading from and writing to
+ * Windows' HANDLE objects, or Posix file descriptors.  This is necessary to map
+ * low-level pipes into an iostream for tinyxml.
+ */
 class HandleStream : public iostream {
 public:
   inline HandleStream();

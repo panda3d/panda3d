@@ -1,23 +1,22 @@
-// Filename: PPPandaObject.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PPPandaObject.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #include "stdafx.h"
 #include "PPPandaObject.h"
 #include "PPInstance.h"
 #include "load_plugin.h"
 
-PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) : 
+PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) :
     m_interface( interfac ), m_p3dObject( p3dObject ), m_refs( 0 ), m_ptinfo( NULL )
 {
     if ( m_p3dObject )
@@ -67,9 +66,9 @@ STDMETHODIMP PPandaObject::QueryInterface(REFIID riid, void FAR* FAR* ppv)
 {
     if(!IsEqualIID(riid, IID_IUnknown))
     {
-        if(!IsEqualIID(riid, IID_IDispatch)) 
+        if(!IsEqualIID(riid, IID_IDispatch))
         {
-            *ppv = NULL;      
+            *ppv = NULL;
             return E_NOINTERFACE;
         }
     }
@@ -170,7 +169,7 @@ STDMETHODIMP PPandaObject::Invoke(
         return E_FAIL;
     }
 
-    if ( dispidMember >= m_idsOfNames.size( ) ) 
+    if ( dispidMember >= m_idsOfNames.size( ) )
     {
         return E_FAIL;
     }
@@ -183,7 +182,7 @@ STDMETHODIMP PPandaObject::Invoke(
     case ( DISPATCH_METHOD | DISPATCH_PROPERTYGET ):
         {
             // NOTE: http://msdn.microsoft.com/en-us/library/ms221479.aspx
-            // The member is invoked as a method. If a property has the same name, 
+            // The member is invoked as a method. If a property has the same name,
             // both the DISPATCH_METHOD and the DISPATCH_PROPERTYGET flag may be set.
 
             bool hasMethod( false );

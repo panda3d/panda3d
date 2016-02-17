@@ -1,17 +1,15 @@
-// Filename: collisionFloorMesh.cxx
-// Created by:  drose (25Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionFloorMesh.cxx
+ * @author drose
+ * @date 2000-04-25
+ */
 
 #include "collisionFloorMesh.h"
 #include "collisionHandler.h"
@@ -39,21 +37,17 @@ PStatCollector CollisionFloorMesh::_volume_pcollector("Collision Volumes:Collisi
 PStatCollector CollisionFloorMesh::_test_pcollector("Collision Tests:CollisionFloorMesh");
 TypeHandle CollisionFloorMesh::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionSolid *CollisionFloorMesh::
 make_copy() {
   return new CollisionFloorMesh(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::xform
-//       Access: Public, Virtual
-//  Description: Transforms the solid by the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the solid by the indicated matrix.
+ */
 void CollisionFloorMesh::
 xform(const LMatrix4 &mat) {
   Vertices::iterator vi;
@@ -76,14 +70,11 @@ xform(const LMatrix4 &mat) {
   CollisionSolid::xform(mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::get_collision_origin
-//       Access: Public, Virtual
-//  Description: Returns the point in space deemed to be the "origin"
-//               of the solid for collision purposes.  The closest
-//               intersection point to this origin point is considered
-//               to be the most significant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point in space deemed to be the "origin" of the solid for
+ * collision purposes.  The closest intersection point to this origin point is
+ * considered to be the most significant.
+ */
 LPoint3 CollisionFloorMesh::
 get_collision_origin() const {
   // No real sensible origin exists for a plane.  We return 0, 0, 0,
@@ -92,21 +83,17 @@ get_collision_origin() const {
   return LPoint3::origin();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionFloorMesh::
 output(ostream &out) const {
   out << "cfloor";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(BoundingVolume) CollisionFloorMesh::
 compute_internal_bounds() const {
   if (_vertices.empty()) {
@@ -133,11 +120,9 @@ compute_internal_bounds() const {
   return new BoundingBox(n, x);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description: must be a vertical Ray!!!
-////////////////////////////////////////////////////////////////////
+/**
+ * must be a vertical Ray!!!
+ */
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
@@ -200,11 +185,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
@@ -273,12 +256,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::fill_viz_geom
-//       Access: Protected, Virtual
-//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
-//               for rendering this solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this solid.
+ */
 void CollisionFloorMesh::
 fill_viz_geom() {
   if (collide_cat.is_debug()) {
@@ -324,36 +304,28 @@ fill_viz_geom() {
   _bounds_viz_geom->add_geom(geom2, get_wireframe_bounds_viz_state());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::get_volume_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of bounding volume tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of bounding volume
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionFloorMesh::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::get_test_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of intersection tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of intersection
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionFloorMesh::
 get_test_pcollector() {
   return _test_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CollisionFloorMesh::
 write_datagram(BamWriter *manager, Datagram &me)
 {
@@ -375,14 +347,11 @@ write_datagram(BamWriter *manager, Datagram &me)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void CollisionFloorMesh::
 fillin(DatagramIterator& scan, BamReader* manager)
 {
@@ -410,11 +379,9 @@ fillin(DatagramIterator& scan, BamReader* manager)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::make_CollisionPolygon
-//       Access: Protected
-//  Description: Factory method to generate a CollisionPolygon object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionPolygon object
+ */
 TypedWritable* CollisionFloorMesh::
 make_CollisionFloorMesh(const FactoryParams &params) {
   CollisionFloorMesh *me = new CollisionFloorMesh;
@@ -426,32 +393,26 @@ make_CollisionFloorMesh(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a CollisionPolygon object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionPolygon object
+ */
 void CollisionFloorMesh::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionFloorMesh);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionFloorMesh::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::add_triangle
-//       Access: Published
-//  Description: store a triangle for processing
-////////////////////////////////////////////////////////////////////
+/**
+ * store a triangle for processing
+ */
 void CollisionFloorMesh::
 add_triangle(unsigned int pointA, unsigned int pointB, unsigned int pointC) {
   CollisionFloorMesh::TriangleIndices  tri;

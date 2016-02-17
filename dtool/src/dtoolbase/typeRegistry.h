@@ -1,16 +1,15 @@
-// Filename: typeRegistry.h
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeRegistry.h
+ * @author drose
+ * @date 2001-08-06
+ */
 
 #ifndef TYPEREGISTRY_H
 #define TYPEREGISTRY_H
@@ -27,15 +26,13 @@ class TypeHandle;
 class TypeRegistryNode;
 class TypedObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeRegistry
-// Description : The TypeRegistry class maintains all the assigned
-//               TypeHandles in a given system.  There should be only
-//               one TypeRegistry class during the lifetime of the
-//               application.  It will be created on the local heap
-//               initially, and it should be migrated to shared memory
-//               as soon as shared memory becomes available.
-////////////////////////////////////////////////////////////////////
+/**
+ * The TypeRegistry class maintains all the assigned TypeHandles in a given
+ * system.  There should be only one TypeRegistry class during the lifetime of
+ * the application.  It will be created on the local heap initially, and it
+ * should be migrated to shared memory as soon as shared memory becomes
+ * available.
+ */
 class EXPCL_DTOOL TypeRegistry : public MemoryBase {
 public:
   // User code shouldn't generally need to call

@@ -1,16 +1,15 @@
-// Filename: eglGraphicsPixmap.h
-// Created by:  rdb (13Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsPixmap.h
+ * @author rdb
+ * @date 2009-06-13
+ */
 
 #ifndef EGLGRAPHICSPIXMAP_H
 #define EGLGRAPHICSPIXMAP_H
@@ -20,13 +19,11 @@
 #include "eglGraphicsPipe.h"
 #include "graphicsBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsPixmap
-// Description : Another offscreen buffer in the EGL environment.  This
-//               creates a Pixmap object, which is probably less
-//               efficient than an EGLPBuffer, so this class is a
-//               second choice to eglGraphicsBuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another offscreen buffer in the EGL environment.  This creates a Pixmap
+ * object, which is probably less efficient than an EGLPBuffer, so this class is
+ * a second choice to eglGraphicsBuffer.
+ */
 class eglGraphicsPixmap : public GraphicsBuffer {
 public:
   eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,

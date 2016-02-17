@@ -1,27 +1,24 @@
-// Filename: virtualMouse.cxx
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualMouse.cxx
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #include "virtualMouse.h"
 #include "dataNodeTransmit.h"
 
 TypeHandle VirtualMouse::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualMouse::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VirtualMouse::
 VirtualMouse(const string &name) :
   DataNode(name)
@@ -44,82 +41,63 @@ VirtualMouse(const string &name) :
   _mouse_on = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualMouse::set_mouse_pos
-//       Access: Published
-//  Description: Sets the current mouse pixel location, where (0,0) is
-//               the upper left, and (width-1, height-1) is the lower
-//               right pixel of the virtual window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the current mouse pixel location, where (0,0) is the upper left, and
+ * (width-1, height-1) is the lower right pixel of the virtual window.
+ */
 void VirtualMouse::
 set_mouse_pos(int x, int y) {
   _mouse_x = x;
   _mouse_y = y;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualMouse::set_window_size
-//       Access: Published
-//  Description: Sets the size of the "window" in which the mouse
-//               rolls.  This changes the meaning of the values passed
-//               to set_mouse_pos().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the size of the "window" in which the mouse rolls.  This changes the
+ * meaning of the values passed to set_mouse_pos().
+ */
 void VirtualMouse::
 set_window_size(int width, int height) {
   _win_width = width;
   _win_height = height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualMouse::set_mouse_on
-//       Access: Published
-//  Description: Sets whether the mouse should appear to be within the
-//               window or not.  If this is true, the mouse is within
-//               the window; if false, the mouse is not within the
-//               window (and set_mouse_pos() means nothing).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the mouse should appear to be within the window or not.  If this
+ * is true, the mouse is within the window; if false, the mouse is not within
+ * the window (and set_mouse_pos() means nothing).
+ */
 void VirtualMouse::
 set_mouse_on(bool flag) {
   _mouse_on = flag;
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualMouse::press_button
-//       Access: Published
-//  Description: Simulates a mouse or keyboard button being depressed.
-//               This should be followed up by a call to
-//               release_button() sometime later (possibly
-//               immediately).
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Simulates a mouse or keyboard button being depressed.  This should be
+ * followed up by a call to release_button() sometime later (possibly
+ * immediately).
+ */
 void VirtualMouse::
 press_button(ButtonHandle button) {
   _next_button_events->add_event(ButtonEvent(button, ButtonEvent::T_down));
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualMouse::release_button
-//       Access: Published
-//  Description: Simulates the button being released.  This should
-//               follow a previous call to press_button().
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Simulates the button being released.  This should follow a previous call to
+ * press_button().
+ */
 void VirtualMouse::
 release_button(ButtonHandle button) {
   _next_button_events->add_event(ButtonEvent(button, ButtonEvent::T_up));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualMouse::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void VirtualMouse::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {

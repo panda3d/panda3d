@@ -1,16 +1,15 @@
-// Filename: animChannelBase.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animChannelBase.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef ANIMCHANNELBASE_H
 #define ANIMCHANNELBASE_H
@@ -22,14 +21,12 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelBase
-// Description : Parent class for all animation channels.  An
-//               AnimChannel is an arbitrary function that changes
-//               over time (actually, over frames), usually defined by
-//               a table read from an egg file (but possibly computed
-//               or generated in any other way).
-////////////////////////////////////////////////////////////////////
+/**
+ * Parent class for all animation channels.  An AnimChannel is an arbitrary
+ * function that changes over time (actually, over frames), usually defined by a
+ * table read from an egg file (but possibly computed or generated in any other
+ * way).
+ */
 class EXPCL_PANDA_CHAN AnimChannelBase : public AnimGroup {
 protected:
   // The default constructor is protected: don't try to create an
@@ -42,7 +39,7 @@ protected:
 public:
   INLINE AnimChannelBase(AnimGroup *parent, const string &name);
 
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
 
   virtual TypeHandle get_value_type() const=0;

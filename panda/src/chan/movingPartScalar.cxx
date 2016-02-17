@@ -1,17 +1,15 @@
-// Filename: movingPartScalar.cxx
-// Created by:  drose (23Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movingPartScalar.cxx
+ * @author drose
+ * @date 1999-02-23
+ */
 
 #include "movingPartScalar.h"
 #include "animChannelScalarDynamic.h"
@@ -30,22 +28,17 @@ template class MovingPart<ACScalarSwitchType>;
 
 TypeHandle MovingPartScalar::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartScalar::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MovingPartScalar::
 ~MovingPartScalar() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartScalar::get_blend_value
-//       Access: Public
-//  Description: Attempts to blend the various scalar values
-//               indicated, and sets the _value member to the
-//               resulting scalar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to blend the various scalar values indicated, and sets the _value
+ * member to the resulting scalar.
+ */
 void MovingPartScalar::
 get_blend_value(const PartBundle *root) {
   // If a forced channel is set on this particular scalar, we always
@@ -90,7 +83,7 @@ get_blend_value(const PartBundle *root) {
       if (channel != NULL) {
         ValueType v;
         channel->get_value(control->get_frame(), v);
-        
+
         if (!cdata->_frame_blend_flag) {
           // Hold the current frame until the next one is ready.
           _value += v * effect;
@@ -117,30 +110,23 @@ get_blend_value(const PartBundle *root) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartScalar::apply_freeze_scalar
-//       Access: Public, Virtual
-//  Description: Freezes this particular joint so that it will always
-//               hold the specified transform.  Returns true if this
-//               is a joint that can be so frozen, false otherwise.
-//               This is called internally by
-//               PartBundle::freeze_joint().
-////////////////////////////////////////////////////////////////////
+/**
+ * Freezes this particular joint so that it will always hold the specified
+ * transform.  Returns true if this is a joint that can be so frozen, false
+ * otherwise.  This is called internally by PartBundle::freeze_joint().
+ */
 bool MovingPartScalar::
 apply_freeze_scalar(PN_stdfloat value) {
   _forced_channel = new AnimChannelFixed<ACScalarSwitchType>(get_name(), value);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartScalar::apply_control
-//       Access: Public, Virtual
-//  Description: Specifies a node to influence this particular joint
-//               so that it will always hold the node's transform.
-//               Returns true if this is a joint that can be so
-//               controlled, false otherwise.  This is called
-//               internally by PartBundle::control_joint().
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a node to influence this particular joint so that it will always
+ * hold the node's transform.  Returns true if this is a joint that can be so
+ * controlled, false otherwise.  This is called internally by
+ * PartBundle::control_joint().
+ */
 bool MovingPartScalar::
 apply_control(PandaNode *node) {
   AnimChannelScalarDynamic *chan = new AnimChannelScalarDynamic(get_name());
@@ -149,11 +135,9 @@ apply_control(PandaNode *node) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartScalar::make_MovingPartScalar
-//       Access: Protected
-//  Description: Factory method to generate a MovingPartScalar object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a MovingPartScalar object
+ */
 TypedWritable* MovingPartScalar::
 make_MovingPartScalar(const FactoryParams &params) {
   MovingPartScalar *me = new MovingPartScalar;
@@ -165,13 +149,10 @@ make_MovingPartScalar(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartScalar::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a MovingPartScalar object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a MovingPartScalar object
+ */
 void MovingPartScalar::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_MovingPartScalar);
 }
-

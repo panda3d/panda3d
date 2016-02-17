@@ -1,61 +1,47 @@
-// Filename: transformState.I
-// Created by:  drose (25Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transformState.I
+ * @author drose
+ * @date 2002-02-25
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::operator !=
-//       Access: Published
-//  Description: Opposite of operator ==.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opposite of operator ==.
+ */
 INLINE bool TransformState::
 operator != (const TransformState &other) const {
   return !(operator == (other));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::compare_to
-//       Access: Published
-//  Description: Provides an arbitrary ordering among all unique
-//               TransformStates, so we can store the essentially
-//               different ones in a big set and throw away the rest.
-//
-//               Note that if this returns 0, it doesn't necessarily
-//               imply that operator == returns true; it uses a very
-//               slightly different comparison threshold.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides an arbitrary ordering among all unique TransformStates, so we can
+ * store the essentially different ones in a big set and throw away the rest.
+ * Note that if this returns 0, it doesn't necessarily imply that operator ==
+ * returns true; it uses a very slightly different comparison threshold.
+ */
 INLINE int TransformState::
 compare_to(const TransformState &other) const {
   return compare_to(other, _uniquify_matrix);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_hash
-//       Access: Published
-//  Description: Returns a suitable hash value for phash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable hash value for phash_map.
+ */
 INLINE size_t TransformState::
 get_hash() const {
   check_hash();
   return _hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_pos(const LVecBase3 &pos) {
   return make_pos_hpr_scale(pos,
@@ -63,12 +49,9 @@ make_pos(const LVecBase3 &pos) {
                             LVecBase3(1.0f, 1.0f, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_hpr
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_hpr(const LVecBase3 &hpr) {
   return make_pos_hpr_scale(LVecBase3(0.0f, 0.0f, 0.0f),
@@ -76,12 +59,9 @@ make_hpr(const LVecBase3 &hpr) {
                             LVecBase3(1.0f, 1.0f, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_quat
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_quat(const LQuaternion &quat) {
   return make_pos_quat_scale(LVecBase3(0.0f, 0.0f, 0.0f),
@@ -89,24 +69,18 @@ make_quat(const LQuaternion &quat) {
                              LVecBase3(1.0f, 1.0f, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_hpr
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
   return make_pos_hpr_scale(pos, hpr,
                             LVecBase3(1.0, 1.0f, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_scale
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_scale(PN_stdfloat scale) {
   // We actually map this 3-d uniform make_scale() to the 2-d
@@ -114,12 +88,9 @@ make_scale(PN_stdfloat scale) {
   return make_scale2d(scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_scale
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_scale(const LVecBase3 &scale) {
   return make_pos_hpr_scale(LVecBase3(0.0f, 0.0f, 0.0f),
@@ -127,12 +98,9 @@ make_scale(const LVecBase3 &scale) {
                             scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_shear
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_shear(const LVecBase3 &shear) {
   return make_pos_hpr_scale_shear(LVecBase3(0.0f, 0.0f, 0.0f),
@@ -141,350 +109,265 @@ make_shear(const LVecBase3 &shear) {
                                   shear);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_hpr_scale
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_pos_hpr_scale(const LVecBase3 &pos, const LVecBase3 &hpr,
                    const LVecBase3 &scale) {
   return make_pos_hpr_scale_shear(pos, hpr, scale, LVecBase3::zero());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_quat_scale
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_pos_quat_scale(const LVecBase3 &pos, const LQuaternion &quat,
                     const LVecBase3 &scale) {
   return make_pos_quat_scale_shear(pos, quat, scale, LVecBase3::zero());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos2d
-//       Access: Published, Static
-//  Description: Makes a new 2-d TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 2-d TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_pos2d(const LVecBase2 &pos) {
   return make_pos_rotate_scale2d(pos, 0.0f, LVecBase2(1.0f, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_rotate2d
-//       Access: Published, Static
-//  Description: Makes a new 2-d TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 2-d TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_rotate2d(PN_stdfloat rotate) {
   return make_pos_rotate_scale2d(LVecBase2(0.0f, 0.0f), rotate,
                                  LVecBase2(1.0f, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_rotate2d
-//       Access: Published, Static
-//  Description: Makes a new 2-d TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 2-d TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_pos_rotate2d(const LVecBase2 &pos, PN_stdfloat rotate) {
   return make_pos_rotate_scale2d(pos, rotate,
                                  LVecBase2(1.0, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_scale2d
-//       Access: Published, Static
-//  Description: Makes a new 2-d TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 2-d TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_scale2d(PN_stdfloat scale) {
   return make_pos_rotate_scale2d(LVecBase2(0.0f, 0.0f), 0.0f,
                                  LVecBase2(scale, scale));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_scale2d
-//       Access: Published, Static
-//  Description: Makes a new 2-d TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 2-d TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_scale2d(const LVecBase2 &scale) {
   return make_pos_rotate_scale2d(LVecBase2(0.0f, 0.0f), 0.0f, scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_shear2d
-//       Access: Published, Static
-//  Description: Makes a new 2-d TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 2-d TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_shear2d(PN_stdfloat shear) {
   return make_pos_rotate_scale_shear2d(LVecBase2(0.0f, 0.0f), 0.0f,
                                        LVecBase2(1.0f, 1.0f), shear);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_rotate_scale2d
-//       Access: Published, Static
-//  Description: Makes a new 2-d TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 2-d TransformState with the specified components.
+ */
 INLINE CPT(TransformState) TransformState::
 make_pos_rotate_scale2d(const LVecBase2 &pos, PN_stdfloat rotate,
                         const LVecBase2 &scale) {
   return make_pos_rotate_scale_shear2d(pos, rotate, scale, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::is_identity
-//       Access: Published
-//  Description: Returns true if the transform represents the identity
-//               matrix, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform represents the identity matrix, false
+ * otherwise.
+ */
 INLINE bool TransformState::
 is_identity() const {
   return ((_flags & F_is_identity) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::is_invalid
-//       Access: Published
-//  Description: Returns true if the transform represents an invalid
-//               matrix, for instance the result of inverting a
-//               singular matrix, or false if the transform is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform represents an invalid matrix, for instance the
+ * result of inverting a singular matrix, or false if the transform is valid.
+ */
 INLINE bool TransformState::
 is_invalid() const {
   return ((_flags & F_is_invalid) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::is_singular
-//       Access: Published
-//  Description: Returns true if the transform represents a singular
-//               transform (that is, it has a zero scale, and it
-//               cannot be inverted), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform represents a singular transform (that is, it
+ * has a zero scale, and it cannot be inverted), or false otherwise.
+ */
 INLINE bool TransformState::
 is_singular() const {
   check_singular();
   return ((_flags & F_is_singular) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::is_2d
-//       Access: Published
-//  Description: Returns true if the transform has been constructed
-//               entirely using the 2-d transform operations,
-//               e.g. make_pos2d(), and therefore operates strictly in
-//               two-dimensional space on X and Y only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform has been constructed entirely using the 2-d
+ * transform operations, e.g.  make_pos2d(), and therefore operates strictly in
+ * two-dimensional space on X and Y only.
+ */
 INLINE bool TransformState::
 is_2d() const {
   return ((_flags & F_is_2d) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_components
-//       Access: Published
-//  Description: Returns true if the transform can be described by
-//               separate pos, hpr, and scale components.  Most
-//               transforms we use in everyday life can be so
-//               described, but some kinds of transforms (for
-//               instance, those involving a skew) cannot.
-//
-//               This is not related to whether the transform was
-//               originally described componentwise.  Even a transform
-//               that was constructed with a 4x4 may return true here
-//               if the matrix is a simple affine matrix with no skew.
-//
-//               If this returns true, you may safely call get_hpr()
-//               and get_scale() to retrieve the components.  (You
-//               may always safely call get_pos() whether this returns
-//               true or false.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform can be described by separate pos, hpr, and
+ * scale components.  Most transforms we use in everyday life can be so
+ * described, but some kinds of transforms (for instance, those involving a
+ * skew) cannot.  This is not related to whether the transform was originally
+ * described componentwise.  Even a transform that was constructed with a 4x4
+ * may return true here if the matrix is a simple affine matrix with no skew.
+ * If this returns true, you may safely call get_hpr() and get_scale() to
+ * retrieve the components.  (You may always safely call get_pos() whether this
+ * returns true or false.)
+ */
 INLINE bool TransformState::
 has_components() const {
   check_components();
   return ((_flags & F_has_components) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::components_given
-//       Access: Published
-//  Description: Returns true if the transform was specified
-//               componentwise, or false if it was specified with a
-//               general 4x4 matrix.  If this is true, the components
-//               returned by get_pos() and get_scale() will be exactly
-//               those that were set; otherwise, these functions will
-//               return computed values.  If this is true, the
-//               rotation may have been set either with a hpr trio or
-//               with a quaternion; hpr_given() or quat_given() can
-//               resolve the difference.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform was specified componentwise, or false if it was
+ * specified with a general 4x4 matrix.  If this is true, the components
+ * returned by get_pos() and get_scale() will be exactly those that were set;
+ * otherwise, these functions will return computed values.  If this is true, the
+ * rotation may have been set either with a hpr trio or with a quaternion;
+ * hpr_given() or quat_given() can resolve the difference.
+ */
 INLINE bool TransformState::
 components_given() const {
   return ((_flags & F_components_given) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::hpr_given
-//       Access: Published
-//  Description: Returns true if the rotation was specified via a trio
-//               of Euler angles, false otherwise.  If this is true,
-//               get_hpr() will be exactly as set; otherwise, it will
-//               return a computed value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the rotation was specified via a trio of Euler angles, false
+ * otherwise.  If this is true, get_hpr() will be exactly as set; otherwise, it
+ * will return a computed value.
+ */
 INLINE bool TransformState::
 hpr_given() const {
   return ((_flags & F_hpr_given) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::quat_given
-//       Access: Published
-//  Description: Returns true if the rotation was specified via a
-//               quaternion, false otherwise.  If this is true,
-//               get_quat() will be exactly as set; otherwise, it will
-//               return a computed value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the rotation was specified via a quaternion, false otherwise.
+ * If this is true, get_quat() will be exactly as set; otherwise, it will return
+ * a computed value.
+ */
 INLINE bool TransformState::
 quat_given() const {
   return ((_flags & F_quat_given) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_pos
-//       Access: Published
-//  Description: Returns true if the transform's pos component can be
-//               extracted out separately.  This is generally always
-//               true, unless the transform is invalid
-//               (i.e. is_invalid() returns true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform's pos component can be extracted out
+ * separately.  This is generally always true, unless the transform is invalid
+ * (i.e.  is_invalid() returns true).
+ */
 INLINE bool TransformState::
 has_pos() const {
   return !is_invalid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_hpr
-//       Access: Published
-//  Description: Returns true if the transform's rotation component
-//               can be extracted out separately and described as a
-//               set of Euler angles.  This is generally true only
-//               when has_components() is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform's rotation component can be extracted out
+ * separately and described as a set of Euler angles.  This is generally true
+ * only when has_components() is true.
+ */
 INLINE bool TransformState::
 has_hpr() const {
   return has_components();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_quat
-//       Access: Published
-//  Description: Returns true if the transform's rotation component
-//               can be extracted out separately and described as a
-//               quaternion.  This is generally true only when
-//               has_components() is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform's rotation component can be extracted out
+ * separately and described as a quaternion.  This is generally true only when
+ * has_components() is true.
+ */
 INLINE bool TransformState::
 has_quat() const {
   return has_components();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_scale
-//       Access: Published
-//  Description: Returns true if the transform's scale component
-//               can be extracted out separately.  This is generally
-//               true only when has_components() is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform's scale component can be extracted out
+ * separately.  This is generally true only when has_components() is true.
+ */
 INLINE bool TransformState::
 has_scale() const {
   return has_components();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_identity_scale
-//       Access: Published
-//  Description: Returns true if the scale is uniform 1.0, or false if
-//               the scale has some real value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the scale is uniform 1.0, or false if the scale has some real
+ * value.
+ */
 INLINE bool TransformState::
 has_identity_scale() const {
   check_components();
   return (_flags & F_identity_scale) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_uniform_scale
-//       Access: Published
-//  Description: Returns true if the scale is uniform across all three
-//               axes (and therefore can be expressed as a single
-//               number), or false if the transform has a different
-//               scale in different dimensions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the scale is uniform across all three axes (and therefore can
+ * be expressed as a single number), or false if the transform has a different
+ * scale in different dimensions.
+ */
 INLINE bool TransformState::
 has_uniform_scale() const {
   check_components();
   return (_flags & F_uniform_scale) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_shear
-//       Access: Published
-//  Description: Returns true if the transform's shear component
-//               can be extracted out separately.  This is generally
-//               true only when has_components() is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform's shear component can be extracted out
+ * separately.  This is generally true only when has_components() is true.
+ */
 INLINE bool TransformState::
 has_shear() const {
   return has_components();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_nonzero_shear
-//       Access: Published
-//  Description: Returns true if the shear component is non-zero,
-//               false if it is zero or if the matrix cannot be
-//               decomposed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the shear component is non-zero, false if it is zero or if
+ * the matrix cannot be decomposed.
+ */
 INLINE bool TransformState::
 has_nonzero_shear() const {
   check_components();
   return (_flags & F_has_nonzero_shear) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::has_mat
-//       Access: Published
-//  Description: Returns true if the transform can be described as a
-//               matrix.  This is generally always true, unless
-//               is_invalid() is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the transform can be described as a matrix.  This is
+ * generally always true, unless is_invalid() is true.
+ */
 INLINE bool TransformState::
 has_mat() const {
   return !is_invalid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_pos
-//       Access: Published
-//  Description: Returns the pos component of the transform.  It is an
-//               error to call this if has_pos() returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pos component of the transform.  It is an error to call this if
+ * has_pos() returned false.
+ */
 INLINE const LPoint3 &TransformState::
 get_pos() const {
   check_components();
@@ -492,13 +375,10 @@ get_pos() const {
   return _pos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_hpr
-//       Access: Published
-//  Description: Returns the rotation component of the transform as a
-//               trio of Euler angles.  It is an error to call this if
-//               has_components() returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the rotation component of the transform as a trio of Euler angles.
+ * It is an error to call this if has_components() returned false.
+ */
 INLINE const LVecBase3 &TransformState::
 get_hpr() const {
   check_hpr();
@@ -506,20 +386,14 @@ get_hpr() const {
   return _hpr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_quat
-//       Access: Published
-//  Description: Returns the rotation component of the transform as a
-//               quaternion.  The return value will be normalized if a
-//               normalized quaternion was given to the constructor
-//               (or if the quaternion was computed implicitly); it
-//               will be non-normalized if a non-normalized quaternion
-//               was given to the constructor.  See also
-//               get_norm_quat().
-//
-//               It is an error to call this if has_components()
-//               returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the rotation component of the transform as a quaternion.  The return
+ * value will be normalized if a normalized quaternion was given to the
+ * constructor (or if the quaternion was computed implicitly); it will be non-
+ * normalized if a non-normalized quaternion was given to the constructor.  See
+ * also get_norm_quat().  It is an error to call this if has_components()
+ * returned false.
+ */
 INLINE const LQuaternion &TransformState::
 get_quat() const {
   check_quat();
@@ -527,15 +401,11 @@ get_quat() const {
   return _quat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_norm_quat
-//       Access: Published
-//  Description: Returns the rotation component of the transform as a
-//               quaternion.  Unlike the result of get_quat(), the
-//               return value of this method is guaranteed to be
-//               normalized.  It is an error to call this if
-//               has_components() returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the rotation component of the transform as a quaternion.  Unlike the
+ * result of get_quat(), the return value of this method is guaranteed to be
+ * normalized.  It is an error to call this if has_components() returned false.
+ */
 INLINE const LQuaternion &TransformState::
 get_norm_quat() const {
   check_norm_quat();
@@ -543,13 +413,10 @@ get_norm_quat() const {
   return _norm_quat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_scale
-//       Access: Published
-//  Description: Returns the scale component of the transform.  It is an
-//               error to call this if has_components() returned
-//               false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scale component of the transform.  It is an error to call this if
+ * has_components() returned false.
+ */
 INLINE const LVecBase3 &TransformState::
 get_scale() const {
   check_components();
@@ -557,13 +424,10 @@ get_scale() const {
   return _scale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_uniform_scale
-//       Access: Published
-//  Description: Returns the scale component of the transform, as a
-//               single number.  It is an error to call this if
-//               has_uniform_scale() returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scale component of the transform, as a single number.  It is an
+ * error to call this if has_uniform_scale() returned false.
+ */
 INLINE PN_stdfloat TransformState::
 get_uniform_scale() const {
   check_components();
@@ -571,13 +435,10 @@ get_uniform_scale() const {
   return _scale[0];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_shear
-//       Access: Published
-//  Description: Returns the shear component of the transform.  It is
-//               an error to call this if has_components() returned
-//               false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the shear component of the transform.  It is an error to call this if
+ * has_components() returned false.
+ */
 INLINE const LVecBase3 &TransformState::
 get_shear() const {
   check_components();
@@ -585,11 +446,9 @@ get_shear() const {
   return _shear;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_mat
-//       Access: Published
-//  Description: Returns the matrix that describes the transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the matrix that describes the transform.
+ */
 INLINE const LMatrix4 &TransformState::
 get_mat() const {
   nassertr(has_mat(), LMatrix4::ident_mat());
@@ -597,13 +456,10 @@ get_mat() const {
   return _mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_pos2d
-//       Access: Published
-//  Description: Returns the pos component of the 2-d transform.  It
-//               is an error to call this if has_pos() or is_2d()
-//               returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pos component of the 2-d transform.  It is an error to call this
+ * if has_pos() or is_2d() returned false.
+ */
 INLINE LVecBase2 TransformState::
 get_pos2d() const {
   check_components();
@@ -611,14 +467,11 @@ get_pos2d() const {
   return LVecBase2(_pos[0], _pos[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_rotate2d
-//       Access: Published
-//  Description: Returns the rotation component of the 2-d transform
-//               as an angle in degrees clockwise about the origin.
-//               It is an error to call this if has_components() or
-//               is_2d() returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the rotation component of the 2-d transform as an angle in degrees
+ * clockwise about the origin.  It is an error to call this if has_components()
+ * or is_2d() returned false.
+ */
 INLINE PN_stdfloat TransformState::
 get_rotate2d() const {
   check_hpr();
@@ -636,13 +489,10 @@ get_rotate2d() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_scale2d
-//       Access: Published
-//  Description: Returns the scale component of the 2-d transform.  It
-//               is an error to call this if has_components() or
-//               is_2d() returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scale component of the 2-d transform.  It is an error to call
+ * this if has_components() or is_2d() returned false.
+ */
 INLINE LVecBase2 TransformState::
 get_scale2d() const {
   check_components();
@@ -650,13 +500,10 @@ get_scale2d() const {
   return LVecBase2(_scale[0], _scale[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_shear2d
-//       Access: Published
-//  Description: Returns the shear component of the 2-d transform.  It
-//               is an error to call this if has_components() or
-//               is_2d() returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the shear component of the 2-d transform.  It is an error to call
+ * this if has_components() or is_2d() returned false.
+ */
 INLINE PN_stdfloat TransformState::
 get_shear2d() const {
   check_components();
@@ -664,13 +511,10 @@ get_shear2d() const {
   return _shear[0];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_mat3
-//       Access: Published
-//  Description: Returns the 3x3 matrix that describes the 2-d
-//               transform.  It is an error to call this if is_2d()
-//               returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the 3x3 matrix that describes the 2-d transform.  It is an error to
+ * call this if is_2d() returned false.
+ */
 INLINE LMatrix3 TransformState::
 get_mat3() const {
   nassertr(has_mat() && is_2d(), LMatrix3::ident_mat());
@@ -680,44 +524,34 @@ get_mat3() const {
                    _mat(3, 0), _mat(3, 1), _mat(3, 3));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_inverse
-//       Access: Published
-//  Description: Returns the inverse of this transform.  If you are
-//               going to immediately compose this result with another
-//               TransformState, it is faster to do it in one
-//               operation with invert_compose().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the inverse of this transform.  If you are going to immediately
+ * compose this result with another TransformState, it is faster to do it in one
+ * operation with invert_compose().
+ */
 INLINE CPT(TransformState) TransformState::
 get_inverse() const {
   return invert_compose(TransformState::make_identity());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_unique
-//       Access: Published
-//  Description: Returns the pointer to the unique TransformState in
-//               the cache that is equivalent to this one.  This may
-//               be the same pointer as this object, or it may be a
-//               different pointer; but it will be an equivalent
-//               object, and it will be a shared pointer.  This may be
-//               called from time to time to improve cache benefits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the unique TransformState in the cache that is
+ * equivalent to this one.  This may be the same pointer as this object, or it
+ * may be a different pointer; but it will be an equivalent object, and it will
+ * be a shared pointer.  This may be called from time to time to improve cache
+ * benefits.
+ */
 INLINE CPT(TransformState) TransformState::
 get_unique() const {
   return return_unique((TransformState *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_geom_rendering
-//       Access: Published
-//  Description: Returns the union of the Geom::GeomRendering bits
-//               that will be required once this TransformState is
-//               applied to a geom which includes the indicated
-//               geom_rendering bits.  The RenderState's
-//               get_geom_rendering() should already have been
-//               applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of the Geom::GeomRendering bits that will be required once
+ * this TransformState is applied to a geom which includes the indicated
+ * geom_rendering bits.  The RenderState's get_geom_rendering() should already
+ * have been applied.
+ */
 INLINE int TransformState::
 get_geom_rendering(int geom_rendering) const {
   if ((geom_rendering & GeomEnums::GR_point_perspective) != 0) {
@@ -729,11 +563,9 @@ get_geom_rendering(int geom_rendering) const {
   return geom_rendering;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::cache_ref
-//       Access: Published
-//  Description: Overrides this method to update PStats appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overrides this method to update PStats appropriately.
+ */
 INLINE void TransformState::
 cache_ref() const {
 #ifdef DO_PSTATS
@@ -745,11 +577,9 @@ cache_ref() const {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::cache_unref
-//       Access: Published
-//  Description: Overrides this method to update PStats appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overrides this method to update PStats appropriately.
+ */
 INLINE bool TransformState::
 cache_unref() const {
 #ifdef DO_PSTATS
@@ -762,11 +592,9 @@ cache_unref() const {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::node_ref
-//       Access: Published
-//  Description: Overrides this method to update PStats appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overrides this method to update PStats appropriately.
+ */
 INLINE void TransformState::
 node_ref() const {
 #ifdef DO_PSTATS
@@ -778,11 +606,9 @@ node_ref() const {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::node_unref
-//       Access: Published
-//  Description: Overrides this method to update PStats appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overrides this method to update PStats appropriately.
+ */
 INLINE bool TransformState::
 node_unref() const {
 #ifdef DO_PSTATS
@@ -795,65 +621,49 @@ node_unref() const {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_composition_cache_num_entries
-//       Access: Published
-//  Description: Returns the number of entries in the composition
-//               cache for this TransformState.  This is the number of
-//               other TransformStates whose composition with this one
-//               has been cached.  This number is not useful for any
-//               practical reason other than performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of entries in the composition cache for this
+ * TransformState.  This is the number of other TransformStates whose
+ * composition with this one has been cached.  This number is not useful for any
+ * practical reason other than performance analysis.
+ */
 INLINE size_t TransformState::
 get_composition_cache_num_entries() const {
   LightReMutexHolder holder(*_states_lock);
   return _composition_cache.get_num_entries();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_invert_composition_cache_num_entries
-//       Access: Published
-//  Description: Returns the number of entries in the
-//               invert_composition cache for this TransformState.
-//               This is similar to the composition cache, but it
-//               records cache entries for the invert_compose()
-//               operation.  See get_composition_cache_num_entries().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of entries in the invert_composition cache for this
+ * TransformState.  This is similar to the composition cache, but it records
+ * cache entries for the invert_compose() operation.  See
+ * get_composition_cache_num_entries().
+ */
 INLINE size_t TransformState::
 get_invert_composition_cache_num_entries() const {
   LightReMutexHolder holder(*_states_lock);
   return _invert_composition_cache.get_num_entries();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_composition_cache_size
-//       Access: Published
-//  Description: Returns the number of slots in the composition
-//               cache for this TransformState.  You may use this as
-//               an upper bound when walking through all of the
-//               composition cache results via
-//               get_composition_cache_source() or result().
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of slots in the composition cache for this TransformState.
+ * You may use this as an upper bound when walking through all of the
+ * composition cache results via get_composition_cache_source() or result().
+ * This has no practical value other than for examining the cache for
+ * performance analysis.
+ */
 INLINE size_t TransformState::
 get_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
   return _composition_cache.get_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_composition_cache_source
-//       Access: Published
-//  Description: Returns the source TransformState of the nth element
-//               in the composition cache.  Returns NULL if there
-//               doesn't happen to be an entry in the nth element.
-//               See get_composition_cache_result().
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the source TransformState of the nth element in the composition
+ * cache.  Returns NULL if there doesn't happen to be an entry in the nth
+ * element.  See get_composition_cache_result().  This has no practical value
+ * other than for examining the cache for performance analysis.
+ */
 INLINE const TransformState *TransformState::
 get_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
@@ -863,20 +673,13 @@ get_composition_cache_source(size_t n) const {
   return _composition_cache.get_key(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_composition_cache_result
-//       Access: Published
-//  Description: Returns the result TransformState of the nth element
-//               in the composition cache.  Returns NULL if there
-//               doesn't happen to be an entry in the nth element.
-//
-//               In general,
-//               a->compose(a->get_composition_cache_source(n)) ==
-//               a->get_composition_cache_result(n).
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the result TransformState of the nth element in the composition
+ * cache.  Returns NULL if there doesn't happen to be an entry in the nth
+ * element.  In general, a->compose(a->get_composition_cache_source(n)) ==
+ * a->get_composition_cache_result(n).  This has no practical value other than
+ * for examining the cache for performance analysis.
+ */
 INLINE const TransformState *TransformState::
 get_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
@@ -886,35 +689,25 @@ get_composition_cache_result(size_t n) const {
   return _composition_cache.get_data(n)._result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_invert_composition_cache_size
-//       Access: Published
-//  Description: Returns the number of slots in the composition
-//               cache for this TransformState.  You may use this as
-//               an upper bound when walking through all of the
-//               composition cache results via
-//               get_invert_composition_cache_source() or result().
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of slots in the composition cache for this TransformState.
+ * You may use this as an upper bound when walking through all of the
+ * composition cache results via get_invert_composition_cache_source() or
+ * result().  This has no practical value other than for examining the cache for
+ * performance analysis.
+ */
 INLINE size_t TransformState::
 get_invert_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
   return _invert_composition_cache.get_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_invert_composition_cache_source
-//       Access: Published
-//  Description: Returns the source TransformState of the nth element
-//               in the invert composition cache.  Returns NULL if
-//               there doesn't happen to be an entry in the nth
-//               element.  See get_invert_composition_cache_result().
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the source TransformState of the nth element in the invert
+ * composition cache.  Returns NULL if there doesn't happen to be an entry in
+ * the nth element.  See get_invert_composition_cache_result().  This has no
+ * practical value other than for examining the cache for performance analysis.
+ */
 INLINE const TransformState *TransformState::
 get_invert_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
@@ -924,21 +717,14 @@ get_invert_composition_cache_source(size_t n) const {
   return _invert_composition_cache.get_key(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_invert_composition_cache_result
-//       Access: Published
-//  Description: Returns the result TransformState of the nth element
-//               in the invert composition cache.  Returns NULL if
-//               there doesn't happen to be an entry in the nth
-//               element.
-//
-//               In general,
-//               a->invert_compose(a->get_invert_composition_cache_source(n))
-//               == a->get_invert_composition_cache_result(n).
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the result TransformState of the nth element in the invert
+ * composition cache.  Returns NULL if there doesn't happen to be an entry in
+ * the nth element.  In general,
+ * a->invert_compose(a->get_invert_composition_cache_source(n)) ==
+ * a->get_invert_composition_cache_result(n).  This has no practical value other
+ * than for examining the cache for performance analysis.
+ */
 INLINE const TransformState *TransformState::
 get_invert_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
@@ -948,47 +734,38 @@ get_invert_composition_cache_result(size_t n) const {
   return _invert_composition_cache.get_data(n)._result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::flush_level
-//       Access: Public, Static
-//  Description: Flushes the PStatCollectors used during traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flushes the PStatCollectors used during traversal.
+ */
 INLINE void TransformState::
 flush_level() {
   _node_counter.flush_level();
   _cache_counter.flush_level();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_node_unref
-//       Access: Private
-//  Description: Reimplements NodeReferenceCount::node_unref().  We do
-//               this because we have a non-virtual unref() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reimplements NodeReferenceCount::node_unref().  We do this because we have a
+ * non-virtual unref() method.
+ */
 INLINE bool TransformState::
 do_node_unref() const {
   node_unref_only();
   return unref();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_cache_unref
-//       Access: Private
-//  Description: Reimplements
-//               CachedTypedWritableReferenceCount::cache_unref().  We
-//               do this because we have a non-virtual unref() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reimplements CachedTypedWritableReferenceCount::cache_unref().  We do this
+ * because we have a non-virtual unref() method.
+ */
 INLINE bool TransformState::
 do_cache_unref() const {
   cache_unref_only();
   return unref();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_hash
-//       Access: Private
-//  Description: Ensures that we know the hash value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that we know the hash value.
+ */
 INLINE void TransformState::
 check_hash() const {
   // This pretends to be a const function, even though it's not,
@@ -998,11 +775,9 @@ check_hash() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_singular
-//       Access: Private
-//  Description: Ensures that we know whether the matrix is singular.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that we know whether the matrix is singular.
+ */
 INLINE void TransformState::
 check_singular() const {
   // This pretends to be a const function, even though it's not,
@@ -1012,12 +787,10 @@ check_singular() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_components
-//       Access: Private
-//  Description: Ensures that we know the components of the transform
-//               (or that we know they cannot be derived).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that we know the components of the transform (or that we know they
+ * cannot be derived).
+ */
 INLINE void TransformState::
 check_components() const {
   // This pretends to be a const function, even though it's not,
@@ -1027,12 +800,10 @@ check_components() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_hpr
-//       Access: Private
-//  Description: Ensures that we know the hpr of the transform
-//               (or that we know they cannot be derived).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that we know the hpr of the transform (or that we know they cannot be
+ * derived).
+ */
 INLINE void TransformState::
 check_hpr() const {
   // This pretends to be a const function, even though it's not,
@@ -1042,12 +813,10 @@ check_hpr() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_quat
-//       Access: Private
-//  Description: Ensures that we know the quat of the transform
-//               (or that we know they cannot be derived).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that we know the quat of the transform (or that we know they cannot
+ * be derived).
+ */
 INLINE void TransformState::
 check_quat() const {
   // This pretends to be a const function, even though it's not,
@@ -1057,12 +826,10 @@ check_quat() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_norm_quat
-//       Access: Private
-//  Description: Ensures that we know the normalized quat of the transform
-//               (or that we know they cannot be derived).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that we know the normalized quat of the transform (or that we know
+ * they cannot be derived).
+ */
 INLINE void TransformState::
 check_norm_quat() const {
   // This pretends to be a const function, even though it's not,
@@ -1072,11 +839,9 @@ check_norm_quat() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_mat
-//       Access: Private
-//  Description: Ensures that we know the overall matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that we know the overall matrix.
+ */
 INLINE void TransformState::
 check_mat() const {
   // This pretends to be a const function, even though it's not,
@@ -1086,62 +851,48 @@ check_mat() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_hash
-//       Access: Private
-//  Description: Computes the hash value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the hash value.
+ */
 INLINE void TransformState::
 calc_hash() {
   LightMutexHolder holder(_lock);
   do_calc_hash();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_components
-//       Access: Private
-//  Description: Derives the components from the matrix, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Derives the components from the matrix, if possible.
+ */
 INLINE void TransformState::
 calc_components() {
   LightMutexHolder holder(_lock);
   do_calc_components();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_hpr
-//       Access: Private
-//  Description: Derives the hpr, from the matrix if necessary, or
-//               from the quat.
-////////////////////////////////////////////////////////////////////
+/**
+ * Derives the hpr, from the matrix if necessary, or from the quat.
+ */
 INLINE void TransformState::
 calc_hpr() {
   LightMutexHolder holder(_lock);
   do_calc_hpr();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_mat
-//       Access: Private
-//  Description: Computes the matrix from the components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the matrix from the components.
+ */
 INLINE void TransformState::
 calc_mat() {
   LightMutexHolder holder(_lock);
   do_calc_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_uniform_scale
-//       Access: Private
-//  Description: Should be called immediately after _scale (and
-//               F_has_components) is set, this checks for a
-//               identity and/or uniform scale (as well as a non-zero
-//               shear) and sets the bit appropriately.
-//
-//               It does not matter whether the lock is or is not held
-//               before calling this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called immediately after _scale (and F_has_components) is set, this
+ * checks for a identity and/or uniform scale (as well as a non-zero shear) and
+ * sets the bit appropriately.  It does not matter whether the lock is or is not
+ * held before calling this method.
+ */
 INLINE void TransformState::
 check_uniform_scale() {
   if (IS_NEARLY_EQUAL(_scale[0], _scale[1]) &&
@@ -1157,17 +908,12 @@ check_uniform_scale() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::check_uniform_scale2d
-//       Access: Private
-//  Description: Should be called immediately after _scale (and
-//               F_has_components) is set, for a known 2-d scale, this
-//               checks for a identity and/or uniform scale (as well
-//               as a non-zero shear) and sets the bit appropriately.
-//
-//               It does not matter whether the lock is or is not held
-//               before calling this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called immediately after _scale (and F_has_components) is set, for
+ * a known 2-d scale, this checks for a identity and/or uniform scale (as well
+ * as a non-zero shear) and sets the bit appropriately.  It does not matter
+ * whether the lock is or is not held before calling this method.
+ */
 INLINE void TransformState::
 check_uniform_scale2d() {
   if (IS_NEARLY_EQUAL(_scale[0], _scale[1])) {
@@ -1183,15 +929,11 @@ check_uniform_scale2d() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_destructing
-//       Access: Private
-//  Description: This function should only be called from the
-//               destructor; it indicates that this TransformState
-//               object is beginning destruction.  It is only used as
-//               a sanity check, and is only meaningful when NDEBUG is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function should only be called from the destructor; it indicates that
+ * this TransformState object is beginning destruction.  It is only used as a
+ * sanity check, and is only meaningful when NDEBUG is not defined.
+ */
 INLINE void TransformState::
 set_destructing() {
 #ifndef NDEBUG
@@ -1199,15 +941,11 @@ set_destructing() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::is_destructing
-//       Access: Private
-//  Description: Returns true if the TransformState object is
-//               currently within its destructor
-//               (i.e. set_destructing() has been called).  This is
-//               only used as a sanity check, and is only meaningful
-//               when NDEBUG is not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the TransformState object is currently within its destructor
+ * (i.e.  set_destructing() has been called).  This is only used as a sanity
+ * check, and is only meaningful when NDEBUG is not defined.
+ */
 INLINE bool TransformState::
 is_destructing() const {
 #ifndef NDEBUG
@@ -1217,12 +955,10 @@ is_destructing() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::consider_update_pstats
-//       Access: Private
-//  Description: Calls update_pstats() if the state of the referenced
-//               bits has changed from the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls update_pstats() if the state of the referenced bits has changed from
+ * the indicated value.
+ */
 INLINE void TransformState::
 consider_update_pstats(int old_referenced_bits) const {
 #ifdef DO_PSTATS
@@ -1233,31 +969,25 @@ consider_update_pstats(int old_referenced_bits) const {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Composition::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TransformState::Composition::
 Composition() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Composition::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TransformState::Composition::
 Composition(const TransformState::Composition &copy) :
   _result(copy._result)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::CompositionCycleDescEntry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TransformState::CompositionCycleDescEntry::
 CompositionCycleDescEntry(const TransformState *obj,
                           const TransformState *result,

@@ -1,16 +1,15 @@
-// Filename: material.cxx
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file material.cxx
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #include "pandabase.h"
 #include "material.h"
@@ -23,11 +22,9 @@
 TypeHandle Material::_type_handle;
 PT(Material) Material::_default;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Material::
 operator = (const Material &copy) {
   Namable::operator = (copy);
@@ -43,21 +40,14 @@ operator = (const Material &copy) {
   _flags = copy._flags & (~F_attrib_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_base_color
-//       Access: Published
-//  Description: Specifies the base color of the material.  In
-//               conjunction with set_metallic, this is an alternate
-//               way to specify the color of a material.  For
-//               dielectrics, this will determine the value of the
-//               diffuse color, and for metals, this will determine
-//               the value of the specular color.
-//
-//               Setting this will clear an explicit specular,
-//               diffuse or ambient color assignment.
-//
-//               If this is not set, the object color will be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the base color of the material.  In conjunction with set_metallic,
+ * this is an alternate way to specify the color of a material.  For
+ * dielectrics, this will determine the value of the diffuse color, and for
+ * metals, this will determine the value of the specular color.  Setting this
+ * will clear an explicit specular, diffuse or ambient color assignment.  If
+ * this is not set, the object color will be used.
+ */
 void Material::
 set_base_color(const LColor &color) {
   if (enforce_attrib_lock) {
@@ -83,11 +73,9 @@ set_base_color(const LColor &color) {
   _specular += _base_color * _metallic;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::clear_base_color
-//       Access: Published
-//  Description: Removes the explicit base_color color from the material.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the explicit base_color color from the material.
+ */
 void Material::
 clear_base_color() {
   if (enforce_attrib_lock) {
@@ -113,18 +101,12 @@ clear_base_color() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_ambient
-//       Access: Published
-//  Description: Specifies the ambient color setting of the material.
-//               This will be the multiplied by any ambient lights in
-//               effect on the material to set its base color.
-//
-//               This is the color of the object as it appears in the
-//               absence of direct light.
-//
-//               If this is not set, the object color will be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the ambient color setting of the material.  This will be the
+ * multiplied by any ambient lights in effect on the material to set its base
+ * color.  This is the color of the object as it appears in the absence of
+ * direct light.  If this is not set, the object color will be used.
+ */
 void Material::
 set_ambient(const LColor &color) {
   if (enforce_attrib_lock) {
@@ -136,20 +118,13 @@ set_ambient(const LColor &color) {
   _flags |= F_ambient;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_diffuse
-//       Access: Published
-//  Description: Specifies the diffuse color setting of the material.
-//               This will be multiplied by any lights in effect on
-//               the material to get the color in the parts of the
-//               object illuminated by the lights.
-//
-//               This is the primary color of an object; the color of
-//               the object as it appears in direct light, in the
-//               absence of highlights.
-//
-//               If this is not set, the object color will be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the diffuse color setting of the material.  This will be multiplied
+ * by any lights in effect on the material to get the color in the parts of the
+ * object illuminated by the lights.  This is the primary color of an object;
+ * the color of the object as it appears in direct light, in the absence of
+ * highlights.  If this is not set, the object color will be used.
+ */
 void Material::
 set_diffuse(const LColor &color) {
   if (enforce_attrib_lock) {
@@ -161,21 +136,14 @@ set_diffuse(const LColor &color) {
   _flags |= F_diffuse;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_specular
-//       Access: Published
-//  Description: Specifies the specular color setting of the material.
-//               This will be multiplied by any lights in effect on
-//               the material to compute the color of specular
-//               highlights on the object.
-//
-//               This is the highlight color of an object: the color
-//               of small highlight reflections.
-//
-//               If this is not set, the specular color is taken from
-//               the index of refraction, which is 1 by default
-//               (meaning no specular reflections are generated).
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the specular color setting of the material.  This will be
+ * multiplied by any lights in effect on the material to compute the color of
+ * specular highlights on the object.  This is the highlight color of an object:
+ * the color of small highlight reflections.  If this is not set, the specular
+ * color is taken from the index of refraction, which is 1 by default (meaning
+ * no specular reflections are generated).
+ */
 void Material::
 set_specular(const LColor &color) {
   if (enforce_attrib_lock) {
@@ -187,11 +155,9 @@ set_specular(const LColor &color) {
   _flags |= F_specular;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::clear_specular
-//       Access: Published
-//  Description: Removes the explicit specular color from the material.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the explicit specular color from the material.
+ */
 void Material::
 clear_specular() {
   if (enforce_attrib_lock) {
@@ -210,20 +176,14 @@ clear_specular() {
   _specular += _base_color * _metallic;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_emission
-//       Access: Published
-//  Description: Specifies the emission color setting of the material.
-//               This is the color of the object as it appears in the
-//               absence of any light whatsover, including ambient
-//               light.  It is as if the object is glowing by this
-//               color (although of course it will not illuminate
-//               neighboring objects).
-//
-//               If this is not set, the object will not glow by its
-//               own light and will only appear visible in the
-//               presence of one or more lights.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the emission color setting of the material.  This is the color of
+ * the object as it appears in the absence of any light whatsover, including
+ * ambient light.  It is as if the object is glowing by this color (although of
+ * course it will not illuminate neighboring objects).  If this is not set, the
+ * object will not glow by its own light and will only appear visible in the
+ * presence of one or more lights.
+ */
 void Material::
 set_emission(const LColor &color) {
   if (enforce_attrib_lock) {
@@ -235,34 +195,24 @@ set_emission(const LColor &color) {
   _flags |= F_emission;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_shininess
-//       Access: Published
-//  Description: Sets the shininess exponent of the material.  This
-//               controls the size of the specular highlight spot.  In
-//               general, larger number produce a smaller specular
-//               highlight, which makes the object appear shinier.
-//               Smaller numbers produce a larger highlight, which
-//               makes the object appear less shiny.
-//
-//               This is usually in the range 0..128.
-//
-//               Setting a shininess value removes any previous
-//               roughness assignment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the shininess exponent of the material.  This controls the size of the
+ * specular highlight spot.  In general, larger number produce a smaller
+ * specular highlight, which makes the object appear shinier.  Smaller numbers
+ * produce a larger highlight, which makes the object appear less shiny.  This
+ * is usually in the range 0..128.  Setting a shininess value removes any
+ * previous roughness assignment.
+ */
 void Material::
 set_shininess(PN_stdfloat shininess) {
   _shininess = shininess;
   _flags &= ~F_roughness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::get_roughness
-//       Access: Published
-//  Description: Returns the roughness previously specified by
-//               set_roughness.  If none was previously set, this
-//               value is computed from the shininess value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the roughness previously specified by set_roughness.  If none was
+ * previously set, this value is computed from the shininess value.
+ */
 PN_stdfloat Material::
 get_roughness() const {
   if ((_flags & F_roughness) == 0) {
@@ -273,18 +223,13 @@ get_roughness() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_roughness
-//       Access: Published
-//  Description: Sets the roughness exponent of the material, where
-//               0 is completely shiny (infinite shininess), and
-//               1 is a completely dull object (0 shininess).  This
-//               is a different, more perceptually intuitive way of
-//               controlling the size of the specular spot, and more
-//               commonly used in physically-based rendering.
-//
-//               Setting a roughness recalculates the shininess value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the roughness exponent of the material, where 0 is completely shiny
+ * (infinite shininess), and 1 is a completely dull object (0 shininess).  This
+ * is a different, more perceptually intuitive way of controlling the size of
+ * the specular spot, and more commonly used in physically-based rendering.
+ * Setting a roughness recalculates the shininess value.
+ */
 void Material::
 set_roughness(PN_stdfloat roughness) {
   _roughness = roughness;
@@ -302,17 +247,13 @@ set_roughness(PN_stdfloat roughness) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_metallic
-//       Access: Published
-//  Description: Sets the metallic setting of the material, which is
-//               is used for physically-based rendering models.
-//               This is usually 0 for dielectric materials and 1
-//               for metals.  It really does not make sense to set
-//               this to a value other than 0 or 1, but it is
-//               nonetheless a float for compatibility with tools
-//               that allow setting this to values other than 0 or 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the metallic setting of the material, which is is used for physically-
+ * based rendering models.  This is usually 0 for dielectric materials and 1 for
+ * metals.  It really does not make sense to set this to a value other than 0 or
+ * 1, but it is nonetheless a float for compatibility with tools that allow
+ * setting this to values other than 0 or 1.
+ */
 void Material::
 set_metallic(PN_stdfloat metallic) {
   if (enforce_attrib_lock) {
@@ -340,11 +281,9 @@ set_metallic(PN_stdfloat metallic) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::clear_metallic
-//       Access: Published
-//  Description: Removes the explicit metallic setting from the material.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the explicit metallic setting from the material.
+ */
 void Material::
 clear_metallic() {
   if (enforce_attrib_lock) {
@@ -370,18 +309,13 @@ clear_metallic() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::set_refractive_index
-//       Access: Published
-//  Description: Sets the index of refraction of the material, which
-//               is used to determine the specular color in absence
-//               of an explicit specular color assignment.
-//               This is usually 1.5 for dielectric materials.  It
-//               is not very useful for metals, since they cannot
-//               be described as easily with a single number.
-//
-//               Should be 1 or higher.  The default is 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the index of refraction of the material, which is used to determine the
+ * specular color in absence of an explicit specular color assignment.  This is
+ * usually 1.5 for dielectric materials.  It is not very useful for metals,
+ * since they cannot be described as easily with a single number.  Should be 1
+ * or higher.  The default is 1.
+ */
 void Material::
 set_refractive_index(PN_stdfloat refractive_index) {
   _refractive_index = refractive_index;
@@ -398,15 +332,12 @@ set_refractive_index(PN_stdfloat refractive_index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this material
-//               sorts before the other one, greater than zero if it
-//               sorts after, or zero if they are equivalent.  The
-//               sorting order is arbitrary and largely meaningless,
-//               except to differentiate different materials.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if this material sorts before the other one,
+ * greater than zero if it sorts after, or zero if they are equivalent.  The
+ * sorting order is arbitrary and largely meaningless, except to differentiate
+ * different materials.
+ */
 int Material::
 compare_to(const Material &other) const {
   if (_flags != other._flags) {
@@ -440,11 +371,9 @@ compare_to(const Material &other) const {
   return strcmp(get_name().c_str(), other.get_name().c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Material::
 output(ostream &out) const {
   out << "Material " << get_name();
@@ -479,11 +408,9 @@ output(ostream &out) const {
       << " t" << get_twoside();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Material::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "Material " << get_name() << "\n";
@@ -518,22 +445,18 @@ write(ostream &out, int indent_level) const {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a Material object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a Material object
+ */
 void Material::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_Material);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void Material::
 write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(get_name());
@@ -560,11 +483,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_stdfloat(_refractive_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::make_Material
-//       Access: Protected
-//  Description: Factory method to generate a Material object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a Material object
+ */
 TypedWritable *Material::
 make_Material(const FactoryParams &params) {
   Material *me = new Material;
@@ -576,14 +497,11 @@ make_Material(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Material::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void Material::
 fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());

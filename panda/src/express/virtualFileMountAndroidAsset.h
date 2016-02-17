@@ -1,16 +1,15 @@
-// Filename: virtualFileMountAndroidAsset.h
-// Created by:  rdb (21Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFileMountAndroidAsset.h
+ * @author rdb
+ * @date 2013-01-21
+ */
 
 #ifndef VIRTUALFILEMOUNTANDROIDASSET_H
 #define VIRTUALFILEMOUNTANDROIDASSET_H
@@ -25,11 +24,9 @@
 
 #include <android/asset_manager.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountAndroidAsset
-// Description : Maps a Multifile's contents into the
-//               VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a Multifile's contents into the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMountAndroidAsset : public VirtualFileMount {
 PUBLISHED:
   INLINE VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path);
@@ -51,7 +48,7 @@ public:
   virtual time_t get_timestamp(const Filename &file) const;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
 private:

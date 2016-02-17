@@ -1,16 +1,15 @@
-// Filename: freetypeFace.cxx
-// Created by:  gogg (16Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file freetypeFace.cxx
+ * @author gogg
+ * @date 2009-11-16
+ */
 
 #include "freetypeFace.h"
 
@@ -24,11 +23,9 @@ bool FreetypeFace::_ft_ok = false;
 
 TypeHandle FreetypeFace::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFace::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FreetypeFace::
 FreetypeFace() : _lock("FreetypeFace::_lock") {
   _face = NULL;
@@ -42,11 +39,9 @@ FreetypeFace() : _lock("FreetypeFace::_lock") {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFace::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FreetypeFace::
 ~FreetypeFace() {
   if (_face != NULL){
@@ -54,17 +49,12 @@ FreetypeFace::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFace::acquire_face
-//       Access: Public
-//  Description: Retrieves the internal freetype face, and also
-//               acquires the lock.  The freetype face is set to the
-//               indicated size, either as a char_size and dpi, or as
-//               a specific pixel_width and height, before returning.
-//
-//               You must call release_face() when you are done using
-//               it, to release the lock.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the internal freetype face, and also acquires the lock.  The
+ * freetype face is set to the indicated size, either as a char_size and dpi, or
+ * as a specific pixel_width and height, before returning.  You must call
+ * release_face() when you are done using it, to release the lock.
+ */
 FT_Face FreetypeFace::
 acquire_face(int char_size, int dpi, int pixel_width, int pixel_height) {
   _lock.acquire();
@@ -92,24 +82,19 @@ acquire_face(int char_size, int dpi, int pixel_width, int pixel_height) {
   return _face;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFace::release_face
-//       Access: Public
-//  Description: Releases the lock acquired by a previous call to
-//               acquire_face(), and allows another thread to use the
-//               face.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the lock acquired by a previous call to acquire_face(), and allows
+ * another thread to use the face.
+ */
 void FreetypeFace::
 release_face(FT_Face face) {
   nassertv(_face == face);
   _lock.release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFace::set_face
-//       Access: Public
-//  Description: Replaces the internal freetype face.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the internal freetype face.
+ */
 void FreetypeFace::
 set_face(FT_Face face) {
   MutexHolder holder(_lock);
@@ -128,7 +113,7 @@ set_face(FT_Face face) {
     _name += " ";
     _name += _face->style_name;
   }
-  
+
   pnmtext_cat.info()
     << "Loaded font " << _name << "\n";
 
@@ -153,7 +138,7 @@ set_face(FT_Face face) {
         << _name << " has no default Unicode charmap.\n";
       if (_face->num_charmaps > 1) {
         pnmtext_cat.warning()
-          << "Arbitrarily choosing first of " 
+          << "Arbitrarily choosing first of "
           << _face->num_charmaps << " charmaps.\n";
       }
       FT_Set_Charmap(_face, _face->charmaps[0]);
@@ -161,12 +146,9 @@ set_face(FT_Face face) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FreetypeFace::initialize_ft_library
-//       Access: Private, Static
-//  Description: Should be called exactly once to initialize the
-//               FreeType library.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called exactly once to initialize the FreeType library.
+ */
 void FreetypeFace::
 initialize_ft_library() {
   if (!_ft_initialized) {

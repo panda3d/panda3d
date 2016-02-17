@@ -1,27 +1,24 @@
-// Filename: eggQtess.cxx
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggQtess.cxx
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #include "eggQtess.h"
 #include "qtessGlobals.h"
 #include "dcast.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggQtess::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggQtess::
 EggQtess() {
   add_normals_options();
@@ -114,14 +111,11 @@ EggQtess() {
   _total_tris = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggQtess::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggQtess::
 handle_args(ProgramBase::Args &args) {
   if (_describe_qtess) {
@@ -132,11 +126,9 @@ handle_args(ProgramBase::Args &args) {
   return EggFilter::handle_args(args);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggQtess::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggQtess::
 run() {
   bool read_qtess = false;
@@ -194,7 +186,7 @@ run() {
     for (si = _surfaces.begin(); si != _surfaces.end(); ++si) {
       tris += (*si)->write_qtess_parameter(out);
     }
-    
+
     cerr << tris << " tris generated.\n";
 
   } else {
@@ -205,7 +197,7 @@ run() {
     for (si = _surfaces.begin(); si != _surfaces.end(); ++si) {
       tris += (*si)->tesselate();
     }
-    
+
     cerr << tris << " tris generated.\n";
 
     // Clear out the surfaces list before removing the vertices, since
@@ -218,11 +210,9 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggQtess::describe_qtess_format
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggQtess::
 describe_qtess_format() {
   nout <<
@@ -247,7 +237,7 @@ describe_qtess_format() {
   show_text("  NUM", 10,
             "Try to achieve the indicated number of triangles over all the "
             "surfaces matched by this line.\n\n");
-  
+
   show_text("  NUM NUM [[!]u# [!]u# ...] [[!]v# [!]v# ...]", 10,
             "Tesselate to NUM x NUM quads.  If u# or v# appear, they indicate "
             "additional isoparams to insert (or remove if preceded by an "
@@ -256,7 +246,7 @@ describe_qtess_format() {
   show_text("  iNUM", 10,
             "Subdivision amount per isoparam.  Equivalent to the command-line "
             "option -u NUM.\n\n");
-  
+
   show_text("  NUM%", 10,
             "This is a special parameter.  This does not request any specific "
             "tesselation for the named surfaces, but instead gives a relative "
@@ -317,16 +307,13 @@ describe_qtess_format() {
     "to indicate a continuation.\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggQtess::find_surfaces
-//       Access: Private
-//  Description: Recursively walks the egg graph, collecting all the
-//               NURBS surfaces found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the egg graph, collecting all the NURBS surfaces found.
+ */
 void EggQtess::
 find_surfaces(EggNode *egg_node) {
   if (egg_node->is_of_type(EggNurbsSurface::get_class_type())) {
-    PT(QtessSurface) surface = 
+    PT(QtessSurface) surface =
       new QtessSurface(DCAST(EggNurbsSurface, egg_node));
     if (surface->is_valid()) {
       _surfaces.push_back(surface);
@@ -353,4 +340,3 @@ int main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-

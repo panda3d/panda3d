@@ -1,16 +1,15 @@
-// Filename: virtualFileSimple.h
-// Created by:  drose (03Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFileSimple.h
+ * @author drose
+ * @date 2002-08-03
+ */
 
 #ifndef VIRTUALFILESIMPLE_H
 #define VIRTUALFILESIMPLE_H
@@ -19,13 +18,11 @@
 
 #include "virtualFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileSimple
-// Description : A simple file or directory within the
-//               VirtualFileSystem: this maps to exactly one file on
-//               one mount point.  Most directories, and all regular
-//               files, are of this kind.
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple file or directory within the VirtualFileSystem: this maps to exactly
+ * one file on one mount point.  Most directories, and all regular files, are of
+ * this kind.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileSimple : public VirtualFile {
 public:
   INLINE VirtualFileSimple(VirtualFileMount *mount,
@@ -70,7 +67,7 @@ public:
   virtual bool write_file(const unsigned char *data, size_t data_size, bool auto_wrap);
 
 protected:
-  virtual bool scan_local_directory(VirtualFileList *file_list, 
+  virtual bool scan_local_directory(VirtualFileList *file_list,
                                     const ov_set<string> &mount_points) const;
 
 private:

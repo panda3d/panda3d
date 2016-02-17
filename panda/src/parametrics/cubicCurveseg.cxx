@@ -1,16 +1,15 @@
-// Filename: cubicCurveseg.cxx
-// Created by:  drose (04Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cubicCurveseg.cxx
+ * @author drose
+ * @date 2001-03-04
+ */
 
 #include "piecewiseCurve.h"
 
@@ -24,21 +23,17 @@
 
 TypeHandle CubicCurveseg::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CubicCurveseg::
 CubicCurveseg() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::Constructor
-//       Access: Public
-//  Description: Creates the curveseg given the four basis vectors
-//               (the columns of the matrix) explicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the curveseg given the four basis vectors (the columns of the matrix)
+ * explicitly.
+ */
 CubicCurveseg::
 CubicCurveseg(const LMatrix4 &basis) {
   Bx = basis.get_col(0);
@@ -49,45 +44,36 @@ CubicCurveseg(const LMatrix4 &basis) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::Constructor
-//       Access: Public
-//  Description: Creates the curveseg as a Bezier segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the curveseg as a Bezier segment.
+ */
 CubicCurveseg::
 CubicCurveseg(const BezierSeg &seg) {
   bezier_basis(seg);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::Constructor
-//       Access: Public
-//  Description: Creates the curveseg as a NURBS segment.  See
-//               nurbs_basis for a description of the parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the curveseg as a NURBS segment.  See nurbs_basis for a description
+ * of the parameters.
+ */
 CubicCurveseg::
 CubicCurveseg(int order, const PN_stdfloat knots[], const LVecBase4 cvs[]) {
   nurbs_basis(order, knots, cvs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::Destructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CubicCurveseg::
 ~CubicCurveseg() {
 }
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::get_point
-//       Access: Published, Virtual
-//  Description: Computes the surface point at a given parametric
-//               point t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the surface point at a given parametric point t.
+ */
 bool CubicCurveseg::
 get_point(PN_stdfloat t, LVecBase3 &point) const {
   PN_stdfloat t_sqrd = t*t;
@@ -95,24 +81,19 @@ get_point(PN_stdfloat t, LVecBase3 &point) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::get_tangent
-//       Access: Published, Virtual
-//  Description: Computes the surface tangent at a given parametric
-//               point t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the surface tangent at a given parametric point t.
+ */
 bool CubicCurveseg::
 get_tangent(PN_stdfloat t, LVecBase3 &tangent) const {
   evaluate_vector(LVecBase4(3.0f*t*t, 2.0f*t, 1.0f, 0.0f), tangent);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::get_pt
-//       Access: Published, Virtual
-//  Description: Simultaneously computes the point and the tangent at
-//               the given parametric point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously computes the point and the tangent at the given parametric
+ * point.
+ */
 bool CubicCurveseg::
 get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const {
   PN_stdfloat t_sqrd=t*t;
@@ -121,12 +102,9 @@ get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::get_2ndtangent
-//       Access: Published, Virtual
-//  Description: Computes the surface 2nd-order tangent at a given
-//               parametric point t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the surface 2nd-order tangent at a given parametric point t.
+ */
 bool CubicCurveseg::
 get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const {
   evaluate_vector(LVecBase4(6.0f*t, 2.0f, 0.0f, 0.0f), tangent2);
@@ -134,13 +112,10 @@ get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::hermite_basis
-//       Access: Public
-//  Description: Defines the curve segment as a Hermite.  This only
-//               sets up the basis vectors, so the curve will be
-//               computed correctly; it does not retain the CV's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the curve segment as a Hermite.  This only sets up the basis vectors,
+ * so the curve will be computed correctly; it does not retain the CV's.
+ */
 void CubicCurveseg::
 hermite_basis(const HermiteCurveCV &cv0,
               const HermiteCurveCV &cv1,
@@ -164,13 +139,10 @@ hermite_basis(const HermiteCurveCV &cv0,
   rational = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::bezier_basis
-//       Access: Public
-//  Description: Defines the curve segment as a Bezier.  This only
-//               sets up the basis vectors, so the curve will be
-//               computed correctly; it does not retain the CV's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the curve segment as a Bezier.  This only sets up the basis vectors,
+ * so the curve will be computed correctly; it does not retain the CV's.
+ */
 void CubicCurveseg::
 bezier_basis(const BezierSeg &seg) {
   static LMatrix4
@@ -286,14 +258,11 @@ compute_nurbs_basis(int order,
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::nurbs_basis
-//       Access: Public
-//  Description: Defines the curve segment as a NURBS.  Order is one
-//               more than the degree, and must be 1, 2, 3, or 4;
-//               knots is an array of order*2 values, and cvs is an
-//               array of order values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the curve segment as a NURBS.  Order is one more than the degree, and
+ * must be 1, 2, 3, or 4; knots is an array of order*2 values, and cvs is an
+ * array of order values.
+ */
 void CubicCurveseg::
 nurbs_basis(int order, const PN_stdfloat knots[], const LVecBase4 cvs[]) {
   assert(order>=1 && order<=4);
@@ -316,14 +285,11 @@ nurbs_basis(int order, const PN_stdfloat knots[], const LVecBase4 cvs[]) {
   rational = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::get_bezier_seg
-//       Access: Public, Virtual
-//  Description: Fills the BezierSeg structure with a description of
-//               the curve segment as a Bezier, if possible, but does
-//               not change the _t member of the structure.  Returns
-//               true if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the BezierSeg structure with a description of the curve segment as a
+ * Bezier, if possible, but does not change the _t member of the structure.
+ * Returns true if successful, false otherwise.
+ */
 bool CubicCurveseg::
 get_bezier_seg(BezierSeg &seg) const {
   static LMatrix4
@@ -361,12 +327,10 @@ col_mult(const LMatrix4 &M, const LVecBase4 &v) {
                 M(3,0)*v[0] + M(3,1)*v[1] + M(3,2)*v[2] + M(3,3)*v[3]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: compute_seg_col
-//  Description: Interprets the parameters for a particular column of
-//               compute_seg.  Builds the indicated column of T
-//               and P.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interprets the parameters for a particular column of compute_seg.  Builds the
+ * indicated column of T and P.
+ */
 static bool
 compute_seg_col(int c,
                 int rtype, PN_stdfloat t, const LVecBase4 &v,
@@ -451,57 +415,34 @@ compute_seg_col(int c,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::compute_seg
-//       Access: Public, Static
-//  Description: Given a set of four properties of a curve segment
-//               (e.g. four points, four tangent values, four control
-//               points, or any combination), and a basis matrix,
-//               computes the corresponding geometry matrix that
-//               (together with the basis matrix) represents the curve
-//               that satisfies the four properties.
-//
-//               The basis matrix is passed in as B, and its inverse
-//               must be precomputed and passed in as Bi.
-//
-//               The result is returned in the matrix G, each column
-//               of which represents the cth control vertex.  If any
-//               of the four properties has RT_KEEP_ORIG set (see
-//               below), G's input value is used to define the
-//               original shape of the curve; otherwise, G's input
-//               value is ignored.
-//
-//               Each property is defined by an rtype, which may be
-//               any of RT_POINT, RT_TANGENT, or RT_CV, and may or may
-//               not be or'ed with RT_KEEP_ORIG.  The meanings of the
-//               types are as follows:
-//
-//               RT_POINT defines a specific point which the curve
-//               segment must pass through.  t is in the range [0,1]
-//               and represents the parametric value at which the
-//               curve segment will intersect the given point.  If
-//               RT_KEEP_ORIG is not set, v defines the point;
-//               otherwise, v is ignored and the original curve at
-//               point t defines the point.
-//
-//               RT_TANGENT defines a specific tangent value which the
-//               curve segment must have at point t.  As with
-//               RT_POINT, if RT_KEEP_ORIG is not set, v defines the
-//               tangent; otherwise, v is ignored and the original
-//               curve defines the tangent.
-//
-//               RT_CV defines a specific control vertex which the
-//               curve segment must have.  In this case, t is ignored.
-//               The position within the argument list determines
-//               which control vertex is applicable; e.g. rtype0 =
-//               RT_CV defines control vertex 0, and rtype2 = RT_CV
-//               defines control vertex 2.  If RT_KEEP_ORIG is not
-//               set, v defines the new control vertex; otherwise, the
-//               control vertex is taken from G.
-//
-//               The return value is true if all the parameters are
-//               sensible, or false if there is some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a set of four properties of a curve segment (e.g.  four points, four
+ * tangent values, four control points, or any combination), and a basis matrix,
+ * computes the corresponding geometry matrix that (together with the basis
+ * matrix) represents the curve that satisfies the four properties.  The basis
+ * matrix is passed in as B, and its inverse must be precomputed and passed in
+ * as Bi.  The result is returned in the matrix G, each column of which
+ * represents the cth control vertex.  If any of the four properties has
+ * RT_KEEP_ORIG set (see below), G's input value is used to define the original
+ * shape of the curve; otherwise, G's input value is ignored.  Each property is
+ * defined by an rtype, which may be any of RT_POINT, RT_TANGENT, or RT_CV, and
+ * may or may not be or'ed with RT_KEEP_ORIG.  The meanings of the types are as
+ * follows:  RT_POINT defines a specific point which the curve segment must pass
+ * through.  t is in the range [0,1] and represents the parametric value at
+ * which the curve segment will intersect the given point.  If RT_KEEP_ORIG is
+ * not set, v defines the point; otherwise, v is ignored and the original curve
+ * at point t defines the point.  RT_TANGENT defines a specific tangent value
+ * which the curve segment must have at point t.  As with RT_POINT, if
+ * RT_KEEP_ORIG is not set, v defines the tangent; otherwise, v is ignored and
+ * the original curve defines the tangent.  RT_CV defines a specific control
+ * vertex which the curve segment must have.  In this case, t is ignored.  The
+ * position within the argument list determines which control vertex is
+ * applicable; e.g.  rtype0 = RT_CV defines control vertex 0, and rtype2 = RT_CV
+ * defines control vertex 2.  If RT_KEEP_ORIG is not set, v defines the new
+ * control vertex; otherwise, the control vertex is taken from G.  The return
+ * value is true if all the parameters are sensible, or false if there is some
+ * error.
+ */
 bool CubicCurveseg::
 compute_seg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
             int rtype1, PN_stdfloat t1, const LVecBase4 &v1,
@@ -559,22 +500,17 @@ compute_seg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::register_with_factory
-//       Access: Public, Static
-//  Description: Initializes the factory for reading these things from
-//               Bam files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the factory for reading these things from Bam files.
+ */
 void CubicCurveseg::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CubicCurveseg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::make_CubicCurveseg
-//       Access: Protected
-//  Description: Factory method to generate an object of this type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate an object of this type.
+ */
 TypedWritable *CubicCurveseg::
 make_CubicCurveseg(const FactoryParams &params) {
   CubicCurveseg *me = new CubicCurveseg;
@@ -586,12 +522,10 @@ make_CubicCurveseg(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::write_datagram
-//       Access: Protected, Virtual
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CubicCurveseg::
 write_datagram(BamWriter *manager, Datagram &me) {
   ParametricCurve::write_datagram(manager, me);
@@ -603,14 +537,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_bool(rational);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void CubicCurveseg::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ParametricCurve::fillin(scan, manager);

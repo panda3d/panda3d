@@ -1,27 +1,24 @@
-// Filename: objToEgg.cxx
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file objToEgg.cxx
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #include "objToEgg.h"
 
 #include "objToEggConverter.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ObjToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ObjToEgg::
 ObjToEgg() :
   SomethingToEgg("obj", ".obj")
@@ -45,11 +42,9 @@ ObjToEgg() :
   _coordinate_system = CS_zup_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ObjToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ObjToEgg::
 run() {
   nout << "Reading " << _input_filename << "\n";

@@ -1,16 +1,15 @@
-// Filename: stateMunger.h
-// Created by:  drose (04May05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stateMunger.h
+ * @author drose
+ * @date 2005-05-04
+ */
 
 #ifndef STATEMUNGER_H
 #define STATEMUNGER_H
@@ -20,13 +19,11 @@
 #include "renderState.h"
 #include "weakKeyHashMap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StateMunger
-// Description : This is just a simple derivative of GeomMunger that
-//               adds the ability to munge states.  That functionality
-//               can't be declared in the base class, since it doesn't
-//               really know about RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is just a simple derivative of GeomMunger that adds the ability to munge
+ * states.  That functionality can't be declared in the base class, since it
+ * doesn't really know about RenderState.
+ */
 class EXPCL_PANDA_PGRAPH StateMunger : public GeomMunger {
 public:
   INLINE StateMunger(GraphicsStateGuardianBase *gsg);
@@ -60,4 +57,3 @@ private:
 #include "stateMunger.I"
 
 #endif
-

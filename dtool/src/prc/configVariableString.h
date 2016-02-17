@@ -1,16 +1,15 @@
-// Filename: configVariableString.h
-// Created by:  drose (20Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableString.h
+ * @author drose
+ * @date 2004-10-20
+ */
 
 #ifndef CONFIGVARIABLESTRING_H
 #define CONFIGVARIABLESTRING_H
@@ -18,11 +17,9 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableString
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a string type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a string type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableString : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableString(const string &name);

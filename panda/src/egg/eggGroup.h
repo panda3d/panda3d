@@ -1,16 +1,15 @@
-// Filename: eggGroup.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroup.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGGROUP_H
 #define EGGGROUP_H
@@ -28,11 +27,10 @@
 #include "collideMask.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroup
-// Description : The main glue of the egg hierarchy, this corresponds
-//               to the <Group>, <Instance>, and <Joint> type nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main glue of the egg hierarchy, this corresponds to the <Group>,
+ * <Instance>, and <Joint> type nodes.
+ */
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
@@ -435,4 +433,3 @@ ostream &operator << (ostream &out, EggGroup::BlendOperand t);
 #include "eggGroup.I"
 
 #endif
-

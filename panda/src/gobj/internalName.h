@@ -1,16 +1,15 @@
-// Filename: internalName.h
-// Created by:  drose (15Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file internalName.h
+ * @author drose
+ * @date 2004-07-15
+ */
 
 #ifndef INTERNALNAME_H
 #define INTERNALNAME_H
@@ -25,21 +24,15 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InternalName
-// Description : Encodes a string name in a hash table, mapping it to
-//               a pointer.  This is used to tokenify names so they
-//               may be used efficiently in low-level Panda
-//               structures, for instance to differentiate the
-//               multiple sets of texture coordinates that might be
-//               stored on a Geom.
-//
-//               InternalNames are hierarchical, with the '.' used by
-//               convention as a separator character.  You can
-//               construct a single InternalName as a composition of
-//               one or more other names, or by giving it a source
-//               string directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes a string name in a hash table, mapping it to a pointer.  This is used
+ * to tokenify names so they may be used efficiently in low-level Panda
+ * structures, for instance to differentiate the multiple sets of texture
+ * coordinates that might be stored on a Geom.  InternalNames are hierarchical,
+ * with the '.' used by convention as a separator character.  You can construct
+ * a single InternalName as a composition of one or more other names, or by
+ * giving it a source string directly.
+ */
 class EXPCL_PANDA_GOBJ InternalName FINAL : public TypedWritableReferenceCount {
 private:
   InternalName(InternalName *parent, const string &basename);
@@ -185,15 +178,12 @@ private:
 
 INLINE ostream &operator << (ostream &out, const InternalName &tcn);
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPT_InternalName
-// Description : This is a const pointer to an InternalName, and
-//               should be used in lieu of a CPT(InternalName) in
-//               function arguments.  The extra feature that it
-//               offers is that it has a constructor to automatically
-//               convert from a string, so that strings are coerced
-//               by the compiler when passed to such a function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a const pointer to an InternalName, and should be used in lieu of a
+ * CPT(InternalName) in function arguments.  The extra feature that it offers is
+ * that it has a constructor to automatically convert from a string, so that
+ * strings are coerced by the compiler when passed to such a function.
+ */
 #ifdef CPPPARSER
 // The construct below confuses interrogate, so we give it a typedef.
 typedef ConstPointerTo<InternalName> CPT_InternalName;

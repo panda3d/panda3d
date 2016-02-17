@@ -1,8 +1,4 @@
-/* Filename: panda_getopt_impl.h
- * Created by:  drose (19Jul11)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file panda_getopt_impl.h
+ * @author drose
+ * @date 2011-07-19
+ */
 
 #ifndef PANDA_GETOPT_IMPL_H
 #define PANDA_GETOPT_IMPL_H
@@ -59,10 +58,10 @@ struct option {
 extern EXPCL_DTOOL int
 getopt(int argc, char *const argv[], const char *optstring);
 extern EXPCL_DTOOL int
-getopt_long(int argc, char *const argv[], const char *optstring, 
+getopt_long(int argc, char *const argv[], const char *optstring,
             const struct option *longopts, int *longindex);
 extern EXPCL_DTOOL int
-getopt_long_only(int argc, char *const argv[], const char *optstring, 
+getopt_long_only(int argc, char *const argv[], const char *optstring,
                  const struct option *longopts, int *longindex);
 
 #ifdef  __cplusplus

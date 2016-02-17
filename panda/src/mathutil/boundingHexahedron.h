@@ -1,16 +1,15 @@
-// Filename: boundingHexahedron.h
-// Created by:  drose (03Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingHexahedron.h
+ * @author drose
+ * @date 1999-10-03
+ */
 
 #ifndef BOUNDINGHEXAHEDRON_H
 #define BOUNDINGHEXAHEDRON_H
@@ -24,15 +23,12 @@
 #include "coordinateSystem.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingHexahedron
-// Description : This defines a bounding convex hexahedron.  It is
-//               typically used to represent a frustum, but may
-//               represent any enclosing convex hexahedron, including
-//               simple boxes.  However, if all you want is an
-//               axis-aligned bounding box, you may be better off with
-//               the simpler BoundingBox class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a bounding convex hexahedron.  It is typically used to represent
+ * a frustum, but may represent any enclosing convex hexahedron, including
+ * simple boxes.  However, if all you want is an axis-aligned bounding box, you
+ * may be better off with the simpler BoundingBox class.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingHexahedron : public FiniteBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingHexahedron();

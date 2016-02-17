@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeSGIWriter.cxx
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeSGIWriter.cxx
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #include "pnmFileTypeSGI.h"
 
@@ -75,22 +74,18 @@ put_short_as_byte(ostream *out_file, short s) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Writer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeSGI::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Writer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeSGI::Writer::
 ~Writer() {
   if (table!=NULL) {
@@ -101,35 +96,25 @@ PNMFileTypeSGI::Writer::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Writer::supports_write_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMWriter supports a
-//               streaming interface to writing the data: that is, it
-//               is capable of writing the image one row at a time,
-//               via repeated calls to write_row().  Returns false if
-//               the only way to write from this file is all at once,
-//               via write_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMWriter supports a streaming interface to
+ * writing the data: that is, it is capable of writing the image one row at a
+ * time, via repeated calls to write_row().  Returns false if the only way to
+ * write from this file is all at once, via write_data().
+ */
 bool PNMFileTypeSGI::Writer::
 supports_write_row() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Writer::write_header
-//       Access: Public, Virtual
-//  Description: If supports_write_row(), above, returns true, this
-//               function may be called to write out the image header
-//               in preparation to writing out the image data one row
-//               at a time.  Returns true if the header is
-//               successfully written, false if there is an error.
-//
-//               It is the user's responsibility to fill in the header
-//               data via calls to set_x_size(), set_num_channels(),
-//               etc., or copy_header_from(), before calling
-//               write_header().
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_write_row(), above, returns true, this function may be called to
+ * write out the image header in preparation to writing out the image data one
+ * row at a time.  Returns true if the header is successfully written, false if
+ * there is an error.  It is the user's responsibility to fill in the header
+ * data via calls to set_x_size(), set_num_channels(), etc., or
+ * copy_header_from(), before calling write_header().
+ */
 bool PNMFileTypeSGI::Writer::
 write_header() {
   table = NULL;
@@ -181,21 +166,15 @@ write_header() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Writer::write_row
-//       Access: Public, Virtual
-//  Description: If supports_write_row(), above, returns true, this
-//               function may be called repeatedly to write the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully written,
-//               false if there is an error.
-//
-//               You must first call write_header() before writing the
-//               individual rows.  It is also important to delete the
-//               PNMWriter class after successfully writing the last
-//               row.  Failing to do this may result in some data not
-//               getting flushed!
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_write_row(), above, returns true, this function may be called
+ * repeatedly to write the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully written, false if there is
+ * an error.  You must first call write_header() before writing the individual
+ * rows.  It is also important to delete the PNMWriter class after successfully
+ * writing the last row.  Failing to do this may result in some data not getting
+ * flushed!
+ */
 bool PNMFileTypeSGI::Writer::
 write_row(xel *row_data, xelval *alpha_data) {
   ScanLine channel[4];

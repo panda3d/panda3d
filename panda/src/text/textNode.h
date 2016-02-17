@@ -1,16 +1,15 @@
-// Filename: textNode.h
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textNode.h
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #ifndef TEXTNODE_H
 #define TEXTNODE_H
@@ -26,29 +25,20 @@
 #include "luse.h"
 #include "geom.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextNode
-// Description : The primary interface to this module.  This class
-//               does basic text assembly; given a string of text and
-//               a TextFont object, it creates a piece of geometry
-//               that may be placed in the 3-d or 2-d world to
-//               represent the indicated text.
-//
-//               The TextNode may be used in one of two ways.
-//               Naively, it may simply be parented directly into the
-//               scene graph and rendered as if it were a GeomNode; in
-//               this mode, the actual polygon geometry that renders
-//               the text is not directly visible or accessible, but
-//               remains hidden within the TextNode.
-//
-//               The second way TextNode may be used is as a text
-//               generator.  To use it in this way, do not parent the
-//               TextNode to the scene graph; instead, set the
-//               properties of the text and call generate() to return
-//               an ordinary node, containing ordinary geometry, which
-//               you may use however you like.  Each time you call
-//               generate() a new node is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * The primary interface to this module.  This class does basic text assembly;
+ * given a string of text and a TextFont object, it creates a piece of geometry
+ * that may be placed in the 3-d or 2-d world to represent the indicated text.
+ * The TextNode may be used in one of two ways.  Naively, it may simply be
+ * parented directly into the scene graph and rendered as if it were a GeomNode;
+ * in this mode, the actual polygon geometry that renders the text is not
+ * directly visible or accessible, but remains hidden within the TextNode.  The
+ * second way TextNode may be used is as a text generator.  To use it in this
+ * way, do not parent the TextNode to the scene graph; instead, set the
+ * properties of the text and call generate() to return an ordinary node,
+ * containing ordinary geometry, which you may use however you like.  Each time
+ * you call generate() a new node is returned.
+ */
 class EXPCL_PANDA_TEXT TextNode : public PandaNode, public TextEncoder, public TextProperties {
 PUBLISHED:
   TextNode(const string &name);
@@ -204,7 +194,7 @@ PUBLISHED:
   // of text in the current font.
   PN_stdfloat calc_width(wchar_t character) const;
   INLINE PN_stdfloat calc_width(const string &line) const;
-  
+
   bool has_exact_character(wchar_t character) const;
   bool has_character(wchar_t character) const;
   bool is_whitespace(wchar_t character) const;

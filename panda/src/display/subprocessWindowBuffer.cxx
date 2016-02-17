@@ -1,16 +1,15 @@
-// Filename: subprocessWindowBuffer.cxx
-// Created by:  drose (11Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file subprocessWindowBuffer.cxx
+ * @author drose
+ * @date 2009-07-11
+ */
 
 #include "subprocessWindowBuffer.h"
 #include <sys/mman.h>
@@ -24,25 +23,19 @@ using namespace std;
 const char SubprocessWindowBuffer::
 _magic_number[SubprocessWindowBuffer::magic_number_length] = "pNdaSWB";
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::operator new
-//       Access: Private
-//  Description: Placement operator.  Returns addr, a trivial
-//               pass-through.
-////////////////////////////////////////////////////////////////////
+/**
+ * Placement operator.  Returns addr, a trivial pass-through.
+ */
 void *SubprocessWindowBuffer::
 operator new(size_t, void *addr) {
   return addr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::Constructor
-//       Access: Private
-//  Description: This constructor is private; it is not intended to be
-//               called directly.  It is used in make_buffer() to
-//               create a temporary local object, to determine the
-//               required mmap_size for a given window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor is private; it is not intended to be called directly.  It is
+ * used in make_buffer() to create a temporary local object, to determine the
+ * required mmap_size for a given window size.
+ */
 SubprocessWindowBuffer::
 SubprocessWindowBuffer(int x_size, int y_size) {
   memcpy(_this_magic, _magic_number, magic_number_length);
@@ -58,11 +51,9 @@ SubprocessWindowBuffer(int x_size, int y_size) {
   _mmap_size = sizeof(*this) + _framebuffer_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::Copy Constructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SubprocessWindowBuffer::
 SubprocessWindowBuffer(const SubprocessWindowBuffer &copy) :
   _mmap_size(copy._mmap_size),
@@ -78,32 +69,23 @@ SubprocessWindowBuffer(const SubprocessWindowBuffer &copy) :
   _last_read = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::Destructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SubprocessWindowBuffer::
 ~SubprocessWindowBuffer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::new_buffer
-//       Access: Public, Static
-//  Description: Call this method to create a new buffer in shared
-//               memory space.  Supply the desired size of the window.
-//
-//               This method will create the required shared-memory
-//               buffer and return a SubprocessWindowBuffer allocated
-//               within that shared memory, or NULL if there is a
-//               failure allocating sufficient shared memory.
-//
-//               It also creates a temporary file on disk and returns
-//               fd, mmap_size, and filename, which the caller must
-//               retain and eventually pass to destroy_buffer().  The
-//               filename should be passed to the child process to
-//               open with open_buffer().
-////////////////////////////////////////////////////////////////////
+/**
+ * Call this method to create a new buffer in shared memory space.  Supply the
+ * desired size of the window.  This method will create the required shared-
+ * memory buffer and return a SubprocessWindowBuffer allocated within that
+ * shared memory, or NULL if there is a failure allocating sufficient shared
+ * memory.  It also creates a temporary file on disk and returns fd, mmap_size,
+ * and filename, which the caller must retain and eventually pass to
+ * destroy_buffer().  The filename should be passed to the child process to open
+ * with open_buffer().
+ */
 SubprocessWindowBuffer *SubprocessWindowBuffer::
 new_buffer(int &fd, size_t &mmap_size, string &filename,
            int x_size, int y_size) {
@@ -144,14 +126,11 @@ new_buffer(int &fd, size_t &mmap_size, string &filename,
   return new(shared_mem) SubprocessWindowBuffer(temp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::destroy_buffer
-//       Access: Public, Static
-//  Description: Destroys a buffer object created via a previous call
-//               to new_buffer().  This destructs objects within the
-//               buffer, unmaps the shared memory, and closes the file
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroys a buffer object created via a previous call to new_buffer().  This
+ * destructs objects within the buffer, unmaps the shared memory, and closes the
+ * file descriptor.
+ */
 void SubprocessWindowBuffer::
 destroy_buffer(int fd, size_t mmap_size, const string &filename,
                SubprocessWindowBuffer *buffer) {
@@ -162,21 +141,14 @@ destroy_buffer(int fd, size_t mmap_size, const string &filename,
   unlink(filename.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::open_buffer
-//       Access: Public, Static
-//  Description: Call this method to open a reference to an existing
-//               buffer in shared memory space.  Supply the temporary
-//               filename returned by new_buffer(), above (presumably
-//               from the parent process).
-//
-//               This method will mmap the required shared-memory
-//               buffer and return a SubprocessWindowBuffer allocated
-//               within that shared memory, or NULL if there is some
-//               failure.  The caller must retain fd, mmap_size, and
-//               filename and eventually pass all three to
-//               close_buffer().
-////////////////////////////////////////////////////////////////////
+/**
+ * Call this method to open a reference to an existing buffer in shared memory
+ * space.  Supply the temporary filename returned by new_buffer(), above
+ * (presumably from the parent process).  This method will mmap the required
+ * shared-memory buffer and return a SubprocessWindowBuffer allocated within
+ * that shared memory, or NULL if there is some failure.  The caller must retain
+ * fd, mmap_size, and filename and eventually pass all three to close_buffer().
+ */
 SubprocessWindowBuffer *SubprocessWindowBuffer::
 open_buffer(int &fd, size_t &mmap_size, const string &filename) {
   mmap_size = 0;
@@ -216,7 +188,7 @@ open_buffer(int &fd, size_t &mmap_size, const string &filename) {
     fd = -1;
     return NULL;
   }
-    
+
 
   mmap_size = temp->_mmap_size;
 
@@ -250,14 +222,11 @@ open_buffer(int &fd, size_t &mmap_size, const string &filename) {
   return buffer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::close_buffer
-//       Access: Public, Static
-//  Description: Closes a buffer object created via a previous call
-//               to open_buffer().  This unmaps the shared memory
-//               and closes the file descriptor, but does not molest
-//               the shared buffer itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes a buffer object created via a previous call to open_buffer().  This
+ * unmaps the shared memory and closes the file descriptor, but does not molest
+ * the shared buffer itself.
+ */
 void SubprocessWindowBuffer::
 close_buffer(int fd, size_t mmap_size, const string &filename,
              SubprocessWindowBuffer *buffer) {
@@ -265,12 +234,9 @@ close_buffer(int fd, size_t mmap_size, const string &filename,
   close(fd);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindowBuffer::verify_magic_number
-//       Access: Public
-//  Description: Returns true if the buffer's magic number matches,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the buffer's magic number matches, false otherwise.
+ */
 bool SubprocessWindowBuffer::
 verify_magic_number() const {
   return (memcmp(_this_magic, _magic_number, magic_number_length) == 0);

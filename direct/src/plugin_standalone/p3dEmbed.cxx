@@ -1,16 +1,15 @@
-// Filename: p3dEmbed.cxx
-// Created by:  rdb (07Dec09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dEmbed.cxx
+ * @author rdb
+ * @date 2009-12-07
+ */
 
 #define P3D_FUNCTION_PROTOTYPES
 
@@ -18,28 +17,24 @@
 #include "load_plugin.h"
 #include "find_root_dir.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DEmbed::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DEmbed::
 P3DEmbed(bool console_environment) : Panda3DBase(console_environment) {
   // Since the Panda3DBase constructor no longer assigns _root_dir, we
   // have to do it here.
   _root_dir = find_root_dir();
-  
+
   // We should leave the arguments intact, just pass them
   // 1:1 as we've received them.
   _prepend_filename_to_args = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DEmbed::run_embedded
-//       Access: Public
-//  Description: Runs with the data embedded in the current
-//               executable, at the specified offset.
-////////////////////////////////////////////////////////////////////
+/**
+ * Runs with the data embedded in the current executable, at the specified
+ * offset.
+ */
 int P3DEmbed::
 run_embedded(streampos read_offset, int argc, char *argv[]) {
   // Check to see if we've actually got an application embedded.  If
@@ -171,7 +166,7 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
     root_dir_f.make_absolute(f.get_dirname());
     _root_dir = root_dir_f.to_os_specific();
   }
-  
+
   // Make the host directory absolute
   if (!host_dir.empty()) {
     Filename host_dir_f(host_dir);
@@ -245,7 +240,7 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
 
   // Now call init_plugin() to verify that we got all of the required
   // function pointers.  This will also call P3D_initialize().
-  if (!init_plugin("", _host_url, _verify_contents, _this_platform, 
+  if (!init_plugin("", _host_url, _verify_contents, _this_platform,
                    _log_dirname, _log_basename, true, _console_environment,
                    _root_dir, _host_dir, _start_dir, cerr)) {
     cerr << "Unable to launch core API\n";
@@ -255,7 +250,7 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   // Create a plugin instance and run the program
   P3D_instance *inst = create_instance(f, true, argv, argc, read_offset);
   _instances.insert(inst);
-  
+
   run_main_loop();
 
   unload_plugin(cerr);

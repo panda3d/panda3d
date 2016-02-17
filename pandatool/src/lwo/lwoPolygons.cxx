@@ -1,16 +1,15 @@
-// Filename: lwoPolygons.cxx
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoPolygons.cxx
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #include "lwoPolygons.h"
 #include "lwoInputFile.h"
@@ -20,37 +19,29 @@
 
 TypeHandle LwoPolygons::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoPolygons::get_num_polygons
-//       Access: Public
-//  Description: Returns the number of polygons of this group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of polygons of this group.
+ */
 int LwoPolygons::
 get_num_polygons() const {
   return _polygons.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoPolygons::get_polygon
-//       Access: Public
-//  Description: Returns the nth polygon of this group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth polygon of this group.
+ */
 LwoPolygons::Polygon *LwoPolygons::
 get_polygon(int n) const {
   nassertr(n >= 0 && n < (int)_polygons.size(), (Polygon *)NULL);
   return _polygons[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoPolygons::read_iff
-//       Access: Public, Virtual
-//  Description: Reads the data of the chunk in from the given input
-//               file, if possible.  The ID and length of the chunk
-//               have already been read.  stop_at is the byte position
-//               of the file to stop at (based on the current position
-//               at in->get_bytes_read()).  Returns true on success,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data of the chunk in from the given input file, if possible.  The
+ * ID and length of the chunk have already been read.  stop_at is the byte
+ * position of the file to stop at (based on the current position at
+ * in->get_bytes_read()).  Returns true on success, false otherwise.
+ */
 bool LwoPolygons::
 read_iff(IffInputFile *in, size_t stop_at) {
   LwoInputFile *lin = DCAST(LwoInputFile, in);
@@ -119,11 +110,9 @@ read_iff(IffInputFile *in, size_t stop_at) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoPolygons::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void LwoPolygons::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

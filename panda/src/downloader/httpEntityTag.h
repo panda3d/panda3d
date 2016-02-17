@@ -1,29 +1,26 @@
-// Filename: httpEntityTag.h
-// Created by:  drose (28Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpEntityTag.h
+ * @author drose
+ * @date 2003-01-28
+ */
 
 #ifndef HTTPENTITYTAG_H
 #define HTTPENTITYTAG_H
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPEntityTag
-// Description : A container for an "entity tag" from an HTTP server.
-//               This is used to identify a particular version of a
-//               document or resource, particularly useful for
-//               verifying caches.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for an "entity tag" from an HTTP server.  This is used to
+ * identify a particular version of a document or resource, particularly useful
+ * for verifying caches.
+ */
 class EXPCL_PANDAEXPRESS HTTPEntityTag {
 PUBLISHED:
   INLINE HTTPEntityTag();

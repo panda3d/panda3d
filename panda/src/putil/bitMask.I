@@ -1,25 +1,22 @@
-// Filename: bitMask.I
-// Created by:  drose (08Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bitMask.I
+ * @author drose
+ * @date 2000-06-08
+ */
 
 template<class WType, int nbits>
 TypeHandle BitMask<WType, nbits>::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits>::
 BitMask() :
@@ -27,11 +24,9 @@ BitMask() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits>::
 BitMask(WordType init_value) :
@@ -39,11 +34,9 @@ BitMask(WordType init_value) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits>::
 BitMask(const BitMask<WType, nbits> &copy) :
@@ -51,11 +44,9 @@ BitMask(const BitMask<WType, nbits> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> &BitMask<WType, nbits>::
 operator = (const BitMask<WType, nbits> &copy) {
@@ -63,11 +54,9 @@ operator = (const BitMask<WType, nbits> &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Named all_on constructor
-//       Access: Published, Static
-//  Description: Returns a BitMask whose bits are all on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask whose bits are all on.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 all_on() {
@@ -76,11 +65,9 @@ all_on() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Named all_on constructor
-//       Access: Published, Static
-//  Description: Returns a BitMask whose bits are all off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask whose bits are all off.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 all_off() {
@@ -89,11 +76,9 @@ all_off() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Named lower_on constructor
-//       Access: Published, Static
-//  Description: Returns a BitMask whose lower on_bits bits are on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask whose lower on_bits bits are on.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 lower_on(int on_bits) {
@@ -107,11 +92,9 @@ lower_on(int on_bits) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Named bit constructor
-//       Access: Published, Static
-//  Description: Returns a BitMask with only the indicated bit on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with only the indicated bit on.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 bit(int index) {
@@ -120,12 +103,9 @@ bit(int index) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Named range constructor
-//       Access: Published, Static
-//  Description: Returns a BitMask whose size bits, beginning at
-//               low_bit, are on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask whose size bits, beginning at low_bit, are on.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 range(int low_bit, int size) {
@@ -141,72 +121,54 @@ range(int low_bit, int size) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits>::
 ~BitMask() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::has_max_num_bits
-//       Access: Published, Static
-//  Description: Returns true if there is a maximum number of bits
-//               that may be stored in this structure, false
-//               otherwise.  If this returns true, the number may be
-//               queried in get_max_num_bits().
-//
-//               This method always returns true.  This method is
-//               defined so generic programming algorithms can use
-//               BitMask or BitArray interchangeably.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a maximum number of bits that may be stored in this
+ * structure, false otherwise.  If this returns true, the number may be queried
+ * in get_max_num_bits().  This method always returns true.  This method is
+ * defined so generic programming algorithms can use BitMask or BitArray
+ * interchangeably.
+ */
 template<class WType, int nbits>
 CONSTEXPR bool BitMask<WType, nbits>::
 has_max_num_bits() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_max_num_bits
-//       Access: Published, Static
-//  Description: If get_max_num_bits() returned true, this method may
-//               be called to return the maximum number of bits that
-//               may be stored in this structure.  It is an error to
-//               call this if get_max_num_bits() return false.
-//
-//               It is never an error to call this method.  This
-//               returns the same thing as get_num_bits().  This
-//               method is defined so generic programming algorithms
-//               can use BitMask or BitArray interchangeably.
-////////////////////////////////////////////////////////////////////
+/**
+ * If get_max_num_bits() returned true, this method may be called to return the
+ * maximum number of bits that may be stored in this structure.  It is an error
+ * to call this if get_max_num_bits() return false.  It is never an error to
+ * call this method.  This returns the same thing as get_num_bits().  This
+ * method is defined so generic programming algorithms can use BitMask or
+ * BitArray interchangeably.
+ */
 template<class WType, int nbits>
 CONSTEXPR int BitMask<WType, nbits>::
 get_max_num_bits() {
   return num_bits;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_num_bits
-//       Access: Published, Static
-//  Description: Returns the number of bits available to set in the
-//               bitmask.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits available to set in the bitmask.
+ */
 template<class WType, int nbits>
 CONSTEXPR int BitMask<WType, nbits>::
 get_num_bits() {
   return num_bits;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_bit
-//       Access: Published
-//  Description: Returns true if the nth bit is set, false if it is
-//               cleared.  index must be in the range [0,
-//               num_bits).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the nth bit is set, false if it is cleared.  index must be in
+ * the range [0, num_bits).
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 get_bit(int index) const {
@@ -214,12 +176,9 @@ get_bit(int index) const {
   return (_word & ((WordType)1 << index)) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::set_bit
-//       Access: Published
-//  Description: Sets the nth bit on.  index must be in the range
-//               [0, num_bits).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit on.  index must be in the range [0, num_bits).
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 set_bit(int index) {
@@ -227,12 +186,9 @@ set_bit(int index) {
   _word |= ((WordType)1 << index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::clear_bit
-//       Access: Published
-//  Description: Sets the nth bit off.  index must be in the range
-//               [0, num_bits).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit off.  index must be in the range [0, num_bits).
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 clear_bit(int index) {
@@ -240,13 +196,10 @@ clear_bit(int index) {
   _word &= ~((WordType)1 << index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::set_bit_to
-//       Access: Published
-//  Description: Sets the nth bit either on or off, according to the
-//               indicated bool value.  index must be in the range [0,
-//               num_bits).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit either on or off, according to the indicated bool value.
+ * index must be in the range [0, num_bits).
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 set_bit_to(int index, bool value) {
@@ -257,37 +210,28 @@ set_bit_to(int index, bool value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::is_zero
-//       Access: Published
-//  Description: Returns true if the entire bitmask is zero, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the entire bitmask is zero, false otherwise.
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 is_zero() const {
   return (_word == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::is_all_on
-//       Access: Published
-//  Description: Returns true if the entire bitmask is one, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the entire bitmask is one, false otherwise.
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 is_all_on() const {
   return (~_word == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::extract
-//       Access: Published
-//  Description: Returns a word that represents only the indicated
-//               range of bits within this BitMask, shifted to the
-//               least-significant position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a word that represents only the indicated range of bits within this
+ * BitMask, shifted to the least-significant position.
+ */
 template<class WType, int nbits>
 INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 extract(int low_bit, int size) const {
@@ -295,12 +239,9 @@ extract(int low_bit, int size) const {
     BitMask<WType, nbits>::lower_on(size)._word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::store
-//       Access: Published
-//  Description: Stores the indicated word into the indicated range of
-//               bits with this BitMask.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated word into the indicated range of bits with this BitMask.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 store(WordType value, int low_bit, int size) {
@@ -308,12 +249,9 @@ store(WordType value, int low_bit, int size) {
   _word = (_word & ~mask) | ((value << low_bit) & mask);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::has_any_of
-//       Access: Published
-//  Description: Returns true if any bit in the indicated range is
-//               set, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any bit in the indicated range is set, false otherwise.
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 has_any_of(int low_bit, int size) const {
@@ -321,12 +259,9 @@ has_any_of(int low_bit, int size) const {
   return (_word & mask) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::has_all_of
-//       Access: Published
-//  Description: Returns true if all bits in the indicated range are
-//               set, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all bits in the indicated range are set, false otherwise.
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 has_all_of(int low_bit, int size) const {
@@ -334,11 +269,9 @@ has_all_of(int low_bit, int size) const {
   return (_word & mask) == mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::set_range
-//       Access: Published
-//  Description: Sets the indicated range of bits on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated range of bits on.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 set_range(int low_bit, int size) {
@@ -346,11 +279,9 @@ set_range(int low_bit, int size) {
   _word |= mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::clear_range
-//       Access: Published
-//  Description: Sets the indicated range of bits off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated range of bits off.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 clear_range(int low_bit, int size) {
@@ -358,11 +289,9 @@ clear_range(int low_bit, int size) {
   _word &= ~mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::set_range_to
-//       Access: Published
-//  Description: Sets the indicated range of bits to either on or off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated range of bits to either on or off.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 set_range_to(bool value, int low_bit, int size) {
@@ -373,112 +302,88 @@ set_range_to(bool value, int low_bit, int size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_word
-//       Access: Published
-//  Description: Returns the entire BitMask as a single word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the entire BitMask as a single word.
+ */
 template<class WType, int nbits>
 INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 get_word() const {
   return _word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::set_word
-//       Access: Published
-//  Description: Sets the entire BitMask to the value indicated by the
-//               given word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the entire BitMask to the value indicated by the given word.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 set_word(WordType value) {
   _word = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_num_on_bits
-//       Access: Published
-//  Description: Returns the number of bits that are set to 1 in the
-//               mask.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits that are set to 1 in the mask.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_num_on_bits() const {
   return count_bits_in_word((WType)_word);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_num_off_bits
-//       Access: Published
-//  Description: Returns the number of bits that are set to 0 in the
-//               mask.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits that are set to 0 in the mask.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_num_off_bits() const {
   return count_bits_in_word((WType)(~_word));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_lowest_on_bit
-//       Access: Published
-//  Description: Returns the index of the lowest 1 bit in the mask.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 1 bit in the mask.  Returns -1 if there are
+ * no 1 bits.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_lowest_on_bit() const {
   return ::get_lowest_on_bit(_word);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_lowest_off_bit
-//       Access: Published
-//  Description: Returns the index of the lowest 0 bit in the mask.
-//               Returns -1 if there are no 0 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 0 bit in the mask.  Returns -1 if there are
+ * no 0 bits.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_lowest_off_bit() const {
   return (~(*this)).get_lowest_on_bit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_highest_on_bit
-//       Access: Published
-//  Description: Returns the index of the highest 1 bit in the mask.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 1 bit in the mask.  Returns -1 if there are
+ * no 1 bits.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_highest_on_bit() const {
   return ::get_highest_on_bit(_word);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_highest_off_bit
-//       Access: Published
-//  Description: Returns the index of the highest 0 bit in the mask.
-//               Returns -1 if there are no 0 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 0 bit in the mask.  Returns -1 if there are
+ * no 0 bits.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_highest_off_bit() const {
   return (~(*this)).get_highest_on_bit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_next_higher_different_bit
-//       Access: Published
-//  Description: Returns the index of the next bit in the mask, above
-//               low_bit, whose value is different that the value of
-//               low_bit.  Returns low_bit again if all bits higher
-//               than low_bit have the same value.
-//
-//               This can be used to quickly iterate through all of
-//               the bits in the mask.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the next bit in the mask, above low_bit, whose value is
+ * different that the value of low_bit.  Returns low_bit again if all bits
+ * higher than low_bit have the same value.  This can be used to quickly iterate
+ * through all of the bits in the mask.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_next_higher_different_bit(int low_bit) const {
@@ -522,52 +427,40 @@ get_next_higher_different_bit(int low_bit) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::invert_in_place
-//       Access: Published
-//  Description: Inverts all the bits in the BitMask.  This is
-//               equivalent to mask = ~mask.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inverts all the bits in the BitMask.  This is equivalent to mask = ~mask.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 invert_in_place() {
   _word = ~_word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::has_bits_in_common
-//       Access: Published
-//  Description: Returns true if this BitMask has any "one" bits in
-//               common with the other one, false otherwise.
-//
-//               This is equivalent to (mask & other) != 0, but may be
-//               faster.  (Actually, it should only be faster in the
-//               BitArray case, but this method is provided for the
-//               benefit of generic programming algorithms).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this BitMask has any "one" bits in common with the other one,
+ * false otherwise.  This is equivalent to (mask & other) != 0, but may be
+ * faster.  (Actually, it should only be faster in the BitArray case, but this
+ * method is provided for the benefit of generic programming algorithms).
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 has_bits_in_common(const BitMask<WType, nbits> &other) const {
   return (_word & other._word) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::clear
-//       Access: Published
-//  Description: Sets all the bits in the BitMask off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets all the bits in the BitMask off.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 clear() {
   _word = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::output
-//       Access: Published
-//  Description: Writes the BitMask out as a binary or a hex number,
-//               according to the number of bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitMask out as a binary or a hex number, according to the number
+ * of bits.
+ */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
 output(ostream &out) const {
@@ -578,12 +471,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::output_binary
-//       Access: Published
-//  Description: Writes the BitMask out as a binary number, with
-//               spaces every four bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitMask out as a binary number, with spaces every four bits.
+ */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
 output_binary(ostream &out, int spaces_every) const {
@@ -595,12 +485,10 @@ output_binary(ostream &out, int spaces_every) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::output_hex
-//       Access: Published
-//  Description: Writes the BitMask out as a hexadecimal number, with
-//               spaces every four digits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitMask out as a hexadecimal number, with spaces every four
+ * digits.
+ */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
 output_hex(ostream &out, int spaces_every) const {
@@ -619,65 +507,52 @@ output_hex(ostream &out, int spaces_every) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::write
-//       Access: Published
-//  Description: Writes the BitMask out as a binary or a hex number,
-//               according to the number of bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the BitMask out as a binary or a hex number, according to the number
+ * of bits.
+ */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 operator == (const BitMask<WType, nbits> &other) const {
   return _word == other._word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator !=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 operator != (const BitMask<WType, nbits> &other) const {
   return _word != other._word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator <
-//       Access: Published
-//  Description: The ordering operator is of limited usefulness with a
-//               BitMask, however, it has a definition which places
-//               all unique BitMasks into a unique ordering.  It may
-//               be useful when defining ordered STL containers of
-//               BitMasks, for instance; and it's required in order to
-//               export any STL container (ordered or unordered) of
-//               BitMask under Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ordering operator is of limited usefulness with a BitMask, however, it
+ * has a definition which places all unique BitMasks into a unique ordering.  It
+ * may be useful when defining ordered STL containers of BitMasks, for instance;
+ * and it's required in order to export any STL container (ordered or unordered)
+ * of BitMask under Windows.
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 operator < (const BitMask<WType, nbits> &other) const {
   return _word < other._word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this BitMask sorts
-//               before the indicated other BitMask, greater than zero
-//               if it sorts after, or 0 if they are equivalent.  This
-//               is based on the same ordering defined by operator <.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if this BitMask sorts before the indicated
+ * other BitMask, greater than zero if it sorts after, or 0 if they are
+ * equivalent.  This is based on the same ordering defined by operator <.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 compare_to(const BitMask<WType, nbits> &other) const {
@@ -690,11 +565,9 @@ compare_to(const BitMask<WType, nbits> &other) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator &
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 operator & (const BitMask<WType, nbits> &other) const {
@@ -703,11 +576,9 @@ operator & (const BitMask<WType, nbits> &other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator |
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 operator | (const BitMask<WType, nbits> &other) const {
@@ -716,11 +587,9 @@ operator | (const BitMask<WType, nbits> &other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator ^
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 operator ^ (const BitMask<WType, nbits> &other) const {
@@ -729,22 +598,18 @@ operator ^ (const BitMask<WType, nbits> &other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator ~
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 operator ~ () const {
   return BitMask<WType, nbits>(~_word);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator <<
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 operator << (int shift) const {
@@ -753,11 +618,9 @@ operator << (int shift) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator >>
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 operator >> (int shift) const {
@@ -766,133 +629,109 @@ operator >> (int shift) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator &=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 operator &= (const BitMask<WType, nbits> &other) {
   _word &= other._word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator |=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 operator |= (const BitMask<WType, nbits> &other) {
   _word |= other._word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator ^=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 operator ^= (const BitMask<WType, nbits> &other) {
   _word ^= other._word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator <<=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 operator <<= (int shift) {
   _word <<= shift;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator >>=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 operator >>= (int shift) {
   _word >>= shift;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::get_key
-//       Access: Published
-//  Description: Returns a mostly unique integer key per unique
-//               bitmask, suitable for using in a hash table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a mostly unique integer key per unique bitmask, suitable for using in
+ * a hash table.
+ */
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_key() const {
   return (int)_word;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::__nonzero__
-//       Access: Published
-//  Description: Returns true if the bitmask is not zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the bitmask is not zero.
+ */
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 __nonzero__() const {
   return _word != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::generate_hash
-//       Access: Public
-//  Description: Adds the bitmask to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the bitmask to the indicated hash generator.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 generate_hash(ChecksumHashGenerator &hashgen) const {
   hashgen.add_int(_word);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::init_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
 init_type(const string &name) {
   register_type(_type_handle, name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::flood_up_in_place
-//       Access: Published
-//  Description: Floods this bitmask's bits upwards.
-////////////////////////////////////////////////////////////////////
+/**
+ * Floods this bitmask's bits upwards.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 flood_up_in_place() {
   _word = ::flood_bits_up(_word);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::flood_down_in_place
-//       Access: Published
-//  Description: Floods this bitmask's bits downwards.
-////////////////////////////////////////////////////////////////////
+/**
+ * Floods this bitmask's bits downwards.
+ */
 template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 flood_down_in_place() {
   _word = ::flood_bits_down(_word);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::flood_bits_up
-//       Access: Published
-//  Description: Returns a BitMask with the bits flooded upwards.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with the bits flooded upwards.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 flood_bits_up() const {
@@ -900,11 +739,9 @@ flood_bits_up() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::flood_bits_down
-//       Access: Published
-//  Description: Returns a BitMask with the bits flooded down.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with the bits flooded down.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 flood_bits_down() const {
@@ -913,12 +750,10 @@ flood_bits_down() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::keep_next_highest_bit
-//       Access: Published
-//  Description: Returns a BitMask with only the next highest
-//               bit above the indicated bit on, or all_off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with only the next highest bit above the indicated bit on,
+ * or all_off.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_highest_bit() const {
@@ -930,12 +765,10 @@ keep_next_highest_bit() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::keep_next_lowest_bit
-//       Access: Published
-//  Description: Returns a BitMask with only the next lower
-//               bit below the indicated bit on, or all_off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with only the next lower bit below the indicated bit on, or
+ * all_off.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_lowest_bit() const {
@@ -947,12 +780,10 @@ keep_next_lowest_bit() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::keep_next_highest_bit
-//       Access: Published
-//  Description: Returns a BitMask with only the next highest
-//               bit above the indicated bit on, or all.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with only the next highest bit above the indicated bit on,
+ * or all.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_highest_bit(int index) const {
@@ -973,12 +804,10 @@ keep_next_highest_bit(int index) const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::keep_next_lowest_bit
-//       Access: Published
-//  Description: Returns a BitMask with only the next lower
-//               bit below the indicated bit on, or all_off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with only the next lower bit below the indicated bit on, or
+ * all_off.
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_lowest_bit(int index) const {
@@ -999,14 +828,11 @@ keep_next_lowest_bit(int index) const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::keep_next_highest_bit
-//       Access: Published
-//  Description: Returns a BitMask with only the next highest "on"
-//               bit above all "on" bits in the passed in bitmask, or
-//               all_off. If there are no "on" bits in the passed in
-//               bitmask, it will return keep_next_highest_bit().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with only the next highest "on" bit above all "on" bits in
+ * the passed in bitmask, or all_off.  If there are no "on" bits in the passed
+ * in bitmask, it will return keep_next_highest_bit().
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_highest_bit(const BitMask<WType, nbits> &other) const {
@@ -1018,14 +844,11 @@ keep_next_highest_bit(const BitMask<WType, nbits> &other) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::keep_next_lowest_bit
-//       Access: Published
-//  Description: Returns a BitMask with only the next lowest "on"
-//               bit below all "on" bits in the passed in bitmask, or
-//               all_off. If there are no "on" bits in the passed in
-//               bitmask, it will return keep_next_lowest_bit().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a BitMask with only the next lowest "on" bit below all "on" bits in
+ * the passed in bitmask, or all_off.  If there are no "on" bits in the passed
+ * in bitmask, it will return keep_next_lowest_bit().
+ */
 template<class WType, int nbits>
 INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_lowest_bit(const BitMask<WType, nbits> &other) const {

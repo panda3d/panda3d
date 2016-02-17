@@ -1,16 +1,15 @@
-// Filename: eggAttributes.cxx
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggAttributes.cxx
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #include "eggAttributes.h"
 #include "eggParameters.h"
@@ -22,31 +21,25 @@
 TypeHandle EggAttributes::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes::
 EggAttributes() {
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Copy constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes::
 EggAttributes(const EggAttributes &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Copy assignment operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes &EggAttributes::
 operator = (const EggAttributes &copy) {
   _flags = copy._flags;
@@ -57,22 +50,17 @@ operator = (const EggAttributes &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes::
 ~EggAttributes() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::write
-//       Access: Published
-//  Description: Writes the attributes to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the attributes to the indicated output stream in Egg format.
+ */
 void EggAttributes::
 write(ostream &out, int indent_level) const {
   if (has_normal()) {
@@ -100,13 +88,10 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::compare_to
-//       Access: Published
-//  Description: An ordering operator to compare two vertices for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordering operator to compare two vertices for sorting order.  This imposes
+ * an arbitrary ordering useful to identify unique vertices.
+ */
 int EggAttributes::
 compare_to(const EggAttributes &other) const {
   if (_flags != other._flags) {
@@ -140,12 +125,9 @@ compare_to(const EggAttributes &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::transform
-//       Access: Published, Virtual
-//  Description: Applies the indicated transformation matrix to the
-//               attributes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transformation matrix to the attributes.
+ */
 void EggAttributes::
 transform(const LMatrix4d &mat) {
   if (has_normal()) {

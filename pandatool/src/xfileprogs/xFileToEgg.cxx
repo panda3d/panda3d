@@ -1,27 +1,24 @@
-// Filename: xFileToEgg.cxx
-// Created by:  drose (21Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileToEgg.cxx
+ * @author drose
+ * @date 2001-06-21
+ */
 
 #include "xFileToEgg.h"
 #include "xFileToEggConverter.h"
 #include "config_xfile.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileToEgg::
 XFileToEgg() :
   SomethingToEgg("DirectX", ".x")
@@ -87,11 +84,9 @@ XFileToEgg() :
   _coordinate_system = CS_yup_left;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void XFileToEgg::
 run() {
   _data->set_coordinate_system(_coordinate_system);
@@ -104,7 +99,7 @@ run() {
   converter._char_name = _char_name;
   converter._keep_model = _keep_model;
   converter._keep_animation = _keep_animation;
-  
+
   // Copy in the path and animation parameters.
   apply_parameters(converter);
 

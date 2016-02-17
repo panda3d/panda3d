@@ -1,16 +1,15 @@
-// Filename: interrogate_interface.cxx
-// Created by:  drose (31Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogate_interface.cxx
+ * @author drose
+ * @date 2000-07-31
+ */
 
 #include "interrogate_interface.h"
 #include "interrogateDatabase.h"
@@ -22,7 +21,7 @@
 // search for interrogate (*.in) files.  In the past, this list has
 // been defined the environment variable ETC_PATH, but now it is
 // passed in by the code generator.
-void 
+void
 interrogate_add_search_directory(const char *dirname) {
   //cerr << "interrogate_add_search_directory(" << dirname << ")\n";
   interrogatedb_path.append_directory(Filename::from_os_specific(dirname));
@@ -31,7 +30,7 @@ interrogate_add_search_directory(const char *dirname) {
 // This function works similar to the above, but adds a complete path
 // string--a list of multiple directories, separated by the standard
 // delimiter--to the search path.
-void 
+void
 interrogate_add_search_path(const char *pathstring) {
   //cerr << "interrogate_add_search_path(" << pathstring << ")\n";
   interrogatedb_path.append_path(pathstring);

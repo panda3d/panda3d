@@ -1,16 +1,15 @@
-// Filename: pgItem.h
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgItem.h
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #ifndef PGITEM_H
 #define PGITEM_H
@@ -41,20 +40,14 @@ class AudioSound;
 class ClipPlaneAttrib;
 class ScissorAttrib;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGItem
-// Description : This is the base class for all the various kinds of
-//               gui widget objects.
-//
-//               It is a Node which corresponds to a rectangular
-//               region on the screen, and it may have any number of
-//               "state" subgraphs, one of which is rendered at any
-//               given time according to its current state.
-//
-//               The PGItem node must be parented to the scene graph
-//               somewhere beneath a PGTop node in order for this
-//               behavior to work.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all the various kinds of gui widget objects.  It
+ * is a Node which corresponds to a rectangular region on the screen, and it may
+ * have any number of "state" subgraphs, one of which is rendered at any given
+ * time according to its current state.  The PGItem node must be parented to the
+ * scene graph somewhere beneath a PGTop node in order for this behavior to
+ * work.
+ */
 class EXPCL_PANDA_PGUI PGItem : public PandaNode {
 PUBLISHED:
   PGItem(const string &name);
@@ -197,8 +190,8 @@ private:
   void mark_frames_stale();
 
   INLINE static PN_stdfloat compute_area(const LVecBase4 &frame);
-  INLINE static void compare_largest(const LVecBase4 *&largest, 
-                                     PN_stdfloat &largest_area, 
+  INLINE static void compare_largest(const LVecBase4 *&largest,
+                                     PN_stdfloat &largest_area,
                                      const LVecBase4 *new_frame);
 
   typedef pvector<LVecBase2> ClipPoints;

@@ -1,16 +1,15 @@
-// Filename: alphaTestAttrib.h
-// Created by:  drose (04Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file alphaTestAttrib.h
+ * @author drose
+ * @date 2002-03-04
+ */
 
 #ifndef ALPHATESTATTRIB_H
 #define ALPHATESTATTRIB_H
@@ -20,11 +19,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AlphaTestAttrib
-// Description : Enables or disables writing of pixel to framebuffer
-//               based on its alpha value relative to a reference alpha value
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables writing of pixel to framebuffer based on its alpha value
+ * relative to a reference alpha value
+ */
 class EXPCL_PANDA_PGRAPH AlphaTestAttrib : public RenderAttrib {
 private:
   INLINE AlphaTestAttrib(PandaCompareFunc mode = M_always,
@@ -89,4 +87,3 @@ private:
 #include "alphaTestAttrib.I"
 
 #endif
-

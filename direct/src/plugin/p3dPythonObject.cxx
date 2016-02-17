@@ -1,24 +1,21 @@
-// Filename: p3dPythonObject.cxx
-// Created by:  drose (03Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPythonObject.cxx
+ * @author drose
+ * @date 2009-07-03
+ */
 
 #include "p3dPythonObject.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPythonObject::
 P3DPythonObject(P3DSession *session, int object_id) :
   _session(session),
@@ -27,11 +24,9 @@ P3DPythonObject(P3DSession *session, int object_id) :
   _session->ref();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPythonObject::
 ~P3DPythonObject() {
   // When the P3DPythonObject wrapper goes away, we have to inform the
@@ -41,22 +36,17 @@ P3DPythonObject::
   p3d_unref_delete(_session);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_type
-//       Access: Public, Virtual
-//  Description: Returns the fundamental type of this kind of object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the fundamental type of this kind of object.
+ */
 P3D_object_type P3DPythonObject::
 get_type() {
   return P3D_OT_object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_bool
-//       Access: Public, Virtual
-//  Description: Returns the object value coerced to a boolean, if
-//               possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the object value coerced to a boolean, if possible.
+ */
 bool P3DPythonObject::
 get_bool() {
   bool bresult = 0;
@@ -65,17 +55,14 @@ get_bool() {
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_DECREF(result);
-  }    
+  }
 
   return bresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_int
-//       Access: Public, Virtual
-//  Description: Returns the object value coerced to an integer, if
-//               possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the object value coerced to an integer, if possible.
+ */
 int P3DPythonObject::
 get_int() {
   int iresult = 0;
@@ -84,17 +71,14 @@ get_int() {
   if (result != NULL) {
     iresult = P3D_OBJECT_GET_INT(result);
     P3D_OBJECT_DECREF(result);
-  }    
+  }
 
   return iresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_float
-//       Access: Public, Virtual
-//  Description: Returns the object value coerced to a floating-point
-//               value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the object value coerced to a floating-point value, if possible.
+ */
 double P3DPythonObject::
 get_float() {
   double fresult = 0.0;
@@ -103,17 +87,15 @@ get_float() {
   if (result != NULL) {
     fresult = P3D_OBJECT_GET_FLOAT(result);
     P3D_OBJECT_DECREF(result);
-  }    
+  }
 
   return fresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::make_string
-//       Access: Public, Virtual
-//  Description: Fills the indicated C++ string object with the value
-//               of this object coerced to a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated C++ string object with the value of this object coerced
+ * to a string.
+ */
 void P3DPythonObject::
 make_string(string &value) {
   P3D_object *result = call("__str__", true, NULL, 0);
@@ -125,16 +107,13 @@ make_string(string &value) {
     delete[] buffer;
 
     P3D_OBJECT_DECREF(result);
-  }    
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_property
-//       Access: Public, Virtual
-//  Description: Returns the named property element in the object.  The
-//               return value is a new-reference P3D_object, or NULL
-//               on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named property element in the object.  The return value is a new-
+ * reference P3D_object, or NULL on error.
+ */
 P3D_object *P3DPythonObject::
 get_property(const string &property) {
   P3D_object *params[1];
@@ -145,13 +124,10 @@ get_property(const string &property) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::set_property
-//       Access: Public, Virtual
-//  Description: Modifies (or deletes, if value is NULL) the named
-//               property element in the object.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Modifies (or deletes, if value is NULL) the named property element in the
+ * object.  Returns true on success, false on failure.
+ */
 bool P3DPythonObject::
 set_property(const string &property, bool needs_response, P3D_object *value) {
   if (!_session->get_matches_script_origin()) {
@@ -162,15 +138,12 @@ set_property(const string &property, bool needs_response, P3D_object *value) {
   return set_property_insecure(property, needs_response, value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::set_property_insecure
-//       Access: Public
-//  Description: Works as set_property(), but does not check the
-//               matches_script_origin flag.  Intended to be called
-//               internally only, never to be called from Javascript.
-////////////////////////////////////////////////////////////////////
+/**
+ * Works as set_property(), but does not check the matches_script_origin flag.
+ * Intended to be called internally only, never to be called from Javascript.
+ */
 bool P3DPythonObject::
-set_property_insecure(const string &property, bool needs_response, 
+set_property_insecure(const string &property, bool needs_response,
                       P3D_object *value) {
   bool bresult = !needs_response;
 
@@ -199,12 +172,9 @@ set_property_insecure(const string &property, bool needs_response,
   return bresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::has_method
-//       Access: Public, Virtual
-//  Description: Returns true if the named method exists on this
-//               object, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named method exists on this object, false otherwise.
+ */
 bool P3DPythonObject::
 has_method(const string &method_name) {
   // First, check the cache.
@@ -236,19 +206,13 @@ has_method(const string &method_name) {
   return bresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::call
-//       Access: Public, Virtual
-//  Description: Invokes the named method on the object, passing the
-//               indicated parameters.  If the method name is empty,
-//               invokes the object itself.
-//
-//               If needs_response is true, the return value is a
-//               new-reference P3D_object on success, or NULL on
-//               failure.  If needs_response is false, the return
-//               value is always NULL, and there is no way to
-//               determine success or failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes the named method on the object, passing the indicated parameters.  If
+ * the method name is empty, invokes the object itself.  If needs_response is
+ * true, the return value is a new-reference P3D_object on success, or NULL on
+ * failure.  If needs_response is false, the return value is always NULL, and
+ * there is no way to determine success or failure.
+ */
 P3D_object *P3DPythonObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
@@ -260,13 +224,10 @@ call(const string &method_name, bool needs_response,
   return call_insecure(method_name, needs_response, params, num_params);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::call_insecure
-//       Access: Public
-//  Description: Works as call(), but does not check the
-//               matches_script_origin flag.  Intended to be called
-//               internally only, never to be called from Javascript.
-////////////////////////////////////////////////////////////////////
+/**
+ * Works as call(), but does not check the matches_script_origin flag.  Intended
+ * to be called internally only, never to be called from Javascript.
+ */
 P3D_object *P3DPythonObject::
 call_insecure(const string &method_name, bool needs_response,
               P3D_object *params[], int num_params) {
@@ -315,13 +276,10 @@ call_insecure(const string &method_name, bool needs_response,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::output
-//       Access: Public, Virtual
-//  Description: Writes a formatted representation of the value to the
-//               indicated string.  This is intended for developer
-//               assistance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a formatted representation of the value to the indicated string.  This
+ * is intended for developer assistance.
+ */
 void P3DPythonObject::
 output(ostream &out) {
   P3D_object *result = call("__repr__", true, NULL, 0);
@@ -329,19 +287,15 @@ output(ostream &out) {
   if (result != NULL) {
     out << ": " << *result;
     P3D_OBJECT_DECREF(result);
-  }    
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::fill_xml
-//       Access: Public, Virtual
-//  Description: If this object has a valid XML representation for the
-//               indicated session (that hasn't already been
-//               implemented by the generic code in P3DSession), this
-//               method will apply it to the indicated "value" element
-//               and return true.  Otherwise, this method will leave
-//               the element unchanged and return false.
-////////////////////////////////////////////////////////////////////
+/**
+ * If this object has a valid XML representation for the indicated session (that
+ * hasn't already been implemented by the generic code in P3DSession), this
+ * method will apply it to the indicated "value" element and return true.
+ * Otherwise, this method will leave the element unchanged and return false.
+ */
 bool P3DPythonObject::
 fill_xml(TiXmlElement *xvalue, P3DSession *session) {
   if (session == _session) {
@@ -357,38 +311,29 @@ fill_xml(TiXmlElement *xvalue, P3DSession *session) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::as_python_object
-//       Access: Public, Virtual
-//  Description: Returns this object, downcast to a P3DPythonObject,
-//               if it is in fact an object of that type; or NULL if
-//               it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object, downcast to a P3DPythonObject, if it is in fact an
+ * object of that type; or NULL if it is not.
+ */
 P3DPythonObject *P3DPythonObject::
 as_python_object() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_session
-//       Access: Public
-//  Description: Returns the session that this object is identified
-//               with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the session that this object is identified with.
+ */
 P3DSession *P3DPythonObject::
 get_session() {
   return _session;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_object_id
-//       Access: Public
-//  Description: Returns the object_id number that is used to uniquely
-//               identify this object in the XML stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the object_id number that is used to uniquely identify this object in
+ * the XML stream.
+ */
 int P3DPythonObject::
 get_object_id() {
   return _object_id;
 }
-

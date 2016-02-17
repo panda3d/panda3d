@@ -1,16 +1,15 @@
-// Filename: virtualFile.h
-// Created by:  drose (03Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFile.h
+ * @author drose
+ * @date 2002-08-03
+ */
 
 #ifndef VIRTUALFILE_H
 #define VIRTUALFILE_H
@@ -29,11 +28,9 @@ class VirtualFileList;
 class VirtualFileSystem;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFile
-// Description : The abstract base class for a file or directory
-//               within the VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for a file or directory within the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFile : public TypedReferenceCount {
 public:
   INLINE VirtualFile();
@@ -94,7 +91,7 @@ public:
   static bool simple_read_file(istream *stream, pvector<unsigned char> &result, size_t max_bytes);
 
 protected:
-  virtual bool scan_local_directory(VirtualFileList *file_list, 
+  virtual bool scan_local_directory(VirtualFileList *file_list,
                                     const ov_set<string> &mount_points) const;
 
 private:

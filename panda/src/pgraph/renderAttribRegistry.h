@@ -1,16 +1,15 @@
-// Filename: renderAttribRegistry.h
-// Created by:  drose (13Nov08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderAttribRegistry.h
+ * @author drose
+ * @date 2008-11-13
+ */
 
 #ifndef RENDERATTRIBREGISTRY_H
 #define RENDERATTRIBREGISTRY_H
@@ -24,13 +23,11 @@
 class RenderAttrib;
 class DeletedBufferChain;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderAttribRegistry
-// Description : This class is used to associate each RenderAttrib
-//               with a different slot index at runtime, so we can
-//               store a list of RenderAttribs in the RenderState
-//               object, and very quickly look them up by type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to associate each RenderAttrib with a different slot index
+ * at runtime, so we can store a list of RenderAttribs in the RenderState
+ * object, and very quickly look them up by type.
+ */
 class EXPCL_PANDA_PGRAPH RenderAttribRegistry {
 private:
   RenderAttribRegistry();

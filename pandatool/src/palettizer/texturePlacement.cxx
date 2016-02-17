@@ -1,16 +1,15 @@
-// Filename: texturePlacement.cxx
-// Created by:  drose (30Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texturePlacement.cxx
+ * @author drose
+ * @date 2000-11-30
+ */
 
 #include "texturePlacement.h"
 #include "textureReference.h"
@@ -30,12 +29,9 @@
 
 TypeHandle TexturePlacement::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::Default Constructor
-//       Access: Private
-//  Description: The default constructor is only for the convenience
-//               of the Bam reader.
-////////////////////////////////////////////////////////////////////
+/**
+ * The default constructor is only for the convenience of the Bam reader.
+ */
 TexturePlacement::
 TexturePlacement() {
   _texture = (TextureImage *)NULL;
@@ -48,11 +44,9 @@ TexturePlacement() {
   _omit_reason = OR_none;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TexturePlacement::
 TexturePlacement(TextureImage *texture, PaletteGroup *group) :
   _texture(texture),
@@ -73,11 +67,9 @@ TexturePlacement(TextureImage *texture, PaletteGroup *group) :
   _is_filled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TexturePlacement::
 ~TexturePlacement() {
   // Make sure we tell all our egg references they're not using us any
@@ -94,53 +86,42 @@ TexturePlacement::
   _group->unplace(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_name
-//       Access: Public
-//  Description: Returns the name of the texture that this placement
-//               represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the texture that this placement represents.
+ */
 const string &TexturePlacement::
 get_name() const {
   return _texture->get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_texture
-//       Access: Public
-//  Description: Returns the texture that this placement represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the texture that this placement represents.
+ */
 TextureImage *TexturePlacement::
 get_texture() const {
   return _texture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_properties
-//       Access: Public
-//  Description: Returns the grouping properties of the image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the grouping properties of the image.
+ */
 const TextureProperties &TexturePlacement::
 get_properties() const {
   return _texture->get_properties();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_group
-//       Access: Public
-//  Description: Returns the group that this placement represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the group that this placement represents.
+ */
 PaletteGroup *TexturePlacement::
 get_group() const {
   return _group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::add_egg
-//       Access: Public
-//  Description: Records the fact that a particular egg file is using
-//               this particular TexturePlacement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the fact that a particular egg file is using this particular
+ * TexturePlacement.
+ */
 void TexturePlacement::
 add_egg(TextureReference *reference) {
   reference->mark_egg_stale();
@@ -154,12 +135,10 @@ add_egg(TextureReference *reference) {
   _references.insert(reference);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::remove_egg
-//       Access: Public
-//  Description: Notes that a particular egg file is no longer using
-//               this particular TexturePlacement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Notes that a particular egg file is no longer using this particular
+ * TexturePlacement.
+ */
 void TexturePlacement::
 remove_egg(TextureReference *reference) {
   reference->mark_egg_stale();
@@ -170,13 +149,10 @@ remove_egg(TextureReference *reference) {
   _references.erase(reference);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::mark_eggs_stale
-//       Access: Public
-//  Description: Marks all the egg files that reference this placement
-//               stale.  Presumably this is called after moving the
-//               texture around in the palette or something.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks all the egg files that reference this placement stale.  Presumably this
+ * is called after moving the texture around in the palette or something.
+ */
 void TexturePlacement::
 mark_eggs_stale() {
   References::iterator ri;
@@ -187,41 +163,31 @@ mark_eggs_stale() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::set_dest
-//       Access: Public
-//  Description: Sets the DestTextureImage that corresponds to this
-//               texture as it was copied to the install directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the DestTextureImage that corresponds to this texture as it was copied
+ * to the install directory.
+ */
 void TexturePlacement::
 set_dest(DestTextureImage *dest) {
   _dest = dest;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_dest
-//       Access: Public
-//  Description: Returns the DestTextureImage that corresponds to this
-//               texture as it was copied to the install directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DestTextureImage that corresponds to this texture as it was
+ * copied to the install directory.
+ */
 DestTextureImage *TexturePlacement::
 get_dest() const {
   return _dest;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::determine_size
-//       Access: Public
-//  Description: Attempts to determine the appropriate size of the
-//               texture for the given placement.  This is based on
-//               the UV range of the egg files that reference the
-//               texture.  Returns true on success, or false if the
-//               texture size cannot be determined (e.g. the texture
-//               file is unknown).
-//
-//               After this returns true, get_x_size() and
-//               get_y_size() may safely be called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to determine the appropriate size of the texture for the given
+ * placement.  This is based on the UV range of the egg files that reference the
+ * texture.  Returns true on success, or false if the texture size cannot be
+ * determined (e.g.  the texture file is unknown).  After this returns true,
+ * get_x_size() and get_y_size() may safely be called.
+ */
 bool TexturePlacement::
 determine_size() {
   if (!_texture->is_size_known()) {
@@ -417,68 +383,53 @@ determine_size() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::is_size_known
-//       Access: Public
-//  Description: Returns true if the texture's size is known, false
-//               otherwise.  Usually this can only be false after
-//               determine_size() has been called there is something
-//               wrong with the texture (in which case the placement
-//               will automatically omit itself from the palette
-//               anyway).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the texture's size is known, false otherwise.  Usually this
+ * can only be false after determine_size() has been called there is something
+ * wrong with the texture (in which case the placement will automatically omit
+ * itself from the palette anyway).
+ */
 bool TexturePlacement::
 is_size_known() const {
   return _size_known;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_omit_reason
-//       Access: Public
-//  Description: Returns the reason the texture has been omitted from
-//               a palette image, or OR_none if it has not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reason the texture has been omitted from a palette image, or
+ * OR_none if it has not.
+ */
 OmitReason TexturePlacement::
 get_omit_reason() const {
   return _omit_reason;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_x_size
-//       Access: Public
-//  Description: Returns the size in the X dimension, in pixels, of
-//               the texture image as it must appear in the palette.
-//               This accounts for any growing or shrinking of the
-//               texture due to the UV coordinate range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size in the X dimension, in pixels, of the texture image as it
+ * must appear in the palette.  This accounts for any growing or shrinking of
+ * the texture due to the UV coordinate range.
+ */
 int TexturePlacement::
 get_x_size() const {
   nassertr(_size_known, 0);
   return _position._x_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_y_size
-//       Access: Public
-//  Description: Returns the size in the Y dimension, in pixels, of
-//               the texture image as it must appear in the palette.
-//               This accounts for any growing or shrinking of the
-//               texture due to the UV coordinate range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size in the Y dimension, in pixels, of the texture image as it
+ * must appear in the palette.  This accounts for any growing or shrinking of
+ * the texture due to the UV coordinate range.
+ */
 int TexturePlacement::
 get_y_size() const {
   nassertr(_size_known, 0);
   return _position._y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_uv_area
-//       Access: Public
-//  Description: Returns the total area of the rectangle occupied by
-//               the UV minmax box, in UV coordinates.  1.0 is the
-//               entire texture; values greater than 1 imply the
-//               texture repeats.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total area of the rectangle occupied by the UV minmax box, in UV
+ * coordinates.  1.0 is the entire texture; values greater than 1 imply the
+ * texture repeats.
+ */
 double TexturePlacement::
 get_uv_area() const {
   if (!_has_uvs) {
@@ -489,102 +440,78 @@ get_uv_area() const {
   return range[0] * range[1];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::is_placed
-//       Access: Public
-//  Description: Returns true if the texture has been placed on a
-//               palette image, false otherwise.  This will generally
-//               be true if get_omit_reason() returns OR_none or
-//               OR_solitary and false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the texture has been placed on a palette image, false
+ * otherwise.  This will generally be true if get_omit_reason() returns OR_none
+ * or OR_solitary and false otherwise.
+ */
 bool TexturePlacement::
 is_placed() const {
   return _image != (PaletteImage *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_image
-//       Access: Public
-//  Description: Returns the particular PaletteImage on which the
-//               texture has been placed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the particular PaletteImage on which the texture has been placed.
+ */
 PaletteImage *TexturePlacement::
 get_image() const {
   nassertr(is_placed(), (PaletteImage *)NULL);
   return _image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_page
-//       Access: Public
-//  Description: Returns the particular PalettePage on which the
-//               texture has been placed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the particular PalettePage on which the texture has been placed.
+ */
 PalettePage *TexturePlacement::
 get_page() const {
   nassertr(is_placed(), (PalettePage *)NULL);
   return _image->get_page();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_placed_x
-//       Access: Public
-//  Description: Returns the X pixel at which the texture has been
-//               placed within its PaletteImage.  It is an error to
-//               call this unless is_placed() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the X pixel at which the texture has been placed within its
+ * PaletteImage.  It is an error to call this unless is_placed() returns true.
+ */
 int TexturePlacement::
 get_placed_x() const {
   nassertr(is_placed(), 0);
   return _placed._x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_placed_y
-//       Access: Public
-//  Description: Returns the Y pixel at which the texture has been
-//               placed within its PaletteImage.  It is an error to
-//               call this unless is_placed() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Y pixel at which the texture has been placed within its
+ * PaletteImage.  It is an error to call this unless is_placed() returns true.
+ */
 int TexturePlacement::
 get_placed_y() const {
   nassertr(is_placed(), 0);
   return _placed._y;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_placed_x_size
-//       Access: Public
-//  Description: Returns the size in the X dimension, in pixels, of
-//               the texture image as it has been placed within the
-//               palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size in the X dimension, in pixels, of the texture image as it
+ * has been placed within the palette.
+ */
 int TexturePlacement::
 get_placed_x_size() const {
   nassertr(is_placed(), 0);
   return _placed._x_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_placed_y_size
-//       Access: Public
-//  Description: Returns the size in the Y dimension, in pixels, of
-//               the texture image as it has been placed within the
-//               palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size in the Y dimension, in pixels, of the texture image as it
+ * has been placed within the palette.
+ */
 int TexturePlacement::
 get_placed_y_size() const {
   nassertr(is_placed(), 0);
   return _placed._y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::get_placed_uv_area
-//       Access: Public
-//  Description: Returns the total area of the rectangle occupied by
-//               the UV minmax box, as it has been placed.  See also
-//               get_uv_area().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total area of the rectangle occupied by the UV minmax box, as it
+ * has been placed.  See also get_uv_area().
+ */
 double TexturePlacement::
 get_placed_uv_area() const {
   nassertr(is_placed(), 0);
@@ -592,14 +519,11 @@ get_placed_uv_area() const {
   return range[0] * range[1];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::place_at
-//       Access: Public
-//  Description: Assigns the texture to a particular position within
-//               the indicated PaletteImage.  It is an error to call
-//               this if the texture has already been placed
-//               elsewhere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the texture to a particular position within the indicated
+ * PaletteImage.  It is an error to call this if the texture has already been
+ * placed elsewhere.
+ */
 void TexturePlacement::
 place_at(PaletteImage *image, int x, int y) {
   nassertv(!is_placed());
@@ -613,14 +537,11 @@ place_at(PaletteImage *image, int x, int y) {
   _omit_reason = OR_none;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::force_replace
-//       Access: Public
-//  Description: Removes the texture from its particular PaletteImage,
-//               but does not remove it from the PaletteGroup.  It
-//               will be re-placed when the PaletteGroup::place_all()
-//               is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the texture from its particular PaletteImage, but does not remove it
+ * from the PaletteGroup.  It will be re-placed when the
+ * PaletteGroup::place_all() is called.
+ */
 void TexturePlacement::
 force_replace() {
   if (_image != (PaletteImage *)NULL) {
@@ -633,16 +554,12 @@ force_replace() {
   _omit_reason = OR_working;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::omit_solitary
-//       Access: Public
-//  Description: Sets the omit reason (returned by get_omit()) to
-//               OR_solitary, indicating that the palettized version
-//               of the texture should not be used because it is the
-//               only texture on a PaletteImage.  However, the texture
-//               is still considered placed, and is_placed() will
-//               return true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the omit reason (returned by get_omit()) to OR_solitary, indicating that
+ * the palettized version of the texture should not be used because it is the
+ * only texture on a PaletteImage.  However, the texture is still considered
+ * placed, and is_placed() will return true.
+ */
 void TexturePlacement::
 omit_solitary() {
   nassertv(is_placed());
@@ -652,12 +569,9 @@ omit_solitary() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::not_solitary
-//       Access: Public
-//  Description: Indicates that the texture, formerly indicated as
-//               solitary, is now no longer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the texture, formerly indicated as solitary, is now no longer.
+ */
 void TexturePlacement::
 not_solitary() {
   nassertv(is_placed());
@@ -667,14 +581,11 @@ not_solitary() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::intersects
-//       Access: Public
-//  Description: Returns true if the particular position this texture
-//               has been assigned to overlaps the rectangle whose
-//               top left corner is at x, y and whose size is given by
-//               x_size, y_size, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the particular position this texture has been assigned to
+ * overlaps the rectangle whose top left corner is at x, y and whose size is
+ * given by x_size, y_size, or false otherwise.
+ */
 bool TexturePlacement::
 intersects(int x, int y, int x_size, int y_size) {
   nassertr(is_placed(), false);
@@ -689,13 +600,10 @@ intersects(int x, int y, int x_size, int y_size) {
            y >= mbot || hbot <= _placed._y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::compute_tex_matrix
-//       Access: Public
-//  Description: Stores in the indicated matrix the appropriate
-//               texture matrix transform for the new placement of the
-//               texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores in the indicated matrix the appropriate texture matrix transform for
+ * the new placement of the texture.
+ */
 void TexturePlacement::
 compute_tex_matrix(LMatrix3d &transform) {
   nassertv(is_placed());
@@ -731,12 +639,9 @@ compute_tex_matrix(LMatrix3d &transform) {
   transform = source_uvs * dest_uvs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::write_placed
-//       Access: Public
-//  Description: Writes the placement position information on a line
-//               by itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the placement position information on a line by itself.
+ */
 void TexturePlacement::
 write_placed(ostream &out, int indent_level) {
   indent(out, indent_level)
@@ -763,36 +668,28 @@ write_placed(ostream &out, int indent_level) {
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::is_filled
-//       Access: Public
-//  Description: Returns true if the texture has been filled
-//               (i.e. fill_image() has been called) since it was
-//               placed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the texture has been filled (i.e.  fill_image() has been
+ * called) since it was placed.
+ */
 bool TexturePlacement::
 is_filled() const {
   return _is_filled;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::mark_unfilled
-//       Access: Public
-//  Description: Marks the texture as unfilled, so that it will need
-//               to be copied into the palette image again.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the texture as unfilled, so that it will need to be copied into the
+ * palette image again.
+ */
 void TexturePlacement::
 mark_unfilled() {
   _is_filled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::fill_image
-//       Access: Public
-//  Description: Fills in the rectangle of the palette image
-//               represented by the texture placement with the image
-//               pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the rectangle of the palette image represented by the texture
+ * placement with the image pixels.
+ */
 void TexturePlacement::
 fill_image(PNMImage &image) {
   nassertv(is_placed());
@@ -886,13 +783,10 @@ fill_image(PNMImage &image) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::fill_swapped_image
-//       Access: Public
-//  Description: Fills in the rectangle of the swapped palette image
-//               represented by the texture placement with the image
-//               pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the rectangle of the swapped palette image represented by the
+ * texture placement with the image pixels.
+ */
 void TexturePlacement::
 fill_swapped_image(PNMImage &image, int index) {
   nassertv(is_placed());
@@ -988,13 +882,10 @@ fill_swapped_image(PNMImage &image, int index) {
   swapTexture->release_source_image();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::flag_error_image
-//       Access: Public
-//  Description: Sets the rectangle of the palette image
-//               represented by the texture placement to red, to
-//               represent a missing texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the rectangle of the palette image represented by the texture placement
+ * to red, to represent a missing texture.
+ */
 void TexturePlacement::
 flag_error_image(PNMImage &image) {
   nassertv(is_placed());
@@ -1012,14 +903,11 @@ flag_error_image(PNMImage &image) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::compute_size_from_uvs
-//       Access: Private
-//  Description: A support function for determine_size(), this
-//               computes the appropriate size of the texture in
-//               pixels based on the UV coverage (as well as on the
-//               size of the source texture).
-////////////////////////////////////////////////////////////////////
+/**
+ * A support function for determine_size(), this computes the appropriate size
+ * of the texture in pixels based on the UV coverage (as well as on the size of
+ * the source texture).
+ */
 void TexturePlacement::
 compute_size_from_uvs(const LTexCoordd &min_uv, const LTexCoordd &max_uv) {
   _position._min_uv = min_uv;
@@ -1048,7 +936,7 @@ compute_size_from_uvs(const LTexCoordd &min_uv, const LTexCoordd &max_uv) {
     _position._margin = _texture->get_margin();
   }
   //cout << "margin: " << _position._margin << endl;
-  
+
   // Normally, we have interior margins, but if the image size is too
   // small--i.e. the margin size is too great a percentage of the
   // image size--we'll make them exterior margins so as not to overly
@@ -1065,25 +953,19 @@ compute_size_from_uvs(const LTexCoordd &min_uv, const LTexCoordd &max_uv) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void TexturePlacement::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_TexturePlacement);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void TexturePlacement::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
@@ -1114,15 +996,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int TexturePlacement::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = TypedWritable::complete_pointers(p_list, manager);
@@ -1165,14 +1044,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::make_TexturePlacement
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable* TexturePlacement::
 make_TexturePlacement(const FactoryParams &params) {
   TexturePlacement *me = new TexturePlacement;
@@ -1184,13 +1060,10 @@ make_TexturePlacement(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePlacement::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void TexturePlacement::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
@@ -1220,13 +1093,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SortPlacementBySize::Function Operator
-//       Access: Public
-//  Description: Compares two TexturePlacement objects and returns
-//               true if the first one is bigger than the second one,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares two TexturePlacement objects and returns true if the first one is
+ * bigger than the second one, false otherwise.
+ */
 bool SortPlacementBySize::
 operator ()(TexturePlacement *a, TexturePlacement *b) const {
   if (a->get_y_size() < b->get_y_size()) {
@@ -1244,6 +1114,6 @@ operator ()(TexturePlacement *a, TexturePlacement *b) const {
     //use this fall through case to let alphabetically smaller textures show up first
     return true;
   }
-  
+
   return false;
 }

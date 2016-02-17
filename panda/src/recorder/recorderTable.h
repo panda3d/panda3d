@@ -1,16 +1,15 @@
-// Filename: recorderTable.h
-// Created by:  drose (27Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file recorderTable.h
+ * @author drose
+ * @date 2004-01-27
+ */
 
 #ifndef RECORDERTABLE_H
 #define RECORDERTABLE_H
@@ -25,13 +24,11 @@ class BamWriter;
 class BamReader;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderTable
-// Description : This object is used by the RecorderController to
-//               write (and read) a record of the set of recorders in
-//               use to the bam file.  Do not attempt to use it
-//               directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object is used by the RecorderController to write (and read) a record of
+ * the set of recorders in use to the bam file.  Do not attempt to use it
+ * directly.
+ */
 class EXPCL_PANDA_RECORDER RecorderTable : public TypedWritable {
 public:
   INLINE RecorderTable();
@@ -89,4 +86,3 @@ private:
 #include "recorderTable.I"
 
 #endif
-

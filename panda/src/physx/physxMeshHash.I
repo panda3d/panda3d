@@ -1,23 +1,19 @@
-// Filename: physxMeshHash.I
-// Created by: enn0x (13Sep10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxMeshHash.I
+ * @author enn0x
+ * @date 2010-09-13
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE PhysxMeshHash::
 PhysxMeshHash() {
 
@@ -35,21 +31,17 @@ PhysxMeshHash() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMeshHash::
 ~PhysxMeshHash() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::hash_function
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int PhysxMeshHash::
 hash_function(int xi, int yi, int zi) const {
 
@@ -57,11 +49,9 @@ hash_function(int xi, int yi, int zi) const {
   return h % _hashIndexSize;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::cell_coord_of
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxMeshHash::
 cell_coord_of(const NxVec3 &v, int &xi, int &yi, int &zi) const {
 
@@ -70,15 +60,11 @@ cell_coord_of(const NxVec3 &v, int &xi, int &yi, int &zi) const {
   zi = (int)(v.z * _invSpacing); if (v.z < 0.0f) zi--;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::get_grid_spacing
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE NxF32 PhysxMeshHash::
 get_grid_spacing() const {
 
   return 1.0f / _invSpacing;
 }
-
-

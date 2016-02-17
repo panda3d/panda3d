@@ -1,16 +1,15 @@
-// Filename: qtessSurface.h
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file qtessSurface.h
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #ifndef QTESSSURFACE_H
 #define QTESSSURFACE_H
@@ -25,12 +24,10 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : QtessSurface
-// Description : A reference to an EggNurbsSurface in the egg file,
-//               and its parameters as set by the user input file and
-//               as computed in relation to the other surfaces.
-////////////////////////////////////////////////////////////////////
+/**
+ * A reference to an EggNurbsSurface in the egg file, and its parameters as set
+ * by the user input file and as computed in relation to the other surfaces.
+ */
 class QtessSurface : public ReferenceCount {
 public:
   QtessSurface(EggNurbsSurface *egg_surface);
@@ -48,7 +45,7 @@ public:
   INLINE int count_tris() const;
 
   double get_score(double ratio);
-  
+
   int tesselate();
   int write_qtess_parameter(ostream &out);
   void omit();
@@ -115,4 +112,3 @@ private:
 #include "qtessSurface.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: bulletDebugNode.h
-// Created by:  enn0x (23Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletDebugNode.h
+ * @author enn0x
+ * @date 2010-01-23
+ */
 
 #ifndef __BULLET_DEBUG_NODE_H__
 #define __BULLET_DEBUG_NODE_H__
@@ -21,10 +20,9 @@
 
 #include "geomNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletDebugNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletDebugNode : public GeomNode {
 
 PUBLISHED:
@@ -73,16 +71,16 @@ private:
 
     virtual void drawLine(const btVector3 &from, const btVector3 &to,
       const btVector3 &color);
-    virtual void drawContactPoint(const btVector3 &point, 
-      const btVector3 &normal, btScalar distance, int lifetime, 
+    virtual void drawContactPoint(const btVector3 &point,
+      const btVector3 &normal, btScalar distance, int lifetime,
       const btVector3 &color);
     virtual void draw3dText(const btVector3 &location, const char *text);
-    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1, 
+    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1,
       const btVector3 &v2, const btVector3 &color, btScalar);
-    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1, 
-      const btVector3 &v2, const btVector3 &n0, const btVector3 &n1, 
+    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1,
+      const btVector3 &v2, const btVector3 &n0, const btVector3 &n1,
       const btVector3 &n2, const btVector3 &color, btScalar alpha);
-    virtual void drawSphere(btScalar radius, const btTransform &transform, 
+    virtual void drawSphere(btScalar radius, const btTransform &transform,
       const btVector3 &color);
 
   public:
@@ -115,7 +113,7 @@ public:
   }
   static void init_type() {
     GeomNode::init_type();
-    register_type(_type_handle, "BulletDebugNode", 
+    register_type(_type_handle, "BulletDebugNode",
                   GeomNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -133,4 +131,3 @@ private:
 #include "bulletDebugNode.I"
 
 #endif // __BULLET_DEBUG_NODE_H__
-

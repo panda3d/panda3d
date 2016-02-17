@@ -1,16 +1,15 @@
-// Filename: textProperties.cxx
-// Created by:  drose (06Apr04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textProperties.cxx
+ * @author drose
+ * @date 2004-04-06
+ */
 
 #include "textProperties.h"
 #include "config_text.h"
@@ -28,11 +27,9 @@ bool TextProperties::_loaded_default_font = false;
 
 TypeHandle TextProperties::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextProperties::
 TextProperties() {
   _specified = 0;
@@ -56,11 +53,9 @@ TextProperties() {
   _text_scale = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextProperties::
 TextProperties(const TextProperties &copy) {
   (*this) = copy;
@@ -68,11 +63,9 @@ TextProperties(const TextProperties &copy) {
   _shadow_state = copy._shadow_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextProperties::
 operator = (const TextProperties &copy) {
   _specified = copy._specified;
@@ -101,11 +94,9 @@ operator = (const TextProperties &copy) {
   _shadow_state.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool TextProperties::
 operator == (const TextProperties &other) const {
   if (_specified != other._specified) {
@@ -175,25 +166,19 @@ operator == (const TextProperties &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::clear
-//       Access: Published
-//  Description: Unsets all properties that have been specified so
-//               far, and resets the TextProperties structure to its
-//               initial empty state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unsets all properties that have been specified so far, and resets the
+ * TextProperties structure to its initial empty state.
+ */
 void TextProperties::
 clear() {
   (*this) = TextProperties();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::add_properties
-//       Access: Published
-//  Description: Sets any properties that are explicitly specified in
-//               other on this object.  Leaves other properties
-//               unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets any properties that are explicitly specified in other on this object.
+ * Leaves other properties unchanged.
+ */
 void TextProperties::
 add_properties(const TextProperties &other) {
   if (other.has_font()) {
@@ -256,11 +241,9 @@ add_properties(const TextProperties &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextProperties::
 write(ostream &out, int indent_level) const {
   if (!is_any_specified()) {
@@ -304,11 +287,11 @@ write(ostream &out, int indent_level) const {
     case A_left:
       out << "A_left\n";
       break;
-      
+
     case A_right:
       out << "A_right\n";
       break;
-      
+
     case A_center:
       out << "A_center\n";
       break;
@@ -316,11 +299,11 @@ write(ostream &out, int indent_level) const {
     case A_boxed_left:
       out << "A_boxed_left\n";
       break;
-      
+
     case A_boxed_right:
       out << "A_boxed_right\n";
       break;
-      
+
     case A_boxed_center:
       out << "A_boxed_center\n";
       break;
@@ -380,12 +363,10 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::get_text_state
-//       Access: Public
-//  Description: Returns a RenderState object suitable for rendering
-//               text with these properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState object suitable for rendering text with these
+ * properties.
+ */
 const RenderState *TextProperties::
 get_text_state() const {
   if (!_text_state.is_null()) {
@@ -409,12 +390,10 @@ get_text_state() const {
   return _text_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::get_shadow_state
-//       Access: Public
-//  Description: Returns a RenderState object suitable for rendering
-//               the shadow of this text with these properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState object suitable for rendering the shadow of this text
+ * with these properties.
+ */
 const RenderState *TextProperties::
 get_shadow_state() const {
   if (!_shadow_state.is_null()) {
@@ -436,16 +415,12 @@ get_shadow_state() const {
   return _shadow_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::load_default_font
-//       Access: Private, Static
-//  Description: This function is called once (or never), the first
-//               time someone attempts to render a TextNode using the
-//               default font.  It should attempt to load the default
-//               font, using the compiled-in version if it is
-//               available, or whatever system file may be named in
-//               Configrc.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called once (or never), the first time someone attempts to
+ * render a TextNode using the default font.  It should attempt to load the
+ * default font, using the compiled-in version if it is available, or whatever
+ * system file may be named in Configrc.
+ */
 void TextProperties::
 load_default_font() {
   _loaded_default_font = true;
@@ -462,7 +437,7 @@ load_default_font() {
 #ifdef COMPILE_IN_DEFAULT_FONT
 #ifdef HAVE_FREETYPE
   // Loading the compiled-in FreeType font is relatively easy.
-  _default_font = new DynamicTextFont((const char *)default_font_data, 
+  _default_font = new DynamicTextFont((const char *)default_font_data,
                                       default_font_size, 0);
   // The compiled-in font seems to confuse FreeType about its winding order.
   ((DynamicTextFont *)_default_font.p())->set_winding_order(DynamicTextFont::WO_left);
@@ -476,12 +451,12 @@ load_default_font() {
   // The font data is stored compressed; decompress it on-the-fly.
   istringstream inz(data);
   IDecompressStream in(&inz, false);
-  
+
 #else
   // The font data is stored uncompressed, so just load it.
   istringstream in(data);
 #endif  // HAVE_ZLIB
-  
+
   BamFile bam_file;
   if (bam_file.open_read(in, "default font stream")) {
     PT(PandaNode) node = bam_file.read_node();
@@ -489,7 +464,7 @@ load_default_font() {
       _default_font = new StaticTextFont(node);
     }
   }
-  
+
 #endif  // HAVE_FREETYPE
 #endif  // COMPILE_IN_DEFAULT_FONT
 }

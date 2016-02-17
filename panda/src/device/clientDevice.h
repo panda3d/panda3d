@@ -1,16 +1,15 @@
-// Filename: clientDevice.h
-// Created by:  drose (25Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clientDevice.h
+ * @author drose
+ * @date 2001-01-25
+ */
 
 #ifndef CLIENTDEVICE_H
 #define CLIENTDEVICE_H
@@ -25,13 +24,11 @@
 
 class ClientBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientDevice
-// Description : Any of a number of different devices that might be
-//               attached to a ClientBase, including trackers, etc.
-//               This is an abstract interface; the actual
-//               implementations are in ClientTrackerDevice, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Any of a number of different devices that might be attached to a ClientBase,
+ * including trackers, etc.  This is an abstract interface; the actual
+ * implementations are in ClientTrackerDevice, etc.
+ */
 class EXPCL_PANDA_DEVICE ClientDevice : public TypedReferenceCount {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type,

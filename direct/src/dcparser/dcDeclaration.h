@@ -1,16 +1,15 @@
-// Filename: dcDeclaration.h
-// Created by:  drose (18Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcDeclaration.h
+ * @author drose
+ * @date 2004-06-18
+ */
 
 #ifndef DCDECLARATION_H
 #define DCDECLARATION_H
@@ -20,16 +19,13 @@
 class DCClass;
 class DCSwitch;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCDeclaration
-// Description : This is a common interface for a declaration in a DC
-//               file.  Currently, this is either a class or a typedef
-//               declaration (import declarations are still collected
-//               together at the top, and don't inherit from this
-//               object).  Its only purpose is so that classes and
-//               typedefs can be stored in one list together so they
-//               can be ordered correctly on output.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a common interface for a declaration in a DC file.  Currently, this
+ * is either a class or a typedef declaration (import declarations are still
+ * collected together at the top, and don't inherit from this object).  Its only
+ * purpose is so that classes and typedefs can be stored in one list together so
+ * they can be ordered correctly on output.
+ */
 class EXPCL_DIRECT DCDeclaration {
 public:
   virtual ~DCDeclaration();
@@ -54,4 +50,3 @@ INLINE ostream &operator << (ostream &out, const DCDeclaration &decl) {
 }
 
 #endif
-

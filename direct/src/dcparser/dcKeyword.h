@@ -1,16 +1,15 @@
-// Filename: dcKeyword.h
-// Created by:  drose (22Jul05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcKeyword.h
+ * @author drose
+ * @date 2005-07-22
+ */
 
 #ifndef DCKEYWORD_H
 #define DCKEYWORD_H
@@ -21,13 +20,11 @@
 class DCParameter;
 class HashGenerator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCKeyword
-// Description : This represents a single keyword declaration in the
-//               dc file.  It is used to define a communication
-//               property associated with a field, for instance
-//               "broadcast" or "airecv".
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single keyword declaration in the dc file.  It is used to
+ * define a communication property associated with a field, for instance
+ * "broadcast" or "airecv".
+ */
 class EXPCL_DIRECT DCKeyword : public DCDeclaration {
 public:
   DCKeyword(const string &name, int historical_flag = ~0);

@@ -1,16 +1,15 @@
-// Filename: p3dSplashWindow.cxx
-// Created by:  drose (17Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dSplashWindow.cxx
+ * @author drose
+ * @date 2009-06-17
+ */
 
 #include "p3dSplashWindow.h"
 #include "wstring_encode.h"
@@ -25,13 +24,10 @@
 // don't know the actual file size we're downloading.
 const double P3DSplashWindow::_unknown_progress_rate = 1.0 / 4096;
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::Constructor
-//       Access: Public
-//  Description: By the time the SplashWindow is created, the instance
-//               has received both its fparams and its wparams.  Copy
-//               them both into this class for reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * By the time the SplashWindow is created, the instance has received both its
+ * fparams and its wparams.  Copy them both into this class for reference.
+ */
 P3DSplashWindow::
 P3DSplashWindow(P3DInstance *inst, bool make_visible) :
   _inst(inst),
@@ -73,22 +69,17 @@ P3DSplashWindow(P3DInstance *inst, bool make_visible) :
   _bstate = BS_hidden;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DSplashWindow::
 ~P3DSplashWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_wparams
-//       Access: Public, Virtual
-//  Description: Changes the window parameters, e.g. to resize or
-//               reposition the window; or sets the parameters for the
-//               first time, creating the initial window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the window parameters, e.g.  to resize or reposition the window; or
+ * sets the parameters for the first time, creating the initial window.
+ */
 void P3DSplashWindow::
 set_wparams(const P3DWindowParams &wparams) {
   _wparams = wparams;
@@ -96,42 +87,30 @@ set_wparams(const P3DWindowParams &wparams) {
   _win_height = _wparams.get_win_height();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_visible
-//       Access: Public, Virtual
-//  Description: Makes the splash window visible or invisible, so as
-//               not to compete with the embedded Panda window in the
-//               same space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the splash window visible or invisible, so as not to compete with the
+ * embedded Panda window in the same space.
+ */
 void P3DSplashWindow::
 set_visible(bool visible) {
   nout << "P3DSplashWindow::set_visible(" << visible << ")\n";
   _visible = visible;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_image_filename
-//       Access: Public, Virtual
-//  Description: Specifies the name of a JPEG or PNG image file that
-//               is displayed in the center of the splash window.
-//
-//               image_placement defines the specific context in which
-//               this particular image is displayed.  It is similar to
-//               the P3DInstance's image_type, but it is a more
-//               specific, lower-level usage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of a JPEG or PNG image file that is displayed in the
+ * center of the splash window.  image_placement defines the specific context in
+ * which this particular image is displayed.  It is similar to the P3DInstance's
+ * image_type, but it is a more specific, lower-level usage.
+ */
 void P3DSplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_fgcolor
-//       Access: Public
-//  Description: Specifies the color that is used to display the text
-//               above the loading bar.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the color that is used to display the text above the loading bar.
+ * This may only be set before wparams is set.
+ */
 void P3DSplashWindow::
 set_fgcolor(int r, int g, int b) {
   nout << "fgcolor " << r << ", " << g << ", " << b << "\n";
@@ -140,15 +119,11 @@ set_fgcolor(int r, int g, int b) {
   _fgcolor_b = b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_bgcolor
-//       Access: Public
-//  Description: Specifies the solid color that is displayed behind
-//               the splash image, if any, or before the splash image
-//               is loaded.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the solid color that is displayed behind the splash image, if any,
+ * or before the splash image is loaded.  This may only be set before wparams is
+ * set.
+ */
 void P3DSplashWindow::
 set_bgcolor(int r, int g, int b) {
   nout << "bgcolor " << r << ", " << g << ", " << b << "\n";
@@ -157,14 +132,10 @@ set_bgcolor(int r, int g, int b) {
   _bgcolor_b = b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_barcolor
-//       Access: Public
-//  Description: Specifies the color that is used to fill the
-//               loading bar.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the color that is used to fill the loading bar.  This may only be
+ * set before wparams is set.
+ */
 void P3DSplashWindow::
 set_barcolor(int r, int g, int b) {
   nout << "barcolor " << r << ", " << g << ", " << b << "\n";
@@ -173,14 +144,10 @@ set_barcolor(int r, int g, int b) {
   _barcolor_b = b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_bar_bgcolor
-//       Access: Public
-//  Description: Specifies the solid color that is displayed behind
-//               the loading bar.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the solid color that is displayed behind the loading bar.  This may
+ * only be set before wparams is set.
+ */
 void P3DSplashWindow::
 set_bar_bgcolor(int r, int g, int b) {
   nout << "bar_bgcolor " << r << ", " << g << ", " << b << "\n";
@@ -189,45 +156,32 @@ set_bar_bgcolor(int r, int g, int b) {
   _bar_bgcolor_b = b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_bar_border
-//       Access: Public
-//  Description: Sets the width in pixels of the border around the
-//               loading bar, or 0 not to draw a bar at all.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the width in pixels of the border around the loading bar, or 0 not to
+ * draw a bar at all.  This may only be set before wparams is set.
+ */
 void P3DSplashWindow::
 set_bar_border(int border) {
   nout << "bar_border " << border << "\n";
   _bar_border = border;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_bar_bottom
-//       Access: Public
-//  Description: Sets the amount of background pixels between the
-//               bottom edge of the window and the bottom edge of
-//               the loading bar border.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the amount of background pixels between the bottom edge of the window
+ * and the bottom edge of the loading bar border.  This may only be set before
+ * wparams is set.
+ */
 void P3DSplashWindow::
 set_bar_bottom(int bottom) {
   nout << "bar_bottom " << bottom << "\n";
   _bar_bottom = bottom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_bar_width
-//       Access: Public
-//  Description: Sets the width of the loading bar.  If percent is
-//               true, it is interpreted as a percentage of the
-//               window width.  If false, it is interpreted as an
-//               absolute width in pixels.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the width of the loading bar.  If percent is true, it is interpreted as
+ * a percentage of the window width.  If false, it is interpreted as an absolute
+ * width in pixels.  This may only be set before wparams is set.
+ */
 void P3DSplashWindow::
 set_bar_width(int width, bool percent) {
   nout << "bar_width " << width;
@@ -245,16 +199,11 @@ set_bar_width(int width, bool percent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_bar_height
-//       Access: Public
-//  Description: Sets the height of the loading bar.  If percent is
-//               true, it is interpreted as a percentage of the
-//               window height.  If false, it is interpreted as an
-//               absolute height in pixels.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the height of the loading bar.  If percent is true, it is interpreted as
+ * a percentage of the window height.  If false, it is interpreted as an
+ * absolute height in pixels.  This may only be set before wparams is set.
+ */
 void P3DSplashWindow::
 set_bar_height(int height, bool percent) {
   nout << "bar_height " << height;
@@ -272,104 +221,76 @@ set_bar_height(int height, bool percent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_font_family
-//       Access: Public
-//  Description: Sets the font family of the text above the loading
-//               bar.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the font family of the text above the loading bar.  This may only be set
+ * before wparams is set.
+ */
 void P3DSplashWindow::
 set_font_family(const string &family) {
   nout << "font_family " << family << "\n";
   _font_family = family;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_font_size
-//       Access: Public
-//  Description: Sets the font size in pixels of the text above the
-//               loading bar.  The default value is 12.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the font size in pixels of the text above the loading bar.  The default
+ * value is 12.  This may only be set before wparams is set.
+ */
 void P3DSplashWindow::
 set_font_size(int size) {
   nout << "font_size " << size << "\n";
   _font_size = size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_font_style
-//       Access: Public
-//  Description: Sets the font style of the text above the loading
-//               bar.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the font style of the text above the loading bar.  This may only be set
+ * before wparams is set.
+ */
 void P3DSplashWindow::
 set_font_style(FontStyle style) {
   nout << "font_style " << style << "\n";
   _font_style = style;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_font_weight
-//       Access: Public
-//  Description: Sets the font weight of the text above the loading
-//               bar.  The default is FW_normal.  It should be
-//               a multiple of 100 in the range 100-900.
-//
-//               This may only be set before wparams is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the font weight of the text above the loading bar.  The default is
+ * FW_normal.  It should be a multiple of 100 in the range 100-900.  This may
+ * only be set before wparams is set.
+ */
 void P3DSplashWindow::
 set_font_weight(int weight) {
   nout << "font_weight " << weight << "\n";
   _font_weight = weight;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_install_label
-//       Access: Public, Virtual
-//  Description: Specifies the text that is displayed above the
-//               install progress bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the text that is displayed above the install progress bar.
+ */
 void P3DSplashWindow::
 set_install_label(const string &install_label) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_install_progress
-//       Access: Public, Virtual
-//  Description: Moves the install progress bar from 0.0 to 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the install progress bar from 0.0 to 1.0.
+ */
 void P3DSplashWindow::
 set_install_progress(double install_progress,
                      bool is_progress_known, size_t received_data) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::handle_event
-//       Access: Public, Virtual
-//  Description: Deals with the event callback from the OS window
-//               system.  Returns true if the event is handled, false
-//               if ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deals with the event callback from the OS window system.  Returns true if the
+ * event is handled, false if ignored.
+ */
 bool P3DSplashWindow::
 handle_event(const P3D_event_data &event) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_button_active
-//       Access: Public, Virtual
-//  Description: Sets whether the button should be visible and active
-//               (true) or invisible and inactive (false).  If active,
-//               the button image will be displayed in the window, and
-//               a click event will be generated when the user clicks
-//               the button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the button should be visible and active (true) or invisible and
+ * inactive (false).  If active, the button image will be displayed in the
+ * window, and a click event will be generated when the user clicks the button.
+ */
 void P3DSplashWindow::
 set_button_active(bool flag) {
   _button_active = flag;
@@ -378,25 +299,19 @@ set_button_active(bool flag) {
   set_mouse_data(_mouse_x, _mouse_y, _mouse_down);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::request_keyboard_focus
-//       Access: Private
-//  Description: The Panda window is asking us to manage keyboard
-//               focus in proxy for it.  This is used on Vista, where
-//               the Panda window may be disallowed from directly
-//               assigning itself keyboard focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda window is asking us to manage keyboard focus in proxy for it.  This
+ * is used on Vista, where the Panda window may be disallowed from directly
+ * assigning itself keyboard focus.
+ */
 void P3DSplashWindow::
 request_keyboard_focus() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::read_image_data
-//       Access: Protected
-//  Description: Reads the image filename and sets image parameters
-//               width, height, num_channels, and data.  Returns true
-//               on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the image filename and sets image parameters width, height,
+ * num_channels, and data.  Returns true on success, false on failure.
+ */
 bool P3DSplashWindow::
 read_image_data(ImageData &image, string &data,
                 const string &image_filename) {
@@ -431,12 +346,10 @@ read_image_data(ImageData &image, string &data,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::get_bar_placement
-//       Access: Protected
-//  Description: Given the window width and height, determine the
-//               rectangle in which to place the progress bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given the window width and height, determine the rectangle in which to place
+ * the progress bar.
+ */
 void P3DSplashWindow::
 get_bar_placement(int &bar_x, int &bar_y,
                   int &bar_width, int &bar_height) {
@@ -457,13 +370,10 @@ get_bar_placement(int &bar_x, int &bar_y,
   bar_y = _win_height - _bar_bottom - _bar_border - bar_height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_button_range
-//       Access: Protected
-//  Description: Specifies the image that contains the "ready" button
-//               image, which in turn determines the clickable
-//               dimensions of the button within the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the image that contains the "ready" button image, which in turn
+ * determines the clickable dimensions of the button within the window.
+ */
 void P3DSplashWindow::
 set_button_range(const ImageData &image) {
   // The clickable area has a certain minimum size, even if it's a
@@ -481,17 +391,13 @@ set_button_range(const ImageData &image) {
   _button_y = (_win_height - _button_height) / 2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_mouse_data
-//       Access: Protected
-//  Description: Intended to be called by the subclasses as the mouse
-//               is tracked through the window, whether the button is
-//               currently active or not.  This updates the internal
-//               state of the mouse pointer, and also (if the button
-//               is active) updates the button state appropriately,
-//               and generates the click event when the mouse button
-//               transitions from down to up over the button area.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called by the subclasses as the mouse is tracked through the
+ * window, whether the button is currently active or not.  This updates the
+ * internal state of the mouse pointer, and also (if the button is active)
+ * updates the button state appropriately, and generates the click event when
+ * the mouse button transitions from down to up over the button area.
+ */
 void P3DSplashWindow::
 set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
   ButtonState orig_bstate = _bstate;
@@ -561,17 +467,13 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::button_click_detected
-//       Access: Protected, Virtual
-//  Description: Called when a button click by the user is detected in
-//               set_mouse_data(), this method simply turns around and
-//               notifies the instance.  It's a virtual method to give
-//               subclasses a chance to redirect this message to the
-//               main thread or process, as necessary.
-//
-//               Note that this method might be called in a sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a button click by the user is detected in set_mouse_data(), this
+ * method simply turns around and notifies the instance.  It's a virtual method
+ * to give subclasses a chance to redirect this message to the main thread or
+ * process, as necessary.  Note that this method might be called in a sub-
+ * thread.
+ */
 void P3DSplashWindow::
 button_click_detected() {
   assert(_inst != NULL);
@@ -579,12 +481,9 @@ button_click_detected() {
   _inst->splash_button_clicked_sub_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_bstate
-//       Access: Protected, Virtual
-//  Description: Changes the button state as the mouse interacts with
-//               it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the button state as the mouse interacts with it.
+ */
 void P3DSplashWindow::
 set_bstate(ButtonState bstate) {
   if (_bstate != bstate) {
@@ -594,13 +493,10 @@ set_bstate(ButtonState bstate) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::refresh
-//       Access: Protected, Virtual
-//  Description: Requests that the window will be repainted.  This may
-//               or may not be implemented for a particular
-//               specialization of P3DSplashWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Requests that the window will be repainted.  This may or may not be
+ * implemented for a particular specialization of P3DSplashWindow.
+ */
 void P3DSplashWindow::
 refresh() {
 }

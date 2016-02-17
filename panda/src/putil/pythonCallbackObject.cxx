@@ -1,16 +1,15 @@
-// Filename: pythonCallbackObject.cxx
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pythonCallbackObject.cxx
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #include "pythonCallbackObject.h"
 
@@ -32,11 +31,9 @@ ConfigureFn(config_pythonCallbackObject) {
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonCallbackObject::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PythonCallbackObject::
 PythonCallbackObject(PyObject *function) {
   _function = Py_None;
@@ -58,23 +55,18 @@ PythonCallbackObject(PyObject *function) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonCallbackObject::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PythonCallbackObject::
 ~PythonCallbackObject() {
   Py_DECREF(_function);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonCallbackObject::set_function
-//       Access: Published
-//  Description: Replaces the function that is called for the callback.
-//               runs.  The parameter should be a Python callable
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the function that is called for the callback.  runs.  The parameter
+ * should be a Python callable object.
+ */
 void PythonCallbackObject::
 set_function(PyObject *function) {
   Py_DECREF(_function);
@@ -85,25 +77,20 @@ set_function(PyObject *function) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonCallbackObject::get_function
-//       Access: Published
-//  Description: Returns the function that is called for the callback.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the function that is called for the callback.
+ */
 PyObject *PythonCallbackObject::
 get_function() {
   Py_INCREF(_function);
   return _function;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonCallbackObject::do_callback
-//       Access: Public, Virtual
-//  Description: This method called when the callback is triggered; it
-//               *replaces* the original function.  To continue
-//               performing the original function, you must call
-//               cbdata->upcall() during the callback.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method called when the callback is triggered; it *replaces* the original
+ * function.  To continue performing the original function, you must call
+ * cbdata->upcall() during the callback.
+ */
 void PythonCallbackObject::
 do_callback(CallbackData *cbdata) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
@@ -119,13 +106,10 @@ do_callback(CallbackData *cbdata) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonCallbackObject::do_python_callback
-//       Access: Private
-//  Description: The Python calls that implement do_callback().  This
-//               function is separate so we can acquire the Python
-//               interpretor lock while it runs.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Python calls that implement do_callback().  This function is separate so
+ * we can acquire the Python interpretor lock while it runs.
+ */
 void PythonCallbackObject::
 do_python_callback(CallbackData *cbdata) {
   nassertv(cbdata != NULL);

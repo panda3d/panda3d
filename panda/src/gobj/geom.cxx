@@ -1,16 +1,15 @@
-// Filename: geom.cxx
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geom.cxx
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #include "geom.h"
 #include "geomPoints.h"
@@ -35,21 +34,17 @@ TypeHandle Geom::CacheEntry::_type_handle;
 TypeHandle Geom::CData::_type_handle;
 TypeHandle GeomPipelineReader::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_cow_copy
-//       Access: Protected, Virtual
-//  Description: Required to implement CopyOnWriteObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required to implement CopyOnWriteObject.
+ */
 PT(CopyOnWriteObject) Geom::
 make_cow_copy() {
   return make_copy();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Geom::
 Geom(const GeomVertexData *data) {
   // Let's ensure the vertex data gets set on all stages at once.
@@ -60,11 +55,9 @@ Geom(const GeomVertexData *data) {
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::Copy Constructor
-//       Access: Protected
-//  Description: Use make_copy() to duplicate a Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use make_copy() to duplicate a Geom.
+ */
 Geom::
 Geom(const Geom &copy) :
   CopyOnWriteObject(copy),
@@ -72,14 +65,11 @@ Geom(const Geom &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::Copy Assignment Operator
-//       Access: Published
-//  Description: The copy assignment operator is not pipeline-safe.
-//               This will completely obliterate all stages of the
-//               pipeline, so don't do it for a Geom that is actively
-//               being used for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * The copy assignment operator is not pipeline-safe.  This will completely
+ * obliterate all stages of the pipeline, so don't do it for a Geom that is
+ * actively being used for rendering.
+ */
 void Geom::
 operator = (const Geom &copy) {
   CopyOnWriteObject::operator = (copy);
@@ -95,41 +85,31 @@ operator = (const Geom &copy) {
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Geom::
 ~Geom() {
   clear_cache();
   release_all();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_copy
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated Geom that is a shallow copy
-//               of this one.  It will be a different Geom pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Geom that is a shallow copy of this one.  It will
+ * be a different Geom pointer, but its internal data may or may not be shared
+ * with that of the original Geom.
+ */
 Geom *Geom::
 make_copy() const {
   return new Geom(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_usage_hint
-//       Access: Published
-//  Description: Changes the UsageHint hint for all of the primitives
-//               on this Geom to the same value.  See
-//               get_usage_hint().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the UsageHint hint for all of the primitives on this Geom to the same
+ * value.  See get_usage_hint().  Don't call this in a downstream thread unless
+ * you don't mind it blowing away other changes you might have recently made in
+ * an upstream thread.
+ */
 void Geom::
 set_usage_hint(Geom::UsageHint usage_hint) {
   Thread *current_thread = Thread::get_current_thread();
@@ -146,17 +126,12 @@ set_usage_hint(Geom::UsageHint usage_hint) {
   cdata->_modified = Geom::get_next_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::modify_vertex_data
-//       Access: Published
-//  Description: Returns a modifiable pointer to the GeomVertexData,
-//               so that application code may directly maniuplate the
-//               geom's underlying data.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable pointer to the GeomVertexData, so that application code
+ * may directly maniuplate the geom's underlying data.  Don't call this in a
+ * downstream thread unless you don't mind it blowing away other changes you
+ * might have recently made in an upstream thread.
+ */
 PT(GeomVertexData) Geom::
 modify_vertex_data() {
   Thread *current_thread = Thread::get_current_thread();
@@ -169,16 +144,11 @@ modify_vertex_data() {
   return cdata->_data.get_write_pointer();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_vertex_data
-//       Access: Published
-//  Description: Replaces the Geom's underlying vertex data table with
-//               a completely new table.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the Geom's underlying vertex data table with a completely new table.
+ * Don't call this in a downstream thread unless you don't mind it blowing away
+ * other changes you might have recently made in an upstream thread.
+ */
 void Geom::
 set_vertex_data(const GeomVertexData *data) {
   Thread *current_thread = Thread::get_current_thread();
@@ -190,21 +160,15 @@ set_vertex_data(const GeomVertexData *data) {
   reset_geom_rendering(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::offset_vertices
-//       Access: Published
-//  Description: Replaces a Geom's vertex table with a new table, and
-//               simultaneously adds the indicated offset to all
-//               vertex references within the Geom's primitives.  This
-//               is intended to be used to combine multiple
-//               GeomVertexDatas from different Geoms into a single
-//               big buffer, with each Geom referencing a subset of
-//               the vertices in the buffer.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces a Geom's vertex table with a new table, and simultaneously adds the
+ * indicated offset to all vertex references within the Geom's primitives.  This
+ * is intended to be used to combine multiple GeomVertexDatas from different
+ * Geoms into a single big buffer, with each Geom referencing a subset of the
+ * vertices in the buffer.  Don't call this in a downstream thread unless you
+ * don't mind it blowing away other changes you might have recently made in an
+ * upstream thread.
+ */
 void Geom::
 offset_vertices(const GeomVertexData *data, int offset) {
   Thread *current_thread = Thread::get_current_thread();
@@ -235,19 +199,14 @@ offset_vertices(const GeomVertexData *data, int offset) {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_nonindexed
-//       Access: Published
-//  Description: Converts the geom from indexed to nonindexed by
-//               duplicating vertices as necessary.  If composite_only
-//               is true, then only composite primitives such as
-//               trifans and tristrips are converted.  Returns the
-//               number of GeomPrimitive objects converted.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the geom from indexed to nonindexed by duplicating vertices as
+ * necessary.  If composite_only is true, then only composite primitives such as
+ * trifans and tristrips are converted.  Returns the number of GeomPrimitive
+ * objects converted.  Don't call this in a downstream thread unless you don't
+ * mind it blowing away other changes you might have recently made in an
+ * upstream thread.
+ */
 int Geom::
 make_nonindexed(bool composite_only) {
   Thread *current_thread = Thread::get_current_thread();
@@ -306,16 +265,12 @@ make_nonindexed(bool composite_only) {
   return num_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_primitive
-//       Access: Published
-//  Description: Replaces the ith GeomPrimitive object stored within
-//               the Geom with the new object.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the ith GeomPrimitive object stored within the Geom with the new
+ * object.  Don't call this in a downstream thread unless you don't mind it
+ * blowing away other changes you might have recently made in an upstream
+ * thread.
+ */
 void Geom::
 set_primitive(int i, const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
@@ -350,18 +305,13 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   mark_internal_bounds_stale(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::add_primitive
-//       Access: Published
-//  Description: Adds a new GeomPrimitive structure to the Geom
-//               object.  This specifies a particular subset of
-//               vertices that are used to define geometric primitives
-//               of the indicated type.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new GeomPrimitive structure to the Geom object.  This specifies a
+ * particular subset of vertices that are used to define geometric primitives of
+ * the indicated type.  Don't call this in a downstream thread unless you don't
+ * mind it blowing away other changes you might have recently made in an
+ * upstream thread.
+ */
 void Geom::
 add_primitive(const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
@@ -396,15 +346,11 @@ add_primitive(const GeomPrimitive *primitive) {
   mark_internal_bounds_stale(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::remove_primitive
-//       Access: Published
-//  Description: Removes the ith primitive from the list.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the ith primitive from the list.  Don't call this in a downstream
+ * thread unless you don't mind it blowing away other changes you might have
+ * recently made in an upstream thread.
+ */
 void Geom::
 remove_primitive(int i) {
   Thread *current_thread = Thread::get_current_thread();
@@ -422,18 +368,13 @@ remove_primitive(int i) {
   mark_internal_bounds_stale(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::clear_primitives
-//       Access: Published
-//  Description: Removes all the primitives from the Geom object (but
-//               keeps the same table of vertices).  You may then
-//               re-add primitives one at a time via calls to
-//               add_primitive().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the primitives from the Geom object (but keeps the same table of
+ * vertices).  You may then re-add primitives one at a time via calls to
+ * add_primitive().  Don't call this in a downstream thread unless you don't
+ * mind it blowing away other changes you might have recently made in an
+ * upstream thread.
+ */
 void Geom::
 clear_primitives() {
   Thread *current_thread = Thread::get_current_thread();
@@ -446,17 +387,12 @@ clear_primitives() {
   mark_internal_bounds_stale(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::decompose_in_place
-//       Access: Published
-//  Description: Decomposes all of the primitives within this Geom,
-//               leaving the results in place.  See
-//               GeomPrimitive::decompose().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decomposes all of the primitives within this Geom, leaving the results in
+ * place.  See GeomPrimitive::decompose().  Don't call this in a downstream
+ * thread unless you don't mind it blowing away other changes you might have
+ * recently made in an upstream thread.
+ */
 void Geom::
 decompose_in_place() {
   Thread *current_thread = Thread::get_current_thread();
@@ -484,17 +420,12 @@ decompose_in_place() {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::doubleside_in_place
-//       Access: Published
-//  Description: Doublesides all of the primitives within this Geom,
-//               leaving the results in place.  See
-//               GeomPrimitive::doubleside().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Doublesides all of the primitives within this Geom, leaving the results in
+ * place.  See GeomPrimitive::doubleside().  Don't call this in a downstream
+ * thread unless you don't mind it blowing away other changes you might have
+ * recently made in an upstream thread.
+ */
 void Geom::
 doubleside_in_place() {
   Thread *current_thread = Thread::get_current_thread();
@@ -522,17 +453,12 @@ doubleside_in_place() {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::reverse_in_place
-//       Access: Published
-//  Description: Reverses all of the primitives within this Geom,
-//               leaving the results in place.  See
-//               GeomPrimitive::reverse().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses all of the primitives within this Geom, leaving the results in
+ * place.  See GeomPrimitive::reverse().  Don't call this in a downstream thread
+ * unless you don't mind it blowing away other changes you might have recently
+ * made in an upstream thread.
+ */
 void Geom::
 reverse_in_place() {
   Thread *current_thread = Thread::get_current_thread();
@@ -560,17 +486,12 @@ reverse_in_place() {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::rotate_in_place
-//       Access: Published
-//  Description: Rotates all of the primitives within this Geom,
-//               leaving the results in place.  See
-//               GeomPrimitive::rotate().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rotates all of the primitives within this Geom, leaving the results in place.
+ * See GeomPrimitive::rotate().  Don't call this in a downstream thread unless
+ * you don't mind it blowing away other changes you might have recently made in
+ * an upstream thread.
+ */
 void Geom::
 rotate_in_place() {
   Thread *current_thread = Thread::get_current_thread();
@@ -610,26 +531,17 @@ rotate_in_place() {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::unify_in_place
-//       Access: Published
-//  Description: Unifies all of the primitives contained within this
-//               Geom into a single (or as few as possible, within the
-//               constraints of max_indices) primitive objects.  This
-//               may require decomposing the primitives if, for
-//               instance, the Geom contains both triangle strips and
-//               triangle fans.
-//
-//               max_indices represents the maximum number of indices
-//               that will be put in any one GeomPrimitive.  If
-//               preserve_order is true, then the primitives will not
-//               be reordered during the operation, even if this
-//               results in a suboptimal result.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unifies all of the primitives contained within this Geom into a single (or as
+ * few as possible, within the constraints of max_indices) primitive objects.
+ * This may require decomposing the primitives if, for instance, the Geom
+ * contains both triangle strips and triangle fans.  max_indices represents the
+ * maximum number of indices that will be put in any one GeomPrimitive.  If
+ * preserve_order is true, then the primitives will not be reordered during the
+ * operation, even if this results in a suboptimal result.  Don't call this in a
+ * downstream thread unless you don't mind it blowing away other changes you
+ * might have recently made in an upstream thread.
+ */
 void Geom::
 unify_in_place(int max_indices, bool preserve_order) {
   if (gobj_cat.is_debug()) {
@@ -750,17 +662,12 @@ unify_in_place(int max_indices, bool preserve_order) {
   reset_geom_rendering(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_lines_in_place
-//       Access: Published
-//  Description: Replaces the GeomPrimitives within this Geom with
-//               corresponding GeomLines, representing a wireframe
-//               of the primitives.  See GeomPrimitive::make_lines().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the GeomPrimitives within this Geom with corresponding GeomLines,
+ * representing a wireframe of the primitives.  See GeomPrimitive::make_lines().
+ * Don't call this in a downstream thread unless you don't mind it blowing away
+ * other changes you might have recently made in an upstream thread.
+ */
 void Geom::
 make_lines_in_place() {
   Thread *current_thread = Thread::get_current_thread();
@@ -788,17 +695,12 @@ make_lines_in_place() {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_points_in_place
-//       Access: Published
-//  Description: Replaces the GeomPrimitives within this Geom with
-//               corresponding GeomPoints.  See
-//               GeomPrimitive::make_points().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the GeomPrimitives within this Geom with corresponding GeomPoints.
+ * See GeomPrimitive::make_points().  Don't call this in a downstream thread
+ * unless you don't mind it blowing away other changes you might have recently
+ * made in an upstream thread.
+ */
 void Geom::
 make_points_in_place() {
   Thread *current_thread = Thread::get_current_thread();
@@ -826,17 +728,12 @@ make_points_in_place() {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_patches_in_place
-//       Access: Published
-//  Description: Replaces the GeomPrimitives within this Geom with
-//               corresponding GeomPatches.  See
-//               GeomPrimitive::make_patches().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the GeomPrimitives within this Geom with corresponding GeomPatches.
+ * See GeomPrimitive::make_patches().  Don't call this in a downstream thread
+ * unless you don't mind it blowing away other changes you might have recently
+ * made in an upstream thread.
+ */
 void Geom::
 make_patches_in_place() {
   Thread *current_thread = Thread::get_current_thread();
@@ -864,20 +761,14 @@ make_patches_in_place() {
   nassertv(all_is_valid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::copy_primitives_from
-//       Access: Published, Virtual
-//  Description: Copies the primitives from the indicated Geom into
-//               this one.  This does require that both Geoms contain
-//               the same fundamental type primitives, both have a
-//               compatible shade model, and both use the same
-//               GeomVertexData.  Both Geoms must also be the same
-//               specific class type (i.e. if one is a GeomTextGlyph,
-//               they both must be.)
-//
-//               Returns true if the copy is successful, or false
-//               otherwise (because the Geoms were mismatched).
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the primitives from the indicated Geom into this one.  This does
+ * require that both Geoms contain the same fundamental type primitives, both
+ * have a compatible shade model, and both use the same GeomVertexData.  Both
+ * Geoms must also be the same specific class type (i.e.  if one is a
+ * GeomTextGlyph, they both must be.)  Returns true if the copy is successful,
+ * or false otherwise (because the Geoms were mismatched).
+ */
 bool Geom::
 copy_primitives_from(const Geom *other) {
   if (get_primitive_type() != PT_none &&
@@ -913,12 +804,10 @@ copy_primitives_from(const Geom *other) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_num_bytes
-//       Access: Published
-//  Description: Returns the number of bytes consumed by the geom and
-//               its primitives (but not including its vertex table).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bytes consumed by the geom and its primitives (but not
+ * including its vertex table).
+ */
 int Geom::
 get_num_bytes() const {
   CDReader cdata(_cycler);
@@ -934,17 +823,12 @@ get_num_bytes() const {
   return num_bytes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::request_resident
-//       Access: Published
-//  Description: Returns true if all the primitive arrays are
-//               currently resident in memory.  If this returns false,
-//               the data will be brought back into memory shortly;
-//               try again later.
-//
-//               This does not also test the Geom's associated
-//               GeomVertexData.  That must be tested separately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all the primitive arrays are currently resident in memory.
+ * If this returns false, the data will be brought back into memory shortly; try
+ * again later.  This does not also test the Geom's associated GeomVertexData.
+ * That must be tested separately.
+ */
 bool Geom::
 request_resident() const {
   CDReader cdata(_cycler);
@@ -963,19 +847,14 @@ request_resident() const {
   return resident;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::transform_vertices
-//       Access: Published
-//  Description: Applies the indicated transform to all of the
-//               vertices in the Geom.  If the Geom happens to share a
-//               vertex table with another Geom, this operation will
-//               duplicate the vertex table instead of breaking the
-//               other Geom; however, if multiple Geoms with shared
-//               tables are transformed by the same matrix, they will
-//               no longer share tables after the operation.  Consider
-//               using the GeomTransformer if you will be applying the
-//               same transform to multiple Geoms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transform to all of the vertices in the Geom.  If the
+ * Geom happens to share a vertex table with another Geom, this operation will
+ * duplicate the vertex table instead of breaking the other Geom; however, if
+ * multiple Geoms with shared tables are transformed by the same matrix, they
+ * will no longer share tables after the operation.  Consider using the
+ * GeomTransformer if you will be applying the same transform to multiple Geoms.
+ */
 void Geom::
 transform_vertices(const LMatrix4 &mat) {
   PT(GeomVertexData) new_data = modify_vertex_data();
@@ -1000,14 +879,11 @@ transform_vertices(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::check_valid
-//       Access: Published
-//  Description: Verifies that the all of the primitives within the
-//               geom reference vertices that actually exist within
-//               the geom's GeomVertexData.  Returns true if the geom
-//               appears to be valid, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the all of the primitives within the geom reference vertices
+ * that actually exist within the geom's GeomVertexData.  Returns true if the
+ * geom appears to be valid, false otherwise.
+ */
 bool Geom::
 check_valid() const {
   Thread *current_thread = Thread::get_current_thread();
@@ -1017,14 +893,11 @@ check_valid() const {
   return geom_reader.check_valid(&data_reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::check_valid
-//       Access: Published
-//  Description: Verifies that the all of the primitives within the
-//               geom reference vertices that actually exist within
-//               the indicated GeomVertexData.  Returns true if the
-//               geom appears to be valid, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the all of the primitives within the geom reference vertices
+ * that actually exist within the indicated GeomVertexData.  Returns true if the
+ * geom appears to be valid, false otherwise.
+ */
 bool Geom::
 check_valid(const GeomVertexData *vertex_data) const {
   Thread *current_thread = Thread::get_current_thread();
@@ -1034,11 +907,9 @@ check_valid(const GeomVertexData *vertex_data) const {
   return geom_reader.check_valid(&data_reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_bounds
-//       Access: Published
-//  Description: Returns the bounding volume for the Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the bounding volume for the Geom.
+ */
 CPT(BoundingVolume) Geom::
 get_bounds(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
@@ -1054,12 +925,9 @@ get_bounds(Thread *current_thread) const {
   return cdata->_internal_bounds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_nested_vertices
-//       Access: Published
-//  Description: Returns the number of vertices rendered by all
-//               primitives within the Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vertices rendered by all primitives within the Geom.
+ */
 int Geom::
 get_nested_vertices(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
@@ -1071,11 +939,9 @@ get_nested_vertices(Thread *current_thread) const {
   return cdata->_nested_vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Geom::
 output(ostream &out) const {
   CDReader cdata(_cycler);
@@ -1100,11 +966,9 @@ output(ostream &out) const {
   out << " ], " << num_faces << " faces";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Geom::
 write(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
@@ -1118,17 +982,12 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::clear_cache
-//       Access: Published
-//  Description: Removes all of the previously-cached results of
-//               munge_geom().
-//
-//               This blows away the entire cache, upstream and
-//               downstream the pipeline.  Use clear_cache_stage()
-//               instead if you only want to blow away the cache at
-//               the current stage and upstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the previously-cached results of munge_geom().  This blows
+ * away the entire cache, upstream and downstream the pipeline.  Use
+ * clear_cache_stage() instead if you only want to blow away the cache at the
+ * current stage and upstream.
+ */
 void Geom::
 clear_cache() {
   LightMutexHolder holder(_cache_lock);
@@ -1141,17 +1000,12 @@ clear_cache() {
   _cache.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::clear_cache_stage
-//       Access: Published
-//  Description: Removes all of the previously-cached results of
-//               munge_geom(), at the current pipeline stage and
-//               upstream.  Does not affect the downstream cache.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the previously-cached results of munge_geom(), at the current
+ * pipeline stage and upstream.  Does not affect the downstream cache.  Don't
+ * call this in a downstream thread unless you don't mind it blowing away other
+ * changes you might have recently made in an upstream thread.
+ */
 void Geom::
 clear_cache_stage(Thread *current_thread) {
   LightMutexHolder holder(_cache_lock);
@@ -1164,30 +1018,22 @@ clear_cache_stage(Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::prepare
-//       Access: Published
-//  Description: Indicates that the geom should be enqueued to be
-//               prepared in the indicated prepared_objects at the
-//               beginning of the next frame.  This will ensure the
-//               geom is already loaded into geom memory if it
-//               is expected to be rendered soon.
-//
-//               Use this function instead of prepare_now() to preload
-//               geoms from a user interface standpoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the geom should be enqueued to be prepared in the indicated
+ * prepared_objects at the beginning of the next frame.  This will ensure the
+ * geom is already loaded into geom memory if it is expected to be rendered
+ * soon.  Use this function instead of prepare_now() to preload geoms from a
+ * user interface standpoint.
+ */
 void Geom::
 prepare(PreparedGraphicsObjects *prepared_objects) {
   prepared_objects->enqueue_geom(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::is_prepared
-//       Access: Published
-//  Description: Returns true if the geom has already been prepared
-//               or enqueued for preparation on the indicated GSG,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the geom has already been prepared or enqueued for
+ * preparation on the indicated GSG, false otherwise.
+ */
 bool Geom::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   Contexts::const_iterator ci;
@@ -1198,13 +1044,10 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   return prepared_objects->is_geom_queued(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::release
-//       Access: Published
-//  Description: Frees the geom context only on the indicated object,
-//               if it exists there.  Returns true if it was released,
-//               false if it had not been prepared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the geom context only on the indicated object, if it exists there.
+ * Returns true if it was released, false if it had not been prepared.
+ */
 bool Geom::
 release(PreparedGraphicsObjects *prepared_objects) {
   Contexts::iterator ci;
@@ -1219,13 +1062,10 @@ release(PreparedGraphicsObjects *prepared_objects) {
   return prepared_objects->dequeue_geom(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::release_all
-//       Access: Published
-//  Description: Frees the context allocated on all objects for which
-//               the geom has been declared.  Returns the number of
-//               contexts which have been freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the context allocated on all objects for which the geom has been
+ * declared.  Returns the number of contexts which have been freed.
+ */
 int Geom::
 release_all() {
   // We have to traverse a copy of the _contexts list, because the
@@ -1249,22 +1089,15 @@ release_all() {
   return num_freed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::prepare_now
-//       Access: Public
-//  Description: Creates a context for the geom on the particular
-//               GSG, if it does not already exist.  Returns the new
-//               (or old) GeomContext.  This assumes that the
-//               GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               geoms.  If this is not necessarily the case, you
-//               should use prepare() instead.
-//
-//               Normally, this is not called directly except by the
-//               GraphicsStateGuardian; a geom does not need to be
-//               explicitly prepared by the user before it may be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a context for the geom on the particular GSG, if it does not already
+ * exist.  Returns the new (or old) GeomContext.  This assumes that the
+ * GraphicsStateGuardian is the currently active rendering context and that it
+ * is ready to accept new geoms.  If this is not necessarily the case, you
+ * should use prepare() instead.  Normally, this is not called directly except
+ * by the GraphicsStateGuardian; a geom does not need to be explicitly prepared
+ * by the user before it may be rendered.
+ */
 GeomContext *Geom::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
@@ -1281,19 +1114,13 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   return gc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::draw
-//       Access: Public
-//  Description: Actually draws the Geom with the indicated GSG, using
-//               the indicated vertex data (which might have been
-//               pre-munged to support the GSG's needs).
-//
-//               Returns true if all of the primitives were drawn
-//               normally, false if there was a problem (for instance,
-//               some of the data was nonresident).  If force is
-//               passed true, it will wait for the data to become
-//               resident if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually draws the Geom with the indicated GSG, using the indicated vertex
+ * data (which might have been pre-munged to support the GSG's needs).  Returns
+ * true if all of the primitives were drawn normally, false if there was a
+ * problem (for instance, some of the data was nonresident).  If force is passed
+ * true, it will wait for the data to become resident if necessary.
+ */
 bool Geom::
 draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
      const GeomVertexData *vertex_data, bool force,
@@ -1307,31 +1134,23 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
   return geom_reader.draw(gsg, munger, &data_reader, force);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_next_modified
-//       Access: Public, Static
-//  Description: Returns a monotonically increasing sequence.  Each
-//               time this is called, a new sequence number is
-//               returned, higher than the previous value.
-//
-//               This is used to ensure that
-//               GeomVertexArrayData::get_modified() and
-//               GeomPrimitive::get_modified() update from the same
-//               space, so that Geom::get_modified() returns a
-//               meaningful value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a monotonically increasing sequence.  Each time this is called, a new
+ * sequence number is returned, higher than the previous value.  This is used to
+ * ensure that GeomVertexArrayData::get_modified() and
+ * GeomPrimitive::get_modified() update from the same space, so that
+ * Geom::get_modified() returns a meaningful value.
+ */
 UpdateSeq Geom::
 get_next_modified() {
   ++_next_modified;
   return _next_modified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::compute_internal_bounds
-//       Access: Private
-//  Description: Recomputes the dynamic bounding volume for this Geom.
-//               This includes all of the vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the dynamic bounding volume for this Geom.  This includes all of
+ * the vertices.
+ */
 void Geom::
 compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   int num_vertices = 0;
@@ -1453,11 +1272,9 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   cdata->_internal_bounds_stale = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::do_calc_tight_bounds
-//       Access: Private
-//  Description: The private implementation of calc_tight_bounds().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of calc_tight_bounds().
+ */
 void Geom::
 do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                      PN_stdfloat &sq_center_dist, bool &found_any,
@@ -1476,11 +1293,9 @@ do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::do_calc_sphere_radius
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Geom::
 do_calc_sphere_radius(const LPoint3 &center, PN_stdfloat &sq_radius,
                       bool &found_any, const GeomVertexData *vertex_data,
@@ -1495,15 +1310,12 @@ do_calc_sphere_radius(const LPoint3 &center, PN_stdfloat &sq_radius,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::clear_prepared
-//       Access: Private
-//  Description: Removes the indicated PreparedGraphicsObjects table
-//               from the Geom's table, without actually releasing
-//               the geom.  This is intended to be called only from
-//               PreparedGraphicsObjects::release_geom(); it should
-//               never be called by user code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated PreparedGraphicsObjects table from the Geom's table,
+ * without actually releasing the geom.  This is intended to be called only from
+ * PreparedGraphicsObjects::release_geom(); it should never be called by user
+ * code.
+ */
 void Geom::
 clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   Contexts::iterator ci;
@@ -1517,16 +1329,12 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::check_will_be_valid
-//       Access: Private
-//  Description: Verifies that the all of the primitives within the
-//               geom reference vertices that actually exist within
-//               the indicated GeomVertexData (presumably in
-//               preparation for assigning the geom to use this data).
-//               Returns true if the data appears to be valid, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the all of the primitives within the geom reference vertices
+ * that actually exist within the indicated GeomVertexData (presumably in
+ * preparation for assigning the geom to use this data). Returns true if the
+ * data appears to be valid, false otherwise.
+ */
 bool Geom::
 check_will_be_valid(const GeomVertexData *vertex_data) const {
   CDReader cdata(_cycler);
@@ -1543,11 +1351,9 @@ check_will_be_valid(const GeomVertexData *vertex_data) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::reset_usage_hint
-//       Access: Private
-//  Description: Recomputes the minimum usage_hint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the minimum usage_hint.
+ */
 void Geom::
 reset_usage_hint(Geom::CData *cdata) {
   cdata->_usage_hint = UH_unspecified;
@@ -1561,11 +1367,9 @@ reset_usage_hint(Geom::CData *cdata) {
   cdata->_got_usage_hint = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::reset_geom_rendering
-//       Access: Private
-//  Description: Rederives the _geom_rendering member.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rederives the _geom_rendering member.
+ */
 void Geom::
 reset_geom_rendering(Geom::CData *cdata) {
   cdata->_geom_rendering = 0;
@@ -1603,13 +1407,10 @@ reset_geom_rendering(Geom::CData *cdata) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::combine_primitives
-//       Access: Private
-//  Description: Combines two primitives of the same type into a
-//               single primitive.  a_prim is modified to append the
-//               vertices from b_prim, which is unmodified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Combines two primitives of the same type into a single primitive.  a_prim is
+ * modified to append the vertices from b_prim, which is unmodified.
+ */
 void Geom::
 combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
                    Thread *current_thread) {
@@ -1661,23 +1462,18 @@ combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Geom.
+ */
 void Geom::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void Geom::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -1685,14 +1481,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Geom is encountered
-//               in the Bam file.  It should create the Geom
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * Geom is encountered in the Bam file.  It should create the Geom and extract
+ * its information from the file.
+ */
 TypedWritable *Geom::
 make_from_bam(const FactoryParams &params) {
   Geom *object = new Geom(NULL);
@@ -1706,13 +1499,11 @@ make_from_bam(const FactoryParams &params) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void Geom::
 finalize(BamReader *manager) {
   CDWriter cdata(_cycler, true);
@@ -1729,13 +1520,10 @@ finalize(BamReader *manager) {
   reset_geom_rendering(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new Geom.
+ */
 void Geom::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
@@ -1743,32 +1531,26 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_cdata(scan, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CDataCache::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Geom::CDataCache::
 ~CDataCache() {
   set_result(NULL, NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CDataCache::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *Geom::CDataCache::
 make_copy() const {
   return new CDataCache(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CacheEntry::evict_callback
-//       Access: Public, Virtual
-//  Description: Called when the entry is evicted from the cache, this
-//               should clean up the owning object appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the entry is evicted from the cache, this should clean up the
+ * owning object appropriately.
+ */
 void Geom::CacheEntry::
 evict_callback() {
   LightMutexHolder holder(_source->_cache_lock);
@@ -1778,11 +1560,9 @@ evict_callback() {
   _source->_cache.erase(ci);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CacheEntry::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Geom::CacheEntry::
 output(ostream &out) const {
   out << "geom " << (void *)_source << ", "
@@ -1790,22 +1570,18 @@ output(ostream &out) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *Geom::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void Geom::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _data.get_read_pointer());
@@ -1826,13 +1602,10 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint8(_bounds_type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int Geom::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
@@ -1847,13 +1620,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new Geom.
+ */
 void Geom::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
@@ -1881,12 +1651,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPipelineReader::check_usage_hint
-//       Access: Public
-//  Description: Ensures that the Geom's usage_hint cache has been
-//               computed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the Geom's usage_hint cache has been computed.
+ */
 void GeomPipelineReader::
 check_usage_hint() const {
   if (!_cdata->_got_usage_hint) {
@@ -1919,11 +1686,9 @@ check_usage_hint() const {
   nassertv(_cdata->_got_usage_hint);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPipelineReader::check_valid
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool GeomPipelineReader::
 check_valid(const GeomVertexDataPipelineReader *data_reader) const {
   Geom::Primitives::const_iterator pi;
@@ -1941,11 +1706,9 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPipelineReader::draw
-//       Access: Public
-//  Description: The implementation of Geom::draw().
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of Geom::draw().
+ */
 bool GeomPipelineReader::
 draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
      const GeomVertexDataPipelineReader *data_reader, bool force) const {

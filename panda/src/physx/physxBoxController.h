@@ -1,16 +1,15 @@
-// Filename: physxBoxController.h
-// Created by:  enn0x (24Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxBoxController.h
+ * @author enn0x
+ * @date 2009-09-24
+ */
 
 #ifndef PHYSXBOXCONTROLLER_H
 #define PHYSXBOXCONTROLLER_H
@@ -21,10 +20,9 @@
 #include "physxController.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBoxController
-// Description : Box character controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * Box character controller.
+ */
 class EXPCL_PANDAPHYSX PhysxBoxController : public PhysxController {
 
 PUBLISHED:
@@ -34,7 +32,7 @@ PUBLISHED:
   void set_extents(const LVector3f &extents);
   LVector3f get_extents() const;
 
-////////////////////////////////////////////////////////////////////
+
 public:
   INLINE NxController *ptr() const { return (NxController *)_ptr; };
 
@@ -44,14 +42,14 @@ public:
 private:
   NxBoxController *_ptr;
 
-////////////////////////////////////////////////////////////////////
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxController::init_type();
-    register_type(_type_handle, "PhysxBoxController", 
+    register_type(_type_handle, "PhysxBoxController",
                   PhysxController::get_class_type());
   }
   virtual TypeHandle get_type() const {

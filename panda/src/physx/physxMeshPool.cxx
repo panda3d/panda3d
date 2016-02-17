@@ -1,16 +1,15 @@
-// Filename: physxMeshPool.cxx
-// Created by:  enn0x (14Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxMeshPool.cxx
+ * @author enn0x
+ * @date 2009-10-14
+ */
 
 #include "physxMeshPool.h"
 #include "physxConvexMesh.h"
@@ -26,11 +25,9 @@ PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
 PhysxMeshPool::ClothMeshes PhysxMeshPool::_cloth_meshes;
 PhysxMeshPool::SoftbodyMeshes PhysxMeshPool::_softbody_meshes;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::check_file
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxMeshPool::
 check_filename(const Filename &fn) {
 
@@ -47,11 +44,9 @@ check_filename(const Filename &fn) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::load_convex_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxConvexMesh *PhysxMeshPool::
 load_convex_mesh(const Filename &fn) {
 
@@ -86,11 +81,9 @@ load_convex_mesh(const Filename &fn) {
   return mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::load_triangle_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxTriangleMesh *PhysxMeshPool::
 load_triangle_mesh(const Filename &fn) {
 
@@ -125,11 +118,9 @@ load_triangle_mesh(const Filename &fn) {
   return mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::load_cloth_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxClothMesh *PhysxMeshPool::
 load_cloth_mesh(const Filename &fn) {
 
@@ -164,11 +155,9 @@ load_cloth_mesh(const Filename &fn) {
   return mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::load_soft_body_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxSoftBodyMesh *PhysxMeshPool::
 load_soft_body_mesh(const Filename &fn) {
 
@@ -203,11 +192,9 @@ load_soft_body_mesh(const Filename &fn) {
   return mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::release_convex_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxMeshPool::
 release_convex_mesh(PhysxConvexMesh *mesh) {
 
@@ -222,11 +209,9 @@ release_convex_mesh(PhysxConvexMesh *mesh) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::release_triangle_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxMeshPool::
 release_triangle_mesh(PhysxTriangleMesh *mesh) {
 
@@ -241,11 +226,9 @@ release_triangle_mesh(PhysxTriangleMesh *mesh) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::release_cloth_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxMeshPool::
 release_cloth_mesh(PhysxClothMesh *mesh) {
 
@@ -260,11 +243,9 @@ release_cloth_mesh(PhysxClothMesh *mesh) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::release_soft_body_mesh
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxMeshPool::
 release_soft_body_mesh(PhysxSoftBodyMesh *mesh) {
 
@@ -279,21 +260,17 @@ release_soft_body_mesh(PhysxSoftBodyMesh *mesh) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::list_content
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshPool::
 list_contents() {
   list_contents(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshPool::list_content
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshPool::
 list_contents(ostream &out) {
 
@@ -307,7 +284,7 @@ list_contents(ostream &out) {
       PhysxConvexMesh *mesh = (*it).second;
 
       out << "  " << fn.get_fullpath()
-          << " (convex mesh, " << mesh->ptr()->getReferenceCount() 
+          << " (convex mesh, " << mesh->ptr()->getReferenceCount()
           << " references)" << endl;
     }
   }
@@ -320,7 +297,7 @@ list_contents(ostream &out) {
       PhysxTriangleMesh *mesh = (*it).second;
 
       out << "  " << fn.get_fullpath()
-          << " (triangle mesh, " << mesh->ptr()->getReferenceCount() 
+          << " (triangle mesh, " << mesh->ptr()->getReferenceCount()
           << " references)\n";
     }
   }
@@ -333,7 +310,7 @@ list_contents(ostream &out) {
       PhysxClothMesh *mesh = (*it).second;
 
       out << "  " << fn.get_fullpath()
-          << " (cloth mesh, " << mesh->ptr()->getReferenceCount() 
+          << " (cloth mesh, " << mesh->ptr()->getReferenceCount()
           << " references)\n";
     }
   }
@@ -346,7 +323,7 @@ list_contents(ostream &out) {
       PhysxSoftBodyMesh *mesh = (*it).second;
 
       out << "  " << fn.get_fullpath()
-          << " (soft body mesh, " << mesh->ptr()->getReferenceCount() 
+          << " (soft body mesh, " << mesh->ptr()->getReferenceCount()
           << " references)\n";
     }
   }
@@ -357,13 +334,12 @@ list_contents(ostream &out) {
   out << "  Total number of convex meshes: " << sdk->getNbConvexMeshes()
       << " created, " << _convex_meshes.size() << " registred\n";
 
-  out << "  Total number of triangle meshes: " << sdk->getNbTriangleMeshes() 
+  out << "  Total number of triangle meshes: " << sdk->getNbTriangleMeshes()
       << " created, " << _triangle_meshes.size() << " registred\n";
 
-  out << "  Total number of cloth meshes: " << sdk->getNbClothMeshes() 
+  out << "  Total number of cloth meshes: " << sdk->getNbClothMeshes()
       << " created, " << _cloth_meshes.size() << " registred\n";
 
-  out << "  Total number of soft body meshes: " << sdk->getNbSoftBodyMeshes() 
+  out << "  Total number of soft body meshes: " << sdk->getNbSoftBodyMeshes()
       << " created, " << _softbody_meshes.size() << " registred\n";
 }
-

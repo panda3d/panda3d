@@ -1,16 +1,15 @@
-// Filename: particleSystem.h
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file particleSystem.h
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #ifndef NDEBUG
 //#define PSDEBUG
@@ -35,10 +34,9 @@
 
 class ParticleSystemManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParticleSystem
-// Description : Contains and manages a particle system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Contains and manages a particle system.
+ */
 class EXPCL_PANDAPHYSICS ParticleSystem : public Physical {
 PUBLISHED:
   // constructor/destructor
@@ -68,7 +66,7 @@ PUBLISHED:
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
   INLINE void set_floor_z(PN_stdfloat z);
-  
+
   INLINE void clear_floor_z();
 
   INLINE int get_pool_size() const;
@@ -188,4 +186,3 @@ private:
 #include "particleSystem.I"
 
 #endif // PARTICLESYSTEM_H
-

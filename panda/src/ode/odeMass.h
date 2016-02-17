@@ -1,16 +1,15 @@
-// Filename: odeMass.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeMass.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODEMASS_H
 #define ODEMASS_H
@@ -21,16 +20,15 @@
 
 #include "ode_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeMass
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeMass : public TypedReferenceCount {
 PUBLISHED:
   OdeMass();
   OdeMass(const OdeMass &copy);
   virtual ~OdeMass();
-  
+
   INLINE int check();
   INLINE void set_zero();
   INLINE void set_parameters(dReal themass,

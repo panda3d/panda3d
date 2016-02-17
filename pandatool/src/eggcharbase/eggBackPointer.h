@@ -1,16 +1,15 @@
-// Filename: eggBackPointer.h
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggBackPointer.h
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #ifndef EGGBACKPOINTER_H
 #define EGGBACKPOINTER_H
@@ -19,19 +18,14 @@
 
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggBackPointer
-// Description : This stores a pointer from an EggJointData or
-//               EggSliderData object back to the referencing data in
-//               an egg file.  One of these objects corresponds to
-//               each model appearing in an egg file, and may
-//               reference either a single node, or a table, or a slew
-//               of vertices and primitives, depending on the type of
-//               data stored.
-//
-//               This is just an abstract base class.  The actual
-//               details are stored in the various subclasses.
-////////////////////////////////////////////////////////////////////
+/**
+ * This stores a pointer from an EggJointData or EggSliderData object back to
+ * the referencing data in an egg file.  One of these objects corresponds to
+ * each model appearing in an egg file, and may reference either a single node,
+ * or a table, or a slew of vertices and primitives, depending on the type of
+ * data stored.  This is just an abstract base class.  The actual details are
+ * stored in the various subclasses.
+ */
 class EggBackPointer : public TypedObject {
 public:
   EggBackPointer();
@@ -62,5 +56,3 @@ private:
 };
 
 #endif
-
-

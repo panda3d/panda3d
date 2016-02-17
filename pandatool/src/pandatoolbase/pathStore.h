@@ -1,28 +1,25 @@
-// Filename: pathStore.h
-// Created by:  drose (10Feb03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pathStore.h
+ * @author drose
+ * @date 2003-02-10
+ */
 
 #ifndef PATHSTORE_H
 #define PATHSTORE_H
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//        Enum : PathStore
-// Description : This enumerated type lists the methods by which
-//               a filename path might be mangled before storing in a
-//               destination file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This enumerated type lists the methods by which a filename path might be
+ * mangled before storing in a destination file.
+ */
 enum PathStore {
   PS_invalid,    // Never use this.
   PS_relative,   // Make relative to a user-specified directory.

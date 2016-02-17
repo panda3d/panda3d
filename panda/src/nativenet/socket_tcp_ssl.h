@@ -1,3 +1,16 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file socket_tcp_ssl.h
+ * @author drose
+ * @date 2007-03-01
+ */
+
 #ifndef __SOCKET_TCP_SSL_H__
 #define __SOCKET_TCP_SSL_H__
 
@@ -15,11 +28,9 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_TCP_SSL
-// Description :
-//
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 
 extern EXPCL_PANDA_NATIVENET SSL_CTX *global_ssl_ctx;
 
@@ -104,10 +115,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP_SSL::Socket_TCP_SSL
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Socket_TCP_SSL::
 Socket_TCP_SSL(SOCKET sck) : ::Socket_IP(sck) {
   // right know this will only work for a
@@ -127,10 +137,9 @@ Socket_TCP_SSL(SOCKET sck) : ::Socket_IP(sck) {
   //printf(" Ssl Accept = %d \n",err);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetNoDelay
-//  Description: Disable Nagle algorithm. Don't delay send to coalesce packets
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable Nagle algorithm.  Don't delay send to coalesce packets
+ */
 inline int Socket_TCP_SSL::SetNoDelay()
 {
     int nodel = 1;
@@ -143,10 +152,9 @@ inline int Socket_TCP_SSL::SetNoDelay()
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetLinger
-//  Description: will control the behavior of SO_LINGER for a TCP socket
-////////////////////////////////////////////////////////////////////
+/**
+ * will control the behavior of SO_LINGER for a TCP socket
+ */
 int Socket_TCP_SSL::SetLinger(int interval_seconds)
 {
     linger ll;
@@ -158,13 +166,11 @@ int Socket_TCP_SSL::SetLinger(int interval_seconds)
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP_SSL::DontLinger
-//  Description: Turn off the linger flag. The socket will quickly release
-//               buffered items and free up OS resources. You may lose
-//               a stream if you use this flag and do not negotiate the close
-//               at the application layer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Turn off the linger flag.  The socket will quickly release buffered items and
+ * free up OS resources.  You may lose a stream if you use this flag and do not
+ * negotiate the close at the application layer.
+ */
 int Socket_TCP_SSL::DontLinger()
 {
     linger ll;
@@ -176,12 +182,10 @@ int Socket_TCP_SSL::DontLinger()
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetSendBufferSize
-//  Description: Just like it sounds. Sets a buffered socket recv buffer size.
-//      This function does not refuse ranges outside hard-coded OS
-//      limits
-////////////////////////////////////////////////////////////////////
+/**
+ * Just like it sounds.  Sets a buffered socket recv buffer size.  This function
+ * does not refuse ranges outside hard-coded OS limits
+ */
 int Socket_TCP_SSL::SetSendBufferSize(int insize)
 {
     if (setsockopt(_socket, (int) SOL_SOCKET, (int) SO_SNDBUF, (char *) &insize, sizeof(int)))
@@ -189,11 +193,10 @@ int Socket_TCP_SSL::SetSendBufferSize(int insize)
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ActiveOpen
-//  Description: This function will try and set the socket up for active open to a specified
-//               address and port provided by the input parameter
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will try and set the socket up for active open to a specified
+ * address and port provided by the input parameter
+ */
 bool Socket_TCP_SSL::ActiveOpen(const Socket_Address & theaddress)
 {
     _socket = DO_NEWTCP();
@@ -215,13 +218,10 @@ bool Socket_TCP_SSL::ActiveOpen(const Socket_Address & theaddress)
     //return SetSslUp();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP_SSL::SendData
-//  Description: Ok Lets Send the Data
-//      - if error
-//      0 if socket closed for write or lengh is 0
-//      + bytes writen ( May be smaller than requested)
-////////////////////////////////////////////////////////////////////
+/**
+ * Ok Lets Send the Data - if error 0 if socket closed for write or lengh is 0 +
+ * bytes writen ( May be smaller than requested)
+ */
 inline int Socket_TCP_SSL::SendData(const char * data, int size)
 {
     if(_ssl == NULL)
@@ -232,13 +232,10 @@ inline int Socket_TCP_SSL::SendData(const char * data, int size)
     return SSL_write(_ssl, data, size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP_SSL::RecvData
-//  Description: Read the data from the connection
-//      - if error
-//      0 if socket closed for read or length is 0
-//      + bytes read ( May be smaller than requested)
-////////////////////////////////////////////////////////////////////
+/**
+ * Read the data from the connection - if error 0 if socket closed for read or
+ * length is 0 + bytes read ( May be smaller than requested)
+ */
 inline int Socket_TCP_SSL::RecvData(char * data, int len)
 {
     if(_ssl == NULL)
@@ -249,11 +246,9 @@ inline int Socket_TCP_SSL::RecvData(char * data, int len)
     return SSL_read(_ssl, data, len);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ErrorIs_WouldBlocking
-//  Description: Is last error a blocking error ??
-//      True is last error was a blocking error
-////////////////////////////////////////////////////////////////////
+/**
+ * Is last error a blocking error ?? True is last error was a blocking error
+ */
 inline bool Socket_TCP_SSL::ErrorIs_WouldBlocking(int err)
 {
     if(_ssl == NULL || err >= 0)
@@ -320,4 +315,3 @@ inline void Socket_TCP_SSL::DetailErrorFormat(void)
 #endif  // HAVE_OPENSSL
 
 #endif //__SOCKET_TCP_SSL_H__
-

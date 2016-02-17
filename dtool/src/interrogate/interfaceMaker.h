@@ -1,16 +1,15 @@
-// Filename: interfaceMaker.h
-// Created by:  drose (19Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMaker.h
+ * @author drose
+ * @date 2001-09-19
+ */
 
 #ifndef INTERFACEMAKER_H
 #define INTERFACEMAKER_H
@@ -36,18 +35,13 @@ class InterrogateFunction;
 class InterrogateMakeSeq;
 class InterrogateType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMaker
-// Description : This is an abstract base class that defines how to
-//               generate code that can be called from an external
-//               language (like Python or Squeak) and that can call
-//               into Panda.
-//
-//               The specializations of this class like
-//               InterfaceMakerPython and InterfaceMakerC will
-//               generate the actual wrappers for the various language
-//               calling conventions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class that defines how to generate code that can be
+ * called from an external language (like Python or Squeak) and that can call
+ * into Panda.  The specializations of this class like InterfaceMakerPython and
+ * InterfaceMakerC will generate the actual wrappers for the various language
+ * calling conventions.
+ */
 class InterfaceMaker {
 public:
   InterfaceMaker(InterrogateModuleDef *def);
@@ -174,23 +168,23 @@ public:
                       CPPInstance *cppfunc, int num_default_parameters);
 
   virtual string
-  get_wrapper_name(const InterrogateType &itype, 
+  get_wrapper_name(const InterrogateType &itype,
                    const InterrogateFunction &ifunc,
                    FunctionIndex func_index);
   virtual string get_wrapper_prefix();
   virtual string get_unique_prefix();
-  
+
   Function *
   record_function(const InterrogateType &itype, FunctionIndex func_index);
 
   virtual void
-  record_function_wrapper(InterrogateFunction &ifunc, 
+  record_function_wrapper(InterrogateFunction &ifunc,
                           FunctionWrapperIndex wrapper_index);
 
   virtual Object *record_object(TypeIndex type_index);
 
   void hash_function_signature(FunctionRemap *remap);
-  
+
 
   string
   manage_return_value(ostream &out, int indent_level,
@@ -200,9 +194,9 @@ public:
   delete_return_value(ostream &out, int indent_level,
                       FunctionRemap *remap, const string &return_expr) const;
 
-  void output_ref(ostream &out, int indent_level, FunctionRemap *remap, 
+  void output_ref(ostream &out, int indent_level, FunctionRemap *remap,
                   const string &varname) const;
-  void output_unref(ostream &out, int indent_level, FunctionRemap *remap, 
+  void output_unref(ostream &out, int indent_level, FunctionRemap *remap,
                     const string &varname) const;
   void write_spam_message(ostream &out, FunctionRemap *remap) const;
 

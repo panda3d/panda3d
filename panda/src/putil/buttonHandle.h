@@ -1,16 +1,15 @@
-// Filename: buttonHandle.h
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buttonHandle.h
+ * @author drose
+ * @date 2000-03-01
+ */
 
 #ifndef BUTTONHANDLE_H
 #define BUTTONHANDLE_H
@@ -19,12 +18,10 @@
 #include "typeHandle.h"
 #include "register_type.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonHandle
-// Description : A ButtonHandle represents a single button from any
-//               device, including keyboard buttons and mouse buttons
-//               (but see KeyboardButton and MouseButton).
-////////////////////////////////////////////////////////////////////
+/**
+ * A ButtonHandle represents a single button from any device, including keyboard
+ * buttons and mouse buttons (but see KeyboardButton and MouseButton).
+ */
 class EXPCL_PANDA_PUTIL ButtonHandle FINAL {
 PUBLISHED:
   INLINE ButtonHandle();
@@ -90,4 +87,3 @@ INLINE ostream &operator << (ostream &out, ButtonHandle button) {
 #include "buttonHandle.I"
 
 #endif
-

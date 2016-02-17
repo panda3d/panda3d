@@ -1,16 +1,15 @@
-// Filename: fltExternalReference.h
-// Created by:  drose (30Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltExternalReference.h
+ * @author drose
+ * @date 2000-08-30
+ */
 
 #ifndef FLTEXTERNALREFERENCE_H
 #define FLTEXTERNALREFERENCE_H
@@ -21,11 +20,10 @@
 
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltExternalReference
-// Description : An external reference to another flt file (possibly
-//               to a specific bead within the flt file).
-////////////////////////////////////////////////////////////////////
+/**
+ * An external reference to another flt file (possibly to a specific bead within
+ * the flt file).
+ */
 class FltExternalReference : public FltBead {
 public:
   FltExternalReference(FltHeader *header);
@@ -73,5 +71,3 @@ private:
 };
 
 #endif
-
-

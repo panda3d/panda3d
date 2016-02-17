@@ -1,16 +1,15 @@
-// Filename: collisionSolid.cxx
-// Created by:  drose (24Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionSolid.cxx
+ * @author drose
+ * @date 2000-04-24
+ */
 
 #include "collisionSolid.h"
 #include "config_collide.h"
@@ -39,21 +38,17 @@ PStatCollector CollisionSolid::_test_pcollector(
   "Collision Tests:CollisionSolid");
 TypeHandle CollisionSolid::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionSolid::
 CollisionSolid() : _lock("CollisionSolid") {
   _flags = F_viz_geom_stale | F_tangible | F_internal_bounds_stale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionSolid::
 CollisionSolid(const CollisionSolid &copy) :
   CopyOnWriteObject(copy),
@@ -65,30 +60,24 @@ CollisionSolid(const CollisionSolid &copy) :
   _flags |= F_viz_geom_stale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionSolid::
 ~CollisionSolid() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::make_cow_copy
-//       Access: Protected, Virtual
-//  Description: Required to implement CopyOnWriteObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required to implement CopyOnWriteObject.
+ */
 PT(CopyOnWriteObject) CollisionSolid::
 make_cow_copy() {
   return make_copy();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_bounds
-//       Access: Protected
-//  Description: Returns the solid's bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the solid's bounding volume.
+ */
 CPT(BoundingVolume) CollisionSolid::
 get_bounds() const {
   LightMutexHolder holder(_lock);
@@ -99,11 +88,9 @@ get_bounds() const {
   return _internal_bounds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::set_bounds
-//       Access: Protected
-//  Description: Returns the solid's bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the solid's bounding volume.
+ */
 void CollisionSolid::
 set_bounds(const BoundingVolume &bounding_volume) {
   LightMutexHolder holder(_lock);
@@ -111,26 +98,20 @@ set_bounds(const BoundingVolume &bounding_volume) {
   ((CollisionSolid *)this)->_flags &= ~F_internal_bounds_stale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection
-//       Access: Public, Virtual
-//  Description: Tests for a collision between this object (which is
-//               also the "from" object in the entry) and the "into"
-//               object.  If a collision is detected, returns a new
-//               CollisionEntry object that records the collision;
-//               otherwise, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tests for a collision between this object (which is also the "from" object in
+ * the entry) and the "into" object.  If a collision is detected, returns a new
+ * CollisionEntry object that records the collision; otherwise, returns NULL.
+ */
 PT(CollisionEntry) CollisionSolid::
 test_intersection(const CollisionEntry &) const {
   report_undefined_from_intersection(get_type());
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::xform
-//       Access: Public, Virtual
-//  Description: Transforms the solid by the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the solid by the indicated matrix.
+ */
 void CollisionSolid::
 xform(const LMatrix4 &mat) {
   LightMutexHolder holder(_lock);
@@ -142,14 +123,11 @@ xform(const LMatrix4 &mat) {
   _flags |= F_viz_geom_stale | F_internal_bounds_stale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_viz
-//       Access: Public, Virtual
-//  Description: Returns a GeomNode that may be rendered to visualize
-//               the CollisionSolid.  This is used during the cull
-//               traversal to render the CollisionNodes that have been
-//               made visible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a GeomNode that may be rendered to visualize the CollisionSolid.
+ * This is used during the cull traversal to render the CollisionNodes that have
+ * been made visible.
+ */
 PT(PandaNode) CollisionSolid::
 get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) const {
   LightMutexHolder holder(_lock);
@@ -172,67 +150,52 @@ get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) cons
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_volume_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of bounding volume tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of bounding volume
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionSolid::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_test_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of intersection tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of intersection
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionSolid::
 get_test_pcollector() {
   return _test_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionSolid::
 output(ostream &out) const {
   out << get_type();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionSolid::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(BoundingVolume) CollisionSolid::
 compute_internal_bounds() const {
   return new BoundingSphere;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_sphere
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a sphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a sphere.
+ */
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_sphere(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSphere::get_class_type(),
@@ -240,13 +203,10 @@ test_intersection_from_sphere(const CollisionEntry &) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_line
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a line.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a line.
+ */
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_line(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionLine::get_class_type(),
@@ -254,13 +214,10 @@ test_intersection_from_line(const CollisionEntry &) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_ray
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a ray.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a ray.
+ */
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_ray(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionRay::get_class_type(),
@@ -268,13 +225,10 @@ test_intersection_from_ray(const CollisionEntry &) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_segment
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a segment.
+ */
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_segment(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSegment::get_class_type(),
@@ -282,13 +236,10 @@ test_intersection_from_segment(const CollisionEntry &) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_parabola
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a parabola.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a parabola.
+ */
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_parabola(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionParabola::get_class_type(),
@@ -296,13 +247,10 @@ test_intersection_from_parabola(const CollisionEntry &) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_box
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a box.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a box.
+ */
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_box(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionBox::get_class_type(),
@@ -329,13 +277,10 @@ public:
 };
 #endif  // NDEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::report_undefined_intersection_test
-//       Access: Protected, Static
-//  Description: Outputs a message the first time an intersection test
-//               is attempted that isn't defined, and explains a bit
-//               about what it means.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a message the first time an intersection test is attempted that isn't
+ * defined, and explains a bit about what it means.
+ */
 void CollisionSolid::
 report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
 #ifndef NDEBUG
@@ -357,13 +302,10 @@ report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::report_undefined_from_intersection
-//       Access: Protected, Static
-//  Description: Outputs a message the first time an intersection test
-//               is attempted that isn't defined, and explains a bit
-//               about what it means.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a message the first time an intersection test is attempted that isn't
+ * defined, and explains a bit about what it means.
+ */
 void CollisionSolid::
 report_undefined_from_intersection(TypeHandle from_type) {
 #ifndef NDEBUG
@@ -373,7 +315,7 @@ report_undefined_from_intersection(TypeHandle from_type) {
   if (reported.insert(from_type).second) {
     collide_cat.error()
       << "Invalid attempt to detect collision from " << from_type << "!\n\n"
-      
+
       "This means that a " << from_type << " object was added to a\n"
       "CollisionTraverser as if it were a colliding object.  However,\n"
       "no implementation for this kind of object has yet been defined\n"
@@ -382,12 +324,10 @@ report_undefined_from_intersection(TypeHandle from_type) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CollisionSolid::
 write_datagram(BamWriter *, Datagram &me) {
   // For now, we need only 8 bits of flags.  If we need to expand this
@@ -399,14 +339,11 @@ write_datagram(BamWriter *, Datagram &me) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void CollisionSolid::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _flags = scan.get_uint8();
@@ -420,26 +357,18 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::fill_viz_geom
-//       Access: Protected, Virtual
-//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
-//               for rendering this solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this solid.
+ */
 void CollisionSolid::
 fill_viz_geom() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_solid_viz_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering collision
-//               visualizations in solid.  This automatically returns
-//               the appropriate state according to the setting of
-//               _tangible.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering collision visualizations in solid.  This
+ * automatically returns the appropriate state according to the setting of
+ * _tangible.  Assumes the lock is already held.
+ */
 CPT(RenderState) CollisionSolid::
 get_solid_viz_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -479,16 +408,11 @@ get_solid_viz_state() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_wireframe_viz_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering collision
-//               visualizations in wireframe.  This automatically returns
-//               the appropriate state according to the setting of
-//               _tangible.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering collision visualizations in wireframe.
+ * This automatically returns the appropriate state according to the setting of
+ * _tangible.  Assumes the lock is already held.
+ */
 CPT(RenderState) CollisionSolid::
 get_wireframe_viz_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -528,15 +452,11 @@ get_wireframe_viz_state() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_other_viz_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering collision
-//               visualizations for things that are neither solid nor
-//               exactly wireframe, like rays and segments.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering collision visualizations for things that
+ * are neither solid nor exactly wireframe, like rays and segments.  Assumes the
+ * lock is already held.
+ */
 CPT(RenderState) CollisionSolid::
 get_other_viz_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -554,16 +474,11 @@ get_other_viz_state() {
   return base_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_solid_bounds_viz_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering collision
-//               visualizations in solid.  This automatically returns
-//               the appropriate state according to the setting of
-//               _tangible.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering collision visualizations in solid.  This
+ * automatically returns the appropriate state according to the setting of
+ * _tangible.  Assumes the lock is already held.
+ */
 CPT(RenderState) CollisionSolid::
 get_solid_bounds_viz_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -603,16 +518,11 @@ get_solid_bounds_viz_state() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_wireframe_bounds_viz_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering collision
-//               visualizations in wireframe.  This automatically returns
-//               the appropriate state according to the setting of
-//               _tangible.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering collision visualizations in wireframe.
+ * This automatically returns the appropriate state according to the setting of
+ * _tangible.  Assumes the lock is already held.
+ */
 CPT(RenderState) CollisionSolid::
 get_wireframe_bounds_viz_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -630,15 +540,11 @@ get_wireframe_bounds_viz_state() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::get_other_bounds_viz_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering collision
-//               visualizations for things that are neither solid nor
-//               exactly wireframe, like rays and segments.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering collision visualizations for things that
+ * are neither solid nor exactly wireframe, like rays and segments.  Assumes the
+ * lock is already held.
+ */
 CPT(RenderState) CollisionSolid::
 get_other_bounds_viz_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -655,4 +561,3 @@ get_other_bounds_viz_state() {
   // intangible.
   return base_state;
 }
-

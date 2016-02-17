@@ -1,16 +1,15 @@
-// Filename: physxConvexShapeDesc.h
-// Created by:  enn0x (14Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxConvexShapeDesc.h
+ * @author enn0x
+ * @date 2009-10-14
+ */
 
 #ifndef PHYSXCONVEXSHAPEDESC_H
 #define PHYSXCONVEXSHAPEDESC_H
@@ -22,10 +21,9 @@
 
 class PhysxConvexMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxConvexShapeDesc
-// Description : Descriptor class for PhysxConvexShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxConvexShape.
+ */
 class EXPCL_PANDAPHYSX PhysxConvexShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

@@ -1,16 +1,15 @@
-// Filename: displayRegion.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegion.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef DISPLAYREGION_H
 #define DISPLAYREGION_H
@@ -47,17 +46,13 @@ class Camera;
 class PNMImage;
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegion
-// Description : A rectangular subregion within a window for rendering
-//               into.  Typically, there is one DisplayRegion that
-//               covers the whole window, but you may also create
-//               smaller DisplayRegions for having different regions
-//               within the window that represent different scenes.
-//               You may also stack up DisplayRegions like panes of
-//               glass, usually for layering 2-d interfaces on top of
-//               a 3-d scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * A rectangular subregion within a window for rendering into.  Typically, there
+ * is one DisplayRegion that covers the whole window, but you may also create
+ * smaller DisplayRegions for having different regions within the window that
+ * represent different scenes.  You may also stack up DisplayRegions like panes
+ * of glass, usually for layering 2-d interfaces on top of a 3-d scene.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegion : public DisplayRegionBase, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
@@ -309,11 +304,10 @@ private:
   friend class DisplayRegionPipelineReader;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionPipelineReader
-// Description : Encapsulates the data from a DisplayRegion,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a DisplayRegion, pre-fetched for one stage of the
+ * pipeline.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);

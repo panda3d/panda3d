@@ -1,23 +1,19 @@
-// Filename: compose_matrix_src.I
-// Created by:  drose (21Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file compose_matrix_src.I
+ * @author drose
+ * @date 1999-02-21
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: compose_matrix
-//  Description: Computes the 4x4 matrix according to scale, shear,
-//               rotation, and translation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the 4x4 matrix according to scale, shear, rotation, and translation.
+ */
 INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix4) &mat,
                const FLOATNAME(LVecBase3) &scale,
@@ -30,11 +26,9 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
   mat = FLOATNAME(LMatrix4)(upper3, translate);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: compose_matrix
-//  Description: Computes the 4x4 matrix according to scale, shear,
-//               rotation, and translation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the 4x4 matrix according to scale, shear, rotation, and translation.
+ */
 INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix4) &mat,
                const FLOATTYPE components[num_matrix_components],
@@ -54,13 +48,11 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
   compose_matrix(mat, scale, shear, hpr, translate, cs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: decompose_matrix
-//  Description: Extracts out the components of an affine matrix.
-//               Returns true if the scale, shear, hpr, and translate
-//               completely describe the matrix, or false if the
-//               matrix is not affine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts out the components of an affine matrix.  Returns true if the scale,
+ * shear, hpr, and translate completely describe the matrix, or false if the
+ * matrix is not affine.
+ */
 INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
                  FLOATNAME(LVecBase3) &scale,
@@ -80,13 +72,11 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: decompose_matrix
-//  Description: Extracts out the components of an affine matrix.
-//               Returns true if the scale, shear, hpr, and translate
-//               completely describe the matrix, or false if the
-//               matrix is not affine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts out the components of an affine matrix.  Returns true if the scale,
+ * shear, hpr, and translate completely describe the matrix, or false if the
+ * matrix is not affine.
+ */
 INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
                  FLOATTYPE components[num_matrix_components],

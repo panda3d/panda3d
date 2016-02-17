@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeAndroid.h
-// Created by:  rdb (11Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeAndroid.h
+ * @author rdb
+ * @date 2013-01-11
+ */
 
 #ifndef PNMFILETYPEANDROID_H
 #define PNMFILETYPEANDROID_H
@@ -25,12 +24,10 @@
 
 #include <jni.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeAndroid
-// Description : Wrapper class around the Android Bitmap mechanism
-//               to allow loading images on Android without needing
-//               libpng or libjpeg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Wrapper class around the Android Bitmap mechanism to allow loading images on
+ * Android without needing libpng or libjpeg.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeAndroid : public PNMFileType {
 public:
   PNMFileTypeAndroid();

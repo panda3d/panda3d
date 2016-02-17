@@ -1,11 +1,16 @@
-/*
-  maxEggExpOptions.h 
-  Created by Phillip Saltzman, 2/15/05
-  Carnegie Mellon University, Entetainment Technology Center
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxOptionsDialog.h
+ * @author saltzman
+ * @date 2005-02-15
+ */
 
-  This file contains a class that allows users to specify
-  export options, and then execute the export
-*/
 
 #ifndef __maxEggExpOptions__H
 #define __maxEggExpOptions__H

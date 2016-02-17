@@ -1,27 +1,23 @@
-// Filename: lmatrix3_src.h
-// Created by:  drose (29Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lmatrix3_src.h
+ * @author drose
+ * @date 1999-01-29
+ */
 
 class FLOATNAME(LMatrix4);
 
-////////////////////////////////////////////////////////////////////
-//       Class : LMatrix3
-// Description : This is a 3-by-3 transform matrix.  It typically will
-//               represent either a rotation-and-scale (no
-//               translation) matrix in 3-d, or a full affine matrix
-//               (rotation, scale, translation) in 2-d, e.g. for a
-//               texture matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a 3-by-3 transform matrix.  It typically will represent either a
+ * rotation-and-scale (no translation) matrix in 3-d, or a full affine matrix
+ * (rotation, scale, translation) in 2-d, e.g.  for a texture matrix.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LMatrix3) {
 public:
   typedef FLOATTYPE numeric_type;

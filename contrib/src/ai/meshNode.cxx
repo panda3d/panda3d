@@ -1,3 +1,13 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file meshNode.cxx
+ */
 
 #include "meshNode.h"
 
@@ -24,11 +34,10 @@ Node::Node(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h) {
 Node::~Node() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: contains
-//  Description: This is a handy function which returns true if the passed position is
-//               within the node's dimensions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a handy function which returns true if the passed position is within
+ * the node's dimensions.
+ */
 bool Node::contains(float x, float y) {
   if(_position.get_x() - _width / 2 <= x && _position.get_x() + _width / 2 >= x &&
     _position.get_y() - _length / 2 <= y && _position.get_y() + _length / 2 >= y) {

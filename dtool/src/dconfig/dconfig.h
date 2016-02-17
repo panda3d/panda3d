@@ -1,16 +1,15 @@
-// Filename: dconfig.h
-// Created by:  cary (14Jul98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dconfig.h
+ * @author cary
+ * @date 1998-07-14
+ */
 
 #ifndef DCONFIG_H
 #define DCONFIG_H
@@ -25,15 +24,12 @@
 #include "configVariableList.h"
 #include "configFlags.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DConfig
-// Description : This class emulates the old dconfig-style interface
-//               to our Panda config system.  It exists only to
-//               provide backward-compatible support, and it is used
-//               primarily by Python code.  For modern code, use the
-//               new ConfigVariable* interface instead of this
-//               deprecated interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class emulates the old dconfig-style interface to our Panda config
+ * system.  It exists only to provide backward-compatible support, and it is
+ * used primarily by Python code.  For modern code, use the new ConfigVariable*
+ * interface instead of this deprecated interface.
+ */
 class EXPCL_DTOOLCONFIG DConfig {
 PUBLISHED:
   static INLINE bool GetBool(const string &sym, bool def = false);

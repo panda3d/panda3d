@@ -1,16 +1,15 @@
-// Filename: iffGenericChunk.h
-// Created by:  drose (23Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iffGenericChunk.h
+ * @author drose
+ * @date 2001-04-23
+ */
 
 #ifndef IFFGENERICCHUNK_H
 #define IFFGENERICCHUNK_H
@@ -22,12 +21,10 @@
 #include "datagram.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : IffGenericChunk
-// Description : A class for a generic kind of IffChunk that is not
-//               understood by a particular IffReader.  It remembers
-//               its entire contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class for a generic kind of IffChunk that is not understood by a particular
+ * IffReader.  It remembers its entire contents.
+ */
 class IffGenericChunk : public IffChunk {
 public:
   INLINE IffGenericChunk();
@@ -62,5 +59,3 @@ private:
 #include "iffGenericChunk.I"
 
 #endif
-
-

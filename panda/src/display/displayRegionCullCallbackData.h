@@ -1,16 +1,15 @@
-// Filename: displayRegionCullCallbackData.h
-// Created by:  drose (14Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegionCullCallbackData.h
+ * @author drose
+ * @date 2009-03-14
+ */
 
 #ifndef DISPLAYREGIONCULLCALLBACKDATA_H
 #define DISPLAYREGIONCULLCALLBACKDATA_H
@@ -21,12 +20,10 @@
 class CullHandler;
 class SceneSetup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionCullCallbackData
-// Description : This specialization on CallbackData is passed when
-//               the callback is initiated from the cull traversal,
-//               for a DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on CallbackData is passed when the callback is initiated
+ * from the cull traversal, for a DisplayRegion.
+ */
 class EXPCL_PANDA_PGRAPH DisplayRegionCullCallbackData : public CallbackData {
 public:
   DisplayRegionCullCallbackData(CullHandler *cull_handler, SceneSetup *scene_setup);

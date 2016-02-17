@@ -1,16 +1,15 @@
-// Filename: renderAttribRegistry.cxx
-// Created by:  drose (13Nov08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderAttribRegistry.cxx
+ * @author drose
+ * @date 2008-11-13
+ */
 
 #include "renderAttribRegistry.h"
 #include "renderAttrib.h"
@@ -19,11 +18,9 @@
 
 RenderAttribRegistry *RenderAttribRegistry::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttribRegistry::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 RenderAttribRegistry::
 RenderAttribRegistry() {
   _registry.reserve(_max_slots);
@@ -34,42 +31,28 @@ RenderAttribRegistry() {
   _registry.push_back(RegistryNode(TypeHandle::none(), 0, NULL));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttribRegistry::Destructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 RenderAttribRegistry::
 ~RenderAttribRegistry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttribRegistry::register_slot
-//       Access: Public
-//  Description: Adds the indicated TypeHandle to the registry, if it
-//               is not there already, and returns a unique slot
-//               number in the range 0 < slot < get_max_slots().
-//
-//               The sort value is an arbitrary integer.  In general,
-//               the RenderAttribs will be sorted in order from lowest
-//               sort value to highest sort value, when they are
-//               traversed via the get_num_sorted_slots() /
-//               get_sorted_slot() methods.  This will be used to sort
-//               render states, so that heavier RenderAttribs are
-//               changed less frequently.  In general, you should
-//               choose sort values such that the heavier
-//               RenderAttribs (that is, those which are more
-//               expensive to change) have lower sort values.
-//
-//               The default_attrib pointer should be a newly
-//               created instance of this attribute that represents
-//               the default state for this attribute.
-//
-//               register_slot() is intended to be called at
-//               application start for each different RenderAttrib
-//               type in the system, to assign a different integer
-//               slot number to each one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated TypeHandle to the registry, if it is not there already,
+ * and returns a unique slot number in the range 0 < slot < get_max_slots().
+ * The sort value is an arbitrary integer.  In general, the RenderAttribs will
+ * be sorted in order from lowest sort value to highest sort value, when they
+ * are traversed via the get_num_sorted_slots() get_sorted_slot() methods.  This
+ * will be used to sort render states, so that heavier RenderAttribs are changed
+ * less frequently.  In general, you should choose sort values such that the
+ * heavier RenderAttribs (that is, those which are more expensive to change)
+ * have lower sort values.  The default_attrib pointer should be a newly created
+ * instance of this attribute that represents the default state for this
+ * attribute.  register_slot() is intended to be called at application start for
+ * each different RenderAttrib type in the system, to assign a different integer
+ * slot number to each one.
+ */
 int RenderAttribRegistry::
 register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
   // Sanity check; if this triggers, you either passed a wrong argument,
@@ -123,11 +106,9 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
   return slot;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttribRegistry::set_slot_sort
-//       Access: Published
-//  Description: Changes the sort number associated with slot n.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the sort number associated with slot n.
+ */
 void RenderAttribRegistry::
 set_slot_sort(int slot, int sort) {
   nassertv(slot >= 0 && slot < (int)_registry.size());
@@ -141,11 +122,9 @@ set_slot_sort(int slot, int sort) {
   ::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttribRegistry::init_global_ptr
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void RenderAttribRegistry::
 init_global_ptr() {
   _global_ptr = new RenderAttribRegistry;

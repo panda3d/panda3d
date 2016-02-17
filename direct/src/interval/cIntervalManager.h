@@ -1,16 +1,15 @@
-// Filename: cIntervalManager.h
-// Created by:  drose (10Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cIntervalManager.h
+ * @author drose
+ * @date 2002-09-10
+ */
 
 #ifndef CINTERVALMANAGER_H
 #define CINTERVALMANAGER_H
@@ -25,21 +24,14 @@
 
 class EventQueue;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CIntervalManager
-// Description : This object holds a number of currently-playing
-//               intervals and is responsible for advancing them each
-//               frame as needed.
-//
-//               There is normally only one IntervalManager object in
-//               the world, and it is the responsibility of the
-//               scripting language to call step() on this object once
-//               each frame, and to then process the events indicated by
-//               get_next_event().  
-//
-//               It is also possible to create multiple
-//               IntervalManager objects for special needs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object holds a number of currently-playing intervals and is responsible
+ * for advancing them each frame as needed.  There is normally only one
+ * IntervalManager object in the world, and it is the responsibility of the
+ * scripting language to call step() on this object once each frame, and to then
+ * process the events indicated by get_next_event().  It is also possible to
+ * create multiple IntervalManager objects for special needs.
+ */
 class EXPCL_DIRECT CIntervalManager {
 PUBLISHED:
   CIntervalManager();
@@ -102,6 +94,3 @@ INLINE ostream &operator << (ostream &out, const CInterval &ival_mgr);
 #include "cIntervalManager.I"
 
 #endif
-
-
-

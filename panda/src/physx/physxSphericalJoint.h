@@ -1,16 +1,15 @@
-// Filename: physxSphericalJoint.h
-// Created by:  enn0x (02Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxSphericalJoint.h
+ * @author enn0x
+ * @date 2009-10-02
+ */
 
 #ifndef PHYSXSPHERICALJOINT_H
 #define PHYSXSPHERICALJOINT_H
@@ -22,14 +21,11 @@
 
 class PhysxSphericalJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphericalJoint
-// Description : A sphere joint constrains two points on two bodies
-//               to coincide. This point, specified in world space
-//               (this guarantees that the points coincide to start
-//               with) is the only parameter that has to be
-//               specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * A sphere joint constrains two points on two bodies to coincide.  This point,
+ * specified in world space (this guarantees that the points coincide to start
+ * with) is the only parameter that has to be specified.
+ */
 class EXPCL_PANDAPHYSX PhysxSphericalJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -45,7 +41,6 @@ PUBLISHED:
   bool get_flag(PhysxSphericalJointFlag flag) const;
   PhysxProjectionMode get_projection_mode() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -55,14 +50,13 @@ public:
 private:
   NxSphericalJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxSphericalJoint", 
+    register_type(_type_handle, "PhysxSphericalJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -1,16 +1,15 @@
-// Filename: lightReMutex.h
-// Created by:  drose (08Oct08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lightReMutex.h
+ * @author drose
+ * @date 2008-10-08
+ */
 
 #ifndef LIGHTREMUTEX_H
 #define LIGHTREMUTEX_H
@@ -19,15 +18,11 @@
 #include "mutexDebug.h"
 #include "lightReMutexDirect.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightReMutex
-// Description : A lightweight reentrant mutex.  See LightMutex and
-//               ReMutex.
-//
-//               This class inherits its implementation either from
-//               MutexDebug or LightReMutexDirect, depending on the
-//               definition of DEBUG_THREADS.
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight reentrant mutex.  See LightMutex and ReMutex.  This class
+ * inherits its implementation either from MutexDebug or LightReMutexDirect,
+ * depending on the definition of DEBUG_THREADS.
+ */
 #ifdef DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE LightReMutex : public MutexDebug
 #else

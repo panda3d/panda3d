@@ -1,16 +1,15 @@
-// Filename: light.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file light.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef LIGHT_H
 #define LIGHT_H
@@ -31,14 +30,11 @@ class NodePath;
 class PandaNode;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Light
-// Description : The abstract interface to all kinds of lights.  The
-//               actual light objects also inherit from PandaNode, and
-//               can therefore be added to the scene graph at some
-//               arbitrary point to define the coordinate system of
-//               effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract interface to all kinds of lights.  The actual light objects also
+ * inherit from PandaNode, and can therefore be added to the scene graph at some
+ * arbitrary point to define the coordinate system of effect.
+ */
 class EXPCL_PANDA_PGRAPH Light {
 PUBLISHED:
   INLINE Light();

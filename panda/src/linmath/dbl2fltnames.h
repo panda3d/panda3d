@@ -1,24 +1,20 @@
-// Filename: dbl2fltnames.h
-// Created by:  drose (04Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dbl2fltnames.h
+ * @author drose
+ * @date 2001-04-04
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//
-// This file is used particularly by lcast_to.h and lcast_to.cxx to
-// define functions that convert from type double to type float.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * This file is used particularly by lcast_to.h and lcast_to.cxx to define
+ * functions that convert from type double to type float.
+ */
 
 #include "fltnames.h"
 

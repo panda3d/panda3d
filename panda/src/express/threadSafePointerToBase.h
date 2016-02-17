@@ -1,16 +1,15 @@
-// Filename: threadSafePointerToBase.h
-// Created by:  drose (28Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadSafePointerToBase.h
+ * @author drose
+ * @date 2006-04-28
+ */
 
 #ifndef THREADSAFEPOINTERTOBASE_H
 #define THREADSAFEPOINTERTOBASE_H
@@ -23,12 +22,10 @@
 #include "config_express.h"
 #include "atomicAdjust.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSafePointerToBase
-// Description : This is the base class for ThreadSafePointerTo and
-//               ThreadSafeConstPointerTo.  Don't try to use it
-//               directly; use either derived class instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for ThreadSafePointerTo and ThreadSafeConstPointerTo.
+ * Don't try to use it directly; use either derived class instead.
+ */
 template <class T>
 class ThreadSafePointerToBase : public PointerToVoid {
 public:

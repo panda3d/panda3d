@@ -1,16 +1,15 @@
-// Filename: httpDigestAuthorization.h
-// Created by:  drose (25Oct02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpDigestAuthorization.h
+ * @author drose
+ * @date 2002-10-25
+ */
 
 #ifndef HTTPDIGESTAUTHORIZATION_H
 #define HTTPDIGESTAUTHORIZATION_H
@@ -25,13 +24,11 @@
 
 #include "httpAuthorization.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPDigestAuthorization
-// Description : Implements the "Digest" type of HTTP authorization.
-//               This is designed to be an improvement over "Basic"
-//               authorization, in that it does not send passwords
-//               over the net in cleartext, and it is harder to spoof.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements the "Digest" type of HTTP authorization.  This is designed to be
+ * an improvement over "Basic" authorization, in that it does not send passwords
+ * over the net in cleartext, and it is harder to spoof.
+ */
 class HTTPDigestAuthorization : public HTTPAuthorization {
 public:
   HTTPDigestAuthorization(const Tokens &tokens, const URLSpec &url,
@@ -61,12 +58,12 @@ private:
   static int match_qop_token(const string &token);
 
   string calc_request_digest(const string &username, const string &password,
-                             HTTPEnum::Method method, 
+                             HTTPEnum::Method method,
                              const string &request_path, const string &body);
   string calc_h(const string &data) const;
   string calc_kd(const string &secret, const string &data) const;
   string get_a1(const string &username, const string &password);
-  string get_a2(HTTPEnum::Method method, const string &request_path, 
+  string get_a2(HTTPEnum::Method method, const string &request_path,
                 const string &body);
   string get_hex_nonce_count() const;
 
@@ -95,4 +92,3 @@ ostream &operator << (ostream &out, HTTPDigestAuthorization::Qop qop);
 #endif  // HAVE_OPENSSL
 
 #endif
-

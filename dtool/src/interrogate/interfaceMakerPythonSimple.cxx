@@ -1,16 +1,15 @@
-// Filename: interfaceMakerPythonSimple.cxx
-// Created by:  drose (01Oct01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMakerPythonSimple.cxx
+ * @author drose
+ * @date 2001-10-01
+ */
 
 #include "interfaceMakerPythonSimple.h"
 #include "interrogateBuilder.h"
@@ -24,33 +23,26 @@
 #include "interrogateFunction.h"
 #include "cppFunctionType.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMakerPythonSimple::
 InterfaceMakerPythonSimple(InterrogateModuleDef *def) :
   InterfaceMakerPython(def)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMakerPythonSimple::
 ~InterfaceMakerPythonSimple() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::write_prototypes
-//       Access: Public, Virtual
-//  Description: Generates the list of function prototypes
-//               corresponding to the functions that will be output in
-//               write_functions().
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of function prototypes corresponding to the functions that
+ * will be output in write_functions().
+ */
 void InterfaceMakerPythonSimple::
 write_prototypes(ostream &out,ostream *out_h) {
   FunctionsByIndex::iterator fi;
@@ -63,13 +55,10 @@ write_prototypes(ostream &out,ostream *out_h) {
   InterfaceMakerPython::write_prototypes(out,out_h);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::write_functions
-//       Access: Public, Virtual
-//  Description: Generates the list of functions that are appropriate
-//               for this interface.  This function is called *before*
-//               write_prototypes(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of functions that are appropriate for this interface.
+ * This function is called *before* write_prototypes(), above.
+ */
 void InterfaceMakerPythonSimple::
 write_functions(ostream &out) {
   FunctionsByIndex::iterator fi;
@@ -81,12 +70,9 @@ write_functions(ostream &out) {
   InterfaceMakerPython::write_functions(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::write_module
-//       Access: Public, Virtual
-//  Description: Generates whatever additional code is required to
-//               support a module file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates whatever additional code is required to support a module file.
+ */
 void InterfaceMakerPythonSimple::
 write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
   InterfaceMakerPython::write_module(out,out_h, def);
@@ -138,59 +124,46 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
       << "}\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::synthesize_this_parameter
-//       Access: Public, Virtual
-//  Description: This method should be overridden and redefined to
-//               return true for interfaces that require the implicit
-//               "this" parameter, if present, to be passed as the
-//               first parameter to any wrapper functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should be overridden and redefined to return true for interfaces
+ * that require the implicit "this" parameter, if present, to be passed as the
+ * first parameter to any wrapper functions.
+ */
 bool InterfaceMakerPythonSimple::
 synthesize_this_parameter() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::get_wrapper_prefix
-//       Access: Protected, Virtual
-//  Description: Returns the prefix string used to generate wrapper
-//               function names.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the prefix string used to generate wrapper function names.
+ */
 string InterfaceMakerPythonSimple::
 get_wrapper_prefix() {
   return "_inP";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::get_unique_prefix
-//       Access: Protected, Virtual
-//  Description: Returns the prefix string used to generate unique
-//               symbolic names, which are not necessarily C-callable
-//               function names.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the prefix string used to generate unique symbolic names, which are
+ * not necessarily C-callable function names.
+ */
 string InterfaceMakerPythonSimple::
 get_unique_prefix() {
   return "p";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::record_function_wrapper
-//       Access: Protected, Virtual
-//  Description: Associates the function wrapper with its function in
-//               the appropriate structures in the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the function wrapper with its function in the appropriate
+ * structures in the database.
+ */
 void InterfaceMakerPythonSimple::
-record_function_wrapper(InterrogateFunction &ifunc, 
+record_function_wrapper(InterrogateFunction &ifunc,
                         FunctionWrapperIndex wrapper_index) {
   ifunc._python_wrappers.push_back(wrapper_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::write_prototype_for
-//       Access: Private
-//  Description: Writes the prototype for the indicated function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the prototype for the indicated function.
+ */
 void InterfaceMakerPythonSimple::
 write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
   Function::Remaps::const_iterator ri;
@@ -209,12 +182,10 @@ write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::write_function_for
-//       Access: Private
-//  Description: Writes the definition for a function that will call
-//               the indicated C++ function or method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the definition for a function that will call the indicated C++
+ * function or method.
+ */
 void InterfaceMakerPythonSimple::
 write_function_for(ostream &out, InterfaceMaker::Function *func) {
   Function::Remaps::const_iterator ri;
@@ -225,12 +196,10 @@ write_function_for(ostream &out, InterfaceMaker::Function *func) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::write_function_instance
-//       Access: Private
-//  Description: Writes out the particular function that handles a
-//               single instance of an overloaded function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the particular function that handles a single instance of an
+ * overloaded function.
+ */
 void InterfaceMakerPythonSimple::write_function_instance(ostream &out, InterfaceMaker::Function *func,
                         FunctionRemap *remap) {
   out << "/*\n"
@@ -395,12 +364,12 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
         << "      return (PyObject *)NULL;\n"
         << "    }\n";
   }
-  
+
   if (track_interpreter) {
     out << "    in_interpreter = 0;\n";
   }
 
-  if (!remap->_void_return && 
+  if (!remap->_void_return &&
       remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
     // return expression.
@@ -409,18 +378,18 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
     out << "    ";
     type->output_instance(out, "return_value", &parser);
     out << " = " << return_expr << ";\n";
-    
+
     if (track_interpreter) {
       out << "    in_interpreter = 1;\n";
     }
     if (!extra_cleanup.empty()) {
       out << "   " << extra_cleanup << "\n";
     }
-    
+
     return_expr = manage_return_value(out, 4, remap, "return_value");
     test_assert(out, 4);
     pack_return_value(out, 4, remap, return_expr);
-    
+
   } else {
     string return_expr = remap->call_function(out, 4, true, container, pexprs);
     if (return_expr.empty()) {
@@ -432,7 +401,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       }
       test_assert(out, 4);
       out << "    return Py_BuildValue(\"\");\n";
-      
+
     } else {
       CPPType *type = remap->_return_type->get_temporary_type();
       out << "    ";
@@ -444,32 +413,30 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       if (!extra_cleanup.empty()) {
         out << "   " << extra_cleanup << "\n";
       }
-      
+
       return_expr = manage_return_value(out, 4, remap, "return_value");
       test_assert(out, 4);
       pack_return_value(out, 4, remap, remap->_return_type->temporary_to_return(return_expr));
     }
   }
-  
+
   out << "  }\n";
-  
+
   out << "  return (PyObject *)NULL;\n";
   out << "}\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonSimple::pack_return_value
-//       Access: Private
-//  Description: Outputs a command to pack the indicated expression,
-//               of the return_type type, as a Python return value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a command to pack the indicated expression, of the return_type type,
+ * as a Python return value.
+ */
 void InterfaceMakerPythonSimple::
 pack_return_value(ostream &out, int indent_level,
                   FunctionRemap *remap, string return_expr) {
   CPPType *orig_type = remap->_return_type->get_orig_type();
   CPPType *type = remap->_return_type->get_new_type();
 
-  if (remap->_return_type->new_type_is_atomic_string()) 
+  if (remap->_return_type->new_type_is_atomic_string())
   {
     if (TypeManager::is_char_pointer(orig_type)) {
       out << "#if PY_MAJOR_VERSION >= 3\n";
@@ -501,12 +468,12 @@ pack_return_value(ostream &out, int indent_level,
     indent(out, indent_level)
       << "return PyBool_FromLong(" << return_expr << ");\n";
 
-  } else if (TypeManager::is_unsigned_longlong(type)) 
+  } else if (TypeManager::is_unsigned_longlong(type))
   {
     indent(out, indent_level)
       << "return PyLong_FromUnsignedLongLong(" << return_expr << ");\n";
 
-  } else if (TypeManager::is_longlong(type)) 
+  } else if (TypeManager::is_longlong(type))
   {
     indent(out, indent_level)
       << "return PyLong_FromLongLong(" << return_expr << ");\n";
@@ -540,7 +507,7 @@ pack_return_value(ostream &out, int indent_level,
   } else if (TypeManager::is_pointer_to_PyObject(type)) {
     indent(out, indent_level)
       << "return " << return_expr << ";\n";
-    
+
   } else if (TypeManager::is_pointer(type)) {
     indent(out, indent_level)
       << "return PyLong_FromVoidPtr((void*)" << return_expr << ");\n";

@@ -1,18 +1,18 @@
-// Filename: glCgShaderContext_src.cxx
-// Created by: jyelon (01Sep05)
-// Updated by: fperazzi, PandaSE (29Apr10) (updated CLP with note that some
-//   parameter types only supported under Cg)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glCgShaderContext_src.cxx
+ * @author jyelon
+ * @date 2005-09-01
+ * @author fperazzi, PandaSE
+ * @date 2010-04-29
+ *   parameter types only supported under Cg)
+ */
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 
@@ -33,11 +33,9 @@ TypeHandle CLP(CgShaderContext)::_type_handle;
 #define cg_report_errors()
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::Constructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(CgShaderContext)::
 CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
@@ -319,22 +317,18 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::Destructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
   // Don't call release_resources; we may not have an active context.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::release_resources
-//       Access: Public
-//  Description: Should deallocate all system resources (such as
-//               vertex program handles or Cg contexts).
-////////////////////////////////////////////////////////////////////
+/**
+ * Should deallocate all system resources (such as vertex program handles or Cg
+ * contexts).
+ */
 void CLP(CgShaderContext)::
 release_resources() {
   if (_cg_program != 0) {
@@ -355,13 +349,10 @@ release_resources() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::bind
-//       Access: Public
-//  Description: This function is to be called to enable a new
-//               shader.  It also initializes all of the shader's
-//               input parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is to be called to enable a new shader.  It also initializes
+ * all of the shader's input parameters.
+ */
 void CLP(CgShaderContext)::
 bind() {
   if (_cg_program != 0) {
@@ -374,11 +365,9 @@ bind() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::unbind
-//       Access: Public
-//  Description: This function disables a currently-bound shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function disables a currently-bound shader.
+ */
 void CLP(CgShaderContext)::
 unbind() {
   if (_cg_program != 0) {
@@ -394,14 +383,11 @@ unbind() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::set_state_and_transform
-//       Access: Public
-//  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the Shader
-//               itself has not changed.  It loads new values into the
-//               shader's parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function gets called whenever the RenderState or TransformState has
+ * changed, but the Shader itself has not changed.  It loads new values into the
+ * shader's parameters.
+ */
 void CLP(CgShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
@@ -477,21 +463,14 @@ set_state_and_transform(const RenderState *target_rs,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::issue_parameters
-//       Access: Public
-//  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the Shader
-//               itself has not changed.  It loads new values into the
-//               shader's parameters.
-//
-//               If "altered" is false, that means you promise that
-//               the parameters for this shader context have already
-//               been issued once, and that since the last time the
-//               parameters were issued, no part of the render
-//               state has changed except the external and internal
-//               transforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function gets called whenever the RenderState or TransformState has
+ * changed, but the Shader itself has not changed.  It loads new values into the
+ * shader's parameters.  If "altered" is false, that means you promise that the
+ * parameters for this shader context have already been issued once, and that
+ * since the last time the parameters were issued, no part of the render state
+ * has changed except the external and internal transforms.
+ */
 void CLP(CgShaderContext)::
 issue_parameters(int altered) {
   PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
@@ -718,12 +697,9 @@ issue_parameters(int altered) {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CgGLShaderContext::update_transform_table
-//       Access: Public
-//  Description: Changes the active transform table, used for hardware
-//               skinning.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the active transform table, used for hardware skinning.
+ */
 void CLP(CgShaderContext)::
 update_transform_table(const TransformTable *table) {
   LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
@@ -749,12 +725,9 @@ update_transform_table(const TransformTable *table) {
                                 _transform_table_size, (float *)matrices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CgGLShaderContext::update_slider_table
-//       Access: Public
-//  Description: Changes the active slider table, used for hardware
-//               skinning.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the active slider table, used for hardware skinning.
+ */
 void CLP(CgShaderContext)::
 update_slider_table(const SliderTable *table) {
   float *sliders = (float *)alloca(_slider_table_size * 4);
@@ -770,11 +743,9 @@ update_slider_table(const SliderTable *table) {
   cgGLSetParameterArray4f(_slider_table_param, 0, _slider_table_size, sliders);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::disable_shader_vertex_arrays
-//       Access: Public
-//  Description: Disable all the vertex arrays used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the vertex arrays used by this shader.
+ */
 void CLP(CgShaderContext)::
 disable_shader_vertex_arrays() {
   if (!valid()) {
@@ -816,17 +787,13 @@ disable_shader_vertex_arrays() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::update_shader_vertex_arrays
-//       Access: Public
-//  Description: Disables all vertex arrays used by the previous
-//               shader, then enables all the vertex arrays needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable arrays then immediately
-//               reenable them.  We may optimize this someday.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all vertex arrays used by the previous shader, then enables all the
+ * vertex arrays needed by this shader.  Extracts the relevant vertex array data
+ * from the gsg.  The current implementation is inefficient, because it may
+ * unnecessarily disable arrays then immediately reenable them.  We may optimize
+ * this someday.
+ */
 bool CLP(CgShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   if (!valid()) {
@@ -1026,11 +993,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::disable_shader_texture_bindings
-//       Access: Public
-//  Description: Disable all the texture bindings used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the texture bindings used by this shader.
+ */
 void CLP(CgShaderContext)::
 disable_shader_texture_bindings() {
   if (!valid()) {
@@ -1063,17 +1028,13 @@ disable_shader_texture_bindings() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::update_shader_texture_bindings
-//       Access: Public
-//  Description: Disables all texture bindings used by the previous
-//               shader, then enables all the texture bindings needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable textures then immediately
-//               reenable them.  We may optimize this someday.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all texture bindings used by the previous shader, then enables all
+ * the texture bindings needed by this shader.  Extracts the relevant vertex
+ * array data from the gsg.  The current implementation is inefficient, because
+ * it may unnecessarily disable textures then immediately reenable them.  We may
+ * optimize this someday.
+ */
 void CLP(CgShaderContext)::
 update_shader_texture_bindings(ShaderContext *prev) {
   //if (prev) {

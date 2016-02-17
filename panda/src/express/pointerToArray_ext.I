@@ -1,26 +1,21 @@
-// Filename: pointerToArray_ext.I
-// Created by:  rdb (08Feb15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointerToArray_ext.I
+ * @author rdb
+ * @date 2015-02-08
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__init__
-//       Access: Published
-//  Description: This special constructor accepts a Python list of
-//               elements, or a Python string (or a bytes object,
-//               in Python 3), or any object that supports the
-//               Python buffer protocol.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special constructor accepts a Python list of elements, or a Python
+ * string (or a bytes object, in Python 3), or any object that supports the
+ * Python buffer protocol.
+ */
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
@@ -143,37 +138,28 @@ __init__(PyObject *self, PyObject *source) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__getitem__
-//       Access: Published
-//  Description: Same as get_element(), this returns the nth element
-//               of the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Same as get_element(), this returns the nth element of the array.
+ */
 template<class Element>
 INLINE const Element &Extension<PointerToArray<Element> >::
 __getitem__(size_t n) const {
   return this->_this->get_element(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__setitem__
-//       Access: Published
-//  Description: Same as set_element(), this replaces the nth element
-//               of the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Same as set_element(), this replaces the nth element of the array.
+ */
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __setitem__(size_t n, const Element &value) {
   this->_this->set_element(n, value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__init__
-//       Access: Public
-//  Description: This special constructor accepts a Python list of
-//               elements, or a Python string (or a bytes object,
-//               in Python 3).
-////////////////////////////////////////////////////////////////////
+/**
+ * This special constructor accepts a Python list of elements, or a Python
+ * string (or a bytes object, in Python 3).
+ */
 template<class Element>
 INLINE void Extension<ConstPointerToArray<Element> >::
 __init__(PyObject *self, PyObject *source) {
@@ -182,12 +168,9 @@ __init__(PyObject *self, PyObject *source) {
   *(this->_this) = MOVE(array);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__getitem__
-//       Access: Published
-//  Description: Same as get_element(), this returns the nth element
-//               of the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Same as get_element(), this returns the nth element of the array.
+ */
 template<class Element>
 INLINE const Element &Extension<ConstPointerToArray<Element> >::
 __getitem__(size_t n) const {
@@ -195,13 +178,10 @@ __getitem__(size_t n) const {
 }
 
 #if PY_VERSION_HEX >= 0x02060000
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__getbuffer__
-//       Access: Published
-//  Description: This is used to implement the buffer protocol, in
-//               order to allow efficient access to the array data
-//               through a Python multiview object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python multiview object.
+ */
 template<class Element>
 INLINE int Extension<PointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
@@ -246,11 +226,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::__releasebuffer__
-//       Access: Published
-//  Description: Releases the buffer allocated by __getbuffer__.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the buffer allocated by __getbuffer__.
+ */
 template<class Element>
 INLINE void Extension<PointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
@@ -263,13 +241,10 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__getbuffer__
-//       Access: Published
-//  Description: This is used to implement the buffer protocol, in
-//               order to allow efficient access to the array data
-//               through a Python multiview object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python multiview object.
+ */
 template<class Element>
 INLINE int Extension<ConstPointerToArray<Element> >::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
@@ -320,11 +295,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::__releasebuffer__
-//       Access: Published
-//  Description: Releases the buffer allocated by __getbuffer__.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the buffer allocated by __getbuffer__.
+ */
 template<class Element>
 INLINE void Extension<ConstPointerToArray<Element> >::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {

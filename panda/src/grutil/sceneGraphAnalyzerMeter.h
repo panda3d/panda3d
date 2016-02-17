@@ -1,16 +1,15 @@
-// Filename: sceneGraphAnalyzerMeter.h
-// Created by:  pratt (14Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneGraphAnalyzerMeter.h
+ * @author pratt
+ * @date 2007-02-14
+ */
 
 #ifndef SCENEGRAPHANALYZERMETER_H
 #define SCENEGRAPHANALYZERMETER_H
@@ -28,18 +27,14 @@ class PandaNode;
 class GraphicsChannel;
 class ClockObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SceneGraphAnalyzerMeter
-// Description : This is a special TextNode that automatically updates
-//               itself with output from a SceneGraphAnalyzer instance.
-//               It can be placed anywhere in the world where you'd like
-//               to see the output from SceneGraphAnalyzer.
-//
-//               It also has a special mode in which it may be
-//               attached directly to a channel or window.  If this is
-//               done, it creates a DisplayRegion for itself and renders
-//               itself in the upper-right-hand corner.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special TextNode that automatically updates itself with output from
+ * a SceneGraphAnalyzer instance.  It can be placed anywhere in the world where
+ * you'd like to see the output from SceneGraphAnalyzer.  It also has a special
+ * mode in which it may be attached directly to a channel or window.  If this is
+ * done, it creates a DisplayRegion for itself and renders itself in the upper-
+ * right-hand corner.
+ */
 class EXPCL_PANDA SceneGraphAnalyzerMeter : public TextNode {
 PUBLISHED:
   SceneGraphAnalyzerMeter(const string &name, PandaNode *node);

@@ -1,16 +1,15 @@
-// Filename: connection.cxx
-// Created by:  jns (07Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file connection.cxx
+ * @author jns
+ * @date 2000-02-07
+ */
 
 #include "connection.h"
 #include "connectionManager.h"
@@ -28,14 +27,11 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::Constructor
-//       Access: Published
-//  Description: Creates a connection.  Normally this constructor
-//               should not be used directly by user code; use one of
-//               the methods in ConnectionManager to make a new
-//               connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a connection.  Normally this constructor should not be used directly
+ * by user code; use one of the methods in ConnectionManager to make a new
+ * connection.
+ */
 Connection::
 Connection(ConnectionManager *manager, Socket_IP *socket) :
   _manager(manager),
@@ -56,11 +52,9 @@ Connection(ConnectionManager *manager, Socket_IP *socket) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::Destructor
-//       Access: Published
-//  Description: Closes a connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes a connection.
+ */
 Connection::
 ~Connection() {
   net_cat.info()
@@ -74,112 +68,81 @@ Connection::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::get_address
-//       Access: Published
-//  Description: Returns the address bound to this connection, if it
-//               is a TCP connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the address bound to this connection, if it is a TCP connection.
+ */
 NetAddress Connection::
 get_address() const {
   Socket_Address addr = _socket->GetPeerName();
   return NetAddress(addr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::get_manager
-//       Access: Published
-//  Description: Returns a pointer to the ConnectionManager object
-//               that serves this connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the ConnectionManager object that serves this
+ * connection.
+ */
 ConnectionManager *Connection::
 get_manager() const {
   return _manager;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::get_socket
-//       Access: Published
-//  Description: Returns the internal Socket_IP that defines the
-//               connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the internal Socket_IP that defines the connection.
+ */
 Socket_IP *Connection::
 get_socket() const {
   return _socket;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_collect_tcp
-//       Access: Published
-//  Description: Enables or disables "collect-tcp" mode.  In this
-//               mode, individual TCP packets are not sent
-//               immediately, but rather they are collected together
-//               and accumulated to be sent periodically as one larger
-//               TCP packet.  This cuts down on overhead from the
-//               TCP/IP protocol, especially if many small packets
-//               need to be sent on the same connection, but it
-//               introduces additional latency (since packets must be
-//               held before they can be sent).
-//
-//               See set_collect_tcp_interval() to specify the
-//               interval of time for which to hold packets before
-//               sending them.
-//
-//               If you enable this mode, you may also need to
-//               periodically call consider_flush() to flush the queue
-//               if no packets have been sent recently.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables "collect-tcp" mode.  In this mode, individual TCP packets
+ * are not sent immediately, but rather they are collected together and
+ * accumulated to be sent periodically as one larger TCP packet.  This cuts down
+ * on overhead from the TCP/IP protocol, especially if many small packets need
+ * to be sent on the same connection, but it introduces additional latency
+ * (since packets must be held before they can be sent).  See
+ * set_collect_tcp_interval() to specify the interval of time for which to hold
+ * packets before sending them.  If you enable this mode, you may also need to
+ * periodically call consider_flush() to flush the queue if no packets have been
+ * sent recently.
+ */
 void Connection::
 set_collect_tcp(bool collect_tcp) {
   _collect_tcp = collect_tcp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::get_collect_tcp
-//       Access: Published
-//  Description: Returns the current setting of "collect-tcp" mode.
-//               See set_collect_tcp().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current setting of "collect-tcp" mode.  See set_collect_tcp().
+ */
 bool Connection::
 get_collect_tcp() const {
   return _collect_tcp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_collect_tcp_interval
-//       Access: Published
-//  Description: Specifies the interval in time, in seconds, for which
-//               to hold TCP packets before sending all of the
-//               recently received packets at once.  This only has
-//               meaning if "collect-tcp" mode is enabled; see
-//               set_collect_tcp().
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the interval in time, in seconds, for which to hold TCP packets
+ * before sending all of the recently received packets at once.  This only has
+ * meaning if "collect-tcp" mode is enabled; see set_collect_tcp().
+ */
 void Connection::
 set_collect_tcp_interval(double interval) {
   _collect_tcp_interval = interval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::get_collect_tcp_interval
-//       Access: Published
-//  Description: Returns the interval in time, in seconds, for which
-//               to hold TCP packets before sending all of the
-//               recently received packets at once.  This only has
-//               meaning if "collect-tcp" mode is enabled; see
-//               set_collect_tcp().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the interval in time, in seconds, for which to hold TCP packets
+ * before sending all of the recently received packets at once.  This only has
+ * meaning if "collect-tcp" mode is enabled; see set_collect_tcp().
+ */
 double Connection::
 get_collect_tcp_interval() const {
   return _collect_tcp_interval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::consider_flush
-//       Access: Published
-//  Description: Sends the most recently queued TCP datagram(s) if
-//               enough time has elapsed.  This only has meaning if
-//               set_collect_tcp() has been set to true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the most recently queued TCP datagram(s) if enough time has elapsed.
+ * This only has meaning if set_collect_tcp() has been set to true.
+ */
 bool Connection::
 consider_flush() {
   LightReMutexHolder holder(_write_mutex);
@@ -188,7 +151,7 @@ consider_flush() {
     return do_flush();
 
   } else {
-    double elapsed = 
+    double elapsed =
       TrueClock::get_global_ptr()->get_short_time() - _queued_data_start;
     // If the elapsed time is negative, someone must have reset the
     // clock back, so just go ahead and flush.
@@ -200,13 +163,10 @@ consider_flush() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::flush
-//       Access: Published
-//  Description: Sends the most recently queued TCP datagram(s) now.
-//               This only has meaning if set_collect_tcp() has been
-//               set to true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the most recently queued TCP datagram(s) now.  This only has meaning if
+ * set_collect_tcp() has been set to true.
+ */
 bool Connection::
 flush() {
   LightReMutexHolder holder(_write_mutex);
@@ -219,11 +179,9 @@ non-blocking I/O effectively at this level, so we shouldn't provide
 this call.  Specifically, we don't provide a way to query whether an
 operation failed because it would have blocked or not.
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_nonblock
-//       Access: Published
-//  Description: Sets whether nonblocking I/O should be in effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether nonblocking I/O should be in effect.
+ */
 void Connection::
 set_nonblock(bool flag) {
   if (flag) {
@@ -234,18 +192,14 @@ set_nonblock(bool flag) {
 }
 */
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_linger
-//       Access: Published
-//  Description: Sets the time to linger on close if data is present.
-//               If flag is false, when you close a socket with data
-//               available the system attempts to deliver the data to
-//               the peer (the default behavior).  If flag is false
-//               but time is zero, the system discards any undelivered
-//               data when you close the socket.  If flag is false but
-//               time is nonzero, the system waits up to time seconds
-//               to deliver the data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the time to linger on close if data is present.  If flag is false, when
+ * you close a socket with data available the system attempts to deliver the
+ * data to the peer (the default behavior).  If flag is false but time is zero,
+ * the system discards any undelivered data when you close the socket.  If flag
+ * is false but time is nonzero, the system waits up to time seconds to deliver
+ * the data.
+ */
 void Connection::
 set_linger(bool flag, double time) {
   Socket_TCP *tcp;
@@ -258,42 +212,34 @@ set_linger(bool flag, double time) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_reuse_addr
-//       Access: Published
-//  Description: Sets whether local address reuse is allowed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether local address reuse is allowed.
+ */
 void Connection::
 set_reuse_addr(bool flag) {
   _socket->SetReuseAddress(flag);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_keep_alive
-//       Access: Published
-//  Description: Sets whether the connection is periodically tested to
-//               see if it is still alive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the connection is periodically tested to see if it is still
+ * alive.
+ */
 void Connection::
 set_keep_alive(bool flag) {
   // TODO.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_recv_buffer_size
-//       Access: Published
-//  Description: Sets the size of the receive buffer, in bytes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the size of the receive buffer, in bytes.
+ */
 void Connection::
 set_recv_buffer_size(int size) {
   _socket->SetRecvBufferSize(size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_send_buffer_size
-//       Access: Published
-//  Description: Sets the size of the send buffer, in bytes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the size of the send buffer, in bytes.
+ */
 void Connection::
 set_send_buffer_size(int size) {
   Socket_TCP *tcp;
@@ -302,32 +248,26 @@ set_send_buffer_size(int size) {
   tcp->SetSendBufferSize(size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_ip_time_to_live
-//       Access: Published
-//  Description: Sets IP time-to-live.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets IP time-to-live.
+ */
 void Connection::
 set_ip_time_to_live(int ttl) {
   // TODO.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_ip_type_of_service
-//       Access: Published
-//  Description: Sets IP type-of-service and precedence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets IP type-of-service and precedence.
+ */
 void Connection::
 set_ip_type_of_service(int tos) {
   // TODO.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_no_delay
-//       Access: Published
-//  Description: If flag is true, this disables the Nagle algorithm,
-//               and prevents delaying of send to coalesce packets.
-////////////////////////////////////////////////////////////////////
+/**
+ * If flag is true, this disables the Nagle algorithm, and prevents delaying of
+ * send to coalesce packets.
+ */
 void Connection::
 set_no_delay(bool flag) {
   Socket_TCP *tcp;
@@ -336,25 +276,20 @@ set_no_delay(bool flag) {
   tcp->SetNoDelay(flag);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::set_max_segment
-//       Access: Published
-//  Description: Sets the maximum segment size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the maximum segment size.
+ */
 void Connection::
 set_max_segment(int size) {
   // TODO.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::send_datagram
-//       Access: Private
-//  Description: This method is intended only to be called by
-//               ConnectionWriter.  It atomically writes the given
-//               datagram to the socket, returning true on success,
-//               false on failure.  If the socket seems to be closed,
-//               it notifies the ConnectionManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is intended only to be called by ConnectionWriter.  It atomically
+ * writes the given datagram to the socket, returning true on success, false on
+ * failure.  If the socket seems to be closed, it notifies the
+ * ConnectionManager.
+ */
 bool Connection::
 send_datagram(const NetDatagram &datagram, int tcp_header_size) {
   nassertr(_socket != (Socket_IP *)NULL, false);
@@ -369,11 +304,11 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
     string data;
     data += header.get_header();
     data += datagram.get_message();
-    
+
     if (net_cat.is_debug()) {
       header.verify_datagram(datagram);
     }
-    
+
     int bytes_to_send = data.length();
     Socket_Address addr = datagram.get_address().get_addr();
 
@@ -384,14 +319,14 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
       okflag = udp->SendTo(data, addr);
     }
 #endif  // SIMPLE_THREADS
-      
+
     if (net_cat.is_spam()) {
       net_cat.spam()
-        << "Sent UDP datagram with " 
-        << bytes_to_send << " bytes to " << (void *)this 
+        << "Sent UDP datagram with "
+        << bytes_to_send << " bytes to " << (void *)this
         << ", ok = " << okflag << "\n";
     }
-      
+
     return check_send_error(okflag);
   }
 
@@ -410,12 +345,12 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
   _queued_data += header.get_header();
   _queued_data += datagram.get_message();
   _queued_count++;
-  
+
   if (net_cat.is_debug()) {
     header.verify_datagram(datagram, tcp_header_size);
   }
 
-  if (!_collect_tcp || 
+  if (!_collect_tcp ||
       TrueClock::get_global_ptr()->get_short_time() - _queued_data_start >= _collect_tcp_interval) {
     return do_flush();
   }
@@ -423,13 +358,10 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::send_raw_datagram
-//       Access: Private
-//  Description: This method is intended only to be called by
-//               ConnectionWriter.  It atomically writes the given
-//               datagram to the socket, without the Datagram header.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is intended only to be called by ConnectionWriter.  It atomically
+ * writes the given datagram to the socket, without the Datagram header.
+ */
 bool Connection::
 send_raw_datagram(const NetDatagram &datagram) {
   nassertr(_socket != (Socket_IP *)NULL, false);
@@ -450,11 +382,11 @@ send_raw_datagram(const NetDatagram &datagram) {
       okflag = udp->SendTo(data, addr);
     }
 #endif  // SIMPLE_THREADS
-    
+
     if (net_cat.is_spam()) {
       net_cat.spam()
-        << "Sent UDP datagram with " 
-        << data.size() << " bytes to " << (void *)this 
+        << "Sent UDP datagram with "
+        << data.size() << " bytes to " << (void *)this
         << ", ok = " << okflag << "\n";
     }
 
@@ -466,7 +398,7 @@ send_raw_datagram(const NetDatagram &datagram) {
   _queued_data += datagram.get_message();
   _queued_count++;
 
-  if (!_collect_tcp || 
+  if (!_collect_tcp ||
       TrueClock::get_global_ptr()->get_short_time() - _queued_data_start >= _collect_tcp_interval) {
     return do_flush();
   }
@@ -474,12 +406,10 @@ send_raw_datagram(const NetDatagram &datagram) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::do_flush
-//       Access: Private
-//  Description: The private implementation of flush(), this assumes
-//               the _write_mutex is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of flush(), this assumes the _write_mutex is
+ * already held.
+ */
 bool Connection::
 do_flush() {
   if (_queued_data.empty()) {
@@ -490,7 +420,7 @@ do_flush() {
 
   if (net_cat.is_spam()) {
     net_cat.spam()
-      << "Sending " << _queued_count << " TCP datagram(s) with " 
+      << "Sending " << _queued_count << " TCP datagram(s) with "
       << _queued_data.length() << " total bytes to " << (void *)this << "\n";
   }
 
@@ -537,12 +467,9 @@ do_flush() {
   return check_send_error(okflag);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Connection::check_send_error
-//       Access: Private
-//  Description: Checks the return value of a Send() or SendTo()
-//               call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the return value of a Send() or SendTo() call.
+ */
 bool Connection::
 check_send_error(bool okflag) {
   if (!okflag) {

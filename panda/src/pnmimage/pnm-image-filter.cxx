@@ -1,16 +1,13 @@
-// Filename: pnm-image-filter.cxx
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnm-image-filter.cxx
+ */
 
 // The functions in this module support spatial filtering of an image by
 // convolution with an (almost) arbitrary kernel.  There are a broad class of
@@ -521,29 +518,23 @@ filter_image(PNMImage &dest, const PNMImage &source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::box_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the indicated
+ * filter.  The image to be copied is squashed and stretched to match the
+ * dimensions of the current image, applying the appropriate filter to perform
+ * the stretching.
+ */
 void PNMImage::
 box_filter_from(float width, const PNMImage &copy) {
   filter_image(*this, copy, width, &box_filter_impl);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::gaussian_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the indicated
+ * filter.  The image to be copied is squashed and stretched to match the
+ * dimensions of the current image, applying the appropriate filter to perform
+ * the stretching.
+ */
 void PNMImage::
 gaussian_filter_from(float width, const PNMImage &copy) {
   filter_image(*this, copy, width, &gaussian_filter_impl);
@@ -629,7 +620,7 @@ filter_image(PfmFile &dest, const PfmFile &source,
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_sparse_xy(dest, source, width, make_filter, ci);
       }
-      
+
     } else {
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_sparse_yx(dest, source, width, make_filter, ci);
@@ -641,7 +632,7 @@ filter_image(PfmFile &dest, const PfmFile &source,
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_xy(dest, source, width, make_filter, ci);
       }
-      
+
     } else {
       for (int ci = 0; ci < num_channels; ++ci) {
         filter_pfm_yx(dest, source, width, make_filter, ci);
@@ -650,29 +641,23 @@ filter_image(PfmFile &dest, const PfmFile &source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::box_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the indicated
+ * filter.  The image to be copied is squashed and stretched to match the
+ * dimensions of the current image, applying the appropriate filter to perform
+ * the stretching.
+ */
 void PfmFile::
 box_filter_from(float width, const PfmFile &copy) {
   filter_image(*this, copy, width, &box_filter_impl);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::gaussian_filter_from
-//       Access: Public
-//  Description: Makes a resized copy of the indicated image into this
-//               one using the indicated filter.  The image to be
-//               copied is squashed and stretched to match the
-//               dimensions of the current image, applying the
-//               appropriate filter to perform the stretching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a resized copy of the indicated image into this one using the indicated
+ * filter.  The image to be copied is squashed and stretched to match the
+ * dimensions of the current image, applying the appropriate filter to perform
+ * the stretching.
+ */
 void PfmFile::
 gaussian_filter_from(float width, const PfmFile &copy) {
   filter_image(*this, copy, width, &gaussian_filter_impl);
@@ -756,18 +741,14 @@ box_filter_region(const PNMImage &image,
   return color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::quick_filter_from
-//       Access: Public
-//  Description: Resizes from the given image, with a fixed radius of
-//               0.5. This is a very specialized and simple algorithm
-//               that doesn't handle dropping below the Nyquist rate
-//               very well, but is quite a bit faster than the more
-//               general box_filter(), above.  If borders are
-//               specified, they will further restrict the size of the
-//               resulting image. There's no point in using
-//               quick_box_filter() on a single image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes from the given image, with a fixed radius of 0.5. This is a very
+ * specialized and simple algorithm that doesn't handle dropping below the
+ * Nyquist rate very well, but is quite a bit faster than the more general
+ * box_filter(), above.  If borders are specified, they will further restrict
+ * the size of the resulting image.  There's no point in using
+ * quick_box_filter() on a single image.
+ */
 void PNMImage::
 quick_filter_from(const PNMImage &from, int xborder, int yborder) {
   int from_xs = from.get_x_size();

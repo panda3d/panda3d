@@ -1,23 +1,19 @@
-// Filename: simpleHashMap.I
-// Created by:  drose (19Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file simpleHashMap.I
+ * @author drose
+ * @date 2007-07-19
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
 SimpleHashMap(const Compare &comp) :
@@ -29,23 +25,18 @@ SimpleHashMap(const Compare &comp) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
 ~SimpleHashMap() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::swap
-//       Access: Public
-//  Description: Quickly exchanges the contents of this map and the
-//               other map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Quickly exchanges the contents of this map and the other map.
+ */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 swap(SimpleHashMap<Key, Value, Compare> &other) {
@@ -66,13 +57,10 @@ swap(SimpleHashMap<Key, Value, Compare> &other) {
   other._num_entries = t3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::find
-//       Access: Public
-//  Description: Searches for the indicated key in the table.  Returns
-//               its index number if it is found, or -1 if it is not
-//               present in the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the indicated key in the table.  Returns its index number if it
+ * is found, or -1 if it is not present in the table.
+ */
 template<class Key, class Value, class Compare>
 int SimpleHashMap<Key, Value, Compare>::
 find(const Key &key) const {
@@ -106,13 +94,10 @@ find(const Key &key) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::store
-//       Access: Public
-//  Description: Records the indicated key/data pair in the map.  If
-//               the key was already present, silently replaces it.
-//               Returns the index at which it was stored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated key/data pair in the map.  If the key was already
+ * present, silently replaces it.  Returns the index at which it was stored.
+ */
 template<class Key, class Value, class Compare>
 int SimpleHashMap<Key, Value, Compare>::
 store(const Key &key, const Value &data) {
@@ -184,13 +169,10 @@ store(const Key &key, const Value &data) {
   return -1;  // To satisfy compiler
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::remove
-//       Access: Public
-//  Description: Removes the indicated key and its associated data
-//               from the table.  Returns true if the key was removed,
-//               false if it was not present.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated key and its associated data from the table.  Returns
+ * true if the key was removed, false if it was not present.
+ */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 remove(const Key &key) {
@@ -202,11 +184,9 @@ remove(const Key &key) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::clear
-//       Access: Public
-//  Description: Completely empties the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely empties the table.
+ */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 clear() {
@@ -225,13 +205,10 @@ clear() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::operator []
-//       Access: Public
-//  Description: Returns a modifiable reference to the data associated
-//               with the indicated key, or creates a new data entry
-//               and returns its reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable reference to the data associated with the indicated key,
+ * or creates a new data entry and returns its reference.
+ */
 template<class Key, class Value, class Compare>
 INLINE Value &SimpleHashMap<Key, Value, Compare>::
 operator [] (const Key &key) {
@@ -242,25 +219,19 @@ operator [] (const Key &key) {
   return modify_data(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::get_size
-//       Access: Public
-//  Description: Returns the total number of slots in the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of slots in the table.
+ */
 template<class Key, class Value, class Compare>
 INLINE size_t SimpleHashMap<Key, Value, Compare>::
 get_size() const {
   return _table_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::has_element
-//       Access: Public
-//  Description: Returns true if there is an element stored in the nth
-//               slot, false otherwise.
-//
-//               n should be in the range 0 <= n < get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is an element stored in the nth slot, false otherwise.
+ * n should be in the range 0 <= n < get_size().
+ */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 has_element(int n) const {
@@ -268,16 +239,11 @@ has_element(int n) const {
   return (get_exists_array()[n] != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::get_key
-//       Access: Public
-//  Description: Returns the key in the nth slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key in the nth slot of the table.  It is an error to call this if
+ * there is nothing stored in the nth slot (use has_element() to check this
+ * first).  n should be in the range 0 <= n < get_size().
+ */
 template<class Key, class Value, class Compare>
 INLINE const Key &SimpleHashMap<Key, Value, Compare>::
 get_key(int n) const {
@@ -285,16 +251,11 @@ get_key(int n) const {
   return _table[n]._key;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::get_data
-//       Access: Public
-//  Description: Returns the data in the nth slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the data in the nth slot of the table.  It is an error to call this
+ * if there is nothing stored in the nth slot (use has_element() to check this
+ * first).  n should be in the range 0 <= n < get_size().
+ */
 template<class Key, class Value, class Compare>
 INLINE const Value &SimpleHashMap<Key, Value, Compare>::
 get_data(int n) const {
@@ -302,17 +263,12 @@ get_data(int n) const {
   return _table[n]._data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::modify_data
-//       Access: Public
-//  Description: Returns a modifiable reference to the data in the nth
-//               slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable reference to the data in the nth slot of the table.  It
+ * is an error to call this if there is nothing stored in the nth slot (use
+ * has_element() to check this first).  n should be in the range 0 <= n <
+ * get_size().
+ */
 template<class Key, class Value, class Compare>
 INLINE Value &SimpleHashMap<Key, Value, Compare>::
 modify_data(int n) {
@@ -320,16 +276,11 @@ modify_data(int n) {
   return _table[n]._data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::set_data
-//       Access: Public
-//  Description: Changes the data for the nth slot of the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the data for the nth slot of the table.  It is an error to call this
+ * if there is nothing stored in the nth slot (use has_element() to check this
+ * first).  n should be in the range 0 <= n < get_size().
+ */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 set_data(int n, const Value &data) {
@@ -337,16 +288,11 @@ set_data(int n, const Value &data) {
   _table[n]._data = data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::remove_element
-//       Access: Public
-//  Description: Removes the nth slot from the table.
-//
-//               It is an error to call this if there is nothing
-//               stored in the nth slot (use has_element() to check
-//               this first).  n should be in the range 0 <= n <
-//               get_size().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth slot from the table.  It is an error to call this if there is
+ * nothing stored in the nth slot (use has_element() to check this first).  n
+ * should be in the range 0 <= n < get_size().
+ */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 remove_element(int n) {
@@ -387,38 +333,29 @@ remove_element(int n) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::get_num_entries
-//       Access: Public
-//  Description: Returns the number of active entries in the table.
-//               This is not necessarily related to the number of
-//               slots in the table as reported by get_size().  Use
-//               get_size() to iterate through all of the slots, not
-//               get_num_entries().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of active entries in the table.  This is not necessarily
+ * related to the number of slots in the table as reported by get_size().  Use
+ * get_size() to iterate through all of the slots, not get_num_entries().
+ */
 template<class Key, class Value, class Compare>
 INLINE size_t SimpleHashMap<Key, Value, Compare>::
 get_num_entries() const {
   return _num_entries;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::is_empty
-//       Access: Public
-//  Description: Returns true if the table is empty;
-//               i.e. get_num_entries() == 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the table is empty; i.e.  get_num_entries() == 0.
+ */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 is_empty() const {
   return (_num_entries == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 output(ostream &out) const {
@@ -440,11 +377,9 @@ output(ostream &out) const {
   out << " ]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 write(ostream &out) const {
@@ -452,12 +387,10 @@ write(ostream &out) const {
   out << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::validate
-//       Access: Public
-//  Description: Returns true if the internal table appears to be
-//               consistent, false if there are some internal errors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the internal table appears to be consistent, false if there
+ * are some internal errors.
+ */
 template<class Key, class Value, class Compare>
 bool SimpleHashMap<Key, Value, Compare>::
 validate() const {
@@ -493,12 +426,9 @@ validate() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::get_hash
-//       Access: Private
-//  Description: Computes an appropriate index number to store the
-//               given pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes an appropriate index number to store the given pointer.
+ */
 template<class Key, class Value, class Compare>
 INLINE size_t SimpleHashMap<Key, Value, Compare>::
 get_hash(const Key &key) const {
@@ -514,11 +444,9 @@ get_hash(const Key &key) const {
   return ((_comp(key) * (size_t)9973) >> 8) & (_table_size - 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::is_element
-//       Access: Private
-//  Description: Returns true if element n matches key.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if element n matches key.
+ */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 is_element(int n, const Key &key) const {
@@ -526,12 +454,10 @@ is_element(int n, const Key &key) const {
   return _comp.is_equal(_table[n]._key, key);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::store_new_element
-//       Access: Private
-//  Description: Constructs a new TableEntry at position n, storing
-//               the indicated key and value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new TableEntry at position n, storing the indicated key and
+ * value.
+ */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 store_new_element(int n, const Key &key, const Value &data) {
@@ -539,11 +465,9 @@ store_new_element(int n, const Key &key, const Value &data) {
   get_exists_array()[n] = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::clear_element
-//       Access: Private
-//  Description: Destructs the TableEntry at position n.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructs the TableEntry at position n.
+ */
 template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 clear_element(int n) {
@@ -551,25 +475,20 @@ clear_element(int n) {
   get_exists_array()[n] = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::get_exists_array
-//       Access: Private
-//  Description: Returns the beginning of the array of _table_size
-//               unsigned chars that are the boolean flags for whether
-//               each element exists (has been constructed) within the
-//               table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the beginning of the array of _table_size unsigned chars that are the
+ * boolean flags for whether each element exists (has been constructed) within
+ * the table.
+ */
 template<class Key, class Value, class Compare>
 INLINE unsigned char *SimpleHashMap<Key, Value, Compare>::
 get_exists_array() const {
   return (unsigned char *)(_table + _table_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::new_table
-//       Access: Private
-//  Description: Allocates a brand new table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a brand new table.
+ */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 new_table() {
@@ -588,13 +507,10 @@ new_table() {
   memset(get_exists_array(), 0, _table_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::consider_expand_table
-//       Access: Private
-//  Description: Expands the table if it will need it (assuming one
-//               more element is about to be added).  Returns true if
-//               expanded, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expands the table if it will need it (assuming one more element is about to
+ * be added).  Returns true if expanded, false otherwise.
+ */
 template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 consider_expand_table() {
@@ -605,11 +521,9 @@ consider_expand_table() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleHashMap::expand_table
-//       Access: Private
-//  Description: Doubles the size of the existing table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Doubles the size of the existing table.
+ */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
 expand_table() {

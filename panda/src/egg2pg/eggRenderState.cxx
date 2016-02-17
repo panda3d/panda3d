@@ -1,16 +1,15 @@
-// Filename: eggRenderState.cxx
-// Created by:  drose (12Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggRenderState.cxx
+ * @author drose
+ * @date 2005-03-12
+ */
 
 #include "eggRenderState.h"
 #include "eggRenderMode.h"
@@ -39,12 +38,9 @@
 #include "config_egg2pg.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderState::fill_state
-//       Access: Public
-//  Description: Sets up the state as appropriate for the indicated
-//               primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the state as appropriate for the indicated primitive.
+ */
 void EggRenderState::
 fill_state(EggPrimitive *egg_prim) {
   // The various EggRenderMode properties can be defined directly at
@@ -227,7 +223,7 @@ fill_state(EggPrimitive *egg_prim) {
         for (tmtexi = tmtex.begin(); tmtexi != tmtex.end(); ++tmtexi) {
           const EggTexture *egg_tex = (*tmtexi)->_egg_tex;
           TextureStage *stage = (*tmtexi)->_stage;
-          
+
           tex_mat_attrib = apply_tex_mat(tex_mat_attrib, stage, egg_tex);
         }
       }
@@ -380,7 +376,7 @@ fill_state(EggPrimitive *egg_prim) {
     break;
   }
 
-  _flat_shaded = 
+  _flat_shaded =
     (egg_flat_shading &&
      egg_prim->get_connected_shading() == EggPrimitive::S_per_face);
 
@@ -392,14 +388,14 @@ fill_state(EggPrimitive *egg_prim) {
     _primitive_type = Geom::PT_lines;
     EggLine *egg_line = DCAST(EggLine, egg_prim);
     if (egg_line->get_thick() != 1.0) {
-      add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 
+      add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged,
                                         egg_line->get_thick()));
     }
   } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
     _primitive_type = Geom::PT_points;
     EggPoint *egg_point = DCAST(EggPoint, egg_prim);
     if (egg_point->get_thick() != 1.0 || egg_point->get_perspective()) {
-      add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 
+      add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged,
                                         egg_point->get_thick(),
                                         egg_point->get_perspective()));
     }
@@ -416,7 +412,7 @@ fill_state(EggPrimitive *egg_prim) {
   if (has_depth_offset) {
     add_attrib(DepthOffsetAttrib::make(depth_offset));
   }
- 
+
 
   if (egg_prim->get_bface_flag()) {
     // The primitive is marked with backface culling disabled--we want
@@ -425,13 +421,10 @@ fill_state(EggPrimitive *egg_prim) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderState::int compare_to
-//       Access: Public
-//  Description: Provides a unique ordering for different
-//               EggRenderState objects, so that primitives of similar
-//               state can be grouped together by the EggBinner.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides a unique ordering for different EggRenderState objects, so that
+ * primitives of similar state can be grouped together by the EggBinner.
+ */
 int EggRenderState::
 compare_to(const EggRenderState &other) const {
   if (_state != other._state) {
@@ -473,16 +466,13 @@ compare_to(const EggRenderState &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderState::get_material_attrib
-//       Access: Private
-//  Description: Returns a RenderAttrib suitable for enabling the
-//               material indicated by the given EggMaterial, and with
-//               the indicated backface flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib suitable for enabling the material indicated by the
+ * given EggMaterial, and with the indicated backface flag.
+ */
 CPT(RenderAttrib) EggRenderState::
 get_material_attrib(const EggMaterial *egg_mat, bool bface) {
-  Materials &materials = 
+  Materials &materials =
     bface ? _loader._materials_bface : _loader._materials;
 
   // First, check whether we've seen this material before.
@@ -541,12 +531,10 @@ get_material_attrib(const EggMaterial *egg_mat, bool bface) {
   return mt;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderState::get_tex_gen
-//       Access: Private, Static
-//  Description: Extracts the tex_gen from the given egg texture,
-//               and returns its corresponding TexGenAttrib mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the tex_gen from the given egg texture, and returns its
+ * corresponding TexGenAttrib mode.
+ */
 TexGenAttrib::Mode EggRenderState::
 get_tex_gen(const EggTexture *egg_tex) {
   switch (egg_tex->get_tex_gen()) {
@@ -581,25 +569,22 @@ get_tex_gen(const EggTexture *egg_tex) {
   return TexGenAttrib::M_off;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderState::apply_tex_mat
-//       Access: Private
-//  Description: Applies the texture matrix from the indicated egg
-//               texture to the given TexMatrixAttrib, and returns the
-//               new attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the texture matrix from the indicated egg texture to the given
+ * TexMatrixAttrib, and returns the new attrib.
+ */
 CPT(RenderAttrib) EggRenderState::
-apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
+apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib,
               TextureStage *stage, const EggTexture *egg_tex) {
   if (egg_tex->has_transform()) {
     CPT(TransformState) transform = _loader.make_transform(egg_tex);
-  
+
     if (tex_mat_attrib == (const RenderAttrib *)NULL) {
       tex_mat_attrib = TexMatrixAttrib::make();
     }
     tex_mat_attrib = DCAST(TexMatrixAttrib, tex_mat_attrib)->
       add_stage(stage, transform);
   }
-    
+
   return tex_mat_attrib;
 }

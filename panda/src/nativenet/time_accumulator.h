@@ -1,10 +1,20 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file time_accumulator.h
+ */
+
+
 #ifndef __TIME_ACCUMULATOR_H__
 #define __TIME_ACCUMULATOR_H__
-////////////////////////////////////////////////////////////////////
-//
-// Think of this as a stopwatch that can be restarted.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Think of this as a stopwatch that can be restarted.
+ */
 class Time_Accumulator
 {
 public:
@@ -23,9 +33,9 @@ private:
     Time_Clock      *_accum_start;  // the time of day the clock started
 };
 
-////////////////////////////////////////////////////////////////////
-// you can set the internal accumilator to a value..
-////////////////////////////////////////////////////////////////////
+/*
+ * you can set the internal accumilator to a value..
+ */
 inline void Time_Accumulator::Set(const Time_Span & in)
 {
     _total_time = in;
@@ -42,35 +52,31 @@ inline void Time_Accumulator::Set(const Time_Span & in)
         Start();
     }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Accumulator::Time_Accumulator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Time_Accumulator::Time_Accumulator() : _total_time(0,0,0,0,0), _accum_start(NULL)
 {
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Accumulator::~Time_Accumulator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Time_Accumulator::~Time_Accumulator()
 {
     if(_accum_start != NULL)
         delete _accum_start;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: void Time_Accumulator::Start
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline     void Time_Accumulator::Start()
 {
     if(_accum_start == NULL)
         _accum_start = new Time_Clock();
 }
-////////////////////////////////////////////////////////////////////
-//     Function: void Time_Accumulator::Stop
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline     void Time_Accumulator::Stop()
 {
     if(_accum_start != NULL)
@@ -81,10 +87,9 @@ inline     void Time_Accumulator::Stop()
         _accum_start = NULL;
     }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Accumulator::Reset
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Time_Accumulator::Reset()
 {
     if(_accum_start != NULL)
@@ -94,10 +99,9 @@ void Time_Accumulator::Reset()
     }
     _total_time.Set(0,0,0,0,0);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Accumulator::Report
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Time_Span  Time_Accumulator::Report()
 {
     Time_Span   answer(_total_time);
@@ -110,4 +114,3 @@ inline Time_Span  Time_Accumulator::Report()
 }
 
 #endif //__TIME_ACCUMULATOR_H__
-

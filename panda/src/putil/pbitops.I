@@ -1,31 +1,27 @@
-// Filename: pbitops.I
-// Created by:  drose (10May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pbitops.I
+ * @author drose
+ * @date 2008-05-10
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: count_bits_in_word
-//  Description: Returns the number of 1 bits in the indicated word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of 1 bits in the indicated word.
+ */
 INLINE int
 count_bits_in_word(PN_uint16 x) {
   return (int)num_bits_on[x];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: count_bits_in_word
-//  Description: Returns the number of 1 bits in the indicated word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of 1 bits in the indicated word.
+ */
 INLINE int
 count_bits_in_word(PN_uint32 x) {
 #if defined(__GNUC__) && defined(__POPCNT__)
@@ -35,10 +31,9 @@ count_bits_in_word(PN_uint32 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: count_bits_in_word
-//  Description: Returns the number of 1 bits in the indicated word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of 1 bits in the indicated word.
+ */
 INLINE int
 count_bits_in_word(PN_uint64 x) {
 #if defined(__GNUC__) && defined(__POPCNT__)
@@ -48,11 +43,9 @@ count_bits_in_word(PN_uint64 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_down
-//  Description: Returns a value such that every bit at or below the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a value such that every bit at or below the highest bit in x is 1.
+ */
 INLINE PN_uint16
 flood_bits_down(PN_uint16 x) {
   x |= (x >> 1);
@@ -62,11 +55,9 @@ flood_bits_down(PN_uint16 x) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_down
-//  Description: Returns a value such that every bit at or below the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a value such that every bit at or below the highest bit in x is 1.
+ */
 INLINE PN_uint32
 flood_bits_down(PN_uint32 x) {
   x |= (x >> 1);
@@ -77,11 +68,9 @@ flood_bits_down(PN_uint32 x) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_down
-//  Description: Returns a value such that every bit at or below the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a value such that every bit at or below the highest bit in x is 1.
+ */
 INLINE PN_uint64
 flood_bits_down(PN_uint64 x) {
   x |= (x >> 1);
@@ -93,11 +82,9 @@ flood_bits_down(PN_uint64 x) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_up
-//  Description: Returns a value such that every bit at or above the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a value such that every bit at or above the highest bit in x is 1.
+ */
 INLINE PN_uint16
 flood_bits_up(PN_uint16 x) {
   x |= (x << 1);
@@ -107,11 +94,9 @@ flood_bits_up(PN_uint16 x) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_up
-//  Description: Returns a value such that every bit at or above the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a value such that every bit at or above the highest bit in x is 1.
+ */
 INLINE PN_uint32
 flood_bits_up(PN_uint32 x) {
   x |= (x << 1);
@@ -122,11 +107,9 @@ flood_bits_up(PN_uint32 x) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_up
-//  Description: Returns a value such that every bit at or above the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a value such that every bit at or above the highest bit in x is 1.
+ */
 INLINE PN_uint64
 flood_bits_up(PN_uint64 x) {
   x |= (x << 1);
@@ -138,11 +121,10 @@ flood_bits_up(PN_uint64 x) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_lowest_on_bit
-//  Description: Returns the index of the lowest 1 bit in the word.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 1 bit in the word.  Returns -1 if there are
+ * no 1 bits.
+ */
 INLINE int
 get_lowest_on_bit(PN_uint16 x) {
 #if defined(_MSC_VER)
@@ -160,11 +142,10 @@ get_lowest_on_bit(PN_uint16 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_lowest_on_bit
-//  Description: Returns the index of the lowest 1 bit in the word.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 1 bit in the word.  Returns -1 if there are
+ * no 1 bits.
+ */
 INLINE int
 get_lowest_on_bit(PN_uint32 x) {
 #if defined(_MSC_VER)
@@ -182,11 +163,10 @@ get_lowest_on_bit(PN_uint32 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_lowest_on_bit
-//  Description: Returns the index of the lowest 1 bit in the word.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the lowest 1 bit in the word.  Returns -1 if there are
+ * no 1 bits.
+ */
 INLINE int
 get_lowest_on_bit(PN_uint64 x) {
 #if defined(_MSC_VER) && defined(_M_X64)
@@ -204,11 +184,10 @@ get_lowest_on_bit(PN_uint64 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_highest_on_bit
-//  Description: Returns the index of the highest 1 bit in the word.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 1 bit in the word.  Returns -1 if there are
+ * no 1 bits.
+ */
 INLINE int
 get_highest_on_bit(PN_uint16 x) {
 #if defined(_MSC_VER)
@@ -222,11 +201,10 @@ get_highest_on_bit(PN_uint16 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_highest_on_bit
-//  Description: Returns the index of the highest 1 bit in the word.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 1 bit in the word.  Returns -1 if there are
+ * no 1 bits.
+ */
 INLINE int
 get_highest_on_bit(PN_uint32 x) {
 #if defined(_MSC_VER)
@@ -240,11 +218,10 @@ get_highest_on_bit(PN_uint32 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_highest_on_bit
-//  Description: Returns the index of the highest 1 bit in the word.
-//               Returns -1 if there are no 1 bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the highest 1 bit in the word.  Returns -1 if there are
+ * no 1 bits.
+ */
 INLINE int
 get_highest_on_bit(PN_uint64 x) {
 #if defined(_MSC_VER) && defined(_M_X64)
@@ -258,37 +235,28 @@ get_highest_on_bit(PN_uint64 x) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_next_higher_bit
-//  Description: Returns the smallest power of 2 greater than x.
-//
-//               Returns the smallest number n such that (1 << n) is
-//               larger than x.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the smallest power of 2 greater than x.  Returns the smallest number
+ * n such that (1 << n) is larger than x.
+ */
 INLINE int
 get_next_higher_bit(PN_uint16 x) {
   return get_highest_on_bit(x) + 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_next_higher_bit
-//  Description: Returns the smallest power of 2 greater than x.
-//
-//               Returns the smallest number n such that (1 << n) is
-//               larger than x.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the smallest power of 2 greater than x.  Returns the smallest number
+ * n such that (1 << n) is larger than x.
+ */
 INLINE int
 get_next_higher_bit(PN_uint32 x) {
   return get_highest_on_bit(x) + 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_next_higher_bit
-//  Description: Returns the smallest power of 2 greater than x.
-//
-//               Returns the smallest number n such that (1 << n) is
-//               larger than x.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the smallest power of 2 greater than x.  Returns the smallest number
+ * n such that (1 << n) is larger than x.
+ */
 INLINE int
 get_next_higher_bit(PN_uint64 x) {
   return get_highest_on_bit(x) + 1;

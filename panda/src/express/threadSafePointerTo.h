@@ -1,16 +1,15 @@
-// Filename: threadSafePointerTo.h
-// Created by:  drose (28Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadSafePointerTo.h
+ * @author drose
+ * @date 2006-04-28
+ */
 
 #ifndef THREADSAFEPOINTERTO_H
 #define THREADSAFEPOINTERTO_H
@@ -18,14 +17,12 @@
 #include "pandabase.h"
 #include "threadSafePointerToBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSafePointerTo
-// Description : This works exactly like PointerTo, except that the
-//               object is designed to be thread-safe: it is generally
-//               safe to make unprotected assignments to this pointer,
-//               in the sense that the last assignment will win and
-//               the reference counts will be properly maintained.
-////////////////////////////////////////////////////////////////////
+/**
+ * This works exactly like PointerTo, except that the object is designed to be
+ * thread-safe: it is generally safe to make unprotected assignments to this
+ * pointer, in the sense that the last assignment will win and the reference
+ * counts will be properly maintained.
+ */
 template <class T>
 class ThreadSafePointerTo : public ThreadSafePointerToBase<T> {
 public:
@@ -69,10 +66,9 @@ PUBLISHED:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSafeConstPointerTo
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class T>
 class ThreadSafeConstPointerTo : public ThreadSafePointerToBase<T> {
 public:

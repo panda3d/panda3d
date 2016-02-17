@@ -1,16 +1,15 @@
-// Filename: filename.h
-// Created by:  drose (18Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file filename.h
+ * @author drose
+ * @date 1999-01-18
+ */
 
 #ifndef FILENAME_H
 #define FILENAME_H
@@ -26,21 +25,15 @@
 
 class DSearchPath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Filename
-// Description : The name of a file, such as a texture file or an Egg
-//               file.  Stores the full pathname, and includes
-//               functions for extracting out the directory prefix
-//               part and the file extension and stuff.
-//
-//               A Filename is also aware of the mapping between the
-//               Unix-like filename convention we use internally, and
-//               the local OS's specific filename convention, and it
-//               knows how to perform basic OS-specific I/O, like
-//               testing for file existence and searching a
-//               searchpath, as well as the best way to open an
-//               fstream for reading or writing.
-////////////////////////////////////////////////////////////////////
+/**
+ * The name of a file, such as a texture file or an Egg file.  Stores the full
+ * pathname, and includes functions for extracting out the directory prefix part
+ * and the file extension and stuff.  A Filename is also aware of the mapping
+ * between the Unix-like filename convention we use internally, and the local
+ * OS's specific filename convention, and it knows how to perform basic OS-
+ * specific I/O, like testing for file existence and searching a searchpath, as
+ * well as the best way to open an fstream for reading or writing.
+ */
 class EXPCL_DTOOL Filename {
 PUBLISHED:
   enum Type {
@@ -304,6 +297,3 @@ INLINE ostream &operator << (ostream &out, const Filename &n) {
 #include "filename.I"
 
 #endif
-
-
-

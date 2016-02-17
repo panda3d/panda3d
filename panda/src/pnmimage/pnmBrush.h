@@ -1,16 +1,15 @@
-// Filename: pnmBrush.h
-// Created by:  drose (01Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmBrush.h
+ * @author drose
+ * @date 2007-02-01
+ */
 
 #ifndef PNMBRUSH_H
 #define PNMBRUSH_H
@@ -22,22 +21,15 @@
 
 class PNMImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMBrush
-// Description : This class is used to control the shape and color of
-//               the drawing operations performed by a PNMPainter
-//               object.
-//
-//               Normally, you don't create a PNMBrush directly;
-//               instead, use one of the static PNMBrush::make_*()
-//               methods provided here.
-//
-//               A PNMBrush is used to draw the border of a polygon or
-//               rectangle, as well as for filling its interior.  When
-//               it is used to draw a border, the brush is "smeared"
-//               over the border; when it is used to fill the
-//               interior, it is tiled through the interior.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to control the shape and color of the drawing operations
+ * performed by a PNMPainter object.  Normally, you don't create a PNMBrush
+ * directly; instead, use one of the static PNMBrush::make_*() methods provided
+ * here.  A PNMBrush is used to draw the border of a polygon or rectangle, as
+ * well as for filling its interior.  When it is used to draw a border, the
+ * brush is "smeared" over the border; when it is used to fill the interior, it
+ * is tiled through the interior.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMBrush : public ReferenceCount {
 protected:
   INLINE PNMBrush(float xc, float yc);

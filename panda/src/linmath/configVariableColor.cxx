@@ -1,25 +1,22 @@
-// Filename: configVariableColor.cxx
-// Created by:  rdb (02Feb14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableColor.cxx
+ * @author rdb
+ * @date 2014-02-02
+ */
 
 #include "configVariableColor.h"
 #include "pdtoa.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::set_default_value
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigVariableColor::
 set_default_value(const LColor &default_value) {
   char buffer[128];

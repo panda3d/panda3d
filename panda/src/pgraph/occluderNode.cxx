@@ -1,16 +1,15 @@
-// Filename: occluderNode.cxx
-// Created by:  jenes (11Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file occluderNode.cxx
+ * @author jenes
+ * @date 2011-03-11
+ */
 
 #include "occluderNode.h"
 
@@ -45,15 +44,12 @@ TypeHandle OccluderNode::_type_handle;
 PT(Texture) OccluderNode::_viz_tex;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::Constructor
-//       Access: Public
-//  Description: The default constructor creates a default occlusion
-//               polygon in the XZ plane (or XY plane in a y-up
-//               coordinate system).  Use the normal Panda set_pos(),
-//               set_hpr(), set_scale() to position it appropriately,
-//               or replace the vertices with set_vertices().
-////////////////////////////////////////////////////////////////////
+/**
+ * The default constructor creates a default occlusion polygon in the XZ plane
+ * (or XY plane in a y-up coordinate system).  Use the normal Panda set_pos(),
+ * set_hpr(), set_scale() to position it appropriately, or replace the vertices
+ * with set_vertices().
+ */
 OccluderNode::
 OccluderNode(const string &name) :
   PandaNode(name)
@@ -69,11 +65,9 @@ OccluderNode(const string &name) :
                LPoint3::rfu(-1.0, 0.0, 1.0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OccluderNode::
 OccluderNode(const OccluderNode &copy) :
   PandaNode(copy),
@@ -83,47 +77,36 @@ OccluderNode(const OccluderNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OccluderNode::
 ~OccluderNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *OccluderNode::
 make_copy() const {
   return new OccluderNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::preserve_name
-//       Access: Public, Virtual
-//  Description: Returns true if the node's name has extrinsic meaning
-//               and must be preserved across a flatten operation,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node's name has extrinsic meaning and must be preserved
+ * across a flatten operation, false otherwise.
+ */
 bool OccluderNode::
 preserve_name() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this node by the indicated matrix, if it means
+ * anything to do so.  For most kinds of nodes, this does nothing.
+ */
 void OccluderNode::
 xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
@@ -135,31 +118,20 @@ xform(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool OccluderNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Normally, an OccluderNode is invisible.  But if someone shows it,
@@ -180,43 +152,33 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool OccluderNode::
 is_renderable() const {
   return true;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::output
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the node to the
-//               indicated output stream.  This is invoked by the <<
-//               operator.  It may be overridden in derived classes to
-//               include some information relevant to the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the node to the indicated output stream.  This
+ * is invoked by the << operator.  It may be overridden in derived classes to
+ * include some information relevant to the class.
+ */
 void OccluderNode::
 output(ostream &out) const {
   PandaNode::output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Called when needed to recompute the node's
-//               _internal_bound object.  Nodes that contain anything
-//               of substance should redefine this to do the right
-//               thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when needed to recompute the node's _internal_bound object.  Nodes
+ * that contain anything of substance should redefine this to do the right
+ * thing.
+ */
 void OccluderNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -238,12 +200,10 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::get_occluder_viz
-//       Access: Protected
-//  Description: Returns a Geom that represents the visualization of
-//               the OccluderNode, as seen from the front.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Geom that represents the visualization of the OccluderNode, as seen
+ * from the front.
+ */
 PT(Geom) OccluderNode::
 get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
   if (_occluder_viz == (Geom *)NULL) {
@@ -301,11 +261,9 @@ get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
   return _occluder_viz;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::get_occluder_viz_state
-//       Access: Protected
-//  Description: Returns the RenderState to apply to the visualization.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the RenderState to apply to the visualization.
+ */
 CPT(RenderState) OccluderNode::
 get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
   if (_viz_tex == NULL) {
@@ -341,11 +299,9 @@ get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
   return state->compose(viz_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::get_frame_viz_state
-//       Access: Protected
-//  Description: Returns the RenderState to apply to the frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the RenderState to apply to the frame.
+ */
 CPT(RenderState) OccluderNode::
 get_frame_viz_state(CullTraverser *trav, CullTraverserData &data) {
   static CPT(RenderState) viz_state;
@@ -359,23 +315,18 @@ get_frame_viz_state(CullTraverser *trav, CullTraverserData &data) {
   return data._state->compose(viz_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               OccluderNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type OccluderNode.
+ */
 void OccluderNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void OccluderNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
@@ -388,13 +339,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int OccluderNode::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
@@ -402,14 +350,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type OccluderNode is encountered
-//               in the Bam file.  It should create the OccluderNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * OccluderNode is encountered in the Bam file.  It should create the
+ * OccluderNode and extract its information from the file.
+ */
 TypedWritable *OccluderNode::
 make_from_bam(const FactoryParams &params) {
   OccluderNode *node = new OccluderNode("");
@@ -422,13 +367,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new OccluderNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new OccluderNode.
+ */
 void OccluderNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);

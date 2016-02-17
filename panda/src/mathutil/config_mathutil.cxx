@@ -1,16 +1,15 @@
-// Filename: config_mathutil.cxx
-// Created by:  drose (01Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_mathutil.cxx
+ * @author drose
+ * @date 1999-10-01
+ */
 
 #include "config_mathutil.h"
 #include "boundingVolume.h"
@@ -54,14 +53,12 @@ ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type
           "also use 'fastest' if you don't want Panda to waste much time "
           "computing the most optimal bounding volume."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libmathutil
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libmathutil() {
   static bool initialized = false;

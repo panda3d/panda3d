@@ -1,17 +1,15 @@
-// Filename: clientAnalogDevice.cxx
-// Created by:  drose (26Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clientAnalogDevice.cxx
+ * @author drose
+ * @date 2001-01-26
+ */
 
 #include "clientAnalogDevice.h"
 
@@ -21,13 +19,10 @@ TypeHandle ClientAnalogDevice::_type_handle;
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientAnalogDevice::ensure_control_index
-//       Access: Private
-//  Description: Guarantees that there is a slot in the array for the
-//               indicated index number, by filling the array up to
-//               that index if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Guarantees that there is a slot in the array for the indicated index number,
+ * by filling the array up to that index if necessary.
+ */
 void ClientAnalogDevice::
 ensure_control_index(int index) {
   nassertv(index >= 0);
@@ -38,23 +33,18 @@ ensure_control_index(int index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientAnalogDevice::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ClientAnalogDevice::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " " << get_device_name() << ":\n";
   write_controls(out, indent_level + 2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientAnalogDevice::write_analogs
-//       Access: Public
-//  Description: Writes a multi-line description of the current analog
-//               control states.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a multi-line description of the current analog control states.
+ */
 void ClientAnalogDevice::
 write_controls(ostream &out, int indent_level) const {
   bool any_controls = false;

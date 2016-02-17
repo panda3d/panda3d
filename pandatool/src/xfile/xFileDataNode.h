@@ -1,16 +1,15 @@
-// Filename: xFileDataNode.h
-// Created by:  drose (08Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataNode.h
+ * @author drose
+ * @date 2004-10-08
+ */
 
 #ifndef XFILEDATANODE_H
 #define XFILEDATANODE_H
@@ -22,17 +21,13 @@
 #include "pointerTo.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataNode
-// Description : This is an abstract base class for an XFileNode which
-//               is also an XFileDataObject.  That is to say, objects
-//               that inherit from this class may be added to the
-//               toplevel X file graph as nodes, and they also may be
-//               containers for data elements.
-//
-//               Specifically, this is the base class of both
-//               XFileDataNodeTemplate and XFileDataNodeReference.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class for an XFileNode which is also an
+ * XFileDataObject.  That is to say, objects that inherit from this class may be
+ * added to the toplevel X file graph as nodes, and they also may be containers
+ * for data elements.  Specifically, this is the base class of both
+ * XFileDataNodeTemplate and XFileDataNodeReference.
+ */
 class XFileDataNode : public XFileNode, public XFileDataObject {
 public:
   XFileDataNode(XFile *x_file, const string &name,
@@ -73,7 +68,3 @@ private:
 #include "xFileDataNode.I"
 
 #endif
-  
-
-
-

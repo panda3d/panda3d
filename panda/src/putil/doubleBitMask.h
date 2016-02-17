@@ -1,16 +1,15 @@
-// Filename: doubleBitMask.h
-// Created by:  drose (08Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file doubleBitMask.h
+ * @author drose
+ * @date 2000-06-08
+ */
 
 #ifndef DOUBLEBITMASK_H
 #define DOUBLEBITMASK_H
@@ -19,15 +18,12 @@
 
 #include "bitMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DoubleBitMask
-// Description : This is a special BitMask type that is implemented as
-//               a pair of lesser BitMask types, to present a
-//               double-wide bit mask.  For instance, on a 32-bit
-//               system, this can be used to make a single 64-bit bit
-//               mask.  More of these can be ganged up together to
-//               make a 128-bit mask, and so on.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special BitMask type that is implemented as a pair of lesser
+ * BitMask types, to present a double-wide bit mask.  For instance, on a 32-bit
+ * system, this can be used to make a single 64-bit bit mask.  More of these can
+ * be ganged up together to make a 128-bit mask, and so on.
+ */
 template<class BMType>
 class DoubleBitMask {
 public:

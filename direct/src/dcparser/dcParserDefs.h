@@ -1,16 +1,15 @@
-// Filename: dcParserDefs.h
-// Created by:  drose (05Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcParserDefs.h
+ * @author drose
+ * @date 2000-10-05
+ */
 
 #ifndef DCPARSERDEFS_H
 #define DCPARSERDEFS_H
@@ -28,7 +27,7 @@ class DCKeyword;
 class DCPacker;
 
 void dc_init_parser(istream &in, const string &filename, DCFile &file);
-void dc_init_parser_parameter_value(istream &in, const string &filename, 
+void dc_init_parser_parameter_value(istream &in, const string &filename,
                                     DCPacker &packer);
 void dc_init_parser_parameter_description(istream &in, const string &filename,
                                           DCFile *file);

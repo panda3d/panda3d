@@ -1,16 +1,15 @@
-// Filename: x11GraphicsPipe.h
-// Created by:  rdb (07Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file x11GraphicsPipe.h
+ * @author rdb
+ * @date 2009-07-07
+ */
 
 #ifndef X11GRAPHICSPIPE_H
 #define X11GRAPHICSPIPE_H
@@ -25,11 +24,10 @@
 
 class FrameBufferProperties;
 
-////////////////////////////////////////////////////////////////////
-//       Class : x11GraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating graphics windows on an X-based client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating graphics windows on
+ * an X-based client.
+ */
 class x11GraphicsPipe : public GraphicsPipe {
 public:
   x11GraphicsPipe(const string &display = string());
@@ -84,7 +82,7 @@ private:
   static bool _error_handlers_installed;
   static ErrorHandlerFunc *_prev_error_handler;
   static IOErrorHandlerFunc *_prev_io_error_handler;
-  
+
   static bool _x_error_messages_enabled;
   static int _x_error_count;
 

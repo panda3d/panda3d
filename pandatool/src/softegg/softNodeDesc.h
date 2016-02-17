@@ -1,16 +1,15 @@
-// Filename: softNodeDesc.h
-// Created by:  masad (03Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file softNodeDesc.h
+ * @author masad
+ * @date 2003-10-03
+ */
 
 #ifndef SOFTNODEDESC_H
 #define SOFTNODEDESC_H
@@ -36,13 +35,11 @@ class EggGroup;
 class EggTable;
 class EggXfmSAnim;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftNodeDesc
-// Description : Describes a single instance of a node aka element in the Soft
-//               scene graph, relating it to the corresponding egg
-//               structures (e.g. node, group, or table entry) that
-//               will be created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a single instance of a node aka element in the Soft scene graph,
+ * relating it to the corresponding egg structures (e.g.  node, group, or table
+ * entry) that will be created.
+ */
 class SoftNodeDesc : public ReferenceCount, public Namable {
 public:
   SoftNodeDesc(SoftNodeDesc *parent=NULL, const string &name = string());
@@ -115,7 +112,7 @@ public:
   PN_stdfloat *vScale;
   PN_stdfloat *uOffset;
   PN_stdfloat *vOffset;
-  
+
   SAA_Boolean valid;
   SAA_Boolean uv_swap;
   //  SAA_Boolean visible;

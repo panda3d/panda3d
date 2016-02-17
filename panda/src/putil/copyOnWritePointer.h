@@ -1,16 +1,15 @@
-// Filename: copyOnWritePointer.h
-// Created by:  drose (09Apr07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file copyOnWritePointer.h
+ * @author drose
+ * @date 2007-04-09
+ */
 
 #ifndef COPYONWRITEPOINTER_H
 #define COPYONWRITEPOINTER_H
@@ -21,17 +20,13 @@
 #include "pointerTo.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CopyOnWritePointer
-// Description : This safely stores the primary, owned pointer to a
-//               CopyOnWriteObject.  At any time, you may call
-//               get_read_pointer() or get_write_pointer() to get a
-//               read-only or modifiable pointer to the object stored.
-//
-//               There may be multiple copies of a CopyOnWritePointer
-//               which all refer to the same shared object.  They will
-//               negotiate with each other properly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This safely stores the primary, owned pointer to a CopyOnWriteObject.  At any
+ * time, you may call get_read_pointer() or get_write_pointer() to get a read-
+ * only or modifiable pointer to the object stored.  There may be multiple
+ * copies of a CopyOnWritePointer which all refer to the same shared object.
+ * They will negotiate with each other properly.
+ */
 class EXPCL_PANDA_PUTIL CopyOnWritePointer {
 public:
   INLINE CopyOnWritePointer(CopyOnWriteObject *object = NULL);
@@ -70,11 +65,10 @@ private:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : CopyOnWritePointerTo
-// Description : A template wrapper around the above class, mainly to
-//               handle the little typecasting niceties.
-////////////////////////////////////////////////////////////////////
+/**
+ * A template wrapper around the above class, mainly to handle the little
+ * typecasting niceties.
+ */
 template <class T>
 class CopyOnWritePointerTo : public CopyOnWritePointer {
 public:

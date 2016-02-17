@@ -1,16 +1,15 @@
-// Filename: fltMaterial.cxx
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltMaterial.cxx
+ * @author drose
+ * @date 2000-08-25
+ */
 
 #include "fltMaterial.h"
 #include "fltRecordReader.h"
@@ -18,11 +17,9 @@
 
 TypeHandle FltMaterial::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMaterial::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltMaterial::
 FltMaterial(FltHeader *header) : FltRecord(header) {
   _material_index = -1;
@@ -35,14 +32,11 @@ FltMaterial(FltHeader *header) : FltRecord(header) {
   _alpha = 1.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMaterial::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltMaterial::
 extract_record(FltRecordReader &reader) {
   if (!FltRecord::extract_record(reader)) {
@@ -75,14 +69,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMaterial::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltMaterial::
 build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {
@@ -114,14 +105,11 @@ build_record(FltRecordWriter &writer) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMaterial::extract_14_record
-//       Access: Public
-//  Description: Fills in the information in this record based on the
-//               information from the current position within the v14
-//               material palette.  Leaves the iterator at the
-//               beginning of the next material.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information from the
+ * current position within the v14 material palette.  Leaves the iterator at the
+ * beginning of the next material.
+ */
 bool FltMaterial::
 extract_14_record(int index, DatagramIterator &di) {
   _material_index = index;
@@ -147,14 +135,11 @@ extract_14_record(int index, DatagramIterator &di) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMaterial::build_14_record
-//       Access: Public
-//  Description: Fills up the current record on the FltRecordWriter
-//               with data for this record, formatted as a part of a
-//               v14 material palette.  Returns true on success, false
-//               if there is some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * formatted as a part of a v14 material palette.  Returns true on success,
+ * false if there is some error.
+ */
 bool FltMaterial::
 build_14_record(Datagram &datagram) {
   datagram.add_be_float32(_ambient[0]);

@@ -1,16 +1,15 @@
-// Filename: ffmpegVideo.h
-// Created by: jyelon (01Aug2007)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ffmpegVideo.h
+ * @author jyelon
+ * @date 2007-08-01
+ */
 
 #ifndef FFMPEGVIDEO_H
 #define FFMPEGVIDEO_H
@@ -24,10 +23,9 @@ class FactoryParams;
 class BamWriter;
 class BamReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FfmpegVideo
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_FFMPEG FfmpegVideo : public MovieVideo {
 PUBLISHED:
   FfmpegVideo(const Filename &name);
@@ -45,7 +43,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -1,16 +1,15 @@
-// Filename: x11GraphicsWindow.cxx
-// Created by:  rdb (07Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file x11GraphicsWindow.cxx
+ * @author rdb
+ * @date 2009-07-07
+ */
 
 #include "x11GraphicsWindow.h"
 #include "config_x11display.h"
@@ -71,11 +70,9 @@ TypeHandle x11GraphicsWindow::_type_handle;
 
 #define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 x11GraphicsWindow::
 x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -112,11 +109,9 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
   pmap<Filename, X11_Cursor>::iterator it;
@@ -126,16 +121,12 @@ x11GraphicsWindow::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if possible.
+ * Returns true if successful, false on failure.  This may fail if the mouse is
+ * not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool x11GraphicsWindow::
 move_pointer(int device, int x, int y) {
   // Note: this is not thread-safe; it should be called only from App.
@@ -167,15 +158,12 @@ move_pointer(int device, int x, int y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool x11GraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -204,13 +192,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void x11GraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -229,16 +214,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via request_properties()
+ * This function is called only within the window thread.
+ */
 void x11GraphicsWindow::
 process_events() {
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
@@ -462,23 +442,15 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.  The window
+ * properties are applied immediately, rather than waiting until the next frame.
+ * This implies that this method may *only* be called from within the window
+ * thread.  The return value is true if the properties are set, false if they
+ * are ignored.  This is mainly useful for derived classes to implement
+ * extensions to this function.
+ */
 void x11GraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (_pipe == (GraphicsPipe *)NULL) {
@@ -798,32 +770,25 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::mouse_mode_absolute
-//       Access: Private, Virtual
-//  Description: Overridden from GraphicsWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overridden from GraphicsWindow.
+ */
 void x11GraphicsWindow::
 mouse_mode_absolute() {
   // unused: remove in 1.10!
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::mouse_mode_relative
-//       Access: Private, Virtual
-//  Description: Overridden from GraphicsWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overridden from GraphicsWindow.
+ */
 void x11GraphicsWindow::
 mouse_mode_relative() {
   // unused: remove in 1.10!
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void x11GraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -868,13 +833,10 @@ close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool x11GraphicsWindow::
 open_window() {
   if (_visual_info == NULL) {
@@ -1030,19 +992,14 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::set_wm_properties
-//       Access: Private
-//  Description: Asks the window manager to set the appropriate
-//               properties.  In X, these properties cannot be
-//               specified directly by the application; they must be
-//               requested via the window manager, which may or may
-//               not choose to honor the request.
-//
-//               If already_mapped is true, the window has already
-//               been mapped (manifested) on the display.  This means
-//               we may need to use a different action in some cases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the window manager to set the appropriate properties.  In X, these
+ * properties cannot be specified directly by the application; they must be
+ * requested via the window manager, which may or may not choose to honor the
+ * request.  If already_mapped is true, the window has already been mapped
+ * (manifested) on the display.  This means we may need to use a different
+ * action in some cases.
+ */
 void x11GraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   x11GraphicsPipe *x11_pipe;
@@ -1267,12 +1224,10 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   sizeof(protocols) / sizeof(Atom));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::setup_colormap
-//       Access: Private, Virtual
-//  Description: Allocates a colormap appropriate to the visual and
-//               stores in in the _colormap method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a colormap appropriate to the visual and stores in in the _colormap
+ * method.
+ */
 void x11GraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   x11GraphicsPipe *x11_pipe;
@@ -1283,11 +1238,9 @@ setup_colormap(XVisualInfo *visual) {
                               visual->visual, AllocNone);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::open_raw_mice
-//       Access: Private
-//  Description: Adds raw mice to the _input_devices list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds raw mice to the _input_devices list.
+ */
 void x11GraphicsWindow::
 open_raw_mice() {
 #ifdef PHAVE_LINUX_INPUT_H
@@ -1364,11 +1317,9 @@ open_raw_mice() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::poll_raw_mice
-//       Access: Private
-//  Description: Reads events from the raw mouse device files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads events from the raw mouse device files.
+ */
 void x11GraphicsWindow::
 poll_raw_mice() {
 #ifdef PHAVE_LINUX_INPUT_H
@@ -1427,12 +1378,9 @@ poll_raw_mice() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::handle_keystroke
-//       Access: Private
-//  Description: Generates a keystroke corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keystroke corresponding to the indicated X KeyPress event.
+ */
 void x11GraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
   if (!_dga_mouse_enabled) {
@@ -1466,12 +1414,9 @@ handle_keystroke(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::handle_keypress
-//       Access: Private
-//  Description: Generates a keypress corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keypress corresponding to the indicated X KeyPress event.
+ */
 void x11GraphicsWindow::
 handle_keypress(XKeyEvent &event) {
   if (!_dga_mouse_enabled) {
@@ -1502,12 +1447,9 @@ handle_keypress(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::handle_keyrelease
-//       Access: Private
-//  Description: Generates a keyrelease corresponding to the indicated
-//               X KeyRelease event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keyrelease corresponding to the indicated X KeyRelease event.
+ */
 void x11GraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
   if (!_dga_mouse_enabled) {
@@ -1538,12 +1480,10 @@ handle_keyrelease(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               keyboard button indicated by the given key event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the keyboard button indicated
+ * by the given key event.
+ */
 ButtonHandle x11GraphicsWindow::
 get_button(XKeyEvent &key_event, bool allow_shift) {
   KeySym key = XLookupKeysym(&key_event, 0);
@@ -1626,12 +1566,10 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
   return map_button(key);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::map_button
-//       Access: Private
-//  Description: Maps from a single X keysym to Panda's ButtonHandle.
-//               Called by get_button(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from a single X keysym to Panda's ButtonHandle.  Called by get_button(),
+ * above.
+ */
 ButtonHandle x11GraphicsWindow::
 map_button(KeySym key) const {
   switch (key) {
@@ -1955,11 +1893,9 @@ map_button(KeySym key) const {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::map_raw_button
-//       Access: Private
-//  Description: Maps from a single X keycode to Panda's ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from a single X keycode to Panda's ButtonHandle.
+ */
 ButtonHandle x11GraphicsWindow::
 map_raw_button(KeyCode key) const {
   switch (key) {
@@ -2076,12 +2012,10 @@ map_raw_button(KeyCode key) const {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_mouse_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               mouse button indicated by the given button event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the mouse button indicated by
+ * the given button event.
+ */
 ButtonHandle x11GraphicsWindow::
 get_mouse_button(XButtonEvent &button_event) {
   int index = button_event.button;
@@ -2098,12 +2032,10 @@ get_mouse_button(XButtonEvent &button_event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_keyboard_map
-//       Access: Private, Virtual
-//  Description: Returns a ButtonMap containing the association
-//               between raw buttons and virtual buttons.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a ButtonMap containing the association between raw buttons and
+ * virtual buttons.
+ */
 ButtonMap *x11GraphicsWindow::
 get_keyboard_map() const {
   // NB.  This could be improved by using the Xkb API.
@@ -2128,14 +2060,10 @@ get_keyboard_map() const {
   return map;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::check_event
-//       Access: Private, Static
-//  Description: This function is used as a predicate to
-//               XCheckIfEvent() to determine if the indicated queued
-//               X event is relevant and should be returned to this
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used as a predicate to XCheckIfEvent() to determine if the
+ * indicated queued X event is relevant and should be returned to this window.
+ */
 Bool x11GraphicsWindow::
 check_event(X11_Display *display, XEvent *event, char *arg) {
   const x11GraphicsWindow *self = (x11GraphicsWindow *)arg;
@@ -2144,13 +2072,10 @@ check_event(X11_Display *display, XEvent *event, char *arg) {
   return (event->xany.window == self->_xwindow);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_cursor
-//       Access: Private
-//  Description: Loads and returns a Cursor corresponding to the
-//               indicated filename.  If the file cannot be loaded,
-//               returns None.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads and returns a Cursor corresponding to the indicated filename.  If the
+ * file cannot be loaded, returns None.
+ */
 X11_Cursor x11GraphicsWindow::
 get_cursor(const Filename &filename) {
 #ifndef HAVE_XCURSOR
@@ -2235,13 +2160,10 @@ get_cursor(const Filename &filename) {
 }
 
 #ifdef HAVE_XCURSOR
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::load_ico
-//       Access: Private
-//  Description: Reads a Windows .ico or .cur file from the
-//               indicated stream and returns it as an X11 Cursor.
-//               If the file cannot be loaded, returns None.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a Windows .ico or .cur file from the indicated stream and returns it as
+ * an X11 Cursor.  If the file cannot be loaded, returns None.
+ */
 X11_Cursor x11GraphicsWindow::
 read_ico(istream &ico) {
  // Local structs, this is just POD, make input easier
@@ -2422,4 +2344,3 @@ cleanup:
   return ret;
 }
 #endif  // HAVE_XCURSOR
-

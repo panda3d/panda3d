@@ -1,16 +1,15 @@
-// Filename: cylindricalLens.cxx
-// Created by:  drose (12Dec01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cylindricalLens.cxx
+ * @author drose
+ * @date 2001-12-12
+ */
 
 #include "cylindricalLens.h"
 #include "deg_2_rad.h"
@@ -23,35 +22,25 @@ static const PN_stdfloat cylindrical_k = 60.0f;
 // focal_length = film_size * cylindrical_k / fov;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates a new Lens just like this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a new Lens just like this one.
+ */
 PT(Lens) CylindricalLens::
 make_copy() const {
   return new CylindricalLens(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::do_extrude
-//       Access: Protected, Virtual
-//  Description: Given a 2-d point in the range (-1,1) in both
-//               dimensions, where (0,0) is the center of the
-//               lens and (-1,-1) is the lower-left corner,
-//               compute the corresponding vector in space that maps
-//               to this point, if such a vector can be determined.
-//               The vector is returned by indicating the points on
-//               the near plane and far plane that both map to the
-//               indicated 2-d point.
-//
-//               The z coordinate of the 2-d point is ignored.
-//
-//               Returns true if the vector is defined, or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a 2-d point in the range (-1,1) in both dimensions, where (0,0) is the
+ * center of the lens and (-1,-1) is the lower-left corner, compute the
+ * corresponding vector in space that maps to this point, if such a vector can
+ * be determined.  The vector is returned by indicating the points on the near
+ * plane and far plane that both map to the indicated 2-d point.  The z
+ * coordinate of the 2-d point is ignored.  Returns true if the vector is
+ * defined, or false otherwise.
+ */
 bool CylindricalLens::
-do_extrude(const Lens::CData *lens_cdata, 
+do_extrude(const Lens::CData *lens_cdata,
            const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
   // Undo the shifting from film offsets, etc.  This puts the point
   // into the range [-film_size/2, film_size/2] in x and y.
@@ -76,26 +65,15 @@ do_extrude(const Lens::CData *lens_cdata,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::do_extrude_vec
-//       Access: Protected, Virtual
-//  Description: Given a 2-d point in the range (-1,1) in both
-//               dimensions, where (0,0) is the center of the
-//               lens and (-1,-1) is the lower-left corner,
-//               compute the vector that corresponds to the view
-//               direction.  This will be parallel to the normal on
-//               the surface (the far plane) corresponding to the lens
-//               shape at this point.
-//
-//               See the comment block on Lens::extrude_vec_impl() for
-//               a more in-depth comment on the meaning of this
-//               vector.
-//
-//               The z coordinate of the 2-d point is ignored.
-//
-//               Returns true if the vector is defined, or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a 2-d point in the range (-1,1) in both dimensions, where (0,0) is the
+ * center of the lens and (-1,-1) is the lower-left corner, compute the vector
+ * that corresponds to the view direction.  This will be parallel to the normal
+ * on the surface (the far plane) corresponding to the lens shape at this point.
+ * See the comment block on Lens::extrude_vec_impl() for a more in-depth comment
+ * on the meaning of this vector.  The z coordinate of the 2-d point is ignored.
+ * Returns true if the vector is defined, or false otherwise.
+ */
 bool CylindricalLens::
 do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &vec) const {
   // Undo the shifting from film offsets, etc.  This puts the point
@@ -112,23 +90,15 @@ do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::do_project
-//       Access: Protected, Virtual
-//  Description: Given a 3-d point in space, determine the 2-d point
-//               this maps to, in the range (-1,1) in both dimensions,
-//               where (0,0) is the center of the lens and
-//               (-1,-1) is the lower-left corner.
-//
-//               Some lens types also set the z coordinate of the 2-d
-//               point to a value in the range (-1, 1), where -1
-//               represents a point on the near plane, and 1
-//               represents a point on the far plane.
-//
-//               Returns true if the 3-d point is in front of the lens
-//               and within the viewing frustum (in which case point2d
-//               is filled in), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a 3-d point in space, determine the 2-d point this maps to, in the
+ * range (-1,1) in both dimensions, where (0,0) is the center of the lens and
+ * (-1,-1) is the lower-left corner.  Some lens types also set the z coordinate
+ * of the 2-d point to a value in the range (-1, 1), where -1 represents a point
+ * on the near plane, and 1 represents a point on the far plane.  Returns true
+ * if the 3-d point is in front of the lens and within the viewing frustum (in
+ * which case point2d is filled in), or false otherwise.
+ */
 bool CylindricalLens::
 do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
@@ -168,19 +138,16 @@ do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point
   point2d = point2d * do_get_film_mat(lens_cdata);
 
   return
-    point2d[0] >= -1.0f && point2d[0] <= 1.0f && 
+    point2d[0] >= -1.0f && point2d[0] <= 1.0f &&
     point2d[1] >= -1.0f && point2d[1] <= 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::fov_to_film
-//       Access: Protected, Virtual
-//  Description: Given a field of view in degrees and a focal length,
-//               compute the correspdonding width (or height) on the
-//               film.  If horiz is true, this is in the horizontal
-//               direction; otherwise, it is in the vertical direction
-//               (some lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a field of view in degrees and a focal length, compute the
+ * correspdonding width (or height) on the film.  If horiz is true, this is in
+ * the horizontal direction; otherwise, it is in the vertical direction (some
+ * lenses behave differently in each direction).
+ */
 PN_stdfloat CylindricalLens::
 fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const {
   if (horiz) {
@@ -190,15 +157,12 @@ fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::fov_to_focal_length
-//       Access: Protected, Virtual
-//  Description: Given a field of view in degrees and a width (or
-//               height) on the film, compute the focal length of the
-//               lens.  If horiz is true, this is in the horizontal
-//               direction; otherwise, it is in the vertical direction
-//               (some lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a field of view in degrees and a width (or height) on the film, compute
+ * the focal length of the lens.  If horiz is true, this is in the horizontal
+ * direction; otherwise, it is in the vertical direction (some lenses behave
+ * differently in each direction).
+ */
 PN_stdfloat CylindricalLens::
 fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const {
   if (horiz) {
@@ -208,15 +172,12 @@ fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::film_to_fov
-//       Access: Protected, Virtual
-//  Description: Given a width (or height) on the film and a focal
-//               length, compute the field of view in degrees.  If
-//               horiz is true, this is in the horizontal direction;
-//               otherwise, it is in the vertical direction (some
-//               lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a width (or height) on the film and a focal length, compute the field
+ * of view in degrees.  If horiz is true, this is in the horizontal direction;
+ * otherwise, it is in the vertical direction (some lenses behave differently in
+ * each direction).
+ */
 PN_stdfloat CylindricalLens::
 film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool horiz) const {
   if (horiz) {

@@ -1,16 +1,15 @@
-// Filename: vertexDataPage.h
-// Created by:  drose (04Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexDataPage.h
+ * @author drose
+ * @date 2007-06-04
+ */
 
 #ifndef VERTEXDATAPAGE_H
 #define VERTEXDATAPAGE_H
@@ -30,13 +29,11 @@
 class VertexDataBook;
 class VertexDataBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexDataPage
-// Description : A block of bytes that holds one or more
-//               VertexDataBlocks.  The entire page may be paged out,
-//               in the form of in-memory compression or to an on-disk
-//               cache file, if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * A block of bytes that holds one or more VertexDataBlocks.  The entire page
+ * may be paged out, in the form of in-memory compression or to an on-disk cache
+ * file, if necessary.
+ */
 class EXPCL_PANDA_GOBJ VertexDataPage : public SimpleAllocator, public SimpleLruPage {
 private:
   VertexDataPage(size_t book_size);
@@ -124,7 +121,7 @@ private:
   private:
     PageThreadManager *_manager;
     VertexDataPage *_working_page;
-    
+
     // Signaled when _working_page is set to NULL after finishing a
     // task.
     ConditionVar _working_cvar;
@@ -187,7 +184,7 @@ private:
     unsigned char _buffer[deflate_page_size];
     size_t _used_size;
     DeflatePage *_next;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -195,7 +192,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "VertexDataPage::DeflatePage");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };

@@ -1,16 +1,15 @@
-// Filename: displayRegionBase.h
-// Created by:  drose (20Feb09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegionBase.h
+ * @author drose
+ * @date 2009-02-20
+ */
 
 #ifndef DISPLAYREGIONBASE_H
 #define DISPLAYREGIONBASE_H
@@ -19,11 +18,10 @@
 
 #include "typedReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionBase
-// Description : An abstract base class for DisplayRegion, mainly so
-//               we can store DisplayRegion pointers in a Camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for DisplayRegion, mainly so we can store
+ * DisplayRegion pointers in a Camera.
+ */
 class EXPCL_PANDA_GSGBASE DisplayRegionBase : public TypedReferenceCount {
 protected:
   INLINE DisplayRegionBase();

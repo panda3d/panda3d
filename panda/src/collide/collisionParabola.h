@@ -1,16 +1,15 @@
-// Filename: collisionParabola.h
-// Created by:  drose (11Oct07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionParabola.h
+ * @author drose
+ * @date 2007-10-11
+ */
 
 #ifndef COLLISIONPARABOLA_H
 #define COLLISIONPARABOLA_H
@@ -22,16 +21,12 @@
 
 class LensNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionParabola
-// Description : This defines a parabolic arc, or subset of an arc,
-//               similar to the path of a projectile or falling
-//               object.  It is finite, having a specific beginning
-//               and end, but it is infinitely thin.
-//
-//               Think of it as a wire bending from point t1 to point
-//               t2 along the path of a pre-defined parabola.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a parabolic arc, or subset of an arc, similar to the path of a
+ * projectile or falling object.  It is finite, having a specific beginning and
+ * end, but it is infinitely thin.  Think of it as a wire bending from point t1
+ * to point t2 along the path of a pre-defined parabola.
+ */
 class EXPCL_PANDA_COLLIDE CollisionParabola : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionParabola();
@@ -110,5 +105,3 @@ private:
 #include "collisionParabola.I"
 
 #endif
-
-

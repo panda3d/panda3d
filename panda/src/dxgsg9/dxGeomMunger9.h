@@ -1,16 +1,15 @@
-// Filename: dxGeomMunger9.h
-// Created by:  drose (11Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxGeomMunger9.h
+ * @author drose
+ * @date 2005-03-11
+ */
 
 #ifndef DXGEOMMUNGER9_H
 #define DXGEOMMUNGER9_H
@@ -21,14 +20,12 @@
 #include "weakPointerTo.h"
 #include "weakPointerCallback.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXGeomMunger9
-// Description : This specialization on GeomMunger finesses vertices
-//               for DirectX rendering.  In particular, it makes sure
-//               colors are stored in DirectX's packed_argb format,
-//               and that all relevant components are packed into a
-//               single array, in the correct order.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on GeomMunger finesses vertices for DirectX rendering.
+ * In particular, it makes sure colors are stored in DirectX's packed_argb
+ * format, and that all relevant components are packed into a single array, in
+ * the correct order.
+ */
 class EXPCL_PANDADX DXGeomMunger9 : public StandardMunger, public WeakPointerCallback {
 public:
   INLINE DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state);
@@ -80,4 +77,3 @@ private:
 #include "dxGeomMunger9.I"
 
 #endif
-

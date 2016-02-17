@@ -1,16 +1,15 @@
-// Filename: eggNurbsCurve.cxx
-// Created by:  drose (15Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggNurbsCurve.cxx
+ * @author drose
+ * @date 2000-02-15
+ */
 
 #include "eggNurbsCurve.h"
 
@@ -18,16 +17,12 @@
 
 TypeHandle EggNurbsCurve::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsCurve::setup
-//       Access: Public
-//  Description: Prepares a new curve definition with the indicated
-//               order and number of knots.  This also implies a
-//               particular number of vertices as well (the number of
-//               knots minus the order), but it is up to the user to
-//               add the correct number of vertices to the curve by
-//               repeatedly calling push_back().
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepares a new curve definition with the indicated order and number of knots.
+ * This also implies a particular number of vertices as well (the number of
+ * knots minus the order), but it is up to the user to add the correct number of
+ * vertices to the curve by repeatedly calling push_back().
+ */
 void EggNurbsCurve::
 setup(int order, int num_knots) {
   _order = order;
@@ -40,17 +35,13 @@ setup(int order, int num_knots) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsCurve::set_num_knots
-//       Access: Public
-//  Description: Directly changes the number of knots.  This will
-//               either add zero-valued knots onto the end, or
-//               truncate knot values from the end, depending on
-//               whether the list is being increased or decreased.  If
-//               possible, it is preferable to use the setup() method
-//               instead of directly setting the number of knots, as
-//               this may result in an invalid curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly changes the number of knots.  This will either add zero-valued knots
+ * onto the end, or truncate knot values from the end, depending on whether the
+ * list is being increased or decreased.  If possible, it is preferable to use
+ * the setup() method instead of directly setting the number of knots, as this
+ * may result in an invalid curve.
+ */
 void EggNurbsCurve::
 set_num_knots(int num) {
   if ((int)_knots.size() >= num) {
@@ -65,14 +56,11 @@ set_num_knots(int num) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsCurve::is_valid
-//       Access: Public
-//  Description: Returns true if the NURBS parameters are all
-//               internally consistent (e.g. it has the right number
-//               of vertices to match its number of knots and order in
-//               each dimension), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the NURBS parameters are all internally consistent (e.g.  it
+ * has the right number of vertices to match its number of knots and order in
+ * each dimension), or false otherwise.
+ */
 bool EggNurbsCurve::
 is_valid() const {
   if (_order < 1 || _order > 4) {
@@ -97,14 +85,11 @@ is_valid() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsCurve::is_closed
-//       Access: Public
-//  Description: Returns true if the curve appears to be closed.
-//               Since the Egg syntax does not provide a means for
-//               explicit indication of closure, this has to be
-//               guessed at by examining the curve itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the curve appears to be closed.  Since the Egg syntax does
+ * not provide a means for explicit indication of closure, this has to be
+ * guessed at by examining the curve itself.
+ */
 bool EggNurbsCurve::
 is_closed() const {
   // Technically, the curve is closed if the CV's at the end are
@@ -122,12 +107,9 @@ is_closed() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsCurve::write
-//       Access: Public, Virtual
-//  Description: Writes the nurbsCurve to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the nurbsCurve to the indicated output stream in Egg format.
+ */
 void EggNurbsCurve::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<NurbsCurve>");

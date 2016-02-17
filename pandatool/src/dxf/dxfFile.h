@@ -1,16 +1,15 @@
-// Filename: dxfFile.h
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxfFile.h
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #ifndef DXFFILE_H
 #define DXFFILE_H
@@ -28,14 +27,11 @@
 static const int DXF_max_line = 256;
 static const int DXF_num_colors = 256;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFFile
-// Description : A generic DXF-reading class.  This class can read a
-//               DXF file but doesn't actually do anything with the
-//               data; it's intended to be inherited from and the
-//               appropriate functions overridden (particularly
-//               DoneEntity()).
-////////////////////////////////////////////////////////////////////
+/**
+ * A generic DXF-reading class.  This class can read a DXF file but doesn't
+ * actually do anything with the data; it's intended to be inherited from and
+ * the appropriate functions overridden (particularly DoneEntity()).
+ */
 class DXFFile : public MemoryBase {
 public:
   DXFFile();

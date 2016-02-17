@@ -1,16 +1,15 @@
-// Filename: recorderController.cxx
-// Created by:  drose (24Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file recorderController.cxx
+ * @author drose
+ * @date 2004-01-24
+ */
 
 #include "recorderController.h"
 #include "recorderFrame.h"
@@ -23,11 +22,9 @@
 TypeHandle RecorderController::_type_handle;
 RecorderController::RecorderFactory *RecorderController::_factory = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 RecorderController::
 RecorderController() {
   _clock_offset = 0.0;
@@ -42,24 +39,19 @@ RecorderController() {
   _eof = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 RecorderController::
 ~RecorderController() {
   close();
   delete _user_table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::begin_record
-//       Access: Published
-//  Description: Begins recording data to the indicated filename.  All
-//               of the recorders in use should already have been
-//               added.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins recording data to the indicated filename.  All of the recorders in use
+ * should already have been added.
+ */
 bool RecorderController::
 begin_record(const Filename &filename) {
   close();
@@ -101,17 +93,13 @@ begin_record(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::begin_playback
-//       Access: Published
-//  Description: Begins playing back data from the indicated filename.
-//               All of the recorders in use should already have been
-//               added, although this may define additional recorders
-//               if they are present in the file (these new recorders
-//               will not be used).  This may also undefine recorders
-//               that were previously added but are not present in the
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins playing back data from the indicated filename.  All of the recorders
+ * in use should already have been added, although this may define additional
+ * recorders if they are present in the file (these new recorders will not be
+ * used).  This may also undefine recorders that were previously added but are
+ * not present in the file.
+ */
 bool RecorderController::
 begin_playback(const Filename &filename) {
   close();
@@ -176,11 +164,9 @@ begin_playback(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::close
-//       Access: Published
-//  Description: Finishes recording data to the indicated filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finishes recording data to the indicated filename.
+ */
 void RecorderController::
 close() {
   if (_writer != (BamWriter *)NULL) {
@@ -211,12 +197,10 @@ close() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::record_frame
-//       Access: Published
-//  Description: Gets the next frame of data from all of the active
-//               recorders and adds it to the output file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the next frame of data from all of the active recorders and adds it to
+ * the output file.
+ */
 void RecorderController::
 record_frame() {
   if (is_recording()) {
@@ -231,12 +215,10 @@ record_frame() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::play_frame
-//       Access: Published
-//  Description: Gets the next frame of data from all of the active
-//               recorders and adds it to the output file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the next frame of data from all of the active recorders and adds it to
+ * the output file.
+ */
 void RecorderController::
 play_frame() {
   if (is_playing()) {
@@ -312,13 +294,10 @@ play_frame() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderController::read_frame
-//       Access: Private
-//  Description: Loads the next frame data from the playback session
-//               file.  Returns the frame data pointer on success, or
-//               NULL on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the next frame data from the playback session file.  Returns the frame
+ * data pointer on success, or NULL on failure.
+ */
 RecorderFrame *RecorderController::
 read_frame() {
   TypedWritable *object = _reader->read_object();

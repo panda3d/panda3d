@@ -1,17 +1,15 @@
-// Filename: textureStagePool.cxx
-// Created by:  drose (03May10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureStagePool.cxx
+ * @author drose
+ * @date 2010-05-03
+ */
 
 #include "textureStagePool.h"
 #include "config_gobj.h"
@@ -22,24 +20,18 @@
 TextureStagePool *TextureStagePool::_global_ptr = (TextureStagePool *)NULL;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::write
-//       Access: Published, Static
-//  Description: Lists the contents of the TextureStage pool to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists the contents of the TextureStage pool to the indicated output stream.
+ */
 void TextureStagePool::
 write(ostream &out) {
   get_global_ptr()->ns_list_contents(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::Constructor
-//       Access: Private
-//  Description: The constructor is not intended to be called
-//               directly; there's only supposed to be one TextureStagePool
-//               in the universe and it constructs itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor is not intended to be called directly; there's only supposed
+ * to be one TextureStagePool in the universe and it constructs itself.
+ */
 TextureStagePool::
 TextureStagePool() {
   ConfigVariableEnum<Mode> texture_stage_pool_mode
@@ -51,11 +43,9 @@ TextureStagePool() {
   _mode = texture_stage_pool_mode.get_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::ns_get_stage
-//       Access: Public
-//  Description: The nonstatic implementation of get_stage().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of get_stage().
+ */
 TextureStage *TextureStagePool::
 ns_get_stage(TextureStage *temp) {
   MutexHolder holder(_lock);
@@ -99,11 +89,9 @@ ns_get_stage(TextureStage *temp) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::ns_release_stage
-//       Access: Private
-//  Description: The nonstatic implementation of release_stage().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_stage().
+ */
 void TextureStagePool::
 ns_release_stage(TextureStage *temp) {
   MutexHolder holder(_lock);
@@ -125,11 +113,9 @@ ns_release_stage(TextureStage *temp) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::ns_release_all_stages
-//       Access: Private
-//  Description: The nonstatic implementation of release_all_stages().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_all_stages().
+ */
 void TextureStagePool::
 ns_release_all_stages() {
   MutexHolder holder(_lock);
@@ -138,11 +124,9 @@ ns_release_all_stages() {
   _stages_by_properties.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::ns_set_mode
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextureStagePool::
 ns_set_mode(TextureStagePool::Mode mode) {
   MutexHolder holder(_lock);
@@ -154,11 +138,9 @@ ns_set_mode(TextureStagePool::Mode mode) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::ns_get_mode
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureStagePool::Mode TextureStagePool::
 ns_get_mode() {
   MutexHolder holder(_lock);
@@ -166,11 +148,9 @@ ns_get_mode() {
   return _mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::ns_garbage_collect
-//       Access: Private
-//  Description: The nonstatic implementation of garbage_collect().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of garbage_collect().
+ */
 int TextureStagePool::
 ns_garbage_collect() {
   MutexHolder holder(_lock);
@@ -183,7 +163,7 @@ ns_garbage_collect() {
     {
       int num_released = 0;
       StagesByName new_set;
-      
+
       StagesByName::iterator ni;
       for (ni = _stages_by_name.begin(); ni != _stages_by_name.end(); ++ni) {
         const string &name = (*ni).first;
@@ -198,7 +178,7 @@ ns_garbage_collect() {
           new_set.insert(new_set.end(), *ni);
         }
       }
-      
+
       _stages_by_name.swap(new_set);
       return num_released;
     }
@@ -207,7 +187,7 @@ ns_garbage_collect() {
     {
       int num_released = 0;
       StagesByProperties new_set;
-      
+
       StagesByProperties::iterator si;
       for (si = _stages_by_properties.begin(); si != _stages_by_properties.end(); ++si) {
         const TextureStage *ts1 = (*si).first;
@@ -222,7 +202,7 @@ ns_garbage_collect() {
           new_set.insert(new_set.end(), *si);
         }
       }
-      
+
       _stages_by_properties.swap(new_set);
       return num_released;
     }
@@ -231,11 +211,9 @@ ns_garbage_collect() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::ns_list_contents
-//       Access: Private
-//  Description: The nonstatic implementation of list_contents().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of list_contents().
+ */
 void TextureStagePool::
 ns_list_contents(ostream &out) const {
   MutexHolder holder(_lock);
@@ -274,12 +252,10 @@ ns_list_contents(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::get_global_ptr
-//       Access: Private, Static
-//  Description: Initializes and/or returns the global pointer to the
-//               one TextureStagePool object in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes and/or returns the global pointer to the one TextureStagePool
+ * object in the system.
+ */
 TextureStagePool *TextureStagePool::
 get_global_ptr() {
   if (_global_ptr == (TextureStagePool *)NULL) {
@@ -288,10 +264,9 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::Mode output operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, TextureStagePool::Mode mode) {
   switch (mode) {
@@ -308,10 +283,9 @@ operator << (ostream &out, TextureStagePool::Mode mode) {
   return out << "**invalid mode (" << (int)mode << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStagePool::Mode input operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 istream &
 operator >> (istream &in, TextureStagePool::Mode &mode) {
   string word;

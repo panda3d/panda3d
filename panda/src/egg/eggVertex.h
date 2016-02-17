@@ -1,16 +1,15 @@
-// Filename: eggVertex.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggVertex.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGVERTEX_H
 #define EGGVERTEX_H
@@ -33,11 +32,10 @@ class EggGroup;
 class EggPrimitive;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggVertex
-// Description : Any one-, two-, three-, or four-component vertex,
-//               possibly with attributes such as a normal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Any one-, two-, three-, or four-component vertex, possibly with attributes
+ * such as a normal.
+ */
 class EXPCL_PANDAEGG EggVertex : public EggObject, public EggAttributes {
 public:
   typedef pset<EggGroup *> GroupRef;
@@ -209,13 +207,11 @@ INLINE ostream &operator << (ostream &out, const EggVertex &vert) {
   return out;
 }
 
-////////////////////////////////////////////////////////////////////
-//       Class : UniqueEggVertices
-// Description : An STL function object for sorting vertices into
-//               order by properties.  Returns true if the two
-//               referenced EggVertex pointers are in sorted order,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object for sorting vertices into order by properties.
+ * Returns true if the two referenced EggVertex pointers are in sorted order,
+ * false otherwise.
+ */
 class EXPCL_PANDAEGG UniqueEggVertices {
 public:
   INLINE bool operator ()(const EggVertex *v1, const EggVertex *v2) const;
@@ -224,6 +220,3 @@ public:
 #include "eggVertex.I"
 
 #endif
-
-
-

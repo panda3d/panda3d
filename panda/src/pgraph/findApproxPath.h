@@ -1,16 +1,15 @@
-// Filename: findApproxPath.h
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file findApproxPath.h
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #ifndef FINDAPPROXPATH_H
 #define FINDAPPROXPATH_H
@@ -24,13 +23,11 @@
 
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FindApproxPath
-// Description : This class is local to this package only; it doesn't
-//               get exported.  It chops a string path, as supplied to
-//               find_up() or find_down(), and breaks it up into its
-//               component pieces.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is local to this package only; it doesn't get exported.  It chops
+ * a string path, as supplied to find_up() or find_down(), and breaks it up into
+ * its component pieces.
+ */
 class FindApproxPath {
 public:
   INLINE FindApproxPath();

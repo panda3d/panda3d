@@ -1,16 +1,15 @@
-// Filename: eggRetargetAnim.cxx
-// Created by:  drose (05May05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggRetargetAnim.cxx
+ * @author drose
+ * @date 2005-05-05
+ */
 
 #include "eggRetargetAnim.h"
 
@@ -24,11 +23,9 @@
 #include "compose_matrix.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRetargetAnim::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggRetargetAnim::
 EggRetargetAnim() {
   add_path_replace_options();
@@ -61,11 +58,9 @@ EggRetargetAnim() {
      &EggRetargetAnim::dispatch_vector_string_comma, NULL, &_keep_joints);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRetargetAnim::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggRetargetAnim::
 run() {
   nassertv(_collection != (EggCharacterCollection *)NULL);
@@ -113,7 +108,7 @@ run() {
   int reference_egg_index = _collection->add_egg(reference_egg);
   nassertv(reference_egg_index > 0);
   nassertv(_collection->get_num_characters() == 1);
-  
+
   int reference_model = _collection->get_first_model_index(reference_egg_index);
   EggCharacterData *char_data = _collection->get_character(0);
   nout << "Processing " << char_data->get_name() << "\n";
@@ -134,13 +129,10 @@ run() {
   write_eggs();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRetargetAnim::retarget_anim
-//       Access: Public
-//  Description: Recursively replaces the scale and translate
-//               information on all of the joints in the char_data
-//               hierarchy wiht this from reference_char.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively replaces the scale and translate information on all of the joints
+ * in the char_data hierarchy wiht this from reference_char.
+ */
 void EggRetargetAnim::
 retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
               int reference_model, const pset<string> &keep_names,
@@ -154,22 +146,22 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
     for (int i = 0; i < num_models; i++) {
       if (joint_data->has_model(i)) {
         int num_frames = char_data->get_num_frames(i);
-        
+
         EggBackPointer *back = joint_data->get_model(i);
         nassertv(back != (EggBackPointer *)NULL);
         EggJointPointer *joint;
         DCAST_INTO_V(joint, back);
-        
+
         LMatrix4d ref = joint_data->get_frame(reference_model, 0);
         LVecBase3d ref_scale, ref_shear, ref_hpr, ref_translate;
         if (!decompose_matrix(ref, ref_scale, ref_shear, ref_hpr, ref_translate)) {
-          nout << "Could not decompose rest frame for " 
+          nout << "Could not decompose rest frame for "
                << joint_data->get_name() << "\n";
         } else {
           int f;
           for (f = 0; f < num_frames; f++) {
             LMatrix4d mat = joint_data->get_frame(i, f);
-            
+
             LVecBase3d scale, shear, hpr, translate;
             if (decompose_matrix(mat, scale, shear, hpr, translate)) {
               compose_matrix(mat, ref_scale, ref_shear, hpr, ref_translate);

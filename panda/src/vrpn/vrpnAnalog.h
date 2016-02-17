@@ -1,16 +1,15 @@
-// Filename: vrpnAnalog.h
-// Created by:  drose (26Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrpnAnalog.h
+ * @author drose
+ * @date 2001-01-26
+ */
 
 #ifndef VRPNANALOG_H
 #define VRPNANALOG_H
@@ -23,22 +22,15 @@
 
 class VrpnAnalogDevice;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnAnalog
-// Description : This is the actual interface to a particular VRPN
-//               analog device, and all of its numbered controls.  A
-//               pointer to this object is stored in the VrpnClient
-//               class for each differently-named VRPN analog device
-//               we connect to.
-//
-//               The VRPN callbacks go here, which in turn get
-//               vectored out to any VrpnAnalogDevice objects that
-//               register with this.  When the last VrpnAnalogDevice
-//               object unregisters, the VrpnAnalog will be deleted
-//               by the VrpnClient.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the actual interface to a particular VRPN analog device, and all of
+ * its numbered controls.  A pointer to this object is stored in the VrpnClient
+ * class for each differently-named VRPN analog device we connect to.  The VRPN
+ * callbacks go here, which in turn get vectored out to any VrpnAnalogDevice
+ * objects that register with this.  When the last VrpnAnalogDevice object
+ * unregisters, the VrpnAnalog will be deleted by the VrpnClient.  This class
+ * does not need to be exported from the DLL.
+ */
 class VrpnAnalog {
 public:
   VrpnAnalog(const string &analog_name, vrpn_Connection *connection);

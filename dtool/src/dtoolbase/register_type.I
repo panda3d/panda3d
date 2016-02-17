@@ -1,27 +1,23 @@
-// Filename: register_type.I
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file register_type.I
+ * @author drose
+ * @date 2001-08-06
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: register_type
-//  Description: This inline function is just a convenient way to call
-//               TypeRegistry::register_type(), along with zero to four
-//               record_derivation()s.  If for some reason you have a
-//               class that has more than four base classes (you're
-//               insane!), then you will need to call Register() and
-//               record_derivation() yourself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This inline function is just a convenient way to call
+ * TypeRegistry::register_type(), along with zero to four record_derivation()s.
+ * If for some reason you have a class that has more than four base classes
+ * (you're insane!), then you will need to call Register() and
+ * record_derivation() yourself.
+ */
 INLINE void
 register_type(TypeHandle &type_handle, const string &name) {
   TypeRegistry::ptr()->register_type(type_handle, name);
@@ -63,14 +59,11 @@ register_type(TypeHandle &type_handle, const string &name,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: register_dynamic_type
-//  Description: This is essentially similar to register_type(),
-//               except that it doesn't store a reference to any
-//               TypeHandle passed in and it therefore doesn't
-//               complain if the type is registered more than once to
-//               different TypeHandle reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is essentially similar to register_type(), except that it doesn't store
+ * a reference to any TypeHandle passed in and it therefore doesn't complain if
+ * the type is registered more than once to different TypeHandle reference.
+ */
 INLINE TypeHandle
 register_dynamic_type(const string &name) {
   return TypeRegistry::ptr()->register_dynamic_type(name);

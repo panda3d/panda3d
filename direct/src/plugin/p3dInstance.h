@@ -1,16 +1,15 @@
-// Filename: p3dInstance.h
-// Created by:  drose (29May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dInstance.h
+ * @author drose
+ * @date 2009-05-29
+ */
 
 #ifndef P3DINSTANCE_H
 #define P3DINSTANCE_H
@@ -45,15 +44,13 @@ class P3DObject;
 class P3DMainObject;
 class P3DTemporaryFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DInstance
-// Description : This is an instance of a Panda3D window, as seen in
-//               the parent-level process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an instance of a Panda3D window, as seen in the parent-level process.
+ */
 class P3DInstance : public P3D_instance, public P3DReferenceCount {
 public:
-  P3DInstance(P3D_request_ready_func *func, 
-              const P3D_token tokens[], size_t num_tokens, 
+  P3DInstance(P3D_request_ready_func *func,
+              const P3D_token tokens[], size_t num_tokens,
               int argc, const char *argv[], void *user_data);
   ~P3DInstance();
   void cleanup();
@@ -78,9 +75,9 @@ public:
 
   bool feed_url_stream(int unique_id,
                        P3D_result_code result_code,
-                       int http_status_code, 
+                       int http_status_code,
                        size_t total_expected_data,
-                       const unsigned char *this_data, 
+                       const unsigned char *this_data,
                        size_t this_data_size);
 
   bool handle_event(const P3D_event_data &event);
@@ -94,14 +91,14 @@ public:
 
   inline P3D_request_ready_func *get_request_ready_func() const;
 
-  void add_package(const string &name, const string &version, 
+  void add_package(const string &name, const string &version,
                    const string &seq, P3DHost *host);
   void add_package(P3DPackage *package);
   void remove_package(P3DPackage *package);
   bool get_packages_info_ready() const;
   bool get_packages_ready() const;
   bool get_packages_failed() const;
-  
+
   inline bool is_trusted() const;
   inline bool get_matches_script_origin() const;
   int start_download(P3DDownload *download, bool add_request = true);
@@ -186,7 +183,7 @@ private:
   void send_browser_script_object();
   P3D_request *make_p3d_request(TiXmlElement *xrequest);
   void handle_notify_request(const string &message);
-  void handle_script_request(const string &operation, P3D_object *object, 
+  void handle_script_request(const string &operation, P3D_object *object,
                              const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
 
@@ -281,7 +278,7 @@ private:
   // Holds the list of certificates that are pre-approved by the
   // plugin vendor.
   P3DPackage *_certlist_package;
-  
+
   // For downloading the p3dcert authorization program.
   P3DPackage *_p3dcert_package;
 

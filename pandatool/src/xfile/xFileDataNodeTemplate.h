@@ -1,16 +1,15 @@
-// Filename: xFileDataNodeTemplate.h
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataNodeTemplate.h
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #ifndef XFILEDATANODETEMPLATE_H
 #define XFILEDATANODETEMPLATE_H
@@ -23,14 +22,11 @@
 #include "pta_int.h"
 #include "pta_double.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataNodeTemplate
-// Description : This is a node which contains all of the data
-//               elements defined by a template.  See XFileTemplate
-//               for the definition of the template; this class only
-//               contains the data members for a particular instance
-//               of a template.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a node which contains all of the data elements defined by a template.
+ * See XFileTemplate for the definition of the template; this class only
+ * contains the data members for a particular instance of a template.
+ */
 class XFileDataNodeTemplate : public XFileDataNode {
 public:
   XFileDataNodeTemplate(XFile *x_file, const string &name,
@@ -58,7 +54,7 @@ protected:
 
 private:
   XFileParseDataList _parse_data_list;
-  
+
   typedef pvector< PT(XFileDataObject) > NestedElements;
   NestedElements _nested_elements;
 
@@ -83,7 +79,3 @@ private:
 #include "xFileDataNodeTemplate.I"
 
 #endif
-  
-
-
-

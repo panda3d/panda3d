@@ -1,16 +1,15 @@
-// Filename: fltLocalVertexPool.h
-// Created by:  drose (28Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltLocalVertexPool.h
+ * @author drose
+ * @date 2001-02-28
+ */
 
 #ifndef FLTLOCALVERTEXPOOL_H
 #define FLTLOCALVERTEXPOOL_H
@@ -23,11 +22,10 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltLocalVertexPool
-// Description : A local vertex pool, as might appear in the middle of
-//               the hierarchy, for instance for a mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * A local vertex pool, as might appear in the middle of the hierarchy, for
+ * instance for a mesh.
+ */
 class FltLocalVertexPool : public FltRecord {
 public:
   FltLocalVertexPool(FltHeader *header);
@@ -77,5 +75,3 @@ private:
 #include "fltLocalVertexPool.I"
 
 #endif
-
-

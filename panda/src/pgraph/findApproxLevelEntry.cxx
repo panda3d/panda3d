@@ -1,16 +1,15 @@
-// Filename: findApproxLevelEntry.cxx
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file findApproxLevelEntry.cxx
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #include "findApproxLevelEntry.h"
 #include "nodePathCollection.h"
@@ -19,12 +18,9 @@
 
 TypeHandle FindApproxLevelEntry::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxLevelEntry::output
-//       Access: Public
-//  Description: Formats the entry for meaningful output.  For
-//               debugging only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the entry for meaningful output.  For debugging only.
+ */
 void FindApproxLevelEntry::
 output(ostream &out) const {
   out << "(" << _node_path << "):";
@@ -37,12 +33,10 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxLevelEntry::write_level
-//       Access: Public
-//  Description: Writes the entire level (a linked list of entries
-//               beginning at this entry).  For debugging only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the entire level (a linked list of entries beginning at this entry).
+ * For debugging only.
+ */
 void FindApproxLevelEntry::
 write_level(ostream &out, int indent_level) const {
   for (const FindApproxLevelEntry *entry = this;
@@ -53,19 +47,13 @@ write_level(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxLevelEntry::consider_node
-//       Access: Public
-//  Description: Considers the node represented by the entry for
-//               matching the find path.  If a solution is found, it
-//               is added to result; if the children of this node
-//               should be considered, the appropriate entries are
-//               added to next_level.
-//
-//               The return value is true if result now contains
-//               max_matches solutions, or false if we should keep
-//               looking.
-////////////////////////////////////////////////////////////////////
+/**
+ * Considers the node represented by the entry for matching the find path.  If a
+ * solution is found, it is added to result; if the children of this node should
+ * be considered, the appropriate entries are added to next_level.  The return
+ * value is true if result now contains max_matches solutions, or false if we
+ * should keep looking.
+ */
 bool FindApproxLevelEntry::
 consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
               int max_matches, int increment) const {
@@ -73,7 +61,7 @@ consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
     // If the entry represents a solution, save it and we're done with
     // the entry.
     result.add_path(_node_path.get_node_path());
-    if (max_matches > 0 && result.get_num_paths() >= max_matches) { 
+    if (max_matches > 0 && result.get_num_paths() >= max_matches) {
       return true;
     }
 
@@ -113,7 +101,7 @@ consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; i++) {
       PandaNode *child_node = children.get_child(i);
-      
+
       consider_next_step(child_node, next_level, increment);
     }
   }
@@ -123,7 +111,7 @@ consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
     int num_stashed = this_node->get_num_stashed();
     for (int i = 0; i < num_stashed; i++) {
       PandaNode *stashed_node = this_node->get_stashed(i);
-      
+
       consider_next_step(stashed_node, next_level, increment);
     }
   }
@@ -131,17 +119,13 @@ consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxLevelEntry::consider_next_step
-//       Access: Public
-//  Description: Compares the indicated child node (which is assumed
-//               to be a child of _node_path) with the next component
-//               of the path.  If it matches, generates whatever
-//               additional entries are appropriate and stores them in
-//               next_level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the indicated child node (which is assumed to be a child of
+ * _node_path) with the next component of the path.  If it matches, generates
+ * whatever additional entries are appropriate and stores them in next_level.
+ */
 void FindApproxLevelEntry::
-consider_next_step(PandaNode *child_node, FindApproxLevelEntry *&next_level, 
+consider_next_step(PandaNode *child_node, FindApproxLevelEntry *&next_level,
                    int increment) const {
   nassertv(child_node != _node_path.node());
 

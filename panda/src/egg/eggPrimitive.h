@@ -1,16 +1,15 @@
-// Filename: eggPrimitive.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPrimitive.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGPRIMITIVE_H
 #define EGGPRIMITIVE_H
@@ -35,19 +34,14 @@
 
 class EggVertexPool;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPrimitive
-// Description : A base class for any of a number of kinds of geometry
-//               primitives: polygons, point lights, nurbs patches,
-//               parametrics curves, etc.  Things with a set of
-//               vertices and some rendering properties like color.
-//
-//               An EggPrimitive is an STL-style container of pointers
-//               to EggVertex's.  In fact, it IS a vector, and can be
-//               manipulated in all the ways that vectors can.
-//               However, it is necessary that all vertices belong to
-//               the same vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any of a number of kinds of geometry primitives: polygons,
+ * point lights, nurbs patches, parametrics curves, etc.  Things with a set of
+ * vertices and some rendering properties like color.  An EggPrimitive is an
+ * STL-style container of pointers to EggVertex's.  In fact, it IS a vector, and
+ * can be manipulated in all the ways that vectors can.  However, it is
+ * necessary that all vertices belong to the same vertex pool.
+ */
 class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
                      public EggRenderMode
 {

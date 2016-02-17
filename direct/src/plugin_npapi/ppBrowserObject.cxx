@@ -1,16 +1,15 @@
-// Filename: ppBrowserObject.cxx
-// Created by:  drose (05Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ppBrowserObject.cxx
+ * @author drose
+ * @date 2009-07-05
+ */
 
 #include "ppBrowserObject.h"
 #include "ppInstance.h"
@@ -26,7 +25,7 @@ object_finish(P3D_object *object) {
   delete ((PPBrowserObject *)object);
 }
 
-static int 
+static int
 object_get_repr(P3D_object *object, char *buffer, int buffer_length) {
   return ((const PPBrowserObject *)object)->get_repr(buffer, buffer_length);
 }
@@ -43,7 +42,7 @@ object_set_property(P3D_object *object, const char *property,
 }
 
 static P3D_object *
-object_call(P3D_object *object, const char *method_name, 
+object_call(P3D_object *object, const char *method_name,
             bool needs_response,
             P3D_object *params[], int num_params) {
   if (method_name == NULL) {
@@ -66,11 +65,9 @@ object_eval(P3D_object *object, const char *expression) {
 
 P3D_class_definition *PPBrowserObject::_browser_object_class;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPBrowserObject::
 PPBrowserObject(PPInstance *inst, NPObject *npobj) :
   _instance(inst),
@@ -81,11 +78,9 @@ PPBrowserObject(PPInstance *inst, NPObject *npobj) :
   browser->retainobject(_npobj);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPBrowserObject::
 PPBrowserObject(const PPBrowserObject &copy) :
   _instance(copy._instance),
@@ -96,23 +91,19 @@ PPBrowserObject(const PPBrowserObject &copy) :
   browser->retainobject(_npobj);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPBrowserObject::
 ~PPBrowserObject() {
   assert(_ref_count == 0);
   browser->releaseobject(_npobj);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::get_repr
-//       Access: Public
-//  Description: Returns a user-friendly representation of the object,
-//               similar to get_string(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a user-friendly representation of the object, similar to
+ * get_string(), above.
+ */
 int PPBrowserObject::
 get_repr(char *buffer, int buffer_length) const {
   ostringstream strm;
@@ -122,13 +113,11 @@ get_repr(char *buffer, int buffer_length) const {
   return (int)result.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::get_property
-//       Access: Public
-//  Description: Returns the named property element in the object.  The
-//               return value is a freshly-allocated PPBrowserObject object
-//               that must be deleted by the caller, or NULL on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named property element in the object.  The return value is a
+ * freshly-allocated PPBrowserObject object that must be deleted by the caller,
+ * or NULL on error.
+ */
 P3D_object *PPBrowserObject::
 get_property(const string &property) const {
   NPIdentifier property_name = browser->getstringidentifier(property.c_str());
@@ -150,13 +139,10 @@ get_property(const string &property) const {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::set_property
-//       Access: Public
-//  Description: Modifies (or deletes, if value is NULL) the named
-//               property element in the object.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Modifies (or deletes, if value is NULL) the named property element in the
+ * object.  Returns true on success, false on failure.
+ */
 bool PPBrowserObject::
 set_property(const string &property, bool needs_response, P3D_object *value) {
   NPIdentifier property_name = browser->getstringidentifier(property.c_str());
@@ -178,14 +164,11 @@ set_property(const string &property, bool needs_response, P3D_object *value) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::call
-//       Access: Public
-//  Description: Invokes the named method on the object, passing the
-//               indicated parameters.  If the method name is empty,
-//               invokes the object itself.  Returns the return value
-//               on success, NULL on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes the named method on the object, passing the indicated parameters.  If
+ * the method name is empty, invokes the object itself.  Returns the return
+ * value on success, NULL on error.
+ */
 P3D_object *PPBrowserObject::
 call(const string &method_name, P3D_object *params[], int num_params) const {
   // First, convert all of the parameters.
@@ -222,12 +205,9 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::eval
-//       Access: Public
-//  Description: Evaluates the indicated JavaScript expression in the
-//               context of the object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evaluates the indicated JavaScript expression in the context of the object.
+ */
 P3D_object *PPBrowserObject::
 eval(const string &expression) const {
   NPString npexpr = { expression.c_str(), (uint32_t)expression.length() };
@@ -244,25 +224,19 @@ eval(const string &expression) const {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::clear_class_definition
-//       Access: Public, Static
-//  Description: Should be called when the core API is unloaded, and
-//               the associated class definition object is therefore
-//               invalidated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called when the core API is unloaded, and the associated class
+ * definition object is therefore invalidated.
+ */
 void PPBrowserObject::
 clear_class_definition() {
   _browser_object_class = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPBrowserObject::get_class_definition
-//       Access: Private, Static
-//  Description: Returns a pointer to the P3D_class_definition object
-//               that lists all of the C-style method pointers for
-//               this class object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the P3D_class_definition object that lists all of the
+ * C-style method pointers for this class object.
+ */
 P3D_class_definition *PPBrowserObject::
 get_class_definition() {
   if (_browser_object_class == NULL) {

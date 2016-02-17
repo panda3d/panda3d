@@ -1,16 +1,13 @@
-// Filename: lquaternion_src.cxx
-// Created by:
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lquaternion_src.cxx
+ */
 
 #include "config_linmath.h"
 #include "lmatrix.h"
@@ -21,21 +18,17 @@ TypeHandle FLOATNAME(LQuaternion)::_type_handle;
 const FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::_ident_quat =
   FLOATNAME(LQuaternion)(1.0f, 0.0f, 0.0f, 0.0f);
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::pure_imaginary_quat
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
 pure_imaginary(const FLOATNAME(LVector3) &v) {
   return FLOATNAME(LQuaternion)(0, v[0], v[1], v[2]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::extract_to_matrix (LMatrix3)
-//       Access: Public
-//  Description: Based on the quat lib from VRPN.
-////////////////////////////////////////////////////////////////////
+/**
+ * Based on the quat lib from VRPN.
+ */
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
   FLOATTYPE N = this->dot(*this);
@@ -52,11 +45,9 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
         (xz + wy), (yz - wx), (1.0f - (xx + yy)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::extract_to_matrix (LMatrix4)
-//       Access: Public
-//  Description: Based on the quat lib from VRPN.
-////////////////////////////////////////////////////////////////////
+/**
+ * Based on the quat lib from VRPN.
+ */
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
   FLOATTYPE N = this->dot(*this);
@@ -74,13 +65,10 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
         0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::set_hpr
-//       Access: Public
-//  Description: Sets the quaternion as the unit quaternion that
-//               is equivalent to these Euler angles.
-//               (from Real-time Rendering, p.49)
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the quaternion as the unit quaternion that is equivalent to these Euler
+ * angles.  (from Real-time Rendering, p.49)
+ */
 void FLOATNAME(LQuaternion)::
 set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
   FLOATNAME(LQuaternion) quat_h, quat_p, quat_r;
@@ -124,12 +112,9 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::get_hpr
-//       Access: Public
-//  Description: Extracts the equivalent Euler angles from the unit
-//               quaternion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the equivalent Euler angles from the unit quaternion.
+ */
 FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 get_hpr(CoordinateSystem cs) const {
   if (cs == CS_default) {
@@ -212,15 +197,11 @@ get_hpr(CoordinateSystem cs) const {
   return hpr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::set_from_matrix
-//       Access: Public
-//  Description: Sets the quaternion according to the rotation
-//               represented by the matrix.  Originally we tried an
-//               algorithm presented by Do-While Jones, but that
-//               turned out to be broken.  This is based on the quat
-//               lib from UNC.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the quaternion according to the rotation represented by the matrix.
+ * Originally we tried an algorithm presented by Do-While Jones, but that turned
+ * out to be broken.  This is based on the quat lib from UNC.
+ */
 void FLOATNAME(LQuaternion)::
 set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   FLOATTYPE m00, m01, m02, m10, m11, m12, m20, m21, m22;
@@ -296,11 +277,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::init_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LQuaternion)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {

@@ -1,16 +1,15 @@
-// Filename: fltToEgg.cxx
-// Created by:  drose (17Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltToEgg.cxx
+ * @author drose
+ * @date 2001-04-17
+ */
 
 #include "fltToEgg.h"
 
@@ -18,11 +17,9 @@
 #include "config_flt.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltToEgg::
 FltToEgg() :
   SomethingToEgg("MultiGen", ".flt")
@@ -59,11 +56,9 @@ FltToEgg() :
   _coordinate_system = CS_zup_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltToEgg::
 run() {
   _data->set_coordinate_system(_coordinate_system);

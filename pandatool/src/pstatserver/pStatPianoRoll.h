@@ -1,16 +1,15 @@
-// Filename: pStatPianoRoll.h
-// Created by:  drose (18Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatPianoRoll.h
+ * @author drose
+ * @date 2000-07-18
+ */
 
 #ifndef PSTATPIANOROLL_H
 #define PSTATPIANOROLL_H
@@ -28,18 +27,13 @@
 
 class PStatFrameData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatPianoRoll
-// Description : This is an abstract class that presents the interface
-//               for drawing a piano-roll type chart: it shows the
-//               time spent in each of a number of collectors as a
-//               horizontal bar of color, with time as the horizontal
-//               axis.
-//
-//               This class just manages all the piano-roll logic; the
-//               actual nuts and bolts of drawing pixels is left to a
-//               user-derived class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract class that presents the interface for drawing a piano-
+ * roll type chart: it shows the time spent in each of a number of collectors as
+ * a horizontal bar of color, with time as the horizontal axis.  This class just
+ * manages all the piano-roll logic; the actual nuts and bolts of drawing pixels
+ * is left to a user-derived class.
+ */
 class PStatPianoRoll : public PStatGraph {
 public:
   PStatPianoRoll(PStatMonitor *monitor, int thread_index,

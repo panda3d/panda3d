@@ -1,16 +1,15 @@
-// Filename: animControl.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animControl.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef ANIMCONTROL_H
 #define ANIMCONTROL_H
@@ -30,17 +29,15 @@
 class PartBundle;
 class AnimChannelBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimControl
-// Description : Controls the timing of a character animation.  An
-//               AnimControl object is created for each
-//               character/bundle binding and manages the state of the
-//               animation: whether started, stopped, or looping, and
-//               the current frame number and play rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Controls the timing of a character animation.  An AnimControl object is
+ * created for each character/bundle binding and manages the state of the
+ * animation: whether started, stopped, or looping, and the current frame number
+ * and play rate.
+ */
 class EXPCL_PANDA_CHAN AnimControl : public TypedReferenceCount, public AnimInterface, public Namable {
 public:
-  AnimControl(const string &name, PartBundle *part, 
+  AnimControl(const string &name, PartBundle *part,
               double frame_rate, int num_frames);
   void setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
                   const BitArray &bound_joints);

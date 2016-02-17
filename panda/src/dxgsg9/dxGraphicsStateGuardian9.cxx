@@ -1,17 +1,17 @@
-// Filename: dxGraphicsStateGuardian9.cxx
-// Created by:  mike (02Feb99)
-// Updated by: fperazzi, PandaSE (05May10) (added get_supports_cg_profile)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxGraphicsStateGuardian9.cxx
+ * @author mike
+ * @date 1999-02-02
+ * @author fperazzi, PandaSE
+ * @date 2010-05-05
+ */
 
 #include "dxGraphicsStateGuardian9.h"
 #include "config_dxgsg9.h"
@@ -92,11 +92,9 @@ LPDIRECT3DDEVICE9 DXGraphicsStateGuardian9::_cg_device = NULL;
 
 #define MY_D3DRGBA(r, g, b, a) ((D3DCOLOR) D3DCOLOR_COLORVALUE(r, g, b, a))
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXGraphicsStateGuardian9::
 DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
   GraphicsStateGuardian(CS_yup_left, engine, pipe)
@@ -160,11 +158,9 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
   atexit (atexit_function);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXGraphicsStateGuardian9::
 ~DXGraphicsStateGuardian9() {
   if (dxgsg9_cat.is_debug()) {
@@ -179,19 +175,14 @@ DXGraphicsStateGuardian9::
   free_nondx_resources();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::prepare_texture
-//       Access: Public, Virtual
-//  Description: Creates a new retained-mode representation of the
-//               given texture, and returns a newly-allocated
-//               TextureContext pointer to reference it.  It is the
-//               responsibility of the calling function to later
-//               call release_texture() with this same pointer (which
-//               will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a texture.  Instead, call Texture::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new retained-mode representation of the given texture, and returns
+ * a newly-allocated TextureContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_texture() with
+ * this same pointer (which will also delete the pointer).  This function should
+ * not be called directly to prepare a texture.  Instead, call
+ * Texture::prepare().
+ */
 TextureContext *DXGraphicsStateGuardian9::
 prepare_texture(Texture *tex, int view) {
   DXTextureContext9 *dtc = new DXTextureContext9(_prepared_objects, tex, view);
@@ -205,12 +196,10 @@ prepare_texture(Texture *tex, int view) {
   return dtc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::apply_texture
-//       Access: Public
-//  Description: Makes the texture the currently available texture for
-//               rendering on the ith stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the texture the currently available texture for rendering on the ith
+ * stage.
+ */
 void DXGraphicsStateGuardian9::
 apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
   if (tc == (TextureContext *)NULL) {
@@ -305,22 +294,15 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
   _d3d_device->SetTexture(i, dtc->get_d3d_texture());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::update_texture
-//       Access: Public, Virtual
-//  Description: Ensures that the current Texture data is refreshed
-//               onto the GSG.  This means updating the texture
-//               properties and/or re-uploading the texture image, if
-//               necessary.  This should only be called within the
-//               draw thread.
-//
-//               If force is true, this function will not return until
-//               the texture has been fully uploaded.  If force is
-//               false, the function may choose to upload a simple
-//               version of the texture instead, if the texture is not
-//               fully resident (and if get_incomplete_render() is
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the current Texture data is refreshed onto the GSG.  This means
+ * updating the texture properties and/or re-uploading the texture image, if
+ * necessary.  This should only be called within the draw thread.  If force is
+ * true, this function will not return until the texture has been fully
+ * uploaded.  If force is false, the function may choose to upload a simple
+ * version of the texture instead, if the texture is not fully resident (and if
+ * get_incomplete_render() is true).
+ */
 bool DXGraphicsStateGuardian9::
 update_texture(TextureContext *tc, bool force) {
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
@@ -342,12 +324,10 @@ update_texture(TextureContext *tc, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::upload_texture
-//       Access: Public
-//  Description: Creates a texture surface on the graphics card and
-//               fills it with its pixel data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a texture surface on the graphics card and fills it with its pixel
+ * data.
+ */
 bool DXGraphicsStateGuardian9::
 upload_texture(DXTextureContext9 *dtc, bool force) {
   Texture *tex = dtc->get_texture();
@@ -382,30 +362,21 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
   return dtc->create_texture(*_screen);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::release_texture
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the texture.
+ */
 void DXGraphicsStateGuardian9::
 release_texture(TextureContext *tc) {
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
   delete dtc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::extract_texture_data
-//       Access: Public, Virtual
-//  Description: This method should only be called by the
-//               GraphicsEngine.  Do not call it directly; call
-//               GraphicsEngine::extract_texture_data() instead.
-//
-//               This method will be called in the draw thread to
-//               download the texture memory's image into its
-//               ram_image value.  It returns true on success, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.  This method
+ * will be called in the draw thread to download the texture memory's image into
+ * its ram_image value.  It returns true on success, false otherwise.
+ */
 bool DXGraphicsStateGuardian9::
 extract_texture_data(Texture *tex) {
   bool success = true;
@@ -424,11 +395,9 @@ extract_texture_data(Texture *tex) {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::prepare_shader
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
 #ifdef HAVE_CG
@@ -438,30 +407,23 @@ prepare_shader(Shader *se) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::release_shader
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 release_shader(ShaderContext *sc) {
   CLP(ShaderContext) *gsc = DCAST(CLP(ShaderContext), sc);
   delete gsc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::prepare_vertex_buffer
-//       Access: Public, Virtual
-//  Description: Creates a new retained-mode representation of the
-//               given data, and returns a newly-allocated
-//               VertexBufferContext pointer to reference it.  It is the
-//               responsibility of the calling function to later
-//               call release_vertex_buffer() with this same pointer (which
-//               will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a buffer.  Instead, call Geom::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new retained-mode representation of the given data, and returns a
+ * newly-allocated VertexBufferContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_vertex_buffer()
+ * with this same pointer (which will also delete the pointer).  This function
+ * should not be called directly to prepare a buffer.  Instead, call
+ * Geom::prepare().
+ */
 VertexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
   CLP(VertexBufferContext) *dvbc = new CLP(VertexBufferContext)(this, _prepared_objects, data);
@@ -510,12 +472,10 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::apply_vertex_buffer
-//       Access: Public
-//  Description: Updates the vertex buffer with the current data, and
-//               makes it the current vertex buffer for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the vertex buffer with the current data, and makes it the current
+ * vertex buffer for rendering.
+ */
 bool CLP(GraphicsStateGuardian)::
 apply_vertex_buffer(VertexBufferContext *vbc,
                     const GeomVertexArrayDataHandle *reader, bool force ) {
@@ -575,14 +535,11 @@ apply_vertex_buffer(VertexBufferContext *vbc,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::release_vertex_buffer
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               data.  This function should never be called
-//               directly; instead, call Data::release() (or simply
-//               let the Data destruct).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply let
+ * the Data destruct).
+ */
 void CLP(GraphicsStateGuardian)::
 release_vertex_buffer(VertexBufferContext *vbc) {
 
@@ -601,24 +558,16 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   delete dvbc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::setup_array_data
-//       Access: Public
-//  Description: Internal function to bind a buffer object for the
-//               indicated data array, if appropriate, or to unbind a
-//               buffer object if it should be rendered from client
-//               memory.
-//
-//               If the buffer object is bound, this function sets
-//               client_pointer to NULL (representing the start of the
-//               buffer object in server memory); if the buffer object
-//               is not bound, this function sets client_pointer the
-//               pointer to the data array in client memory, that is,
-//               the data array passed in.
-//
-//               If force is not true, the function may return false
-//               indicating the data is not currently available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Internal function to bind a buffer object for the indicated data array, if
+ * appropriate, or to unbind a buffer object if it should be rendered from
+ * client memory.  If the buffer object is bound, this function sets
+ * client_pointer to NULL (representing the start of the buffer object in server
+ * memory); if the buffer object is not bound, this function sets client_pointer
+ * the pointer to the data array in client memory, that is, the data array
+ * passed in.  If force is not true, the function may return false indicating
+ * the data is not currently available.
+ */
 bool CLP(GraphicsStateGuardian)::
 setup_array_data(CLP(VertexBufferContext)*& dvbc,
                  const GeomVertexArrayDataHandle* array_reader,
@@ -635,31 +584,24 @@ setup_array_data(CLP(VertexBufferContext)*& dvbc,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::prepare_index_buffer
-//       Access: Public, Virtual
-//  Description: Creates a new retained-mode representation of the
-//               given data, and returns a newly-allocated
-//               IndexBufferContext pointer to reference it.  It is the
-//               responsibility of the calling function to later call
-//               release_index_buffer() with this same pointer (which
-//               will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a buffer.  Instead, call Geom::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new retained-mode representation of the given data, and returns a
+ * newly-allocated IndexBufferContext pointer to reference it.  It is the
+ * responsibility of the calling function to later call release_index_buffer()
+ * with this same pointer (which will also delete the pointer).  This function
+ * should not be called directly to prepare a buffer.  Instead, call
+ * Geom::prepare().
+ */
 IndexBufferContext *DXGraphicsStateGuardian9::
 prepare_index_buffer(GeomPrimitive *data) {
   DXIndexBufferContext9 *dibc = new DXIndexBufferContext9(_prepared_objects, data);
   return dibc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::apply_index_buffer
-//       Access: Public
-//  Description: Updates the index buffer with the current data, and
-//               makes it the current index buffer for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the index buffer with the current data, and makes it the current
+ * index buffer for rendering.
+ */
 bool DXGraphicsStateGuardian9::
 apply_index_buffer(IndexBufferContext *ibc,
                    const GeomPrimitivePipelineReader *reader, bool force) {
@@ -711,36 +653,26 @@ apply_index_buffer(IndexBufferContext *ibc,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::release_index_buffer
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               data.  This function should never be called
-//               directly; instead, call Data::release() (or simply
-//               let the Data destruct).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply let
+ * the Data destruct).
+ */
 void DXGraphicsStateGuardian9::
 release_index_buffer(IndexBufferContext *ibc) {
   DXIndexBufferContext9 *dibc = DCAST(DXIndexBufferContext9, ibc);
   delete dibc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::begin_occlusion_query
-//       Access: Public, Virtual
-//  Description: Begins a new occlusion query.  After this call, you
-//               may call begin_draw_primitives() and
-//               draw_triangles()/draw_whatever() repeatedly.
-//               Eventually, you should call end_occlusion_query()
-//               before the end of the frame; that will return a new
-//               OcclusionQueryContext object that will tell you how
-//               many pixels represented by the bracketed geometry
-//               passed the depth test.
-//
-//               It is not valid to call begin_occlusion_query()
-//               between another begin_occlusion_query()
-//               .. end_occlusion_query() sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins a new occlusion query.  After this call, you may call
+ * begin_draw_primitives() and draw_triangles()/draw_whatever() repeatedly.
+ * Eventually, you should call end_occlusion_query() before the end of the
+ * frame; that will return a new OcclusionQueryContext object that will tell you
+ * how many pixels represented by the bracketed geometry passed the depth test.
+ * It is not valid to call begin_occlusion_query() between another
+ * begin_occlusion_query() .. end_occlusion_query() sequence.
+ */
 void DXGraphicsStateGuardian9::
 begin_occlusion_query() {
   nassertv(_supports_occlusion_query);
@@ -765,15 +697,12 @@ begin_occlusion_query() {
   _current_occlusion_query = queryobj;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::end_occlusion_query
-//       Access: Public, Virtual
-//  Description: Ends a previous call to begin_occlusion_query().
-//               This call returns the OcclusionQueryContext object
-//               that will (eventually) report the number of pixels
-//               that passed the depth test between the call to
-//               begin_occlusion_query() and end_occlusion_query().
-////////////////////////////////////////////////////////////////////
+/**
+ * Ends a previous call to begin_occlusion_query(). This call returns the
+ * OcclusionQueryContext object that will (eventually) report the number of
+ * pixels that passed the depth test between the call to begin_occlusion_query()
+ * and end_occlusion_query().
+ */
 PT(OcclusionQueryContext) DXGraphicsStateGuardian9::
 end_occlusion_query() {
   if (_current_occlusion_query == (OcclusionQueryContext *)NULL) {
@@ -795,24 +724,19 @@ end_occlusion_query() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::make_geom_munger
-//       Access: Public, Virtual
-//  Description: Creates a new GeomMunger object to munge vertices
-//               appropriate to this GSG for the indicated state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new GeomMunger object to munge vertices appropriate to this GSG for
+ * the indicated state.
+ */
 PT(GeomMunger) DXGraphicsStateGuardian9::
 make_geom_munger(const RenderState *state, Thread *current_thread) {
   PT(DXGeomMunger9) munger = new DXGeomMunger9(this, state);
   return GeomMunger::register_munger(munger, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::clear
-//       Access: Public, Virtual
-//  Description: Clears all of the indicated buffers to their assigned
-//               colors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears all of the indicated buffers to their assigned colors.
+ */
 void DXGraphicsStateGuardian9::
 clear(DrawableRegion *clearable) {
 
@@ -893,12 +817,9 @@ clear(DrawableRegion *clearable) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::prepare_display_region
-//       Access: Public, Virtual
-//  Description: Prepare a display region for rendering (set up
-//               scissor region and viewport)
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepare a display region for rendering (set up scissor region and viewport)
+ */
 void DXGraphicsStateGuardian9::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
@@ -938,17 +859,12 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::calc_projection_mat
-//       Access: Public, Virtual
-//  Description: Given a lens, calculates the appropriate projection
-//               matrix for use with this gsg.  Note that the
-//               projection matrix depends a lot upon the coordinate
-//               system of the rendering API.
-//
-//               The return value is a TransformState if the lens is
-//               acceptable, NULL if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a lens, calculates the appropriate projection matrix for use with this
+ * gsg.  Note that the projection matrix depends a lot upon the coordinate
+ * system of the rendering API.  The return value is a TransformState if the
+ * lens is acceptable, NULL if it is not.
+ */
 CPT(TransformState) DXGraphicsStateGuardian9::
 calc_projection_mat(const Lens *lens) {
   if (lens == (Lens *)NULL) {
@@ -982,18 +898,13 @@ calc_projection_mat(const Lens *lens) {
   return TransformState::make_mat(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::prepare_lens
-//       Access: Public, Virtual
-//  Description: Makes the current lens (whichever lens was most
-//               recently specified with set_scene()) active, so
-//               that it will transform future rendered geometry.
-//               Normally this is only called from the draw process,
-//               and usually it is called by set_scene().
-//
-//               The return value is true if the lens is acceptable,
-//               false if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the current lens (whichever lens was most recently specified with
+ * set_scene()) active, so that it will transform future rendered geometry.
+ * Normally this is only called from the draw process, and usually it is called
+ * by set_scene().  The return value is true if the lens is acceptable, false if
+ * it is not.
+ */
 bool DXGraphicsStateGuardian9::
 prepare_lens() {
   LMatrix4f mat = LCAST(float, _projection_mat->get_mat());
@@ -1003,19 +914,13 @@ prepare_lens() {
   return SUCCEEDED(hr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::begin_frame
-//       Access: Public, Virtual
-//  Description: Called before each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup before
-//               beginning the frame.
-//
-//               The return value is true if successful (in which case
-//               the frame will be drawn and end_frame() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_frame() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup before beginning the frame.  The return value is true if
+ * successful (in which case the frame will be drawn and end_frame() will be
+ * called later), or false if unsuccessful (in which case nothing will be drawn
+ * and end_frame() will not be called).
+ */
 bool DXGraphicsStateGuardian9::
 begin_frame(Thread *current_thread) {
 
@@ -1056,21 +961,15 @@ begin_frame(Thread *current_thread) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::begin_scene
-//       Access: Public, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the beginning of drawing commands for a "scene"
-//               (usually a particular DisplayRegion) within a frame.
-//               All 3-D drawing commands, except the clear operation,
-//               must be enclosed within begin_scene() .. end_scene().
-//
-//               The return value is true if successful (in which case
-//               the scene will be drawn and end_scene() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_scene() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the beginning of drawing
+ * commands for a "scene" (usually a particular DisplayRegion) within a frame.
+ * All 3-D drawing commands, except the clear operation, must be enclosed within
+ * begin_scene() .. end_scene().  The return value is true if successful (in
+ * which case the scene will be drawn and end_scene() will be called later), or
+ * false if unsuccessful (in which case nothing will be drawn and end_scene()
+ * will not be called).
+ */
 bool DXGraphicsStateGuardian9::
 begin_scene() {
   if (!GraphicsStateGuardian::begin_scene()) {
@@ -1102,15 +1001,12 @@ begin_scene() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::end_scene
-//       Access: Public, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the end of drawing commands for a "scene" (usually a
-//               particular DisplayRegion) within a frame.  All 3-D
-//               drawing commands, except the clear operation, must be
-//               enclosed within begin_scene() .. end_scene().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the end of drawing
+ * commands for a "scene" (usually a particular DisplayRegion) within a frame.
+ * All 3-D drawing commands, except the clear operation, must be enclosed within
+ * begin_scene() .. end_scene().
+ */
 void DXGraphicsStateGuardian9::
 end_scene() {
   GraphicsStateGuardian::end_scene();
@@ -1155,13 +1051,10 @@ end_scene() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::end_frame
-//       Access: Public, Virtual
-//  Description: Called after each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup after
-//               rendering the frame, and before the window flips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup after rendering the frame, and before the window flips.
+ */
 void DXGraphicsStateGuardian9::
 end_frame(Thread *current_thread) {
 
@@ -1202,14 +1095,11 @@ end_frame(Thread *current_thread) {
   GraphicsStateGuardian::end_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::begin_draw_primitives
-//       Access: Public, Virtual
-//  Description: Called before a sequence of draw_primitive()
-//               functions are called, this should prepare the vertex
-//               data for rendering.  It returns true if the vertices
-//               are ok, false to abort this group of primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before a sequence of draw_primitive() functions are called, this
+ * should prepare the vertex data for rendering.  It returns true if the
+ * vertices are ok, false to abort this group of primitives.
+ */
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
@@ -1334,15 +1224,12 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::update_standard_vertex_arrays
-//       Access: Protected
-//  Description: Binds vertex buffers as stream sources and sets the
-//               correct FVF format for fixed-function rendering.
-//               Used only when the standard (non-shader) pipeline
-//               is about to be used - dxShaderContexts are responsible
-//               for setting up their own vertex arrays.
-////////////////////////////////////////////////////////////////////
+/**
+ * Binds vertex buffers as stream sources and sets the correct FVF format for
+ * fixed-function rendering.  Used only when the standard (non-shader) pipeline
+ * is about to be used - dxShaderContexts are responsible for setting up their
+ * own vertex arrays.
+ */
 bool CLP(GraphicsStateGuardian)::
 update_standard_vertex_arrays(bool force) {
 
@@ -1385,15 +1272,12 @@ update_standard_vertex_arrays(bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::disable_standard_vertex_arrays
-//       Access: Protected
-//  Description: Unbinds all of the streams that are currently enabled.
-//               dxShaderContexts are responsible for setting up their
-//               own streams, but before they can do so, the standard
-//               streams need to be disabled to get them "out of the
-//               way."  Called only from begin_draw_primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unbinds all of the streams that are currently enabled.  dxShaderContexts are
+ * responsible for setting up their own streams, but before they can do so, the
+ * standard streams need to be disabled to get them "out of the way."  Called
+ * only from begin_draw_primitives.
+ */
 void CLP(GraphicsStateGuardian)::
 disable_standard_vertex_arrays() {
   for ( int array_index = 0; array_index < _num_bound_streams; ++array_index )
@@ -1403,11 +1287,9 @@ disable_standard_vertex_arrays() {
   _num_bound_streams = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_triangles
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected triangles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected triangles.
+ */
 bool DXGraphicsStateGuardian9::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatTimer timer(_draw_primitive_pcollector);
@@ -1472,11 +1354,9 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_tristrips
-//       Access: Public, Virtual
-//  Description: Draws a series of triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of triangle strips.
+ */
 bool DXGraphicsStateGuardian9::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatTimer timer(_draw_primitive_pcollector);
@@ -1641,11 +1521,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_trifans
-//       Access: Public, Virtual
-//  Description: Draws a series of triangle fans.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of triangle fans.
+ */
 bool DXGraphicsStateGuardian9::
 draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatTimer timer(_draw_primitive_pcollector);
@@ -1749,11 +1627,9 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_lines
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected line segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected line segments.
+ */
 bool DXGraphicsStateGuardian9::
 draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatTimer timer(_draw_primitive_pcollector);
@@ -1817,21 +1693,17 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_linestrips
-//       Access: Public, Virtual
-//  Description: Draws a series of line strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of line strips.
+ */
 bool DXGraphicsStateGuardian9::
 draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_points
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected points.
+ */
 bool DXGraphicsStateGuardian9::
 draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   //PStatTimer timer(_draw_primitive_pcollector);
@@ -1863,13 +1735,10 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::end_draw_primitives()
-//       Access: Public, Virtual
-//  Description: Called after a sequence of draw_primitive()
-//               functions are called, this should do whatever cleanup
-//               is appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a sequence of draw_primitive() functions are called, this should
+ * do whatever cleanup is appropriate.
+ */
 void DXGraphicsStateGuardian9::
 end_draw_primitives() {
   // Turn off vertex blending--it seems to cause problems if we leave
@@ -1890,15 +1759,10 @@ end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::framebuffer_copy_to_texture
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display
-//               region from the framebuffer into texture memory.
-//
-//               If z > -1, it is the cube map index into which to
-//               copy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer into
+ * texture memory.  If z > -1, it is the cube map index into which to copy.
+ */
 bool DXGraphicsStateGuardian9::
 framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr, const RenderBuffer &rb) {
@@ -2039,31 +1903,22 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::framebuffer_copy_to_ram
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display region
-//               from the framebuffer into system memory, not texture
-//               memory.  Returns true on success, false on failure.
-//
-//               This completely redefines the ram image of the
-//               indicated texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer into
+ * system memory, not texture memory.  Returns true on success, false on
+ * failure.  This completely redefines the ram image of the indicated texture.
+ */
 bool DXGraphicsStateGuardian9::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
                         const DisplayRegion *dr, const RenderBuffer &rb) {
   return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_framebuffer_copy_to_ram
-//       Access: Public
-//  Description: This is the implementation of
-//               framebuffer_copy_to_ram(); it adds one additional
-//               parameter, which should be true if the framebuffer is
-//               to be inverted during the copy (as in the same way it
-//               copies to texture memory).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the implementation of framebuffer_copy_to_ram(); it adds one
+ * additional parameter, which should be true if the framebuffer is to be
+ * inverted during the copy (as in the same way it copies to texture memory).
+ */
 bool DXGraphicsStateGuardian9::
 do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
                            const DisplayRegion *dr, const RenderBuffer &rb,
@@ -2267,15 +2122,12 @@ void DXGraphicsStateGuardian9::reset_render_states (void)
   _last_fvf = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.  The GraphicsWindow pointer represents a
-//               typical window that might be used for this context;
-//               it may be required to set up the frame buffer
-//               properly the first time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all internal state as if the gsg were newly created.  The
+ * GraphicsWindow pointer represents a typical window that might be used for
+ * this context; it may be required to set up the frame buffer properly the
+ * first time.
+ */
 void DXGraphicsStateGuardian9::
 reset() {
   GraphicsStateGuardian::reset();
@@ -2789,11 +2641,9 @@ reset() {
   add_gsg(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::apply_fog
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 apply_fog(Fog *fog) {
   if (_do_fog_type == None)
@@ -2835,15 +2685,11 @@ apply_fog(Fog *fog) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_transform
-//       Access: Protected
-//  Description: Sends the indicated transform matrix to the graphics
-//               API to be applied to future vertices.
-//
-//               This transform is the internal_transform, already
-//               converted into the GSG's internal coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the indicated transform matrix to the graphics API to be applied to
+ * future vertices.  This transform is the internal_transform, already converted
+ * into the GSG's internal coordinate system.
+ */
 void DXGraphicsStateGuardian9::
 do_issue_transform() {
   const TransformState *transform = _internal_transform;
@@ -2880,11 +2726,9 @@ do_issue_transform() {
   _transform_stale = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_alpha_test
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_alpha_test() {
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
@@ -2903,11 +2747,9 @@ do_issue_alpha_test() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_shader
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_shader() {
 
@@ -2950,11 +2792,9 @@ do_issue_shader() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_render_mode
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_render_mode() {
   const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
@@ -3004,11 +2844,9 @@ do_issue_render_mode() {
   _current_fill_mode = mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_rescale_normal
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_rescale_normal() {
   RescaleNormalAttrib::Mode mode = RescaleNormalAttrib::M_none;
@@ -3034,11 +2872,9 @@ do_issue_rescale_normal() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_depth_test
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_depth_test() {
   const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot()));
@@ -3051,11 +2887,9 @@ do_issue_depth_test() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_depth_write
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_depth_write() {
   const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
@@ -3067,11 +2901,9 @@ do_issue_depth_write() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_cull_face
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_cull_face() {
   const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
@@ -3103,11 +2935,9 @@ do_issue_cull_face() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_fog
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_fog() {
   const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
@@ -3121,11 +2951,9 @@ do_issue_fog() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_depth_offset
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_depth_offset() {
   const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
@@ -3147,11 +2975,9 @@ do_issue_depth_offset() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_shade_model
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_shade_model() {
   const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
@@ -3166,23 +2992,15 @@ do_issue_shade_model() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_state_and_transform
-//       Access: Public, Virtual
-//  Description: Simultaneously resets the render state and the
-//               transform state.
-//
-//               This transform specified is the "internal" net
-//               transform, already converted into the GSG's internal
-//               coordinate space by composing it to
-//               get_cs_transform().  (Previously, this used to be the
-//               "external" net transform, with the assumption that
-//               that GSG would convert it internally, but that is no
-//               longer the case.)
-//
-//               Special case: if (state==NULL), then the target
-//               state is already stored in _target.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously resets the render state and the transform state.  This
+ * transform specified is the "internal" net transform, already converted into
+ * the GSG's internal coordinate space by composing it to get_cs_transform().
+ * (Previously, this used to be the "external" net transform, with the
+ * assumption that that GSG would convert it internally, but that is no longer
+ * the case.)  Special case: if (state==NULL), then the target state is already
+ * stored in _target.
+ */
 void DXGraphicsStateGuardian9::
 set_state_and_transform(const RenderState *target,
                         const TransformState *transform) {
@@ -3391,14 +3209,11 @@ set_state_and_transform(const RenderState *target,
   _state_rs = _target_rs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id within
+ * a frame, this should set up the associated hardware light with the light's
+ * properties.
+ */
 void DXGraphicsStateGuardian9::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   // Get the light in "world coordinates" (actually, view
@@ -3438,14 +3253,11 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id within
+ * a frame, this should set up the associated hardware light with the light's
+ * properties.
+ */
 void DXGraphicsStateGuardian9::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   static PStatCollector _draw_set_state_light_bind_directional_pcollector("Draw:Set State:Light:Bind:Directional");
@@ -3495,14 +3307,11 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id within
+ * a frame, this should set up the associated hardware light with the light's
+ * properties.
+ */
 void DXGraphicsStateGuardian9::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   Lens *lens = light_obj->get_lens();
@@ -3557,12 +3366,9 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_index_type
-//       Access: Protected, Static
-//  Description: Maps from the Geom's internal numeric type symbols
-//               to DirectX's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from the Geom's internal numeric type symbols to DirectX's.
+ */
 D3DFORMAT DXGraphicsStateGuardian9::
 get_index_type(Geom::NumericType numeric_type) {
   switch (numeric_type) {
@@ -3578,11 +3384,9 @@ get_index_type(Geom::NumericType numeric_type) {
   return D3DFMT_INDEX16;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_material
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_material() {
   static Material empty;
@@ -3647,11 +3451,9 @@ do_issue_material() {
   _d3d_device->SetMaterial(&cur_material);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_texture
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
@@ -3676,11 +3478,9 @@ do_issue_texture() {
   _texture_binding_shader_context = _current_shader_context;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::disable_standard_texture_bindings
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 disable_standard_texture_bindings() {
   // Disable the texture stages that are no longer used.
@@ -3701,11 +3501,9 @@ disable_standard_texture_bindings() {
   _num_active_texture_stages = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::update_standard_texture_bindings
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 update_standard_texture_bindings() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
@@ -3915,14 +3713,11 @@ update_standard_texture_bindings() {
   _num_active_texture_stages = num_stages;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_blending
-//       Access: Protected, Virtual
-//  Description: Called after any of the things that might change
-//               blending state have changed, this function is
-//               responsible for setting the appropriate color
-//               blending mode based on the current properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after any of the things that might change blending state have changed,
+ * this function is responsible for setting the appropriate color blending mode
+ * based on the current properties.
+ */
 void DXGraphicsStateGuardian9::
 do_issue_blending() {
   // Handle the color_write attrib.  If color_write is off, then
@@ -4017,41 +3812,32 @@ do_issue_blending() {
   set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::reissue_transforms
-//       Access: Protected, Virtual
-//  Description: Called by clear_state_and_transform() to ensure that
-//               the current modelview and projection matrices are
-//               properly loaded in the graphics state, after a
-//               callback might have mucked them up.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by clear_state_and_transform() to ensure that the current modelview
+ * and projection matrices are properly loaded in the graphics state, after a
+ * callback might have mucked them up.
+ */
 void DXGraphicsStateGuardian9::
 reissue_transforms() {
   prepare_lens();
   do_issue_transform();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::enable_lighting
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable or disable the use of lighting overall.  This
-//               is called by issue_light() according to whether any
-//               lights are in use or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable or disable the use of
+ * lighting overall.  This is called by issue_light() according to whether any
+ * lights are in use or not.
+ */
 void DXGraphicsStateGuardian9::
 enable_lighting(bool enable) {
   set_render_state(D3DRS_LIGHTING, (DWORD)enable);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_ambient_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               indicate the color of the ambient light that should
-//               be in effect.  This is called by issue_light() after
-//               all other lights have been enabled or disabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to indicate the color of the
+ * ambient light that should be in effect.  This is called by issue_light()
+ * after all other lights have been enabled or disabled.
+ */
 void DXGraphicsStateGuardian9::
 set_ambient_light(const LColor &color) {
   LColor c = color;
@@ -4063,13 +3849,11 @@ set_ambient_light(const LColor &color) {
   set_render_state(D3DRS_AMBIENT, LColor_to_D3DCOLOR(c));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::enable_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated light id.  A specific Light will
-//               already have been bound to this id via bind_light().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable the indicated light
+ * id.  A specific Light will already have been bound to this id via
+ * bind_light().
+ */
 void DXGraphicsStateGuardian9::
 enable_light(int light_id, bool enable) {
   HRESULT hr = _d3d_device->LightEnable(light_id, enable);
@@ -4081,14 +3865,11 @@ enable_light(int light_id, bool enable) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::enable_clip_plane
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated clip_plane id.  A specific
-//               PlaneNode will already have been bound to this id via
-//               bind_clip_plane().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable the indicated
+ * clip_plane id.  A specific PlaneNode will already have been bound to this id
+ * via bind_clip_plane().
+ */
 void DXGraphicsStateGuardian9::
 enable_clip_plane(int plane_id, bool enable) {
   if (enable) {
@@ -4099,14 +3880,11 @@ enable_clip_plane(int plane_id, bool enable) {
   set_render_state(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::bind_clip_plane
-//       Access: Protected, Virtual
-//  Description: Called the first time a particular clip_plane has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware clip_plane with the clip_plane's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular clip_plane has been bound to a given id
+ * within a frame, this should set up the associated hardware clip_plane with
+ * the clip_plane's properties.
+ */
 void DXGraphicsStateGuardian9::
 bind_clip_plane(const NodePath &plane, int plane_id) {
   // Get the plane in "world coordinates" (actually, view
@@ -4127,14 +3905,11 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::close_gsg
-//       Access: Protected, Virtual
-//  Description: This is called by the associated GraphicsWindow when
-//               close_window() is called.  It should null out the
-//               _win pointer and possibly free any open resources
-//               associated with the GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the associated GraphicsWindow when close_window() is
+ * called.  It should null out the _win pointer and possibly free any open
+ * resources associated with the GSG.
+ */
 void DXGraphicsStateGuardian9::
 close_gsg() {
   GraphicsStateGuardian::close_gsg();
@@ -4162,12 +3937,9 @@ close_gsg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::free_nondx_resources
-//       Access: Public
-//  Description: Frees some memory that was explicitly allocated
-//               within the dxgsg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees some memory that was explicitly allocated within the dxgsg.
+ */
 void DXGraphicsStateGuardian9::
 free_nondx_resources() {
 #ifdef HAVE_CG
@@ -4178,12 +3950,10 @@ free_nondx_resources() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::free_d3d_device
-//       Access: Public
-//  Description: setup for re-calling dx_init(), this is not the final
-//               exit cleanup routine (see dx_cleanup)
-////////////////////////////////////////////////////////////////////
+/**
+ * setup for re-calling dx_init(), this is not the final exit cleanup routine
+ * (see dx_cleanup)
+ */
 void DXGraphicsStateGuardian9::
 free_d3d_device() {
   // dont want a full reset of gsg, just a state clear
@@ -4212,25 +3982,20 @@ free_d3d_device() {
   // obviously we dont release ID3D9, just ID3DDevice9
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_draw_buffer
-//       Access: Protected
-//  Description: Sets up the glDrawBuffer to render into the buffer
-//               indicated by the RenderBuffer object.  This only sets
-//               up the color bits; it does not affect the depth,
-//               stencil, accum layers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the glDrawBuffer to render into the buffer indicated by the
+ * RenderBuffer object.  This only sets up the color bits; it does not affect
+ * the depth, stencil, accum layers.
+ */
 void DXGraphicsStateGuardian9::
 set_draw_buffer(const RenderBuffer &rb) {
   dxgsg9_cat.fatal() << "DX set_draw_buffer unimplemented!!!";
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_read_buffer
-//       Access: Protected
-//  Description: Vestigial analog of glReadBuffer
-////////////////////////////////////////////////////////////////////
+/**
+ * Vestigial analog of glReadBuffer
+ */
 void DXGraphicsStateGuardian9::
 set_read_buffer(const RenderBuffer &rb) {
   if (rb._buffer_type & RenderBuffer::T_front) {
@@ -4245,14 +4010,11 @@ set_read_buffer(const RenderBuffer &rb) {
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_light_color
-//       Access: Public
-//  Description: Returns the array of four floats that should be
-//               issued as the light's color, as scaled by the current
-//               value of _light_color_scale, in the case of
-//               color_scale_via_lighting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the array of four floats that should be issued as the light's color,
+ * as scaled by the current value of _light_color_scale, in the case of
+ * color_scale_via_lighting.
+ */
 const D3DCOLORVALUE &DXGraphicsStateGuardian9::
 get_light_color(Light *light) const {
   LColor c = light->get_color();
@@ -4264,12 +4026,9 @@ get_light_color(Light *light) const {
   return *(D3DCOLORVALUE *)cf.get_data();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_blend_func
-//       Access: Protected, Static
-//  Description: Maps from ColorBlendAttrib::Operand to D3DBLEND
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from ColorBlendAttrib::Operand to D3DBLEND value.
+ */
 D3DBLEND DXGraphicsStateGuardian9::
 get_blend_func(ColorBlendAttrib::Operand operand) {
   switch (operand) {
@@ -4328,11 +4087,9 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
   return D3DBLEND_ZERO;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::report_texmgr_stats
-//       Access: Protected
-//  Description: Reports the DX texture manager's activity to PStats.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports the DX texture manager's activity to PStats.
+ */
 void DXGraphicsStateGuardian9::
 report_texmgr_stats() {
 
@@ -4406,11 +4163,9 @@ report_texmgr_stats() {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_context
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 set_context(DXScreenData *new_context) {
   nassertv(new_context != NULL);
@@ -4422,12 +4177,9 @@ set_context(DXScreenData *new_context) {
   set_cg_device(_d3d_device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_render_target
-//       Access: Protected
-//  Description: Set render target to the backbuffer of current swap
-//               chain.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set render target to the backbuffer of current swap chain.
+ */
 void DXGraphicsStateGuardian9::
 set_render_target() {
   if (_d3d_device == NULL) {
@@ -4464,11 +4216,9 @@ set_render_target() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_texture_blend_mode
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 set_texture_blend_mode(int i, const TextureStage *stage) {
   switch (stage->get_mode()) {
@@ -4630,11 +4380,9 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::dx_cleanup
-//       Access: Protected
-//  Description: Clean up the DirectX environment, accounting for exit()
-////////////////////////////////////////////////////////////////////
+/**
+ * Clean up the DirectX environment, accounting for exit()
+ */
 void DXGraphicsStateGuardian9::
 dx_cleanup() {
   if (!_d3d_device) {
@@ -4652,17 +4400,13 @@ dx_cleanup() {
   // Releasing pD3D is now the responsibility of the GraphicsPipe destructor
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::reset_d3d_device
-//       Access: Protected
-//  Description: This function checks current device's framebuffer
-//               dimension against passed p_presentation_params backbuffer
-//               dimension to determine a device reset if there is
-//               only one window or it is the main window or
-//               fullscreen mode then, it resets the device. Finally
-//               it returns the new DXScreenData through parameter
-//               screen
-////////////////////////////////////////////////////////////////////
+/**
+ * This function checks current device's framebuffer dimension against passed
+ * p_presentation_params backbuffer dimension to determine a device reset if
+ * there is only one window or it is the main window or fullscreen mode then, it
+ * resets the device.  Finally it returns the new DXScreenData through parameter
+ * screen
+ */
 HRESULT DXGraphicsStateGuardian9::
 reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
                  DXScreenData **screen) {
@@ -4776,11 +4520,9 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   return hr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::check_cooperative_level
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool DXGraphicsStateGuardian9::
 check_cooperative_level() {
   bool bDoReactivateWindow = false;
@@ -4839,11 +4581,9 @@ check_cooperative_level() {
   return SUCCEEDED(hr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::show_frame
-//       Access: Protected
-//  Description: redraw primary buffer
-////////////////////////////////////////////////////////////////////
+/**
+ * redraw primary buffer
+ */
 void DXGraphicsStateGuardian9::
 show_frame() {
   if (_d3d_device == NULL) {
@@ -4872,11 +4612,9 @@ show_frame() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::create_swap_chain
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool DXGraphicsStateGuardian9::
 create_swap_chain(DXScreenData *new_context) {
   // Instead of creating a device and rendering as d3ddevice->present()
@@ -4893,11 +4631,9 @@ create_swap_chain(DXScreenData *new_context) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::release_swap_chain
-//       Access: Protected
-//  Description: Release the swap chain on this DXScreenData
-////////////////////////////////////////////////////////////////////
+/**
+ * Release the swap chain on this DXScreenData
+ */
 bool DXGraphicsStateGuardian9::
 release_swap_chain(DXScreenData *new_context) {
   HRESULT hr;
@@ -4911,21 +4647,17 @@ release_swap_chain(DXScreenData *new_context) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::copy_pres_reset
-//       Access: Protected
-//  Description: copies the PresReset from passed DXScreenData
-////////////////////////////////////////////////////////////////////
+/**
+ * copies the PresReset from passed DXScreenData
+ */
 void DXGraphicsStateGuardian9::
 copy_pres_reset(DXScreenData *screen) {
   memcpy(&_presentation_reset, &_screen->_presentation_params, sizeof(D3DPRESENT_PARAMETERS));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_d3d_min_type
-//       Access: Protected, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian9::
 get_d3d_min_type(SamplerState::FilterType filter_type) {
   switch (filter_type) {
@@ -4957,11 +4689,9 @@ get_d3d_min_type(SamplerState::FilterType filter_type) {
   return D3DTEXF_POINT;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_d3d_mip_type
-//       Access: Protected, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian9::
 get_d3d_mip_type(SamplerState::FilterType filter_type) {
   switch (filter_type) {
@@ -4993,12 +4723,10 @@ get_d3d_mip_type(SamplerState::FilterType filter_type) {
   return D3DTEXF_NONE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_texture_operation
-//       Access: Protected, Static
-//  Description: Returns the D3DTEXTUREOP value corresponding to the
-//               indicated TextureStage::CombineMode enumerated type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the D3DTEXTUREOP value corresponding to the indicated
+ * TextureStage::CombineMode enumerated type.
+ */
 D3DTEXTUREOP DXGraphicsStateGuardian9::
 get_texture_operation(TextureStage::CombineMode mode, int scale) {
   switch (mode) {
@@ -5041,13 +4769,11 @@ get_texture_operation(TextureStage::CombineMode mode, int scale) {
   return D3DTOP_DISABLE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_texture_argument
-//       Access: Protected
-//  Description: Returns the D3DTA value corresponding to the
-//               indicated TextureStage::CombineSource and
-//               TextureStage::CombineOperand enumerated types.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the D3DTA value corresponding to the indicated
+ * TextureStage::CombineSource and TextureStage::CombineOperand enumerated
+ * types.
+ */
 DWORD DXGraphicsStateGuardian9::
 get_texture_argument(TextureStage::CombineSource source,
                      TextureStage::CombineOperand operand) const {
@@ -5074,13 +4800,10 @@ get_texture_argument(TextureStage::CombineSource source,
   return D3DTA_CURRENT;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_texture_argument_modifier
-//       Access: Protected, Static
-//  Description: Returns the extra bits that modify the D3DTA
-//               argument, according to the indicated
-//               TextureStage::CombineOperand enumerated type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the extra bits that modify the D3DTA argument, according to the
+ * indicated TextureStage::CombineOperand enumerated type.
+ */
 DWORD DXGraphicsStateGuardian9::
 get_texture_argument_modifier(TextureStage::CombineOperand operand) {
   switch (operand) {
@@ -5104,14 +4827,11 @@ get_texture_argument_modifier(TextureStage::CombineOperand operand) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_primitive_up
-//       Access: Protected
-//  Description: Issues the DrawPrimitiveUP call to draw the indicated
-//               primitive_type from the given buffer.  We add the
-//               num_vertices parameter, so we can determine the size
-//               of the buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Issues the DrawPrimitiveUP call to draw the indicated primitive_type from the
+ * given buffer.  We add the num_vertices parameter, so we can determine the
+ * size of the buffer.
+ */
 void DXGraphicsStateGuardian9::
 draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
       unsigned int primitive_count,
@@ -5151,17 +4871,13 @@ draw_primitive_up(D3DPRIMITIVETYPE primitive_type,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_indexed_primitive_up
-//       Access: Protected
-//  Description: Issues the DrawIndexedPrimitiveUP call to draw the
-//               indicated primitive_type from the given buffer.  As
-//               in draw_primitive_up(), above, the parameter list is
-//               not exactly one-for-one with the
-//               DrawIndexedPrimitiveUP() call, but it's similar (in
-//               particular, we pass max_index instead of NumVertices,
-//               which always seemed ambiguous to me).
-////////////////////////////////////////////////////////////////////
+/**
+ * Issues the DrawIndexedPrimitiveUP call to draw the indicated primitive_type
+ * from the given buffer.  As in draw_primitive_up(), above, the parameter list
+ * is not exactly one-for-one with the DrawIndexedPrimitiveUP() call, but it's
+ * similar (in particular, we pass max_index instead of NumVertices, which
+ * always seemed ambiguous to me).
+ */
 void DXGraphicsStateGuardian9::
 draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
         unsigned int min_index, unsigned int max_index,
@@ -5199,18 +4915,13 @@ draw_indexed_primitive_up(D3DPRIMITIVETYPE primitive_type,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::check_dx_allocation
-//       Access:
-//  Description: This function is called after the creation of
-//               textures, vertex buffers, and index buffers to
-//               check if DirectX is out of memory. If DirectX is
-//               out of memory and the LRU is being used, then
-//               page out some memory. This function is a fail-safe
-//               just in case another process allocates video
-//               memory, DirectX is fragmented, or there are some
-//               borderline memory allocation cases, ...
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called after the creation of textures, vertex buffers, and
+ * index buffers to check if DirectX is out of memory.  If DirectX is out of
+ * memory and the LRU is being used, then page out some memory.  This function
+ * is a fail-safe just in case another process allocates video memory, DirectX
+ * is fragmented, or there are some borderline memory allocation cases, ...
+ */
 bool DXGraphicsStateGuardian9::
 check_dx_allocation (HRESULT result, int allocation_size, int attempts)
 {
@@ -5246,9 +4957,9 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
   return retry;
 }
 
-////////////////////////////////////////////////////////////////////
-//  DX stencil code section
-////////////////////////////////////////////////////////////////////
+/*
+ * DX stencil code section
+ */
 static int dx_stencil_comparison_function_array[] = {
   D3DCMP_NEVER,
   D3DCMP_LESS,
@@ -5272,11 +4983,9 @@ static int dx_stencil_operation_array[] = {
   D3DSTENCILOP_DECRSAT,
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_issue_stencil
-//       Access: Protected
-//  Description: Set stencil render states.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set stencil render states.
+ */
 void DXGraphicsStateGuardian9::
 do_issue_stencil() {
   if (!_supports_stencil) {
@@ -5364,11 +5073,9 @@ do_issue_stencil() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: dxGraphicsStateGuardian9::do_issue_scissor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXGraphicsStateGuardian9::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
@@ -5383,12 +5090,10 @@ do_issue_scissor() {
   set_render_state(D3DRS_SCISSORTESTENABLE, TRUE);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: dxGraphicsStateGuardian9::calc_fb_properties
-//       Access: Public
-//  Description: Convert DirectX framebuffer format ids into a
-//               FrameBufferProperties structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convert DirectX framebuffer format ids into a FrameBufferProperties
+ * structure.
+ */
 FrameBufferProperties DXGraphicsStateGuardian9::
 calc_fb_properties(DWORD cformat, DWORD dformat,
                    DWORD multisampletype, DWORD multisamplequality) {
@@ -5499,11 +5204,9 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_gamma_table
-//       Access: Public, Static
-//  Description: Static function for getting the original gamma.
-////////////////////////////////////////////////////////////////////
+/**
+ * Static function for getting the original gamma.
+ */
 bool DXGraphicsStateGuardian9::
 get_gamma_table(void) {
   bool get;
@@ -5525,12 +5228,9 @@ get_gamma_table(void) {
   return get;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::static_set_gamma
-//       Access: Public, Static
-//  Description: Static function for setting gamma which is needed
-//               for atexit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Static function for setting gamma which is needed for atexit.
+ */
 bool DXGraphicsStateGuardian9::
 static_set_gamma(bool restore, PN_stdfloat gamma) {
   bool set;
@@ -5557,12 +5257,9 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
   return set;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_gamma
-//       Access: Published
-//  Description: Non static version of setting gamma.  Returns true
-//               on success.
-////////////////////////////////////////////////////////////////////
+/**
+ * Non static version of setting gamma.  Returns true on success.
+ */
 bool DXGraphicsStateGuardian9::
 set_gamma(PN_stdfloat gamma) {
   bool set;
@@ -5575,33 +5272,26 @@ set_gamma(PN_stdfloat gamma) {
   return set;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::restore_gamma
-//       Access: Published
-//  Description: Restore original gamma.
-////////////////////////////////////////////////////////////////////
+/**
+ * Restore original gamma.
+ */
 void DXGraphicsStateGuardian9::
 restore_gamma() {
   static_set_gamma(true, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::atexit_function
-//       Access: Public, Static
-//  Description: This function is passed to the atexit function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the atexit function.
+ */
 void DXGraphicsStateGuardian9::
 atexit_function(void) {
   set_cg_device(NULL);
   static_set_gamma(true, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_supports_cg_profile
-//       Access: Public, Virtual
-//  Description: Returns true if this particular GSG supports the
-//               specified Cg Shader Profile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GSG supports the specified Cg Shader Profile.
+ */
 bool DXGraphicsStateGuardian9::
 get_supports_cg_profile(const string &name) const {
 #ifndef HAVE_CG
@@ -5617,13 +5307,10 @@ get_supports_cg_profile(const string &name) const {
 #endif  // HAVE_CG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_cg_device
-//       Access: Protected, Static
-//  Description: Sets the global Cg device pointer.  TODO: make this
-//               thread-safe somehow.  Maybe Cg is inherently not
-//               thread-safe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the global Cg device pointer.  TODO: make this thread-safe somehow.
+ * Maybe Cg is inherently not thread-safe.
+ */
 void DXGraphicsStateGuardian9::
 set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
 #ifdef HAVE_CG

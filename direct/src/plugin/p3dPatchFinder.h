@@ -1,16 +1,15 @@
-// Filename: p3dPatchFinder.h
-// Created by:  drose (27Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPatchFinder.h
+ * @author drose
+ * @date 2009-09-27
+ */
 
 #ifndef P3DPATCHFINDER_H
 #define P3DPATCHFINDER_H
@@ -21,16 +20,12 @@
 #include <vector>
 #include <map>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DPatchFinder
-// Description : This class is used to reconstruct the patch
-//               chain--the chain of patch files needed to generate a
-//               file--for downloading a package via patches, rather
-//               than downloading the entire file.
-//
-//               It is similar to PatchMaker.py, except it only reads
-//               patches, it does not generate them.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to reconstruct the patch chain--the chain of patch files
+ * needed to generate a file--for downloading a package via patches, rather than
+ * downloading the entire file.  It is similar to PatchMaker.py, except it only
+ * reads patches, it does not generate them.
+ */
 class P3DPatchFinder {
 public:
   class Package;
@@ -180,4 +175,3 @@ inline ostream &operator << (ostream &out, const P3DPatchFinder::PackageVersionK
 }
 
 #endif
-

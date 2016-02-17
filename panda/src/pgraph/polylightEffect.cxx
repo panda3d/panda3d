@@ -1,16 +1,15 @@
-// Filename: polylightEffect.cxx
-// Created by:  sshodhan (02Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file polylightEffect.cxx
+ * @author sshodhan
+ * @date 2004-06-02
+ */
 
 #include "polylightEffect.h"
 #include "polylightNode.h"
@@ -25,11 +24,9 @@
 
 TypeHandle PolylightEffect::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::make
-//       Access: Published, Static
-//  Description: Constructs a new PolylightEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new PolylightEffect object.
+ */
 CPT(RenderEffect) PolylightEffect::
 make() {
   PolylightEffect *effect = new PolylightEffect;
@@ -39,11 +36,9 @@ make() {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::make
-//       Access: Published, Static
-//  Description: Constructs a new PolylightEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new PolylightEffect object.
+ */
 CPT(RenderEffect) PolylightEffect::
 make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center) {
   PolylightEffect *effect = new PolylightEffect;
@@ -53,11 +48,9 @@ make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center) {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::make
-//       Access: Published, Static
-//  Description: Constructs a new PolylightEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new PolylightEffect object.
+ */
 CPT(RenderEffect) PolylightEffect::
 make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center,
      const LightGroup &lights) {
@@ -69,57 +62,42 @@ make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center,
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this effect during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if cull_callback() has
+ * been defined.  Otherwise, returns false to indicate cull_callback() does not
+ * need to be called for this effect during the cull traversal.
+ */
 bool PolylightEffect::
 has_cull_callback() const {
   return !_lightgroup.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::cull_callback
-//       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
-//
-//               At the time this function is called, the current
-//               node's transform and state have not yet been applied
-//               to the net_transform and net_state.  This callback
-//               may modify the node_transform and node_state to apply
-//               an effective change to the render state at this
-//               level.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_cull_callback() returns true, this function will be called during the
+ * cull traversal to perform any additional operations that should be performed
+ * at cull time.  This may include additional manipulation of render state or
+ * additional visible/invisible decisions, or any other arbitrary operation.  At
+ * the time this function is called, the current node's transform and state have
+ * not yet been applied to the net_transform and net_state.  This callback may
+ * modify the node_transform and node_state to apply an effective change to the
+ * render state at this level.
+ */
 void PolylightEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &node_state) const {
-  //CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene()->get_scene_root(), &data, node_transform); 
-  CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene(), &data, node_transform); 
+  //CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene()->get_scene_root(), &data, node_transform);
+  CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene(), &data, node_transform);
   CPT(RenderState) poly_light_state = RenderState::make(poly_light_attrib);
-  node_state = node_state->compose(poly_light_state); 
+  node_state = node_state->compose(poly_light_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::do_poly_light
-//       Access: Public
-//  Description: Gets the node's position and based on distance from 
-//               lights in the lightgroup calculates the color to be 
-//               modulated in. If the avatar is in the range of 
-//               multiple lights, then determine, which light it is
-//               closer to, and get the weight of the scene_color
-//               in respect to that light's proximity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the node's position and based on distance from lights in the lightgroup
+ * calculates the color to be modulated in.  If the avatar is in the range of
+ * multiple lights, then determine, which light it is closer to, and get the
+ * weight of the scene_color in respect to that light's proximity.
+ */
 CPT(RenderAttrib) PolylightEffect::
 do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const TransformState *node_transform) const {
   //static bool was_under_polylight = false;
@@ -127,7 +105,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   PN_stdfloat r,g,b; // To hold the color calculation
   PN_stdfloat min_dist; // hold the dist from light that avatar is closer to
   int num_lights = 0; // Keep track of number of lights for division
-  PN_stdfloat light_scale; // Variable to calculate attenuation 
+  PN_stdfloat light_scale; // Variable to calculate attenuation
   PN_stdfloat weight_scale = 1.0f; // Variable to compensate snap of color when you walk inside the light volume
   PN_stdfloat Rcollect, Gcollect, Bcollect;
 
@@ -146,9 +124,9 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   }
   min_dist = 100000.0;
   // Cycle through all the lights in this effect's lightgroup
-  LightGroup::const_iterator light_iter; 
+  LightGroup::const_iterator light_iter;
   for (light_iter = _lightgroup.begin(); light_iter != _lightgroup.end(); light_iter++){
-    const PolylightNode *light = DCAST(PolylightNode, (*light_iter).node()); 
+    const PolylightNode *light = DCAST(PolylightNode, (*light_iter).node());
 
     // light holds the current PolylightNode
     if (light->is_enabled()) { // if enabled get all the properties
@@ -177,7 +155,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
         light_camera.normalize();
         light_avatar.normalize();
         PN_stdfloat intensity = light_camera.dot(light_avatar);
-        
+
         if (polylight_info) {
           pgraph_cat.debug() << "light position = " << light_position << endl;
           pgraph_cat.debug() << "relative avatar position = " << avatar_position << endl;
@@ -238,7 +216,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
 
         if (min_dist > dist) {
           min_dist = dist;
-          // Keep accumulating each lights contribution... 
+          // Keep accumulating each lights contribution...
           // we have to prevent color snap, so factor in the weight.
           // weight becomes negligent as you are closer to the light
           // and opposite otherwise
@@ -346,15 +324,13 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   return ColorScaleAttrib::make(LVecBase4(r, g, b, 1.0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PolylightEffect::
 output(ostream &out) const {
   out << get_type() << ":";
-    
+
   LightGroup::const_iterator li;
   for (li = _lightgroup.begin(); li != _lightgroup.end(); ++li) {
     NodePath light = (*li);
@@ -365,21 +341,14 @@ output(ostream &out) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived PolylightEffect
-//               types to return a unique number indicating whether
-//               this PolylightEffect is equivalent to the other one.
-//
-//               This should return 0 if the two PolylightEffect objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two PolylightEffect
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived PolylightEffect types to return a unique
+ * number indicating whether this PolylightEffect is equivalent to the other
+ * one.  This should return 0 if the two PolylightEffect objects are equivalent,
+ * a number less than zero if this one should be sorted before the other one,
+ * and a number greater than zero otherwise.  This will only be called with two
+ * PolylightEffect objects whose get_type() functions return the same.
+ */
 int PolylightEffect::
 compare_to_impl(const RenderEffect *other) const {
   const PolylightEffect *ta;
@@ -388,7 +357,7 @@ compare_to_impl(const RenderEffect *other) const {
   if (_contribution_type != ta->_contribution_type) {
     return _contribution_type < ta->_contribution_type ? -1 : 1;
   }
- 
+
   if (_weight != ta->_weight) {
     return _weight < ta->_weight ? -1 :1;
   }
@@ -396,18 +365,15 @@ compare_to_impl(const RenderEffect *other) const {
   if (_lightgroup != ta->_lightgroup) {
     return _lightgroup < ta->_lightgroup ? -1 : 1;
   }
- 
+
   return 0;
 }
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::add_light
-//       Access: Published
-//  Description: Add a PolylightNode object to this effect and return
-//               a new effect
-////////////////////////////////////////////////////////////////////
+/**
+ * Add a PolylightNode object to this effect and return a new effect
+ */
 CPT(RenderEffect) PolylightEffect::
 add_light(const NodePath &newlight) const {
   PolylightEffect *effect = new PolylightEffect(*this);
@@ -416,17 +382,14 @@ add_light(const NodePath &newlight) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::remove_light
-//       Access: Published
-//  Description: Remove a light from this effect. Return the new updated
-//               effect
-////////////////////////////////////////////////////////////////////
+/**
+ * Remove a light from this effect.  Return the new updated effect
+ */
 CPT(RenderEffect) PolylightEffect::
 remove_light(const NodePath &newlight) const {
   PolylightEffect *effect = new PolylightEffect(*this);
   LightGroup::iterator light_iter;
-  light_iter = find(effect->_lightgroup.begin(),effect->_lightgroup.end(), newlight); 
+  light_iter = find(effect->_lightgroup.begin(),effect->_lightgroup.end(), newlight);
   if (light_iter == effect->_lightgroup.end()) {
     pgraph_cat.debug()
       << "Attempt to remove Polylight " << newlight << "; not found.\n";
@@ -435,18 +398,14 @@ remove_light(const NodePath &newlight) const {
     effect->_lightgroup.erase(light_iter);
   }
   return return_new(effect);
- 
+
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::set_weight
-//       Access: Published
-//  Description: Set weight and return a new effect... the reason
-//               this couldnt be done through make was because
-//               that would return a new effect without the 
-//               lightgroup which is static and cant be accessed
-//               Here, we just pass that to the make
-////////////////////////////////////////////////////////////////////
+/**
+ * Set weight and return a new effect... the reason this couldnt be done through
+ * make was because that would return a new effect without the lightgroup which
+ * is static and cant be accessed Here, we just pass that to the make
+ */
 CPT(RenderEffect) PolylightEffect::
 set_weight(PN_stdfloat w) const {
   PolylightEffect *effect = new PolylightEffect(*this);
@@ -454,15 +413,12 @@ set_weight(PN_stdfloat w) const {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::set_contrib
-//       Access: Published
-//  Description: Set Contrib Type and return a new effect... the reason
-//               this couldnt be done through make was because
-//               that would return a new effect without the 
-//               lightgroup which is static and cant be accessed
-//               Here, we just pass that to the make
-////////////////////////////////////////////////////////////////////
+/**
+ * Set Contrib Type and return a new effect... the reason this couldnt be done
+ * through make was because that would return a new effect without the
+ * lightgroup which is static and cant be accessed Here, we just pass that to
+ * the make
+ */
 CPT(RenderEffect) PolylightEffect::
 set_contrib(ContribType ct) const {
   PolylightEffect *effect = new PolylightEffect(*this);
@@ -470,15 +426,11 @@ set_contrib(ContribType ct) const {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::set_effect_center
-//       Access: Published
-//  Description: Set weight and return a new effect... the reason
-//               this couldnt be done through make was because
-//               that would return a new effect without the 
-//               lightgroup which is static and cant be accessed
-//               Here, we just pass that to the make
-////////////////////////////////////////////////////////////////////
+/**
+ * Set weight and return a new effect... the reason this couldnt be done through
+ * make was because that would return a new effect without the lightgroup which
+ * is static and cant be accessed Here, we just pass that to the make
+ */
 CPT(RenderEffect) PolylightEffect::
 set_effect_center(const LPoint3 &ec) const{
   PolylightEffect *effect = new PolylightEffect(*this);
@@ -486,16 +438,14 @@ set_effect_center(const LPoint3 &ec) const{
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PolylightEffect::has_light
-//       Access: Published
-//  Description: Returns true if the indicated light is listed in the
-//               PolylightEffect, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated light is listed in the PolylightEffect, false
+ * otherwise.
+ */
 bool PolylightEffect::
 has_light(const NodePath &light) const {
   LightGroup::const_iterator li;
-  li = find(_lightgroup.begin(), _lightgroup.end(), light); 
+  li = find(_lightgroup.begin(), _lightgroup.end(), light);
   return (li != _lightgroup.end());
 }
 

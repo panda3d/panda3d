@@ -1,16 +1,15 @@
-// Filename: cvsCopy.cxx
-// Created by:  drose (31Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cvsCopy.cxx
+ * @author drose
+ * @date 2000-10-31
+ */
 
 #include "cvsCopy.h"
 #include "cvsSourceDirectory.h"
@@ -18,11 +17,9 @@
 #include "pnotify.h"
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CVSCopy::
 CVSCopy() {
   _model_dirname = ".";
@@ -91,24 +88,16 @@ CVSCopy() {
      &CVSCopy::dispatch_string, NULL, &_cvs_binary);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::import
-//       Access: Public
-//  Description: Checks for the given filename somewhere in the
-//               directory hierarchy, and chooses a place to import
-//               it.  Copies the file by calling copy_file().
-//
-//               Extra_data may be NULL or a pointer to some
-//               user-defined structure; CVSCopy simply passes it
-//               unchanged to copy_file().  It presumably gives the
-//               class a hint as to how the file should be copied.
-//               Suggested_dir is the suggested directory in which to
-//               copy the file, if it does not already exist
-//               elsewhere.
-//
-//               On success, returns the FilePath it was actually
-//               copied to.  On failure, returns an invalid FilePath.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks for the given filename somewhere in the directory hierarchy, and
+ * chooses a place to import it.  Copies the file by calling copy_file().
+ * Extra_data may be NULL or a pointer to some user-defined structure; CVSCopy
+ * simply passes it unchanged to copy_file().  It presumably gives the class a
+ * hint as to how the file should be copied.  Suggested_dir is the suggested
+ * directory in which to copy the file, if it does not already exist elsewhere.
+ * On success, returns the FilePath it was actually copied to.  On failure,
+ * returns an invalid FilePath.
+ */
 CVSSourceTree::FilePath CVSCopy::
 import(const Filename &source, void *extra_data,
        CVSSourceDirectory *suggested_dir) {
@@ -156,14 +145,11 @@ import(const Filename &source, void *extra_data,
   return path;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::continue_after_error
-//       Access: Public
-//  Description: Prompts the user (unless -f was specified) if he
-//               wants to continue the copy operation after some error
-//               has occurred.  Returns true to continue, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Prompts the user (unless -f was specified) if he wants to continue the copy
+ * operation after some error has occurred.  Returns true to continue, false
+ * otherwise.
+ */
 bool CVSCopy::
 continue_after_error() {
   if (_force) {
@@ -190,14 +176,11 @@ continue_after_error() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool CVSCopy::
 handle_args(Args &args) {
   if (args.empty()) {
@@ -213,16 +196,12 @@ handle_args(Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::post_command_line
-//       Access: Protected, Virtual
-//  Description: This is called after the command line has been
-//               completely processed, and it gives the program a
-//               chance to do some last-minute processing and
-//               validation of the options and arguments.  It should
-//               return true if everything is fine, false if there is
-//               an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called after the command line has been completely processed, and it
+ * gives the program a chance to do some last-minute processing and validation
+ * of the options and arguments.  It should return true if everything is fine,
+ * false if there is an error.
+ */
 bool CVSCopy::
 post_command_line() {
   if (!scan_hierarchy()) {
@@ -259,26 +238,20 @@ post_command_line() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::verify_file
-//       Access: Protected, Virtual
-//  Description: Verifies that the file is identical and does not need
-//               to be recopied.  Returns true if the files are
-//               identical, false if they differ.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the file is identical and does not need to be recopied.
+ * Returns true if the files are identical, false if they differ.
+ */
 bool CVSCopy::
 verify_file(const Filename &, const Filename &,
             CVSSourceDirectory *, void *) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::verify_binary_file
-//       Access: Protected
-//  Description: Verifies that the file is identical and does not need
-//               to be recopied.  Returns true if the files are
-//               identical, false if they differ.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the file is identical and does not need to be recopied.
+ * Returns true if the files are identical, false if they differ.
+ */
 bool CVSCopy::
 verify_binary_file(Filename source, Filename dest) {
   if (source == dest) {
@@ -323,16 +296,12 @@ verify_binary_file(Filename source, Filename dest) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::copy_binary_file
-//       Access: Protected
-//  Description: Copies a file without modifying it or scanning it in
-//               any way.  This is particularly useful for copying
-//               textures.  This is provided as a convenience function
-//               for derived programs because so many model file
-//               formats will also require copying textures or other
-//               black-box files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a file without modifying it or scanning it in any way.  This is
+ * particularly useful for copying textures.  This is provided as a convenience
+ * function for derived programs because so many model file formats will also
+ * require copying textures or other black-box files.
+ */
 bool CVSCopy::
 copy_binary_file(Filename source, Filename dest) {
   if (source == dest) {
@@ -374,13 +343,10 @@ copy_binary_file(Filename source, Filename dest) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::cvs_add
-//       Access: Protected
-//  Description: Invokes CVS to add the indicated filename to the
-//               repository, if the user so requested.  Returns true
-//               if successful, false if there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes CVS to add the indicated filename to the repository, if the user so
+ * requested.  Returns true if successful, false if there is an error.
+ */
 bool CVSCopy::
 cvs_add(const Filename &filename) {
   if (_no_cvs) {
@@ -392,7 +358,7 @@ cvs_add(const Filename &filename) {
     return false;
   }
 
-  string command = _cvs_binary + " add -kb " + 
+  string command = _cvs_binary + " add -kb " +
     protect_from_shell(filename.get_basename());
   nout << command << "\n";
   int result = system(command.c_str());
@@ -406,14 +372,11 @@ cvs_add(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::protect_from_shell
-//       Access: Protected, Static
-//  Description: Inserts escape characters into the indicated source
-//               string to protect it from the shell, so that it may
-//               be given on the command line.  Returns the modified
-//               string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts escape characters into the indicated source string to protect it from
+ * the shell, so that it may be given on the command line.  Returns the modified
+ * string.
+ */
 string CVSCopy::
 protect_from_shell(const string &source) {
   string result;
@@ -449,29 +412,23 @@ protect_from_shell(const string &source) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::filter_filename
-//       Access: Protected, Virtual
-//  Description: Given a source filename (including the basename only,
-//               without a dirname), return the appropriate
-//               corresponding filename within the source directory.
-//               This may be used by derived classes to, for instance,
-//               strip a version number from the filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source filename (including the basename only, without a dirname),
+ * return the appropriate corresponding filename within the source directory.
+ * This may be used by derived classes to, for instance, strip a version number
+ * from the filename.
+ */
 string CVSCopy::
 filter_filename(const string &source) {
   return source;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::scan_hierarchy
-//       Access: Private
-//  Description: Starts the scan of the source hierarchy.  This
-//               identifies all of the files in the source hierarchy
-//               we're to copy these into, so we can guess where
-//               referenced files should be placed.  Returns true if
-//               everything is ok, false if there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the scan of the source hierarchy.  This identifies all of the files in
+ * the source hierarchy we're to copy these into, so we can guess where
+ * referenced files should be placed.  Returns true if everything is ok, false
+ * if there is an error.
+ */
 bool CVSCopy::
 scan_hierarchy() {
   if (!_got_root_dirname) {
@@ -488,14 +445,11 @@ scan_hierarchy() {
   return _tree.scan(_key_filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::scan_for_root
-//       Access: Private
-//  Description: Searches for the root of the source directory by
-//               looking for the parent directory that contains
-//               "Package.pp".  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the root of the source directory by looking for the parent
+ * directory that contains "Package.pp".  Returns true on success, false on
+ * failure.
+ */
 bool CVSCopy::
 scan_for_root(const string &dirname) {
   Filename sources = dirname + "/Sources.pp";
@@ -513,13 +467,10 @@ scan_for_root(const string &dirname) {
   return scan_for_root(dirname + "/..");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSCopy::prompt
-//       Access: Private
-//  Description: Issues a prompt to the user and waits for a typed
-//               response.  Returns the response (which will not be
-//               empty).
-////////////////////////////////////////////////////////////////////
+/**
+ * Issues a prompt to the user and waits for a typed response.  Returns the
+ * response (which will not be empty).
+ */
 string CVSCopy::
 prompt(const string &message) {
   nout << flush;

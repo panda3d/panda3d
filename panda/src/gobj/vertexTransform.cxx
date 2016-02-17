@@ -1,16 +1,15 @@
-// Filename: vertexTransform.cxx
-// Created by:  drose (23Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexTransform.cxx
+ * @author drose
+ * @date 2005-03-23
+ */
 
 #include "vertexTransform.h"
 #include "bamReader.h"
@@ -23,20 +22,16 @@ UpdateSeq VertexTransform::_next_modified;
 
 TypeHandle VertexTransform::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VertexTransform::
 VertexTransform() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VertexTransform::
 ~VertexTransform() {
   // We shouldn't destruct while any TransformTables are holding our
@@ -44,16 +39,12 @@ VertexTransform::
   nassertv(_tables.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::mult_matrix
-//       Access: Published, Virtual
-//  Description: Premultiplies this transform's matrix with the
-//               indicated previous matrix, so that the result is the
-//               net composition of the given transform with this
-//               transform.  The result is stored in the parameter
-//               "result", which should not be the same matrix as
-//               previous.
-////////////////////////////////////////////////////////////////////
+/**
+ * Premultiplies this transform's matrix with the indicated previous matrix, so
+ * that the result is the net composition of the given transform with this
+ * transform.  The result is stored in the parameter "result", which should not
+ * be the same matrix as previous.
+ */
 void VertexTransform::
 mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const {
   nassertv(&result != &previous);
@@ -62,14 +53,11 @@ mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const {
   result.multiply(me, previous);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::accumulate_matrix
-//       Access: Published, Virtual
-//  Description: Adds the value of this transform's matrix, modified
-//               by the indicated weight, into the indicated
-//               accumulation matrix.  This is used to compute the
-//               result of several blended transforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the value of this transform's matrix, modified by the indicated weight,
+ * into the indicated accumulation matrix.  This is used to compute the result
+ * of several blended transforms.
+ */
 void VertexTransform::
 accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
   LMatrix4 me;
@@ -77,44 +65,34 @@ accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
   accum.accumulate(me, weight);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VertexTransform::
 output(ostream &out) const {
   out << get_type();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VertexTransform::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << *this << ":\n";
   LMatrix4 mat;
   get_matrix(mat);
   mat.write(out, indent_level + 2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::get_next_modified
-//       Access: Public, Static
-//  Description: Returns a monotonically increasing sequence.  Each
-//               time this is called, a new sequence number is
-//               returned, higher than the previous value.
-//
-//               This is used to ensure that all
-//               VertexTransform::get_modified() calls return an
-//               increasing number in the same space, so that
-//               TransformBlend::get_modified() is easy to determine.
-//               It is similar to Geom::get_modified(), but it is in a
-//               different space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a monotonically increasing sequence.  Each time this is called, a new
+ * sequence number is returned, higher than the previous value.  This is used to
+ * ensure that all VertexTransform::get_modified() calls return an increasing
+ * number in the same space, so that TransformBlend::get_modified() is easy to
+ * determine.  It is similar to Geom::get_modified(), but it is in a different
+ * space.
+ */
 UpdateSeq VertexTransform::
 get_next_modified(Thread *current_thread) {
   CDWriter cdatag(_global_cycler, true, current_thread);
@@ -124,75 +102,60 @@ get_next_modified(Thread *current_thread) {
   return _next_modified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::mark_modified
-//       Access: Protected
-//  Description: Intended to be called by a derived class whenever the
-//               reported transform might have changed.  Without
-//               calling this method, changes to get_matrix() may not
-//               be propagated through the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called by a derived class whenever the reported transform
+ * might have changed.  Without calling this method, changes to get_matrix() may
+ * not be propagated through the system.
+ */
 void VertexTransform::
 mark_modified(Thread *current_thread) {
   CDWriter cdata(_cycler, true, current_thread);
   cdata->_modified = get_next_modified(current_thread);
-  
+
   Palettes::iterator pi;
   for (pi = _tables.begin(); pi != _tables.end(); ++pi) {
     (*pi)->update_modified(cdata->_modified, current_thread);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void VertexTransform::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new VertexTransform.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new VertexTransform.
+ */
 void VertexTransform::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *VertexTransform::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void VertexTransform::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int VertexTransform::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
@@ -200,13 +163,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexTransform::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new VertexTransform.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new VertexTransform.
+ */
 void VertexTransform::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
 }

@@ -1,16 +1,15 @@
-// Filename: bulletConeTwistConstraint.h
-// Created by:  enn0x (01Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletConeTwistConstraint.h
+ * @author enn0x
+ * @date 2010-03-01
+ */
 
 #ifndef __BULLET_CONE_TWIST_CONSTRAINT_H__
 #define __BULLET_CONE_TWIST_CONSTRAINT_H__
@@ -25,14 +24,13 @@
 
 class BulletRigidBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletConeTwistConstraint
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletConeTwistConstraint : public BulletConstraint {
 
 PUBLISHED:
-  BulletConeTwistConstraint(const BulletRigidBodyNode *node_a, 
+  BulletConeTwistConstraint(const BulletRigidBodyNode *node_a,
                             const TransformState *frame_a);
   BulletConeTwistConstraint(const BulletRigidBodyNode *node_a,
                             const BulletRigidBodyNode *node_b,
@@ -64,14 +62,13 @@ public:
 private:
   btConeTwistConstraint *_constraint;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     BulletConstraint::init_type();
-    register_type(_type_handle, "BulletConeTwistConstraint", 
+    register_type(_type_handle, "BulletConeTwistConstraint",
                   BulletConstraint::get_class_type());
   }
   virtual TypeHandle get_type() const {

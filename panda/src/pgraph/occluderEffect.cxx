@@ -1,16 +1,15 @@
-// Filename: occluderEffect.cxx
-// Created by:  drose (17Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file occluderEffect.cxx
+ * @author drose
+ * @date 2011-03-17
+ */
 
 #include "occluderEffect.h"
 #include "pandaNode.h"
@@ -25,12 +24,9 @@
 CPT(RenderEffect) OccluderEffect::_empty_effect;
 TypeHandle OccluderEffect::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::make
-//       Access: Published, Static
-//  Description: Constructs a new OccluderEffect object that does
-//               nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new OccluderEffect object that does nothing.
+ */
 CPT(RenderEffect) OccluderEffect::
 make() {
   // We make it a special case and store a pointer to the empty effect
@@ -42,32 +38,26 @@ make() {
   return _empty_effect;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::add_on_occluder
-//       Access: Published
-//  Description: Returns a new OccluderEffect, just like this one, but
-//               with the indicated occluder added to the list of occluders
-//               enabled by this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new OccluderEffect, just like this one, but with the indicated
+ * occluder added to the list of occluders enabled by this effect.
+ */
 CPT(RenderEffect) OccluderEffect::
 add_on_occluder(const NodePath &occluder) const {
   nassertr(!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type()), this);
   OccluderEffect *effect = new OccluderEffect(*this);
   effect->_on_occluders.insert(occluder);
 
-  pair<Occluders::iterator, bool> insert_result = 
+  pair<Occluders::iterator, bool> insert_result =
     effect->_on_occluders.insert(Occluders::value_type(occluder));
 
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::remove_on_occluder
-//       Access: Published
-//  Description: Returns a new OccluderEffect, just like this one, but
-//               with the indicated occluder removed from the list of
-//               occluders enabled by this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new OccluderEffect, just like this one, but with the indicated
+ * occluder removed from the list of occluders enabled by this effect.
+ */
 CPT(RenderEffect) OccluderEffect::
 remove_on_occluder(const NodePath &occluder) const {
   nassertr(!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type()), this);
@@ -76,11 +66,9 @@ remove_on_occluder(const NodePath &occluder) const {
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void OccluderEffect::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -88,7 +76,7 @@ output(ostream &out) const {
     out << "identity";
   } else {
     out << "on";
-    
+
     Occluders::const_iterator li;
     for (li = _on_occluders.begin(); li != _on_occluders.end(); ++li) {
       NodePath occluder = (*li);
@@ -97,21 +85,14 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived OccluderEffect
-//               types to return a unique number indicating whether
-//               this OccluderEffect is equivalent to the other one.
-//
-//               This should return 0 if the two OccluderEffect
-//               objects are equivalent, a number less than zero if
-//               this one should be sorted before the other one, and a
-//               number greater than zero otherwise.
-//
-//               This will only be called with two OccluderEffect
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived OccluderEffect types to return a unique
+ * number indicating whether this OccluderEffect is equivalent to the other one.
+ * This should return 0 if the two OccluderEffect objects are equivalent, a
+ * number less than zero if this one should be sorted before the other one, and
+ * a number greater than zero otherwise.  This will only be called with two
+ * OccluderEffect objects whose get_type() functions return the same.
+ */
 int OccluderEffect::
 compare_to_impl(const RenderEffect *other) const {
   const OccluderEffect *ta;
@@ -139,27 +120,22 @@ compare_to_impl(const RenderEffect *other) const {
   if (oli != ta->_on_occluders.end()) {
     return -1;
   }
-  
+
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               OccluderEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type OccluderEffect.
+ */
 void OccluderEffect::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void OccluderEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
@@ -173,13 +149,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int OccluderEffect::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderEffect::complete_pointers(p_list, manager);
@@ -217,29 +190,22 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::require_fully_complete
-//       Access: Public, Virtual
-//  Description: Some objects require all of their nested pointers to
-//               have been completed before the objects themselves can
-//               be completed.  If this is the case, override this
-//               method to return true, and be careful with circular
-//               references (which would make the object unreadable
-//               from a bam file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Some objects require all of their nested pointers to have been completed
+ * before the objects themselves can be completed.  If this is the case,
+ * override this method to return true, and be careful with circular references
+ * (which would make the object unreadable from a bam file).
+ */
 bool OccluderEffect::
 require_fully_complete() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type OccluderEffect is encountered
-//               in the Bam file.  It should create the OccluderEffect
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * OccluderEffect is encountered in the Bam file.  It should create the
+ * OccluderEffect and extract its information from the file.
+ */
 TypedWritable *OccluderEffect::
 make_from_bam(const FactoryParams &params) {
   OccluderEffect *effect = new OccluderEffect;
@@ -252,13 +218,10 @@ make_from_bam(const FactoryParams &params) {
   return effect;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new OccluderEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new OccluderEffect.
+ */
 void OccluderEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);

@@ -1,16 +1,15 @@
-// Filename: imageTrans.h
-// Created by:  drose (19Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file imageTrans.h
+ * @author drose
+ * @date 2000-06-19
+ */
 
 #ifndef IMAGETRANS_H
 #define IMAGETRANS_H
@@ -19,12 +18,10 @@
 
 #include "imageFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ImageTrans
-// Description : A program to read an image file and write an
-//               equivalent image file, possibly performing some minor
-//               operations along the way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an image file and write an equivalent image file, possibly
+ * performing some minor operations along the way.
+ */
 class ImageTrans : public ImageFilter {
 public:
   ImageTrans();
@@ -46,7 +43,7 @@ private:
     C_b,
     C_a
   };
-    
+
   Channels _channels;
   LColor _color_scale;
   bool _has_color_scale;
@@ -54,4 +51,3 @@ private:
 };
 
 #endif
-

@@ -1,24 +1,23 @@
-// Filename: pview_delegate.mm
-// Created by:  drose (10Apr09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-    
-#import "pview_delegate.h" 
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pview_delegate.mm
+ * @author drose
+ * @date 2009-04-10
+ */
+
+#import "pview_delegate.h"
 #import "viewController.h"
 #include "dcast.h"
 #include "pandaFramework.h"
 #include "config_iphonedisplay.h"
 
-@implementation PviewAppDelegate 
+@implementation PviewAppDelegate
 
 @synthesize animationTimer;
 @synthesize animationInterval;
@@ -30,13 +29,13 @@ PandaFramework framework;
 int argc = 0;
 char **argv = NULL;
 
-void 
+void
 signal_handler(int i) {
   nout << "Caught signal " << i << "\n";
   exit(1);
 }
 
-- (void)applicationDidFinishLaunching: (UIApplication *)application { 
+- (void)applicationDidFinishLaunching: (UIApplication *)application {
   ConfigVariableBool pview_trap_signals("pview-trap-signals", false);
   if (pview_trap_signals) {
     // Set up a signal handler on every signal, so we can report this to
@@ -67,16 +66,16 @@ signal_handler(int i) {
 
   // Ensure the IPhoneDisplay is available.
   init_libiphonedisplay();
-  
+
   framework.open_framework(argc, argv);
   startup = 0;
 
   ConfigVariableDouble timer_fps("timer-fps", 60.0);
   animationInterval = 1.0 / timer_fps;
   [self startAnimation];
-} 
+}
 
-- (void)applicationDidReceiveMemoryWarning: (UIApplication *)application { 
+- (void)applicationDidReceiveMemoryWarning: (UIApplication *)application {
   nout << "applicationDidReceiveMemoryWarning\n";
 }
 
@@ -97,7 +96,7 @@ signal_handler(int i) {
 
 
 - (void)setAnimationInterval:(NSTimeInterval)interval {
-    
+
     animationInterval = interval;
     if (animationTimer) {
         [self stopAnimation];
@@ -125,7 +124,7 @@ signal_handler(int i) {
       window->enable_keyboard();
       window->setup_trackball();
       framework.get_models().instance_to(window->get_render());
-      
+
       if (argc < 2) {
         window->load_default_model(framework.get_models());
       } else {
@@ -134,14 +133,14 @@ signal_handler(int i) {
       int hierarchy_match_flags = PartGroup::HMF_ok_part_extra |
         PartGroup::HMF_ok_anim_extra;
       window->loop_animations(hierarchy_match_flags);
-      
+
       window->center_trackball(framework.get_models());
-      
+
       ConfigVariableBool pview_lighting("pview-lighting", false);
       if (pview_lighting) {
         window->set_lighting(true);
       }
-      
+
       ConfigVariableBool want_pstats("want-pstats", false);
       if (want_pstats) {
         PStatClient::connect();
@@ -163,8 +162,8 @@ signal_handler(int i) {
   framework.close_framework();
 }
 
-- (void)dealloc { 
-  [super dealloc]; 
-} 
+- (void)dealloc {
+  [super dealloc];
+}
 
-@end 
+@end

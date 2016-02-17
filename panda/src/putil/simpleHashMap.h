@@ -1,16 +1,15 @@
-// Filename: simpleHashMap.h
-// Created by:  drose (19Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file simpleHashMap.h
+ * @author drose
+ * @date 2007-07-19
+ */
 
 #ifndef SIMPLEHASHMAP_H
 #define SIMPLEHASHMAP_H
@@ -19,16 +18,13 @@
 #include "pvector.h"
 #include "config_util.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleHashMap
-// Description : This template class implements an unordered map of
-//               keys to data, implemented as a hashtable.  It is
-//               similar to STL's hash_map, but (a) it has a simpler
-//               interface (we don't mess around with iterators), (b)
-//               it wants an additional method on the Compare object,
-//               Compare::is_equal(a, b), and (c) it doesn't depend on
-//               the system STL providing hash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class implements an unordered map of keys to data, implemented
+ * as a hashtable.  It is similar to STL's hash_map, but (a) it has a simpler
+ * interface (we don't mess around with iterators), (b) it wants an additional
+ * method on the Compare object, Compare::is_equal(a, b), and (c) it doesn't
+ * depend on the system STL providing hash_map.
+ */
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class SimpleHashMap {
 public:

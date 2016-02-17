@@ -1,16 +1,15 @@
-// Filename: geomDrawCallbackData.h
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomDrawCallbackData.h
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #ifndef GEOMDRAWCALLBACKDATA_H
 #define GEOMDRAWCALLBACKDATA_H
@@ -22,15 +21,13 @@
 class CullableObject;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomDrawCallbackData
-// Description : This specialization on CallbackData is passed when
-//               the callback is initiated from deep within the draw
-//               traversal, for a particular Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on CallbackData is passed when the callback is initiated
+ * from deep within the draw traversal, for a particular Geom.
+ */
 class EXPCL_PANDA_PGRAPH GeomDrawCallbackData : public CallbackData {
 public:
-  INLINE GeomDrawCallbackData(CullableObject *obj, 
+  INLINE GeomDrawCallbackData(CullableObject *obj,
                               GraphicsStateGuardianBase *gsg, bool force);
 
 PUBLISHED:

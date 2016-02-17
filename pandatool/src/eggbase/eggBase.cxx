@@ -1,16 +1,15 @@
-// Filename: eggBase.cxx
-// Created by:  drose (14Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggBase.cxx
+ * @author drose
+ * @date 2000-02-14
+ */
 
 #include "eggBase.h"
 
@@ -21,11 +20,9 @@
 #include "dcast.h"
 #include "string_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggBase::
 EggBase() {
   add_option
@@ -51,14 +48,11 @@ EggBase() {
   _noabs = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::add_normals_options
-//       Access: Public
-//  Description: Adds -no, -np, etc. as valid options for this
-//               program.  If the user specifies one of the options on
-//               the command line, the normals will be adjusted when
-//               the egg file is written out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds -no, -np, etc.  as valid options for this program.  If the user
+ * specifies one of the options on the command line, the normals will be
+ * adjusted when the egg file is written out.
+ */
 void EggBase::
 add_normals_options() {
   static NormalsMode strip = NM_strip;
@@ -110,11 +104,9 @@ add_normals_options() {
      &EggBase::dispatch_none, &_got_tbnauto);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::add_points_options
-//       Access: Public
-//  Description: Adds -points as a valid option for this program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds -points as a valid option for this program.
+ */
 void EggBase::
 add_points_options() {
   add_option
@@ -123,14 +115,11 @@ add_points_options() {
      &EggBase::dispatch_none, &_make_points);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::add_transform_options
-//       Access: Public
-//  Description: Adds -TS, -TT, etc. as valid options for this
-//               program.  If the user specifies one of the options on
-//               the command line, the data will be transformed when
-//               the egg file is written out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds -TS, -TT, etc.  as valid options for this program.  If the user
+ * specifies one of the options on the command line, the data will be
+ * transformed when the egg file is written out.
+ */
 void EggBase::
 add_transform_options() {
   add_option
@@ -159,13 +148,10 @@ add_transform_options() {
      &EggBase::dispatch_translate, &_got_transform, &_transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::convert_paths
-//       Access: Public, Static
-//  Description: Recursively walks the egg hierarchy.  Any filenames
-//               encountered are replaced according to the indicated
-//               PathReplace.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the egg hierarchy.  Any filenames encountered are replaced
+ * according to the indicated PathReplace.
+ */
 void EggBase::
 convert_paths(EggNode *node, PathReplace *path_replace,
               const DSearchPath &additional_path) {
@@ -203,60 +189,44 @@ convert_paths(EggNode *node, PathReplace *path_replace,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::append_command_comment
-//       Access: Protected
-//  Description: Inserts a comment into the beginning of the indicated
-//               egg file corresponding to the command line that
-//               invoked this program.
-//
-//               Normally this function is called automatically when
-//               appropriate by EggWriter, and it's not necessary to
-//               call it explicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts a comment into the beginning of the indicated egg file corresponding
+ * to the command line that invoked this program.  Normally this function is
+ * called automatically when appropriate by EggWriter, and it's not necessary to
+ * call it explicitly.
+ */
 void EggBase::
 append_command_comment(EggData *data) {
   append_command_comment(data, get_exec_command());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::append_command_comment
-//       Access: Protected, Static
-//  Description: Inserts a comment into the beginning of the indicated
-//               egg file corresponding to the command line that
-//               invoked this program.
-//
-//               Normally this function is called automatically when
-//               appropriate by EggWriter, and it's not necessary to
-//               call it explicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts a comment into the beginning of the indicated egg file corresponding
+ * to the command line that invoked this program.  Normally this function is
+ * called automatically when appropriate by EggWriter, and it's not necessary to
+ * call it explicitly.
+ */
 void EggBase::
 append_command_comment(EggData *data, const string &comment) {
   data->insert(data->begin(), new EggComment("", comment));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::dispatch_normals
-//       Access: Protected, Static
-//  Description: Accepts one of -no, -np, etc. and sets _normals_mode
-//               as indicated.  The void * argument is a pointer to a
-//               NormalsMode variable that indicates which switch was
-//               passed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts one of -no, -np, etc.  and sets _normals_mode as indicated.  The void
+ * * argument is a pointer to a NormalsMode variable that indicates which switch
+ * was passed.
+ */
 bool EggBase::
 dispatch_normals(ProgramBase *self, const string &opt, const string &arg, void *mode) {
   EggBase *base = (EggBase *)self;
   return base->ns_dispatch_normals(opt, arg, mode);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::ns_dispatch_normals
-//       Access: Protected
-//  Description: Accepts one of -no, -np, etc. and sets _normals_mode
-//               as indicated.  The void * argument is a pointer to a
-//               NormalsMode variable that indicates which switch was
-//               passed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts one of -no, -np, etc.  and sets _normals_mode as indicated.  The void
+ * * argument is a pointer to a NormalsMode variable that indicates which switch
+ * was passed.
+ */
 bool EggBase::
 ns_dispatch_normals(const string &opt, const string &arg, void *mode) {
   _normals_mode = *(NormalsMode *)mode;
@@ -272,12 +242,9 @@ ns_dispatch_normals(const string &opt, const string &arg, void *mode) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::dispatch_scale
-//       Access: Protected, Static
-//  Description: Handles -TS, which specifies a scale transform.  Var
-//               is an LMatrix4d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TS, which specifies a scale transform.  Var is an LMatrix4d.
+ */
 bool EggBase::
 dispatch_scale(const string &opt, const string &arg, void *var) {
   LMatrix4d *transform = (LMatrix4d *)var;
@@ -311,24 +278,20 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::dispatch_rotate_xyz
-//       Access: Protected, Static
-//  Description: Handles -TR, which specifies a rotate transform about
-//               the three cardinal axes.  Var is an LMatrix4d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TR, which specifies a rotate transform about the three cardinal
+ * axes.  Var is an LMatrix4d.
+ */
 bool EggBase::
 dispatch_rotate_xyz(ProgramBase *self, const string &opt, const string &arg, void *var) {
   EggBase *base = (EggBase *)self;
   return base->ns_dispatch_rotate_xyz(opt, arg, var);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::ns_dispatch_rotate_xyz
-//       Access: Protected
-//  Description: Handles -TR, which specifies a rotate transform about
-//               the three cardinal axes.  Var is an LMatrix4d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TR, which specifies a rotate transform about the three cardinal
+ * axes.  Var is an LMatrix4d.
+ */
 bool EggBase::
 ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
   LMatrix4d *transform = (LMatrix4d *)var;
@@ -362,24 +325,20 @@ ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::dispatch_rotate_axis
-//       Access: Protected, Static
-//  Description: Handles -TA, which specifies a rotate transform about
-//               an arbitrary axis.  Var is an LMatrix4d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TA, which specifies a rotate transform about an arbitrary axis.  Var
+ * is an LMatrix4d.
+ */
 bool EggBase::
 dispatch_rotate_axis(ProgramBase *self, const string &opt, const string &arg, void *var) {
   EggBase *base = (EggBase *)self;
   return base->ns_dispatch_rotate_axis(opt, arg, var);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::ns_dispatch_rotate_axis
-//       Access: Protected
-//  Description: Handles -TA, which specifies a rotate transform about
-//               an arbitrary axis.  Var is an LMatrix4d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TA, which specifies a rotate transform about an arbitrary axis.  Var
+ * is an LMatrix4d.
+ */
 bool EggBase::
 ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
   LMatrix4d *transform = (LMatrix4d *)var;
@@ -410,12 +369,9 @@ ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::dispatch_translate
-//       Access: Protected, Static
-//  Description: Handles -TT, which specifies a translate transform.
-//               Var is an LMatrix4d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TT, which specifies a translate transform.  Var is an LMatrix4d.
+ */
 bool EggBase::
 dispatch_translate(const string &opt, const string &arg, void *var) {
   LMatrix4d *transform = (LMatrix4d *)var;

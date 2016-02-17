@@ -1,16 +1,15 @@
-// Filename: fltTransformRotateAboutEdge.cxx
-// Created by:  drose (30Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTransformRotateAboutEdge.cxx
+ * @author drose
+ * @date 2000-08-30
+ */
 
 #include "fltTransformRotateAboutEdge.h"
 #include "fltRecordReader.h"
@@ -18,11 +17,9 @@
 
 TypeHandle FltTransformRotateAboutEdge::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltTransformRotateAboutEdge::
 FltTransformRotateAboutEdge(FltHeader *header) : FltTransformRecord(header) {
   _point_a.set(0.0, 0.0, 0.0);
@@ -30,12 +27,10 @@ FltTransformRotateAboutEdge(FltHeader *header) : FltTransformRecord(header) {
   _angle = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::set
-//       Access: Public
-//  Description: Defines the rotation.  The angle is given in degrees,
-//               counterclockwise about the axis as seen from point a.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the rotation.  The angle is given in degrees, counterclockwise about
+ * the axis as seen from point a.
+ */
 void FltTransformRotateAboutEdge::
 set(const LPoint3d &point_a, const LPoint3d &point_b, PN_stdfloat angle) {
   _point_a = point_a;
@@ -45,42 +40,34 @@ set(const LPoint3d &point_a, const LPoint3d &point_b, PN_stdfloat angle) {
   recompute_matrix();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::get_point_a
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LPoint3d &FltTransformRotateAboutEdge::
 get_point_a() const {
   return _point_a;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::get_point_b
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LPoint3d &FltTransformRotateAboutEdge::
 get_point_b() const {
   return _point_b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::get_angle
-//       Access: Public
-//  Description: Returns the angle of rotation, in degrees
-//               counterclockwise about the axis as seen from point a.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the angle of rotation, in degrees counterclockwise about the axis as
+ * seen from point a.
+ */
 PN_stdfloat FltTransformRotateAboutEdge::
 get_angle() const {
   return _angle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::recompute_matrix
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltTransformRotateAboutEdge::
 recompute_matrix() {
   if (_point_a == _point_b) {
@@ -95,14 +82,11 @@ recompute_matrix() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltTransformRotateAboutEdge::
 extract_record(FltRecordReader &reader) {
   if (!FltTransformRecord::extract_record(reader)) {
@@ -130,14 +114,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformRotateAboutEdge::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltTransformRotateAboutEdge::
 build_record(FltRecordWriter &writer) const {
   if (!FltTransformRecord::build_record(writer)) {
@@ -161,4 +142,3 @@ build_record(FltRecordWriter &writer) const {
 
   return true;
 }
-

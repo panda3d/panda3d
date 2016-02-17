@@ -1,16 +1,15 @@
-// Filename: eggSliderData.h
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggSliderData.h
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #ifndef EGGSLIDERDATA_H
 #define EGGSLIDERDATA_H
@@ -20,14 +19,11 @@
 #include "eggComponentData.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSliderData
-// Description : This corresponds to a single morph slider control.
-//               It contains back pointers to all the vertices and
-//               primitives that reference this slider across all
-//               models, as well as all the tables in which it appears
-//               in all animation files.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to a single morph slider control.  It contains back pointers
+ * to all the vertices and primitives that reference this slider across all
+ * models, as well as all the tables in which it appears in all animation files.
+ */
 class EggSliderData : public EggComponentData {
 public:
   EggSliderData(EggCharacterCollection *collection,
@@ -60,5 +56,3 @@ private:
 #include "eggSliderData.I"
 
 #endif
-
-

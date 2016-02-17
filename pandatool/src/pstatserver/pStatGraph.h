@@ -1,16 +1,15 @@
-// Filename: pStatGraph.h
-// Created by:  drose (19Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatGraph.h
+ * @author drose
+ * @date 2000-07-19
+ */
 
 #ifndef PSTATGRAPH_H
 #define PSTATGRAPH_H
@@ -27,12 +26,10 @@
 
 class PStatView;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatGraph
-// Description : This is an abstract base class for several different
-//               kinds of graphs that have a few things in common,
-//               like labels and guide bars.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class for several different kinds of graphs that
+ * have a few things in common, like labels and guide bars.
+ */
 class PStatGraph {
 public:
   PStatGraph(PStatMonitor *monitor, int xsize, int ysize);
@@ -56,7 +53,7 @@ public:
     GBS_target,
     GBS_user,
   };
-  
+
   class GuideBar {
   public:
     GuideBar(double height, const string &label, GuideBarStyle style);

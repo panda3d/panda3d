@@ -1,16 +1,15 @@
-// Filename: graphicsDevice.h
-// Created by:  masad (21Jul03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsDevice.h
+ * @author masad
+ * @date 2003-07-21
+ */
 
 #ifndef GRAPHICSDEVICE_H
 #define GRAPHICSDEVICE_H
@@ -21,15 +20,12 @@
 
 class GraphicsPipe;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsDevice
-// Description : An abstract device object that is part of Graphics
-//               Pipe. This device is set to NULL for OpenGL. But 
-//               DirectX uses it to take control of multiple windows
-//               under single device or multiple devices (i.e. more
-//               than one adapters in the machine).   
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract device object that is part of Graphics Pipe.  This device is set
+ * to NULL for OpenGL. But DirectX uses it to take control of multiple windows
+ * under single device or multiple devices (i.e.  more than one adapters in the
+ * machine).
+ */
 class EXPCL_PANDA_DISPLAY GraphicsDevice : public TypedReferenceCount {
 public:
   GraphicsDevice(GraphicsPipe *pipe);

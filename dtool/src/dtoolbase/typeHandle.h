@@ -1,16 +1,15 @@
-// Filename: typeHandle.h
-// Created by:  drose (23Oct98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeHandle.h
+ * @author drose
+ * @date 1998-10-23
+ */
 
 #ifndef TYPEHANDLE_H
 #define TYPEHANDLE_H
@@ -64,24 +63,18 @@
 
 class TypedObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeHandle
-// Description : TypeHandle is the identifier used to differentiate
-//               C++ class types.  Any C++ classes that inherit from
-//               some base class, and must be differentiated at run
-//               time, should store a static TypeHandle object that
-//               can be queried through a static member function
-//               named get_class_type().  Most of the time, it is also
-//               desirable to inherit from TypedObject, which provides
-//               some virtual functions to return the TypeHandle for a
-//               particular instance.
-//
-//               At its essence, a TypeHandle is simply a unique
-//               identifier that is assigned by the TypeRegistry.  The
-//               TypeRegistry stores a tree of TypeHandles, so that
-//               ancestry of a particular type may be queried, and the
-//               type name may be retrieved for run-time display.
-////////////////////////////////////////////////////////////////////
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any C++
+ * classes that inherit from some base class, and must be differentiated at run
+ * time, should store a static TypeHandle object that can be queried through a
+ * static member function named get_class_type().  Most of the time, it is also
+ * desirable to inherit from TypedObject, which provides some virtual functions
+ * to return the TypeHandle for a particular instance.  At its essence, a
+ * TypeHandle is simply a unique identifier that is assigned by the
+ * TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so that
+ * ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
 class EXPCL_DTOOL TypeHandle FINAL {
 PUBLISHED:
   enum MemoryClass {

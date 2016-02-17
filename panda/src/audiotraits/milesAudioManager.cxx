@@ -1,17 +1,16 @@
-// Filename: milesAudioManager.cxx
-// Created by:  skyler (June 6, 2001)
-// Prior system by: cary
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file milesAudioManager.cxx
+ * @author skyler
+ * @date 2001-06-06
+ * Prior system by: cary
+ */
 
 #include "milesAudioManager.h"
 
@@ -40,21 +39,18 @@ AudioManager *Create_MilesAudioManager() {
   return new MilesAudioManager();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::Constructor
-//       Access: Public
-//  Description: Create an audio manager.  This may open the Miles
-//               sound system if there were no other MilesAudioManager
-//               instances.  Subsequent managers may use the same
-//               Miles resources.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create an audio manager.  This may open the Miles sound system if there were
+ * no other MilesAudioManager instances.  Subsequent managers may use the same
+ * Miles resources.
+ */
 MilesAudioManager::
-MilesAudioManager() : 
+MilesAudioManager() :
   _lock("MilesAudioManager::_lock"),
   _streams_lock("MilesAudioManager::_streams_lock"),
   _streams_cvar(_streams_lock)
 {
-  audio_debug("MilesAudioManager::MilesAudioManager(), this = " 
+  audio_debug("MilesAudioManager::MilesAudioManager(), this = "
               << (void *)this);
   GlobalMilesManager::get_global_ptr()->add_manager(this);
   audio_debug("  audio_active="<<audio_active);
@@ -82,17 +78,14 @@ MilesAudioManager() :
   // method will be called in the sys.exitfunc chain.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::Destructor
-//       Access: Public, Virtual
-//  Description: Clean up this audio manager and possibly release
-//               the Miles resources that are reserved by the 
-//               application (the later happens if this is the last
-//               active manager).
-////////////////////////////////////////////////////////////////////
+/**
+ * Clean up this audio manager and possibly release the Miles resources that are
+ * reserved by the application (the later happens if this is the last active
+ * manager).
+ */
 MilesAudioManager::
 ~MilesAudioManager() {
-  audio_debug("MilesAudioManager::~MilesAudioManager(), this = " 
+  audio_debug("MilesAudioManager::~MilesAudioManager(), this = "
               << (void *)this);
   cleanup();
   GlobalMilesManager::get_global_ptr()->remove_manager(this);
@@ -100,15 +93,12 @@ MilesAudioManager::
   audio_debug("MilesAudioManager::~MilesAudioManager() finished");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::shutdown
-//       Access: Public, Virtual
-//  Description: Call this at exit time to shut down the audio system.
-//               This will invalidate all currently-active
-//               AudioManagers and AudioSounds in the system.  If you
-//               change your mind and want to play sounds again, you
-//               will have to recreate all of these objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Call this at exit time to shut down the audio system.  This will invalidate
+ * all currently-active AudioManagers and AudioSounds in the system.  If you
+ * change your mind and want to play sounds again, you will have to recreate all
+ * of these objects.
+ */
 void MilesAudioManager::
 shutdown() {
   audio_debug("shutdown() started");
@@ -116,24 +106,19 @@ shutdown() {
   audio_debug("shutdown() finished");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::is_valid
-//       Access: Public, Virtual
-//  Description: This is mostly for debugging, but it it could be
-//               used to detect errors in a release build if you
-//               don't mind the cpu cost.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is mostly for debugging, but it it could be used to detect errors in a
+ * release build if you don't mind the cpu cost.
+ */
 bool MilesAudioManager::
 is_valid() {
   LightReMutexHolder holder(_lock);
   return do_is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_sound
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(AudioSound) MilesAudioManager::
 get_sound(const string &file_name, bool, int) {
   LightReMutexHolder holder(_lock);
@@ -219,22 +204,18 @@ get_sound(const string &file_name, bool, int) {
   return audioSound;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_sound
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(AudioSound) MilesAudioManager::
 get_sound(MovieAudio *sound, bool, int) {
   nassert_raise("Miles audio manager does not support MovieAudio sources.");
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::uncache_sound
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioManager::
 uncache_sound(const string &file_name) {
   audio_debug("MilesAudioManager::uncache_sound(file_name=\""
@@ -258,11 +239,9 @@ uncache_sound(const string &file_name) {
   nassertv(do_is_valid());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::clear_cache
-//       Access: Public, Virtual
-//  Description: Clear out the sound cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clear out the sound cache.
+ */
 void MilesAudioManager::
 clear_cache() {
   audio_debug("MilesAudioManager::clear_cache()");
@@ -270,11 +249,9 @@ clear_cache() {
   do_clear_cache();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_cache_limit
-//       Access: Public, Virtual
-//  Description: Set the number of sounds that the cache can hold.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the number of sounds that the cache can hold.
+ */
 void MilesAudioManager::
 set_cache_limit(unsigned int count) {
   LightReMutexHolder holder(_lock);
@@ -288,21 +265,17 @@ set_cache_limit(unsigned int count) {
   nassertv(do_is_valid());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_cache_limit
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int MilesAudioManager::
 get_cache_limit() const {
   return _cache_limit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_volume
-//       Access: Public, Virtual
-//  Description: set the overall volume
-////////////////////////////////////////////////////////////////////
+/**
+ * set the overall volume
+ */
 void MilesAudioManager::
 set_volume(PN_stdfloat volume) {
   audio_debug("MilesAudioManager::set_volume(volume="<<volume<<")");
@@ -317,21 +290,17 @@ set_volume(PN_stdfloat volume) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_volume
-//       Access: Public, Virtual
-//  Description: get the overall volume
-////////////////////////////////////////////////////////////////////
+/**
+ * get the overall volume
+ */
 PN_stdfloat MilesAudioManager::
 get_volume() const {
   return _volume;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_play_rate
-//       Access: Public
-//  Description: set the overall play rate
-////////////////////////////////////////////////////////////////////
+/**
+ * set the overall play rate
+ */
 void MilesAudioManager::
 set_play_rate(PN_stdfloat play_rate) {
   audio_debug("MilesAudioManager::set_play_rate(play_rate="<<play_rate<<")");
@@ -346,21 +315,17 @@ set_play_rate(PN_stdfloat play_rate) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_play_rate
-//       Access: Public
-//  Description: get the overall speed/pitch/play rate
-////////////////////////////////////////////////////////////////////
+/**
+ * get the overall speed/pitch/play rate
+ */
 PN_stdfloat MilesAudioManager::
 get_play_rate() const {
   return _play_rate;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_active
-//       Access: Public, Virtual
-//  Description: turn on/off
-////////////////////////////////////////////////////////////////////
+/**
+ * turn on/off
+ */
 void MilesAudioManager::
 set_active(bool active) {
   audio_debug("MilesAudioManager::set_active(flag="<<active<<")");
@@ -379,21 +344,17 @@ set_active(bool active) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_active
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool MilesAudioManager::
 get_active() const {
   return _active;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_concurrent_sound_limit
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
   LightReMutexHolder holder(_lock);
@@ -401,45 +362,36 @@ set_concurrent_sound_limit(unsigned int limit) {
   do_reduce_sounds_playing_to(_concurrent_sound_limit);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_concurrent_sound_limit
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int MilesAudioManager::
 get_concurrent_sound_limit() const {
   return _concurrent_sound_limit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::reduce_sounds_playing_to
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
   LightReMutexHolder holder(_lock);
   do_reduce_sounds_playing_to(count);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::stop_all_sounds
-//       Access: Public, Virtual
-//  Description: Stop playback on all sounds managed by this manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stop playback on all sounds managed by this manager.
+ */
 void MilesAudioManager::
 stop_all_sounds() {
   audio_debug("MilesAudioManager::stop_all_sounds()");
   reduce_sounds_playing_to(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_set_listener_attributes
-//       Access: Public
-//  Description: Set spatial attributes of the listener for 3D
-//               sounds.  Note that Y and Z are switched to
-//               translate into Miles's coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set spatial attributes of the listener for 3D sounds.  Note that Y and Z are
+ * switched to translate into Miles's coordinate system.
+ */
 void MilesAudioManager::audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
   audio_debug("MilesAudioManager::audio_3d_set_listener_attributes()");
 
@@ -449,13 +401,10 @@ void MilesAudioManager::audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdf
   AIL_set_listener_3D_orientation(mgr->_digital_driver, fx, fz, fy, ux, uz, uy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_get_listener_attributes
-//       Access: Public
-//  Description: Get spatial attributes of the listener for 3D
-//               sounds.  Note that Y and Z are switched to
-//               translate from Miles's coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Get spatial attributes of the listener for 3D sounds.  Note that Y and Z are
+ * switched to translate from Miles's coordinate system.
+ */
 void MilesAudioManager::audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
   audio_debug("MilesAudioManager::audio_3d_get_listener_attributes()");
 
@@ -479,12 +428,10 @@ void MilesAudioManager::audio_3d_get_listener_attributes(PN_stdfloat *px, PN_std
   *uz = luz;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_set_distance_factor
-//       Access: Public
-//  Description: Set factor to allow user to easily work in a
-//               different scale.  1.0 represents meters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set factor to allow user to easily work in a different scale.  1.0 represents
+ * meters.
+ */
 void MilesAudioManager::audio_3d_set_distance_factor(PN_stdfloat factor) {
   audio_debug("MilesAudioManager::audio_3d_set_distance_factor( factor= " << factor << ")");
 
@@ -492,11 +439,9 @@ void MilesAudioManager::audio_3d_set_distance_factor(PN_stdfloat factor) {
   AIL_set_3D_distance_factor(mgr->_digital_driver, factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_get_distance_factor
-//       Access: Public
-//  Description: Get factor controlling working units.
-////////////////////////////////////////////////////////////////////
+/**
+ * Get factor controlling working units.
+ */
 PN_stdfloat MilesAudioManager::audio_3d_get_distance_factor() const {
   audio_debug("MilesAudioManager::audio_3d_get_distance_factor()");
 
@@ -504,12 +449,9 @@ PN_stdfloat MilesAudioManager::audio_3d_get_distance_factor() const {
   return AIL_3D_distance_factor(mgr->_digital_driver);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_set_doppler_factor
-//       Access: Public
-//  Description: Exaggerates or diminishes the Doppler effect. 
-//               Defaults to 1.0
-////////////////////////////////////////////////////////////////////
+/**
+ * Exaggerates or diminishes the Doppler effect.  Defaults to 1.0
+ */
 void MilesAudioManager::audio_3d_set_doppler_factor(PN_stdfloat factor) {
   audio_debug("MilesAudioManager::audio_3d_set_doppler_factor(factor="<<factor<<")");
 
@@ -517,11 +459,9 @@ void MilesAudioManager::audio_3d_set_doppler_factor(PN_stdfloat factor) {
   AIL_set_3D_doppler_factor(mgr->_digital_driver, factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_get_doppler_factor
-//       Access: Public
-//  Description: Get the factor controlling the Doppler effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Get the factor controlling the Doppler effect.
+ */
 PN_stdfloat MilesAudioManager::audio_3d_get_doppler_factor() const {
   audio_debug("MilesAudioManager::audio_3d_get_doppler_factor()");
 
@@ -529,12 +469,9 @@ PN_stdfloat MilesAudioManager::audio_3d_get_doppler_factor() const {
   return AIL_3D_doppler_factor(mgr->_digital_driver);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_set_drop_off_factor
-//       Access: Public
-//  Description: Control the effect distance has on audability.
-//               Defaults to 1.0
-////////////////////////////////////////////////////////////////////
+/**
+ * Control the effect distance has on audability.  Defaults to 1.0
+ */
 void MilesAudioManager::audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   audio_debug("MilesAudioManager::audio_3d_set_drop_off_factor("<<factor<<")");
 
@@ -542,12 +479,9 @@ void MilesAudioManager::audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   AIL_set_3D_rolloff_factor(mgr->_digital_driver, factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::audio_3d_get_drop_off_factor
-//       Access: Public
-//  Description: Get the factor controlling how quickly sound falls
-//               off with distance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Get the factor controlling how quickly sound falls off with distance.
+ */
 PN_stdfloat MilesAudioManager::audio_3d_get_drop_off_factor() const {
   audio_debug("MilesAudioManager::audio_3d_get_drop_off_factor()");
 
@@ -555,18 +489,12 @@ PN_stdfloat MilesAudioManager::audio_3d_get_drop_off_factor() const {
   return AIL_3D_rolloff_factor(mgr->_digital_driver);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_speaker_configuration
-//       Access: Published
-//  Description: Works similarly to MilesAudioSound::set_speaker_levels,
-//               but specifies the 3D positions of the speakers in space.
-//
-//               Once a NULL value is found for a speaker position,
-//               no more speaker positions will be used.
-//
-//               Note that Y and Z are switched to translate from Miles's
-//               coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Works similarly to MilesAudioSound::set_speaker_levels, but specifies the 3D
+ * positions of the speakers in space.  Once a NULL value is found for a speaker
+ * position, no more speaker positions will be used.  Note that Y and Z are
+ * switched to translate from Miles's coordinate system.
+ */
 void MilesAudioManager::
 set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2, LVecBase3 *speaker3, LVecBase3 *speaker4, LVecBase3 *speaker5, LVecBase3 *speaker6, LVecBase3 *speaker7, LVecBase3 *speaker8, LVecBase3 *speaker9) {
   audio_debug("MilesAudioManager::set_speaker_configuration()");
@@ -644,13 +572,10 @@ set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2, LVecBase3 *s
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::update()
-//       Access: Public, Virtual
-//  Description: Must be called every frame.  Failure to call this
-//               every frame could cause problems for some audio
-//               managers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Must be called every frame.  Failure to call this every frame could cause
+ * problems for some audio managers.
+ */
 void MilesAudioManager::
 update() {
   {
@@ -664,7 +589,7 @@ update() {
 
   if (_sounds_finished) {
     _sounds_finished = false;
-    
+
     // If the _sounds_finished flag was set, we should scan our list
     // of playing sounds and see if any of them have finished
     // recently.  We don't do this in the finished callback, because
@@ -683,11 +608,9 @@ update() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::release_sound
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioManager::
 release_sound(MilesAudioSound *audioSound) {
   audio_debug("MilesAudioManager::release_sound(audioSound=\""
@@ -701,13 +624,10 @@ release_sound(MilesAudioSound *audioSound) {
   audio_debug("MilesAudioManager::release_sound() finished");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::cleanup
-//       Access: Public
-//  Description: Shuts down the audio manager and releases any
-//               resources associated with it.  Also cleans up all
-//               AudioSounds created via the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shuts down the audio manager and releases any resources associated with it.
+ * Also cleans up all AudioSounds created via the manager.
+ */
 void MilesAudioManager::
 cleanup() {
   audio_debug("MilesAudioManager::cleanup(), this = " << (void *)this
@@ -747,23 +667,19 @@ cleanup() {
   audio_debug("MilesAudioManager::cleanup() finished");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioManager::
 output(ostream &out) const {
   LightReMutexHolder holder(_lock);
   out << get_type() << ": " << _sounds_playing.size()
-      << " / " << _sounds_on_loan.size() << " sounds playing / total"; 
+      << " / " << _sounds_on_loan.size() << " sounds playing / total";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::write
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioManager::
 write(ostream &out) const {
   LightReMutexHolder holder(_lock);
@@ -795,7 +711,7 @@ write(ostream &out) const {
   }
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
- 
+
   int num_samples = mgr->get_num_samples();
   out << num_samples << " sample handles allocated globally.\n";
 
@@ -804,12 +720,9 @@ write(ostream &out) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::do_is_valid
-//       Access: Private
-//  Description: Implementation of is_valid().  Assumes the lock is
-//               already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implementation of is_valid().  Assumes the lock is already held.
+ */
 bool MilesAudioManager::
 do_is_valid() {
   bool check = true;
@@ -831,11 +744,9 @@ do_is_valid() {
   return _is_valid && check;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::do_reduce_sounds_playing_to
-//       Access: Private
-//  Description: Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes the lock is already held.
+ */
 void MilesAudioManager::
 do_reduce_sounds_playing_to(unsigned int count) {
   int limit = _sounds_playing.size() - count;
@@ -846,11 +757,9 @@ do_reduce_sounds_playing_to(unsigned int count) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::do_clear_cache
-//       Access: Private
-//  Description: Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes the lock is already held.
+ */
 void MilesAudioManager::
 do_clear_cache() {
   if (_is_valid) { nassertv(do_is_valid()); }
@@ -859,13 +768,10 @@ do_clear_cache() {
   if (_is_valid) { nassertv(do_is_valid()); }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::start_service_stream
-//       Access: Private
-//  Description: Adds the indicated stream to the list of streams to
-//               be serviced by a Panda sub-thread.  This is in lieu
-//               of Miles' auto-service-stream mechanism.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated stream to the list of streams to be serviced by a Panda
+ * sub-thread.  This is in lieu of Miles' auto-service-stream mechanism.
+ */
 void MilesAudioManager::
 start_service_stream(HSTREAM stream) {
   MutexHolder holder(_streams_lock);
@@ -881,12 +787,10 @@ start_service_stream(HSTREAM stream) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::stop_service_stream
-//       Access: Private
-//  Description: Removes the indicated stream from the list of streams
-//               to be serviced by a Panda sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated stream from the list of streams to be serviced by a
+ * Panda sub-thread.
+ */
 void MilesAudioManager::
 stop_service_stream(HSTREAM stream) {
   MutexHolder holder(_streams_lock);
@@ -895,13 +799,11 @@ stop_service_stream(HSTREAM stream) {
     _streams.erase(si);
   }
 }
-  
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::most_recently_used
-//       Access: Private
-//  Description: Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Assumes the lock is already held.
+ */
 void MilesAudioManager::
 most_recently_used(const string &path) {
   audio_debug("MilesAudioManager::most_recently_used(path=\""
@@ -916,11 +818,9 @@ most_recently_used(const string &path) {
   nassertv(do_is_valid());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::uncache_a_sound
-//       Access: Private
-//  Description: Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes the lock is already held.
+ */
 void MilesAudioManager::
 uncache_a_sound() {
   audio_debug("MilesAudioManager::uncache_a_sound()");
@@ -939,11 +839,9 @@ uncache_a_sound() {
   nassertv(do_is_valid());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::starting_sound
-//       Access: Private
-//  Description: Inform the manager that a sound is about to play.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inform the manager that a sound is about to play.
+ */
 void MilesAudioManager::
 starting_sound(MilesAudioSound *audio) {
   LightReMutexHolder holder(_lock);
@@ -953,13 +851,10 @@ starting_sound(MilesAudioSound *audio) {
   _sounds_playing.insert(audio);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::stopping_sound
-//       Access: Private
-//  Description: Inform the manager that a sound is finished or 
-//               someone called stop on the sound (this should not
-//               be called if a sound is only paused).
-////////////////////////////////////////////////////////////////////
+/**
+ * Inform the manager that a sound is finished or someone called stop on the
+ * sound (this should not be called if a sound is only paused).
+ */
 void MilesAudioManager::
 stopping_sound(MilesAudioSound *audio) {
   LightReMutexHolder holder(_lock);
@@ -969,15 +864,10 @@ stopping_sound(MilesAudioSound *audio) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::load
-//       Access: Private
-//  Description: Reads a sound file and allocates a SoundData pointer
-//               for it.  Returns NULL if the sound file cannot be
-//               loaded.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a sound file and allocates a SoundData pointer for it.  Returns NULL if
+ * the sound file cannot be loaded.  Assumes the lock is already held.
+ */
 PT(MilesAudioManager::SoundData) MilesAudioManager::
 load(const Filename &file_name) {
   PT(SoundData) sd = new SoundData;
@@ -1017,7 +907,7 @@ load(const Filename &file_name) {
       return NULL;
     }
 
-    sd->_file_type = 
+    sd->_file_type =
       AIL_file_type(&sd->_raw_data[0], sd->_raw_data.size());
 
     if (sd->_file_type == AILFILETYPE_MIDI) {
@@ -1034,7 +924,7 @@ load(const Filename &file_name) {
         // Copy the data to our own buffer and free the
         // Miles-allocated data.
         sd->_raw_data.clear();
-        sd->_raw_data.insert(sd->_raw_data.end(), 
+        sd->_raw_data.insert(sd->_raw_data.end(),
                              (unsigned char *)xmi, (unsigned char *)xmi + xmi_size);
         AIL_mem_free_lock(xmi);
         sd->_file_type = AILFILETYPE_XMIDI;
@@ -1043,7 +933,7 @@ load(const Filename &file_name) {
           << "Could not convert " << sd->_basename << " to XMIDI.\n";
       }
     }
-    
+
     bool expand_to_wav = false;
 
     if (sd->_file_type != AILFILETYPE_MPEG_L3_AUDIO) {
@@ -1054,7 +944,7 @@ load(const Filename &file_name) {
       audio_debug(sd->_basename << " will be expanded in-memory.");
       expand_to_wav = true;
     }
-    
+
     if (expand_to_wav) {
       // Now convert the file to WAV format in-memory.  This is useful
       // to work around seek and length problems associated with
@@ -1066,7 +956,7 @@ load(const Filename &file_name) {
                              NULL)) {
         audio_debug("expanded " << sd->_basename << " from " << sd->_raw_data.size()
                     << " bytes to " << wav_data_size << " bytes.");
-        
+
         if (wav_data_size != 0) {
           // Now copy the memory into our own buffers, and free the
           // Miles-allocated memory.
@@ -1077,7 +967,7 @@ load(const Filename &file_name) {
           sd->_basename.set_extension("wav");
         }
         AIL_mem_free_lock(wav_data);
-        
+
       } else {
         audio_debug("unable to expand " << sd->_basename);
       }
@@ -1092,12 +982,10 @@ load(const Filename &file_name) {
   return sd;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::thread_main
-//       Access: Private
-//  Description: Called to service the streaming audio channels
-//               currently playing on the audio manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to service the streaming audio channels currently playing on the audio
+ * manager.
+ */
 void MilesAudioManager::
 thread_main(volatile bool &keep_running) {
   MutexHolder holder(_streams_lock);
@@ -1118,56 +1006,48 @@ thread_main(volatile bool &keep_running) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::do_service_streams
-//       Access: Private
-//  Description: Internal function to service all the streams.
-//               Assumes _streams_lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Internal function to service all the streams.  Assumes _streams_lock is
+ * already held.
+ */
 void MilesAudioManager::
 do_service_streams() {
   size_t i = 0;
   while (i < _streams.size()) {
     HSTREAM stream = _streams[i];
-    
+
     // We must release the lock while we are servicing stream i.
     _streams_lock.release();
     AIL_service_stream(stream, 0);
     Thread::consider_yield();
     _streams_lock.acquire();
-    
+
     ++i;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::StreamThread::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MilesAudioManager::StreamThread::
-StreamThread(MilesAudioManager *mgr) : 
+StreamThread(MilesAudioManager *mgr) :
   Thread("StreamThread", "StreamThread"),
-  _mgr(mgr) 
+  _mgr(mgr)
 {
   _keep_running = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::StreamThread::thread_main
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioManager::StreamThread::
 thread_main() {
   _mgr->thread_main(_keep_running);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::SoundData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MilesAudioManager::SoundData::
 SoundData() :
   _raw_data(MilesAudioManager::get_class_type()),
@@ -1176,25 +1056,21 @@ SoundData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::SoundData::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MilesAudioManager::SoundData::
 ~SoundData() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::SoundData::get_length
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat MilesAudioManager::SoundData::
 get_length() {
   if (!_has_length) {
     // Time to determine the length of the file.
-    
+
     if (_raw_data.empty()) {
       _length = 0.0f;
       _has_length = true;
@@ -1203,7 +1079,7 @@ get_length() {
       // If it's an mp3 file, we have to calculate its length by
       // walking through all of its frames.
       audio_debug("Computing length of mp3 file " << _basename);
-      
+
       MP3_INFO info;
       AIL_inspect_MP3(&info, &_raw_data[0], _raw_data.size());
       _length = 0.0f;
@@ -1231,11 +1107,9 @@ get_length() {
   return _length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::SoundData::set_length
-//       Access: Public
-//  Description: Records the sample length, as determined externally.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the sample length, as determined externally.
+ */
 void MilesAudioManager::SoundData::
 set_length(PN_stdfloat length) {
   _length = length;

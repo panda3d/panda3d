@@ -1,16 +1,15 @@
-// Filename: colorAttrib.cxx
-// Created by:  drose (22Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorAttrib.cxx
+ * @author drose
+ * @date 2002-02-22
+ */
 
 #include "colorAttrib.h"
 #include "graphicsStateGuardianBase.h"
@@ -25,13 +24,10 @@ int ColorAttrib::_attrib_slot;
 CPT(RenderAttrib) ColorAttrib::_off;
 CPT(RenderAttrib) ColorAttrib::_vertex;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::make_vertex
-//       Access: Published, Static
-//  Description: Constructs a new ColorAttrib object that indicates
-//               geometry should be rendered according to its own
-//               vertex color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ColorAttrib object that indicates geometry should be
+ * rendered according to its own vertex color.
+ */
 CPT(RenderAttrib) ColorAttrib::
 make_vertex() {
   if (_vertex != 0) {
@@ -42,24 +38,20 @@ make_vertex() {
   return _vertex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::make_flat
-//       Access: Published, Static
-//  Description: Constructs a new ColorAttrib object that indicates
-//               geometry should be rendered in the indicated color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ColorAttrib object that indicates geometry should be
+ * rendered in the indicated color.
+ */
 CPT(RenderAttrib) ColorAttrib::
 make_flat(const LColor &color) {
   ColorAttrib *attrib = new ColorAttrib(T_flat, color);
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::make_off
-//       Access: Published, Static
-//  Description: Constructs a new ColorAttrib object that indicates
-//               geometry should be rendered in white.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ColorAttrib object that indicates geometry should be
+ * rendered in white.
+ */
 CPT(RenderAttrib) ColorAttrib::
 make_off() {
   if (_off != 0) {
@@ -70,23 +62,18 @@ make_off() {
   return _off;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) ColorAttrib::
 make_default() {
   return make_off();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ColorAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -105,21 +92,14 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ColorAttrib
-//               types to return a unique number indicating whether
-//               this ColorAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two ColorAttrib objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two ColorAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived ColorAttrib types to return a unique
+ * number indicating whether this ColorAttrib is equivalent to the other one.
+ * This should return 0 if the two ColorAttrib objects are equivalent, a number
+ * less than zero if this one should be sorted before the other one, and a
+ * number greater than zero otherwise.  This will only be called with two
+ * ColorAttrib objects whose get_type() functions return the same.
+ */
 int ColorAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ColorAttrib *ta = (const ColorAttrib *)other;
@@ -133,16 +113,12 @@ compare_to_impl(const RenderAttrib *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t ColorAttrib::
 get_hash_impl() const {
   size_t hash = 0;
@@ -153,11 +129,9 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::get_auto_shader_attrib_impl
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPT(RenderAttrib) ColorAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
   // For a ColorAttrib, the only relevant information is the type: is
@@ -168,13 +142,10 @@ get_auto_shader_attrib_impl(const RenderState *state) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::quantize_color
-//       Access: Private
-//  Description: Quantizes the color color to the nearest multiple of
-//               1000, just to prevent runaway accumulation of
-//               only slightly-different ColorAttribs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Quantizes the color color to the nearest multiple of 1000, just to prevent
+ * runaway accumulation of only slightly-different ColorAttribs.
+ */
 void ColorAttrib::
 quantize_color() {
   switch (_type) {
@@ -195,23 +166,18 @@ quantize_color() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               ColorAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type ColorAttrib.
+ */
 void ColorAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void ColorAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
@@ -220,14 +186,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   _color.write_datagram(dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type ColorAttrib is encountered
-//               in the Bam file.  It should create the ColorAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * ColorAttrib is encountered in the Bam file.  It should create the ColorAttrib
+ * and extract its information from the file.
+ */
 TypedWritable *ColorAttrib::
 make_from_bam(const FactoryParams &params) {
   ColorAttrib *attrib = new ColorAttrib(T_off, LColor::zero());
@@ -240,13 +203,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new ColorAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new ColorAttrib.
+ */
 void ColorAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);

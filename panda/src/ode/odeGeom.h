@@ -1,16 +1,15 @@
-// Filename: odeGeom.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeGeom.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODEGEOM_H
 #define ODEGEOM_H
@@ -40,10 +39,9 @@ class OdeQuadTreeSpace;
 class OdeUtil;
 class OdeCollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeGeom : public TypedObject {
   friend class OdeContactGeom;
   friend class OdeSpace;
@@ -54,7 +52,7 @@ public:
   OdeGeom(dGeomID id);
 
 PUBLISHED:
-  enum GeomClass { GC_sphere = 0, 
+  enum GeomClass { GC_sphere = 0,
                    GC_box,
                    GC_capped_cylinder,
                    GC_cylinder,

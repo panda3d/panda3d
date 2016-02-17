@@ -1,16 +1,15 @@
-// Filename: multiplexStreamBuf.h
-// Created by:  drose (27Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file multiplexStreamBuf.h
+ * @author drose
+ * @date 2000-11-27
+ */
 
 #ifndef MULTIPLEXSTREAMBUF_H
 #define MULTIPLEXSTREAMBUF_H
@@ -20,12 +19,10 @@
 #include "pvector.h"
 #include <stdio.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : MultiplexStreamBuf
-// Description : Used by MultiplexStream to implement an ostream that
-//               sends what is written to it to any number of
-//               additional sources, like other ostreams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used by MultiplexStream to implement an ostream that sends what is written to
+ * it to any number of additional sources, like other ostreams.
+ */
 class EXPCL_PANDAEXPRESS MultiplexStreamBuf : public streambuf {
 public:
   MultiplexStreamBuf();

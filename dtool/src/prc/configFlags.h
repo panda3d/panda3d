@@ -1,16 +1,15 @@
-// Filename: configFlags.h
-// Created by:  drose (21Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configFlags.h
+ * @author drose
+ * @date 2004-10-21
+ */
 
 #ifndef CONFIGFLAGS_H
 #define CONFIGFLAGS_H
@@ -19,13 +18,11 @@
 #include "numeric_types.h"
 #include "atomicAdjust.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigFlags
-// Description : This class is the base class of both ConfigVariable
-//               and ConfigVariableCore.  It exists only to provide a
-//               convenient name scoping for some enumerated values
-//               common to both classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is the base class of both ConfigVariable and ConfigVariableCore.
+ * It exists only to provide a convenient name scoping for some enumerated
+ * values common to both classes.
+ */
 class EXPCL_DTOOLCONFIG ConfigFlags {
 PUBLISHED:
   enum ValueType {

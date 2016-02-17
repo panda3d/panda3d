@@ -1,16 +1,15 @@
-// Filename: daeToEggConverter.cxx
-// Created by:  pro-rsoft (08May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file daeToEggConverter.cxx
+ * @author rdb
+ * @date 2008-05-08
+ */
 
 #include "daeToEggConverter.h"
 #include "fcollada_utils.h"
@@ -49,11 +48,9 @@
   #include "FCDocument/FCDGeometryPolygonsInput.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DAEToEggConverter::
 DAEToEggConverter() {
   _unit_name = "meter";
@@ -64,22 +61,18 @@ DAEToEggConverter() {
   _invert_transparency = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DAEToEggConverter::
 DAEToEggConverter(const DAEToEggConverter &copy) :
   SomethingToEggConverter(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DAEToEggConverter::
 ~DAEToEggConverter() {
   if (_error_handler != NULL) {
@@ -87,46 +80,35 @@ DAEToEggConverter::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *DAEToEggConverter::
 make_copy() {
   return new DAEToEggConverter(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string DAEToEggConverter::
 get_name() const {
   return "COLLADA";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string DAEToEggConverter::
 get_extension() const {
   return "dae";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns true
+ * if successful, false otherwise.
+ */
 bool DAEToEggConverter::
 convert_file(const Filename &filename) {
   // Reset stuff
@@ -317,15 +299,11 @@ convert_file(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::get_input_units
-//       Access: Public, Virtual
-//  Description: This may be called after convert_file() has been
-//               called and returned true, indicating a successful
-//               conversion.  It will return the distance units
-//               represented by the converted egg file, if known, or
-//               DU_invalid if not known.
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be called after convert_file() has been called and returned true,
+ * indicating a successful conversion.  It will return the distance units
+ * represented by the converted egg file, if known, or DU_invalid if not known.
+ */
 DistanceUnit DAEToEggConverter::
 get_input_units() {
   if (IS_NEARLY_EQUAL(_unit_meters, 0.001)) {

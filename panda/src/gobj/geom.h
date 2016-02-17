@@ -1,16 +1,15 @@
-// Filename: geom.h
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geom.h
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #ifndef GEOM_H
 #define GEOM_H
@@ -44,17 +43,14 @@
 class GeomContext;
 class PreparedGraphicsObjects;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Geom
-// Description : A container for geometry primitives.  This class
-//               associates one or more GeomPrimitive objects with a
-//               table of vertices defined by a GeomVertexData object.
-//               All of the primitives stored in a particular Geom are
-//               drawn from the same set of vertices (each primitive
-//               uses a subset of all of the vertices in the table),
-//               and all of them must be rendered at the same time, in
-//               the same graphics state.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for geometry primitives.  This class associates one or more
+ * GeomPrimitive objects with a table of vertices defined by a GeomVertexData
+ * object.  All of the primitives stored in a particular Geom are drawn from the
+ * same set of vertices (each primitive uses a subset of all of the vertices in
+ * the table), and all of them must be rendered at the same time, in the same
+ * graphics state.
+ */
 class EXPCL_PANDA_GOBJ Geom : public CopyOnWriteObject, public GeomEnums {
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
@@ -400,15 +396,11 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomPipelineReader
-// Description : Encapsulates the data from a Geom,
-//               pre-fetched for one stage of the pipeline.
-//
-//               Does not hold a reference to the Geom.  The caller
-//               must ensure that the Geom persists for at least the
-//               lifetime of the GeomPipelineReader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a Geom, pre-fetched for one stage of the pipeline.
+ * Does not hold a reference to the Geom.  The caller must ensure that the Geom
+ * persists for at least the lifetime of the GeomPipelineReader.
+ */
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);

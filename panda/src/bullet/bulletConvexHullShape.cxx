@@ -1,16 +1,15 @@
-// Filename: bulletConvexHullShape.cxx
-// Created by:  enn0x (26Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletConvexHullShape.cxx
+ * @author enn0x
+ * @date 2010-01-26
+ */
 
 #include "bulletConvexHullShape.h"
 
@@ -20,11 +19,9 @@
 
 TypeHandle BulletConvexHullShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletConvexHullShape::
 BulletConvexHullShape() {
 
@@ -32,33 +29,27 @@ BulletConvexHullShape() {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletConvexHullShape::
 ptr() const {
 
   return _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::add_point
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletConvexHullShape::
 add_point(const LPoint3 &p) {
 
   _shape->addPoint(LVecBase3_to_btVector3(p));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletConvexHullShape::
 add_array(const PTA_LVecBase3 &points) {
 
@@ -79,11 +70,9 @@ add_array(const PTA_LVecBase3 &points) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletConvexHullShape::
 add_geom(const Geom *geom, const TransformState *ts) {
 
@@ -122,23 +111,18 @@ add_geom(const Geom *geom, const TransformState *ts) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               BulletShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type BulletShape.
+ */
 void BulletConvexHullShape::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void BulletConvexHullShape::
 write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(get_margin());
@@ -154,14 +138,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type BulletShape is encountered
-//               in the Bam file.  It should create the BulletShape
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * BulletShape is encountered in the Bam file.  It should create the BulletShape
+ * and extract its information from the file.
+ */
 TypedWritable *BulletConvexHullShape::
 make_from_bam(const FactoryParams &params) {
   BulletConvexHullShape *param = new BulletConvexHullShape;
@@ -174,13 +155,10 @@ make_from_bam(const FactoryParams &params) {
   return param;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexHullShape::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BulletShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletShape.
+ */
 void BulletConvexHullShape::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PN_stdfloat margin = scan.get_stdfloat();

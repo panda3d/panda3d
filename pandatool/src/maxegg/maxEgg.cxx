@@ -1,12 +1,16 @@
-/*
-  MaxEgg.cpp
-  Created by Steven "Sauce" Osman, 01/??/03
-  Modified by Ken Strickland, 02/25/03
-  Carnegie Mellon University, Entertainment Technology Center
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxEgg.cxx
+ * @author osman
+ * @date 2003-01-01
+ */
 
-  This file implements the classes that are used in the Panda 3D file
-  exporter for 3D Studio Max.
-*/
 
 #include "maxEgg.h"
 
@@ -617,9 +621,9 @@ void MaxEggPlugin::BuildMesh()
     meshBuilt = TRUE;
 }
 
-////////////////////////////////////////////////////////////////////
-// The creation callback - sets the initial position of the helper in the scene.
-////////////////////////////////////////////////////////////////////
+/*
+ * The creation callback - sets the initial position of the helper in the scene.
+ */
 
 class MaxEggPluginCreateMouseCallBack: public CreateMouseCallBack
 {
@@ -650,9 +654,9 @@ static MaxEggPluginCreateMouseCallBack MaxEggCreateMouseCB;
 CreateMouseCallBack* MaxEggPlugin::GetCreateMouseCallBack()
 { return &MaxEggCreateMouseCB; }
 
-////////////////////////////////////////////////////////////////////
-//Boilerplate functions for dealing with the display of the plugin
-////////////////////////////////////////////////////////////////////
+/*
+ * Boilerplate functions for dealing with the display of the plugin
+ */
 
 void MaxEggPlugin::GetMat(TimeValue t, INode* inode, ViewExp* vpt, Matrix3& tm)
 {
@@ -746,9 +750,9 @@ RefTargetHandle MaxEggPlugin::Clone(RemapDir& remap)
     return(newob);
 }
 
-////////////////////////////////////////////////////////////////////
-// Loading and saving the plugin
-////////////////////////////////////////////////////////////////////
+/*
+ * Loading and saving the plugin
+ */
 
 IOResult MaxEggPlugin::Save(ISave *isave) {
     SaveCheckState();
@@ -859,4 +863,3 @@ TCHAR *GetString(int id)
                 return LoadString(hInstance, id, buf, sizeof(buf)) ? buf : NULL;
         return NULL;
 }
-

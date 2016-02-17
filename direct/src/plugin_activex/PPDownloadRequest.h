@@ -1,16 +1,15 @@
-// Filename: PPDownloadRequest.h
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PPDownloadRequest.h
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #pragma once
 
@@ -31,19 +30,19 @@ public:
     };
 
     PPDownloadRequest( PPInstance& instance, P3D_request* p3dRequest ) :
-        m_instance( instance ), m_p3dRequest( p3dRequest ), m_data( NULL ), 
+        m_instance( instance ), m_p3dRequest( p3dRequest ), m_data( NULL ),
         m_requestType( RequestType::P3DObject ), m_hFile( INVALID_HANDLE_VALUE )
     {
     }
 
     PPDownloadRequest( PPInstance& instance, const std::string& fileName ) :
-        m_instance( instance ), m_p3dRequest( NULL ), m_fileName( fileName ), 
+        m_instance( instance ), m_p3dRequest( NULL ), m_fileName( fileName ),
         m_data( NULL ), m_requestType( RequestType::File ), m_hFile( INVALID_HANDLE_VALUE )
     {
     }
 
     PPDownloadRequest( PPInstance& instance, std::strstream* data ) :
-        m_instance( instance ), m_p3dRequest ( NULL ), m_data( data ), 
+        m_instance( instance ), m_p3dRequest ( NULL ), m_data( data ),
         m_requestType( RequestType::Data ), m_hFile( INVALID_HANDLE_VALUE )
     {
     }

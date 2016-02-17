@@ -1,16 +1,15 @@
-// Filename: lineStreamBuf.cxx
-// Created by:  drose (26Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lineStreamBuf.cxx
+ * @author drose
+ * @date 2000-02-26
+ */
 
 #include "lineStreamBuf.h"
 
@@ -19,11 +18,9 @@
 typedef int streamsize;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LineStreamBuf::
 LineStreamBuf() {
   _has_newline = false;
@@ -36,24 +33,19 @@ LineStreamBuf() {
   setp(0, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LineStreamBuf::
 ~LineStreamBuf() {
   sync();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineStreamBuf::get_line
-//       Access: Public
-//  Description: Extracts the next line of text from the
-//               LineStreamBuf, and sets the has_newline() flag
-//               according to whether this line had a trailing newline
-//               or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the next line of text from the LineStreamBuf, and sets the
+ * has_newline() flag according to whether this line had a trailing newline or
+ * not.
+ */
 string LineStreamBuf::
 get_line() {
   // Extract the data up to, but not including, the next newline
@@ -73,13 +65,10 @@ get_line() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineStreamBuf::sync
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when the
-//               buffer should be flushed to output (for instance, on
-//               destruction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when the buffer should be flushed
+ * to output (for instance, on destruction).
+ */
 int LineStreamBuf::
 sync() {
   streamsize n = pptr() - pbase();
@@ -88,12 +77,10 @@ sync() {
   return 0;  // EOF to indicate write full.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineStreamBuf::overflow
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int LineStreamBuf::
 overflow(int ch) {
   streamsize n = pptr() - pbase();

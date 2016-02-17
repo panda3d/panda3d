@@ -1,16 +1,15 @@
-// Filename: eggCompositePrimitive.h
-// Created by:  drose (13Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCompositePrimitive.h
+ * @author drose
+ * @date 2005-03-13
+ */
 
 #ifndef EGGCOMPOSITEPRIMITIVE_H
 #define EGGCOMPOSITEPRIMITIVE_H
@@ -19,13 +18,11 @@
 
 #include "eggPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCompositePrimitive
-// Description : The base class for primitives such as triangle strips
-//               and triangle fans, which include several component
-//               triangles, each of which might have its own color
-//               and/or normal.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for primitives such as triangle strips and triangle fans,
+ * which include several component triangles, each of which might have its own
+ * color and/or normal.
+ */
 class EXPCL_PANDAEGG EggCompositePrimitive : public EggPrimitive {
 PUBLISHED:
   INLINE EggCompositePrimitive(const string &name = "");

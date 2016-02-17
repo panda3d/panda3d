@@ -1,17 +1,16 @@
-// Filename: audioManager.h
-// Created by:  skyler (June 6, 2001)
-// Prior system by: cary
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file audioManager.h
+ * @author skyler
+ * @date 2001-06-06
+ * Prior system by: cary
+ */
 
 #ifndef __AUDIO_MANAGER_H__
 #define __AUDIO_MANAGER_H__
@@ -32,17 +31,17 @@ PUBLISHED:
   enum SpeakerModeCategory {
     // These enumerants line up one-to-one
     // with the FMOD SPEAKERMODE enumerants.
-    SPEAKERMODE_raw, 
-    SPEAKERMODE_mono, 
-    SPEAKERMODE_stereo, 
-    SPEAKERMODE_quad, 
-    SPEAKERMODE_surround, 
-    SPEAKERMODE_5point1, 
-    SPEAKERMODE_7point1, 
+    SPEAKERMODE_raw,
+    SPEAKERMODE_mono,
+    SPEAKERMODE_stereo,
+    SPEAKERMODE_quad,
+    SPEAKERMODE_surround,
+    SPEAKERMODE_5point1,
+    SPEAKERMODE_7point1,
     SPEAKERMODE_max,
     SPEAKERMODE_COUNT
   };
-  
+
 
   enum SpeakerId {
     SPK_none,
@@ -62,11 +61,11 @@ PUBLISHED:
     SM_sample,
     SM_stream,
   };
-  
+
   virtual int getSpeakerSetup();
   virtual void setSpeakerSetup(SpeakerModeCategory cat);
   virtual bool configure_filters(FilterProperties *config);
-  
+
   // Create an AudioManager for each category of sounds you have.
   // E.g.
   //   MySoundEffects = create_AudioManager::AudioManager();
@@ -79,7 +78,7 @@ PUBLISHED:
   virtual ~AudioManager();
 
   virtual void shutdown();
-  
+
   // If you're interested in knowing whether this audio manager
   // is valid, here's the call to do it.  It is not necessary
   // to check whether the audio manager is valid before making other
@@ -88,7 +87,7 @@ PUBLISHED:
   // the sounds it creates should not crash the application even
   // when the objects are not valid.
   virtual bool is_valid() = 0;
-  
+
   // Get a sound:
   virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false, int mode=SM_heuristic) = 0;
   virtual PT(AudioSound) get_sound(MovieAudio *source, bool positional = false, int mode=SM_heuristic) = 0;
@@ -107,13 +106,13 @@ PUBLISHED:
 
   // Control volume:
   // FYI:
-  //   If you start a sound with the volume off and turn the volume 
+  //   If you start a sound with the volume off and turn the volume
   //   up later, you'll hear the sound playing at that late point.
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
   virtual void set_volume(PN_stdfloat volume) = 0;
   virtual PN_stdfloat get_volume() const = 0;
-  
+
   // Turn the manager on or off.
   // If you play a sound while the manager is inactive, it won't start.
   // If you deactivate the manager while sounds are playing, they'll
@@ -124,7 +123,7 @@ PUBLISHED:
   // inits to true.
   virtual void set_active(bool flag) = 0;
   virtual bool get_active() const = 0;
-  
+
   // This controls the number of sounds that you allow at once.  This
   // is more of a user choice -- it avoids talk over and the creation
   // of a cacophony.
@@ -134,7 +133,7 @@ PUBLISHED:
   // n == allow n sounds to be playing at the same time.
   virtual void set_concurrent_sound_limit(unsigned int limit = 0) = 0;
   virtual unsigned int get_concurrent_sound_limit() const = 0;
-  
+
   // This is likely to be a utility function for the concurrent_sound_limit
   // options.  It is exposed as an API, because it's reasonable that it
   // may be useful to be here.  It reduces the number of concurrently
@@ -153,8 +152,8 @@ PUBLISHED:
   virtual void update();
 
   // This controls the "set of ears" that listens to 3D spacialized sound
-  // px, py, pz are position coordinates. 
-  // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters). 
+  // px, py, pz are position coordinates.
+  // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters).
   // fx, fy and fz are the respective components of a unit forward-vector
   // ux, uy and uz are the respective components of a unit up-vector
   virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
@@ -165,7 +164,7 @@ PUBLISHED:
                                                 PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz,
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
- 
+
   // Control the "relative scale that sets the distance factor" units for 3D spacialized audio. Default is 1.0
   // Fmod uses meters internally, so give a float in Units-per meter
   // Don't know what Miles uses.
@@ -199,11 +198,11 @@ public:
 
 protected:
   friend class AudioSound;
-  
+
   // Avoid adding data members (instance variables) to this mostly abstract
   // base class.  This allows implementors of various sound systems the
   // best flexibility.
-  
+
   static Create_AudioManager_proc* _create_AudioManager;
   AtomicAdjust::Pointer _null_sound;
 

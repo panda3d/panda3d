@@ -1,16 +1,15 @@
-// Filename: xFileDataDef.cxx
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataDef.cxx
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #include "xFileDataDef.h"
 #include "indent.h"
@@ -25,44 +24,34 @@
 
 TypeHandle XFileDataDef::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileDataDef::
 ~XFileDataDef() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::clear
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void XFileDataDef::
 clear() {
   XFileNode::clear();
   _array_def.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::add_array_def
-//       Access: Public
-//  Description: Adds an additional array dimension to the data
-//               description.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds an additional array dimension to the data description.
+ */
 void XFileDataDef::
 add_array_def(const XFileArrayDef &array_def) {
   _array_def.push_back(array_def);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::write_text
-//       Access: Public, Virtual
-//  Description: Writes a suitable representation of this node to an
-//               .x file in text mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a suitable representation of this node to an .x file in text mode.
+ */
 void XFileDataDef::
 write_text(ostream &out, int indent_level) const {
   indent(out, indent_level);
@@ -133,21 +122,15 @@ write_text(ostream &out, int indent_level) const {
   out << ";\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::repack_data
-//       Access: Public, Virtual
-//  Description: This is called on the template that defines an
-//               object, once the data for the object has been parsed.
-//               It is responsible for identifying which component of
-//               the template owns each data element, and packing the
-//               data elements appropriately back into the object.
-//
-//               It returns true on success, or false on an error
-//               (e.g. not enough data elements, mismatched data
-//               type).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called on the template that defines an object, once the data for the
+ * object has been parsed.  It is responsible for identifying which component of
+ * the template owns each data element, and packing the data elements
+ * appropriately back into the object.  It returns true on success, or false on
+ * an error (e.g.  not enough data elements, mismatched data type).
+ */
 bool XFileDataDef::
-repack_data(XFileDataObject *object, 
+repack_data(XFileDataObject *object,
             const XFileParseDataList &parse_data_list,
             XFileDataDef::PrevData &prev_data,
             size_t &index, size_t &sub_index) const {
@@ -195,17 +178,14 @@ repack_data(XFileDataObject *object,
     prev_data[this] = data_value;
   }
 
-  return XFileNode::repack_data(object, parse_data_list, 
+  return XFileNode::repack_data(object, parse_data_list,
                                 prev_data, index, sub_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::fill_zero_data
-//       Access: Public, Virtual
-//  Description: This is similar to repack_data(), except it is used
-//               to fill the initial values for a newly-created
-//               template object to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to repack_data(), except it is used to fill the initial
+ * values for a newly-created template object to zero.
+ */
 bool XFileDataDef::
 fill_zero_data(XFileDataObject *object) const {
   PT(XFileDataObject) data_value;
@@ -244,15 +224,11 @@ fill_zero_data(XFileDataObject *object) const {
   return XFileNode::fill_zero_data(object);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::matches
-//       Access: Public, Virtual
-//  Description: Returns true if the node, particularly a template
-//               node, is structurally equivalent to the other node
-//               (which must be of the same type).  This checks data
-//               element types, but does not compare data element
-//               names.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node, particularly a template node, is structurally
+ * equivalent to the other node (which must be of the same type).  This checks
+ * data element types, but does not compare data element names.
+ */
 bool XFileDataDef::
 matches(const XFileNode *other) const {
   if (!XFileNode::matches(other)) {
@@ -284,12 +260,10 @@ matches(const XFileNode *other) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::unpack_integer_value
-//       Access: Private
-//  Description: Unpacks and returns the next sequential integer value
-//               from the parse_data_list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks and returns the next sequential integer value from the
+ * parse_data_list.
+ */
 PT(XFileDataObject) XFileDataDef::
 unpack_integer_value(const XFileParseDataList &parse_data_list,
                      const XFileDataDef::PrevData &prev_data,
@@ -303,7 +277,7 @@ unpack_integer_value(const XFileParseDataList &parse_data_list,
     nassertr(sub_index < parse_data._int_list.size(), NULL);
     int value = parse_data._int_list[sub_index];
     data_value = new XFileDataObjectInteger(this, value);
-    
+
     sub_index++;
     if (sub_index >= parse_data._int_list.size()) {
       index++;
@@ -317,12 +291,10 @@ unpack_integer_value(const XFileParseDataList &parse_data_list,
   return data_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::unpack_double_value
-//       Access: Private
-//  Description: Unpacks and returns the next sequential double value
-//               from the parse_data_list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks and returns the next sequential double value from the
+ * parse_data_list.
+ */
 PT(XFileDataObject) XFileDataDef::
 unpack_double_value(const XFileParseDataList &parse_data_list,
                     const XFileDataDef::PrevData &prev_data,
@@ -336,7 +308,7 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
     nassertr(sub_index < parse_data._double_list.size(), NULL);
     double value = parse_data._double_list[sub_index];
     data_value = new XFileDataObjectDouble(this, value);
-    
+
     sub_index++;
     if (sub_index >= parse_data._double_list.size()) {
       index++;
@@ -347,7 +319,7 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
     nassertr(sub_index < parse_data._int_list.size(), NULL);
     int value = parse_data._int_list[sub_index];
     data_value = new XFileDataObjectDouble(this, value);
-    
+
     sub_index++;
     if (sub_index >= parse_data._int_list.size()) {
       index++;
@@ -361,12 +333,10 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
   return data_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::unpack_string_value
-//       Access: Private
-//  Description: Unpacks and returns the next sequential string value
-//               from the parse_data_list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks and returns the next sequential string value from the
+ * parse_data_list.
+ */
 PT(XFileDataObject) XFileDataDef::
 unpack_string_value(const XFileParseDataList &parse_data_list,
                     const XFileDataDef::PrevData &prev_data,
@@ -388,20 +358,18 @@ unpack_string_value(const XFileParseDataList &parse_data_list,
   return data_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::unpack_template_value
-//       Access: Private
-//  Description: Unpacks a nested template object's data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks a nested template object's data.
+ */
 PT(XFileDataObject) XFileDataDef::
 unpack_template_value(const XFileParseDataList &parse_data_list,
                       const XFileDataDef::PrevData &prev_data,
                       size_t &index, size_t &sub_index) const {
-  PT(XFileDataNodeTemplate) data_value = 
+  PT(XFileDataNodeTemplate) data_value =
     new XFileDataNodeTemplate(get_x_file(), get_name(), _template);
 
   PrevData nested_prev_data(prev_data);
-  if (!_template->repack_data(data_value, parse_data_list, 
+  if (!_template->repack_data(data_value, parse_data_list,
                               nested_prev_data, index, sub_index)) {
     return NULL;
   }
@@ -409,21 +377,18 @@ unpack_template_value(const XFileParseDataList &parse_data_list,
   return data_value.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::unpack_value
-//       Access: Private
-//  Description: Unpacks and returns the next sequential value, of the
-//               type supported by the unpack_method.  If the value
-//               is an array type, unpacks all the elements of the
-//               array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks and returns the next sequential value, of the type supported by the
+ * unpack_method.  If the value is an array type, unpacks all the elements of
+ * the array.
+ */
 PT(XFileDataObject) XFileDataDef::
 unpack_value(const XFileParseDataList &parse_data_list, int array_index,
              const XFileDataDef::PrevData &prev_data,
-             size_t &index, size_t &sub_index, 
+             size_t &index, size_t &sub_index,
              XFileDataDef::UnpackMethod unpack_method) const {
   PT(XFileDataObject) data_value;
-  
+
   if (array_index == (int)_array_def.size()) {
     if (index >= parse_data_list._list.size()) {
       xyyerror("Not enough data elements in structure at " + get_name());
@@ -443,7 +408,7 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
         return data_value;
       }
 
-      PT(XFileDataObject) array_element = 
+      PT(XFileDataObject) array_element =
         unpack_value(parse_data_list, array_index + 1,
                      prev_data, index, sub_index,
                      unpack_method);
@@ -457,45 +422,36 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
   return data_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::zero_fill_integer_value
-//       Access: Private
-//  Description: Returns a newly-allocated zero integer value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated zero integer value.
+ */
 PT(XFileDataObject) XFileDataDef::
 zero_fill_integer_value() const {
   return new XFileDataObjectInteger(this, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::zero_fill_double_value
-//       Access: Private
-//  Description: Returns a newly-allocated zero floating-point value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated zero floating-point value.
+ */
 PT(XFileDataObject) XFileDataDef::
 zero_fill_double_value() const {
   return new XFileDataObjectDouble(this, 0.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::zero_fill_string_value
-//       Access: Private
-//  Description: Returns a newly-allocated empty string value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated empty string value.
+ */
 PT(XFileDataObject) XFileDataDef::
 zero_fill_string_value() const {
   return new XFileDataObjectString(this, "");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::zero_fill_template_value
-//       Access: Private
-//  Description: Returns a newly-allocated zero-filled nested template
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated zero-filled nested template value.
+ */
 PT(XFileDataObject) XFileDataDef::
 zero_fill_template_value() const {
-  PT(XFileDataObject) data_value = 
+  PT(XFileDataObject) data_value =
     new XFileDataNodeTemplate(get_x_file(), get_name(), _template);
   if (!_template->fill_zero_data(data_value)) {
     return NULL;
@@ -504,19 +460,16 @@ zero_fill_template_value() const {
   return data_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataDef::zero_fill_value
-//       Access: Private
-//  Description: Creates a zero-valued element for the next sequential
-//               value, of the type returned by the zero_fill_method.
-//               If the value is a fixed-size array type, zero-fills
-//               all the elements of the array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a zero-valued element for the next sequential value, of the type
+ * returned by the zero_fill_method.  If the value is a fixed-size array type,
+ * zero-fills all the elements of the array.
+ */
 PT(XFileDataObject) XFileDataDef::
-zero_fill_value(int array_index, 
+zero_fill_value(int array_index,
                 XFileDataDef::ZeroFillMethod zero_fill_method) const {
   PT(XFileDataObject) data_value;
-  
+
   if (array_index == (int)_array_def.size()) {
     data_value = (this->*zero_fill_method)();
 
@@ -528,7 +481,7 @@ zero_fill_value(int array_index,
     }
 
     for (int i = 0; i < array_size; i++) {
-      PT(XFileDataObject) array_element = 
+      PT(XFileDataObject) array_element =
         zero_fill_value(array_index + 1, zero_fill_method);
       if (array_element == (XFileDataObject *)NULL) {
         return NULL;

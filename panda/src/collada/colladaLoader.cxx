@@ -1,16 +1,15 @@
-// Filename: colladaLoader.cxx
-// Created by: Xidram (21Dec10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colladaLoader.cxx
+ * @author Xidram
+ * @date 2010-12-21
+ */
 
 #include "colladaLoader.h"
 #include "virtualFileSystem.h"
@@ -48,10 +47,9 @@
 
 #define TOSTRING(x) (x == NULL ? "" : x)
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::Constructor
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ColladaLoader::
 ColladaLoader() :
   _record (NULL),
@@ -63,19 +61,17 @@ ColladaLoader() :
   _dae = new DAE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::Destructor
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ColladaLoader::
 ~ColladaLoader() {
   delete _dae;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::read
-//  Description: Reads from the indicated file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads from the indicated file.
+ */
 bool ColladaLoader::
 read(const Filename &filename) {
   _filename = filename;
@@ -95,11 +91,10 @@ read(const Filename &filename) {
   return !_error;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::build_graph
-//  Description: Converts scene graph structures into a Panda3D
-//               scene graph, with _root being the root node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts scene graph structures into a Panda3D scene graph, with _root being
+ * the root node.
+ */
 void ColladaLoader::
 build_graph() {
   nassertv(_collada); // read() must be called first
@@ -115,10 +110,9 @@ build_graph() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_visual_scene
-//  Description: Loads a visual scene structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a visual scene structure.
+ */
 void ColladaLoader::
 load_visual_scene(domVisual_scene& scene, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
@@ -156,10 +150,9 @@ load_visual_scene(domVisual_scene& scene, PandaNode *parent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_node
-//  Description: Loads a COLLADA <node>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a COLLADA <node>.
+ */
 void ColladaLoader::
 load_node(domNode& node, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
@@ -292,10 +285,9 @@ load_node(domNode& node, PandaNode *parent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_tags
-//  Description: Loads tags specified in an <extra> element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads tags specified in an <extra> element.
+ */
 void ColladaLoader::
 load_tags(domExtra &extra, PandaNode *node) {
   domTechnique_Array &techniques = extra.getTechnique_array();
@@ -324,10 +316,9 @@ load_tags(domExtra &extra, PandaNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_camera
-//  Description: Loads a COLLADA <camera> as a Camera object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a COLLADA <camera> as a Camera object.
+ */
 void ColladaLoader::
 load_camera(domCamera &cam, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
@@ -339,11 +330,9 @@ load_camera(domCamera &cam, PandaNode *parent) {
   //TODO
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_instance_geometry
-//  Description: Loads a COLLADA <instance_geometry> as a GeomNode
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a COLLADA <instance_geometry> as a GeomNode object.
+ */
 void ColladaLoader::
 load_instance_geometry(domInstance_geometry &inst, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
@@ -375,11 +364,10 @@ load_instance_geometry(domInstance_geometry &inst, PandaNode *parent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_geometry
-//  Description: Loads a COLLADA <geometry> and adds the primitives
-//               to the given GeomNode object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a COLLADA <geometry> and adds the primitives to the given GeomNode
+ * object.
+ */
 void ColladaLoader::
 load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat) {
   domMesh* mesh = geom.getMesh();
@@ -446,10 +434,9 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaLoader::load_light
-//  Description: Loads a COLLADA <light> as a LightNode object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a COLLADA <light> as a LightNode object.
+ */
 void ColladaLoader::
 load_light(domLight &light, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.

@@ -1,16 +1,15 @@
-// Filename: dxfFile.cxx
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxfFile.cxx
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #include "dxfFile.h"
 #include "string_utils.h"
@@ -274,13 +273,11 @@ DXFFile::Color DXFFile::_colors[DXF_num_colors] = {
   { 0.866, 0.866, 0.866 },
   { 1, 1, 1 },
 };
-      
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+
+/**
+
+ */
 DXFFile::
 DXFFile() {
   _in = NULL;
@@ -290,11 +287,9 @@ DXFFile() {
   _color_index = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXFFile::
 ~DXFFile() {
   if (_owns_in) {
@@ -304,12 +299,9 @@ DXFFile::
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::process
-//       Access: Public
-//  Description: Opens the indicated filename and reads it as a DXF
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename and reads it as a DXF file.
+ */
 void DXFFile::
 process(Filename filename) {
   filename.set_text();
@@ -323,14 +315,11 @@ process(Filename filename) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::process
-//       Access: Public
-//  Description: Reads the indicated stream as a DXF file.  If owns_in
-//               is true, then the istream will be deleted via
-//               vfs->close_read_file() when the DXFFile object
-//               destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated stream as a DXF file.  If owns_in is true, then the
+ * istream will be deleted via vfs->close_read_file() when the DXFFile object
+ * destructs.
+ */
 void DXFFile::
 process(istream *in, bool owns_in) {
   if (_owns_in) {
@@ -370,39 +359,30 @@ process(istream *in, bool owns_in) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::Begin File
-//       Access: Public, Virtual
-//  Description: A hook for user code, if desired.  This function is
-//               called whenever processing begins on the DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A hook for user code, if desired.  This function is called whenever
+ * processing begins on the DXF file.
+ */
 void DXFFile::
 begin_file() {
 }
-      
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::begin_section
-//       Access: Public, Virtual
-//  Description: A hook for user code, if desired.  This function is
-//               called whenever a new section in the DXF file is
-//               encountered.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * A hook for user code, if desired.  This function is called whenever a new
+ * section in the DXF file is encountered.
+ */
 void DXFFile::
 begin_section() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::done_vertex
-//       Access: Public, Virtual
-//  Description: A hook for user code, if desired.  This function is
-//               called whenever a vertex is read from the DXF file.
-//               This function has the default behavior of adding the
-//               vertex to the _verts list, so that when done_entity()
-//               is called later, it will have the complete list of
-//               vertices available to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A hook for user code, if desired.  This function is called whenever a vertex
+ * is read from the DXF file.  This function has the default behavior of adding
+ * the vertex to the _verts list, so that when done_entity() is called later, it
+ * will have the complete list of vertices available to it.
+ */
 void DXFFile::
 done_vertex() {
   DXFVertex v;
@@ -411,51 +391,40 @@ done_vertex() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::done_entity
-//       Access: Public, Virtual
-//  Description: This is the primary hook for user code.  This
-//               function is called when an entity is read from the
-//               DXF file.  This may be something like a polygon,
-//               point, or a polygon mesh: any geometry.  It is up to
-//               the user code to override this function and do
-//               something interesting with each piece of geometry
-//               that is read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary hook for user code.  This function is called when an
+ * entity is read from the DXF file.  This may be something like a polygon,
+ * point, or a polygon mesh: any geometry.  It is up to the user code to
+ * override this function and do something interesting with each piece of
+ * geometry that is read.
+ */
 void DXFFile::
 done_entity() {
 }
-      
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::end_section
-//       Access: Public, Virtual
-//  Description: A hook for user code, if desired.  This function is
-//               called as each section in the DXF file is finished.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * A hook for user code, if desired.  This function is called as each section in
+ * the DXF file is finished.
+ */
 void DXFFile::
 end_section() {
 }
-      
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::end_file
-//       Access: Public, Virtual
-//  Description: A hook for user code, if desired.  This function is
-//               called when the DXF processing is complete.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * A hook for user code, if desired.  This function is called when the DXF
+ * processing is complete.
+ */
 void DXFFile::
 end_file() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::Error
-//       Access: Public, Virtual
-//  Description: A hook for user code, if desired.  This function is
-//               called when some unexpected error occurs while
-//               reading the DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A hook for user code, if desired.  This function is called when some
+ * unexpected error occurs while reading the DXF file.
+ */
 void DXFFile::
 error() {
   nout << "Error!\n";
@@ -463,12 +432,10 @@ error() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::find_color
-//       Access: Public, Static
-//  Description: Returns the index of the closest matching AutoCAD
-//               color to the indicated r, g, b.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the closest matching AutoCAD color to the indicated r,
+ * g, b.
+ */
 int DXFFile::
 find_color(double r, double g, double b) {
   double best_diff = 4.0;   // 4 is greater than our expected max, 3.
@@ -487,14 +454,11 @@ find_color(double r, double g, double b) {
   return best_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::get_color
-//       Access: Public
-//  Description: This is a convenience function to return the r,g,b
-//               color of the current entity (at the time of
-//               done_entity()).  It's based on the _color_index value
-//               that was read from the DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience function to return the r,g,b color of the current
+ * entity (at the time of done_entity()).  It's based on the _color_index value
+ * that was read from the DXF file.
+ */
 const DXFFile::Color &DXFFile::
 get_color() const {
   if (_color_index >= 0 && _color_index <= 255) {
@@ -504,16 +468,12 @@ get_color() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::ocs_2_wcs
-//       Access: Public
-//  Description: Assuming the current entity is a planar-based entity,
-//               for instance, a 2-d polygon (as opposed to a 3-d
-//               polygon), this converts the coordinates from the
-//               funny planar coordinate system to the world
-//               coordinates.  It converts the _p value of the entity,
-//               as well as all vertices in the _verts list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming the current entity is a planar-based entity, for instance, a 2-d
+ * polygon (as opposed to a 3-d polygon), this converts the coordinates from the
+ * funny planar coordinate system to the world coordinates.  It converts the _p
+ * value of the entity, as well as all vertices in the _verts list.
+ */
 void DXFFile::
 ocs_2_wcs() {
   compute_ocs();
@@ -534,12 +494,10 @@ ocs_2_wcs() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::compute_ocs
-//       Access: Protected
-//  Description: Computes the matrix used to convert from the planar
-//               coordinate system to world coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the matrix used to convert from the planar coordinate system to
+ * world coordinates.
+ */
 void DXFFile::
 compute_ocs() {
   // A 2-d entity's vertices might be defined in an "Object Coordinate
@@ -570,12 +528,10 @@ compute_ocs() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::get_group
-//       Access: Protected
-//  Description: Reads the next code, string pair from the DXF file.
-//               This is the basic unit of data in a DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the next code, string pair from the DXF file.  This is the basic unit
+ * of data in a DXF file.
+ */
 bool DXFFile::
 get_group() {
   istream &in = *_in;
@@ -611,12 +567,9 @@ get_group() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::change_state
-//       Access: Protected
-//  Description: Called as new nodes are read to update the internal
-//               state correctly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as new nodes are read to update the internal state correctly.
+ */
 void DXFFile::
 change_state(State new_state) {
   if (_state == ST_verts) {
@@ -650,11 +603,9 @@ change_state(State new_state) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::change_section
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXFFile::
 change_section(Section new_section) {
   change_state(ST_section);
@@ -663,14 +614,11 @@ change_section(Section new_section) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::change_layer
-//       Access: Protected
-//  Description: Given a newly read layer name, sets the _layer
-//               pointer to point to the associate layer.  If the
-//               layer name has not been encountered before, creates a
-//               new layer definition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a newly read layer name, sets the _layer pointer to point to the
+ * associate layer.  If the layer name has not been encountered before, creates
+ * a new layer definition.
+ */
 void DXFFile::
 change_layer(const string &layer_name) {
   if (_layer == NULL || _layer->get_name() != layer_name) {
@@ -679,11 +627,9 @@ change_layer(const string &layer_name) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::change_entity
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXFFile::
 change_entity(Entity new_entity) {
   if (new_entity == EN_vertex && _vertices_follow) {
@@ -700,12 +646,10 @@ change_entity(Entity new_entity) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::reset_entity
-//       Access: Protected
-//  Description: Resets the current entity to its initial, default
-//               state prior to reading a new entity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the current entity to its initial, default state prior to reading a
+ * new entity.
+ */
 void DXFFile::
 reset_entity() {
   _p.set(0.0, 0.0, 0.0);
@@ -720,12 +664,10 @@ reset_entity() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::state_top
-//       Access: Protected
-//  Description: Does the DXF processing when we are at the top of the
-//               file, outside of any section.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the DXF processing when we are at the top of the file, outside of any
+ * section.
+ */
 void DXFFile::
 state_top() {
   if (_code != 0) {
@@ -736,7 +678,7 @@ state_top() {
     if (_string == "SECTION") {
       if (get_group()) {
         if (_code != 2) {
-          nout << "Group code 0 not immediately followed by code 2; found code " 
+          nout << "Group code 0 not immediately followed by code 2; found code "
                << _code << " instead.\n";
         } else {
           if (_string == "HEADER") {
@@ -765,12 +707,9 @@ state_top() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::state_section
-//       Access: Protected
-//  Description: Does the DXF processing when we are within some
-//               section.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the DXF processing when we are within some section.
+ */
 void DXFFile::
 state_section() {
   string tail;
@@ -812,12 +751,9 @@ state_section() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::state_entity
-//       Access: Protected
-//  Description: Does the DXF processing when we are reading an
-//               entity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the DXF processing when we are reading an entity.
+ */
 void DXFFile::
 state_entity() {
   string tail;
@@ -909,12 +845,10 @@ state_entity() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFFile::state_verts
-//       Access: Protected
-//  Description: Does the DXF processing when we are reading the list
-//               of vertices that might follow an entity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the DXF processing when we are reading the list of vertices that might
+ * follow an entity.
+ */
 void DXFFile::
 state_verts() {
   string tail;
@@ -999,4 +933,3 @@ ostream &operator << (ostream &out, const DXFFile::Entity &entity) {
   }
   return out << "Unknown entity";
 }
-

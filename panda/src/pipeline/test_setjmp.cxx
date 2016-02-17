@@ -1,16 +1,15 @@
-// Filename: test_setjmp.cxx
-// Created by:  drose (19Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_setjmp.cxx
+ * @author drose
+ * @date 2007-06-19
+ */
 
 #include "pandabase.h"
 
@@ -33,7 +32,7 @@ main(int argc, char *argv[]) {
 
   size_t word_size = sizeof(buf1[0]);
   size_t num_words = sizeof(buf1) / word_size;
-  
+
   cerr << num_words << " words of " << word_size << " bytes\n";
   for (size_t i = 0; i < num_words; ++i) {
     cerr << "  word " << i << ": " << (void *)buf1[i] << " vs. "
@@ -42,6 +41,6 @@ main(int argc, char *argv[]) {
   cerr << "scratch = " << (void *)scratch << "\n";
   cerr << "scratch end = " << (void *)(scratch + 1024) << "\n";
 #endif  // PHAVE_UCONTEXT_H
-    
+
   return 0;
 }

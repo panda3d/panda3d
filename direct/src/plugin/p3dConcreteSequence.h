@@ -1,16 +1,15 @@
-// Filename: p3dConcreteSequence.h
-// Created by:  drose (30Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dConcreteSequence.h
+ * @author drose
+ * @date 2009-06-30
+ */
 
 #ifndef P3DCONCRETESEQUENCE_H
 #define P3DCONCRETESEQUENCE_H
@@ -18,15 +17,11 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DConcreteSequence
-// Description : An object type that contains a sequence of objects,
-//               which is passed by value between Python and
-//               JavaScript, so may be more optimal for small lists
-//               that are accessed repeatedly.
-//
-//               This is converted from a Python "tuple" object.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that contains a sequence of objects, which is passed by value
+ * between Python and JavaScript, so may be more optimal for small lists that
+ * are accessed repeatedly.  This is converted from a Python "tuple" object.
+ */
 class P3DConcreteSequence : public P3DObject {
 public:
   P3DConcreteSequence();
@@ -57,4 +52,3 @@ private:
 };
 
 #endif
-

@@ -1,16 +1,14 @@
-// Filename: config_milesAudio.cxx
-// Created by:  skyler
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_milesAudio.cxx
+ * @author skyler
+ */
 
 #include "pandabase.h"
 #ifdef HAVE_RAD_MSS //[
@@ -61,14 +59,12 @@ ConfigVariableBool miles_audio_panda_threads
           "and ensures better lock protection within Panda.  This has "
           "no meaning unless Panda is compiled with thread support."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libMilesAudio
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libMilesAudio() {
   static bool initialized = false;
@@ -88,12 +84,10 @@ init_libMilesAudio() {
   ps->set_system_tag("audio", "implementation", "Miles");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_audio_manager_func_miles_audio
-//  Description: This function is called when the dynamic library is
-//               loaded; it should return the Create_AudioManager
-//               function appropriate to create a MilesAudioManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called when the dynamic library is loaded; it should return
+ * the Create_AudioManager function appropriate to create a MilesAudioManager.
+ */
 Create_AudioManager_proc *
 get_audio_manager_func_miles_audio() {
   init_libMilesAudio();

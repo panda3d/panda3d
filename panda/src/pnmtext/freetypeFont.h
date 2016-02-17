@@ -1,16 +1,15 @@
-// Filename: freetypeFont.h
-// Created by:  drose (07Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file freetypeFont.h
+ * @author drose
+ * @date 2003-09-07
+ */
 
 #ifndef FREETYPEFONT_H
 #define FREETYPEFONT_H
@@ -32,14 +31,11 @@
 
 class NurbsCurveResult;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FreetypeFont
-// Description : This is a common base class for both DynamicTextFont
-//               and PNMTextMaker.  Both of these are utility classes
-//               that use the FreeType library to generate glyphs from
-//               fonts; this class abstracts out that common wrapper
-//               around FreeType.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a common base class for both DynamicTextFont and PNMTextMaker.  Both
+ * of these are utility classes that use the FreeType library to generate glyphs
+ * from fonts; this class abstracts out that common wrapper around FreeType.
+ */
 class EXPCL_PANDA_PNMTEXT FreetypeFont : public Namable {
 protected:
   FreetypeFont();

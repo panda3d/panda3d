@@ -1,16 +1,15 @@
-// Filename: movieTypeRegistry.cxx
-// Created by:  rdb (24Aug13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieTypeRegistry.cxx
+ * @author rdb
+ * @date 2013-08-24
+ */
 
 #include "movieTypeRegistry.h"
 #include "string_utils.h"
@@ -20,11 +19,9 @@
 
 MovieTypeRegistry *MovieTypeRegistry::_global_ptr = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::make_audio
-//       Access: Published, Static
-//  Description: Obtains a MovieVideo that references a file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a MovieVideo that references a file.
+ */
 PT(MovieAudio) MovieTypeRegistry::
 make_audio(const Filename &name) {
   string ext = downcase(name.get_extension());
@@ -62,13 +59,10 @@ make_audio(const Filename &name) {
   return new MovieAudio("Load-Failure Stub");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::register_audio_type
-//       Access: Published, Static
-//  Description: Registers a MovieAudio type, so that files with
-//               any of the given extensions will be loaded as this
-//               type.  You may use * as a catch-all extension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers a MovieAudio type, so that files with any of the given extensions
+ * will be loaded as this type.  You may use * as a catch-all extension.
+ */
 void MovieTypeRegistry::
 register_audio_type(MakeAudioFunc func, const string &extensions) {
   vector_string words;
@@ -87,12 +81,9 @@ register_audio_type(MakeAudioFunc func, const string &extensions) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::load_audio_types
-//       Access: Published, Static
-//  Description: Loads the list with audio types, if we haven't
-//               already.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the list with audio types, if we haven't already.
+ */
 void MovieTypeRegistry::
 load_audio_types() {
   static bool audio_types_loaded = false;
@@ -144,11 +135,9 @@ load_audio_types() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::make_video
-//       Access: Published, Static
-//  Description: Obtains a MovieVideo that references a file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a MovieVideo that references a file.
+ */
 PT(MovieVideo) MovieTypeRegistry::
 make_video(const Filename &name) {
   string ext = downcase(name.get_extension());
@@ -186,13 +175,10 @@ make_video(const Filename &name) {
   return new MovieVideo("Load-Failure Stub");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::register_video_type
-//       Access: Published, Static
-//  Description: Registers a MovieVideo type, so that files with
-//               any of the given extensions will be loaded as this
-//               type.  You may use * as a catch-all extension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers a MovieVideo type, so that files with any of the given extensions
+ * will be loaded as this type.  You may use * as a catch-all extension.
+ */
 void MovieTypeRegistry::
 register_video_type(MakeVideoFunc func, const string &extensions) {
   vector_string words;
@@ -211,12 +197,9 @@ register_video_type(MakeVideoFunc func, const string &extensions) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::load_video_types
-//       Access: Published, Static
-//  Description: Loads the list with video types, if we haven't
-//               already.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the list with video types, if we haven't already.
+ */
 void MovieTypeRegistry::
 load_video_types() {
   static bool video_types_loaded = false;
@@ -268,11 +251,9 @@ load_video_types() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::load_library
-//       Access: Published, Static
-//  Description: Loads the module.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the module.
+ */
 void MovieTypeRegistry::
 load_movie_library(const string &name) {
   Filename dlname = Filename::dso_filename("lib" + name + ".so");

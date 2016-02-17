@@ -1,16 +1,15 @@
-// Filename: fltTransformGeneralMatrix.h
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTransformGeneralMatrix.h
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #ifndef FLTTRANSFORMGENERALMATRIX_H
 #define FLTTRANSFORMGENERALMATRIX_H
@@ -19,12 +18,10 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformGeneralMatrix
-// Description : A general 4x4 matrix.  This appears in the flt file
-//               when there is no record of the composition of the
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * A general 4x4 matrix.  This appears in the flt file when there is no record
+ * of the composition of the transform.
+ */
 class FltTransformGeneralMatrix : public FltTransformRecord {
 public:
   FltTransformGeneralMatrix(FltHeader *header);
@@ -55,5 +52,3 @@ private:
 };
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: PPInstance.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PPInstance.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #include "stdafx.h"
 
@@ -75,7 +74,7 @@ void P3D_NotificationSync(P3D_instance *instance)
     }
 }
 
-PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) : 
+PPInstance::PPInstance( CP3DActiveXCtrl& parentCtrl ) :
     m_parentCtrl( parentCtrl ), m_p3dInstance( NULL ), m_p3dObject( NULL ), m_isInit( false )
 {
   // We need the root dir first.
@@ -119,14 +118,14 @@ read_tokens() {
       for (const char *p = m_parentCtrl.m_parameters[ i ].first; *p; ++p) {
         keyword += tolower(*p);
       }
-      
-      _tokens[i]._keyword = strdup( keyword.c_str() ); 
+
+      _tokens[i]._keyword = strdup( keyword.c_str() );
       _tokens[i]._value = strdup( m_parentCtrl.m_parameters[ i ].second );
     }
-    
+
     // fgcolor and bgcolor are useful to know here (in case we have to
     // draw a twirling icon).
-    
+
     // The default bgcolor is white.
     _bgcolor_r = _bgcolor_g = _bgcolor_b = 0xff;
     if (has_token("bgcolor")) {
@@ -137,7 +136,7 @@ read_tokens() {
         _bgcolor_b = b;
       }
     }
-    
+
     // The default fgcolor is either black or white, according to the
     // brightness of the bgcolor.
     if (_bgcolor_r + _bgcolor_g + _bgcolor_b > 0x80 + 0x80 + 0x80) {
@@ -158,16 +157,16 @@ read_tokens() {
 int PPInstance::DownloadFile( const std::string& from, const std::string& to )
 {
     int error( 0 );
-	HRESULT hr( S_OK ); 
+  HRESULT hr( S_OK );
 
     nout << "Downloading " << from << " into " << to << "\n";
-	{
-		PPDownloadRequest p3dFileDownloadRequest( *this, to ); 
-		PPDownloadCallback dcForFile( p3dFileDownloadRequest );
-		hr = ::URLOpenStream( m_parentCtrl.GetControllingUnknown(), from.c_str(), 0, &dcForFile );
-	}
+  {
+    PPDownloadRequest p3dFileDownloadRequest( *this, to );
+    PPDownloadCallback dcForFile( p3dFileDownloadRequest );
+    hr = ::URLOpenStream( m_parentCtrl.GetControllingUnknown(), from.c_str(), 0, &dcForFile );
+  }
     if ( FAILED( hr ) )
-    {   
+    {
         error = 1;
         nout << "Error downloading " << from << " :" << hr << "\n";
     }
@@ -178,10 +177,10 @@ int PPInstance::CopyFile( const std::string& from, const std::string& to )
 {
   ifstream in(from.c_str(), ios::in | ios::binary);
   ofstream out(to.c_str(), ios::out | ios::binary);
-        
+
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
-  
+
   in.read(buffer, buffer_size);
   size_t count = in.gcount();
   while (count != 0) {
@@ -200,14 +199,10 @@ int PPInstance::CopyFile( const std::string& from, const std::string& to )
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::read_contents_file
-//       Access: Private
-//  Description: Attempts to open and read the contents.xml file on
-//               disk.  Copies the file to its standard location
-//               on success.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open and read the contents.xml file on disk.  Copies the file to
+ * its standard location on success.  Returns true on success, false on failure.
+ */
 bool PPInstance::
 read_contents_file(const string &contents_filename, bool fresh_download) {
   TiXmlDocument doc(contents_filename.c_str());
@@ -237,7 +232,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
 
       xorig = new TiXmlElement("orig");
       xcontents->LinkEndChild(xorig);
-      
+
       xorig->SetAttribute("expiration", (int)_contents_expiration);
 
     } else {
@@ -247,7 +242,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
       if (xorig != NULL) {
         xorig->Attribute("expiration", &expiration);
       }
-      
+
       _contents_expiration = min(_contents_expiration, (time_t)expiration);
     }
 
@@ -276,7 +271,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
           break;
         }
       }
-    
+
       xpackage = xpackage->NextSiblingElement("package");
     }
   }
@@ -314,16 +309,13 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     nout << "Couldn't rewrite " << standard_filename << "\n";
     return false;
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::find_host
-//       Access: Private
-//  Description: Scans the <contents> element for the matching <host>
-//               element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the <contents> element for the matching <host> element.
+ */
 void PPInstance::
 find_host(TiXmlElement *xcontents) {
   string host_url = PANDA_PACKAGE_HOST_URL;
@@ -355,12 +347,10 @@ find_host(TiXmlElement *xcontents) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::read_xhost
-//       Access: Private
-//  Description: Reads the host data from the <host> (or <alt_host>)
-//               entry in the contents.xml file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the host data from the <host> (or <alt_host>) entry in the contents.xml
+ * file.
+ */
 void PPInstance::
 read_xhost(TiXmlElement *xhost) {
   // Get the "download" URL, which is the source from which we
@@ -376,7 +366,7 @@ read_xhost(TiXmlElement *xhost) {
       _download_url_prefix += "/";
     }
   }
-        
+
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
   while (xmirror != NULL) {
     const char *url = xmirror->Attribute("url");
@@ -387,35 +377,29 @@ read_xhost(TiXmlElement *xhost) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::add_mirror
-//       Access: Private
-//  Description: Adds a new URL to serve as a mirror for this host.
-//               The mirrors will be consulted first, before
-//               consulting the host directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new URL to serve as a mirror for this host.  The mirrors will be
+ * consulted first, before consulting the host directly.
+ */
 void PPInstance::
 add_mirror(std::string mirror_url) {
   // Ensure the URL ends in a slash.
   if (!mirror_url.empty() && mirror_url[mirror_url.size() - 1] != '/') {
     mirror_url += '/';
   }
-  
+
   // Add it to the _mirrors list, but only if it's not already
   // there.
   if (std::find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
     _mirrors.push_back(mirror_url);
   }
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::choose_random_mirrors
-//       Access: Public
-//  Description: Selects num_mirrors elements, chosen at random, from
-//               the _mirrors list.  Adds the selected mirrors to
-//               result.  If there are fewer than num_mirrors elements
-//               in the list, adds only as many mirrors as we can get.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Selects num_mirrors elements, chosen at random, from the _mirrors list.  Adds
+ * the selected mirrors to result.  If there are fewer than num_mirrors elements
+ * in the list, adds only as many mirrors as we can get.
+ */
 void PPInstance::
 choose_random_mirrors(std::vector<std::string> &result, int num_mirrors) {
   std::vector<size_t> selected;
@@ -459,7 +443,7 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
         nout << "GetTempFileName failed (folder is " << m_rootDir << ")\n";
         return 1;
       }
-      
+
       std::string local_filename;
       wstring_to_string(local_filename, local_filename_w);
 
@@ -467,13 +451,13 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
       if (!hostUrl.empty() && hostUrl[hostUrl.size() - 1] != '/') {
         hostUrl += '/';
       }
-      
+
       // Append a query string to the contents.xml URL to uniquify it
       // and ensure we don't get a cached version.
       std::ostringstream strm;
       strm << hostUrl << P3D_CONTENTS_FILENAME << "?" << time(NULL);
       std::string remoteContentsUrl( strm.str() );
-      
+
       error = DownloadFile( remoteContentsUrl, local_filename );
       if ( !error ) {
         if ( !read_contents_file( local_filename, true ) )
@@ -490,7 +474,7 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
       // We don't need the temporary file any more.
       ::DeleteFileW( local_filename_w );
     }
-      
+
     if (!error) {
       // OK, at this point we have successfully read contents.xml,
       // and we have a good file spec in _coreapi_dll.
@@ -508,7 +492,7 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
 
         error = 1;
         for (std::vector<std::string>::iterator si = mirrors.begin();
-             si != mirrors.end() && error; 
+             si != mirrors.end() && error;
              ++si) {
           std::string url = (*si) + _coreapi_dll.get_filename();
           error = DownloadFile(url, p3dLocalModuleFileName);
@@ -556,12 +540,12 @@ int PPInstance::DownloadP3DComponents( std::string& p3dDllFilename )
     return error;
 }
 
-int PPInstance::LoadPlugin( const std::string& dllFilename ) 
+int PPInstance::LoadPlugin( const std::string& dllFilename )
 {
     CSingleLock lock(&_load_mutex);
     lock.Lock();
     if ( !m_pluginLoaded )
-    { 
+    {
         ref_plugin();
         m_pluginLoaded = true;
     }
@@ -625,7 +609,7 @@ int PPInstance::UnloadPlugin()
     int error( 0 );
 
     if ( m_pluginLoaded )
-    { 
+    {
         m_pluginLoaded = false;
         m_isInit = false;
         unref_plugin();
@@ -647,11 +631,11 @@ void PPInstance::
 unref_plugin() {
   assert( s_instanceCount > 0 );
   s_instanceCount -= 1;
-  
+
   if ( s_instanceCount == 0 && is_plugin_loaded() ) {
     nout << "Unloading core API\n";
     unload_plugin(nout);
-    
+
     // This pointer is no longer valid and must be reset for next
     // time.
     PPBrowserObject::clear_class_definition();
@@ -663,7 +647,7 @@ int PPInstance::Start( const std::string& p3dFilename  )
     {
       CSingleLock lock(&_load_mutex);
       lock.Lock();
-      
+
       assert(!m_isInit);
       m_isInit = true;
     }
@@ -681,17 +665,17 @@ int PPInstance::Start( const std::string& p3dFilename  )
 
     if ( !m_p3dInstance )
     {
-        nout << "Error creating P3D instance: " << GetLastError() << "\n"; 
+        nout << "Error creating P3D instance: " << GetLastError() << "\n";
         return 1;
     }
     CComPtr<IDispatchEx> pDispatch;
     PPBrowserObject *pobj = new PPBrowserObject( &m_parentCtrl, pDispatch );
     P3D_instance_set_browser_script_object_ptr( m_p3dInstance, pobj );
     P3D_OBJECT_DECREF( pobj );
-    
+
     m_p3dObject = P3D_instance_get_panda_script_object_ptr( m_p3dInstance );
     P3D_OBJECT_INCREF( m_p3dObject );
-    
+
     P3D_instance_setup_window_ptr( m_p3dInstance, P3D_WT_embedded, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, &parent_window );
 
     nout << "Starting new P3D instance " << p3dFilename << "\n";
@@ -706,8 +690,8 @@ int PPInstance::Start( const std::string& p3dFilename  )
 
 int PPInstance::Stop( )
 {
-	m_eventStop.SetEvent( );
-	::WaitForSingleObject( m_eventDownloadStopped.m_hObject, INFINITE ); 
+  m_eventStop.SetEvent( );
+  ::WaitForSingleObject( m_eventDownloadStopped.m_hObject, INFINITE );
     if ( m_p3dInstance )
     {
         P3D_instance_finish_ptr( m_p3dInstance );
@@ -733,15 +717,15 @@ int PPInstance::Stop( )
       _num_tokens = 0;
     }
 
-	return 0;
+  return 0;
 }
 
 std::string PPInstance::GetHostUrl( )
 {
     CString hostingPageLocation = m_parentCtrl.m_hostingPageUrl.Left( m_parentCtrl.m_hostingPageUrl.ReverseFind( '/' ) );;
     std::string p3dRemoteFilename( hostingPageLocation );
-    p3dRemoteFilename += "/"; 
-    return p3dRemoteFilename; 
+    p3dRemoteFilename += "/";
+    return p3dRemoteFilename;
 }
 
 std::string PPInstance::GetP3DFilename( )
@@ -771,7 +755,7 @@ void PPInstance::HandleRequestLoop() {
           // so now.
           return;
         }
-          
+
       } else {
         nout << "Error handling P3D request. Instance's user data is not a Control \n";
       }
@@ -782,7 +766,7 @@ void PPInstance::HandleRequestLoop() {
 
 void PPInstance::HandleRequestGetUrl( void* data )
 {
-	HRESULT hr( S_OK );
+  HRESULT hr( S_OK );
     ThreadedRequestData *trdata = static_cast<ThreadedRequestData*>( data );
     PPInstance *self = trdata->_self;
     P3D_request *request = trdata->_request;
@@ -814,8 +798,8 @@ void PPInstance::HandleRequestGetUrl( void* data )
         // It starts with a slash, so go back to the root of this
         // particular host.
         colon = host_url.find(':');
-        if (colon != std::string::npos && 
-            colon + 2 < host_url.size() && 
+        if (colon != std::string::npos &&
+            colon + 2 < host_url.size() &&
             host_url[colon + 1] == '/' && host_url[colon + 2] == '/') {
           slash = host_url.find('/', colon + 3);
           url = host_url.substr(0, slash) + url;
@@ -828,26 +812,26 @@ void PPInstance::HandleRequestGetUrl( void* data )
       nout << "Made fullpath: " << url << "\n";
     }
 
-	{
-		PPDownloadRequest p3dObjectDownloadRequest( parent->m_instance, request ); 
-		PPDownloadCallback bsc( p3dObjectDownloadRequest );
-		hr = ::URLOpenStream( parent->GetControllingUnknown(), url.c_str(), 0, &bsc );
-	}
+  {
+    PPDownloadRequest p3dObjectDownloadRequest( parent->m_instance, request );
+    PPDownloadCallback bsc( p3dObjectDownloadRequest );
+    hr = ::URLOpenStream( parent->GetControllingUnknown(), url.c_str(), 0, &bsc );
+  }
     P3D_result_code result_code = P3D_RC_done;
     if ( FAILED( hr ) )
     {
-        nout << "Error handling P3D_RT_get_url request" << " :" << hr << "\n"; 
+        nout << "Error handling P3D_RT_get_url request" << " :" << hr << "\n";
         result_code = P3D_RC_generic_error;
     }
 
-    P3D_instance_feed_url_stream_ptr( 
-        request->_instance, 
-        request->_request._get_url._unique_id, 
-        result_code, 
-        0, 
-        0, 
-        (const void*)NULL, 
-        0 
+    P3D_instance_feed_url_stream_ptr(
+        request->_instance,
+        request->_request._get_url._unique_id,
+        result_code,
+        0,
+        0,
+        (const void*)NULL,
+        0
         );
     P3D_request_finish_ptr( request, true );
 }
@@ -859,7 +843,7 @@ HandleRequest( P3D_request *request ) {
   }
   bool handled = false;
   bool continue_loop = true;
-  
+
   switch ( request->_request_type ) {
   case P3D_RT_stop:
     {
@@ -896,13 +880,10 @@ HandleRequest( P3D_request *request ) {
   return continue_loop;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::compare_seq
-//       Access: Private, Static
-//  Description: Compares the two dotted-integer sequence values
-//               numerically.  Returns -1 if seq_a sorts first, 1 if
-//               seq_b sorts first, 0 if they are equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the two dotted-integer sequence values numerically.  Returns -1 if
+ * seq_a sorts first, 1 if seq_b sorts first, 0 if they are equivalent.
+ */
 int PPInstance::
 compare_seq(const string &seq_a, const string &seq_b) {
   const char *num_a = seq_a.c_str();
@@ -930,13 +911,11 @@ compare_seq(const string &seq_a, const string &seq_b) {
   return comp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::compare_seq_int
-//       Access: Private, Static
-//  Description: Numerically compares the formatted integer value at
-//               num_a with num_b.  Increments both num_a and num_b to
-//               the next character following the valid integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Numerically compares the formatted integer value at num_a with num_b.
+ * Increments both num_a and num_b to the next character following the valid
+ * integer.
+ */
 int PPInstance::
 compare_seq_int(const char *&num_a, const char *&num_b) {
   long int a;
@@ -959,13 +938,10 @@ compare_seq_int(const char *&num_a, const char *&num_b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::set_failed
-//       Access: Private
-//  Description: Called when something has gone wrong that prevents
-//               the plugin instance from running.  Specifically, this
-//               means it failed to load the core API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when something has gone wrong that prevents the plugin instance from
+ * running.  Specifically, this means it failed to load the core API.
+ */
 void PPInstance::
 set_failed() {
   if (!_failed) {
@@ -982,7 +958,7 @@ set_failed() {
       CComPtr<IDispatch> pDispatch;
 
       CString evalExpression( expression.c_str() );
-      HRESULT hr = m_parentCtrl.EvalExpression( pDispatch, evalExpression , varResult ); 
+      HRESULT hr = m_parentCtrl.EvalExpression( pDispatch, evalExpression , varResult );
       if (FAILED(hr)) {
         nout << "Unable to eval " << expression << "\n";
       } else {
@@ -993,13 +969,10 @@ set_failed() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::lookup_token
-//       Access: Private
-//  Description: Returns the value associated with the first
-//               appearance of the named token, or empty string if the
-//               token does not appear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value associated with the first appearance of the named token, or
+ * empty string if the token does not appear.
+ */
 std::string PPInstance::
 lookup_token(const std::string &keyword) const {
   for (int i = 0; i < _num_tokens; ++i) {
@@ -1011,12 +984,9 @@ lookup_token(const std::string &keyword) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::has_token
-//       Access: Private
-//  Description: Returns true if the named token appears in the list,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named token appears in the list, false otherwise.
+ */
 bool PPInstance::
 has_token(const std::string &keyword) const {
   for (int i = 0; i < _num_tokens; ++i) {
@@ -1027,4 +997,3 @@ has_token(const std::string &keyword) const {
 
   return false;
 }
-

@@ -1,16 +1,15 @@
-// Filename: cocoaGraphicsWindow.h
-// Created by:  rdb (14May12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cocoaGraphicsWindow.h
+ * @author rdb
+ * @date 2012-05-14
+ */
 
 #ifndef COCOAGRAPHICSWINDOW_H
 #define COCOAGRAPHICSWINDOW_H
@@ -24,11 +23,9 @@
 #import <AppKit/NSView.h>
 #import <AppKit/NSWindow.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : CocoaGraphicsWindow
-// Description : An interface to the Cocoa system for managing
-//               OpenGL windows under Mac OS X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the Cocoa system for managing OpenGL windows under Mac OS X.
+ */
 class CocoaGraphicsWindow : public GraphicsWindow {
 public:
   CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,

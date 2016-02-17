@@ -1,16 +1,15 @@
-// Filename: parameterRemapPTToPointer.cxx
-// Created by:  drose (10Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file parameterRemapPTToPointer.cxx
+ * @author drose
+ * @date 2000-08-10
+ */
 
 #include "parameterRemapPTToPointer.h"
 #include "interrogate.h"
@@ -22,11 +21,9 @@
 #include "cppDeclaration.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapPTToPointer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParameterRemapPTToPointer::
 ParameterRemapPTToPointer(CPPType *orig_type) :
   ParameterRemap(orig_type)
@@ -63,43 +60,32 @@ ParameterRemapPTToPointer(CPPType *orig_type) :
   _temporary_type = pt_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapPTToPointer::pass_parameter
-//       Access: Public, Virtual
-//  Description: Outputs an expression that converts the indicated
-//               variable from the new type to the original type, for
-//               passing into the actual C++ function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs an expression that converts the indicated variable from the new type
+ * to the original type, for passing into the actual C++ function.
+ */
 void ParameterRemapPTToPointer::
 pass_parameter(ostream &out, const string &variable_name) {
   out << variable_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapPTToPointer::get_return_expr
-//       Access: Public, Virtual
-//  Description: Returns an expression that evalutes to the
-//               appropriate value type for returning from the
-//               function, given an expression of the original type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an expression that evalutes to the appropriate value type for
+ * returning from the function, given an expression of the original type.
+ */
 string ParameterRemapPTToPointer::
 get_return_expr(const string &expression) {
   return expression;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapPTToPointer::temporary_to_return
-//       Access: Public, Virtual
-//  Description: Returns the string that converts the expression
-//               stored in the indicated temporary variable to the
-//               appropriate return value type.  This is normally a
-//               pass-through, but in cases when the temporary
-//               variable type must be different than the return type
-//               (i.e. get_temporary_type() != get_new_type()), this
-//               might perform some operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string that converts the expression stored in the indicated
+ * temporary variable to the appropriate return value type.  This is normally a
+ * pass-through, but in cases when the temporary variable type must be different
+ * than the return type (i.e.  get_temporary_type() != get_new_type()), this
+ * might perform some operation.
+ */
 string ParameterRemapPTToPointer::
 temporary_to_return(const string &temporary) {
   return temporary + ".p()";
 }
-

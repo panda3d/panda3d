@@ -1,16 +1,15 @@
-// Filename: graphicsEngine.cxx
-// Created by:  drose (24Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsEngine.cxx
+ * @author drose
+ * @date 2002-02-24
+ */
 
 #include "graphicsEngine.h"
 #include "graphicsPipe.h"
@@ -119,14 +118,11 @@ PStatCollector GraphicsEngine::_occlusion_passed_pcollector("Occlusion results:V
 PStatCollector GraphicsEngine::_occlusion_failed_pcollector("Occlusion results:Occluded");
 PStatCollector GraphicsEngine::_occlusion_tests_pcollector("Occlusion tests");
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::Constructor
-//       Access: Published
-//  Description: Creates a new GraphicsEngine object.  The Pipeline is
-//               normally left to default to NULL, which indicates the
-//               global render pipeline, but it may be any Pipeline
-//               you choose.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new GraphicsEngine object.  The Pipeline is normally left to
+ * default to NULL, which indicates the global render pipeline, but it may be
+ * any Pipeline you choose.
+ */
 GraphicsEngine::
 GraphicsEngine(Pipeline *pipeline) :
   _pipeline(pipeline),
@@ -155,12 +151,9 @@ GraphicsEngine(Pipeline *pipeline) :
   _singular_warning_this_frame = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::Destructor
-//       Access: Published
-//  Description: Gracefully cleans up the graphics engine and its
-//               related threads and windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gracefully cleans up the graphics engine and its related threads and windows.
+ */
 GraphicsEngine::
 ~GraphicsEngine() {
 #ifdef DO_PSTATS
@@ -172,13 +165,11 @@ GraphicsEngine::
   remove_all_windows();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::set_threading_model
-//       Access: Published
-//  Description: Specifies how future objects created via make_gsg(),
-//               make_buffer(), and make_window() will be threaded.
-//               This does not affect any already-created objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how future objects created via make_gsg(), make_buffer(), and
+ * make_window() will be threaded.  This does not affect any already-created
+ * objects.
+ */
 void GraphicsEngine::
 set_threading_model(const GraphicsThreadingModel &threading_model) {
   if (!Thread::is_threading_supported()) {
@@ -208,12 +199,10 @@ set_threading_model(const GraphicsThreadingModel &threading_model) {
   _threading_model = threading_model;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_threading_model
-//       Access: Published
-//  Description: Returns the threading model that will be applied to
-//               future objects.  See set_threading_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the threading model that will be applied to future objects.  See
+ * set_threading_model().
+ */
 GraphicsThreadingModel GraphicsEngine::
 get_threading_model() const {
   GraphicsThreadingModel result;
@@ -229,19 +218,12 @@ get_threading_model() const {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_output
-//       Access: Published
-//  Description: Creates a new window (or buffer) and returns it.
-//               The GraphicsEngine becomes the owner of the window,
-//               it will persist at least until remove_window() is
-//               called later.
-//
-//               If a null pointer is supplied for the gsg, then this
-//               routine will create a new gsg.
-//
-//               This routine is only called from the app thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window (or buffer) and returns it.  The GraphicsEngine becomes
+ * the owner of the window, it will persist at least until remove_window() is
+ * called later.  If a null pointer is supplied for the gsg, then this routine
+ * will create a new gsg.  This routine is only called from the app thread.
+ */
 
 GraphicsOutput *GraphicsEngine::
 make_output(GraphicsPipe *pipe,
@@ -475,17 +457,13 @@ make_output(GraphicsPipe *pipe,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::add_window
-//       Access: Published
-//  Description: This can be used to add a newly-created
-//               GraphicsOutput object (and its GSG) to the engine's
-//               list of windows, and requests that it be opened.
-//               This shouldn't be called by user code as
-//               make_output normally does this under the hood; it
-//               may be useful in esoteric cases in which a custom
-//               window object is used.
-////////////////////////////////////////////////////////////////////
+/**
+ * This can be used to add a newly-created GraphicsOutput object (and its GSG)
+ * to the engine's list of windows, and requests that it be opened.  This
+ * shouldn't be called by user code as make_output normally does this under the
+ * hood; it may be useful in esoteric cases in which a custom window object is
+ * used.
+ */
 bool GraphicsEngine::
 add_window(GraphicsOutput *window, int sort) {
   nassertr(window != NULL, false);
@@ -511,30 +489,20 @@ add_window(GraphicsOutput *window, int sort) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::remove_window
-//       Access: Published
-//  Description: Removes the indicated window or offscreen buffer from
-//               the set of windows that will be processed when
-//               render_frame() is called.  This also closes the
-//               window if it is open, and removes the window from its
-//               GraphicsPipe, allowing the window to be destructed if
-//               there are no other references to it.  (However, the
-//               window may not be actually closed until next frame,
-//               if it is controlled by a sub-thread.)
-//
-//               The return value is true if the window was removed,
-//               false if it was not found.
-//
-//               Unlike remove_all_windows(), this function does not
-//               terminate any of the threads that may have been
-//               started to service this window; they are left running
-//               (since you might open a new window later on these
-//               threads).  If your intention is to clean up before
-//               shutting down, it is better to call
-//               remove_all_windows() then to call remove_window() one
-//               at a time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated window or offscreen buffer from the set of windows that
+ * will be processed when render_frame() is called.  This also closes the window
+ * if it is open, and removes the window from its GraphicsPipe, allowing the
+ * window to be destructed if there are no other references to it.  (However,
+ * the window may not be actually closed until next frame, if it is controlled
+ * by a sub-thread.)  The return value is true if the window was removed, false
+ * if it was not found.  Unlike remove_all_windows(), this function does not
+ * terminate any of the threads that may have been started to service this
+ * window; they are left running (since you might open a new window later on
+ * these threads).  If your intention is to clean up before shutting down, it is
+ * better to call remove_all_windows() then to call remove_window() one at a
+ * time.
+ */
 bool GraphicsEngine::
 remove_window(GraphicsOutput *window) {
   nassertr(window != NULL, false);
@@ -591,13 +559,10 @@ remove_window(GraphicsOutput *window) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::remove_all_windows
-//       Access: Published
-//  Description: Removes and closes all windows from the engine.  This
-//               also cleans up and terminates any threads that have
-//               been started to service those windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes and closes all windows from the engine.  This also cleans up and
+ * terminates any threads that have been started to service those windows.
+ */
 void GraphicsEngine::
 remove_all_windows() {
   Thread *current_thread = Thread::get_current_thread();
@@ -644,14 +609,11 @@ remove_all_windows() {
   Thread::prepare_for_exit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::reset_all_windows
-//       Access: Published
-//  Description: Resets the framebuffer of the current window.  This
-//               is currently used by DirectX 8 only. It calls a
-//               reset_window function on each active window to
-//               release/create old/new framebuffer
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the framebuffer of the current window.  This is currently used by
+ * DirectX 8 only.  It calls a reset_window function on each active window to
+ * release/create old/new framebuffer
+ */
 void GraphicsEngine::
 reset_all_windows(bool swapchain) {
   Windows::iterator wi;
@@ -662,35 +624,26 @@ reset_all_windows(bool swapchain) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::is_empty
-//       Access: Published
-//  Description: Returns true if there are no windows or buffers
-//               managed by the engine, false if there is at least
-//               one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are no windows or buffers managed by the engine, false
+ * if there is at least one.
+ */
 bool GraphicsEngine::
 is_empty() const {
   return _windows.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_num_windows
-//       Access: Published
-//  Description: Returns the number of windows (or buffers) managed by
-//               the engine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of windows (or buffers) managed by the engine.
+ */
 int GraphicsEngine::
 get_num_windows() const {
   return _windows.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_window
-//       Access: Published
-//  Description: Returns the nth window or buffers managed by the
-//               engine, in sorted order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth window or buffers managed by the engine, in sorted order.
+ */
 GraphicsOutput *GraphicsEngine::
 get_window(int n) const {
   nassertr(n >= 0 && n < (int)_windows.size(), NULL);
@@ -701,12 +654,10 @@ get_window(int n) const {
   return _windows[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::render_frame
-//       Access: Published
-//  Description: Renders the next frame in all the registered windows,
-//               and flips all of the frame buffers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renders the next frame in all the registered windows, and flips all of the
+ * frame buffers.
+ */
 void GraphicsEngine::
 render_frame() {
   Thread *current_thread = Thread::get_current_thread();
@@ -964,17 +915,13 @@ render_frame() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::open_windows
-//       Access: Published
-//  Description: Fully opens (or closes) any windows that have
-//               recently been requested open or closed, without
-//               rendering any frames.  It is not necessary to call
-//               this explicitly, since windows will be automatically
-//               opened or closed when the next frame is rendered, but
-//               you may call this if you want your windows now
-//               without seeing a frame go by.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fully opens (or closes) any windows that have recently been requested open or
+ * closed, without rendering any frames.  It is not necessary to call this
+ * explicitly, since windows will be automatically opened or closed when the
+ * next frame is rendered, but you may call this if you want your windows now
+ * without seeing a frame go by.
+ */
 void GraphicsEngine::
 open_windows() {
   Thread *current_thread = Thread::get_current_thread();
@@ -1010,15 +957,12 @@ open_windows() {
   _needs_open_windows = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::sync_frame
-//       Access: Published
-//  Description: Waits for all the threads that started drawing their
-//               last frame to finish drawing.  The windows are not
-//               yet flipped when this returns; see also flip_frame().
-//               It is not usually necessary to call this explicitly,
-//               unless you need to see the previous frame right away.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for all the threads that started drawing their last frame to finish
+ * drawing.  The windows are not yet flipped when this returns; see also
+ * flip_frame(). It is not usually necessary to call this explicitly, unless you
+ * need to see the previous frame right away.
+ */
 void GraphicsEngine::
 sync_frame() {
   Thread *current_thread = Thread::get_current_thread();
@@ -1030,20 +974,16 @@ sync_frame() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::ready_flip
-//       Access: Published
-//  Description: Waits for all the threads that started drawing their
-//               last frame to finish drawing. Returns when all threads have
-//               actually finished drawing, as opposed to 'sync_frame'
-//               we seems to return once all draw calls have been submitted.
-//               Calling 'flip_frame' after this function should immediately
-//               cause a buffer flip.  This function will only work in
-//               opengl right now, for all other graphics pipelines it will
-//               simply return immediately.  In opengl it's a bit of a hack:
-//               it will attempt to read a single pixel from the frame buffer to
-//               force the graphics card to finish drawing before it returns
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for all the threads that started drawing their last frame to finish
+ * drawing.  Returns when all threads have actually finished drawing, as opposed
+ * to 'sync_frame' we seems to return once all draw calls have been submitted.
+ * Calling 'flip_frame' after this function should immediately cause a buffer
+ * flip.  This function will only work in opengl right now, for all other
+ * graphics pipelines it will simply return immediately.  In opengl it's a bit
+ * of a hack: it will attempt to read a single pixel from the frame buffer to
+ * force the graphics card to finish drawing before it returns
+ */
 void GraphicsEngine::
 ready_flip() {
   Thread *current_thread = Thread::get_current_thread();
@@ -1054,15 +994,11 @@ ready_flip() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::flip_frame
-//       Access: Published
-//  Description: Waits for all the threads that started drawing their
-//               last frame to finish drawing, and then flips all the
-//               windows.  It is not usually necessary to call this
-//               explicitly, unless you need to see the previous frame
-//               right away.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for all the threads that started drawing their last frame to finish
+ * drawing, and then flips all the windows.  It is not usually necessary to call
+ * this explicitly, unless you need to see the previous frame right away.
+ */
 void GraphicsEngine::
 flip_frame() {
   Thread *current_thread = Thread::get_current_thread();
@@ -1073,35 +1009,21 @@ flip_frame() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::extract_texture_data
-//       Access: Published
-//  Description: Asks the indicated GraphicsStateGuardian to retrieve
-//               the texture memory image of the indicated texture and
-//               store it in the texture's ram_image field.  The image
-//               can then be written to disk via Texture::write(), or
-//               otherwise manipulated on the CPU.
-//
-//               This is useful for retrieving the contents of a
-//               texture that has been somehow generated on the
-//               graphics card, instead of having been loaded the
-//               normal way via Texture::read() or Texture::load().
-//               It is particularly useful for getting the data
-//               associated with a compressed texture image.
-//
-//               Since this requires a round-trip to the draw thread,
-//               it may require waiting for the current thread to
-//               finish rendering if it is called in a multithreaded
-//               environment.  However, you can call this several
-//               consecutive times on different textures for little
-//               additional cost.
-//
-//               If the texture has not yet been loaded to the GSG in
-//               question, it will be loaded immediately.
-//
-//               The return value is true if the operation is
-//               successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the indicated GraphicsStateGuardian to retrieve the texture memory image
+ * of the indicated texture and store it in the texture's ram_image field.  The
+ * image can then be written to disk via Texture::write(), or otherwise
+ * manipulated on the CPU.  This is useful for retrieving the contents of a
+ * texture that has been somehow generated on the graphics card, instead of
+ * having been loaded the normal way via Texture::read() or Texture::load(). It
+ * is particularly useful for getting the data associated with a compressed
+ * texture image.  Since this requires a round-trip to the draw thread, it may
+ * require waiting for the current thread to finish rendering if it is called in
+ * a multithreaded environment.  However, you can call this several consecutive
+ * times on different textures for little additional cost.  If the texture has
+ * not yet been loaded to the GSG in question, it will be loaded immediately.
+ * The return value is true if the operation is successful, false otherwise.
+ */
 bool GraphicsEngine::
 extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
   ReMutexHolder holder(_lock);
@@ -1130,26 +1052,17 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::dispatch_compute
-//       Access: Published
-//  Description: Asks the indicated GraphicsStateGuardian to dispatch
-//               the compute shader in the given ShaderAttrib using
-//               the given work group counts.  This can act as an
-//               interface for running a one-off compute shader,
-//               without having to store it in the scene graph using
-//               a ComputeNode.
-//
-//               Since this requires a round-trip to the draw thread,
-//               it may require waiting for the current thread to
-//               finish rendering if it is called in a multithreaded
-//               environment.  However, you can call this several
-//               consecutive times on different textures for little
-//               additional cost.
-//
-//               The return value is true if the operation is
-//               successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the indicated GraphicsStateGuardian to dispatch the compute shader in
+ * the given ShaderAttrib using the given work group counts.  This can act as an
+ * interface for running a one-off compute shader, without having to store it in
+ * the scene graph using a ComputeNode.  Since this requires a round-trip to the
+ * draw thread, it may require waiting for the current thread to finish
+ * rendering if it is called in a multithreaded environment.  However, you can
+ * call this several consecutive times on different textures for little
+ * additional cost.  The return value is true if the operation is successful,
+ * false otherwise.
+ */
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
   nassertv(sattr->get_shader() != (Shader *)NULL);
@@ -1183,11 +1096,9 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
   gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_global_ptr
-//       Access: Published, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsEngine *GraphicsEngine::
 get_global_ptr() {
   if (_global_ptr == NULL) {
@@ -1197,19 +1108,13 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::texture_uploaded
-//       Access: Public
-//  Description: This method is called by the GraphicsStateGuardian
-//               after a texture has been successfully uploaded to
-//               graphics memory.  It is intended as a callback so the
-//               texture can release its RAM image, if _keep_ram_image
-//               is false.
-//
-//               Normally, this is not called directly except by the
-//               GraphicsStateGuardian.  It will be called in the draw
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the GraphicsStateGuardian after a texture has been
+ * successfully uploaded to graphics memory.  It is intended as a callback so
+ * the texture can release its RAM image, if _keep_ram_image is false.
+ * Normally, this is not called directly except by the GraphicsStateGuardian.
+ * It will be called in the draw thread.
+ */
 void GraphicsEngine::
 texture_uploaded(Texture *tex) {
   MutexHolder holder(_loaded_textures_lock);
@@ -1223,11 +1128,9 @@ texture_uploaded(Texture *tex) {
 //               Usually only called by DisplayRegion::do_cull.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_cull
-//       Access: Public, Static
-//  Description: Fires off a cull traversal using the indicated camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fires off a cull traversal using the indicated camera.
+ */
 void GraphicsEngine::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         GraphicsStateGuardian *gsg, Thread *current_thread) {
@@ -1268,24 +1171,19 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::scene_root_func
-//       Access: Private, Static
-//  Description: This function is added to PandaNode::scene_root_func
-//               to implement PandaNode::is_scene_root().
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is added to PandaNode::scene_root_func to implement
+ * PandaNode::is_scene_root().
+ */
 bool GraphicsEngine::
 scene_root_func(const PandaNode *node) {
   return _global_ptr->is_scene_root(node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::is_scene_root
-//       Access: Private
-//  Description: Returns true if the indicated node is known to be
-//               the render root of some active DisplayRegion
-//               associated with this GraphicsEngine, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated node is known to be the render root of some
+ * active DisplayRegion associated with this GraphicsEngine, false otherwise.
+ */
 bool GraphicsEngine::
 is_scene_root(const PandaNode *node) {
   Thread *current_thread = Thread::get_current_thread();
@@ -1328,16 +1226,11 @@ is_scene_root(const PandaNode *node) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::set_window_sort
-//       Access: Private
-//  Description: Changes the sort value of a particular window (or
-//               buffer) on the GraphicsEngine.  This requires
-//               securing the mutex.
-//
-//               Users shouldn't call this directly; use
-//               GraphicsOutput::set_sort() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the sort value of a particular window (or buffer) on the
+ * GraphicsEngine.  This requires securing the mutex.  Users shouldn't call this
+ * directly; use GraphicsOutput::set_sort() instead.
+ */
 void GraphicsEngine::
 set_window_sort(GraphicsOutput *window, int sort) {
   ReMutexHolder holder(_lock);
@@ -1345,15 +1238,12 @@ set_window_sort(GraphicsOutput *window, int sort) {
   _windows_sorted = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::cull_and_draw_together
-//       Access: Private
-//  Description: This is called in the cull+draw thread by individual
-//               RenderThread objects during the frame rendering.  It
-//               culls the geometry and immediately draws it, without
-//               first collecting it into bins.  This is used when the
-//               threading model begins with the "-" character.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in the cull+draw thread by individual RenderThread objects
+ * during the frame rendering.  It culls the geometry and immediately draws it,
+ * without first collecting it into bins.  This is used when the threading model
+ * begins with the "-" character.
+ */
 void GraphicsEngine::
 cull_and_draw_together(const GraphicsEngine::Windows &wlist,
                        Thread *current_thread) {
@@ -1403,12 +1293,9 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::cull_and_draw_together
-//       Access: Private
-//  Description: Called only from within the inner loop in
-//               cull_and_draw_together(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only from within the inner loop in cull_and_draw_together(), above.
+ */
 void GraphicsEngine::
 cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
                        Thread *current_thread) {
@@ -1465,14 +1352,11 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::cull_to_bins
-//       Access: Private
-//  Description: This is called in the cull thread by individual
-//               RenderThread objects during the frame rendering.  It
-//               collects the geometry into bins in preparation for
-//               drawing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in the cull thread by individual RenderThread objects during
+ * the frame rendering.  It collects the geometry into bins in preparation for
+ * drawing.
+ */
 void GraphicsEngine::
 cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   PStatTimer timer(_cull_pcollector, current_thread);
@@ -1532,12 +1416,9 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::cull_to_bins
-//       Access: Private
-//  Description: Called only within the inner loop of cull_to_bins(),
-//               above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only within the inner loop of cull_to_bins(), above.
+ */
 void GraphicsEngine::
 cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
@@ -1585,15 +1466,11 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   dr->set_cull_result(MOVE(cull_result), MOVE(scene_setup), current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::draw_bins
-//       Access: Private
-//  Description: This is called in the draw thread by individual
-//               RenderThread objects during the frame rendering.  It
-//               issues the graphics commands to draw the objects that
-//               have been collected into bins by a previous call to
-//               cull_to_bins().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in the draw thread by individual RenderThread objects during
+ * the frame rendering.  It issues the graphics commands to draw the objects
+ * that have been collected into bins by a previous call to cull_to_bins().
+ */
 void GraphicsEngine::
 draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   nassertv(wlist.verify_list());
@@ -1677,13 +1554,10 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::draw_bins
-//       Access: Private
-//  Description: This variant on draw_bins() is only called from
-//               draw_bins(), above.  It draws the cull result for a
-//               particular DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on draw_bins() is only called from draw_bins(), above.  It draws
+ * the cull result for a particular DisplayRegion.
+ */
 void GraphicsEngine::
 draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
@@ -1696,13 +1570,10 @@ draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   do_draw(cull_result, scene_setup, win, dr, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_contexts
-//       Access: Private
-//  Description: Called in the draw thread, this calls make_context()
-//               on each window on the list to guarantee its gsg and
-//               graphics context both get created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called in the draw thread, this calls make_context() on each window on the
+ * list to guarantee its gsg and graphics context both get created.
+ */
 void GraphicsEngine::
 make_contexts(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   Windows::const_iterator wi;
@@ -1714,13 +1585,11 @@ make_contexts(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::process_events
-//       Access: Private
-//  Description: This is called by the RenderThread object to process
-//               all the windows events (resize, etc.) for the given
-//               list of windows.  This is run in the window thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the RenderThread object to process all the windows events
+ * (resize, etc.) for the given list of windows.  This is run in the window
+ * thread.
+ */
 void GraphicsEngine::
 process_events(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   // We're not using a vector iterator here, since it's possible that
@@ -1731,13 +1600,11 @@ process_events(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::flip_windows
-//       Access: Private
-//  Description: This is called by the RenderThread object to flip the
-//               buffers for all of the non-single-buffered windows in
-//               the given list.  This is run in the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the RenderThread object to flip the buffers for all of the
+ * non-single-buffered windows in the given list.  This is run in the draw
+ * thread.
+ */
 void GraphicsEngine::
 flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   size_t num_windows = wlist.size();
@@ -1765,13 +1632,11 @@ flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::ready_flip_windows
-//       Access: Private
-//  Description: This is called by the RenderThread object to flip the
-//               buffers for all of the non-single-buffered windows in
-//               the given list.  This is run in the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the RenderThread object to flip the buffers for all of the
+ * non-single-buffered windows in the given list.  This is run in the draw
+ * thread.
+ */
 void GraphicsEngine::
 ready_flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   Windows::const_iterator wi;
@@ -1784,12 +1649,10 @@ ready_flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_sync_frame
-//       Access: Private
-//  Description: The implementation of sync_frame().  We assume _lock
-//               is already held before this method is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of sync_frame().  We assume _lock is already held before
+ * this method is called.
+ */
 void GraphicsEngine::
 do_sync_frame(Thread *current_thread) {
   nassertv(_lock.debug_is_locked());
@@ -1811,12 +1674,10 @@ do_sync_frame(Thread *current_thread) {
   _flip_state = FS_sync;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_ready_flip
-//       Access: Private
-//  Description: Wait until all draw calls have finished drawing and
-//               the frame is ready to flip
-////////////////////////////////////////////////////////////////////
+/**
+ * Wait until all draw calls have finished drawing and the frame is ready to
+ * flip
+ */
 void GraphicsEngine::
 do_ready_flip(Thread *current_thread) {
   nassertv(_lock.debug_is_locked());
@@ -1838,12 +1699,10 @@ do_ready_flip(Thread *current_thread) {
   _flip_state = FS_sync;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_flip_frame
-//       Access: Private
-//  Description: The implementation of flip_frame().  We assume _lock
-//               is already held before this method is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of flip_frame().  We assume _lock is already held before
+ * this method is called.
+ */
 void GraphicsEngine::
 do_flip_frame(Thread *current_thread) {
   nassertv(_lock.debug_is_locked());
@@ -1886,14 +1745,11 @@ do_flip_frame(Thread *current_thread) {
   _flip_state = FS_flip;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::setup_scene
-//       Access: Private
-//  Description: Returns a new SceneSetup object appropriate for
-//               rendering the scene from the indicated camera, or
-//               NULL if the scene should not be rendered for some
-//               reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new SceneSetup object appropriate for rendering the scene from the
+ * indicated camera, or NULL if the scene should not be rendered for some
+ * reason.
+ */
 PT(SceneSetup) GraphicsEngine::
 setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   Thread *current_thread = dr->get_current_thread();
@@ -2012,11 +1868,9 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   return scene_setup;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_draw
-//       Access: Private
-//  Description: Draws the previously-culled scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the previously-culled scene.
+ */
 void GraphicsEngine::
 do_draw(CullResult *cull_result, SceneSetup *scene_setup,
         GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
@@ -2079,15 +1933,11 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_add_window
-//       Access: Private
-//  Description: An internal function called by make_window() and
-//               make_buffer() and similar functions to add the
-//               newly-created GraphicsOutput object to the engine's
-//               list of windows, and to request that the window be
-//               opened.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by make_window() and make_buffer() and similar
+ * functions to add the newly-created GraphicsOutput object to the engine's list
+ * of windows, and to request that the window be opened.
+ */
 void GraphicsEngine::
 do_add_window(GraphicsOutput *window,
               const GraphicsThreadingModel &threading_model) {
@@ -2147,14 +1997,11 @@ do_add_window(GraphicsOutput *window,
   _needs_open_windows = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_add_gsg
-//       Access: Private
-//  Description: An internal function called by make_output to add
-//               the newly-created gsg object to the engine's
-//               list of gsg's.  It also adjusts various config
-//               variables based on the gsg's capabilities.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by make_output to add the newly-created gsg
+ * object to the engine's list of gsg's.  It also adjusts various config
+ * variables based on the gsg's capabilities.
+ */
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
@@ -2176,14 +2023,11 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
   draw->add_gsg(gsg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_remove_window
-//       Access: Private
-//  Description: An internal function called by remove_window() and
-//               remove_all_windows() to actually remove the indicated
-//               window from all relevant structures, except the
-//               _windows list itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by remove_window() and remove_all_windows() to
+ * actually remove the indicated window from all relevant structures, except the
+ * _windows list itself.
+ */
 void GraphicsEngine::
 do_remove_window(GraphicsOutput *window, Thread *current_thread) {
   nassertv(window != NULL);
@@ -2212,13 +2056,10 @@ do_remove_window(GraphicsOutput *window, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_resort_windows
-//       Access: Private
-//  Description: Resorts all of the Windows lists.  This may need to
-//               be done if one or more of the windows' sort
-//               properties has changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resorts all of the Windows lists.  This may need to be done if one or more of
+ * the windows' sort properties has changed.
+ */
 void GraphicsEngine::
 do_resort_windows() {
   _windows_sorted = true;
@@ -2233,35 +2074,22 @@ do_resort_windows() {
   _windows.sort();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::auto_adjust_capabilities
-//       Access: Private
-//  Description: Video card capability flags are stored on a
-//               per-gsg basis.  However, there are a few cases
-//               where panda needs to know not the capabilities
-//               of an individual GSG, but rather, the
-//               collective capabilities of all the GSGs.
-//
-//               Non-power-of-two (NPOT) texture support is the
-//               classic example.  Panda makes a single global
-//               decision to either create NPOT textures, or not.
-//               Therefore, it doesn't need to know whether one GSG
-//               supports NPOT textures.  It needs to know whether ALL
-//               the GSGs support NPOT textures.
-//
-//               The purpose of this routine is to maintain global
-//               capability flags that summarize the collective
-//               capabilities of the computer as a whole.
-//
-//               These global capability flags are initialized from
-//               config variables.  Then, they can be auto-reconfigured
-//               using built-in heuristic mechanisms if the user so
-//               desires.  Whether auto-reconfiguration is enabled or
-//               not, the configured values are checked against
-//               the actual capabilities of the machine and error
-//               messages will be printed if there is a mismatch.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Video card capability flags are stored on a per-gsg basis.  However, there
+ * are a few cases where panda needs to know not the capabilities of an
+ * individual GSG, but rather, the collective capabilities of all the GSGs.
+ * Non-power-of-two (NPOT) texture support is the classic example.  Panda makes
+ * a single global decision to either create NPOT textures, or not.  Therefore,
+ * it doesn't need to know whether one GSG supports NPOT textures.  It needs to
+ * know whether ALL the GSGs support NPOT textures.  The purpose of this routine
+ * is to maintain global capability flags that summarize the collective
+ * capabilities of the computer as a whole.  These global capability flags are
+ * initialized from config variables.  Then, they can be auto-reconfigured using
+ * built-in heuristic mechanisms if the user so desires.  Whether auto-
+ * reconfiguration is enabled or not, the configured values are checked against
+ * the actual capabilities of the machine and error messages will be printed if
+ * there is a mismatch.
+ */
 void GraphicsEngine::
 auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
 
@@ -2338,12 +2166,9 @@ auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::terminate_threads
-//       Access: Private
-//  Description: Signals our child threads to terminate and waits for
-//               them to clean up.
-////////////////////////////////////////////////////////////////////
+/**
+ * Signals our child threads to terminate and waits for them to clean up.
+ */
 void GraphicsEngine::
 terminate_threads(Thread *current_thread) {
   ReMutexHolder holder(_lock, current_thread);
@@ -2379,13 +2204,10 @@ terminate_threads(Thread *current_thread) {
 
 
 #ifdef DO_PSTATS
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::pstats_count_cycler_type
-//       Access: Private, Static
-//  Description: A callback function for
-//               Pipeline::iterate_all_cycler_types() to report the
-//               cycler types to PStats.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback function for Pipeline::iterate_all_cycler_types() to report the
+ * cycler types to PStats.
+ */
 void GraphicsEngine::
 pstats_count_cycler_type(TypeHandle type, int count, void *data) {
   GraphicsEngine *self = (GraphicsEngine *)data;
@@ -2399,13 +2221,10 @@ pstats_count_cycler_type(TypeHandle type, int count, void *data) {
 #endif // DO_PSTATS
 
 #ifdef DO_PSTATS
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::pstats_count_dirty_cycler_type
-//       Access: Private, Static
-//  Description: A callback function for
-//               Pipeline::iterate_dirty_cycler_types() to report the
-//               cycler types to PStats.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback function for Pipeline::iterate_dirty_cycler_types() to report the
+ * cycler types to PStats.
+ */
 void GraphicsEngine::
 pstats_count_dirty_cycler_type(TypeHandle type, int count, void *data) {
   GraphicsEngine *self = (GraphicsEngine *)data;
@@ -2418,14 +2237,11 @@ pstats_count_dirty_cycler_type(TypeHandle type, int count, void *data) {
 }
 #endif // DO_PSTATS
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_invert_polygon_state
-//       Access: Protected, Static
-//  Description: Returns a RenderState for inverting the sense of
-//               polygon vertex ordering: if the scene graph specifies
-//               a clockwise ordering, this changes it to
-//               counterclockwise, and vice-versa.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for inverting the sense of polygon vertex ordering: if
+ * the scene graph specifies a clockwise ordering, this changes it to
+ * counterclockwise, and vice-versa.
+ */
 const RenderState *GraphicsEngine::
 get_invert_polygon_state() {
   // Once someone asks for this pointer, we hold its reference count
@@ -2438,18 +2254,13 @@ get_invert_polygon_state() {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::get_window_renderer
-//       Access: Private
-//  Description: Returns the WindowRenderer with the given name.
-//               Creates a new RenderThread if there is no such thread
-//               already.  The pipeline_stage number specifies the
-//               pipeline stage that will be assigned to the thread
-//               (unless was previously given a higher stage).
-//
-//               You must already be holding the lock before calling
-//               this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the WindowRenderer with the given name.  Creates a new RenderThread
+ * if there is no such thread already.  The pipeline_stage number specifies the
+ * pipeline stage that will be assigned to the thread (unless was previously
+ * given a higher stage).  You must already be holding the lock before calling
+ * this method.
+ */
 GraphicsEngine::WindowRenderer *GraphicsEngine::
 get_window_renderer(const string &name, int pipeline_stage) {
   nassertr(_lock.debug_is_locked(), NULL);
@@ -2476,49 +2287,39 @@ get_window_renderer(const string &name, int pipeline_stage) {
   return thread.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsEngine::WindowRenderer::
 WindowRenderer(const string &name) :
   _wl_lock(string("GraphicsEngine::WindowRenderer::_wl_lock ") + name)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::add_gsg
-//       Access: Public
-//  Description: Adds a new GSG to the _gsg list, if it is not already
-//               there.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new GSG to the _gsg list, if it is not already there.
+ */
 void GraphicsEngine::WindowRenderer::
 add_gsg(GraphicsStateGuardian *gsg) {
   LightReMutexHolder holder(_wl_lock);
   _gsgs.insert(gsg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::add_window
-//       Access: Public
-//  Description: Adds a new window to the indicated list, which should
-//               be a member of the WindowRenderer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new window to the indicated list, which should be a member of the
+ * WindowRenderer.
+ */
 void GraphicsEngine::WindowRenderer::
 add_window(Windows &wlist, GraphicsOutput *window) {
   LightReMutexHolder holder(_wl_lock);
   wlist.insert(window);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::remove_window
-//       Access: Public
-//  Description: Immediately removes the indicated window from all
-//               lists.  If the window is currently open and is
-//               already on the _window list, moves it to the _pending_close
-//               list for later closure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately removes the indicated window from all lists.  If the window is
+ * currently open and is already on the _window list, moves it to the
+ * _pending_close list for later closure.
+ */
 void GraphicsEngine::WindowRenderer::
 remove_window(GraphicsOutput *window) {
   nassertv(window != NULL);
@@ -2551,12 +2352,9 @@ remove_window(GraphicsOutput *window) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::resort_windows
-//       Access: Public
-//  Description: Resorts all the lists of windows, assuming they may
-//               have become unsorted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resorts all the lists of windows, assuming they may have become unsorted.
+ */
 void GraphicsEngine::WindowRenderer::
 resort_windows() {
   LightReMutexHolder holder(_wl_lock);
@@ -2588,14 +2386,11 @@ resort_windows() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_frame
-//       Access: Public
-//  Description: Executes one stage of the pipeline for the current
-//               thread: calls cull on all windows that are on the
-//               cull list for this thread, draw on all the windows on
-//               the draw list, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Executes one stage of the pipeline for the current thread: calls cull on all
+ * windows that are on the cull list for this thread, draw on all the windows on
+ * the draw list, etc.
+ */
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
   PStatTimer timer(engine->_do_frame_pcollector, current_thread);
@@ -2627,15 +2422,12 @@ do_frame(GraphicsEngine *engine, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_windows
-//       Access: Public
-//  Description: Attempts to fully open or close any windows or
-//               buffers associated with this thread, but does not
-//               otherwise perform any rendering.  (Normally, this
-//               step is handled during do_frame(); call this method
-//               only if you want these things to open immediately.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to fully open or close any windows or buffers associated with this
+ * thread, but does not otherwise perform any rendering.  (Normally, this step
+ * is handled during do_frame(); call this method only if you want these things
+ * to open immediately.)
+ */
 void GraphicsEngine::WindowRenderer::
 do_windows(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
@@ -2646,12 +2438,9 @@ do_windows(GraphicsEngine *engine, Thread *current_thread) {
   engine->make_contexts(_draw, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_flip
-//       Access: Public
-//  Description: Flips the windows as appropriate for the current
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flips the windows as appropriate for the current thread.
+ */
 void GraphicsEngine::WindowRenderer::
 do_flip(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
@@ -2659,12 +2448,9 @@ do_flip(GraphicsEngine *engine, Thread *current_thread) {
   engine->flip_windows(_draw, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_ready_flip
-//       Access: Public
-//  Description: Prepares windows for flipping by waiting until all draw
-//               calls are finished
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepares windows for flipping by waiting until all draw calls are finished
+ */
 void GraphicsEngine::WindowRenderer::
 do_ready_flip(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
@@ -2673,11 +2459,9 @@ do_ready_flip(GraphicsEngine *engine, Thread *current_thread) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_close
-//       Access: Public
-//  Description: Closes all the windows on the _window list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes all the windows on the _window list.
+ */
 void GraphicsEngine::WindowRenderer::
 do_close(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
@@ -2705,12 +2489,10 @@ do_close(GraphicsEngine *engine, Thread *current_thread) {
   _gsgs.swap(new_gsgs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_pending
-//       Access: Public
-//  Description: Actually closes any windows that were recently
-//               removed from the WindowRenderer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually closes any windows that were recently removed from the
+ * WindowRenderer.
+ */
 void GraphicsEngine::WindowRenderer::
 do_pending(GraphicsEngine *engine, Thread *current_thread) {
   LightReMutexHolder holder(_wl_lock);
@@ -2734,14 +2516,11 @@ do_pending(GraphicsEngine *engine, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::any_done_gsgs
-//       Access: Public
-//  Description: Returns true if any of the GSG's on this thread's
-//               draw list are done (they have no outstanding pointers
-//               other than this one), or false if all of them are
-//               still good.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the GSG's on this thread's draw list are done (they
+ * have no outstanding pointers other than this one), or false if all of them
+ * are still good.
+ */
 bool GraphicsEngine::WindowRenderer::
 any_done_gsgs() const {
   GSGs::const_iterator gi;
@@ -2754,11 +2533,9 @@ any_done_gsgs() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::RenderThread::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsEngine::RenderThread::
 RenderThread(const string &name, GraphicsEngine *engine) :
   Thread(name, "Main"),
@@ -2771,13 +2548,10 @@ RenderThread(const string &name, GraphicsEngine *engine) :
   _thread_state = TS_wait;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::RenderThread::thread_main
-//       Access: Public, Virtual
-//  Description: The main loop for a particular render thread.  The
-//               thread will process whatever cull or draw windows it
-//               has assigned to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main loop for a particular render thread.  The thread will process
+ * whatever cull or draw windows it has assigned to it.
+ */
 void GraphicsEngine::RenderThread::
 thread_main() {
   Thread *current_thread = Thread::get_current_thread();

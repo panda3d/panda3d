@@ -1,16 +1,15 @@
-// Filename: physxContactPair.h
-// Created by:  enn0x (19Dec09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxContactPair.h
+ * @author enn0x
+ * @date 2009-12-19
+ */
 
 #ifndef PHYSXCONTACTPAIR_H
 #define PHYSXCONTACTPAIR_H
@@ -25,12 +24,10 @@
 class PhysxShape;
 class PhysxContactPoint;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxContactPair
-// Description : An instance of this class is send with contact
-//               reporting events. It contains detailed information
-//               on the contact.
-////////////////////////////////////////////////////////////////////
+/**
+ * An instance of this class is send with contact reporting events.  It contains
+ * detailed information on the contact.
+ */
 class EXPCL_PANDAPHYSX PhysxContactPair : public TypedReferenceCount {
 
 PUBLISHED:
@@ -54,14 +51,13 @@ private:
   NxContactPair _pair;
   pvector<PhysxContactPoint> _contacts;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "PhysxContactPair", 
+    register_type(_type_handle, "PhysxContactPair",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

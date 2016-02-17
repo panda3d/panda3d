@@ -1,16 +1,15 @@
-// Filename: ppInstance.cxx
-// Created by:  drose (19Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ppInstance.cxx
+ * @author drose
+ * @date 2009-06-19
+ */
 
 #include "ppInstance.h"
 #include "ppPandaObject.h"
@@ -45,16 +44,13 @@
 
 PPInstance::FileDatas PPInstance::_file_datas;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::Constructor
-//       Access: Public
-//  Description: Creates a new instance of a Panda3D plugin window.
-//               The create_data structure is supplied from NPAPI, and
-//               defines the initial parameters specified in the HTML
-//               document.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new instance of a Panda3D plugin window.  The create_data structure
+ * is supplied from NPAPI, and defines the initial parameters specified in the
+ * HTML document.
+ */
 PPInstance::
-PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode, 
+PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
            int16_t argc, char *argn[], char *argv[], NPSavedData *saved,
            P3D_window_handle_type window_handle_type,
            P3D_event_type event_type) {
@@ -177,11 +173,9 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
 #endif  // MACOSX_HAS_EVENT_MODELS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPInstance::
 ~PPInstance() {
   cleanup_window();
@@ -227,16 +221,12 @@ PPInstance::
   _tokens.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::begin
-//       Access: Public
-//  Description: Begins the initial download of the core API.  This
-//               should be called after constructing the PPInstance.
-//               It is a separate method than the constructor, because
-//               it initiates some callbacks that might rely on the
-//               object having been fully constructed and its pointer
-//               stored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins the initial download of the core API.  This should be called after
+ * constructing the PPInstance.  It is a separate method than the constructor,
+ * because it initiates some callbacks that might rely on the object having been
+ * fully constructed and its pointer stored.
+ */
 void PPInstance::
 begin() {
   // On Windows and Linux, we must insist on having this call.  OSX
@@ -283,13 +273,13 @@ begin() {
       _mirrors.clear();
       ostringstream strm;
       strm << _download_url_prefix << "contents.xml";
-      
+
       // Append a uniquifying query string to the URL to force the
       // download to go all the way through any caches.  We use the time
       // in seconds; that's unique enough.
       strm << "?" << time(NULL);
       url = strm.str();
-      
+
       PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
       start_download(url, req);
     }
@@ -298,14 +288,12 @@ begin() {
   handle_request_loop();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::set_window
-//       Access: Public
-//  Description: Stores or updates the window parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores or updates the window parameters.
+ */
 void PPInstance::
 set_window(NPWindow *window) {
-  if (_got_window && 
+  if (_got_window &&
       window->x == _window.x &&
       window->y == _window.y &&
       window->width == _window.width &&
@@ -365,7 +353,7 @@ set_window(NPWindow *window) {
       // Create a new GtkPlug to bind to the XEmbed socket.
       _plug = gtk_plug_new((GdkNativeWindow) reinterpret_cast<XID>(window->window));
       gtk_widget_show(_plug);
-      
+
       nout << "original XID is " << window->window << ", created X11 window "
            << GDK_DRAWABLE_XID(_plug->window) << "\n";
     }
@@ -390,12 +378,9 @@ set_window(NPWindow *window) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::new_stream
-//       Access: Public
-//  Description: Receives notification of a new stream object, e.g. a
-//               url request.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives notification of a new stream object, e.g.  a url request.
+ */
 NPError PPInstance::
 new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
   assert(find(_streams.begin(), _streams.end(), stream) == _streams.end());
@@ -420,7 +405,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
         _p3d_instance_id = P3D_instance_start_stream_ptr(_p3d_inst, _instance_url.c_str());
         nout << "p3d instance to stream " << _p3d_instance_id << "\n";
       }
-      
+
       *stype = NP_NORMAL;
       _streams.push_back(stream);
       return NPERR_NO_ERROR;
@@ -463,14 +448,11 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::stop_outstanding_streams
-//       Access: Public
-//  Description: Stops any download streams that are currently active
-//               on the instance.  It is necessary to call this
-//               explicitly before destroying the instance, at least
-//               for Safari.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops any download streams that are currently active on the instance.  It is
+ * necessary to call this explicitly before destroying the instance, at least
+ * for Safari.
+ */
 void PPInstance::
 stop_outstanding_streams() {
   Streams::iterator si;
@@ -494,12 +476,10 @@ stop_outstanding_streams() {
   _file_datas.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::write_ready
-//       Access: Public
-//  Description: Called by the browser to ask how much data is ready
-//               to be received for the indicated stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to ask how much data is ready to be received for the
+ * indicated stream.
+ */
 int32_t PPInstance::
 write_ready(NPStream *stream) {
   // We're supposed to return the maximum amount of data the plugin is
@@ -508,12 +488,9 @@ write_ready(NPStream *stream) {
   return 0x7fffffff;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::write_stream
-//       Access: Public
-//  Description: Called by the browser to feed data read from a URL or
-//               whatever.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to feed data read from a URL or whatever.
+ */
 int PPInstance::
 write_stream(NPStream *stream, int offset, int len, void *buffer) {
   if (stream->notifyData == NULL) {
@@ -584,7 +561,7 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
       set_failed();
     }
     return len;
-    
+
   default:
     nout << "Unexpected write_stream on " << stream->url << "\n";
     break;
@@ -594,13 +571,10 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::destroy_stream
-//       Access: Public
-//  Description: Called by the browser to mark the end of a stream;
-//               the file has either been successfully downloaded or
-//               failed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to mark the end of a stream; the file has either been
+ * successfully downloaded or failed.
+ */
 NPError PPInstance::
 destroy_stream(NPStream *stream, NPReason reason) {
   Streams::iterator si = find(_streams.begin(), _streams.end(), stream);
@@ -642,7 +616,7 @@ destroy_stream(NPStream *stream, NPReason reason) {
         if (result_code != P3D_RC_done) {
           set_failed();
         }
-        
+
       } else {
         // The instance has (only just) been created.  Tell it we've
         // sent it all the data it will get.
@@ -681,20 +655,16 @@ destroy_stream(NPStream *stream, NPReason reason) {
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::url_notify
-//       Access: Public
-//  Description: Called by the browser to announce the end of a
-//               stream.  This normally follows destroy_stream(),
-//               unless the stream was never created in the first
-//               place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to announce the end of a stream.  This normally follows
+ * destroy_stream(), unless the stream was never created in the first place.
+ */
 void PPInstance::
 url_notify(const char *url, NPReason reason, void *notifyData) {
   if (notifyData == NULL) {
     return;
   }
-  
+
   PPDownloadRequest *req = (PPDownloadRequest *)notifyData;
   if (_failed) {
     // We're done; ignore this.
@@ -739,7 +709,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
       }
     }
     break;
-    
+
   case PPDownloadRequest::RT_core_dll:
     if (reason == NPRES_DONE) {
       downloaded_plugin(_core_dll_temp_file._filename);
@@ -754,7 +724,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
         if (!_core_urls.empty()) {
           string url = _core_urls.back();
           _core_urls.pop_back();
-          
+
           PPDownloadRequest *req2 = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
           start_download(url, req2);
         }
@@ -766,16 +736,14 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
     nout << "Unexpected url_notify on stream type " << req->_rtype << "\n";
     break;
   }
-  
+
   delete req;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::stream_as_file
-//       Access: Public
-//  Description: Called by the browser to report the filename that
-//               contains the fully-downloaded stream contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to report the filename that contains the fully-
+ * downloaded stream contents.
+ */
 void PPInstance::
 stream_as_file(NPStream *stream, const char *fname) {
   if (stream->notifyData == NULL) {
@@ -821,29 +789,25 @@ stream_as_file(NPStream *stream, const char *fname) {
         // the files and copy the data by hand.
         copy_file(filename, name);
       }
-      
+
       filename = name;
       free(name);
-      
+
       // TODO: remove this temporary file when we're done with it.
     }
   }
-    
+
 #endif  // __APPLE__
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
   downloaded_file(req, filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::handle_request
-//       Access: Public
-//  Description: Handles a request from the Core API or the
-//               application, forwarding it to the browser as
-//               appropriate.  Returns true if we should continue the
-//               request loop, or false to return (temporarily) to
-//               JavaScript.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles a request from the Core API or the application, forwarding it to the
+ * browser as appropriate.  Returns true if we should continue the request loop,
+ * or false to return (temporarily) to JavaScript.
+ */
 bool PPInstance::
 handle_request(P3D_request *request) {
   if (_p3d_inst == NULL || _failed) {
@@ -866,8 +830,8 @@ handle_request(P3D_request *request) {
 
   case P3D_RT_get_url:
     {
-      PPDownloadRequest *req = 
-        new PPDownloadRequest(PPDownloadRequest::RT_user, 
+      PPDownloadRequest *req =
+        new PPDownloadRequest(PPDownloadRequest::RT_user,
                               request->_request._get_url._unique_id);
       start_download(request->_request._get_url._url, req);
     }
@@ -908,15 +872,11 @@ handle_request(P3D_request *request) {
   return continue_loop;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::generic_browser_call
-//       Access: Public, Static
-//  Description: This method is called from strategically-chosen
-//               browser callback functions.  Its purpose is to
-//               provide another hook into the main thread callback,
-//               particularly if the PluginAsyncCall function isn't
-//               available.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called from strategically-chosen browser callback functions.
+ * Its purpose is to provide another hook into the main thread callback,
+ * particularly if the PluginAsyncCall function isn't available.
+ */
 void PPInstance::
 generic_browser_call() {
   /*
@@ -929,13 +889,10 @@ generic_browser_call() {
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::handle_event
-//       Access: Public
-//  Description: Called by the browser as new window events are
-//               generated.  Returns true if the event is handled,
-//               false if ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser as new window events are generated.  Returns true if
+ * the event is handled, false if ignored.
+ */
 bool PPInstance::
 handle_event(void *event) {
   bool retval = false;
@@ -971,12 +928,10 @@ handle_event(void *event) {
   return retval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::get_panda_script_object
-//       Access: Public
-//  Description: Returns a toplevel object that JavaScript or whatever
-//               can read and/or modify to control the instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a toplevel object that JavaScript or whatever can read and/or modify
+ * to control the instance.
+ */
 NPObject *PPInstance::
 get_panda_script_object() {
   if (_script_object != NULL) {
@@ -999,26 +954,20 @@ get_panda_script_object() {
   return _script_object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::set_xembed
-//       Access: Public
-//  Description: Sets the use_xembed flag, telling the instance what
-//               kind of window object to expect from NPAPI.  If this
-//               is true, the window object is an XID following the
-//               XEmbed specification; if false, it is a normal window
-//               handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the use_xembed flag, telling the instance what kind of window object to
+ * expect from NPAPI.  If this is true, the window object is an XID following
+ * the XEmbed specification; if false, it is a normal window handle.
+ */
 void PPInstance::
 set_xembed(bool use_xembed) {
   _use_xembed = use_xembed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::p3dobj_to_variant
-//       Access: Public
-//  Description: Converts the indicated P3D_object to the equivalent
-//               NPVariant, and stores it in result.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated P3D_object to the equivalent NPVariant, and stores it
+ * in result.
+ */
 void PPInstance::
 p3dobj_to_variant(NPVariant *result, P3D_object *object) {
   switch (P3D_OBJECT_GET_TYPE(object)) {
@@ -1060,14 +1009,11 @@ p3dobj_to_variant(NPVariant *result, P3D_object *object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::variant_to_p3dobj
-//       Access: Public
-//  Description: Converts the indicated NPVariant to the equivalent
-//               P3D_object, and returns it (newly-allocated).  The
-//               caller is responsible for freeing the returned object
-//               later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated NPVariant to the equivalent P3D_object, and returns it
+ * (newly-allocated).  The caller is responsible for freeing the returned object
+ * later.
+ */
 P3D_object *PPInstance::
 variant_to_p3dobj(const NPVariant *variant) {
   if (NPVARIANT_IS_VOID(*variant)) {
@@ -1101,11 +1047,9 @@ variant_to_p3dobj(const NPVariant *variant) {
   return P3D_new_none_object_ptr();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::output_np_variant
-//       Access: Public
-//  Description: Outputs the variant value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the variant value.
+ */
 void PPInstance::
 output_np_variant(ostream &out, const NPVariant &result) {
   if (NPVARIANT_IS_NULL(result)) {
@@ -1128,12 +1072,9 @@ output_np_variant(ostream &out, const NPVariant &result) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::find_host
-//       Access: Private
-//  Description: Scans the <contents> element for the matching <host>
-//               element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the <contents> element for the matching <host> element.
+ */
 void PPInstance::
 find_host(TiXmlElement *xcontents) {
   string host_url = PANDA_PACKAGE_HOST_URL;
@@ -1144,7 +1085,7 @@ find_host(TiXmlElement *xcontents) {
       // We're the primary host.  This is the normal case.
       read_xhost(xhost);
       return;
-      
+
     } else {
       // We're not the primary host; perhaps we're an alternate host.
       TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
@@ -1165,12 +1106,10 @@ find_host(TiXmlElement *xcontents) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::read_xhost
-//       Access: Private
-//  Description: Reads the host data from the <host> (or <alt_host>)
-//               entry in the contents.xml file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the host data from the <host> (or <alt_host>) entry in the contents.xml
+ * file.
+ */
 void PPInstance::
 read_xhost(TiXmlElement *xhost) {
   // Get the "download" URL, which is the source from which we
@@ -1186,7 +1125,7 @@ read_xhost(TiXmlElement *xhost) {
       _download_url_prefix += "/";
     }
   }
-        
+
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
   while (xmirror != NULL) {
     const char *url = xmirror->Attribute("url");
@@ -1197,35 +1136,29 @@ read_xhost(TiXmlElement *xhost) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::add_mirror
-//       Access: Private
-//  Description: Adds a new URL to serve as a mirror for this host.
-//               The mirrors will be consulted first, before
-//               consulting the host directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new URL to serve as a mirror for this host.  The mirrors will be
+ * consulted first, before consulting the host directly.
+ */
 void PPInstance::
 add_mirror(string mirror_url) {
   // Ensure the URL ends in a slash.
   if (!mirror_url.empty() && mirror_url[mirror_url.size() - 1] != '/') {
     mirror_url += '/';
   }
-  
+
   // Add it to the _mirrors list, but only if it's not already
   // there.
   if (find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
     _mirrors.push_back(mirror_url);
   }
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::choose_random_mirrors
-//       Access: Public
-//  Description: Selects num_mirrors elements, chosen at random, from
-//               the _mirrors list.  Adds the selected mirrors to
-//               result.  If there are fewer than num_mirrors elements
-//               in the list, adds only as many mirrors as we can get.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Selects num_mirrors elements, chosen at random, from the _mirrors list.  Adds
+ * the selected mirrors to result.  If there are fewer than num_mirrors elements
+ * in the list, adds only as many mirrors as we can get.
+ */
 void PPInstance::
 choose_random_mirrors(vector<string> &result, int num_mirrors) {
   vector<size_t> selected;
@@ -1243,14 +1176,11 @@ choose_random_mirrors(vector<string> &result, int num_mirrors) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::request_ready
-//       Access: Private, Static
-//  Description: This function is attached as an asynchronous callback
-//               to each instance; it will be notified when the
-//               instance has a request ready.  This function may be
-//               called in a sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is attached as an asynchronous callback to each instance; it
+ * will be notified when the instance has a request ready.  This function may be
+ * called in a sub-thread.
+ */
 void PPInstance::
 request_ready(P3D_instance *instance) {
   PPInstance *inst = (PPInstance *)(instance->_user_data);
@@ -1271,7 +1201,7 @@ request_ready(P3D_instance *instance) {
 
 #ifdef _WIN32
     // Use a Windows message to forward this event to the main thread.
-    
+
     // Get the window handle for the window associated with this
     // instance.
     const NPWindow *win = inst->get_window();
@@ -1300,11 +1230,9 @@ request_ready(P3D_instance *instance) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::start_download
-//       Access: Private
-//  Description: Initiates a download request.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initiates a download request.
+ */
 void PPInstance::
 start_download(const string &url, PPDownloadRequest *req) {
   nout << "start_download: " << url << "\n";
@@ -1318,12 +1246,9 @@ start_download(const string &url, PPDownloadRequest *req) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::downloaded_contents_file
-//       Access: Private
-//  Description: The contents.xml file has been successfully downloaded;
-//               copy it into place.
-////////////////////////////////////////////////////////////////////
+/**
+ * The contents.xml file has been successfully downloaded; copy it into place.
+ */
 void PPInstance::
 downloaded_contents_file(const string &filename) {
   // Now we have the contents.xml file.  Read this to get the
@@ -1332,12 +1257,12 @@ downloaded_contents_file(const string &filename) {
     // Successfully downloaded and read, and it has been written
     // into its normal place.
     get_core_api();
-    
+
   } else {
     // Error reading the contents.xml file, or in loading the core
     // API that it references.
     nout << "Unable to read contents file " << filename << "\n";
-    
+
     // If there's an outstanding contents.xml file on disk, try to
     // load that one as a fallback.
     string contents_filename = _root_dir + "/contents.xml";
@@ -1350,14 +1275,10 @@ downloaded_contents_file(const string &filename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::read_contents_file
-//       Access: Private
-//  Description: Attempts to open and read the contents.xml file on
-//               disk.  Copies the file to its standard location
-//               on success.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open and read the contents.xml file on disk.  Copies the file to
+ * its standard location on success.  Returns true on success, false on failure.
+ */
 bool PPInstance::
 read_contents_file(const string &contents_filename, bool fresh_download) {
   _download_url_prefix = _standard_url_prefix;
@@ -1390,7 +1311,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
 
       xorig = new TiXmlElement("orig");
       xcontents->LinkEndChild(xorig);
-      
+
       xorig->SetAttribute("expiration", (int)_contents_expiration);
 
     } else {
@@ -1400,7 +1321,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
       if (xorig != NULL) {
         xorig->Attribute("expiration", &expiration);
       }
-      
+
       _contents_expiration = min(_contents_expiration, (time_t)expiration);
     }
 
@@ -1429,7 +1350,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
           break;
         }
       }
-        
+
       xpackage = xpackage->NextSiblingElement("package");
     }
   }
@@ -1467,16 +1388,13 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     nout << "Couldn't rewrite " << standard_filename << "\n";
     return false;
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::get_filename_from_url
-//       Access: Private, Static
-//  Description: Returns the actual filename referenced by a file://
-//               url.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the actual filename referenced by a file: url.
+ */
 string PPInstance::
 get_filename_from_url(const string &url) {
   string filename = url.substr(7);
@@ -1487,11 +1405,11 @@ get_filename_from_url(const string &url) {
     filename = filename.substr(0, query);
   }
 
-#ifdef _WIN32 
+#ifdef _WIN32
   // On Windows, we have to munge the filename specially, because it's
   // been URL-munged.  It might begin with a leading slash as well as
   // a drive letter.  Clean up that nonsense.
-  if (filename.length() >= 3 && 
+  if (filename.length() >= 3 &&
       (filename[0] == '/' || filename[0] == '\\') &&
       isalpha(filename[1]) && filename[2] == ':') {
     filename = filename.substr(1);
@@ -1501,12 +1419,9 @@ get_filename_from_url(const string &url) {
   return filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::downloaded_file
-//       Access: Private
-//  Description: Called to receive the fully-downloaded contents of a
-//               URL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to receive the fully-downloaded contents of a URL.
+ */
 void PPInstance::
 downloaded_file(PPDownloadRequest *req, const string &filename) {
   // Since we're no longer using NP_ASFILEONLY, none of these URL
@@ -1537,25 +1452,20 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::feed_file
-//       Access: Private
-//  Description: Opens the named file (extracted from a file:// URL)
-//               and feeds its contents to the core API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the named file (extracted from a file:// URL) and feeds its contents to
+ * the core API.
+ */
 void PPInstance::
 feed_file(PPDownloadRequest *req, const string &filename) {
   StreamingFileData *file_data = new StreamingFileData(req, filename, _p3d_inst);
   _file_datas.push_back(file_data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::send_p3d_temp_file_data
-//       Access: Private
-//  Description: Once the instance has been created, sends it all of
-//               the data we have saved up for it while we were
-//               waiting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the instance has been created, sends it all of the data we have saved up
+ * for it while we were waiting.
+ */
 void PPInstance::
 send_p3d_temp_file_data() {
   assert(_p3d_temp_file._opened);
@@ -1563,7 +1473,7 @@ send_p3d_temp_file_data() {
   nout << "Sending " << _p3d_temp_file._current_size
        << " preliminary bytes of " << _p3d_temp_file._total_size
        << " total p3d data\n";
-        
+
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
@@ -1595,13 +1505,10 @@ send_p3d_temp_file_data() {
   _p3d_temp_file.cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::get_core_api
-//       Access: Private
-//  Description: Checks the core API DLL file against the
-//               specification in the contents file, and downloads it
-//               if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the core API DLL file against the specification in the contents file,
+ * and downloads it if necessary.
+ */
 void PPInstance::
 get_core_api() {
   if (_coreapi_dll.quick_verify(_root_dir)) {
@@ -1631,7 +1538,7 @@ get_core_api() {
     vector<string> mirrors;
     choose_random_mirrors(mirrors, 2);
     for (vector<string>::iterator si = mirrors.begin();
-         si != mirrors.end(); 
+         si != mirrors.end();
          ++si) {
       url = (*si) + _coreapi_dll.get_filename();
       _core_urls.push_back(url);
@@ -1647,12 +1554,9 @@ get_core_api() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::downloaded_plugin
-//       Access: Private
-//  Description: The core API DLL has been successfully downloaded;
-//               copy it into place.
-////////////////////////////////////////////////////////////////////
+/**
+ * The core API DLL has been successfully downloaded; copy it into place.
+ */
 void PPInstance::
 downloaded_plugin(const string &filename) {
   // We could have been downloading this file as a stream, but that
@@ -1713,12 +1617,10 @@ downloaded_plugin(const string &filename) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::do_load_plugin
-//       Access: Private
-//  Description: Once the core API DLL has been downloaded, loads it
-//               into memory and starts the instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the core API DLL has been downloaded, loads it into memory and starts
+ * the instance.
+ */
 void PPInstance::
 do_load_plugin() {
   string pathname = _coreapi_dll.get_pathname(_root_dir);
@@ -1765,12 +1667,9 @@ do_load_plugin() {
   create_instance();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::create_instance
-//       Access: Private
-//  Description: Actually creates the internal P3D_instance object, if
-//               possible and needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually creates the internal P3D_instance object, if possible and needed.
+ */
 void PPInstance::
 create_instance() {
   if (_started) {
@@ -1804,7 +1703,7 @@ create_instance() {
     tokens = &_tokens[0];
   }
   _started = true;
-  _p3d_inst = P3D_new_instance_ptr(request_ready, tokens, _tokens.size(), 
+  _p3d_inst = P3D_new_instance_ptr(request_ready, tokens, _tokens.size(),
                                0, NULL, this);
   if (_p3d_inst == NULL) {
     set_failed();
@@ -1822,7 +1721,7 @@ create_instance() {
   } else {
     nout << "Couldn't get window_object\n";
   }
-  
+
   if (_script_object != NULL) {
     // Now that we have a true instance, initialize our
     // script_object with the proper P3D_object pointer.
@@ -1842,19 +1741,16 @@ create_instance() {
       send_p3d_temp_file_data();
     }
   }
-  
+
   if (_got_window) {
     send_window();
   }
 }
 
-  
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::send_window
-//       Access: Private
-//  Description: Actually issues the window parameters to the internal
-//               P3D_instance object.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Actually issues the window parameters to the internal P3D_instance object.
+ */
 void PPInstance::
 send_window() {
   assert(_p3d_inst != NULL);
@@ -1970,7 +1866,7 @@ send_window() {
   } else if (_window.width == 0 || _window.height == 0) {
     // No size: hidden.
     window_type = P3D_WT_hidden;
-  }    
+  }
 
   P3D_instance_setup_window_ptr
     (_p3d_inst, window_type,
@@ -1978,12 +1874,10 @@ send_window() {
      &parent_window);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::cleanup_window
-//       Access: Private
-//  Description: Called at instance shutdown, this restores the parent
-//               window to its original state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called at instance shutdown, this restores the parent window to its original
+ * state.
+ */
 void PPInstance::
 cleanup_window() {
   if (_got_window) {
@@ -2020,21 +1914,19 @@ cleanup_window() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::copy_file
-//       Access: Private
-//  Description: Copies the data in the file named by from_filename
-//               into the file named by to_filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the data in the file named by from_filename into the file named by
+ * to_filename.
+ */
 bool PPInstance::
 copy_file(const string &from_filename, const string &to_filename) {
   mkfile_complete(to_filename, nout);
   ifstream in(from_filename.c_str(), ios::in | ios::binary);
   ofstream out(to_filename.c_str(), ios::out | ios::binary);
-        
+
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
-  
+
   in.read(buffer, buffer_size);
   size_t count = in.gcount();
   while (count != 0) {
@@ -2053,13 +1945,10 @@ copy_file(const string &from_filename, const string &to_filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::lookup_token
-//       Access: Private
-//  Description: Returns the value associated with the first
-//               appearance of the named token, or empty string if the
-//               token does not appear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value associated with the first appearance of the named token, or
+ * empty string if the token does not appear.
+ */
 string PPInstance::
 lookup_token(const string &keyword) const {
   Tokens::const_iterator ti;
@@ -2072,12 +1961,9 @@ lookup_token(const string &keyword) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::has_token
-//       Access: Private
-//  Description: Returns true if the named token appears in the list,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named token appears in the list, false otherwise.
+ */
 bool PPInstance::
 has_token(const string &keyword) const {
   Tokens::const_iterator ti;
@@ -2091,13 +1977,10 @@ has_token(const string &keyword) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::compare_seq
-//       Access: Private, Static
-//  Description: Compares the two dotted-integer sequence values
-//               numerically.  Returns -1 if seq_a sorts first, 1 if
-//               seq_b sorts first, 0 if they are equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the two dotted-integer sequence values numerically.  Returns -1 if
+ * seq_a sorts first, 1 if seq_b sorts first, 0 if they are equivalent.
+ */
 int PPInstance::
 compare_seq(const string &seq_a, const string &seq_b) {
   const char *num_a = seq_a.c_str();
@@ -2125,13 +2008,11 @@ compare_seq(const string &seq_a, const string &seq_b) {
   return comp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::compare_seq_int
-//       Access: Private, Static
-//  Description: Numerically compares the formatted integer value at
-//               num_a with num_b.  Increments both num_a and num_b to
-//               the next character following the valid integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Numerically compares the formatted integer value at num_a with num_b.
+ * Increments both num_a and num_b to the next character following the valid
+ * integer.
+ */
 int PPInstance::
 compare_seq_int(const char *&num_a, const char *&num_b) {
   long int a;
@@ -2154,13 +2035,10 @@ compare_seq_int(const char *&num_a, const char *&num_b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::set_failed
-//       Access: Private
-//  Description: Called when something has gone wrong that prevents
-//               the plugin instance from running.  Specifically, this
-//               means it failed to load the core API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when something has gone wrong that prevents the plugin instance from
+ * running.  Specifically, this means it failed to load the core API.
+ */
 void PPInstance::
 set_failed() {
   if (!_failed) {
@@ -2199,13 +2077,10 @@ set_failed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::handle_request_loop
-//       Access: Private, Static
-//  Description: Checks for any new requests from the plugin, and
-//               dispatches them to the appropriate PPInstance.  This
-//               function is called only in the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks for any new requests from the plugin, and dispatches them to the
+ * appropriate PPInstance.  This function is called only in the main thread.
+ */
 void PPInstance::
 handle_request_loop() {
   if (!is_plugin_loaded()) {
@@ -2251,14 +2126,11 @@ handle_request_loop() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::browser_sync_callback
-//       Access: Private, Static
-//  Description: This callback hook is passed to
-//               NPN_PluginThreadAsyncCall() (if that function is
-//               available) to forward a request to the main thread.
-//               The callback is actually called in the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback hook is passed to NPN_PluginThreadAsyncCall() (if that function
+ * is available) to forward a request to the main thread.  The callback is
+ * actually called in the main thread.
+ */
 void PPInstance::
 browser_sync_callback(void *) {
   handle_request_loop();
@@ -2266,14 +2138,11 @@ browser_sync_callback(void *) {
 
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::st_window_proc
-//       Access: Private, Static
-//  Description: We bind this function to the parent window we were
-//               given in set_window, so we can spin the request_loop
-//               when needed.  This is only in the Windows case; other
-//               platforms rely on explicit windows events.
-////////////////////////////////////////////////////////////////////
+/**
+ * We bind this function to the parent window we were given in set_window, so we
+ * can spin the request_loop when needed.  This is only in the Windows case;
+ * other platforms rely on explicit windows events.
+ */
 LONG PPInstance::
 st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   LONG_PTR self = GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -2287,16 +2156,12 @@ st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #endif  // _WIN32
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::window_proc
-//       Access: Private
-//  Description: The non-static window_proc() function.
-//
-//               We bind this function to the parent window we were
-//               given in set_window, so we can spin the request_loop
-//               when needed.  This is only in the Windows case; other
-//               platforms rely on explicit windows events.
-////////////////////////////////////////////////////////////////////
+/**
+ * The non-static window_proc() function.  We bind this function to the parent
+ * window we were given in set_window, so we can spin the request_loop when
+ * needed.  This is only in the Windows case; other platforms rely on explicit
+ * windows events.
+ */
 LONG PPInstance::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   if (!has_plugin_thread_async_call) {
@@ -2311,7 +2176,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // Eat the WM_ERASEBKGND message, so the browser's intervening
     // window won't overdraw on top of our own window.
     return true;
-    
+
   case WM_PAINT:
     if (!_started) {
       // If we haven't yet loaded the instance, we can paint a
@@ -2339,13 +2204,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::win_get_twirl_bitmaps
-//       Access: Private
-//  Description: Fills _twirl_bitmaps with an array of bitmaps for
-//               drawing the twirling icon while we're waiting for the
-//               instance to load.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills _twirl_bitmaps with an array of bitmaps for drawing the twirling icon
+ * while we're waiting for the instance to load.
+ */
 void PPInstance::
 win_get_twirl_bitmaps() {
   BITMAPINFOHEADER bmih;
@@ -2372,7 +2234,7 @@ win_get_twirl_bitmaps() {
 
   for (int step = 0; step < twirl_num_steps + 1; ++step) {
     get_twirl_data(twirl_data, twirl_size, step,
-                   _fgcolor_r, _fgcolor_g, _fgcolor_b, 
+                   _fgcolor_r, _fgcolor_g, _fgcolor_b,
                    _bgcolor_r, _bgcolor_g, _bgcolor_b);
 
     // Expand out the RGB channels into RGBA.
@@ -2399,12 +2261,10 @@ win_get_twirl_bitmaps() {
 #endif  // _WIN32
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::win_paint_twirl
-//       Access: Private
-//  Description: Paints the twirling icon into the browser window
-//               before the instance has started.
-////////////////////////////////////////////////////////////////////
+/**
+ * Paints the twirling icon into the browser window before the instance has
+ * started.
+ */
 void PPInstance::
 win_paint_twirl(HWND hwnd, HDC dc) {
   RECT rect;
@@ -2431,18 +2291,18 @@ win_paint_twirl(HWND hwnd, HDC dc) {
       if (_failed) {
         step = twirl_num_steps;
       }
-      
+
       HBITMAP twirl = _twirl_bitmaps[step];
-      
+
       int left = rect.left + (width - twirl_width) / 2;
       int top = rect.top + (height - twirl_height) / 2;
-      
+
       HDC mem_dc = CreateCompatibleDC(bdc);
       SelectObject(mem_dc, twirl);
-      
+
       BitBlt(bdc, left, top, twirl_width, twirl_height,
              mem_dc, 0, 0, SRCCOPY);
-      
+
       SelectObject(mem_dc, NULL);
       DeleteDC(mem_dc);
     }
@@ -2454,16 +2314,11 @@ win_paint_twirl(HWND hwnd, HDC dc) {
 #endif  // _WIN32
 
 #ifdef MACOSX_HAS_EVENT_MODELS
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::copy_cocoa_event
-//       Access: Private, Static
-//  Description: Copies the NPCocoaEvent structure componentwise into
-//               a P3DCocoaEvent structure, for passing into the core
-//               API.
-//
-//               The aux_data object is used to manage temporary
-//               storage on the strings created for the event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the NPCocoaEvent structure componentwise into a P3DCocoaEvent
+ * structure, for passing into the core API.  The aux_data object is used to
+ * manage temporary storage on the strings created for the event.
+ */
 void PPInstance::
 copy_cocoa_event(P3DCocoaEvent *p3d_event, NPCocoaEvent *np_event,
                  EventAuxData &aux_data) {
@@ -2544,9 +2399,9 @@ copy_cocoa_event(P3DCocoaEvent *p3d_event, NPCocoaEvent *np_event,
   case NPCocoaEventKeyUp:
   case NPCocoaEventFlagsChanged:
     p3d_event->data.key.modifierFlags = np_event->data.key.modifierFlags;
-    p3d_event->data.key.characters = 
+    p3d_event->data.key.characters =
       make_ansi_string(aux_data._characters, np_event->data.key.characters);
-    p3d_event->data.key.charactersIgnoringModifiers = 
+    p3d_event->data.key.charactersIgnoringModifiers =
       make_ansi_string(aux_data._characters_im, np_event->data.key.charactersIgnoringModifiers);
     p3d_event->data.key.isARepeat = np_event->data.key.isARepeat;
     p3d_event->data.key.keyCode = np_event->data.key.keyCode;
@@ -2558,7 +2413,7 @@ copy_cocoa_event(P3DCocoaEvent *p3d_event, NPCocoaEvent *np_event,
     break;
 
   case NPCocoaEventTextInput:
-    p3d_event->data.text.text = 
+    p3d_event->data.text.text =
       make_ansi_string(aux_data._text, np_event->data.text.text);
     break;
   }
@@ -2566,22 +2421,20 @@ copy_cocoa_event(P3DCocoaEvent *p3d_event, NPCocoaEvent *np_event,
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef MACOSX_HAS_EVENT_MODELS
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::make_ansi_string
-//       Access: Private, Static
-//  Description: OSX only: Fills result with the unicode characters in
-//               the NPNSString.  Also returns result.c_str().
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: Fills result with the unicode characters in the NPNSString.  Also
+ * returns result.c_str().
+ */
 const wchar_t *PPInstance::
 make_ansi_string(wstring &result, NPNSString *ns_string) {
   result.clear();
-  
+
   if (ns_string != NULL) {
     // An NPNSString is really just an NSString, which is itself just a
     // CFString.
     CFStringRef cfstr = (CFStringRef)ns_string;
     CFIndex length = CFStringGetLength(cfstr);
-    
+
     for (CFIndex i = 0; i < length; ++i) {
       result += (wchar_t)CFStringGetCharacterAtIndex(cfstr, i);
     }
@@ -2592,14 +2445,11 @@ make_ansi_string(wstring &result, NPNSString *ns_string) {
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef MACOSX_HAS_EVENT_MODELS
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::handle_cocoa_event
-//       Access: Private
-//  Description: Locally processes a Cocoa event for the window before
-//               sending it down to the Core API.  This is used for
-//               drawing a twirling icon in the window while the Core
-//               API is downloading.
-////////////////////////////////////////////////////////////////////
+/**
+ * Locally processes a Cocoa event for the window before sending it down to the
+ * Core API.  This is used for drawing a twirling icon in the window while the
+ * Core API is downloading.
+ */
 void PPInstance::
 handle_cocoa_event(const P3DCocoaEvent *p3d_event) {
   switch (p3d_event->type) {
@@ -2609,7 +2459,7 @@ handle_cocoa_event(const P3DCocoaEvent *p3d_event) {
       paint_twirl_osx_cgcontext(context);
     }
     break;
-    
+
   default:
     break;
   }
@@ -2617,13 +2467,10 @@ handle_cocoa_event(const P3DCocoaEvent *p3d_event) {
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef MACOSX_HAS_EVENT_MODELS
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::osx_get_twirl_images
-//       Access: Private
-//  Description: Fills _twirl_images with an array of images for
-//               drawing the twirling icon while we're waiting for the
-//               instance to load.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills _twirl_images with an array of images for drawing the twirling icon
+ * while we're waiting for the instance to load.
+ */
 void PPInstance::
 osx_get_twirl_images() {
   if (_got_twirl_images) {
@@ -2636,7 +2483,7 @@ osx_get_twirl_images() {
 
   for (int step = 0; step < twirl_num_steps + 1; ++step) {
     get_twirl_data(twirl_data, twirl_size, step,
-                   _fgcolor_r, _fgcolor_g, _fgcolor_b, 
+                   _fgcolor_r, _fgcolor_g, _fgcolor_b,
                    _bgcolor_r, _bgcolor_g, _bgcolor_b);
 
     unsigned char *new_data = new unsigned char[twirl_size * 4];
@@ -2660,26 +2507,24 @@ osx_get_twirl_images() {
     image._raw_data = new_data;
 
     image._data =
-      CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data, 
+      CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data,
                                   twirl_size * 4, kCFAllocatorNull);
     image._provider = CGDataProviderCreateWithCFData(image._data);
     image._color_space = CGColorSpaceCreateDeviceRGB();
-    
+
     image._image =
-      CGImageCreate(twirl_width, twirl_height, 8, 32, 
+      CGImageCreate(twirl_width, twirl_height, 8, 32,
                     twirl_width * 4, image._color_space,
-                    kCGImageAlphaFirst | kCGBitmapByteOrder32Little, 
+                    kCGImageAlphaFirst | kCGBitmapByteOrder32Little,
                     image._provider, NULL, false, kCGRenderingIntentDefault);
   }
 }
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef MACOSX_HAS_EVENT_MODELS
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::osx_release_twirl_images
-//       Access: Private
-//  Description: Frees the twirl_images array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the twirl_images array.
+ */
 void PPInstance::
 osx_release_twirl_images() {
   if (!_got_twirl_images) {
@@ -2715,13 +2560,10 @@ osx_release_twirl_images() {
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef MACOSX_HAS_EVENT_MODELS
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::paint_twirl_osx_cgcontext
-//       Access: Private
-//  Description: Actually paints the twirling icon in the OSX window,
-//               using Core Graphics.  (We don't bother painting it in
-//               the older Cocoa interface.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually paints the twirling icon in the OSX window, using Core Graphics.
+ * (We don't bother painting it in the older Cocoa interface.)
+ */
 void PPInstance::
 paint_twirl_osx_cgcontext(CGContextRef context) {
   // Clear the whole region to the bgcolor before beginning.
@@ -2746,7 +2588,7 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
     struct timeval tv;
     gettimeofday(&tv, (struct timezone *)NULL);
     double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
-    
+
     // Don't draw the twirling icon until at least half a second has
     // passed, so we don't distract people by drawing it
     // unnecessarily.
@@ -2759,50 +2601,44 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef MACOSX_HAS_EVENT_MODELS
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::osx_paint_image
-//       Access: Private
-//  Description: Draws the indicated image, centered within the
-//               window.  Returns true on success, false if the image
-//               is not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the indicated image, centered within the window.  Returns true on
+ * success, false if the image is not defined.
+ */
 bool PPInstance::
 osx_paint_image(CGContextRef context, const OsxImageData &image) {
   if (image._image == NULL) {
     return false;
   }
-    
+
   // Determine the relative size of image and window.
   int win_cx = _window.width / 2;
   int win_cy = _window.height / 2;
 
   CGRect rect = { { 0, 0 }, { 0, 0 } };
-    
+
   // The bitmap fits within the window; center it.
-      
+
   // This is the top-left corner of the bitmap in window coordinates.
   int p_x = win_cx - twirl_width / 2;
   int p_y = win_cy - twirl_height / 2;
-  
+
   rect.origin.x += p_x;
   rect.origin.y += p_y;
   rect.size.width = twirl_width;
   rect.size.height = twirl_height;
 
   CGContextDrawImage(context, rect, image._image);
-  
+
   return true;
 }
 #endif  // MACOSX_HAS_EVENT_MODELS
 
 #ifdef __APPLE__
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::timer_callback
-//       Access: Private, Static
-//  Description: OSX only: this callback is associated with a
-//               CFRunLoopTimer; it's used to forward request messages
-//               to the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: this callback is associated with a CFRunLoopTimer; it's used to
+ * forward request messages to the main thread.
+ */
 void PPInstance::
 timer_callback(CFRunLoopTimerRef timer, void *info) {
   PPInstance *self = (PPInstance *)info;
@@ -2819,12 +2655,9 @@ timer_callback(CFRunLoopTimerRef timer, void *info) {
 #endif  // __APPLE__
 
 #ifdef __APPLE__
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::st_twirl_timer_callback
-//       Access: Private, Static
-//  Description: OSX only: this callback is used to twirl the icon
-//               before the instance loads.
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: this callback is used to twirl the icon before the instance loads.
+ */
 void PPInstance::
 st_twirl_timer_callback(CFRunLoopTimerRef timer, void *info) {
   PPInstance *self = (PPInstance *)info;
@@ -2833,12 +2666,9 @@ st_twirl_timer_callback(CFRunLoopTimerRef timer, void *info) {
 #endif  // __APPLE__
 
 #ifdef __APPLE__
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::twirl_timer_callback
-//       Access: Private
-//  Description: OSX only: this callback is used to twirl the icon
-//               before the instance loads.
-////////////////////////////////////////////////////////////////////
+/**
+ * OSX only: this callback is used to twirl the icon before the instance loads.
+ */
 void PPInstance::
 twirl_timer_callback() {
   if (_got_window) {
@@ -2849,12 +2679,10 @@ twirl_timer_callback() {
 #endif  // __APPLE__
 
 #ifdef HAVE_X11
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::x11_start_twirl_subprocess
-//       Access: Public
-//  Description: Spawns a separate process to twirl the loading icon
-//               in the X11 browser window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Spawns a separate process to twirl the loading icon in the X11 browser
+ * window.
+ */
 void PPInstance::
 x11_start_twirl_subprocess() {
   if (_twirl_subprocess_pid != -1) {
@@ -2883,11 +2711,9 @@ x11_start_twirl_subprocess() {
 #endif  // HAVE_X11
 
 #ifdef HAVE_X11
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::x11_stop_twirl_subprocess
-//       Access: Public
-//  Description: Kills the twirl process that was started earlier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Kills the twirl process that was started earlier.
+ */
 void PPInstance::
 x11_stop_twirl_subprocess() {
   if (_twirl_subprocess_pid == -1) {
@@ -2905,7 +2731,7 @@ x11_stop_twirl_subprocess() {
     nout << "  exited normally, status = "
          << WEXITSTATUS(status) << "\n";
   } else if (WIFSIGNALED(status)) {
-    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+    nout << "  signalled by " << WTERMSIG(status) << ", core = "
          << WCOREDUMP(status) << "\n";
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
@@ -2915,13 +2741,10 @@ x11_stop_twirl_subprocess() {
 #endif  // HAVE_X11
 
 #ifdef HAVE_X11
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::x11_twirl_subprocess_run
-//       Access: Public
-//  Description: The code that is run within a subprocess.  This code
-//               is responsible for twirling the loading icon
-//               endlessly.
-////////////////////////////////////////////////////////////////////
+/**
+ * The code that is run within a subprocess.  This code is responsible for
+ * twirling the loading icon endlessly.
+ */
 void PPInstance::
 x11_twirl_subprocess_run() {
   // Since everything within this function happens within a subprocess
@@ -3011,8 +2834,8 @@ x11_twirl_subprocess_run() {
   if (bg_pixel != -1) {
     gcval.background = bg_pixel;
   }
-  GC graphics_context = XCreateGC(display, window, 
-    GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval); 
+  GC graphics_context = XCreateGC(display, window,
+    GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval);
 
   // Load up the twirling images.
   XImage *images[twirl_num_steps];
@@ -3025,7 +2848,7 @@ x11_twirl_subprocess_run() {
 
   for (int step = 0; step < twirl_num_steps; ++step) {
     get_twirl_data(twirl_data, twirl_size, step,
-                   _fgcolor_r, _fgcolor_g, _fgcolor_b, 
+                   _fgcolor_r, _fgcolor_g, _fgcolor_b,
                    _bgcolor_r, _bgcolor_g, _bgcolor_b);
     uint32_t *new_data = new uint32_t[twirl_size];
     int j = 0;
@@ -3040,7 +2863,7 @@ x11_twirl_subprocess_run() {
     }
 
     // Now load the image.
-    images[step] = XCreateImage(display, CopyFromParent, DefaultDepth(display, screen), 
+    images[step] = XCreateImage(display, CopyFromParent, DefaultDepth(display, screen),
                                 ZPixmap, 0, (char *)new_data, twirl_width, twirl_height, 32, 0);
   }
 
@@ -3076,7 +2899,7 @@ x11_twirl_subprocess_run() {
       XClearWindow(display, window);
       int xo = (_window.width - twirl_width) / 2;
       int yo = (_window.height - twirl_height) / 2;
-      XPutImage(display, window, graphics_context, images[step], 0, 0, 
+      XPutImage(display, window, graphics_context, images[step], 0, 0,
                 xo, yo, twirl_width, twirl_height);
 
       XFlush(display);
@@ -3092,11 +2915,9 @@ x11_twirl_subprocess_run() {
 }
 #endif  // HAVE_X11
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamingFileData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPInstance::StreamingFileData::
 StreamingFileData(PPDownloadRequest *req, const string &filename,
                   P3D_instance *p3d_inst) :
@@ -3121,11 +2942,9 @@ StreamingFileData(PPDownloadRequest *req, const string &filename,
   SPAWN_THREAD(_thread, thread_run, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamingFileData::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPInstance::StreamingFileData::
 ~StreamingFileData() {
   // Time to stop.
@@ -3134,24 +2953,19 @@ PPInstance::StreamingFileData::
   JOIN_THREAD(_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamingFileData::is_done
-//       Access: Public
-//  Description: Returns true if the file has been fully read and this
-//               object is ready to be deleted, or false if there is
-//               more work to do.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file has been fully read and this object is ready to be
+ * deleted, or false if there is more work to do.
+ */
 bool PPInstance::StreamingFileData::
 is_done() const {
   return _thread_done;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamingFileData::thread_run
-//       Access: Private
-//  Description: The main function of the file thread.  This reads the
-//               file contents and feeds it to the core API.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main function of the file thread.  This reads the file contents and feeds
+ * it to the core API.
+ */
 void PPInstance::StreamingFileData::
 thread_run() {
   static const size_t buffer_size = 81920;
@@ -3210,11 +3024,9 @@ thread_run() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamTempFile::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPInstance::StreamTempFile::
 StreamTempFile() {
   _opened = false;
@@ -3223,24 +3035,19 @@ StreamTempFile() {
   _total_size = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamTempFile::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PPInstance::StreamTempFile::
 ~StreamTempFile() {
   cleanup();
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamTempFile::open
-//       Access: Public
-//  Description: Creates the temp file and prepares to write to it.
-//               It is not normally necessary to call this explicitly;
-//               it will be called automatically on the first call to
-//               feed().
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Creates the temp file and prepares to write to it.  It is not normally
+ * necessary to call this explicitly; it will be called automatically on the
+ * first call to feed().
+ */
 void PPInstance::StreamTempFile::
 open() {
   assert(!_opened);
@@ -3262,13 +3069,10 @@ open() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamTempFile::feed
-//       Access: Public
-//  Description: Receives new data from the URL and writes it to the
-//               temp file.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives new data from the URL and writes it to the temp file.  Returns true
+ * on success, false on failure.
+ */
 bool PPInstance::StreamTempFile::
 feed(size_t total_expected_data, const void *this_data,
      size_t this_data_size) {
@@ -3293,13 +3097,10 @@ feed(size_t total_expected_data, const void *this_data,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamTempFile::finish
-//       Access: Public
-//  Description: Marks the end of the data received from the URL.  The
-//               file is closed but not yet deleted; it remains on
-//               disk and may be read at leisure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the end of the data received from the URL.  The file is closed but not
+ * yet deleted; it remains on disk and may be read at leisure.
+ */
 void PPInstance::StreamTempFile::
 finish() {
   if (!_finished) {
@@ -3310,24 +3111,18 @@ finish() {
   _stream.close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamTempFile::close
-//       Access: Public
-//  Description: Closes the stream for more data.  The file is not yet
-//               deleted; it remains on disk and may be read at
-//               leisure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the stream for more data.  The file is not yet deleted; it remains on
+ * disk and may be read at leisure.
+ */
 void PPInstance::StreamTempFile::
 close() {
   _stream.close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamTempFile::cleanup
-//       Access: Public
-//  Description: Closes all open processes and removes the temp file
-//               from disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes all open processes and removes the temp file from disk.
+ */
 void PPInstance::StreamTempFile::
 cleanup() {
   finish();

@@ -1,23 +1,19 @@
-// Filename: interrogateElement.I
-// Created by:  drose (11Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateElement.I
+ * @author drose
+ * @date 2000-08-11
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE InterrogateElement::
 InterrogateElement(InterrogateModuleDef *def) :
   InterrogateComponent(def)
@@ -30,21 +26,17 @@ InterrogateElement(InterrogateModuleDef *def) :
   _clear_function = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE InterrogateElement::
 InterrogateElement(const InterrogateElement &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void InterrogateElement::
 operator = (const InterrogateElement &copy) {
   InterrogateComponent::operator = (copy);
@@ -58,143 +50,114 @@ operator = (const InterrogateElement &copy) {
   _clear_function = copy._clear_function;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::is_global
-//       Access: Public
-//  Description: Returns true if the element is marked as 'global'.
-//               This means only that it should appear in the global
-//               element list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the element is marked as 'global'. This means only that it
+ * should appear in the global element list.
+ */
 INLINE bool InterrogateElement::
 is_global() const {
   return (_flags & F_global) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::has_scoped_name
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool InterrogateElement::
 has_scoped_name() const {
   return !_scoped_name.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::get_scoped_name
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const string &InterrogateElement::
 get_scoped_name() const {
   return _scoped_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::has_comment
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool InterrogateElement::
 has_comment() const {
   return !_comment.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::get_comment
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const string &InterrogateElement::
 get_comment() const {
   return _comment;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::get_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TypeIndex InterrogateElement::
 get_type() const {
   return _type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::has_getter
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool InterrogateElement::
 has_getter() const {
   return (_flags & F_has_getter) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::get_getter
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE FunctionIndex InterrogateElement::
 get_getter() const {
   return _getter;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::has_setter
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool InterrogateElement::
 has_setter() const {
   return (_flags & F_has_setter) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::get_setter
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE FunctionIndex InterrogateElement::
 get_setter() const {
   return _setter;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::has_has_function
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool InterrogateElement::
 has_has_function() const {
   return (_flags & F_has_has_function) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::get_has_function
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE FunctionIndex InterrogateElement::
 get_has_function() const {
   return _has_function;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::has_clear_function
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool InterrogateElement::
 has_clear_function() const {
   return (_flags & F_has_clear_function) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateElement::get_clear_function
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE FunctionIndex InterrogateElement::
 get_clear_function() const {
   return _clear_function;

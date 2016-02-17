@@ -1,25 +1,22 @@
-// Filename: textureRequest.cxx
-// Created by:  drose (30Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureRequest.cxx
+ * @author drose
+ * @date 2000-11-30
+ */
 
 #include "textureRequest.h"
 #include "palettizer.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureRequest::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureRequest::
 TextureRequest() {
   _got_size = false;
@@ -42,12 +39,9 @@ TextureRequest() {
   _coverage_threshold = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureRequest::pre_txa_file
-//       Access: Public
-//  Description: Sets some state up that must be set prior to reading
-//               the .txa file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets some state up that must be set prior to reading the .txa file.
+ */
 void TextureRequest::
 pre_txa_file() {
   _margin = pal->_margin;

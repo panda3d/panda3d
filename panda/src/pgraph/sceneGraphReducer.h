@@ -1,16 +1,15 @@
-// Filename: sceneGraphReducer.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneGraphReducer.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef SCENEGRAPHREDUCER_H
 #define SCENEGRAPHREDUCER_H
@@ -29,17 +28,13 @@
 
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SceneGraphReducer
-// Description : An interface for simplifying ("flattening") scene
-//               graphs by eliminating unneeded nodes and collapsing
-//               out unneeded state changes and transforms.
-//
-//               This class is designed so that it may be inherited
-//               from and specialized, if needed, to fine-tune the
-//               flattening behavior, but normally the default
-//               behavior is sufficient.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface for simplifying ("flattening") scene graphs by eliminating
+ * unneeded nodes and collapsing out unneeded state changes and transforms.
+ * This class is designed so that it may be inherited from and specialized, if
+ * needed, to fine-tune the flattening behavior, but normally the default
+ * behavior is sufficient.
+ */
 class EXPCL_PANDA_PGRAPH SceneGraphReducer {
 PUBLISHED:
   INLINE SceneGraphReducer(GraphicsStateGuardianBase *gsg = NULL);
@@ -101,7 +96,7 @@ PUBLISHED:
 
     // If set, GeomVertexDatas with unanimated vertices will not be
     // combined with GeomVertexDatas with animated vertices.
-    CVD_animation_type = 0x080, 
+    CVD_animation_type = 0x080,
   };
 
   enum MakeNonindexed {
@@ -136,7 +131,7 @@ PUBLISHED:
   int remove_column(PandaNode *root, const InternalName *column);
 
   int make_compatible_state(PandaNode *root);
-  
+
   INLINE int make_compatible_format(PandaNode *root, int collect_bits = ~0);
   void decompose(PandaNode *root);
 
@@ -162,15 +157,15 @@ protected:
   bool consider_siblings(PandaNode *parent_node, PandaNode *child1,
                          PandaNode *child2);
 
-  bool do_flatten_child(PandaNode *grandparent_node, 
+  bool do_flatten_child(PandaNode *grandparent_node,
                         PandaNode *parent_node, PandaNode *child_node);
 
-  PandaNode *do_flatten_siblings(PandaNode *parent_node, 
+  PandaNode *do_flatten_siblings(PandaNode *parent_node,
                                  PandaNode *child1, PandaNode *child2);
 
-  PT(PandaNode) collapse_nodes(PandaNode *node1, PandaNode *node2, 
+  PT(PandaNode) collapse_nodes(PandaNode *node1, PandaNode *node2,
                                bool siblings);
-  void choose_name(PandaNode *preserve, PandaNode *source1, 
+  void choose_name(PandaNode *preserve, PandaNode *source1,
                    PandaNode *source2);
 
   int r_remove_column(PandaNode *node, const InternalName *column,

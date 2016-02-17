@@ -1,17 +1,15 @@
-// Filename: collisionHandlerEvent.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandlerEvent.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "collisionHandlerEvent.h"
 #include "config_collide.h"
@@ -22,25 +20,19 @@
 
 TypeHandle CollisionHandlerEvent::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::Constructor
-//       Access: Public
-//  Description: The default CollisionHandlerEvent will throw no
-//               events.  Its pattern strings must first be set via a
-//               call to add_in_pattern() and/or add_out_pattern().
-////////////////////////////////////////////////////////////////////
+/**
+ * The default CollisionHandlerEvent will throw no events.  Its pattern strings
+ * must first be set via a call to add_in_pattern() and/or add_out_pattern().
+ */
 CollisionHandlerEvent::
 CollisionHandlerEvent() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::begin_group
-//       Access: Public, Virtual
-//  Description: Will be called by the CollisionTraverser before a new
-//               traversal is begun.  It instructs the handler to
-//               reset itself in preparation for a number of
-//               CollisionEntries to be sent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Will be called by the CollisionTraverser before a new traversal is begun.  It
+ * instructs the handler to reset itself in preparation for a number of
+ * CollisionEntries to be sent.
+ */
 void CollisionHandlerEvent::
 begin_group() {
   if (collide_cat.is_spam()) {
@@ -51,12 +43,10 @@ begin_group() {
   _current_colliding.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::add_entry
-//       Access: Public, Virtual
-//  Description: Called between a begin_group() .. end_group()
-//               sequence for each collision that is detected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between a begin_group() .. end_group() sequence for each collision
+ * that is detected.
+ */
 void CollisionHandlerEvent::
 add_entry(CollisionEntry *entry) {
   nassertv(entry != (CollisionEntry *)NULL);
@@ -73,14 +63,11 @@ add_entry(CollisionEntry *entry) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::end_group
-//       Access: Public, Virtual
-//  Description: Called by the CollisionTraverser at the completion of
-//               all collision detections for this traversal.  It
-//               should do whatever finalization is required for the
-//               handler.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the CollisionTraverser at the completion of all collision
+ * detections for this traversal.  It should do whatever finalization is
+ * required for the handler.
+ */
 bool CollisionHandlerEvent::
 end_group() {
   // Now compare the list of entries we collected this frame with
@@ -137,44 +124,33 @@ end_group() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::clear
-//       Access: Public
-//  Description: Empties the list of elements that all colliders are
-//               known to be colliding with.  No "out" events will be
-//               thrown; if the same collision is detected next frame,
-//               a new "in" event will be thrown for each collision.
-//
-//               This can be called each frame to defeat the
-//               persistent "in" event mechanism, which prevents the
-//               same "in" event from being thrown repeatedly.
-//               However, also see add_again_pattern(), which can be
-//               used to set the event that is thrown when a collision
-//               is detected for two or more consecutive frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of elements that all colliders are known to be colliding
+ * with.  No "out" events will be thrown; if the same collision is detected next
+ * frame, a new "in" event will be thrown for each collision.  This can be
+ * called each frame to defeat the persistent "in" event mechanism, which
+ * prevents the same "in" event from being thrown repeatedly.  However, also see
+ * add_again_pattern(), which can be used to set the event that is thrown when a
+ * collision is detected for two or more consecutive frames.
+ */
 void CollisionHandlerEvent::
 clear() {
   _last_colliding.clear();
   _current_colliding.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::flush
-//       Access: Public
-//  Description: Same as clear() except "out" events are thrown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Same as clear() except "out" events are thrown.
+ */
 void CollisionHandlerEvent::
 flush() {
   begin_group();
   end_group();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::throw_event_for
-//       Access: Private
-//  Description: Throws whatever events are suggested by the list of
-//               patterns.
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws whatever events are suggested by the list of patterns.
+ */
 void CollisionHandlerEvent::
 throw_event_for(const vector_string &patterns, CollisionEntry *entry) {
   vector_string::const_iterator pi;
@@ -183,11 +159,9 @@ throw_event_for(const vector_string &patterns, CollisionEntry *entry) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerEvent::throw_event_pattern
-//       Access: Private
-//  Description: Throws an event matching the indicated pattern.
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws an event matching the indicated pattern.
+ */
 void CollisionHandlerEvent::
 throw_event_pattern(const string &pattern, CollisionEntry *entry) {
   if (pattern.empty()) {
@@ -258,7 +232,7 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
         if (entry->has_into()) {
           event += entry->get_into_node_path().get_net_tag(key);
         }
-        
+
       } else {
         collide_cat.error()
           << "Invalid symbol in event_pattern: %" << cmd << "\n";
@@ -267,7 +241,7 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
       event += pattern[p];
     }
   }
-  
+
   if (!event.empty()) {
     throw_event(event, EventParameter(entry));
   }

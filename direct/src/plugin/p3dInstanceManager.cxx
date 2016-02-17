@@ -1,16 +1,15 @@
-// Filename: p3dInstanceManager.cxx
-// Created by:  drose (29May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dInstanceManager.cxx
+ * @author drose
+ * @date 2009-05-29
+ */
 
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
@@ -56,11 +55,9 @@ ostream *nout_stream = &logfile;
 
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::Constructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DInstanceManager::
 P3DInstanceManager() {
   init_xml();
@@ -114,11 +111,9 @@ P3DInstanceManager() {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::Destructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DInstanceManager::
 ~P3DInstanceManager() {
   if (_started_notify_thread) {
@@ -187,16 +182,13 @@ P3DInstanceManager::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::initialize
-//       Access: Public
-//  Description: Called by the plugin host at application startup.  It
-//               returns true if the DLL is successfully initialized,
-//               false if it should be immediately shut down and
-//               redownloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the plugin host at application startup.  It returns true if the DLL
+ * is successfully initialized, false if it should be immediately shut down and
+ * redownloaded.
+ */
 bool P3DInstanceManager::
-initialize(int api_version, const string &contents_filename, 
+initialize(int api_version, const string &contents_filename,
            const string &host_url, P3D_verify_contents verify_contents,
            const string &platform, const string &log_directory,
            const string &log_basename, bool trusted_environment,
@@ -350,12 +342,10 @@ initialize(int api_version, const string &contents_filename,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::set_plugin_version
-//       Access: Public
-//  Description: Specifies the version of the calling plugin, for
-//               reporting to JavaScript and the like.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the version of the calling plugin, for reporting to JavaScript and
+ * the like.
+ */
 void P3DInstanceManager::
 set_plugin_version(int major, int minor, int sequence,
                    bool official, const string &distributor,
@@ -391,7 +381,7 @@ set_plugin_version(int major, int minor, int sequence,
   string internal_set_ver = P3D_COREAPI_VERSION_STR;
   if (coreapi_set_ver != internal_set_ver && !coreapi_set_ver.empty() && !internal_set_ver.empty()) {
     nout << "Warning!  contents.xml reports Core API version number "
-         << coreapi_set_ver << ", but its actual version number is " 
+         << coreapi_set_ver << ", but its actual version number is "
          << internal_set_ver << "\n";
   }
   _coreapi_set_ver = internal_set_ver;
@@ -418,11 +408,9 @@ set_plugin_version(int major, int minor, int sequence,
   nout << "Core API date: " << timestamp_string << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::set_super_mirror
-//       Access: Public
-//  Description: Specifies the "super mirror" URL.  See p3d_plugin.h.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the "super mirror" URL.  See p3d_plugin.h.
+ */
 void P3DInstanceManager::
 set_super_mirror(const string &super_mirror_url) {
   reconsider_runtime_environment();
@@ -437,15 +425,12 @@ set_super_mirror(const string &super_mirror_url) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::create_instance
-//       Access: Public
-//  Description: Returns a newly-allocated P3DInstance with the
-//               indicated startup information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated P3DInstance with the indicated startup information.
+ */
 P3DInstance *P3DInstanceManager::
-create_instance(P3D_request_ready_func *func, 
-                const P3D_token tokens[], size_t num_tokens, 
+create_instance(P3D_request_ready_func *func,
+                const P3D_token tokens[], size_t num_tokens,
                 int argc, const char *argv[], void *user_data) {
   reconsider_runtime_environment();
   P3DInstance *inst = new P3DInstance(func, tokens, num_tokens, argc, argv,
@@ -456,12 +441,9 @@ create_instance(P3D_request_ready_func *func,
   return inst;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::set_p3d_filename
-//       Access: Public
-//  Description: Sets the p3d_filename (or p3d_url) on a particular
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the p3d_filename (or p3d_url) on a particular instance.
+ */
 bool P3DInstanceManager::
 set_p3d_filename(P3DInstance *inst, bool is_local,
                  const string &p3d_filename, const int &p3d_offset) {
@@ -478,13 +460,10 @@ set_p3d_filename(P3DInstance *inst, bool is_local,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::make_p3d_stream
-//       Access: Public
-//  Description: Indicates an intention to transmit the p3d data as a
-//               stream.  Should return a new unique stream ID to
-//               receive it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates an intention to transmit the p3d data as a stream.  Should return a
+ * new unique stream ID to receive it.
+ */
 int P3DInstanceManager::
 make_p3d_stream(P3DInstance *inst, const string &p3d_url) {
   if (inst->is_started()) {
@@ -495,13 +474,10 @@ make_p3d_stream(P3DInstance *inst, const string &p3d_url) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::start_instance
-//       Access: Public
-//  Description: Actually starts the instance running on a particular
-//               session.  This is called by the P3DInstance when it
-//               successfully loads its instance file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually starts the instance running on a particular session.  This is called
+ * by the P3DInstance when it successfully loads its instance file.
+ */
 bool P3DInstanceManager::
 start_instance(P3DInstance *inst) {
   if (inst->is_failed()) {
@@ -530,12 +506,9 @@ start_instance(P3DInstance *inst) {
   return inst->is_started();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::finish_instance
-//       Access: Public
-//  Description: Terminates and removes a previously-returned
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates and removes a previously-returned instance.
+ */
 void P3DInstanceManager::
 finish_instance(P3DInstance *inst) {
   nout << "finish_instance: " << inst << "\n";
@@ -563,14 +536,11 @@ finish_instance(P3DInstance *inst) {
   p3d_unref_delete(inst);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::authorize_instance
-//       Access: Public
-//  Description: Creates a new P3DAuthSession object, to pop up a
-//               window for the user to authorize the certificate on
-//               this instance.  Automatically terminates any
-//               previously-created P3DAuthSession.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new P3DAuthSession object, to pop up a window for the user to
+ * authorize the certificate on this instance.  Automatically terminates any
+ * previously-created P3DAuthSession.
+ */
 P3DAuthSession *P3DInstanceManager::
 authorize_instance(P3DInstance *inst) {
   if (_auth_session != NULL) {
@@ -586,13 +556,10 @@ authorize_instance(P3DInstance *inst) {
   return _auth_session;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::validate_instance
-//       Access: Public
-//  Description: Returns the P3DInstance pointer corresponding to the
-//               indicated P3D_instance if it is valid, or NULL if it
-//               is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the P3DInstance pointer corresponding to the indicated P3D_instance
+ * if it is valid, or NULL if it is not.
+ */
 P3DInstance *P3DInstanceManager::
 validate_instance(P3D_instance *instance) {
   Instances::iterator ii;
@@ -604,12 +571,10 @@ validate_instance(P3D_instance *instance) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::check_request
-//       Access: Public
-//  Description: If a request is currently pending on any instance,
-//               returns its pointer.  Otherwise, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * If a request is currently pending on any instance, returns its pointer.
+ * Otherwise, returns NULL.
+ */
 P3DInstance *P3DInstanceManager::
 check_request() {
   Instances::iterator ii;
@@ -623,18 +588,14 @@ check_request() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::wait_request
-//       Access: Public
-//  Description: Does not return until a request is pending on some
-//               instance, or until no instances remain, or until the
-//               indicated time in seconds has elapsed.  Use
-//               check_request to retrieve the pending request.  Due
-//               to the possibility of race conditions, it is possible
-//               for this function to return when there is in fact no
-//               request pending (another thread may have extracted
-//               the request first).
-////////////////////////////////////////////////////////////////////
+/**
+ * Does not return until a request is pending on some instance, or until no
+ * instances remain, or until the indicated time in seconds has elapsed.  Use
+ * check_request to retrieve the pending request.  Due to the possibility of
+ * race conditions, it is possible for this function to return when there is in
+ * fact no request pending (another thread may have extracted the request
+ * first).
+ */
 void P3DInstanceManager::
 wait_request(double timeout) {
 #ifdef _WIN32
@@ -661,7 +622,7 @@ wait_request(double timeout) {
     _request_ready.release();
     return;
   }
-  
+
   // No pending requests; go to sleep.
   _request_ready.wait(timeout);
 
@@ -698,19 +659,16 @@ wait_request(double timeout) {
       _request_ready.release();
       return;
     }
-    
+
     // No pending requests; go to sleep.
     _request_ready.wait(timeout);
   }
   _request_ready.release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_host
-//       Access: Public
-//  Description: Returns a (possibly shared) pointer to the indicated
-//               download host.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a (possibly shared) pointer to the indicated download host.
+ */
 P3DHost *P3DInstanceManager::
 get_host(const string &host_url) {
   Hosts::iterator pi = _hosts.find(host_url);
@@ -725,43 +683,36 @@ get_host(const string &host_url) {
   return host;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::forget_host
-//       Access: Public
-//  Description: Removes the indicated host from the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated host from the cache.
+ */
 void P3DInstanceManager::
 forget_host(P3DHost *host) {
   const string &host_url = host->get_host_url();
 
   nout << "Forgetting host " << host_url << "\n";
-  
+
   // Hmm, this is a memory leak.  But we allow it to remain, since
   // it's an unusual circumstance (uninstalling), and it's safer to
   // leak than to risk a floating pointer.
   _hosts.erase(host_url);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_unique_id
-//       Access: Public
-//  Description: Returns a number used to uniquify different
-//               instances.  This number is guaranteed to be different
-//               at each call, at least until the int space rolls
-//               over.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number used to uniquify different instances.  This number is
+ * guaranteed to be different at each call, at least until the int space rolls
+ * over.
+ */
 int P3DInstanceManager::
 get_unique_id() {
   ++_unique_id;
   return _unique_id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::signal_request_ready
-//       Access: Public
-//  Description: May be called in any thread to indicate that a new
-//               P3D_request is available in the indicated instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called in any thread to indicate that a new P3D_request is available
+ * in the indicated instance.
+ */
 void P3DInstanceManager::
 signal_request_ready(P3DInstance *inst) {
   if (inst->get_request_ready_func() != NULL) {
@@ -788,11 +739,9 @@ signal_request_ready(P3DInstance *inst) {
   _request_ready.release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::make_class_definition
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3D_class_definition *P3DInstanceManager::
 make_class_definition() const {
   P3D_class_definition *new_class = new P3D_class_definition(P3DObject::_generic_class);
@@ -800,14 +749,11 @@ make_class_definition() const {
   return new_class;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::make_temp_filename
-//       Access: Public
-//  Description: Constructs a new, unique temporary filename with the
-//               indicated extension.  You should use the
-//               P3DTemporaryFilename interface instead of calling
-//               this method directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new, unique temporary filename with the indicated extension.
+ * You should use the P3DTemporaryFilename interface instead of calling this
+ * method directly.
+ */
 string P3DInstanceManager::
 make_temp_filename(const string &extension) {
   string result;
@@ -832,7 +778,7 @@ make_temp_filename(const string &extension) {
     result += "p3d_";
     result += hex_code;
     result += extension;
-    
+
     exists = false;
     if (_temp_filenames.find(result) != _temp_filenames.end()) {
       // We've previously allocated this file.
@@ -861,14 +807,11 @@ make_temp_filename(const string &extension) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::release_temp_filename
-//       Access: Public
-//  Description: Releases a temporary filename assigned earlier via
-//               make_temp_filename().  If the file exists, it will be
-//               removed.  You should use the P3DTemporaryFilename
-//               interface instead of calling this method directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases a temporary filename assigned earlier via make_temp_filename().  If
+ * the file exists, it will be removed.  You should use the P3DTemporaryFilename
+ * interface instead of calling this method directly.
+ */
 void P3DInstanceManager::
 release_temp_filename(const string &filename) {
   nout << "release_temp_filename: " << filename << "\n";
@@ -876,13 +819,10 @@ release_temp_filename(const string &filename) {
   unlink(filename.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::find_cert
-//       Access: Public
-//  Description: Looks for the particular certificate in the cache of
-//               recognized certificates.  Returns true if it is
-//               found, false if not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for the particular certificate in the cache of recognized certificates.
+ * Returns true if it is found, false if not.
+ */
 bool P3DInstanceManager::
 find_cert(X509 *cert) {
   // First, we need the DER representation.
@@ -931,7 +871,7 @@ find_cert(X509 *cert) {
       // We might as well save this cert in the table for next time,
       // even if it's not the one we're looking for right now.
       _approved_certs.insert(der2);
-      
+
       if (der == der2) {
         return true;
       }
@@ -942,12 +882,10 @@ find_cert(X509 *cert) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::read_certlist
-//       Access: Public
-//  Description: Reads the pre-approved certificates in the certlist
-//               package and adds them to the in-memory cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the pre-approved certificates in the certlist package and adds them to
+ * the in-memory cache.
+ */
 void P3DInstanceManager::
 read_certlist(P3DPackage *package) {
   nout << "reading certlist in " << package->get_package_dir() << "\n";
@@ -976,7 +914,7 @@ read_certlist(P3DPackage *package) {
           x509 = PEM_read_X509(fp, NULL, NULL, (void *)"");
           fclose(fp);
         }
-        
+
         if (x509 != NULL) {
           string der2 = cert_to_der(x509);
           _approved_certs.insert(der2);
@@ -986,12 +924,9 @@ read_certlist(P3DPackage *package) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_cert_dir
-//       Access: Public
-//  Description: Returns the directory searched for this particular
-//               certificate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the directory searched for this particular certificate.
+ */
 string P3DInstanceManager::
 get_cert_dir(X509 *cert) {
   string der = cert_to_der(cert);
@@ -1016,35 +951,27 @@ get_cert_dir(X509 *cert) {
   return _certs_dir + "/" + basename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::cert_to_der
-//       Access: Public, Static
-//  Description: Converts the indicated certificate to its binary DER
-//               representation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated certificate to its binary DER representation.
+ */
 string P3DInstanceManager::
 cert_to_der(X509 *cert) {
   int buffer_size = i2d_X509(cert, NULL);
   unsigned char *buffer = new unsigned char[buffer_size];
   unsigned char *p = buffer;
   i2d_X509(cert, &p);
-  
+
   string result((char *)buffer, buffer_size);
   delete[] buffer;
 
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::uninstall_all
-//       Access: Public
-//  Description: Stops all active instances and removes *all*
-//               downloaded files from all hosts, and empties the
-//               current user's Panda3D directory as much as possible.
-//
-//               This cannot remove the coreapi dll or directory on
-//               Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops all active instances and removes *all* downloaded files from all hosts,
+ * and empties the current user's Panda3D directory as much as possible.  This
+ * cannot remove the coreapi dll or directory on Windows.
+ */
 void P3DInstanceManager::
 uninstall_all() {
   Instances::iterator ii;
@@ -1072,11 +999,9 @@ uninstall_all() {
   _created_runtime_environment = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_global_ptr
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DInstanceManager *P3DInstanceManager::
 get_global_ptr() {
   if (_global_ptr == NULL) {
@@ -1085,13 +1010,10 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::delete_global_ptr
-//       Access: Public, Static
-//  Description: This is called only at plugin shutdown time; it
-//               deletes the global instance manager pointer and
-//               clears it to NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called only at plugin shutdown time; it deletes the global instance
+ * manager pointer and clears it to NULL.
+ */
 void P3DInstanceManager::
 delete_global_ptr() {
   if (_global_ptr != NULL) {
@@ -1100,22 +1022,14 @@ delete_global_ptr() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::scan_directory
-//       Access: Public, Static
-//  Description: Attempts to open the named filename as if it were a
-//               directory and looks for the non-hidden files within
-//               the directory.  Fills the given vector up with the
-//               sorted list of filenames that are local to this
-//               directory.
-//
-//               It is the user's responsibility to ensure that the
-//               contents vector is empty before making this call;
-//               otherwise, the new files will be appended to it.
-//
-//               Returns true on success, false if the directory could
-//               not be read for some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the named filename as if it were a directory and looks for
+ * the non-hidden files within the directory.  Fills the given vector up with
+ * the sorted list of filenames that are local to this directory.  It is the
+ * user's responsibility to ensure that the contents vector is empty before
+ * making this call; otherwise, the new files will be appended to it.  Returns
+ * true on success, false if the directory could not be read for some reason.
+ */
 bool P3DInstanceManager::
 scan_directory(const string &dirname, vector<string> &contents) {
 #ifdef _WIN32
@@ -1179,22 +1093,16 @@ scan_directory(const string &dirname, vector<string> &contents) {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::scan_directory_recursively
-//       Access: Public, Static
-//  Description: Fills up filename_contents with the list of all
-//               files (but not directories), and dirname_contents
-//               with the list of all directories, rooted at the
-//               indicated dirname and below.  The filenames generated
-//               are relative to the root of the dirname, with slashes
-//               (not backslashes) as the directory separator
-//               character.
-//
-//               Returns true on success, false if the original
-//               dirname wasn't a directory or something like that.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up filename_contents with the list of all files (but not directories),
+ * and dirname_contents with the list of all directories, rooted at the
+ * indicated dirname and below.  The filenames generated are relative to the
+ * root of the dirname, with slashes (not backslashes) as the directory
+ * separator character.  Returns true on success, false if the original dirname
+ * wasn't a directory or something like that.
+ */
 bool P3DInstanceManager::
-scan_directory_recursively(const string &dirname, 
+scan_directory_recursively(const string &dirname,
                            vector<string> &filename_contents,
                            vector<string> &dirname_contents,
                            const string &prefix) {
@@ -1211,7 +1119,7 @@ scan_directory_recursively(const string &dirname,
     // directory, or is it a regular file?
     string pathname = dirname + "/" + (*si);
     string rel_filename = prefix + (*si);
-    if (scan_directory_recursively(pathname, filename_contents, 
+    if (scan_directory_recursively(pathname, filename_contents,
                                    dirname_contents, rel_filename + "/")) {
       // It's a directory, and it's just added its results to the
       // contents.
@@ -1227,13 +1135,10 @@ scan_directory_recursively(const string &dirname,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::delete_directory_recursively
-//       Access: Public, Static
-//  Description: Deletes all of the files and directories in the named
-//               directory and below, like rm -rf.  Use with extreme
-//               caution.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes all of the files and directories in the named directory and below,
+ * like rm -rf.  Use with extreme caution.
+ */
 void P3DInstanceManager::
 delete_directory_recursively(const string &root_dir) {
   vector<string> contents, dirname_contents;
@@ -1329,26 +1234,20 @@ delete_directory_recursively(const string &root_dir) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::remove_file_from_list
-//       Access: Public, Static
-//  Description: Removes the first instance of the indicated file
-//               from the given list.  Returns true if removed, false
-//               if it was not found.
-//
-//               On Windows, the directory separator characters are
-//               changed from backslash to forward slash before
-//               searching in the list; so it is assumed that the list
-//               contains filenames with a forward slash used as a
-//               separator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the first instance of the indicated file from the given list.
+ * Returns true if removed, false if it was not found.  On Windows, the
+ * directory separator characters are changed from backslash to forward slash
+ * before searching in the list; so it is assumed that the list contains
+ * filenames with a forward slash used as a separator.
+ */
 bool P3DInstanceManager::
 remove_file_from_list(vector<string> &contents, const string &filename) {
 #ifdef _WIN32
   // Convert backslashes to slashes.
   string clean_filename;
-  for (string::const_iterator pi = filename.begin(); 
-       pi != filename.end(); 
+  for (string::const_iterator pi = filename.begin();
+       pi != filename.end();
        ++pi) {
     if ((*pi) == '\\') {
       clean_filename += '/';
@@ -1371,15 +1270,12 @@ remove_file_from_list(vector<string> &contents, const string &filename) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::append_safe_dir
-//       Access: Public, Static
-//  Description: Appends the indicated basename to the root directory
-//               name, which is modified in-place.  The basename is
-//               allowed to contain nested slashes, but no directory
-//               component of the basename may begin with a ".", thus
-//               precluding ".." and hidden files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends the indicated basename to the root directory name, which is modified
+ * in-place.  The basename is allowed to contain nested slashes, but no
+ * directory component of the basename may begin with a ".", thus precluding
+ * ".." and hidden files.
+ */
 void P3DInstanceManager::
 append_safe_dir(string &root, const string &basename) {
   if (basename.empty()) {
@@ -1402,13 +1298,10 @@ append_safe_dir(string &root, const string &basename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::create_runtime_environment
-//       Access: Private
-//  Description: Called during initialize, or after a previous call to
-//               uninstall_all(), to make sure all needed
-//               directories exist and the logfile is open.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called during initialize, or after a previous call to uninstall_all(), to
+ * make sure all needed directories exist and the logfile is open.
+ */
 void P3DInstanceManager::
 create_runtime_environment() {
   mkdir_complete(_log_directory, cerr);
@@ -1531,12 +1424,9 @@ create_runtime_environment() {
   _created_runtime_environment = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::append_safe_dir_component
-//       Access: Private, Static
-//  Description: Appends a single directory component, implementing
-//               append_safe_dir(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a single directory component, implementing append_safe_dir(), above.
+ */
 void P3DInstanceManager::
 append_safe_dir_component(string &root, const string &component) {
   if (component.empty()) {
@@ -1549,11 +1439,9 @@ append_safe_dir_component(string &root, const string &component) {
   root += component;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::nt_thread_run
-//       Access: Private
-//  Description: The main function for the notify thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main function for the notify thread.
+ */
 void P3DInstanceManager::
 nt_thread_run() {
   // The notify thread exists because we need to be able to send
@@ -1603,7 +1491,7 @@ supports_win64() {
   typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
   LPFN_ISWOW64PROCESS _IsWow64Process;
   _IsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle("kernel32"), "IsWow64Process");
-  
+
   if (_IsWow64Process != NULL) {
     if (!_IsWow64Process(GetCurrentProcess(), &is_win64)) {
       is_win64 = false;

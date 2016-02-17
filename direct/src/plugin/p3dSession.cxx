@@ -1,16 +1,15 @@
-// Filename: p3dSession.cxx
-// Created by:  drose (03Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dSession.cxx
+ * @author drose
+ * @date 2009-06-03
+ */
 
 #include "p3dSession.h"
 #include "p3dInstance.h"
@@ -44,15 +43,12 @@
 #include <crt_externs.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::Constructor
-//       Access: Public
-//  Description: Creates a new session, corresponding to a new
-//               subprocess with its own copy of Python.  The initial
-//               parameters for the session are taken from the
-//               indicated instance object (but the instance itself is
-//               not automatically started within the session).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new session, corresponding to a new subprocess with its own copy of
+ * Python.  The initial parameters for the session are taken from the indicated
+ * instance object (but the instance itself is not automatically started within
+ * the session).
+ */
 P3DSession::
 P3DSession(P3DInstance *inst) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -79,23 +75,18 @@ P3DSession(P3DInstance *inst) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DSession::
 ~P3DSession() {
   assert(!_p3dpython_running);
-  DESTROY_LOCK(_instances_lock);  
+  DESTROY_LOCK(_instances_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::shutdown
-//       Access: Public
-//  Description: Terminates the session by shutting down Python and
-//               stopping the subprocess.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates the session by shutting down Python and stopping the subprocess.
+ */
 void P3DSession::
 shutdown() {
   set_failed();
@@ -158,7 +149,7 @@ shutdown() {
       struct timeval start;
       gettimeofday(&start, NULL);
       int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
-      
+
       int status;
       pid_t result = waitpid(_p3dpython_pid, &status, WNOHANG);
       while (result != _p3dpython_pid) {
@@ -166,20 +157,20 @@ shutdown() {
           perror("waitpid");
           break;
         }
-        
+
         struct timeval now;
         gettimeofday(&now, NULL);
         int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
         int elapsed = now_ms - start_ms;
-        
+
         if (elapsed > max_wait_ms) {
           // Tired of waiting.  Kill the process.
-          nout << "Force-killing python process, pid " << _p3dpython_pid 
+          nout << "Force-killing python process, pid " << _p3dpython_pid
                << "\n";
           kill(_p3dpython_pid, SIGKILL);
           start_ms = now_ms;
         }
-        
+
         // Yield the timeslice and wait some more.
         struct timeval tv;
         tv.tv_sec = 0;
@@ -232,16 +223,12 @@ shutdown() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::start_instance
-//       Access: Public
-//  Description: Adds the indicated instance to the session, and
-//               starts it running.  It is an error if the instance
-//               has been started anywhere else.
-//
-//               The instance must have the same session_key as the
-//               one that was passed to the P3DSession constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated instance to the session, and starts it running.  It is an
+ * error if the instance has been started anywhere else.  The instance must have
+ * the same session_key as the one that was passed to the P3DSession
+ * constructor.
+ */
 void P3DSession::
 start_instance(P3DInstance *inst) {
   assert(inst->_session == NULL);
@@ -263,7 +250,7 @@ start_instance(P3DInstance *inst) {
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "start_instance");
   TiXmlElement *xinstance = inst->make_xml();
-  
+
   doc->LinkEndChild(xcommand);
   xcommand->LinkEndChild(xinstance);
 
@@ -277,20 +264,17 @@ start_instance(P3DInstance *inst) {
   start_p3dpython(inst);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::terminate_instance
-//       Access: Public
-//  Description: Removes the indicated instance from the session, and
-//               stops it.  It is an error if the instance is not
-//               already running on this session.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated instance from the session, and stops it.  It is an
+ * error if the instance is not already running on this session.
+ */
 void P3DSession::
 terminate_instance(P3DInstance *inst) {
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "terminate_instance");
   xcommand->SetAttribute("instance_id", inst->get_instance_id());
-  
+
   doc->LinkEndChild(xcommand);
 
   send_command(doc);
@@ -306,17 +290,12 @@ terminate_instance(P3DInstance *inst) {
   p3d_unref_delete(inst);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::send_command
-//       Access: Public
-//  Description: Sends the indicated command to the running Python
-//               process.  If the process has not yet been started,
-//               queues it up until it is ready.
-//
-//               The command must be a newly-allocated TiXmlDocument;
-//               it will be deleted after it has been delivered to the
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the indicated command to the running Python process.  If the process
+ * has not yet been started, queues it up until it is ready.  The command must
+ * be a newly-allocated TiXmlDocument; it will be deleted after it has been
+ * delivered to the process.
+ */
 void P3DSession::
 send_command(TiXmlDocument *command) {
   if (_p3dpython_started) {
@@ -329,21 +308,13 @@ send_command(TiXmlDocument *command) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::command_and_response
-//       Access: Public
-//  Description: Sends the indicated command to the running Python
-//               process, and waits for a response.  Returns the
-//               newly-allocated response on success, or NULL on
-//               failure.
-//
-//               The command must be a newly-allocated TiXmlDocument;
-//               it will be deleted after it has been delivered to the
-//               process.
-//
-//               This will fail if the python process is not running
-//               or if it suddenly stops.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the indicated command to the running Python process, and waits for a
+ * response.  Returns the newly-allocated response on success, or NULL on
+ * failure.  The command must be a newly-allocated TiXmlDocument; it will be
+ * deleted after it has been delivered to the process.  This will fail if the
+ * python process is not running or if it suddenly stops.
+ */
 TiXmlDocument *P3DSession::
 command_and_response(TiXmlDocument *command) {
   if (!_p3dpython_started) {
@@ -437,13 +408,10 @@ command_and_response(TiXmlDocument *command) {
   return response;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::xml_to_p3dobj
-//       Access: Public
-//  Description: Converts the XML representation of the particular
-//               object value into a corresponding P3D_object.
-//               Returns the object, a new reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the XML representation of the particular object value into a
+ * corresponding P3D_object.  Returns the object, a new reference.
+ */
 P3D_object *P3DSession::
 xml_to_p3dobj(const TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
@@ -536,14 +504,11 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
   return inst_mgr->new_undefined_object();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::p3dobj_to_xml
-//       Access: Public
-//  Description: Allocates and returns a new XML structure
-//               corresponding to the indicated value.  The supplied
-//               P3DObject's reference count is not decremented; the
-//               caller remains responsible for decrementing it later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new XML structure corresponding to the indicated
+ * value.  The supplied P3DObject's reference count is not decremented; the
+ * caller remains responsible for decrementing it later.
+ */
 TiXmlElement *P3DSession::
 p3dobj_to_xml(P3D_object *obj) {
   TiXmlElement *xvalue = new TiXmlElement("value");
@@ -623,14 +588,11 @@ p3dobj_to_xml(P3D_object *obj) {
   return xvalue;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::send_windows_message
-//       Access: Public
-//  Description: This is called by the splash window to deliver a
-//               windows keyboard message to the Panda process.  It
-//               will be called in a sub-thread, but that's OK, since
-//               write_xml() supports locking.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the splash window to deliver a windows keyboard message to
+ * the Panda process.  It will be called in a sub-thread, but that's OK, since
+ * write_xml() supports locking.
+ */
 void P3DSession::
 send_windows_message(P3DInstance *inst, unsigned int msg, int wparam, int lparam) {
   if (_p3dpython_started) {
@@ -646,12 +608,10 @@ send_windows_message(P3DInstance *inst, unsigned int msg, int wparam, int lparam
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::signal_request_ready
-//       Access: Public
-//  Description: May be called in any thread to indicate that a new
-//               P3D_request is available in the indicated instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called in any thread to indicate that a new P3D_request is available
+ * in the indicated instance.
+ */
 void P3DSession::
 signal_request_ready(P3DInstance *inst) {
   // Since a new request might require baking, we should wake up a
@@ -665,14 +625,11 @@ signal_request_ready(P3DInstance *inst) {
   _response_ready.release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::drop_pyobj
-//       Access: Public
-//  Description: If the session is still active, issues the command to
-//               the child process to release the indicated PyObject
-//               from its table.  This is intended to be called
-//               strictly by the P3DPythonObject destructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the session is still active, issues the command to the child process to
+ * release the indicated PyObject from its table.  This is intended to be called
+ * strictly by the P3DPythonObject destructor.
+ */
 void P3DSession::
 drop_pyobj(int object_id) {
   if (_p3dpython_started) {
@@ -685,15 +642,11 @@ drop_pyobj(int object_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::drop_p3dobj
-//       Access: Public
-//  Description: Responds to a drop_p3dobj message from the child
-//               process indicating that a particular P3D_object is no
-//               longer being used by the child.  This removes the
-//               corresponding P3D_object from our tables and
-//               decrements its reference count.
-////////////////////////////////////////////////////////////////////
+/**
+ * Responds to a drop_p3dobj message from the child process indicating that a
+ * particular P3D_object is no longer being used by the child.  This removes the
+ * corresponding P3D_object from our tables and decrements its reference count.
+ */
 void P3DSession::
 drop_p3dobj(int object_id) {
   SentObjects::iterator si = _sent_objects.find(object_id);
@@ -704,11 +657,9 @@ drop_p3dobj(int object_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::start_p3dpython
-//       Access: Private
-//  Description: Starts Python running in a child process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts Python running in a child process.
+ */
 void P3DSession::
 start_p3dpython(P3DInstance *inst) {
   if (_p3dpython_started) {
@@ -730,8 +681,8 @@ start_p3dpython(P3DInstance *inst) {
   // If we're not to be preserving the user's current directory, then
   // we'll need to change to the standard start directory.
   _keep_user_env = false;
-  if (inst_mgr->get_trusted_environment() && 
-      inst_mgr->get_console_environment() && 
+  if (inst_mgr->get_trusted_environment() &&
+      inst_mgr->get_console_environment() &&
       inst->_keep_user_env) {
     _keep_user_env = true;
   }
@@ -786,7 +737,7 @@ start_p3dpython(P3DInstance *inst) {
   string prc_name = inst->get_fparams().lookup_token("prc_name");
   if (prc_name.empty()) {
     prc_name = inst->_prc_name;
-    
+
     if (!prc_name.empty()) {
       // If the prc_name is taken from the p3d file (and not from the
       // HTML tokens), then we also append the alt_host name to the
@@ -805,7 +756,7 @@ start_p3dpython(P3DInstance *inst) {
     string this_prc_dir = inst_mgr->get_root_dir() + "/prc";
     inst_mgr->append_safe_dir(this_prc_dir, prc_name);
     replace_slashes(this_prc_dir);
-    prc_path = this_prc_dir + sep + prc_path;    
+    prc_path = this_prc_dir + sep + prc_path;
   }
 
   if (keep_pythonpath) {
@@ -840,7 +791,7 @@ start_p3dpython(P3DInstance *inst) {
   string p3dpythonw_exe = _p3dpython_exe + "w";
   if (_p3dpython_exe.empty()) {
     // Allow package to override the name of the p3dpython executables.
-    const char *p3dpython_name_xconfig = NULL; 
+    const char *p3dpython_name_xconfig = NULL;
     const char *p3dpythonw_name_xconfig = NULL;
     const TiXmlElement *panda3d_xconfig = inst->_panda3d_package->get_xconfig();
     if (panda3d_xconfig != NULL) {
@@ -1019,7 +970,7 @@ start_p3dpython(P3DInstance *inst) {
   replace_slashes(temp_dir);
   _env += temp_dir;
   _env += '\0';
-  
+
   // Define each package's root directory in an environment variable
   // named after the package, for the convenience of the packages in
   // setting up their config files.
@@ -1152,7 +1103,7 @@ start_p3dpython(P3DInstance *inst) {
       struct tm log_time_local = *log_time_local_p;
       static const size_t buffer_size = 16;
       char buffer[buffer_size];
-      sprintf(buffer, "%02d%02d%02d_%02d%02d%02d", 
+      sprintf(buffer, "%02d%02d%02d_%02d%02d%02d",
               (int)(log_time_local.tm_year+1900-2000),
               (int)(log_time_local.tm_mon+1),
               (int)(log_time_local.tm_mday),
@@ -1192,7 +1143,7 @@ start_p3dpython(P3DInstance *inst) {
   if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
     nout << "failed to create pipe\n";
     set_failed();
-  } else { 
+  } else {
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
     SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
@@ -1271,7 +1222,7 @@ start_p3dpython(P3DInstance *inst) {
   if (!_pipe_write) {
     nout << "unable to open write pipe\n";
   }
-  
+
   spawn_read_thread();
 
   // The very first command we send to the process is its session_id.
@@ -1281,7 +1232,7 @@ start_p3dpython(P3DInstance *inst) {
   xcommand->SetAttribute("session_id", _session_id);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
-  
+
   // Also feed it any commands we may have queued up from before the
   // process was started.
   Commands::iterator ci;
@@ -1292,17 +1243,12 @@ start_p3dpython(P3DInstance *inst) {
   _commands.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::set_failed
-//       Access: Private
-//  Description: Sets the "failed" indication to display sadness to
-//               the user--we're unable to launch the instance for
-//               some reason.
-//
-//               When this is called on the P3DSession instead of on a
-//               particular P3DInstance, it means that all instances
-//               attached to this session are marked failed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the "failed" indication to display sadness to the user--we're unable to
+ * launch the instance for some reason.  When this is called on the P3DSession
+ * instead of on a particular P3DInstance, it means that all instances attached
+ * to this session are marked failed.
+ */
 void P3DSession::
 set_failed() {
   _failed = true;
@@ -1316,13 +1262,10 @@ set_failed() {
   RELEASE_LOCK(_instances_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::spawn_read_thread
-//       Access: Private
-//  Description: Starts the read thread.  This thread is responsible
-//               for reading the standard input socket for XML
-//               requests and storing them in the _requests queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the read thread.  This thread is responsible for reading the standard
+ * input socket for XML requests and storing them in the _requests queue.
+ */
 void P3DSession::
 spawn_read_thread() {
   assert(!_started_read_thread && !_read_thread_continue);
@@ -1332,11 +1275,9 @@ spawn_read_thread() {
   _started_read_thread = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::join_read_thread
-//       Access: Private
-//  Description: Waits for the read thread to stop.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for the read thread to stop.
+ */
 void P3DSession::
 join_read_thread() {
   if (!_started_read_thread) {
@@ -1349,12 +1290,10 @@ join_read_thread() {
   _started_read_thread = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::replace_slashes
-//       Access: Private, Static
-//  Description: Changes the forward slashes to backslashes on
-//               Windows.  Does nothing on the other platforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the forward slashes to backslashes on Windows.  Does nothing on the
+ * other platforms.
+ */
 void P3DSession::
 replace_slashes(string &str) {
 #ifdef _WIN32
@@ -1373,11 +1312,9 @@ replace_slashes(string &str) {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::rt_thread_run
-//       Access: Private
-//  Description: The main function for the read thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main function for the read thread.
+ */
 void P3DSession::
 rt_thread_run() {
   while (_read_thread_continue) {
@@ -1399,13 +1336,10 @@ rt_thread_run() {
   nout << "Exiting rt_thread_run in " << this << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::rt_handle_request
-//       Access: Private
-//  Description: Processes a single request or notification received
-//               from an instance.  This method runs in the read
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a single request or notification received from an instance.  This
+ * method runs in the read thread.
+ */
 void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {
   TiXmlElement *xresponse = doc->FirstChildElement("response");
@@ -1445,12 +1379,10 @@ rt_handle_request(TiXmlDocument *doc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::rt_terminate
-//       Access: Private
-//  Description: Got a closed pipe from the sub-process.  Send a
-//               terminate request for all instances.
-////////////////////////////////////////////////////////////////////
+/**
+ * Got a closed pipe from the sub-process.  Send a terminate request for all
+ * instances.
+ */
 void P3DSession::
 rt_terminate() {
   Instances icopy;
@@ -1468,23 +1400,15 @@ rt_terminate() {
 }
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::win_create_process
-//       Access: Private
-//  Description: Creates a sub-process to run _p3dpython_exe, with
-//               the appropriate command-line arguments, and the
-//               environment string defined in _env.  Standard error
-//               is logged to _log_pathname, if that string is
-//               nonempty.
-//
-//               Opens the two HandleStreams _pipe_read and
-//               _pipe_write as the read and write pipes to the child
-//               process's standard output and standard input,
-//               respectively.
-//
-//               Returns the handle to the created process on success,
-//               or INVALID_HANDLE_VALUE on falure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a sub-process to run _p3dpython_exe, with the appropriate command-
+ * line arguments, and the environment string defined in _env.  Standard error
+ * is logged to _log_pathname, if that string is nonempty.  Opens the two
+ * HandleStreams _pipe_read and _pipe_write as the read and write pipes to the
+ * child process's standard output and standard input, respectively.  Returns
+ * the handle to the created process on success, or INVALID_HANDLE_VALUE on
+ * falure.
+ */
 HANDLE P3DSession::
 win_create_process() {
   // Make sure we see an error dialog if there is a missing DLL.
@@ -1497,7 +1421,7 @@ win_create_process() {
     wstring log_pathname_w;
     string_to_wstring(log_pathname_w, _log_pathname);
     HANDLE handle = CreateFileW
-      (log_pathname_w.c_str(), GENERIC_WRITE, 
+      (log_pathname_w.c_str(), GENERIC_WRITE,
        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
        NULL, CREATE_ALWAYS, 0, NULL);
     if (handle != INVALID_HANDLE_VALUE) {
@@ -1511,7 +1435,7 @@ win_create_process() {
 
   STARTUPINFOW startup_info;
   ZeroMemory(&startup_info, sizeof(startup_info));
-  startup_info.cb = sizeof(startup_info); 
+  startup_info.cb = sizeof(startup_info);
 
   // Set up the I/O handles.  We send stderr and stdout to our
   // error_handle.
@@ -1560,10 +1484,10 @@ win_create_process() {
   wstring env_w;
   string_to_wstring(env_w, _env);
 
-  PROCESS_INFORMATION process_info; 
+  PROCESS_INFORMATION process_info;
   BOOL result = CreateProcessW
-    (p3dpython_exe_w.c_str(), command_line, NULL, NULL, TRUE, 
-     CREATE_UNICODE_ENVIRONMENT, (void *)env_w.c_str(), 
+    (p3dpython_exe_w.c_str(), command_line, NULL, NULL, TRUE,
+     CREATE_UNICODE_ENVIRONMENT, (void *)env_w.c_str(),
      start_dir_cstr, &startup_info, &process_info);
   bool started_program = (result != 0);
 
@@ -1593,23 +1517,14 @@ win_create_process() {
 
 
 #ifndef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::posix_create_process
-//       Access: Private
-//  Description: Creates a sub-process to run _p3dpython_exe, with
-//               the appropriate command-line arguments, and the
-//               environment string defined in _env.  Standard error
-//               is logged to _log_pathname, if that string is
-//               nonempty.
-//
-//               Opens the two HandleStreams _pipe_read and
-//               _pipe_write as the read and write pipes to the child
-//               process's standard output and standard input,
-//               respectively.
-//
-//               Returns the pid of the created process on success, or
-//               -1 on falure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a sub-process to run _p3dpython_exe, with the appropriate command-
+ * line arguments, and the environment string defined in _env.  Standard error
+ * is logged to _log_pathname, if that string is nonempty.  Opens the two
+ * HandleStreams _pipe_read and _pipe_write as the read and write pipes to the
+ * child process's standard output and standard input, respectively.  Returns
+ * the pid of the created process on success, or -1 on falure.
+ */
 int P3DSession::
 posix_create_process() {
   // If the program file doesn't exist or isn't executable, don't even
@@ -1634,7 +1549,7 @@ posix_create_process() {
 
     if (!_log_pathname.empty()) {
       // Open a logfile.
-      int logfile_fd = open(_log_pathname.c_str(), 
+      int logfile_fd = open(_log_pathname.c_str(),
                             O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (logfile_fd < 0) {
         nout << "Unable to open " << _log_pathname << "\n";
@@ -1697,7 +1612,7 @@ posix_create_process() {
   struct timeval start;
   gettimeofday(&start, NULL);
   int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
-  
+
   int status;
   pid_t result = waitpid(child, &status, WNOHANG);
   while (result != child) {
@@ -1705,7 +1620,7 @@ posix_create_process() {
       perror("waitpid");
       break;
     }
-    
+
     struct timeval now;
     gettimeofday(&now, NULL);
     int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
@@ -1716,7 +1631,7 @@ posix_create_process() {
       nout << "child still alive after " << elapsed << " ms\n";
       return child;
     }
-        
+
     // Yield the timeslice and wait some more.
     struct timeval tv;
     tv.tv_sec = 0;
@@ -1751,13 +1666,10 @@ posix_create_process() {
 }
 #endif  // _WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::p3dpython_thread_run
-//       Access: Private
-//  Description: This method is called in a sub-thread to fire up
-//               p3dpython within this same process, but only if the
-//               above attempt to create a sub-process failed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called in a sub-thread to fire up p3dpython within this same
+ * process, but only if the above attempt to create a sub-process failed.
+ */
 void P3DSession::
 p3dpython_thread_run() {
   nout << "running p3dpython_thread_run()\n";
@@ -1791,7 +1703,7 @@ p3dpython_thread_run() {
 #ifdef _WIN32
 #ifdef _DEBUG
   libp3dpython += "_d.dll";
-#else  
+#else
   libp3dpython += ".dll";
 #endif
   SetErrorMode(0);
@@ -1837,14 +1749,11 @@ p3dpython_thread_run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::get_env
-//       Access: Private, Static
-//  Description: Implements getenv(), respecting Windows' Unicode
-//               environment.  Returns true if the variable is
-//               defined, false if it is not.  If it is defined, fills
-//               value with its definition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements getenv(), respecting Windows' Unicode environment.  Returns true
+ * if the variable is defined, false if it is not.  If it is defined, fills
+ * value with its definition.
+ */
 bool P3DSession::
 get_env(string &value, const string &varname) {
 #ifdef _WIN32
@@ -1866,14 +1775,10 @@ get_env(string &value, const string &varname) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::write_env
-//       Access: Private
-//  Description: Writes _env, which is formatted as a string
-//               containing zero-byte-terminated environment
-//               defintions, to the nout stream, one definition per
-//               line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes _env, which is formatted as a string containing zero-byte-terminated
+ * environment defintions, to the nout stream, one definition per line.
+ */
 void P3DSession::
 write_env() const {
   size_t p = 0;
@@ -1886,4 +1791,3 @@ write_env() const {
     zero = _env.find('\0', p);
   }
 }
-

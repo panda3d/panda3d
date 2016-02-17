@@ -1,16 +1,15 @@
-// Filename: buttonEvent.cxx
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buttonEvent.cxx
+ * @author drose
+ * @date 2000-03-01
+ */
 
 #include "buttonEvent.h"
 #include "datagram.h"
@@ -18,11 +17,9 @@
 #include "buttonRegistry.h"
 #include "textEncoder.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ButtonEvent::
 output(ostream &out) const {
   switch (_type) {
@@ -66,11 +63,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::write_datagram
-//       Access: Public
-//  Description: Writes the event into a datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the event into a datagram.
+ */
 void ButtonEvent::
 write_datagram(Datagram &dg) const {
   dg.add_uint8(_type);
@@ -107,11 +102,9 @@ write_datagram(Datagram &dg) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::read_datagram
-//       Access: Public
-//  Description: Restores the event from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Restores the event from the datagram.
+ */
 void ButtonEvent::
 read_datagram(DatagramIterator &scan) {
   _type = (Type)scan.get_uint8();

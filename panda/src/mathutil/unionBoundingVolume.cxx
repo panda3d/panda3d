@@ -1,16 +1,15 @@
-// Filename: unionBoundingVolume.cxx
-// Created by:  drose (08Feb12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file unionBoundingVolume.cxx
+ * @author drose
+ * @date 2012-02-08
+ */
 
 #include "unionBoundingVolume.h"
 #include "config_mathutil.h"
@@ -19,11 +18,9 @@
 
 TypeHandle UnionBoundingVolume::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 UnionBoundingVolume::
 UnionBoundingVolume(const UnionBoundingVolume &copy) :
   GeometricBoundingVolume(copy),
@@ -31,21 +28,17 @@ UnionBoundingVolume(const UnionBoundingVolume &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::make_copy
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BoundingVolume *UnionBoundingVolume::
 make_copy() const {
   return new UnionBoundingVolume(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::get_approx_center
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 UnionBoundingVolume::
 get_approx_center() const {
   nassertr(!is_empty(), LPoint3::zero());
@@ -61,11 +54,9 @@ get_approx_center() const {
   return center / (PN_stdfloat)_components.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::xform
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void UnionBoundingVolume::
 xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
@@ -79,11 +70,9 @@ xform(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void UnionBoundingVolume::
 output(ostream &out) const {
   if (is_empty()) {
@@ -101,11 +90,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::write
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void UnionBoundingVolume::
 write(ostream &out, int indent_level) const {
   if (is_empty()) {
@@ -123,28 +110,22 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::clear_components
-//       Access: Published
-//  Description: Removes all components from the volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all components from the volume.
+ */
 void UnionBoundingVolume::
 clear_components() {
   _components.clear();
   _flags = F_empty;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::add_component
-//       Access: Published
-//  Description: Adds a new component to the volume.  This does not
-//               necessarily increase the total number of components
-//               by one, and you may or may not be able to find this
-//               component in the volume by a subsequent call to
-//               get_component(); certain optimizations may prevent
-//               the component from being added, or have other
-//               unexpected effects on the total set of components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new component to the volume.  This does not necessarily increase the
+ * total number of components by one, and you may or may not be able to find
+ * this component in the volume by a subsequent call to get_component(); certain
+ * optimizations may prevent the component from being added, or have other
+ * unexpected effects on the total set of components.
+ */
 void UnionBoundingVolume::
 add_component(const GeometricBoundingVolume *component) {
   if (component->is_infinite()) {
@@ -181,12 +162,10 @@ add_component(const GeometricBoundingVolume *component) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::filter_intersection
-//       Access: Published
-//  Description: Removes from the union any components that have no
-//               intersection with the indicated volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from the union any components that have no intersection with the
+ * indicated volume.
+ */
 void UnionBoundingVolume::
 filter_intersection(const BoundingVolume *volume) {
   size_t i = 0;
@@ -207,21 +186,17 @@ filter_intersection(const BoundingVolume *volume) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::extend_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool UnionBoundingVolume::
 extend_other(BoundingVolume *other) const {
   return other->extend_by_union(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::around_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool UnionBoundingVolume::
 around_other(BoundingVolume *other,
              const BoundingVolume **first,
@@ -229,32 +204,26 @@ around_other(BoundingVolume *other,
   return other->around_unions(first, last);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int UnionBoundingVolume::
 contains_other(const BoundingVolume *other) const {
   return other->contains_union(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::extend_by_geometric
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool UnionBoundingVolume::
 extend_by_geometric(const GeometricBoundingVolume *volume) {
   add_component(volume);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::around_geometric
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool UnionBoundingVolume::
 around_geometric(const BoundingVolume **first,
                  const BoundingVolume **last) {
@@ -280,11 +249,9 @@ around_geometric(const BoundingVolume **first,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_point
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int UnionBoundingVolume::
 contains_point(const LPoint3 &point) const {
   nassertr(!point.is_nan(), IF_no_intersection);
@@ -303,11 +270,9 @@ contains_point(const LPoint3 &point) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_lineseg
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int UnionBoundingVolume::
 contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   nassertr(!a.is_nan() && !b.is_nan(), IF_no_intersection);
@@ -326,13 +291,10 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_sphere
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a sphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a sphere.
+ */
 int UnionBoundingVolume::
 contains_sphere(const BoundingSphere *sphere) const {
   int result = 0;
@@ -349,13 +311,10 @@ contains_sphere(const BoundingSphere *sphere) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_box
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a box.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a box.
+ */
 int UnionBoundingVolume::
 contains_box(const BoundingBox *box) const {
   int result = 0;
@@ -372,13 +331,10 @@ contains_box(const BoundingBox *box) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_hexahedron
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a hexahedron.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a hexahedron.
+ */
 int UnionBoundingVolume::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   int result = 0;
@@ -395,13 +351,10 @@ contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_line
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a line.
+ */
 int UnionBoundingVolume::
 contains_line(const BoundingLine *line) const {
   int result = 0;
@@ -418,13 +371,10 @@ contains_line(const BoundingLine *line) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_plane
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a plane.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a plane.
+ */
 int UnionBoundingVolume::
 contains_plane(const BoundingPlane *plane) const {
   int result = 0;
@@ -441,13 +391,10 @@ contains_plane(const BoundingPlane *plane) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_union
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a union object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a union object.
+ */
 int UnionBoundingVolume::
 contains_union(const UnionBoundingVolume *unionv) const {
   int result = 0;
@@ -464,13 +411,10 @@ contains_union(const UnionBoundingVolume *unionv) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_intersection
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be an intersection object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be an intersection object.
+ */
 int UnionBoundingVolume::
 contains_intersection(const IntersectionBoundingVolume *intersection) const {
   int result = 0;
@@ -487,11 +431,9 @@ contains_intersection(const IntersectionBoundingVolume *intersection) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_finite
-//       Access: Protected, Virtual
-//  Description: Generic handler for a FiniteBoundingVolume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generic handler for a FiniteBoundingVolume.
+ */
 int UnionBoundingVolume::
 contains_finite(const FiniteBoundingVolume *volume) const {
   int result = 0;
@@ -508,11 +450,9 @@ contains_finite(const FiniteBoundingVolume *volume) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::contains_geometric
-//       Access: Protected, Virtual
-//  Description: Generic handler for a GeometricBoundingVolume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generic handler for a GeometricBoundingVolume.
+ */
 int UnionBoundingVolume::
 contains_geometric(const GeometricBoundingVolume *volume) const {
   int result = 0;
@@ -529,14 +469,11 @@ contains_geometric(const GeometricBoundingVolume *volume) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::other_contains_union
-//       Access: Protected, Virtual
-//  Description: Generic reverse-direction comparison.  Called by
-//               BoundingVolumes that do not implement
-//               contains_union() explicitly.  This returns the test
-//               of whether the other volume contains this volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generic reverse-direction comparison.  Called by BoundingVolumes that do not
+ * implement contains_union() explicitly.  This returns the test of whether the
+ * other volume contains this volume.
+ */
 int UnionBoundingVolume::
 other_contains_union(const BoundingVolume *volume) const {
   int all_result = IF_possible | IF_some | IF_all;
@@ -556,4 +493,3 @@ other_contains_union(const BoundingVolume *volume) const {
   some_result &= ~IF_all;
   return some_result | all_result;
 }
-

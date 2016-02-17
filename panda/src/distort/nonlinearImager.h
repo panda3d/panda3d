@@ -1,16 +1,15 @@
-// Filename: nonlinearImager.h
-// Created by:  drose (12Dec01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nonlinearImager.h
+ * @author drose
+ * @date 2001-12-12
+ */
 
 #ifndef NONLINEARIMAGER_H
 #define NONLINEARIMAGER_H
@@ -35,62 +34,38 @@ class GraphicsStateGuardian;
 class GraphicsOutput;
 class GenericAsyncTask;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NonlinearImager
-// Description : This class object combines the rendered output of a
-//               3-d from one or more linear (e.g. perspective)
-//               cameras, as seen through a single, possibly nonlinear
-//               camera.
-//
-//               This can be used to generate real-time imagery of a
-//               3-d scene using a nonlinear camera, for instance a
-//               fisheye camera, even though the underlying graphics
-//               engine may only support linear cameras.  It can also
-//               pre-distort imagery to compensate for off-axis
-//               projectors, and/or curved screens of any complexity.
-//
-//               
-//               A NonlinearImager may be visualized as a dark room
-//               into which a number of projection screens have been
-//               placed, of arbitrary size and shape and at any
-//               arbitrary position and orientation to each other.
-//               Onto each of these screens is projected the view as
-//               seen by a normal perspective camera that exists in
-//               the world (that is, under render).
-//
-//               There also exist in the room one or more (possibly
-//               nonlinear) cameras, called viewers, that observe
-//               these screens.  The image of the projection screens
-//               seen by each viewer is finally displayed on the
-//               viewer's associated DisplayRegion.  By placing the
-//               viewer(s) appropriately relative to the screens, and
-//               by choosing suitable lens properties for the
-//               viewer(s), you can achieve a wide variety of
-//               distortion effects.
-//
-//
-//               There are several different LensNode (Camera) objects
-//               involved at each stage in the process.  To help keep
-//               them all straight, different words are used to refer
-//               to each different kind of Camera used within this
-//               object.  The camera(s) under render, that capture the
-//               original view of the world to be projected onto the
-//               screens, are called source cameras, and are set per
-//               screen via set_source_camera().  The LensNode that is
-//               associated with each screen to project the image as
-//               seen from the screen's source camera is called a
-//               projector; these are set via the
-//               ProjectionScreen::set_projector() interface.
-//               Finally, the cameras that view the whole
-//               configuration of screens are called viewers; each of
-//               these is associated with a DisplayRegion, and they
-//               are set via set_viewer_camera().
-//
-//               Of all these lenses, only the source cameras must use
-//               linear (that is, perspective or orthographic) lenses.
-//               The projectors and viewers may be any arbitrary lens,
-//               linear or otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class object combines the rendered output of a 3-d from one or more
+ * linear (e.g.  perspective) cameras, as seen through a single, possibly
+ * nonlinear camera.  This can be used to generate real-time imagery of a 3-d
+ * scene using a nonlinear camera, for instance a fisheye camera, even though
+ * the underlying graphics engine may only support linear cameras.  It can also
+ * pre-distort imagery to compensate for off-axis projectors, and/or curved
+ * screens of any complexity.   A NonlinearImager may be visualized as a dark
+ * room into which a number of projection screens have been placed, of arbitrary
+ * size and shape and at any arbitrary position and orientation to each other.
+ * Onto each of these screens is projected the view as seen by a normal
+ * perspective camera that exists in the world (that is, under render).  There
+ * also exist in the room one or more (possibly nonlinear) cameras, called
+ * viewers, that observe these screens.  The image of the projection screens
+ * seen by each viewer is finally displayed on the viewer's associated
+ * DisplayRegion.  By placing the viewer(s) appropriately relative to the
+ * screens, and by choosing suitable lens properties for the viewer(s), you can
+ * achieve a wide variety of distortion effects.   There are several different
+ * LensNode (Camera) objects involved at each stage in the process.  To help
+ * keep them all straight, different words are used to refer to each different
+ * kind of Camera used within this object.  The camera(s) under render, that
+ * capture the original view of the world to be projected onto the screens, are
+ * called source cameras, and are set per screen via set_source_camera().  The
+ * LensNode that is associated with each screen to project the image as seen
+ * from the screen's source camera is called a projector; these are set via the
+ * ProjectionScreen::set_projector() interface.  Finally, the cameras that view
+ * the whole configuration of screens are called viewers; each of these is
+ * associated with a DisplayRegion, and they are set via set_viewer_camera().
+ * Of all these lenses, only the source cameras must use linear (that is,
+ * perspective or orthographic) lenses.  The projectors and viewers may be any
+ * arbitrary lens, linear or otherwise.
+ */
 class EXPCL_PANDAFX NonlinearImager {
 PUBLISHED:
   NonlinearImager();

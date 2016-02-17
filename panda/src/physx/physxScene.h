@@ -1,16 +1,15 @@
-// Filename: physxScene.h
-// Created by:  enn0x (14Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxScene.h
+ * @author enn0x
+ * @date 2009-09-14
+ */
 
 #ifndef PHYSXSCENE_H
 #define PHYSXSCENE_H
@@ -56,20 +55,14 @@ class PhysxClothDesc;
 class PhysxSoftBody;
 class PhysxSoftBodyDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxScene
-// Description : A scene is a collection of bodies, constraints,
-//               and effectors which can interact.
-//
-//               The scene simulates the behavior of these objects
-//               over time. Several scenes may exist at the same
-//               time, but each body, constraint, or effector object
-//               is specific to a scene -- they may not be shared.
-//
-//               For example, attempting to create a joint in one
-//               scene and then using it to attach bodies from a
-//               different scene results in undefined behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * A scene is a collection of bodies, constraints, and effectors which can
+ * interact.  The scene simulates the behavior of these objects over time.
+ * Several scenes may exist at the same time, but each body, constraint, or
+ * effector object is specific to a scene -- they may not be shared.  For
+ * example, attempting to create a joint in one scene and then using it to
+ * attach bodies from a different scene results in undefined behavior.
+ */
 class EXPCL_PANDAPHYSX PhysxScene : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -97,7 +90,7 @@ PUBLISHED:
 
   LVector3f get_gravity() const;
   PhysxSceneStats2 get_stats2() const;
-  bool get_flag(PhysxSceneFlag flag) const; 
+  bool get_flag(PhysxSceneFlag flag) const;
   bool is_hardware_scene() const;
 
   // Actors
@@ -220,7 +213,6 @@ PUBLISHED:
   PhysxFilterOp get_filter_op2() const;
   PhysxConstraintDominance get_dominance_group_pair(unsigned int g1, unsigned int g2);
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -263,14 +255,13 @@ private:
   static PStatCollector _pcollector_cloth;
   static PStatCollector _pcollector_softbody;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxScene", 
+    register_type(_type_handle, "PhysxScene",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

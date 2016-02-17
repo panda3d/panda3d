@@ -1,34 +1,28 @@
-// Filename: virtualFile_ext.cxx
-// Created by:  rdb (15Sep15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFile_ext.cxx
+ * @author rdb
+ * @date 2015-09-15
+ */
 
 #include "virtualFile_ext.h"
 #include "vector_uchar.h"
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::read_file
-//       Access: Published
-//  Description: Convenience function; returns the entire contents of
-//               the indicated file as a string (or as a bytes object,
-//               in Python 3).
-//
-//               This variant on read_file() is implemented directly
-//               for Python, as a small optimization, to avoid the
-//               double-construction of a string object that would be
-//               otherwise required for the return value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience function; returns the entire contents of the indicated file as a
+ * string (or as a bytes object, in Python 3).  This variant on read_file() is
+ * implemented directly for Python, as a small optimization, to avoid the
+ * double-construction of a string object that would be otherwise required for
+ * the return value.
+ */
 PyObject *Extension<VirtualFile>::
 read_file(bool auto_unwrap) const {
   vector_uchar pv;
@@ -50,17 +44,12 @@ read_file(bool auto_unwrap) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::write_file
-//       Access: Published
-//  Description: Convenience function; writes the entire contents of
-//               the indicated file as a string.
-//
-//               This variant on write_file() is implemented directly
-//               for Python, as a small optimization, to avoid the
-//               double-construction of a string object that would be
-//               otherwise required.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience function; writes the entire contents of the indicated file as a
+ * string.  This variant on write_file() is implemented directly for Python, as
+ * a small optimization, to avoid the double-construction of a string object
+ * that would be otherwise required.
+ */
 PyObject *Extension<VirtualFile>::
 write_file(PyObject *data, bool auto_wrap) {
   char *buffer;

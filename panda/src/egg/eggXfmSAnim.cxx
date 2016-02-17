@@ -1,16 +1,15 @@
-// Filename: eggXfmSAnim.cxx
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggXfmSAnim.cxx
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #include "eggXfmSAnim.h"
 #include "eggSAnimData.h"
@@ -28,12 +27,9 @@ TypeHandle EggXfmSAnim::_type_handle;
 
 const string EggXfmSAnim::_standard_order = "srpht";
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::Conversion constructor
-//       Access: Public
-//  Description: Converts the older-style XfmAnim table to the
-//               newer-style XfmSAnim table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the older-style XfmAnim table to the newer-style XfmSAnim table.
+ */
 EggXfmSAnim::
 EggXfmSAnim(const EggXfmAnimData &convert_from)
   : EggGroupNode(convert_from.get_name())
@@ -58,12 +54,9 @@ EggXfmSAnim(const EggXfmAnimData &convert_from)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::optimize
-//       Access: Public
-//  Description: Optimizes the table by collapsing redundant
-//               sub-tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Optimizes the table by collapsing redundant sub-tables.
+ */
 void EggXfmSAnim::
 optimize() {
   iterator ci = begin();
@@ -98,15 +91,11 @@ optimize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::optimize_to_standard_order
-//       Access: Public
-//  Description: Optimizes the table by collapsing redundant
-//               sub-tables, and simultaneously ensures that the order
-//               string is the standard order (which is the same as
-//               that supported by compose_matrix() and
-//               decompose_matrix()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Optimizes the table by collapsing redundant sub-tables, and simultaneously
+ * ensures that the order string is the standard order (which is the same as
+ * that supported by compose_matrix() and decompose_matrix()).
+ */
 void EggXfmSAnim::
 optimize_to_standard_order() {
   if (get_order() != get_standard_order()) {
@@ -115,15 +104,11 @@ optimize_to_standard_order() {
   optimize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::normalize
-//       Access: Public
-//  Description: The inverse operation of optimize(), this ensures
-//               that all the sub-tables have the same length by
-//               duplicating rows as necessary.  This is needed before
-//               doing operations like add_data() or set_value() on an
-//               existing table.
-////////////////////////////////////////////////////////////////////
+/**
+ * The inverse operation of optimize(), this ensures that all the sub-tables
+ * have the same length by duplicating rows as necessary.  This is needed before
+ * doing operations like add_data() or set_value() on an existing table.
+ */
 void EggXfmSAnim::
 normalize() {
   if (get_order() != get_standard_order()) {
@@ -140,23 +125,18 @@ normalize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::is_anim_matrix
-//       Access: Public, Virtual
-//  Description: Returns true if this node represents a table of
-//               animation transformation data, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this node represents a table of animation transformation
+ * data, false otherwise.
+ */
 bool EggXfmSAnim::
 is_anim_matrix() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::write
-//       Access: Public, Virtual
-//  Description: Writes the data to the indicated output stream in Egg
-//               format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the data to the indicated output stream in Egg format.
+ */
 void EggXfmSAnim::
 write(ostream &out, int indent_level) const {
   test_under_integrity();
@@ -213,14 +193,10 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::compose_with_order
-//       Access: Public, Static
-//  Description: Composes a matrix out of the nine individual
-//               components, respecting the order string.  The
-//               components will be applied in the order indicated by
-//               the string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Composes a matrix out of the nine individual components, respecting the order
+ * string.  The components will be applied in the order indicated by the string.
+ */
 void EggXfmSAnim::
 compose_with_order(LMatrix4d &mat,
                    const LVecBase3d &scale,
@@ -275,15 +251,12 @@ compose_with_order(LMatrix4d &mat,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::get_num_rows
-//       Access: Public
-//  Description: Returns the effective number of rows in the table.
-//               This is actually the number of rows of the smallest
-//               subtable larger than one row.  This is a convenience
-//               function that treats the table of tables as if it
-//               were a single table of matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the effective number of rows in the table.  This is actually the
+ * number of rows of the smallest subtable larger than one row.  This is a
+ * convenience function that treats the table of tables as if it were a single
+ * table of matrices.
+ */
 int EggXfmSAnim::
 get_num_rows() const {
   bool found_any = false;
@@ -307,17 +280,13 @@ get_num_rows() const {
   return min_rows;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::get_value
-//       Access: Public
-//  Description: Returns the value of the aggregate row of the table
-//               as a matrix.  This is a convenience function that
-//               treats the table of tables as if it were a single
-//               table of matrices.  It is an error to call this if
-//               any SAnimData children of this node have an improper
-//               name (e.g. not a single letter, or not one of
-//               "ijkabchprxyz").
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the aggregate row of the table as a matrix.  This is a
+ * convenience function that treats the table of tables as if it were a single
+ * table of matrices.  It is an error to call this if any SAnimData children of
+ * this node have an improper name (e.g.  not a single letter, or not one of
+ * "ijkabchprxyz").
+ */
 void EggXfmSAnim::
 get_value(int row, LMatrix4d &mat) const {
   LVector3d scale(1.0, 1.0, 1.0);
@@ -407,21 +376,13 @@ get_value(int row, LMatrix4d &mat) const {
   compose_with_order(mat, scale, shear, hpr, translate, get_order(), _coordsys);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::set_value
-//       Access: Public
-//  Description: Replaces the indicated row of the table with the
-//               given matrix.
-//
-//               This function can only be called if all the
-//               constraints of add_data(), below, are met.  Call
-//               normalize() first if you are not sure.
-//
-//               The return value is true if the matrix can be
-//               decomposed and stored as scale, shear, rotate, and
-//               translate, or false otherwise.  The data is set in
-//               either case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the indicated row of the table with the given matrix.  This function
+ * can only be called if all the constraints of add_data(), below, are met.
+ * Call normalize() first if you are not sure.  The return value is true if the
+ * matrix can be decomposed and stored as scale, shear, rotate, and translate,
+ * or false otherwise.  The data is set in either case.
+ */
 bool EggXfmSAnim::
 set_value(int row, const LMatrix4d &mat) {
   nassertr(get_order() == get_standard_order(), false);
@@ -437,7 +398,7 @@ set_value(int row, const LMatrix4d &mat) {
   for (int i = 0; i < num_matrix_components; i++) {
     string name(1, matrix_component_letters[i]);
     EggNode *child = find_child(name);
-    nassertr(child != (EggNode *)NULL && 
+    nassertr(child != (EggNode *)NULL &&
              child->is_of_type(EggSAnimData::get_class_type()), false);
     EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
@@ -465,12 +426,12 @@ set_value(int row, const LMatrix4d &mat) {
     for (int i = 0; i < num_matrix_components; i += 3) {
       egg_cat.warning(false)
         << "  "
-        << matrix_component_letters[i] 
+        << matrix_component_letters[i]
         << matrix_component_letters[i + 1]
         << matrix_component_letters[i + 2]
         << ": "
-        << components[i] << " " 
-        << components[i + 1] << " " 
+        << components[i] << " "
+        << components[i + 1] << " "
         << components[i + 2] << "\n";
     }
     egg_cat.warning(false)
@@ -483,37 +444,23 @@ set_value(int row, const LMatrix4d &mat) {
   return add_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::add_data
-//       Access: Public
-//  Description: Adds a new matrix to the table, by adding a new row
-//               to each of the subtables.
-//
-//               This is a convenience function that
-//               treats the table of tables as if it were a single
-//               table of matrices.  It is an error to call this if
-//               any SAnimData children of this node have an improper
-//               name (e.g. not a single letter, or not one of
-//               "ijkabchprxyz").
-//
-//               This function has the further requirement that all
-//               nine of the subtables must exist and be of the same
-//               length.  Furthermore, the order string must be the
-//               standard order string, which matches the system
-//               compose_matrix() and decompose_matrix() functions.
-//
-//               Thus, you probably cannot take an existing
-//               EggXfmSAnim object and start adding matrices to the
-//               end; you must clear out the original data first.  (As
-//               a special exception, if no tables exist, they will be
-//               created.)  The method normalize() will do this for
-//               you on an existing EggXfmSAnim.
-//
-//               This function may fail silently if the matrix cannot
-//               be decomposed into scale, shear, rotate, and
-//               translate.  In this case, the closest approximation
-//               is added to the table, and false is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new matrix to the table, by adding a new row to each of the subtables.
+ * This is a convenience function that treats the table of tables as if it were
+ * a single table of matrices.  It is an error to call this if any SAnimData
+ * children of this node have an improper name (e.g.  not a single letter, or
+ * not one of "ijkabchprxyz").  This function has the further requirement that
+ * all nine of the subtables must exist and be of the same length.  Furthermore,
+ * the order string must be the standard order string, which matches the system
+ * compose_matrix() and decompose_matrix() functions.  Thus, you probably cannot
+ * take an existing EggXfmSAnim object and start adding matrices to the end; you
+ * must clear out the original data first.  (As a special exception, if no
+ * tables exist, they will be created.)  The method normalize() will do this for
+ * you on an existing EggXfmSAnim.  This function may fail silently if the
+ * matrix cannot be decomposed into scale, shear, rotate, and translate.  In
+ * this case, the closest approximation is added to the table, and false is
+ * returned.
+ */
 bool EggXfmSAnim::
 add_data(const LMatrix4d &mat) {
   double components[num_matrix_components];
@@ -540,7 +487,7 @@ add_data(const LMatrix4d &mat) {
   for (int i = 0; i < num_matrix_components; i++) {
     string name(1, matrix_component_letters[i]);
     EggNode *child = find_child(name);
-    nassertr(child != (EggNode *)NULL && 
+    nassertr(child != (EggNode *)NULL &&
              child->is_of_type(EggSAnimData::get_class_type()), false);
     EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
@@ -572,12 +519,12 @@ add_data(const LMatrix4d &mat) {
     for (int i = 0; i < num_matrix_components; i += 3) {
       egg_cat.warning(false)
         << "  "
-        << matrix_component_letters[i] 
+        << matrix_component_letters[i]
         << matrix_component_letters[i + 1]
         << matrix_component_letters[i + 2]
         << ": "
-        << components[i] << " " 
-        << components[i + 1] << " " 
+        << components[i] << " "
+        << components[i + 1] << " "
         << components[i + 2] << "\n";
     }
     egg_cat.warning(false)
@@ -590,12 +537,10 @@ add_data(const LMatrix4d &mat) {
   return add_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::add_component_data
-//       Access: Public
-//  Description: Adds a new row to the named component (one of
-//               matrix_component_letters) of the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new row to the named component (one of matrix_component_letters) of
+ * the table.
+ */
 void EggXfmSAnim::
 add_component_data(const string &component_name, double value) {
   EggNode *child = find_child(component_name);
@@ -612,12 +557,9 @@ add_component_data(const string &component_name, double value) {
   sanim->add_data(value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::add_component_data
-//       Access: Public
-//  Description: Adds a new row to the indicated component (0-12) of
-//               the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new row to the indicated component (0-12) of the table.
+ */
 void EggXfmSAnim::
 add_component_data(int component, double value) {
   nassertv(component >= 0 && component < num_matrix_components);
@@ -626,14 +568,11 @@ add_component_data(int component, double value) {
   add_component_data(name, value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::r_transform
-//       Access: Protected, Virtual
-//  Description: Applies the indicated transform to all the rows of
-//               the table.  This actually forces the generation of a
-//               totally new set of rows, and will quietly change the
-//               order to the standard order (if it is different).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transform to all the rows of the table.  This actually
+ * forces the generation of a totally new set of rows, and will quietly change
+ * the order to the standard order (if it is different).
+ */
 void EggXfmSAnim::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
             CoordinateSystem to_cs) {
@@ -668,30 +607,23 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
   optimize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::r_mark_coordsys
-//       Access: Protected, Virtual
-//  Description: This is only called immediately after loading an egg
-//               file from disk, to propagate the value found in the
-//               CoordinateSystem entry (or the default Y-up
-//               coordinate system) to all nodes that care about what
-//               the coordinate system is.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is only called immediately after loading an egg file from disk, to
+ * propagate the value found in the CoordinateSystem entry (or the default Y-up
+ * coordinate system) to all nodes that care about what the coordinate system
+ * is.
+ */
 void EggXfmSAnim::
 r_mark_coordsys(CoordinateSystem cs) {
   _coordsys = cs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::normalize_by_rebuilding
-//       Access: Private
-//  Description: One implementation of normalize() that rebuilds the
-//               entire table by composing and decomposing the rows.
-//               This has the advantage that it will also reset the
-//               order string to the standard order string, but it is
-//               more computationally intensive and is subject to
-//               roundoff error.
-////////////////////////////////////////////////////////////////////
+/**
+ * One implementation of normalize() that rebuilds the entire table by composing
+ * and decomposing the rows.  This has the advantage that it will also reset the
+ * order string to the standard order string, but it is more computationally
+ * intensive and is subject to roundoff error.
+ */
 void EggXfmSAnim::
 normalize_by_rebuilding() {
   // Save a temporary copy of the original data.
@@ -714,15 +646,12 @@ normalize_by_rebuilding() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmSAnim::normalize_by_expanding
-//       Access: Private
-//  Description: Another implementation of normalize() that simply
-//               expands any one-row tables and creates default-valued
-//               tables where none were before.  This will not change
-//               the order string, but is much faster and does not
-//               introduce roundoff error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another implementation of normalize() that simply expands any one-row tables
+ * and creates default-valued tables where none were before.  This will not
+ * change the order string, but is much faster and does not introduce roundoff
+ * error.
+ */
 void EggXfmSAnim::
 normalize_by_expanding() {
   iterator ci;

@@ -1,155 +1,123 @@
-// Filename: lmatrix4_src.I
-// Created by:  drose (15Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lmatrix4_src.I
+ * @author drose
+ * @date 1999-01-15
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Row::Constructor
-//       Access: Private
-//  Description: Defines a row-level index accessor to the matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a row-level index accessor to the matrix.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::Row::
 Row(FLOATTYPE *row) : _row(row) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Row::operator []
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::Row::
 operator [](int i) const {
   nassertr(i >= 0 && i < 4, 0.0);
   return _row[i];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Row::operator []
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix4)::Row::
 operator [](int i) {
   nassertr(i >= 0 && i < 4, _row[0]);
   return _row[i];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Row::size
-//       Access: Public, Static
-//  Description: Returns 4: the number of columns of a LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 4: the number of columns of a LMatrix4.
+ */
 INLINE_LINMATH int FLOATNAME(LMatrix4)::Row::
 size() {
   return 4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::CRow::Constructor
-//       Access: Private
-//  Description: Defines a row-level constant accessor to the matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a row-level constant accessor to the matrix.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::CRow::
 CRow(const FLOATTYPE *row) : _row(row) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::CRow::operator []
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::CRow::
 operator [](int i) const {
   nassertr(i >= 0 && i < 4, 0.0);
   return _row[i];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::CRow::size
-//       Access: Public, Static
-//  Description: Returns 4: the number of columns of a LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 4: the number of columns of a LMatrix4.
+ */
 INLINE_LINMATH int FLOATNAME(LMatrix4)::CRow::
 size() {
   return 4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::ident_mat
-//       Access: Public, Static
-//  Description: Returns an identity matrix.
-//
-//               This function definition must appear first, since
-//               some inline functions below take advantage of it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an identity matrix.  This function definition must appear first,
+ * since some inline functions below take advantage of it.
+ */
 INLINE_LINMATH const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 ident_mat() {
   return _ident_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::ones_mat
-//       Access: Public, Static
-//  Description: Returns an matrix filled with ones.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an matrix filled with ones.
+ */
 INLINE_LINMATH const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 ones_mat() {
   return _ones_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::zeros_mat
-//       Access: Public, Static
-//  Description: Returns an matrix filled with zeros.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an matrix filled with zeros.
+ */
 INLINE_LINMATH const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 zeros_mat() {
   return _zeros_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) : _m(copy._m) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) {
   operator = (copy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
   TAU_PROFILE("void LMatrix4::operator = (const LMatrix4 &)", " ", TAU_USER);
@@ -157,11 +125,9 @@ operator = (const FLOATNAME(LMatrix4) &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
   TAU_PROFILE("void LMatrix4::operator = (const UnalignedLMatrix4 &)", " ", TAU_USER);
@@ -170,22 +136,18 @@ operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Fill Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (FLOATTYPE fill_value) {
   fill(fill_value);
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
@@ -214,11 +176,9 @@ FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
   _m(3, 3) = e33;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Constructor, upper 3x3
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
   TAU_PROFILE("void LMatrix4::LMatrix4(const LMatrix3 &)", " ", TAU_USER);
@@ -244,11 +204,9 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
   _m(3, 3) = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Constructor, upper 3x3 plus translation
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
          const FLOATNAME(LVecBase3) &trans) {
@@ -275,13 +233,10 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
   _m(3, 3) = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::fill
-//       Access: Public
-//  Description: Sets each element of the matrix to the indicated
-//               fill_value.  This is of questionable value, but is
-//               sometimes useful when initializing to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets each element of the matrix to the indicated fill_value.  This is of
+ * questionable value, but is sometimes useful when initializing to zero.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 fill(FLOATTYPE fill_value) {
   TAU_PROFILE("void LMatrix4::fill(FLOATTYPE)", " ", TAU_USER);
@@ -295,11 +250,9 @@ fill(FLOATTYPE fill_value) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::set
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
@@ -328,11 +281,9 @@ set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
   _m(3, 3) = e33;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::set_upper_3
-//       Access: Public
-//  Description: Sets the upper 3x3 submatrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the upper 3x3 submatrix.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_upper_3(const FLOATNAME(LMatrix3) &upper3) {
   TAU_PROFILE("void LMatrix4::set_upper_3(const LMatrix3 &)", " ", TAU_USER);
@@ -353,11 +304,9 @@ set_upper_3(const FLOATNAME(LMatrix3) &upper3) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_upper_3
-//       Access: Public
-//  Description: Retrieves the upper 3x3 submatrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the upper 3x3 submatrix.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix4)::
 get_upper_3() const {
   TAU_PROFILE("LMatrix3 LMatrix4::get_upper_3()", " ", TAU_USER);
@@ -371,11 +320,9 @@ get_upper_3() const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::set_row
-//       Access: Public
-//  Description: Replaces the indicated row of the matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the indicated row of the matrix.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_row(int row, const FLOATNAME(LVecBase4) &v) {
 #ifdef HAVE_EIGEN
@@ -388,11 +335,9 @@ set_row(int row, const FLOATNAME(LVecBase4) &v) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::set_col
-//       Access: Public
-//  Description: Replaces the indicated column of the matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the indicated column of the matrix.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_col(int col, const FLOATNAME(LVecBase4) &v) {
 #ifdef HAVE_EIGEN
@@ -405,13 +350,10 @@ set_col(int col, const FLOATNAME(LVecBase4) &v) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::set_row
-//       Access: Public
-//  Description: Replaces the indicated row of the matrix with the
-//               indicated 3-component vector, ignoring the last
-//               column.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the indicated row of the matrix with the indicated 3-component
+ * vector, ignoring the last column.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_row(int row, const FLOATNAME(LVecBase3) &v) {
 #ifdef HAVE_EIGEN
@@ -423,13 +365,10 @@ set_row(int row, const FLOATNAME(LVecBase3) &v) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::set_col
-//       Access: Public
-//  Description: Replaces the indicated column of the matrix with the
-//               indicated 3-component vector, ignoring the last
-//               row.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the indicated column of the matrix with the indicated 3-component
+ * vector, ignoring the last row.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_col(int col, const FLOATNAME(LVecBase3) &v) {
 #ifdef HAVE_EIGEN
@@ -441,12 +380,9 @@ set_col(int col, const FLOATNAME(LVecBase3) &v) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_row
-//       Access: Public
-//  Description: Retrieves the indicated row of the matrix as a
-//               4-component vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the indicated row of the matrix as a 4-component vector.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LMatrix4)::
 get_row(int row) const {
 #ifdef HAVE_EIGEN
@@ -459,12 +395,9 @@ get_row(int row) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_row
-//       Access: Public
-//  Description: Stores the indicated row of the matrix as a
-//               4-component vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated row of the matrix as a 4-component vector.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 get_row(FLOATNAME(LVecBase4) &result_vec, int row) const {
 #ifdef HAVE_EIGEN
@@ -477,12 +410,9 @@ get_row(FLOATNAME(LVecBase4) &result_vec, int row) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_col
-//       Access: Public
-//  Description: Retrieves the indicated column of the matrix as a
-//               4-component vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the indicated column of the matrix as a 4-component vector.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LMatrix4)::
 get_col(int col) const {
 #ifdef HAVE_EIGEN
@@ -495,12 +425,10 @@ get_col(int col) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_row3
-//       Access: Public
-//  Description: Retrieves the row column of the matrix as a
-//               3-component vector, ignoring the last column.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the row column of the matrix as a 3-component vector, ignoring the
+ * last column.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_row3(int row) const {
 #ifdef HAVE_EIGEN
@@ -512,12 +440,10 @@ get_row3(int row) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_row3
-//       Access: Public
-//  Description: Stores the row column of the matrix as a
-//               3-component vector, ignoring the last column.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the row column of the matrix as a 3-component vector, ignoring the
+ * last column.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 get_row3(FLOATNAME(LVecBase3) &result_vec,int row) const {
 #ifdef HAVE_EIGEN
@@ -529,12 +455,10 @@ get_row3(FLOATNAME(LVecBase3) &result_vec,int row) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_col3
-//       Access: Public
-//  Description: Retrieves the indicated column of the matrix as a
-//               3-component vector, ignoring the last row.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the indicated column of the matrix as a 3-component vector,
+ * ignoring the last row.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_col3(int col) const {
 #ifdef HAVE_EIGEN
@@ -546,66 +470,53 @@ get_col3(int col) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Indexing operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix4)::
 operator () (int row, int col) {
   nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, _m(0, 0));
   return _m(row, col);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Indexing operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 operator () (int row, int col) const {
   nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, _m(0, 0));
   return _m(row, col);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Indexing Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::CRow FLOATNAME(LMatrix4)::
 operator [](int i) const {
   nassertr(i >= 0 && i < 4, CRow(&_m(0, 0)));
   return CRow(&_m(i, 0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Indexing Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::Row FLOATNAME(LMatrix4)::
 operator [](int i) {
   nassertr(i >= 0 && i < 4, Row(&_m(0, 0)));
   return Row(&_m(i, 0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::size
-//       Access: Public, Static
-//  Description: Returns 4: the number of rows of a LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 4: the number of rows of a LMatrix4.
+ */
 INLINE_LINMATH int FLOATNAME(LMatrix4)::
 size() {
   return 4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::is_nan
-//       Access: Public
-//  Description: Returns true if any component of the matrix is
-//               not-a-number, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any component of the matrix is not-a-number, false otherwise.
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 is_nan() const {
   TAU_PROFILE("bool LMatrix4::is_nan()", " ", TAU_USER);
@@ -616,186 +527,149 @@ is_nan() const {
     cnan(_m(3, 0)) || cnan(_m(3, 1)) || cnan(_m(3, 2)) || cnan(_m(3, 3));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::is_identity
-//       Access: Public
-//  Description: Returns true if this is (close enough to) the
-//               identity matrix, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this is (close enough to) the identity matrix, false
+ * otherwise.
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 is_identity() const {
   // Eigen has isIdentity, but it seems to be twice as slow as this.
   return almost_equal(ident_mat(), NEARLY_ZERO(FLOATTYPE));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_cell
-//       Access: Public
-//  Description: Returns a particular element of the matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a particular element of the matrix.
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 get_cell(int row, int col) const {
   nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, 0.0f);
   return _m(row, col);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::set_cell
-//       Access: Public
-//  Description: Changes a particular element of the matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes a particular element of the matrix.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_cell(int row, int col, FLOATTYPE value) {
   nassertv(row >= 0 && row < 4 && col >= 0 && col < 4);
   _m(row, col) = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_data
-//       Access: Public
-//  Description: Returns the address of the first of the nine data
-//               elements in the matrix.  The remaining elements
-//               occupy the next eight positions in row-major order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the address of the first of the nine data elements in the matrix.
+ * The remaining elements occupy the next eight positions in row-major order.
+ */
 INLINE_LINMATH const FLOATTYPE *FLOATNAME(LMatrix4)::
 get_data() const {
   return &_m(0, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_num_components
-//       Access: Public
-//  Description: Returns the number of elements in the matrix, 16.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of elements in the matrix, 16.
+ */
 INLINE_LINMATH int FLOATNAME(LMatrix4)::
 get_num_components() const {
   return 16;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::begin
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the matrix,
+ * STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::iterator FLOATNAME(LMatrix4)::
 begin() {
   return &_m(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::end
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the matrix,
+ * STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::iterator FLOATNAME(LMatrix4)::
 end() {
   return begin() + 16;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::begin
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the matrix,
+ * STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::const_iterator FLOATNAME(LMatrix4)::
 begin() const {
   return &_m(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::end
-//       Access: Public
-//  Description: Returns an iterator that may be used to traverse the
-//               elements of the matrix, STL-style.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that may be used to traverse the elements of the matrix,
+ * STL-style.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)::const_iterator FLOATNAME(LMatrix4)::
 end() const {
   return begin() + 16;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Ordering Operator
-//       Access: Public
-//  Description: This performs a lexicographical comparison.  It's of
-//               questionable mathematical meaning, but sometimes has
-//               a practical purpose for sorting unique vectors,
-//               especially in an STL container.  Also see
-//               compare_to().
-////////////////////////////////////////////////////////////////////
+/**
+ * This performs a lexicographical comparison.  It's of questionable
+ * mathematical meaning, but sometimes has a practical purpose for sorting
+ * unique vectors, especially in an STL container.  Also see compare_to().
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 operator < (const FLOATNAME(LMatrix4) &other) const {
   return compare_to(other) < 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Equality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 operator == (const FLOATNAME(LMatrix4) &other) const {
   return compare_to(other) == 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Inequality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 operator != (const FLOATNAME(LMatrix4) &other) const {
   return compare_to(other) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::compare_to
-//       Access: Public
-//  Description: This flavor of compare_to uses a default threshold
-//               value based on the numeric type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of compare_to uses a default threshold value based on the numeric
+ * type.
+ */
 INLINE_LINMATH int FLOATNAME(LMatrix4)::
 compare_to(const FLOATNAME(LMatrix4) &other) const {
   return compare_to(other, NEARLY_ZERO(FLOATTYPE));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_hash
-//       Access: Public
-//  Description: Returns a suitable hash for phash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable hash for phash_map.
+ */
 INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
 get_hash() const {
   return add_hash(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::get_hash
-//       Access: Public
-//  Description: Returns a suitable hash for phash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable hash for phash_map.
+ */
 INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
 get_hash(FLOATTYPE threshold) const {
   return add_hash(0, threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::add_hash
-//       Access: Public
-//  Description: Adds the vector into the running hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector into the running hash.
+ */
 INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
 add_hash(size_t hash) const {
   return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::add_hash
-//       Access: Public
-//  Description: Adds the vector into the running hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector into the running hash.
+ */
 INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
 add_hash(size_t hash, FLOATTYPE threshold) const {
   TAU_PROFILE("size_t LMatrix4::add_hash(size_t, FLOATTYPE)", " ", TAU_USER);
@@ -830,12 +704,9 @@ v_res._v(1) = v._v(0)*mat._m(0, 1) + v._v(1)*mat._m(1, 1) + v._v(2)*mat._m(2, 1)
 v_res._v(2) = v._v(0)*mat._m(0, 2) + v._v(1)*mat._m(1, 2) + v._v(2)*mat._m(2, 2) + v._v(3)*mat._m(3, 2);   \
 v_res._v(3) = v._v(0)*mat._m(0, 3) + v._v(1)*mat._m(1, 3) + v._v(2)*mat._m(2, 3) + v._v(3)*mat._m(3, 3);
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform
-//       Access: Public
-//  Description: 4-component vector or point times matrix.  This is a
-//               fully general operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * 4-component vector or point times matrix.  This is a fully general operation.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LMatrix4)::
 xform(const FLOATNAME(LVecBase4) &v) const {
   TAU_PROFILE("LVecBase3 LMatrix4::xform(const LVecBase3 &)", " ", TAU_USER);
@@ -851,13 +722,10 @@ xform(const FLOATNAME(LVecBase4) &v) const {
 
 #undef VECTOR4_MATRIX4_PRODUCT
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_point
-//       Access: Public
-//  Description: The matrix transforms a 3-component point (including
-//               translation component) and returns the result.  This
-//               assumes the matrix is an affine transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component point (including translation component)
+ * and returns the result.  This assumes the matrix is an affine transform.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_point(const FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("LVecBase3 LMatrix4::xform_point(const LVecBase3 &)", " ", TAU_USER);
@@ -876,13 +744,10 @@ xform_point(const FLOATNAME(LVecBase3) &v) const {
   return v_res;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_point_general
-//       Access: Public
-//  Description: The matrix transforms a 3-component point (including
-//               translation component) and returns the result, as a
-//               fully general operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component point (including translation component)
+ * and returns the result, as a fully general operation.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_point_general(const FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("LVecBase3 LMatrix4::xform_point_general(const LVecBase3 &)", " ", TAU_USER);
@@ -891,13 +756,10 @@ xform_point_general(const FLOATNAME(LVecBase3) &v) const {
   return FLOATNAME(LVecBase3)(v4[0] / v4[3], v4[1] / v4[3], v4[2] / v4[3]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_vec
-//       Access: Public
-//  Description: The matrix transforms a 3-component vector (without
-//               translation component) and returns the result.  This
-//               assumes the matrix is an orthonormal transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component vector (without translation component)
+ * and returns the result.  This assumes the matrix is an orthonormal transform.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_vec(const FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("LVecBase3 LMatrix4::xform_vec(const LVecBase3 &)", " ", TAU_USER);
@@ -916,13 +778,10 @@ xform_vec(const FLOATNAME(LVecBase3) &v) const {
   return v_res;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_vec_general
-//       Access: Public
-//  Description: The matrix transforms a 3-component vector (without
-//               translation component) and returns the result, as a
-//               fully general operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component vector (without translation component)
+ * and returns the result, as a fully general operation.
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_vec_general(const FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("LVecBase3 LMatrix4::xform_vec_general(const LVecBase3 &)", " ", TAU_USER);
@@ -936,12 +795,9 @@ xform_vec_general(const FLOATNAME(LVecBase3) &v) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_in_place
-//       Access: Public
-//  Description: 4-component vector or point times matrix.  This is a
-//               fully general operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * 4-component vector or point times matrix.  This is a fully general operation.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 xform_in_place(FLOATNAME(LVecBase4) &v) const {
   TAU_PROFILE("void LMatrix4::xform_in_place(LVecBase3 &)", " ", TAU_USER);
@@ -953,13 +809,10 @@ xform_in_place(FLOATNAME(LVecBase4) &v) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_point_in_place
-//       Access: Public
-//  Description: The matrix transforms a 3-component point (including
-//               translation component).  This assumes the matrix is
-//               an affine transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component point (including translation component).
+ * This assumes the matrix is an affine transform.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 xform_point_in_place(FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("void LMatrix4::xform_point_in_place(LVecBase3 &)", " ", TAU_USER);
@@ -972,25 +825,20 @@ xform_point_in_place(FLOATNAME(LVecBase3) &v) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_point_general_in_place
-//       Access: Public
-//  Description: The matrix transforms a 3-component point (including
-//               translation component), as a fully general operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component point (including translation component),
+ * as a fully general operation.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 xform_point_general_in_place(FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("void LMatrix4::xform_point_general_in_place(LVecBase3 &)", " ", TAU_USER);
   v = xform_point_general(v);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_vec_in_place
-//       Access: Public
-//  Description: The matrix transforms a 3-component vector (without
-//               translation component).  This assumes the matrix is
-//               an orthonormal transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component vector (without translation component).
+ * This assumes the matrix is an orthonormal transform.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 xform_vec_in_place(FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("void LMatrix4::xform_vec_in_place(LVecBase3 &)", " ", TAU_USER);
@@ -1003,12 +851,10 @@ xform_vec_in_place(FLOATNAME(LVecBase3) &v) const {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::xform_vec_general_in_place
-//       Access: Public
-//  Description: The matrix transforms a 3-component vector (without
-//               translation component), as a fully general operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * The matrix transforms a 3-component vector (without translation component),
+ * as a fully general operation.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 xform_vec_general_in_place(FLOATNAME(LVecBase3) &v) const {
   TAU_PROFILE("void LMatrix4::xform_vec_general_in_place(LVecBase3 &)", " ", TAU_USER);
@@ -1040,11 +886,9 @@ res._m(3, 1) = a._m(3, 0)*b._m(0, 1) + a._m(3, 1)*b._m(1, 1) + a._m(3, 2)*b._m(2
 res._m(3, 2) = a._m(3, 0)*b._m(0, 2) + a._m(3, 1)*b._m(1, 2) + a._m(3, 2)*b._m(2, 2) + a._m(3, 3)*b._m(3, 2);   \
 res._m(3, 3) = a._m(3, 0)*b._m(0, 3) + a._m(3, 1)*b._m(1, 3) + a._m(3, 2)*b._m(2, 3) + a._m(3, 3)*b._m(3, 3);
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix * matrix
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator * (const FLOATNAME(LMatrix4) &other) const {
   TAU_PROFILE("LMatrix4 LMatrix4::operator *(const LMatrix4 &)", " ", TAU_USER);
@@ -1072,11 +916,9 @@ multiply(const FLOATNAME(LMatrix4) &other1, const FLOATNAME(LMatrix4) &other2) {
 
 #undef MATRIX4_PRODUCT
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix * scalar
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator * (FLOATTYPE scalar) const {
   TAU_PROFILE("LMatrix4 operator *(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
@@ -1110,22 +952,18 @@ operator * (FLOATTYPE scalar) const {
   return t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix / scalar
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator / (FLOATTYPE scalar) const {
   FLOATTYPE recip_scalar = 1.0f/scalar;
   return (*this) * recip_scalar;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix += matrix
-//       Access: Public
-//  Description: Performs a memberwise addition between two matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a memberwise addition between two matrices.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator += (const FLOATNAME(LMatrix4) &other) {
   TAU_PROFILE("LMatrix4 LMatrix4::operator +=(const LMatrix4 &)", " ", TAU_USER);
@@ -1157,11 +995,9 @@ operator += (const FLOATNAME(LMatrix4) &other) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix -= matrix
-//       Access: Public
-//  Description: Performs a memberwise addition between two matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a memberwise addition between two matrices.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator -= (const FLOATNAME(LMatrix4) &other) {
   TAU_PROFILE("LMatrix4 LMatrix4::operator -=(const LMatrix4 &)", " ", TAU_USER);
@@ -1194,11 +1030,9 @@ operator -= (const FLOATNAME(LMatrix4) &other) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix *= matrix
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator *= (const FLOATNAME(LMatrix4) &other) {
   TAU_PROFILE("LMatrix4 LMatrix4::operator *=(const LMatrix4 &)", " ", TAU_USER);
@@ -1213,11 +1047,9 @@ operator *= (const FLOATNAME(LMatrix4) &other) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix *= scalar
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator *= (FLOATTYPE scalar) {
   TAU_PROFILE("LMatrix4 LMatrix4::operator *=(FLOATTYPE)", " ", TAU_USER);
@@ -1249,11 +1081,9 @@ operator *= (FLOATTYPE scalar) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::matrix /= scalar
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator /= (FLOATTYPE scalar) {
   TAU_PROFILE("LMatrix4 LMatrix4::operator /=(FLOATTYPE)", " ", TAU_USER);
@@ -1261,11 +1091,9 @@ operator /= (FLOATTYPE scalar) {
   return operator *= (recip_scalar);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::componentwise_mult
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 componentwise_mult(const FLOATNAME(LMatrix4) &other) {
 #ifdef HAVE_EIGEN
@@ -1294,11 +1122,9 @@ componentwise_mult(const FLOATNAME(LMatrix4) &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::transpose_from
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 transpose_from(const FLOATNAME(LMatrix4) &other) {
   TAU_PROFILE("LMatrix4 LMatrix4::transpose_from(const LMatrix4 &other)", " ", TAU_USER);
@@ -1328,11 +1154,9 @@ transpose_from(const FLOATNAME(LMatrix4) &other) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::transpose_in_place
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 transpose_in_place() {
   TAU_PROFILE("void LMatrix4::transpose_in_place()", " ", TAU_USER);
@@ -1350,22 +1174,14 @@ transpose_in_place() {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::invert_from
-//       Access: Public
-//  Description: Computes the inverse of the other matrix, and stores
-//               the result in this matrix.  This is a fully general
-//               operation and makes no assumptions about the type of
-//               transform represented by the matrix.
-//
-//               The other matrix must be a different object than this
-//               matrix.  However, if you need to invert a matrix in
-//               place, see invert_in_place.
-//
-//               The return value is true if the matrix was
-//               successfully inverted, false if the was a
-//               singularity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the inverse of the other matrix, and stores the result in this
+ * matrix.  This is a fully general operation and makes no assumptions about the
+ * type of transform represented by the matrix.  The other matrix must be a
+ * different object than this matrix.  However, if you need to invert a matrix
+ * in place, see invert_in_place.  The return value is true if the matrix was
+ * successfully inverted, false if the was a singularity.
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_from(const FLOATNAME(LMatrix4) &other) {
   TAU_PROFILE("bool LMatrix4::invert_from(const LMatrix4 &)", " ", TAU_USER);
@@ -1423,22 +1239,14 @@ invert_from(const FLOATNAME(LMatrix4) &other) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::invert_affine_from
-//       Access: Public
-//  Description: Performs an invert of the indicated matrix, storing
-//               the result in this matrix.  The calculation is only
-//               correct of the other matrix represents an affine
-//               transform.
-//
-//               The other matrix must be a different object than this
-//               matrix.  However, if you need to invert a matrix in
-//               place, see invert_in_place.
-//
-//               The return value is true if the matrix was
-//               successfully inverted, false if there was a
-//               singularity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs an invert of the indicated matrix, storing the result in this
+ * matrix.  The calculation is only correct of the other matrix represents an
+ * affine transform.  The other matrix must be a different object than this
+ * matrix.  However, if you need to invert a matrix in place, see
+ * invert_in_place.  The return value is true if the matrix was successfully
+ * inverted, false if there was a singularity.
+ */
 
 // bugbug: we could optimize this for rotation/scale/translation matrices
 //         (transpose upper 3x3 and take negative of translation component)
@@ -1474,13 +1282,10 @@ invert_affine_from(const FLOATNAME(LMatrix4) &other) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::invert_in_place
-//       Access: Public
-//  Description: Inverts the current matrix.  Returns true if the
-//               inverse is successful, false if the matrix was
-//               singular.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inverts the current matrix.  Returns true if the inverse is successful, false
+ * if the matrix was singular.
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_in_place() {
   TAU_PROFILE("bool LMatrix4::invert_in_place()", " ", TAU_USER);
@@ -1488,11 +1293,9 @@ invert_in_place() {
   return invert_from(temp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::accumulate
-//       Access: Public
-//  Description: Computes (*this) += other * weight.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes (*this) += other * weight.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 accumulate(const FLOATNAME(LMatrix4) &other, FLOATTYPE weight) {
 #ifdef HAVE_EIGEN
@@ -1520,12 +1323,9 @@ accumulate(const FLOATNAME(LMatrix4) &other, FLOATTYPE weight) {
 #endif  // HAVE_EIGEN
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::set_translate_mat
-//       Access: Public
-//  Description: Fills mat with a matrix that applies the indicated
-//               translation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills mat with a matrix that applies the indicated translation.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_translate_mat(const FLOATNAME(LVecBase3) &trans) {
   set(1.0f, 0.0f, 0.0f, 0.0f,
@@ -1534,12 +1334,10 @@ set_translate_mat(const FLOATNAME(LVecBase3) &trans) {
       trans._v(0), trans._v(1), trans._v(2), 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::set_scale_mat
-//       Access: Public
-//  Description: Fills mat with a matrix that applies the indicated
-//               scale in each of the three axes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills mat with a matrix that applies the indicated scale in each of the three
+ * axes.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_scale_mat(const FLOATNAME(LVecBase3) &scale) {
   set(scale._v(0), 0.0f, 0.0f, 0.0f,
@@ -1548,24 +1346,19 @@ set_scale_mat(const FLOATNAME(LVecBase3) &scale) {
       0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::set_shear_mat
-//       Access: Public
-//  Description: Fills mat with a matrix that applies the indicated
-//               shear in each of the three planes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills mat with a matrix that applies the indicated shear in each of the three
+ * planes.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
   set_scale_shear_mat(FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
                       shear, cs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::set_scale_shear_mat
-//       Access: Public, Static
-//  Description: Fills mat with a matrix that applies the indicated
-//               scale and shear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills mat with a matrix that applies the indicated scale and shear.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
                     const FLOATNAME(LVecBase3) &shear,
@@ -1584,12 +1377,9 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
   _m(3, 2) = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::translate_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               translation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated translation.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 translate_mat(const FLOATNAME(LVecBase3) &trans) {
   return FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
@@ -1598,12 +1388,9 @@ translate_mat(const FLOATNAME(LVecBase3) &trans) {
                              trans._v(0), trans._v(1), trans._v(2), 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::translate_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               translation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated translation.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz) {
   return FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
@@ -1612,12 +1399,10 @@ translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz) {
                            tx, ty, tz, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::rotate_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that rotates by the given angle in
-//               degrees counterclockwise about the indicated vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that rotates by the given angle in degrees counterclockwise
+ * about the indicated vector.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
            CoordinateSystem cs) {
@@ -1626,13 +1411,10 @@ rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   return mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::rotate_mat_normaxis
-//       Access: Public, Static
-//  Description: Returns a matrix that rotates by the given angle in
-//               degrees counterclockwise about the indicated vector.
-//               Assumes axis has been prenormalized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that rotates by the given angle in degrees counterclockwise
+ * about the indicated vector.  Assumes axis has been prenormalized.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
                     CoordinateSystem cs) {
@@ -1643,12 +1425,9 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   return mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::scale_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               scale in each of the three axes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated scale in each of the three axes.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_mat(const FLOATNAME(LVecBase3) &scale) {
   return FLOATNAME(LMatrix4)(scale._v(0), 0.0f, 0.0f, 0.0f,
@@ -1658,12 +1437,9 @@ scale_mat(const FLOATNAME(LVecBase3) &scale) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::scale_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               scale in each of the three axes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated scale in each of the three axes.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
   return FLOATNAME(LMatrix4)(sx, 0.0f, 0.0f, 0.0f,
@@ -1672,12 +1448,9 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
                              0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::scale_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               uniform scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated uniform scale.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_mat(FLOATTYPE scale) {
   return FLOATNAME(LMatrix4)(scale, 0.0f, 0.0f, 0.0f,
@@ -1686,12 +1459,10 @@ scale_mat(FLOATTYPE scale) {
                              0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::shear_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               shear in each of the three planes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated shear in each of the three
+ * planes.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
   FLOATNAME(LMatrix4) mat;
@@ -1699,12 +1470,10 @@ shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
   return mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::shear_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               shear in each of the three planes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated shear in each of the three
+ * planes.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
           CoordinateSystem cs) {
@@ -1713,12 +1482,9 @@ shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
   return mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::scale_shear_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               scale and shear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated scale and shear.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
                 const FLOATNAME(LVecBase3) &shear,
@@ -1728,12 +1494,9 @@ scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
   return mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::scale_shear_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               scale and shear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that applies the indicated scale and shear.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_shear_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz,
                 FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
@@ -1744,53 +1507,44 @@ scale_shear_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz,
   return mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::y_to_z_up_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that transforms from the Y-up
-//               coordinate system to the Z-up coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that transforms from the Y-up coordinate system to the Z-up
+ * coordinate system.
+ */
 INLINE_LINMATH const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 y_to_z_up_mat() {
   return _y_to_z_up_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::z_to_y_up_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that transforms from the Y-up
-//               coordinate system to the Z-up coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that transforms from the Y-up coordinate system to the Z-up
+ * coordinate system.
+ */
 INLINE_LINMATH const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 z_to_y_up_mat() {
   return _z_to_y_up_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::almost_equal
-//       Access: Public
-//  Description: Returns true if two matrices are memberwise equal
-//               within a default tolerance based on the numeric type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if two matrices are memberwise equal within a default tolerance
+ * based on the numeric type.
+ */
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 almost_equal(const FLOATNAME(LMatrix4) &other) const {
   return almost_equal(other, NEARLY_ZERO(FLOATTYPE));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::generate_hash
-//       Access: Public
-//  Description: Adds the vector to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector to the indicated hash generator.
+ */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 generate_hash(ChecksumHashGenerator &hashgen) const {
   generate_hash(hashgen, NEARLY_ZERO(FLOATTYPE));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: transpose
-//  Description: Transposes the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transposes the given matrix and returns it.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)
 transpose(const FLOATNAME(LMatrix4) &a) {
   FLOATNAME(LMatrix4) result;
@@ -1798,10 +1552,9 @@ transpose(const FLOATNAME(LMatrix4) &a) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: invert
-//  Description: Inverts the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inverts the given matrix and returns it.
+ */
 INLINE_LINMATH FLOATNAME(LMatrix4)
 invert(const FLOATNAME(LMatrix4) &a) {
   TAU_PROFILE("LMatrix4 invert(const LMatrix4 &)", " ", TAU_USER);
@@ -1817,50 +1570,40 @@ invert(const FLOATNAME(LMatrix4) &a) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
 FLOATNAME(UnalignedLMatrix4)() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
 FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy) {
   operator = (copy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
 FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) : _m(copy._m) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
   memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * num_components);
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
 operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
   TAU_PROFILE("void UnalignedLMatrix4::operator =(UnalignedLMatrix4 &)", " ", TAU_USER);
@@ -1868,11 +1611,9 @@ operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
 FLOATNAME(UnalignedLMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
                              FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
@@ -1885,11 +1626,9 @@ FLOATNAME(UnalignedLMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATT
       e30, e31, e32, e33);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::set
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH void FLOATNAME(UnalignedLMatrix4)::
 set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
@@ -1918,45 +1657,36 @@ set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
   _m(3, 3) = e33;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Indexing operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATTYPE &FLOATNAME(UnalignedLMatrix4)::
 operator () (int row, int col) {
   nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, _m(0, 0));
   return _m(row, col);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::Indexing operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATTYPE FLOATNAME(UnalignedLMatrix4)::
 operator () (int row, int col) const {
   nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, 0.0);
   return _m(row, col);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::get_data
-//       Access: Published
-//  Description: Returns the address of the first of the nine data
-//               elements in the matrix.  The remaining elements
-//               occupy the next eight positions in row-major order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the address of the first of the nine data elements in the matrix.
+ * The remaining elements occupy the next eight positions in row-major order.
+ */
 INLINE_LINMATH const FLOATTYPE *FLOATNAME(UnalignedLMatrix4)::
 get_data() const {
   return &_m(0, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::get_num_components
-//       Access: Published
-//  Description: Returns the number of elements in the matrix, sixteen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of elements in the matrix, sixteen.
+ */
 INLINE_LINMATH int FLOATNAME(UnalignedLMatrix4)::
 get_num_components() const {
   return 16;

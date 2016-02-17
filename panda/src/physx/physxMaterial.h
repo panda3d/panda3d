@@ -1,16 +1,15 @@
-// Filename: physxMaterial.h
-// Created by:  enn0x (21Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxMaterial.h
+ * @author enn0x
+ * @date 2009-09-21
+ */
 
 #ifndef PHYSXMATERIAL_H
 #define PHYSXMATERIAL_H
@@ -25,29 +24,17 @@
 class PhysxScene;
 class PhysxMaterialDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMaterial
-// Description : A class for describing a shape's surface
-//               properties.
-//
-//               You can create a material which has different
-//               friction coefficients depending on the direction
-//               that a body in contact is trying to move in. This
-//               is called anisotropic friction.
-//
-//               Anisotropic friction is useful for modeling things
-//               like sledges, skis etc
-//
-//               When you create an anisotropic material you specify
-//               the default friction parameters and also friction
-//               parameters for the V axis. The friction parameters
-//               for the V axis are applied to motion along the
-//               direction of anisotropy (dirOfAnisotropy).
-//
-//               Default material: You can change the properties of
-//               the default material by querying for material
-//               index 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class for describing a shape's surface properties.  You can create a
+ * material which has different friction coefficients depending on the direction
+ * that a body in contact is trying to move in.  This is called anisotropic
+ * friction.  Anisotropic friction is useful for modeling things like sledges,
+ * skis etc  When you create an anisotropic material you specify the default
+ * friction parameters and also friction parameters for the V axis.  The
+ * friction parameters for the V axis are applied to motion along the direction
+ * of anisotropy (dirOfAnisotropy).  Default material: You can change the
+ * properties of the default material by querying for material index 0.
+ */
 class EXPCL_PANDAPHYSX PhysxMaterial : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -83,7 +70,6 @@ PUBLISHED:
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level=0) const;
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -96,14 +82,13 @@ public:
 private:
   NxMaterial *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxMaterial", 
+    register_type(_type_handle, "PhysxMaterial",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

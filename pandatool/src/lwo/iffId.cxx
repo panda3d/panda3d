@@ -1,26 +1,23 @@
-// Filename: iffId.cxx
-// Created by:  drose (23Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iffId.cxx
+ * @author drose
+ * @date 2001-04-23
+ */
 
 #include "iffId.h"
 
 #include <ctype.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IffId::
 output(ostream &out) const {
   // If all of the characters are printable, just output them.

@@ -1,17 +1,15 @@
-// Filename: cppExpression.cxx
-// Created by:  drose (25Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppExpression.cxx
+ * @author drose
+ * @date 1999-10-25
+ */
 
 #include "cppExpression.h"
 #include "cppToken.h"
@@ -30,43 +28,35 @@
 
 #include <assert.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::Result::
 Result() {
   _type = RT_error;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::Result::
 Result(int value) {
   _type = RT_integer;
   _u._integer = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::Result::
 Result(double value) {
   _type = RT_real;
   _u._real = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::Result::
 Result(void *value) {
   _type = RT_pointer;
@@ -74,11 +64,9 @@ Result(void *value) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::as_integer
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int CPPExpression::Result::
 as_integer() const {
   switch (_type) {
@@ -99,11 +87,9 @@ as_integer() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::as_real
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 double CPPExpression::Result::
 as_real() const {
   switch (_type) {
@@ -124,11 +110,9 @@ as_real() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::as_pointer
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void *CPPExpression::Result::
 as_pointer() const {
   switch (_type) {
@@ -148,11 +132,9 @@ as_pointer() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::as_boolean
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CPPExpression::Result::
 as_boolean() const {
   switch (_type) {
@@ -172,11 +154,9 @@ as_boolean() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Result::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPExpression::Result::
 output(ostream &out) const {
   switch (_type) {
@@ -201,11 +181,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(bool value) :
   CPPDeclaration(CPPFile())
@@ -214,11 +192,9 @@ CPPExpression(bool value) :
   _u._boolean = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(unsigned long long value) :
   CPPDeclaration(CPPFile())
@@ -227,11 +203,9 @@ CPPExpression(unsigned long long value) :
   _u._integer = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(int value) :
   CPPDeclaration(CPPFile())
@@ -240,11 +214,9 @@ CPPExpression(int value) :
   _u._integer = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(long double value) :
   CPPDeclaration(CPPFile())
@@ -253,11 +225,9 @@ CPPExpression(long double value) :
   _u._real = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(const string &value) :
   CPPDeclaration(CPPFile())
@@ -266,11 +236,9 @@ CPPExpression(const string &value) :
   _str = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
               CPPScope *global_scope, CPPPreprocessor *error_sink) :
@@ -300,11 +268,9 @@ CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
   //_u._ident->_native_scope = current_scope;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(int unary_operator, CPPExpression *op1) :
   CPPDeclaration(CPPFile())
@@ -316,11 +282,9 @@ CPPExpression(int unary_operator, CPPExpression *op1) :
   _u._op._op3 = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2) :
   CPPDeclaration(CPPFile())
@@ -332,11 +296,9 @@ CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2) :
   _u._op._op3 = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2,
               CPPExpression *op3) :
@@ -349,12 +311,9 @@ CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2,
   _u._op._op3 = op3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named typecast_op constructor
-//       Access: Public, Static
-//  Description: Creates an expression that represents a typecast
-//               operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an expression that represents a typecast operation.
+ */
 CPPExpression CPPExpression::
 typecast_op(CPPType *type, CPPExpression *op1, Type cast_type) {
   assert(cast_type >= T_typecast && cast_type <= T_reinterpret_cast);
@@ -365,12 +324,9 @@ typecast_op(CPPType *type, CPPExpression *op1, Type cast_type) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named construct_op constructor
-//       Access: Public, Static
-//  Description: Creates an expression that represents a constructor
-//               call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an expression that represents a constructor call.
+ */
 CPPExpression CPPExpression::
 construct_op(CPPType *type, CPPExpression *op1) {
   CPPExpression expr(0);
@@ -388,12 +344,9 @@ construct_op(CPPType *type, CPPExpression *op1) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named new_op constructor
-//       Access: Public, Static
-//  Description: Creates an expression that represents a use of the
-//               new operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an expression that represents a use of the new operator.
+ */
 CPPExpression CPPExpression::
 new_op(CPPType *type, CPPExpression *op1) {
   CPPExpression expr(0);
@@ -411,12 +364,9 @@ new_op(CPPType *type, CPPExpression *op1) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named typeid_op constructor
-//       Access: Public, Static
-//  Description: Creates an expression that represents a use of the
-//               typeid operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an expression that represents a use of the typeid operator.
+ */
 CPPExpression CPPExpression::
 typeid_op(CPPType *type, CPPType *std_type_info) {
   CPPExpression expr(0);
@@ -426,12 +376,9 @@ typeid_op(CPPType *type, CPPType *std_type_info) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named typeid_op constructor
-//       Access: Public, Static
-//  Description: Creates an expression that represents a use of the
-//               typeid operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an expression that represents a use of the typeid operator.
+ */
 CPPExpression CPPExpression::
 typeid_op(CPPExpression *op1, CPPType *std_type_info) {
   CPPExpression expr(0);
@@ -441,11 +388,9 @@ typeid_op(CPPExpression *op1, CPPType *std_type_info) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named sizeof_func constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression CPPExpression::
 sizeof_func(CPPType *type) {
   CPPExpression expr(0);
@@ -455,11 +400,9 @@ sizeof_func(CPPType *type) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named alignof_func constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression CPPExpression::
 alignof_func(CPPType *type) {
   CPPExpression expr(0);
@@ -469,11 +412,9 @@ alignof_func(CPPType *type) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named literal constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression CPPExpression::
 literal(unsigned long long value, CPPInstance *lit_op) {
   CPPExpression expr(0);
@@ -483,11 +424,9 @@ literal(unsigned long long value, CPPInstance *lit_op) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named literal constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression CPPExpression::
 literal(long double value, CPPInstance *lit_op) {
   CPPExpression expr(0);
@@ -497,11 +436,9 @@ literal(long double value, CPPInstance *lit_op) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named literal constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression CPPExpression::
 literal(CPPExpression *value, CPPInstance *lit_op) {
   CPPExpression expr(0);
@@ -511,11 +448,9 @@ literal(CPPExpression *value, CPPInstance *lit_op) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::named raw_literal constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression CPPExpression::
 raw_literal(const string &raw, CPPInstance *lit_op) {
   CPPExpression expr(0);
@@ -526,11 +461,9 @@ raw_literal(const string &raw, CPPInstance *lit_op) {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::get_nullptr
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const CPPExpression &CPPExpression::
 get_nullptr() {
   static CPPExpression expr(0);
@@ -538,11 +471,9 @@ get_nullptr() {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::get_default
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const CPPExpression &CPPExpression::
 get_default() {
   static CPPExpression expr(0);
@@ -550,11 +481,9 @@ get_default() {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::get_delete
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const CPPExpression &CPPExpression::
 get_delete() {
   static CPPExpression expr(0);
@@ -562,20 +491,16 @@ get_delete() {
   return expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::
 ~CPPExpression() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::evaluate
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression::Result CPPExpression::
 evaluate() const {
   Result r1, r2;
@@ -885,12 +810,10 @@ evaluate() const {
   return Result();  // Compiler kludge; can't get here.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::determine_type
-//       Access: Public
-//  Description: Returns the type of the expression, if it is known,
-//               or NULL if the type cannot be determined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type of the expression, if it is known, or NULL if the type
+ * cannot be determined.
+ */
 CPPType *CPPExpression::
 determine_type() const {
   CPPType *t1 = (CPPType *)NULL;
@@ -1144,14 +1067,11 @@ determine_type() const {
   return NULL;  // Compiler kludge; can't get here.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::is_fully_specified
-//       Access: Public, Virtual
-//  Description: Returns true if this declaration is an actual,
-//               factual declaration, or false if some part of the
-//               declaration depends on a template parameter which has
-//               not yet been instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this declaration is an actual, factual declaration, or false
+ * if some part of the declaration depends on a template parameter which has not
+ * yet been instantiated.
+ */
 bool CPPExpression::
 is_fully_specified() const {
   if (!CPPDeclaration::is_fully_specified()) {
@@ -1228,11 +1148,9 @@ is_fully_specified() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::substitute_decl
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPExpression::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -1372,13 +1290,10 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::is_tbd
-//       Access: Public
-//  Description: Returns true if any type within the expression list is
-//               a CPPTBDType and thus isn't fully determined right
-//               now.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any type within the expression list is a CPPTBDType and thus
+ * isn't fully determined right now.
+ */
 bool CPPExpression::
 is_tbd() const {
   switch (_type) {
@@ -1441,11 +1356,9 @@ is_tbd() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPExpression::
 output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   switch (_type) {
@@ -1846,31 +1759,25 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration::SubType CPPExpression::
 get_subtype() const {
   return ST_expression;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::as_expression
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExpression *CPPExpression::
 as_expression() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::elevate_type
-//       Access: Public, Static
-//  Description: Returns the most general of the two given types.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the most general of the two given types.
+ */
 CPPType *CPPExpression::
 elevate_type(CPPType *t1, CPPType *t2) {
   CPPSimpleType *st1 = t1->as_simple_type();
@@ -1919,12 +1826,10 @@ elevate_type(CPPType *t1, CPPType *t2) {
   return st1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::is_equal
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration to determine whether this
-//               expr is equivalent to another expr.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration to determine whether this expr is equivalent to
+ * another expr.
+ */
 bool CPPExpression::
 is_equal(const CPPDeclaration *other) const {
   const CPPExpression *ot = ((CPPDeclaration *)other)->as_expression();
@@ -2011,13 +1916,10 @@ is_equal(const CPPDeclaration *other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExpression::is_less
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration to determine whether this
-//               expr should be ordered before another expr of the
-//               same type, in an arbitrary but fixed ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration to determine whether this expr should be ordered
+ * before another expr of the same type, in an arbitrary but fixed ordering.
+ */
 bool CPPExpression::
 is_less(const CPPDeclaration *other) const {
   const CPPExpression *ot = ((CPPDeclaration *)other)->as_expression();

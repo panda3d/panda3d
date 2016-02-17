@@ -1,16 +1,15 @@
-// Filename: interfaceMaker.cxx
-// Created by:  drose (19Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMaker.cxx
+ * @author drose
+ * @date 2001-09-19
+ */
 
 #include "interfaceMaker.h"
 #include "interrogateBuilder.h"
@@ -42,11 +41,9 @@
 
 InterrogateType dummy_type;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Function::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::Function::
 Function(const string &name,
          const InterrogateType &itype,
@@ -60,11 +57,9 @@ Function(const string &name,
   _args_type = AT_unknown;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Function::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::Function::
 ~Function() {
   Remaps::iterator ri;
@@ -73,11 +68,9 @@ InterfaceMaker::Function::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::MakeSeq::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::MakeSeq::
 MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
   _name(name),
@@ -87,11 +80,9 @@ MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Property::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::Property::
 Property(const InterrogateElement &ielement) :
   _ielement(ielement),
@@ -102,11 +93,9 @@ Property(const InterrogateElement &ielement) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Object::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::Object::
 Object(const InterrogateType &itype) :
   _itype(itype),
@@ -114,23 +103,17 @@ Object(const InterrogateType &itype) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Object::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::Object::
 ~Object() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Object::check_protocols
-//       Access: Public
-//  Description: To be called after all of the methods have been
-//               added, this checks which protocols this object
-//               appears to support (based on the methods it
-//               provides).
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called after all of the methods have been added, this checks which
+ * protocols this object appears to support (based on the methods it provides).
+ */
 void InterfaceMaker::Object::
 check_protocols() {
   int flags = 0;
@@ -178,14 +161,11 @@ check_protocols() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Object::is_static_method
-//       Access: Public
-//  Description: Returns true if the first method found with the
-//               indicated name is a static method, false if it is an
-//               instance method.  This does not test all overloads of
-//               the indicated name, merely the first one found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the first method found with the indicated name is a static
+ * method, false if it is an instance method.  This does not test all overloads
+ * of the indicated name, merely the first one found.
+ */
 bool InterfaceMaker::Object::
 is_static_method(const string &name) {
   Functions::const_iterator fi;
@@ -204,22 +184,18 @@ is_static_method(const string &name) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::
 InterfaceMaker(InterrogateModuleDef *def) :
   _def(def)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMaker::
 ~InterfaceMaker() {
   Objects::iterator oi;
@@ -233,15 +209,11 @@ InterfaceMaker::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::generate_wrappers
-//       Access: Public, Virtual
-//  Description: Walks through the set of functions in the database
-//               and generates wrappers for each function, storing
-//               these in the database.  No actual code should be
-//               output yet; this just updates the database with the
-//               wrapper information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the set of functions in the database and generates wrappers for
+ * each function, storing these in the database.  No actual code should be
+ * output yet; this just updates the database with the wrapper information.
+ */
 void InterfaceMaker::
 generate_wrappers() {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
@@ -296,62 +268,45 @@ generate_wrappers() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::write_includes
-//       Access: Public, Virtual
-//  Description: Generates the list of #include ... whatever that's
-//               required by this particular interface to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of #include ... whatever that's required by this
+ * particular interface to the indicated output stream.
+ */
 void InterfaceMaker::
 write_includes(ostream &) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::write_prototypes
-//       Access: Public, Virtual
-//  Description: Generates the list of function prototypes
-//               corresponding to the functions that will be output in
-//               write_functions().
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of function prototypes corresponding to the functions that
+ * will be output in write_functions().
+ */
 void InterfaceMaker::
 write_prototypes(ostream &out,ostream *out_h) {
   _function_writers.write_prototypes(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::write_functions
-//       Access: Public, Virtual
-//  Description: Generates the list of functions that are appropriate
-//               for this interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of functions that are appropriate for this interface.
+ */
 void InterfaceMaker::
 write_functions(ostream &out) {
   _function_writers.write_code(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::write_module
-//       Access: Public, Virtual
-//  Description: Generates whatever additional code is required to
-//               support a module file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates whatever additional code is required to support a module file.
+ */
 void InterfaceMaker::
 write_module(ostream &, ostream *out_h, InterrogateModuleDef *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::remap_parameter
-//       Access: Public, Virtual
-//  Description: Allocates a new ParameterRemap object suitable to the
-//               indicated parameter type.  If struct_type is
-//               non-NULL, it is the type of the enclosing class for
-//               the function (method) in question.
-//
-//               The return value is a newly-allocated ParameterRemap
-//               object, if the parameter type is acceptable, or NULL
-//               if the parameter type cannot be handled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a new ParameterRemap object suitable to the indicated parameter
+ * type.  If struct_type is non-NULL, it is the type of the enclosing class for
+ * the function (method) in question.  The return value is a newly-allocated
+ * ParameterRemap object, if the parameter type is acceptable, or NULL if the
+ * parameter type cannot be handled.
+ */
 ParameterRemap *InterfaceMaker::
 remap_parameter(CPPType *struct_type, CPPType *param_type) {
   nassertr(param_type != NULL, NULL);
@@ -448,57 +403,44 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::synthesize_this_parameter
-//       Access: Public, Virtual
-//  Description: This method should be overridden and redefined to
-//               return true for interfaces that require the implicit
-//               "this" parameter, if present, to be passed as the
-//               first parameter to any wrapper functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should be overridden and redefined to return true for interfaces
+ * that require the implicit "this" parameter, if present, to be passed as the
+ * first parameter to any wrapper functions.
+ */
 bool InterfaceMaker::
 synthesize_this_parameter() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::separate_overloading
-//       Access: Public, Virtual
-//  Description: This method should be overridden and redefined to
-//               return true for interfaces that require overloaded
-//               instances of a function to be defined as separate
-//               functions (each with its own hashed name), or false
-//               for interfaces that can support overloading natively,
-//               and thus only require one wrapper function per each
-//               overloaded input function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should be overridden and redefined to return true for interfaces
+ * that require overloaded instances of a function to be defined as separate
+ * functions (each with its own hashed name), or false for interfaces that can
+ * support overloading natively, and thus only require one wrapper function per
+ * each overloaded input function.
+ */
 bool InterfaceMaker::
 separate_overloading() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::wrap_global_functions
-//       Access: Public, Virtual
-//  Description: This method should be overridden and redefined to
-//               return false for interfaces that don't support
-//               global functions and should therefore will only
-//               accept function remaps that have a class associated.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should be overridden and redefined to return false for interfaces
+ * that don't support global functions and should therefore will only accept
+ * function remaps that have a class associated.
+ */
 bool InterfaceMaker::
 wrap_global_functions() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::get_function_remaps
-//       Access: Public
-//  Description: Fills up the indicated vector with all of the
-//               FunctionRemap pointers created by this
-//               InterfaceMaker.  It is the user's responsibility to
-//               empty the vector before calling this function; the
-//               new pointers will simply be added to the end.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the indicated vector with all of the FunctionRemap pointers created
+ * by this InterfaceMaker.  It is the user's responsibility to empty the vector
+ * before calling this function; the new pointers will simply be added to the
+ * end.
+ */
 void InterfaceMaker::
 get_function_remaps(vector<FunctionRemap *> &remaps) {
   FunctionsByIndex::iterator fi;
@@ -512,11 +454,9 @@ get_function_remaps(vector<FunctionRemap *> &remaps) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::indent
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &InterfaceMaker::
 indent(ostream &out, int indent_level) {
   for (int i = 0; i < indent_level; i++) {
@@ -525,12 +465,10 @@ indent(ostream &out, int indent_level) {
   return out;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::make_function_remap
-//       Access: Protected, Virtual
-//  Description: Creates a FunctionRemap object corresponding to the
-//               particular function wrapper.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a FunctionRemap object corresponding to the particular function
+ * wrapper.
+ */
 FunctionRemap *InterfaceMaker::
 make_function_remap(const InterrogateType &itype,
                     const InterrogateFunction &ifunc,
@@ -559,18 +497,13 @@ make_function_remap(const InterrogateType &itype,
   return (FunctionRemap *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::get_wrapper_name
-//       Access: Protected, Virtual
-//  Description: Returns the function name that will be used to wrap
-//               the indicated function.
-//
-//               This is the name for the overall wrapper function,
-//               including all of the overloaded instances.
-//               Interfaces that must define a different wrapper for
-//               each FunctionRemap object (i.e. for each instance of
-//               an overloaded function) need not define a name here.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the function name that will be used to wrap the indicated function.
+ * This is the name for the overall wrapper function, including all of the
+ * overloaded instances.  Interfaces that must define a different wrapper for
+ * each FunctionRemap object (i.e.  for each instance of an overloaded function)
+ * need not define a name here.
+ */
 string InterfaceMaker::
 get_wrapper_name(const InterrogateType &itype,
                  const InterrogateFunction &ifunc,
@@ -583,36 +516,28 @@ get_wrapper_name(const InterrogateType &itype,
   return new_name.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::get_wrapper_prefix
-//       Access: Protected, Virtual
-//  Description: Returns the prefix string used to generate wrapper
-//               function names.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the prefix string used to generate wrapper function names.
+ */
 string InterfaceMaker::
 get_wrapper_prefix() {
   return "xx_";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::get_unique_prefix
-//       Access: Protected, Virtual
-//  Description: Returns the prefix string used to generate unique
-//               symbolic names, which are not necessarily C-callable
-//               function names.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the prefix string used to generate unique symbolic names, which are
+ * not necessarily C-callable function names.
+ */
 string InterfaceMaker::
 get_unique_prefix() {
   return "x";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::record_function
-//       Access: Protected
-//  Description: Records the indicated function, along with all of its
-//               FunctionRemap flavors and FunctionWriter helpers, for
-//               future output.  Returns the new Function pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated function, along with all of its FunctionRemap flavors
+ * and FunctionWriter helpers, for future output.  Returns the new Function
+ * pointer.
+ */
 InterfaceMaker::Function *InterfaceMaker::
 record_function(const InterrogateType &itype, FunctionIndex func_index) {
   assert(func_index != 0);
@@ -696,23 +621,18 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
   return func;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::record_function_wrapper
-//       Access: Protected, Virtual
-//  Description: Associates the function wrapper with its function in
-//               the appropriate structures in the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the function wrapper with its function in the appropriate
+ * structures in the database.
+ */
 void InterfaceMaker::
 record_function_wrapper(InterrogateFunction &, FunctionWrapperIndex) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::record_object
-//       Access: Protected
-//  Description: Records the indicated type, which may be a struct
-//               type, along with all of its associated methods, if
-//               any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the indicated type, which may be a struct type, along with all of its
+ * associated methods, if any.
+ */
 InterfaceMaker::Object *InterfaceMaker::
 record_object(TypeIndex type_index) {
   if (type_index == 0) {
@@ -793,14 +713,11 @@ record_object(TypeIndex type_index) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::manage_return_value
-//       Access: Protected
-//  Description: Does any additional processing that we might want to
-//               do on the return value for the function, just before
-//               we return it.  Returns the string representing the
-//               new return value after processing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does any additional processing that we might want to do on the return value
+ * for the function, just before we return it.  Returns the string representing
+ * the new return value after processing.
+ */
 string InterfaceMaker::
 manage_return_value(ostream &out, int indent_level,
                     FunctionRemap *remap, const string &return_expr) const {
@@ -837,13 +754,10 @@ manage_return_value(ostream &out, int indent_level,
   return return_expr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::delete_return_value
-//       Access: Protected
-//  Description: Cleans up the given return value by deleting it or
-//               decrementing its reference count or whatever is
-//               appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Cleans up the given return value by deleting it or decrementing its reference
+ * count or whatever is appropriate.
+ */
 void InterfaceMaker::
 delete_return_value(ostream &out, int indent_level,
                     FunctionRemap *remap, const string &return_expr) const {
@@ -858,12 +772,10 @@ delete_return_value(ostream &out, int indent_level,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::output_ref
-//       Access: Protected
-//  Description: Outputs the code to increment the reference count for
-//               the indicated variable name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the code to increment the reference count for the indicated variable
+ * name.
+ */
 void InterfaceMaker::
 output_ref(ostream &out, int indent_level, FunctionRemap *remap,
            const string &varname) const {
@@ -894,12 +806,10 @@ output_ref(ostream &out, int indent_level, FunctionRemap *remap,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::output_unref
-//       Access: Protected
-//  Description: Outputs the code to decrement the reference count for
-//               the indicated variable name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the code to decrement the reference count for the indicated variable
+ * name.
+ */
 void InterfaceMaker::
 output_unref(ostream &out, int indent_level, FunctionRemap *remap,
              const string &varname) const {
@@ -939,14 +849,11 @@ output_unref(ostream &out, int indent_level, FunctionRemap *remap,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::hash_function_signature
-//       Access: Protected
-//  Description: Generates a unique string that corresponds to the
-//               function signature for the indicated FunctionRemap
-//               object, and stores the generated string in the _hash
-//               member of the FunctionRemap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a unique string that corresponds to the function signature for the
+ * indicated FunctionRemap object, and stores the generated string in the _hash
+ * member of the FunctionRemap.
+ */
 void InterfaceMaker::
 hash_function_signature(FunctionRemap *remap) {
   string hash = InterrogateBuilder::hash_string(remap->_function_signature, 5);
@@ -1009,12 +916,10 @@ hash_function_signature(FunctionRemap *remap) {
   remap->_hash = hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMaker::write_spam_message
-//       Access: Protected
-//  Description: Generates a string to output a spammy message to
-//               notify indicating we have just called this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a string to output a spammy message to notify indicating we have
+ * just called this function.
+ */
 void InterfaceMaker::
 write_spam_message(ostream &out, FunctionRemap *remap) const {
   ostringstream strm;
@@ -1045,4 +950,3 @@ write_spam_message(ostream &out, FunctionRemap *remap) const {
   out << "\\n\";\n"
     "  }\n";
 }
-

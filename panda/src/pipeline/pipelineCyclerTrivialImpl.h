@@ -1,16 +1,15 @@
-// Filename: pipelineCyclerTrivialImpl.h
-// Created by:  drose (31Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pipelineCyclerTrivialImpl.h
+ * @author drose
+ * @date 2006-01-31
+ */
 
 #ifndef PIPELINECYCLERTRIVIALIMPL_H
 #define PIPELINECYCLERTRIVIALIMPL_H
@@ -24,26 +23,18 @@
 
 class Pipeline;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PipelineCyclerTrivialImpl
-// Description : This is the trivial, non-threaded implementation of
-//               PipelineCyclerBase.  It is only compiled when
-//               DO_PIPELINING is not defined (which usually implies
-//               that threading is not available).
-//
-//               This implementation is designed to do as little as
-//               possible, and to compile to nothing, or almost
-//               nothing.  It doesn't actually support pipelining in
-//               any way.  It doesn't even perform any sanity checks
-//               to speak of.  It's designed for a strictly
-//               single-threaded application, and its purpose is to be
-//               as low-overhead as possible.
-//
-//               We define this as a struct instead of a class to
-//               emphasize the importance of byte placement within the
-//               object, so that the inherited struct's data is likely
-//               to be placed by the compiler at the "this" pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the trivial, non-threaded implementation of PipelineCyclerBase.  It
+ * is only compiled when DO_PIPELINING is not defined (which usually implies
+ * that threading is not available).  This implementation is designed to do as
+ * little as possible, and to compile to nothing, or almost nothing.  It doesn't
+ * actually support pipelining in any way.  It doesn't even perform any sanity
+ * checks to speak of.  It's designed for a strictly single-threaded
+ * application, and its purpose is to be as low-overhead as possible.  We define
+ * this as a struct instead of a class to emphasize the importance of byte
+ * placement within the object, so that the inherited struct's data is likely to
+ * be placed by the compiler at the "this" pointer.
+ */
 struct EXPCL_PANDA_PIPELINE PipelineCyclerTrivialImpl {
 public:
   INLINE PipelineCyclerTrivialImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
@@ -102,4 +93,3 @@ public:
 #endif  // !DO_PIPELINING
 
 #endif
-

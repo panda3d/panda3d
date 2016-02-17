@@ -1,16 +1,15 @@
-// Filename: physxBounds3.h
-// Created by:  enn0x (31Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxBounds3.h
+ * @author enn0x
+ * @date 2009-10-31
+ */
 
 #ifndef PHYSXBOUNDS3_H
 #define PHYSXBOUNDS3_H
@@ -21,14 +20,11 @@
 #include "config_physx.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBounds3
-// Description : Represention of a axis aligned bounding box. 
-//               The box is stored as minimum and maximum extent
-//               corners. Alternate representation would be center
-//               and dimensions. May be empty or nonempty. If not
-//               empty, min <= max has to hold.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represention of a axis aligned bounding box.  The box is stored as minimum
+ * and maximum extent corners.  Alternate representation would be center and
+ * dimensions.  May be empty or nonempty.  If not empty, min <= max has to hold.
+ */
 class EXPCL_PANDAPHYSX PhysxBounds3 {
 
 PUBLISHED:

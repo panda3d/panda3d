@@ -1,16 +1,15 @@
-// Filename: signPrcFile_src.cxx
-// Created by:  drose (19Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file signPrcFile_src.cxx
+ * @author drose
+ * @date 2004-10-19
+ */
 
 // This file is intended to be #included by a generated *_sign?.cxx
 // file, one of the output files of make-prc-key.  This contains the
@@ -33,13 +32,11 @@
 
 string progname = PROGNAME;
 
-////////////////////////////////////////////////////////////////////
-//     Function: output_ssl_errors
-//  Description: A convenience function that is itself a wrapper
-//               around the OpenSSL convenience function to output the
-//               recent OpenSSL errors.  This function sends the error
-//               string to cerr.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function that is itself a wrapper around the OpenSSL
+ * convenience function to output the recent OpenSSL errors.  This function
+ * sends the error string to cerr.
+ */
 void
 output_ssl_errors() {
   cerr << "Error occurred in SSL routines.\n";
@@ -60,10 +57,9 @@ output_ssl_errors() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: read_prc_line
-//  Description: Reads a single line of the prc file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single line of the prc file.
+ */
 void
 read_prc_line(const string &line, string &data) {
   // Strip out lines with this prefix.  These are from a previous
@@ -77,11 +73,10 @@ read_prc_line(const string &line, string &data) {
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: read_file
-//  Description: Reads the entire contents of the file, less any
-//               previous signatures, to the indicated string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the entire contents of the file, less any previous signatures, to the
+ * indicated string.
+ */
 void
 read_file(istream &in, string &data) {
   // We avoid getline() here because of its notorious problem with
@@ -132,19 +127,16 @@ read_file(istream &in, string &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output_hex
-//  Description: Outputs the indicated data stream as a series of hex
-//               digits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the indicated data stream as a series of hex digits.
+ */
 void
 output_hex(ostream &out, const unsigned char *data, size_t size) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: sign_prc
-//  Description: Applies the signature to the named file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the signature to the named file.
+ */
 void
 sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   filename.set_text();
@@ -181,7 +173,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
     time_t generated_time = GENERATED_TIME;
     t = localtime(&generated_time);
     strftime(formatted, 128, "%I:%M %p %B %d, %Y", t);
-    
+
     strm << "\n"
          << "##! Signed with level " << KEY_NUMBER << " key generated on "
          << formatted << "\n"
@@ -245,10 +237,9 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: usage
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void
 usage() {
   time_t generated_time = GENERATED_TIME;
@@ -281,10 +272,9 @@ usage() {
     "       prompted interactively.\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: main
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int
 main(int argc, char **argv) {
   preprocess_argv(argc, argv);

@@ -1,16 +1,15 @@
-// Filename: pStatThreadData.h
-// Created by:  drose (08Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatThreadData.h
+ * @author drose
+ * @date 2000-07-08
+ */
 
 #ifndef PSTATTHREADDATA_H
 #define PSTATTHREADDATA_H
@@ -25,16 +24,13 @@ class PStatCollectorDef;
 class PStatFrameData;
 class PStatClientData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatThreadData
-// Description : A collection of FrameData structures for
-//               recently-received frames within a particular thread.
-//               This holds the raw data as reported by the client,
-//               and it automatically handles frames received
-//               out-of-order or skipped.  You can ask for a
-//               particular frame by frame number or time and receive
-//               the data for the nearest frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * A collection of FrameData structures for recently-received frames within a
+ * particular thread.  This holds the raw data as reported by the client, and it
+ * automatically handles frames received out-of-order or skipped.  You can ask
+ * for a particular frame by frame number or time and receive the data for the
+ * nearest frame.
+ */
 class PStatThreadData : public ReferenceCount {
 public:
   PStatThreadData(const PStatClientData *client_data);
@@ -85,4 +81,3 @@ private:
 #include "pStatThreadData.I"
 
 #endif
-

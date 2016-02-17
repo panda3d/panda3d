@@ -1,23 +1,19 @@
-// Filename: vertexBufferContext.I
-// Created by:  drose (17Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexBufferContext.I
+ * @author drose
+ * @date 2005-03-17
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 INLINE VertexBufferContext::
 VertexBufferContext(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
   BufferContext(&pgo->_vbuffer_residency),
@@ -26,72 +22,58 @@ VertexBufferContext(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::get_data
-//       Access: Public
-//  Description: Returns the pointer to the client-side array data
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the client-side array data object.
+ */
 INLINE GeomVertexArrayData *VertexBufferContext::
 get_data() const {
   return _data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::changed_size
-//       Access: Public
-//  Description: Returns true if the data has changed size since the
-//               last time mark_loaded() was called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the data has changed size since the last time mark_loaded()
+ * was called.
+ */
 INLINE bool VertexBufferContext::
 changed_size(const GeomVertexArrayDataHandle *reader) const {
   nassertr(reader->get_object() == _data, false);
   return get_data_size_bytes() != (size_t)reader->get_data_size_bytes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::changed_usage_hint
-//       Access: Public
-//  Description: Returns true if the data has changed its usage hint
-//               since the last time mark_loaded() was called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the data has changed its usage hint since the last time
+ * mark_loaded() was called.
+ */
 INLINE bool VertexBufferContext::
 changed_usage_hint(const GeomVertexArrayDataHandle *reader) const {
   nassertr(reader->get_object() == _data, false);
   return _usage_hint != reader->get_usage_hint();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::was_modified
-//       Access: Public
-//  Description: Returns true if the data has been modified since the
-//               last time mark_loaded() was called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the data has been modified since the last time mark_loaded()
+ * was called.
+ */
 INLINE bool VertexBufferContext::
 was_modified(const GeomVertexArrayDataHandle *reader) const {
   nassertr(reader->get_object() == _data, false);
   return get_modified() != reader->get_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::update_data_size_bytes
-//       Access: Public
-//  Description: Should be called (usually by a derived class) when
-//               the on-card size of this object has changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called (usually by a derived class) when the on-card size of this
+ * object has changed.
+ */
 INLINE void VertexBufferContext::
 update_data_size_bytes(size_t new_data_size_bytes) {
   BufferContext::update_data_size_bytes(new_data_size_bytes);
   AdaptiveLruPage::set_lru_size(new_data_size_bytes);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::mark_loaded
-//       Access: Public
-//  Description: Should be called after the VertexBufferContext has been
-//               loaded into graphics memory, this updates the
-//               internal flags for changed_size() and modified().
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called after the VertexBufferContext has been loaded into graphics
+ * memory, this updates the internal flags for changed_size() and modified().
+ */
 INLINE void VertexBufferContext::
 mark_loaded(const GeomVertexArrayDataHandle *reader) {
   nassertv(reader->get_object() == _data);
@@ -103,12 +85,9 @@ mark_loaded(const GeomVertexArrayDataHandle *reader) {
   set_resident(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::mark_unloaded
-//       Access: Public
-//  Description: Should be called after the buffer has been forced
-//               out of graphics memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called after the buffer has been forced out of graphics memory.
+ */
 INLINE void VertexBufferContext::
 mark_unloaded() {
   update_modified(UpdateSeq::old());

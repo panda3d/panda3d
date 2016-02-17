@@ -1,16 +1,15 @@
-// Filename: geomVertexColumn.h
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexColumn.h
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #ifndef GEOMVERTEXCOLUMN_H
 #define GEOMVERTEXCOLUMN_H
@@ -30,13 +29,11 @@ class DatagramIterator;
 class GeomVertexReader;
 class GeomVertexWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexColumn
-// Description : This defines how a single column is interleaved
-//               within a vertex array stored within a Geom.  The
-//               GeomVertexArrayFormat class maintains a list of these
-//               to completely define a particular array structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines how a single column is interleaved within a vertex array stored
+ * within a Geom.  The GeomVertexArrayFormat class maintains a list of these to
+ * completely define a particular array structure.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexColumn : public GeomEnums {
 private:
   INLINE GeomVertexColumn();

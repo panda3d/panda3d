@@ -1,16 +1,15 @@
-// Filename: androidGraphicsWindow.cxx
-// Created by:  rdb (11Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file androidGraphicsWindow.cxx
+ * @author rdb
+ * @date 2013-01-11
+ */
 
 #include "androidGraphicsWindow.h"
 #include "androidGraphicsStateGuardian.h"
@@ -34,11 +33,9 @@ extern IMPORT_CLASS struct android_app* panda_android_app;
 
 TypeHandle AndroidGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AndroidGraphicsWindow::
 AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const string &name,
@@ -62,25 +59,20 @@ AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AndroidGraphicsWindow::
 ~AndroidGraphicsWindow() {
   destroy_surface();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool AndroidGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -128,13 +120,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void AndroidGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -153,16 +142,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.  This should cause the window to wait for the flip, if necessary.
+ */
 void AndroidGraphicsWindow::
 end_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
@@ -180,16 +164,11 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via request_properties()
+ * This function is called only within the window thread.
+ */
 void AndroidGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
@@ -208,23 +187,15 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.  The window
+ * properties are applied immediately, rather than waiting until the next frame.
+ * This implies that this method may *only* be called from within the window
+ * thread.  The return value is true if the properties are set, false if they
+ * are ignored.  This is mainly useful for derived classes to implement
+ * extensions to this function.
+ */
 void AndroidGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (_pipe == (GraphicsPipe *)NULL) {
@@ -255,12 +226,9 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void AndroidGraphicsWindow::
 close_window() {
   destroy_surface();
@@ -272,13 +240,10 @@ close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool AndroidGraphicsWindow::
 open_window() {
   // GSG Creation/Initialization
@@ -333,11 +298,9 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::destroy_surface
-//       Access: Protected, Virtual
-//  Description: Terminates the EGL surface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates the EGL surface.
+ */
 void AndroidGraphicsWindow::
 destroy_surface() {
   if (_egl_surface != EGL_NO_SURFACE) {
@@ -356,11 +319,9 @@ destroy_surface() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::create_surface
-//       Access: Protected, Virtual
-//  Description: Creates the EGL surface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the EGL surface.
+ */
 bool AndroidGraphicsWindow::
 create_surface() {
   AndroidGraphicsStateGuardian *androidgsg;
@@ -415,22 +376,18 @@ create_surface() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::handle_command
-//       Access: Private, Static
-//  Description: Android app sends a command from the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Android app sends a command from the main thread.
+ */
 void AndroidGraphicsWindow::
 handle_command(struct android_app *app, int32_t command) {
   AndroidGraphicsWindow* window = (AndroidGraphicsWindow*) app->userData;
   window->ns_handle_command(command);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::ns_handle_command
-//       Access: Private
-//  Description: Android app sends a command from the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Android app sends a command from the main thread.
+ */
 void AndroidGraphicsWindow::
 ns_handle_command(int32_t command) {
   WindowProperties properties;
@@ -490,12 +447,9 @@ ns_handle_command(int32_t command) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::handle_input_event
-//       Access: Private, Static
-//  Description: Processes an input event.  Returns 1 if the event
-//               was handled, 0 otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes an input event.  Returns 1 if the event was handled, 0 otherwise.
+ */
 int32_t AndroidGraphicsWindow::
 handle_input_event(struct android_app* app, AInputEvent *event) {
   AndroidGraphicsWindow* window = (AndroidGraphicsWindow*) app->userData;
@@ -510,11 +464,9 @@ handle_input_event(struct android_app* app, AInputEvent *event) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::handle_keystroke
-//       Access: Private
-//  Description: Processes a key event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a key event.
+ */
 int32_t AndroidGraphicsWindow::
 handle_key_event(const AInputEvent *event) {
   /*
@@ -559,11 +511,9 @@ handle_key_event(const AInputEvent *event) {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::handle_motion_event
-//       Access: Private
-//  Description: Processes a motion event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a motion event.
+ */
 int32_t AndroidGraphicsWindow::
 handle_motion_event(const AInputEvent *event) {
   int32_t action = AMotionEvent_getAction(event);
@@ -583,13 +533,10 @@ handle_motion_event(const AInputEvent *event) {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsWindow::map_button
-//       Access: Private
-//  Description: Given an Android keycode, returns an appropriate
-//               ButtonHandle object, or ButtonHandle::none() if
-//               a matching ButtonHandle does not exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an Android keycode, returns an appropriate ButtonHandle object, or
+ * ButtonHandle::none() if a matching ButtonHandle does not exist.
+ */
 ButtonHandle AndroidGraphicsWindow::
 map_button(int32_t keycode) {
   switch (keycode) {

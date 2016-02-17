@@ -1,45 +1,37 @@
-// Filename: nodePointerToBase.I
-// Created by:  drose (07May05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePointerToBase.I
+ * @author drose
+ * @date 2005-05-07
+ */
 
+/**
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+ */
 template<class T>
 INLINE NodePointerToBase<T>::
 NodePointerToBase(To *ptr) {
   reassign(ptr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE NodePointerToBase<T>::
 NodePointerToBase(const NodePointerToBase<T> &copy) {
   reassign(copy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::Destructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE NodePointerToBase<T>::
 ~NodePointerToBase() {
@@ -47,11 +39,9 @@ INLINE NodePointerToBase<T>::
 }
 
 #ifdef USE_MOVE_SEMANTICS
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::Move Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE NodePointerToBase<T>::
 NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT {
@@ -59,15 +49,12 @@ NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT {
   from._void_ptr = (void *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::reassign
-//       Access: Protected
-//  Description: This version of reassign is called when a
-//               NodePointerTo is assigned to this Node PointerTo
-//               as an rvalue.  In this case, we can steal the
-//               reference count from the other PointerTo, without
-//               needing to call ref() and unref() unnecessarily.
-////////////////////////////////////////////////////////////////////
+/**
+ * This version of reassign is called when a NodePointerTo is assigned to this
+ * Node PointerTo as an rvalue.  In this case, we can steal the reference count
+ * from the other PointerTo, without needing to call ref() and unref()
+ * unnecessarily.
+ */
 template<class T>
 INLINE void NodePointerToBase<T>::
 reassign(NodePointerToBase<T> &&from) NOEXCEPT {
@@ -83,13 +70,10 @@ reassign(NodePointerToBase<T> &&from) NOEXCEPT {
 }
 #endif  // USE_MOVE_SEMANTICS
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::reassign
-//       Access: Protected
-//  Description: This is the main work of the NodePointerTo family.  When
-//               the pointer is reassigned, decrement the old
-//               reference count and increment the new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main work of the NodePointerTo family.  When the pointer is
+ * reassigned, decrement the old reference count and increment the new one.
+ */
 template<class T>
 void NodePointerToBase<T>::
 reassign(To *ptr) {
@@ -127,11 +111,9 @@ reassign(To *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::reassign
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE void NodePointerToBase<T>::
 reassign(const NodePointerToBase<To> &copy) {
@@ -139,24 +121,20 @@ reassign(const NodePointerToBase<To> &copy) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::clear
-//       Access: Published
-//  Description: A convenient way to set the NodePointerTo object to NULL.
-//               (Assignment to a NULL pointer also works, of course.)
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenient way to set the NodePointerTo object to NULL. (Assignment to a
+ * NULL pointer also works, of course.)
+ */
 template<class T>
 INLINE void NodePointerToBase<T>::
 clear() {
   reassign((To *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePointerToBase::output
-//       Access: Published
-//  Description: A handy function to output NodePointerTo's as a hex
-//               pointer followed by a reference count.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy function to output NodePointerTo's as a hex pointer followed by a
+ * reference count.
+ */
 template<class T>
 INLINE void NodePointerToBase<T>::
 output(ostream &out) const {

@@ -1,16 +1,15 @@
-// Filename: graphicsWindowInputDevice.h
-// Created by:  drose (24May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsWindowInputDevice.h
+ * @author drose
+ * @date 2000-05-24
+ */
 
 #ifndef GRAPHICSWINDOWINPUTDEVICE_H
 #define GRAPHICSWINDOWINPUTDEVICE_H
@@ -31,14 +30,12 @@
 // Forward declarations
 class GraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsWindowInputDevice
-// Description : This is a structure representing a single input
-//               device that may be associated with a window.
-//               Typically this will be a keyboard/mouse pair, and
-//               there will be exactly one of these associated with
-//               each window, but other variants are possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a structure representing a single input device that may be associated
+ * with a window.  Typically this will be a keyboard/mouse pair, and there will
+ * be exactly one of these associated with each window, but other variants are
+ * possible.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice {
 private:
   GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags);

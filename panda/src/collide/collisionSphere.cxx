@@ -1,17 +1,15 @@
-// Filename: collisionSphere.cxx
-// Created by:  drose (24Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionSphere.cxx
+ * @author drose
+ * @date 2000-04-24
+ */
 
 #include "collisionSphere.h"
 #include "collisionLine.h"
@@ -39,31 +37,25 @@ PStatCollector CollisionSphere::_test_pcollector(
   "Collision Tests:CollisionSphere");
 TypeHandle CollisionSphere::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionSolid *CollisionSphere::
 make_copy() {
   return new CollisionSphere(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(CollisionEntry) CollisionSphere::
 test_intersection(const CollisionEntry &entry) const {
   return entry.get_into()->test_intersection_from_sphere(entry);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::xform
-//       Access: Public, Virtual
-//  Description: Transforms the solid by the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the solid by the indicated matrix.
+ */
 void CollisionSphere::
 xform(const LMatrix4 &mat) {
   _center = _center * mat;
@@ -76,68 +68,53 @@ xform(const LMatrix4 &mat) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::get_collision_origin
-//       Access: Public, Virtual
-//  Description: Returns the point in space deemed to be the "origin"
-//               of the solid for collision purposes.  The closest
-//               intersection point to this origin point is considered
-//               to be the most significant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point in space deemed to be the "origin" of the solid for
+ * collision purposes.  The closest intersection point to this origin point is
+ * considered to be the most significant.
+ */
 LPoint3 CollisionSphere::
 get_collision_origin() const {
   return get_center();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::get_volume_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of bounding volume tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of bounding volume
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionSphere::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::get_test_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of intersection tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of intersection
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionSphere::
 get_test_pcollector() {
   return _test_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionSphere::
 output(ostream &out) const {
   out << "sphere, c (" << get_center() << "), r " << get_radius();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(BoundingVolume) CollisionSphere::
 compute_internal_bounds() const {
   return new BoundingSphere(_center, _radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
@@ -175,17 +152,17 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
         // No intersection.
         return NULL;
       }
-      
+
       if (t2 < 0.0 || t1 > 1.0) {
         // Both intersection points are before the start of the segment or
         // after the end of the segment.
         return NULL;
       }
-      
+
       // doubles, not floats, to satisfy min and max templates.
       actual_t = min(1.0, max(0.0, t1));
       contact_point = from_a + actual_t * (from_b - from_a);
-      
+
       if (t1 < 0.0) {
         // Point a is within the sphere.  The first intersection point is
         // point a itself.
@@ -200,7 +177,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       return NULL;
     }
   }
-  
+
   if (collide_cat.is_debug()) {
     collide_cat.debug()
       << "intersection detected from " << entry.get_from_node_path()
@@ -246,11 +223,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_line
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
@@ -288,11 +263,9 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_box
-//       Access: Public, Virtual
-//  Description: Double dispatch point for box as a FROM object
-////////////////////////////////////////////////////////////////////
+/**
+ * Double dispatch point for box as a FROM object
+ */
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
@@ -366,11 +339,9 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
@@ -415,11 +386,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_segment
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
@@ -466,11 +435,9 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_parabola
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(CollisionEntry) CollisionSphere::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
@@ -511,12 +478,9 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::fill_viz_geom
-//       Access: Protected, Virtual
-//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
-//               for rendering this solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this solid.
+ */
 void CollisionSphere::
 fill_viz_geom() {
   if (collide_cat.is_debug()) {
@@ -531,7 +495,7 @@ fill_viz_geom() {
     ("collision", GeomVertexFormat::get_v3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   for (int sl = 0; sl < num_slices; ++sl) {
     PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
@@ -543,31 +507,26 @@ fill_viz_geom() {
       vertex.add_data3(compute_point(latitude, longitude1));
     }
     vertex.add_data3(compute_point(1.0, longitude0));
-    
+
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  
+
   _viz_geom->add_geom(geom, get_solid_viz_state());
   _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::intersects_line
-//       Access: Protected
-//  Description: Determine the point(s) of intersection of a parametric
-//               line with the sphere.  The line is infinite in both
-//               directions, and passes through "from" and from+delta.
-//               If the line does not intersect the sphere, the
-//               function returns false, and t1 and t2 are undefined.
-//               If it does intersect the sphere, it returns true, and
-//               t1 and t2 are set to the points along the equation
-//               from+t*delta that correspond to the two points of
-//               intersection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determine the point(s) of intersection of a parametric line with the sphere.
+ * The line is infinite in both directions, and passes through "from" and
+ * from+delta.  If the line does not intersect the sphere, the function returns
+ * false, and t1 and t2 are undefined.  If it does intersect the sphere, it
+ * returns true, and t1 and t2 are set to the points along the equation
+ * from+t*delta that correspond to the two points of intersection.
+ */
 bool CollisionSphere::
 intersects_line(double &t1, double &t2,
                 const LPoint3 &from, const LVector3 &delta,
@@ -632,19 +591,13 @@ intersects_line(double &t1, double &t2,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::intersects_parabola
-//       Access: Protected
-//  Description: Determine a point of intersection of a parametric
-//               parabola with the sphere.
-//
-//               We only consider the segment of the parabola between
-//               t1 and t2, which has already been computed as
-//               corresponding to points p1 and p2.  If there is an
-//               intersection, t is set to the parametric point of
-//               intersection, and true is returned; otherwise, false
-//               is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determine a point of intersection of a parametric parabola with the sphere.
+ * We only consider the segment of the parabola between t1 and t2, which has
+ * already been computed as corresponding to points p1 and p2.  If there is an
+ * intersection, t is set to the parametric point of intersection, and true is
+ * returned; otherwise, false is returned.
+ */
 bool CollisionSphere::
 intersects_parabola(double &t, const LParabola &parabola,
                     double t1, double t2,
@@ -675,7 +628,7 @@ intersects_parabola(double &t, const LParabola &parabola,
   if (tmid != t1 && tmid != t2) {
     LPoint3 pmid = parabola.calc_point(tmid);
     LPoint3 pmid2 = (p1 + p2) * 0.5f;
-  
+
     if ((pmid - pmid2).length_squared() > 0.001f) {
       // Subdivide.
       if (intersects_parabola(t, parabola, t1, tmid, p1, pmid)) {
@@ -699,14 +652,11 @@ intersects_parabola(double &t, const LParabola &parabola,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::compute_point
-//       Access: Protected
-//  Description: Returns a point on the surface of the sphere.
-//               latitude and longitude range from 0.0 to 1.0.  This
-//               is used by fill_viz_geom() to create a visible
-//               representation of the sphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a point on the surface of the sphere.  latitude and longitude range
+ * from 0.0 to 1.0.  This is used by fill_viz_geom() to create a visible
+ * representation of the sphere.
+ */
 LVertex CollisionSphere::
 compute_point(PN_stdfloat latitude, PN_stdfloat longitude) const {
   PN_stdfloat s1, c1;
@@ -719,22 +669,18 @@ compute_point(PN_stdfloat latitude, PN_stdfloat longitude) const {
   return p * get_radius() + get_center();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a CollisionSphere object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionSphere object
+ */
 void CollisionSphere::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionSphere);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CollisionSphere::
 write_datagram(BamWriter *manager, Datagram &me) {
   CollisionSolid::write_datagram(manager, me);
@@ -742,11 +688,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_stdfloat(_radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::make_CollisionSphere
-//       Access: Protected
-//  Description: Factory method to generate a CollisionSphere object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionSphere object
+ */
 TypedWritable *CollisionSphere::
 make_CollisionSphere(const FactoryParams &params) {
   CollisionSphere *me = new CollisionSphere;
@@ -758,14 +702,11 @@ make_CollisionSphere(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void CollisionSphere::
 fillin(DatagramIterator& scan, BamReader* manager) {
   CollisionSolid::fillin(scan, manager);

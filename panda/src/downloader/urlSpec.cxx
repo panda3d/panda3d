@@ -1,27 +1,24 @@
-// Filename: urlSpec.cxx
-// Created by:  drose (24Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file urlSpec.cxx
+ * @author drose
+ * @date 2002-09-24
+ */
 
 #include "urlSpec.h"
 
 #include <ctype.h>
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 URLSpec::
 URLSpec() {
   _port = 0;
@@ -38,11 +35,9 @@ URLSpec() {
   _query_start = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void URLSpec::
 operator = (const URLSpec &copy) {
   _url = copy._url;
@@ -60,12 +55,10 @@ operator = (const URLSpec &copy) {
   _query_start = copy._query_start;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::get_scheme
-//       Access: Published
-//  Description: Returns the scheme specified by the URL, or empty
-//               string if no scheme is specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scheme specified by the URL, or empty string if no scheme is
+ * specified.
+ */
 string URLSpec::
 get_scheme() const {
   if (has_scheme()) {
@@ -74,12 +67,10 @@ get_scheme() const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::get_port
-//       Access: Published
-//  Description: Returns the port number specified by the URL, or the
-//               default port if not specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the port number specified by the URL, or the default port if not
+ * specified.
+ */
 int URLSpec::
 get_port() const {
   if (has_port()) {
@@ -88,14 +79,11 @@ get_port() const {
   return get_default_port_for_scheme(get_scheme());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::is_default_port
-//       Access: Published
-//  Description: Returns true if the port number encoded in this URL
-//               is the default port number for the scheme (or if
-//               there is no port number), or false if it is a
-//               nonstandard port.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the port number encoded in this URL is the default port
+ * number for the scheme (or if there is no port number), or false if it is a
+ * nonstandard port.
+ */
 bool URLSpec::
 is_default_port() const {
   if (!has_port()) {
@@ -104,12 +92,10 @@ is_default_port() const {
   return (_port == get_default_port_for_scheme(get_scheme()));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::get_default_port_for_scheme
-//       Access: Published, Static
-//  Description: Returns the default port number for the indicated
-//               scheme, or 0 if there is no known default.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default port number for the indicated scheme, or 0 if there is no
+ * known default.
+ */
 int URLSpec::
 get_default_port_for_scheme(const string &scheme) {
   if (scheme == "http" || scheme.empty()) {
@@ -125,14 +111,11 @@ get_default_port_for_scheme(const string &scheme) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::get_server_and_port
-//       Access: Published
-//  Description: Returns a string consisting of the server name,
-//               followed by a colon, followed by the port number.  If
-//               the port number is not explicitly given in the URL,
-//               this string will include the implicit port number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string consisting of the server name, followed by a colon, followed
+ * by the port number.  If the port number is not explicitly given in the URL,
+ * this string will include the implicit port number.
+ */
 string URLSpec::
 get_server_and_port() const {
   if (has_port()) {
@@ -143,12 +126,9 @@ get_server_and_port() const {
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::get_path
-//       Access: Published
-//  Description: Returns the path specified by the URL, or "/" if no
-//               path is specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the path specified by the URL, or "/" if no path is specified.
+ */
 string URLSpec::
 get_path() const {
   if (has_path()) {
@@ -157,12 +137,10 @@ get_path() const {
   return "/";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::get_path_and_query
-//       Access: Published
-//  Description: Returns the path (or "/" if no path is specified),
-//               followed by the query if it is specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the path (or "/" if no path is specified), followed by the query if
+ * it is specified.
+ */
 string URLSpec::
 get_path_and_query() const {
   if (has_path()) {
@@ -174,11 +152,9 @@ get_path_and_query() const {
   return "/";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_scheme
-//       Access: Published
-//  Description: Replaces the scheme part of the URL specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the scheme part of the URL specification.
+ */
 void URLSpec::
 set_scheme(const string &scheme) {
   int length_adjust;
@@ -244,12 +220,10 @@ set_scheme(const string &scheme) {
   _query_start += length_adjust;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_authority
-//       Access: Published
-//  Description: Replaces the authority part of the URL specification.
-//               This includes the username, server, and port.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the authority part of the URL specification.  This includes the
+ * username, server, and port.
+ */
 void URLSpec::
 set_authority(const string &authority) {
   int length_adjust;
@@ -299,11 +273,9 @@ set_authority(const string &authority) {
   parse_authority();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_username
-//       Access: Published
-//  Description: Replaces the username part of the URL specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the username part of the URL specification.
+ */
 void URLSpec::
 set_username(const string &username) {
   if (username.empty() && !has_authority()) {
@@ -323,11 +295,9 @@ set_username(const string &username) {
   set_authority(authority);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_server
-//       Access: Published
-//  Description: Replaces the server part of the URL specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the server part of the URL specification.
+ */
 void URLSpec::
 set_server(const string &server) {
   if (server.empty() && !has_authority()) {
@@ -347,11 +317,9 @@ set_server(const string &server) {
   set_authority(authority);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_port
-//       Access: Published
-//  Description: Replaces the port part of the URL specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the port part of the URL specification.
+ */
 void URLSpec::
 set_port(const string &port) {
   if (port.empty() && !has_authority()) {
@@ -372,12 +340,9 @@ set_port(const string &port) {
   set_authority(authority);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_port
-//       Access: Published
-//  Description: Replaces the port part of the URL specification,
-//               given a numeric port number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the port part of the URL specification, given a numeric port number.
+ */
 void URLSpec::
 set_port(int port) {
   ostringstream str;
@@ -385,14 +350,11 @@ set_port(int port) {
   set_port(str.str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_server_and_port
-//       Access: Published
-//  Description: Replaces the server and port parts of the URL
-//               specification simultaneously.  The input string
-//               should be of the form "server:port", or just
-//               "server" to make the port number implicit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the server and port parts of the URL specification simultaneously.
+ * The input string should be of the form "server:port", or just "server" to
+ * make the port number implicit.
+ */
 void URLSpec::
 set_server_and_port(const string &server_and_port) {
   if (server_and_port.empty() && !has_authority()) {
@@ -407,11 +369,9 @@ set_server_and_port(const string &server_and_port) {
   set_authority(authority);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_path
-//       Access: Published
-//  Description: Replaces the path part of the URL specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the path part of the URL specification.
+ */
 void URLSpec::
 set_path(const string &path) {
   int length_adjust;
@@ -453,11 +413,9 @@ set_path(const string &path) {
   _query_start += length_adjust;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_query
-//       Access: Published
-//  Description: Replaces the query part of the URL specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the query part of the URL specification.
+ */
 void URLSpec::
 set_query(const string &query) {
   if (query.empty()) {
@@ -481,14 +439,11 @@ set_query(const string &query) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::set_url
-//       Access: Published
-//  Description: Completely replaces the URL with the indicated
-//               string.  If server_name_expected is true, it is a
-//               hint that an undecorated URL is probably a server
-//               name, not a local filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely replaces the URL with the indicated string.  If
+ * server_name_expected is true, it is a hint that an undecorated URL is
+ * probably a server name, not a local filename.
+ */
 void URLSpec::
 set_url(const string &url, bool server_name_expected) {
   size_t p, q;
@@ -560,7 +515,7 @@ set_url(const string &url, bool server_name_expected) {
 
   // We also know we have an authority if the url contains two slashes
   // at this point.
-  bool leading_slashes = 
+  bool leading_slashes =
     (start < _url.length() - 1 && _url.substr(start, 2) == "//");
   if (leading_slashes) {
     has_authority = true;
@@ -615,11 +570,9 @@ set_url(const string &url, bool server_name_expected) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::input
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool URLSpec::
 input(istream &in) {
   string url;
@@ -631,27 +584,20 @@ input(istream &in) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void URLSpec::
 output(ostream &out) const {
   out << get_url();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::quote
-//       Access: Published, Static
-//  Description: Returns the source string with all "unsafe"
-//               characters quoted, making a string suitable for
-//               placing in a URL.  Letters, digits, and the
-//               underscore, comma, period, and hyphen characters, as
-//               well as any included in the safe string, are left
-//               alone; all others are converted to hex
-//               representation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the source string with all "unsafe" characters quoted, making a
+ * string suitable for placing in a URL.  Letters, digits, and the underscore,
+ * comma, period, and hyphen characters, as well as any included in the safe
+ * string, are left alone; all others are converted to hex representation.
+ */
 string URLSpec::
 quote(const string &source, const string &safe) {
   ostringstream result;
@@ -687,12 +633,10 @@ quote(const string &source, const string &safe) {
   return result.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::quote_plus
-//       Access: Published, Static
-//  Description: Behaves like quote() with the additional behavior of
-//               replacing spaces with plus signs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like quote() with the additional behavior of replacing spaces with
+ * plus signs.
+ */
 string URLSpec::
 quote_plus(const string &source, const string &safe) {
   ostringstream result;
@@ -732,13 +676,10 @@ quote_plus(const string &source, const string &safe) {
   return result.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::unquote
-//       Access: Published, Static
-//  Description: Reverses the operation of quote(): converts escaped
-//               characters of the form "%xx" to their ascii
-//               equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the operation of quote(): converts escaped characters of the form
+ * "%xx" to their ascii equivalent.
+ */
 string URLSpec::
 unquote(const string &source) {
   string result;
@@ -770,13 +711,10 @@ unquote(const string &source) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::unquote_plus
-//       Access: Published, Static
-//  Description: Reverses the operation of quote_plus(): converts escaped
-//               characters of the form "%xx" to their ascii
-//               equivalent, and also converts plus signs to spaces.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the operation of quote_plus(): converts escaped characters of the
+ * form "%xx" to their ascii equivalent, and also converts plus signs to spaces.
+ */
 string URLSpec::
 unquote_plus(const string &source) {
   string result;
@@ -812,15 +750,11 @@ unquote_plus(const string &source) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: URLSpec::parse_authority
-//       Access: Private
-//  Description: Assumes _url[_username_start .. _port_end - 1] is
-//               the authority component if the URL, consisting of
-//               [username@]server[:port].  Parses out the three
-//               pieces and updates the various _start and _end
-//               parameters accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes _url[_username_start .. _port_end - 1] is the authority component if
+ * the URL, consisting of [username@]server[:port].  Parses out the three pieces
+ * and updates the various _start and _end parameters accordingly.
+ */
 void URLSpec::
 parse_authority() {
   _flags &= ~(F_has_username | F_has_server | F_has_port);
@@ -854,7 +788,7 @@ parse_authority() {
     _flags |= F_has_port;
     _server_end = colon;
     _port_start = colon + 1;
-        
+
     // Decode the port into an integer.  Don't bother to error
     // check if it's not really an integer.
     string port_str = _url.substr(_port_start, _port_end - _port_start);

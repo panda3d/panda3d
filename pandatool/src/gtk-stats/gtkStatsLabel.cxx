@@ -1,16 +1,15 @@
-// Filename: gtkStatsLabel.cxx
-// Created by:  drose (16Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gtkStatsLabel.cxx
+ * @author drose
+ * @date 2006-01-16
+ */
 
 #include "gtkStatsLabel.h"
 #include "gtkStatsMonitor.h"
@@ -21,11 +20,9 @@ int GtkStatsLabel::_right_margin = 2;
 int GtkStatsLabel::_top_margin = 2;
 int GtkStatsLabel::_bottom_margin = 2;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsLabel::
 GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
               int thread_index, int collector_index, bool use_fullname) :
@@ -42,17 +39,17 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   }
 
   _widget = gtk_drawing_area_new();
-  gtk_widget_add_events(_widget, 
-			GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | 
-			GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(_widget), "expose_event",  
-		   G_CALLBACK(expose_event_callback), this);
-  g_signal_connect(G_OBJECT(_widget), "enter_notify_event",  
-		   G_CALLBACK(enter_notify_event_callback), this);
-  g_signal_connect(G_OBJECT(_widget), "leave_notify_event",  
-		   G_CALLBACK(leave_notify_event_callback), this);
-  g_signal_connect(G_OBJECT(_widget), "button_press_event",  
-		   G_CALLBACK(button_press_event_callback), this);
+  gtk_widget_add_events(_widget,
+      GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |
+      GDK_BUTTON_PRESS_MASK);
+  g_signal_connect(G_OBJECT(_widget), "expose_event",
+       G_CALLBACK(expose_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "enter_notify_event",
+       G_CALLBACK(enter_notify_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "leave_notify_event",
+       G_CALLBACK(leave_notify_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "button_press_event",
+       G_CALLBACK(button_press_event_callback), this);
 
   gtk_widget_show(_widget);
 
@@ -88,52 +85,41 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   _height = height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsLabel::
 ~GtkStatsLabel() {
   //  DeleteObject(_bg_brush);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::get_widget
-//       Access: Public
-//  Description: Returns the widget for this label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the widget for this label.
+ */
 GtkWidget *GtkStatsLabel::
 get_widget() const {
   return _widget;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::get_height
-//       Access: Public
-//  Description: Returns the height of the label as we requested it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the height of the label as we requested it.
+ */
 int GtkStatsLabel::
 get_height() const {
   return _height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::get_collector_index
-//       Access: Public
-//  Description: Returns the collector this label represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the collector this label represents.
+ */
 int GtkStatsLabel::
 get_collector_index() const {
   return _collector_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::set_highlight
-//       Access: Public
-//  Description: Enables or disables the visual highlight for this
-//               label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables the visual highlight for this label.
+ */
 void GtkStatsLabel::
 set_highlight(bool highlight) {
   if (_highlight != highlight) {
@@ -142,23 +128,17 @@ set_highlight(bool highlight) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::get_highlight
-//       Access: Public
-//  Description: Returns true if the visual highlight for this
-//               label is enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the visual highlight for this label is enabled.
+ */
 bool GtkStatsLabel::
 get_highlight() const {
   return _highlight;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::set_mouse_within
-//       Access: Private
-//  Description: Used internally to indicate whether the mouse is
-//               within the label's widget.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used internally to indicate whether the mouse is within the label's widget.
+ */
 void GtkStatsLabel::
 set_mouse_within(bool mouse_within) {
   if (_mouse_within != mouse_within) {
@@ -167,11 +147,9 @@ set_mouse_within(bool mouse_within) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::expose_event_callback
-//       Access: Private, Static
-//  Description: Draws the background color of the label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the background color of the label.
+ */
 gboolean GtkStatsLabel::
 expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
@@ -179,63 +157,56 @@ expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GdkGC *gc = gdk_gc_new(widget->window);
   gdk_gc_set_rgb_fg_color(gc, &self->_bg_color);
 
-  gdk_draw_rectangle(widget->window, gc, TRUE, 0, 0, 
-		     widget->allocation.width, widget->allocation.height);
+  gdk_draw_rectangle(widget->window, gc, TRUE, 0, 0,
+         widget->allocation.width, widget->allocation.height);
 
   // Center the text within the rectangle.
   int width, height;
   pango_layout_get_pixel_size(self->_layout, &width, &height);
 
   gdk_gc_set_rgb_fg_color(gc, &self->_fg_color);
-  gdk_draw_layout(widget->window, gc, 
-		  (widget->allocation.width - width) / 2, 0,
-		  self->_layout);
+  gdk_draw_layout(widget->window, gc,
+      (widget->allocation.width - width) / 2, 0,
+      self->_layout);
 
   // Now draw the highlight rectangle, if any.
   if (self->_highlight || self->_mouse_within) {
-    gdk_draw_rectangle(widget->window, gc, FALSE, 0, 0, 
-		       widget->allocation.width - 1, widget->allocation.height - 1);
+    gdk_draw_rectangle(widget->window, gc, FALSE, 0, 0,
+           widget->allocation.width - 1, widget->allocation.height - 1);
   }
 
   g_object_unref(gc);
   return TRUE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::enter_notify_event_callback
-//       Access: Private, Static
-//  Description: Called when the mouse enters the label region
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the mouse enters the label region
+ */
 gboolean GtkStatsLabel::
-enter_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event, 
-			    gpointer data) {
+enter_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
+          gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
   self->set_mouse_within(true);
   return TRUE;
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::leave_notify_event_callback
-//       Access: Private, Static
-//  Description: Called when the mouse leaves the label region
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Called when the mouse leaves the label region
+ */
 gboolean GtkStatsLabel::
-leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event, 
-			    gpointer data) {
+leave_notify_event_callback(GtkWidget *widget, GdkEventCrossing *event,
+          gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
   self->set_mouse_within(false);
   return TRUE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsLabel::button_press_event_callback
-//       Access: Private, Static
-//  Description: Called when the mouse button is depressed within the
-//               label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the mouse button is depressed within the label.
+ */
 gboolean GtkStatsLabel::
-button_press_event_callback(GtkWidget *widget, GdkEventButton *event, 
-			    gpointer data) {
+button_press_event_callback(GtkWidget *widget, GdkEventButton *event,
+          gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
   bool double_click = (event->type == GDK_2BUTTON_PRESS);
   if (double_click) {

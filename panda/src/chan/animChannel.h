@@ -1,16 +1,15 @@
-// Filename: animChannel.h
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animChannel.h
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #ifndef ANIMCHANNEL_H
 #define ANIMCHANNEL_H
@@ -21,11 +20,10 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannel
-// Description : This template class is the parent class for all kinds
-//               of AnimChannels that return different values.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class is the parent class for all kinds of AnimChannels that
+ * return different values.
+ */
 template<class SwitchType>
 class AnimChannel : public AnimChannelBase {
 protected:
@@ -132,4 +130,3 @@ typedef AnimChannel<ACScalarSwitchType> AnimChannelScalar;
 #endif
 
 #endif
-

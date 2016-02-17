@@ -1,8 +1,4 @@
-/* Filename: p3d_plugin.h
- * Created by:  drose (28May09)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file p3d_plugin.h
+ * @author drose
+ * @date 2009-05-28
+ */
 
 #ifndef P3D_PLUGIN_H
 #define P3D_PLUGIN_H
@@ -137,7 +136,7 @@ typedef enum {
    core API.  Note that the individual instances also have their own
    log_basename values.  If log_history is greater than zero, the
    most recent log_history (count) logs generated (per log_basename)
-   will be retained on disk, each named uniquely by appending a 
+   will be retained on disk, each named uniquely by appending a
    timestamp to the log_basename before file creation.
 
    Next, trusted_environment should be set true to indicate that the
@@ -159,7 +158,7 @@ typedef enum {
    compatible API, false otherwise.  If it returns false, the host
    should not call any more functions in this API, and should
    immediately unload the DLL and (if possible) download a new one. */
-typedef bool 
+typedef bool
 P3D_initialize_func(int api_version, const char *contents_filename,
                     const char *host_url, P3D_verify_contents verify_contents,
                     const char *platform,
@@ -334,7 +333,7 @@ typedef struct {
   const char *_value;
 } P3D_token;
 
-/* This function creates a new Panda3D instance.  
+/* This function creates a new Panda3D instance.
 
    For tokens, pass an array of P3D_token elements (above), which
    correspond to the user-supplied keyword/value pairs that may appear
@@ -360,7 +359,7 @@ typedef struct {
  */
 
 typedef P3D_instance *
-P3D_new_instance_func(P3D_request_ready_func *func, 
+P3D_new_instance_func(P3D_request_ready_func *func,
                       const P3D_token tokens[], size_t num_tokens,
                       int argc, const char *argv[],
                       void *user_data);
@@ -403,7 +402,7 @@ P3D_instance_start_stream_func(P3D_instance *instance, const char *p3d_url);
    from rendering, for instance when the user navigates away from the
    page containing it.  After calling this function, you should not
    reference the P3D_instance pointer again. */
-typedef void 
+typedef void
 P3D_instance_finish_func(P3D_instance *instance);
 
 /* Call this function after creating an instance in order to set its
@@ -429,7 +428,7 @@ P3D_instance_setup_window_func(P3D_instance *instance,
    an int, float, or string; or it might be a class object with
    methods and properties.  Instances of P3D_object are passed around
    as parameters into and return values from functions.
-  
+
    To implement a P3D_object, we need to first define a class
    definition, which is a table of methods.  Most classes are defined
    internally by the core API, but the host must define at least one
@@ -509,7 +508,7 @@ P3D_object_get_float_method(P3D_object *object);
    of the buffer.  Note that P3D_object string data is internally
    encoded using utf-8, by convention. */
 typedef int
-P3D_object_get_string_method(P3D_object *object, 
+P3D_object_get_string_method(P3D_object *object,
                              char *buffer, int buffer_size);
 
 /* As above, but instead of the literal object data, returns a
@@ -519,7 +518,7 @@ P3D_object_get_string_method(P3D_object *object,
    marks and escape characters from P3D_OBJECT_GET_REPR().
    Mechanically, this function works the same way as get_string(). */
 typedef int
-P3D_object_get_repr_method(P3D_object *object, 
+P3D_object_get_repr_method(P3D_object *object,
                            char *buffer, int buffer_size);
 
 /* Looks up a property on the object by name, i.e. a data member or a
@@ -656,12 +655,12 @@ P3D_object_get_repr_func(P3D_object *object, char *buffer, int buffer_size);
 typedef P3D_object *
 P3D_object_get_property_func(P3D_object *object, const char *property);
 typedef bool
-P3D_object_set_property_func(P3D_object *object, const char *property, 
+P3D_object_set_property_func(P3D_object *object, const char *property,
                              bool needs_response, P3D_object *value);
 typedef bool
 P3D_object_has_method_func(P3D_object *object, const char *method_name);
 typedef P3D_object *
-P3D_object_call_func(P3D_object *object, const char *method_name, 
+P3D_object_call_func(P3D_object *object, const char *method_name,
                      bool needs_response,
                      P3D_object *params[], int num_params);
 typedef P3D_object *
@@ -669,9 +668,9 @@ P3D_object_eval_func(P3D_object *object, const char *expression);
 
 /* A NULL pointer passed into either incref or decref is safe and will
    be quietly ignored. */
-typedef void 
+typedef void
 P3D_object_incref_func(P3D_object *object);
-typedef void 
+typedef void
 P3D_object_decref_func(P3D_object *object);
 
 
@@ -744,14 +743,14 @@ P3D_instance_get_panda_script_object_func(P3D_instance *instance);
    If this function is never called, the instance will not be able to
    make outcalls to the DOM or to JavaScript, but scripts may still be
    able to control the instance via P3D_instance_get_panda_script_object(),
-   above. 
+   above.
 
    Note that the object's constructor should initialize its reference
    count to 1.  The instance will increment the reference count as a
    result of this call; the caller is responsible for calling DECREF
    on the object after this call to remove its own reference. */
 typedef void
-P3D_instance_set_browser_script_object_func(P3D_instance *instance, 
+P3D_instance_set_browser_script_object_func(P3D_instance *instance,
                                             P3D_object *object);
 
 
@@ -967,9 +966,9 @@ typedef enum {
 typedef bool
 P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   P3D_result_code result_code,
-                                  int http_status_code, 
+                                  int http_status_code,
                                   size_t total_expected_data,
-                                  const void *this_data, 
+                                  const void *this_data,
                                   size_t this_data_size);
 
 /* This enum and set of structures abstract out the event pointer data
@@ -1015,7 +1014,7 @@ typedef struct {
     struct {
       unsigned int modifierFlags;
       double pluginX;
-      double pluginY;            
+      double pluginY;
       int buttonNumber;
       int clickCount;
       double deltaX;
@@ -1067,7 +1066,7 @@ typedef struct {
    The return value is true if the handler has processed the event,
    false if it has been ignored. */
 typedef bool
-P3D_instance_handle_event_func(P3D_instance *instance, 
+P3D_instance_handle_event_func(P3D_instance *instance,
                                const P3D_event_data *event);
 
 #ifdef P3D_FUNCTION_PROTOTYPES
@@ -1127,5 +1126,3 @@ EXPCL_P3D_PLUGIN P3D_instance_handle_event_func P3D_instance_handle_event;
 #endif
 
 #endif  /* P3D_PLUGIN_H */
-
-

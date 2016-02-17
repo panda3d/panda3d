@@ -1,16 +1,15 @@
-// Filename: makePrcKey.cxx
-// Created by:  drose (19Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file makePrcKey.cxx
+ * @author drose
+ * @date 2004-10-19
+ */
 
 #include "dtoolbase.h"
 #include "prcKeyRegistry.h"
@@ -39,13 +38,11 @@ public:
 };
 typedef pvector<KeyNumber> KeyNumbers;
 
-////////////////////////////////////////////////////////////////////
-//     Function: output_ssl_errors
-//  Description: A convenience function that is itself a wrapper
-//               around the OpenSSL convenience function to output the
-//               recent OpenSSL errors.  This function sends the error
-//               string to cerr.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function that is itself a wrapper around the OpenSSL
+ * convenience function to output the recent OpenSSL errors.  This function
+ * sends the error string to cerr.
+ */
 void
 output_ssl_errors() {
   cerr << "Error occurred in SSL routines.\n";
@@ -66,14 +63,13 @@ output_ssl_errors() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output_c_string
-//  Description: Extracts the data written to the indicated memory bio
-//               and writes it to the indicated stream, formatting it
-//               to be compiled into a C or C++ program as a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the data written to the indicated memory bio and writes it to the
+ * indicated stream, formatting it to be compiled into a C or C++ program as a
+ * string.
+ */
 void
-output_c_string(ostream &out, const string &string_name, 
+output_c_string(ostream &out, const string &string_name,
                 size_t index, BIO *mbio) {
   char *data_ptr;
   size_t data_size = BIO_get_mem_data(mbio, &data_ptr);
@@ -98,7 +94,7 @@ output_c_string(ostream &out, const string &string_name,
         out << data_ptr[i];
 
       } else {
-        out << "\\x" << hex << setw(2) << setfill('0') 
+        out << "\\x" << hex << setw(2) << setfill('0')
             << (unsigned int)(unsigned char)data_ptr[i] << dec;
       }
     }
@@ -107,14 +103,13 @@ output_c_string(ostream &out, const string &string_name,
       << "_length = " << data_size << ";\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: generate_key
-//  Description: Generates a new public and private key pair.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a new public and private key pair.
+ */
 EVP_PKEY *
 generate_key() {
   RSA *rsa = RSA_generate_key(1024, 7, NULL, NULL);
-  
+
   if (rsa == (RSA *)NULL) {
     output_ssl_errors();
     exit(1);
@@ -126,13 +121,11 @@ generate_key() {
   return pkey;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_public_keys
-//  Description: Writes the list of public keys stored in the
-//               PrcKeyRegistry to the indicated output filename as a
-//               compilable list of KeyDef entries, suitable for
-//               passing to PrcKeyRegistry::record_keys().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the list of public keys stored in the PrcKeyRegistry to the indicated
+ * output filename as a compilable list of KeyDef entries, suitable for passing
+ * to PrcKeyRegistry::record_keys().
+ */
 void
 write_public_keys(Filename outfile) {
   outfile.set_text();
@@ -183,7 +176,7 @@ write_public_keys(Filename outfile) {
     time_t generated_time = pkr->get_generated_time(i);
 
     if (pkey != (EVP_PKEY *)NULL) {
-      out << "  { prc_pubkey" << i << "_data, prc_pubkey" << i 
+      out << "  { prc_pubkey" << i << "_data, prc_pubkey" << i
           << "_length, " << generated_time << " },\n";
     } else {
       out << "  { NULL, 0, 0 },\n";
@@ -194,12 +187,10 @@ write_public_keys(Filename outfile) {
       << "static const int num_prc_pubkeys = " << num_keys << ";\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_private_key
-//  Description: Generates a C++ program that can be used to sign a
-//               prc file with the indicated private key into the
-//               given output filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a C++ program that can be used to sign a prc file with the
+ * indicated private key into the given output filename.
+ */
 void
 write_private_key(EVP_PKEY *pkey, Filename outfile, int n, time_t now,
                   const char *pp) {
@@ -242,7 +233,7 @@ write_private_key(EVP_PKEY *pkey, Filename outfile, int n, time_t now,
 
   BIO_free(mbio);
 
-  out << 
+  out <<
     "\n\n"
     "#define KEY_NUMBER " << n << "\n"
     "#define KEY_DATA prc_privkey" << n << "_data\n"
@@ -253,10 +244,9 @@ write_private_key(EVP_PKEY *pkey, Filename outfile, int n, time_t now,
     "#include \"signPrcFile_src.cxx\"\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: usage
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void
 usage() {
   cerr <<
@@ -268,18 +258,18 @@ usage() {
     "key is not secret and will be compiled into libdtool, while the private\n"
     "key should be safeguarded and will be written into a .cxx file that\n"
     "can be compiled as a standalone application.\n\n"
-    
+
     "The output is a public and private key pair for each trust level.  The\n"
     "form of the output for both public and private keys will be compilable\n"
     "C++ code; see -a and -b, below, for a complete description.\n\n"
-    
+
     "After the options, the remaining arguments list the individual trust\n"
     "level keys to generate.  For each integer specified, a different key\n"
     "will be created.  There should be one key for each trust level\n"
     "required; a typical application will only need one or two keys.\n\n"
-  
+
     "Options:\n\n"
-    
+
     "   -a pub_outfile.cxx\n"
     "       Specifies the name and location of the public key output file\n"
     "       to generate.  This file must then be named by the Config.pp\n"
@@ -313,10 +303,9 @@ usage() {
     "       programs without having to supply a pass phrase.\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: main
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int
 main(int argc, char **argv) {
   extern char *optarg;
@@ -416,7 +405,7 @@ main(int argc, char **argv) {
       exit(1);
     }
     if (key._number <= 0) {
-      cerr << "Key numbers must be greater than 0; you specified " 
+      cerr << "Key numbers must be greater than 0; you specified "
            << key._number << ".\n";
       exit(1);
     }

@@ -1,16 +1,15 @@
-// Filename: physxTriangleMeshShapeDesc.h
-// Created by:  enn0x (14Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxTriangleMeshShapeDesc.h
+ * @author enn0x
+ * @date 2009-10-14
+ */
 
 #ifndef PHYSXTRIANGLEMESHSHAPEDESC_H
 #define PHYSXTRIANGLEMESHSHAPEDESC_H
@@ -22,10 +21,9 @@
 
 class PhysxTriangleMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxTriangleMeshShapeDesc
-// Description : Descriptor class for PhysxTriangleMeshShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxTriangleMeshShape.
+ */
 class EXPCL_PANDAPHYSX PhysxTriangleMeshShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

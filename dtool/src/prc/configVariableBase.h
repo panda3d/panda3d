@@ -1,16 +1,15 @@
-// Filename: configVariableBase.h
-// Created by:  drose (21Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableBase.h
+ * @author drose
+ * @date 2004-10-21
+ */
 
 #ifndef CONFIGVARIABLEBASE_H
 #define CONFIGVARIABLEBASE_H
@@ -33,18 +32,14 @@
 #define PRC_DESC(description) ""
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableBase
-// Description : This class is the base class for both
-//               ConfigVariableList and ConfigVariable (and hence for
-//               all of the ConfigVariableBool, ConfigVaribleString,
-//               etc. classes).  It collects together the common
-//               interface for all generic ConfigVariables.
-//
-//               Mostly, this class serves as a thin wrapper around
-//               ConfigVariableCore and/or ConfigDeclaration, more or
-//               less duplicating the interface presented there.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is the base class for both ConfigVariableList and ConfigVariable
+ * (and hence for all of the ConfigVariableBool, ConfigVaribleString, etc.
+ * classes).  It collects together the common interface for all generic
+ * ConfigVariables.  Mostly, this class serves as a thin wrapper around
+ * ConfigVariableCore and/or ConfigDeclaration, more or less duplicating the
+ * interface presented there.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableBase : public ConfigFlags {
 protected:
   INLINE ConfigVariableBase(const string &name, ValueType type);

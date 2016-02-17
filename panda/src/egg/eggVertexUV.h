@@ -1,16 +1,15 @@
-// Filename: eggVertexUV.h
-// Created by:  drose (20Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggVertexUV.h
+ * @author drose
+ * @date 2004-07-20
+ */
 
 #ifndef EGGVERTEXUV_H
 #define EGGVERTEXUV_H
@@ -22,13 +21,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggVertexUV
-// Description : The set of UV's that may or may not be assigned to a
-//               vertex.  To support multitexturing, there may be
-//               multiple sets of UV's on a particular vertex, each
-//               with its own name.
-////////////////////////////////////////////////////////////////////
+/**
+ * The set of UV's that may or may not be assigned to a vertex.  To support
+ * multitexturing, there may be multiple sets of UV's on a particular vertex,
+ * each with its own name.
+ */
 class EXPCL_PANDAEGG EggVertexUV : public EggNamedObject {
 PUBLISHED:
   EggVertexUV(const string &name, const LTexCoordd &uv);
@@ -100,4 +97,3 @@ private:
 #include "eggVertexUV.I"
 
 #endif
-

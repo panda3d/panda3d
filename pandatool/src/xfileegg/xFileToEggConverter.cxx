@@ -1,16 +1,15 @@
-// Filename: xFileToEggConverter.cxx
-// Created by:  drose (21Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileToEggConverter.cxx
+ * @author drose
+ * @date 2001-06-21
+ */
 
 #include "xFileToEggConverter.h"
 #include "xFileMesh.h"
@@ -27,11 +26,9 @@
 #include "eggTextureCollection.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileToEggConverter::
 XFileToEggConverter() {
   _make_char = false;
@@ -40,11 +37,9 @@ XFileToEggConverter() {
   _dart_node = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileToEggConverter::
 XFileToEggConverter(const XFileToEggConverter &copy) :
   SomethingToEggConverter(copy),
@@ -54,73 +49,54 @@ XFileToEggConverter(const XFileToEggConverter &copy) :
   _dart_node = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileToEggConverter::
 ~XFileToEggConverter() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *XFileToEggConverter::
 make_copy() {
   return new XFileToEggConverter(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string XFileToEggConverter::
 get_name() const {
   return "DirectX";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string XFileToEggConverter::
 get_extension() const {
   return "x";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files (with
+ * a .pz extension), false otherwise.
+ */
 bool XFileToEggConverter::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-//
-//               This is designed to be as generic as possible,
-//               generally in support of run-time loading.
-//               Command-line converters may choose to use
-//               convert_flt() instead, as it provides more control.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns true
+ * if successful, false otherwise.  This is designed to be as generic as
+ * possible, generally in support of run-time loading.  Command-line converters
+ * may choose to use convert_flt() instead, as it provides more control.
+ */
 bool XFileToEggConverter::
 convert_file(const Filename &filename) {
   close();
@@ -160,20 +136,17 @@ convert_file(const Filename &filename) {
   if (_keep_model && !_keep_animation) {
     strip_nodes(EggTable::get_class_type());
   }
-  
+
   if (_keep_animation && !_keep_model) {
     strip_nodes(EggGroup::get_class_type());
   }
-  
+
   return !had_error();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::close
-//       Access: Public
-//  Description: Finalizes and closes the file previously opened via
-//               convert_file().
-////////////////////////////////////////////////////////////////////
+/**
+ * Finalizes and closes the file previously opened via convert_file().
+ */
 void XFileToEggConverter::
 close() {
   _x_file->clear();
@@ -184,7 +157,7 @@ close() {
     delete (*mi);
   }
   _meshes.clear();
-  
+
   AnimationSets::const_iterator asi;
   for (asi = _animation_sets.begin(); asi != _animation_sets.end(); ++asi) {
     delete (*asi);
@@ -194,12 +167,10 @@ close() {
   _joints.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::strip_nodes
-//       Access: Public
-//  Description: Removes all groups of the given type.  This is used
-//               to implement the -anim and -model options.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all groups of the given type.  This is used to implement the -anim
+ * and -model options.
+ */
 void XFileToEggConverter::
 strip_nodes(TypeHandle t) {
   pvector <EggNode *> garbage;
@@ -215,49 +186,37 @@ strip_nodes(TypeHandle t) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::get_dart_node
-//       Access: Public
-//  Description: Returns the root of the joint hierarchy, if
-//               _make_char is true, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the root of the joint hierarchy, if _make_char is true, or NULL
+ * otherwise.
+ */
 EggGroup *XFileToEggConverter::
 get_dart_node() const {
   return _dart_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::create_unique_texture
-//       Access: Public
-//  Description: Returns an EggTexture pointer whose properties match
-//               that of the the given EggTexture, except for the tref
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an EggTexture pointer whose properties match that of the the given
+ * EggTexture, except for the tref name.
+ */
 EggTexture *XFileToEggConverter::
 create_unique_texture(const EggTexture &copy) {
   return _textures.create_unique_texture(copy, ~EggTexture::E_tref_name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::create_unique_material
-//       Access: Public
-//  Description: Returns an EggMaterial pointer whose properties match
-//               that of the the given EggMaterial, except for the mref
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an EggMaterial pointer whose properties match that of the the given
+ * EggMaterial, except for the mref name.
+ */
 EggMaterial *XFileToEggConverter::
 create_unique_material(const EggMaterial &copy) {
   return _materials.create_unique_material(copy, ~EggMaterial::E_mref_name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::find_joint
-//       Access: Public
-//  Description: This is called by set_animation_frame, for
-//               the purposes of building the frame data for the
-//               animation--it needs to know the original rest frame
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by set_animation_frame, for the purposes of building the frame
+ * data for the animation--it needs to know the original rest frame transform.
+ */
 EggGroup *XFileToEggConverter::
 find_joint(const string &joint_name) {
   Joints::iterator ji;
@@ -284,13 +243,10 @@ find_joint(const string &joint_name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::get_toplevel
-//       Access: Private
-//  Description: Pulls off all of the top-level objects in the .x file
-//               and converts them, and their descendents, to the
-//               appropriate egg structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pulls off all of the top-level objects in the .x file and converts them, and
+ * their descendents, to the appropriate egg structures.
+ */
 bool XFileToEggConverter::
 get_toplevel() {
   int num_objects = _x_file->get_num_objects();
@@ -317,7 +273,7 @@ get_toplevel() {
   }
 
   EggGroupNode *egg_parent = _egg_data;
-  
+
   // If we are converting an animatable model, make an extra node to
   // represent the root of the hierarchy.
   if (_make_char) {
@@ -337,12 +293,10 @@ get_toplevel() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_toplevel_object
-//       Access: Private
-//  Description: Converts the indicated object, encountered outside of
-//               any Frames, to the appropriate egg structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated object, encountered outside of any Frames, to the
+ * appropriate egg structures.
+ */
 bool XFileToEggConverter::
 convert_toplevel_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
   if (obj->is_standard_object("Header")) {
@@ -384,16 +338,13 @@ convert_toplevel_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
         << obj->get_template_name() << "\n";
     }
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_object
-//       Access: Private
-//  Description: Converts the indicated object to the appropriate egg
-//               structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated object to the appropriate egg structures.
+ */
 bool XFileToEggConverter::
 convert_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
   if (obj->is_standard_object("Header")) {
@@ -421,23 +372,20 @@ convert_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
         << obj->get_template_name() << "\n";
     }
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_frame
-//       Access: Private
-//  Description: Converts the indicated frame to the appropriate egg
-//               structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated frame to the appropriate egg structures.
+ */
 bool XFileToEggConverter::
 convert_frame(XFileDataNode *obj, EggGroupNode *egg_parent) {
 
   string name = obj->get_name();
   EggGroup *group = new EggGroup(name);
   egg_parent->add_child(group);
-  
+
   if (_make_char) {
     group->set_group_type(EggGroup::GT_joint);
     if (name.empty()) {
@@ -465,15 +413,11 @@ convert_frame(XFileDataNode *obj, EggGroupNode *egg_parent) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_transform
-//       Access: Private
-//  Description: Reads a transform matrix, a child of a given frame,
-//               and applies it to the node.  Normally this can only
-//               be done if the node in question is an EggGroup, which
-//               should be the case if the transform was a child of a
-//               frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a transform matrix, a child of a given frame, and applies it to the
+ * node.  Normally this can only be done if the node in question is an EggGroup,
+ * which should be the case if the transform was a child of a frame.
+ */
 bool XFileToEggConverter::
 convert_transform(XFileDataNode *obj, EggGroupNode *egg_parent) {
   LMatrix4d mat = (*obj)["frameMatrix"]["matrix"].mat4();
@@ -491,13 +435,10 @@ convert_transform(XFileDataNode *obj, EggGroupNode *egg_parent) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_animation_set
-//       Access: Private
-//  Description: Begins an AnimationSet.  This is the root of one
-//               particular animation (table of frames per joint) to
-//               be applied to the model within this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins an AnimationSet.  This is the root of one particular animation (table
+ * of frames per joint) to be applied to the model within this file.
+ */
 bool XFileToEggConverter::
 convert_animation_set(XFileDataNode *obj) {
   XFileAnimationSet *animation_set = new XFileAnimationSet();
@@ -529,14 +470,11 @@ convert_animation_set(XFileDataNode *obj) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_animation_set_object
-//       Access: Private
-//  Description: Converts the indicated object, a child of a
-//               AnimationSet.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated object, a child of a AnimationSet.
+ */
 bool XFileToEggConverter::
-convert_animation_set_object(XFileDataNode *obj, 
+convert_animation_set_object(XFileDataNode *obj,
                              XFileAnimationSet &animation_set) {
   if (obj->is_standard_object("Animation")) {
     if (!convert_animation(obj, animation_set)) {
@@ -550,15 +488,13 @@ convert_animation_set_object(XFileDataNode *obj,
         << obj->get_template_name() << "\n";
     }
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_animation
-//       Access: Private
-//  Description: Converts the indicated Animation template object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Animation template object.
+ */
 bool XFileToEggConverter::
 convert_animation(XFileDataNode *obj, XFileAnimationSet &animation_set) {
   // Within an Animation template, we expect to find a reference to a
@@ -600,12 +536,9 @@ convert_animation(XFileDataNode *obj, XFileAnimationSet &animation_set) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_animation_object
-//       Access: Private
-//  Description: Converts the indicated object, a child of a
-//               Animation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated object, a child of a Animation.
+ */
 bool XFileToEggConverter::
 convert_animation_object(XFileDataNode *obj, const string &joint_name,
                          XFileToEggConverter::FrameData &table) {
@@ -627,20 +560,18 @@ convert_animation_object(XFileDataNode *obj, const string &joint_name,
         << obj->get_template_name() << "\n";
     }
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_animation_key
-//       Access: Private
-//  Description: Converts the indicated AnimationKey template object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated AnimationKey template object.
+ */
 bool XFileToEggConverter::
-convert_animation_key(XFileDataNode *obj, const string &joint_name, 
+convert_animation_key(XFileDataNode *obj, const string &joint_name,
                       XFileToEggConverter::FrameData &table) {
   int key_type = (*obj)["keyType"].i();
-  
+
   const XFileDataObject &keys = (*obj)["keys"];
 
   int last_time = 0;
@@ -668,14 +599,12 @@ convert_animation_key(XFileDataNode *obj, const string &joint_name,
 
   return true;
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::set_animation_frame
-//       Access: Private
-//  Description: Sets a single frame of the animation data.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Sets a single frame of the animation data.
+ */
 bool XFileToEggConverter::
-set_animation_frame(const string &joint_name, 
+set_animation_frame(const string &joint_name,
                     XFileToEggConverter::FrameData &table, int frame,
                     int key_type, const XFileDataObject &values) {
   if ((int)table._entries.size() <= frame) {
@@ -711,7 +640,7 @@ set_animation_frame(const string &joint_name,
     frame_entry._scale = values.vec3();
     table._flags |= XFileAnimationSet::FDF_scale;
     break;
-    
+
   case 2:
     // Key type 2: position
     if (values.size() != 3) {
@@ -747,16 +676,13 @@ set_animation_frame(const string &joint_name,
       << "Unsupported key type " << key_type << " in animation table.\n";
     return false;
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_mesh
-//       Access: Private
-//  Description: Converts the indicated mesh to the appropriate egg
-//               structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated mesh to the appropriate egg structures.
+ */
 bool XFileToEggConverter::
 convert_mesh(XFileDataNode *obj, EggGroupNode *egg_parent) {
   XFileMesh *mesh = new XFileMesh(_egg_data->get_coordinate_system());
@@ -773,12 +699,9 @@ convert_mesh(XFileDataNode *obj, EggGroupNode *egg_parent) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::create_polygons
-//       Access: Private
-//  Description: Creates all the polygons associated with
-//               previously-saved meshes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates all the polygons associated with previously-saved meshes.
+ */
 bool XFileToEggConverter::
 create_polygons() {
   bool okflag = true;
@@ -795,12 +718,10 @@ create_polygons() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::create_hierarchy
-//       Access: Private
-//  Description: Creates the animation table hierarchies for the
-//               previously-saved animation sets.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the animation table hierarchies for the previously-saved animation
+ * sets.
+ */
 bool XFileToEggConverter::
 create_hierarchy() {
   bool okflag = true;

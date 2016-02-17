@@ -1,16 +1,15 @@
-// Filename: odeQuadTreeSpace.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeQuadTreeSpace.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODEQUADTREESPACE_H
 #define ODEQUADTREESPACE_H
@@ -22,10 +21,9 @@
 #include "odeSpace.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeQuadTreeSpace
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeQuadTreeSpace : public OdeSpace {
   friend class OdeSpace;
   friend class OdeGeom;
@@ -64,4 +62,3 @@ private:
 #include "odeQuadTreeSpace.I"
 
 #endif
-

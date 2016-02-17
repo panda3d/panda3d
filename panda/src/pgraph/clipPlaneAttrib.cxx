@@ -1,16 +1,15 @@
-// Filename: clipPlaneAttrib.cxx
-// Created by:  drose (11Jul02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clipPlaneAttrib.cxx
+ * @author drose
+ * @date 2002-07-11
+ */
 
 #include "clipPlaneAttrib.h"
 #include "pandaNode.h"
@@ -37,20 +36,16 @@ public:
     PlaneNode *pa = DCAST(PlaneNode, a.node());
     PlaneNode *pb = DCAST(PlaneNode, b.node());
     nassertr(pa != (PlaneNode *)NULL && pb != (PlaneNode *)NULL, a < b);
-             
+
     return pa->get_priority() > pb->get_priority();
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new ClipPlaneAttrib object that enables (or
-//               disables, according to op) the indicated plane(s).
-//
-//               This method is now deprecated.  Use add_on_plane() or
-//               add_off_plane() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ClipPlaneAttrib object that enables (or disables, according
+ * to op) the indicated plane(s).  This method is now deprecated.  Use
+ * add_on_plane() or add_off_plane() instead.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
   pgraph_cat.warning()
@@ -63,7 +58,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
     attrib = make_all_off();
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane));
     return attrib;
-   
+
   case O_add:
     attrib = make();
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane));
@@ -79,15 +74,11 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
   return make();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new ClipPlaneAttrib object that turns on (or
-//               off, according to op) the indicate plane(s).
-//
-//               This method is now deprecated.  Use add_on_plane() or
-//               add_off_plane() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ClipPlaneAttrib object that turns on (or off, according to
+ * op) the indicate plane(s).  This method is now deprecated.  Use
+ * add_on_plane() or add_off_plane() instead.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
   pgraph_cat.warning()
@@ -101,7 +92,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane1));
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane2));
     return attrib;
-   
+
   case O_add:
     attrib = make();
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane1));
@@ -119,15 +110,11 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
   return make();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new ClipPlaneAttrib object that turns on (or
-//               off, according to op) the indicate plane(s).
-//
-//               This method is now deprecated.  Use add_on_plane() or
-//               add_off_plane() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ClipPlaneAttrib object that turns on (or off, according to
+ * op) the indicate plane(s).  This method is now deprecated.  Use
+ * add_on_plane() or add_off_plane() instead.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
      PlaneNode *plane3) {
@@ -143,7 +130,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane2));
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane3));
     return attrib;
-   
+
   case O_add:
     attrib = make();
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane1));
@@ -163,15 +150,11 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
   return make();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new ClipPlaneAttrib object that turns on (or
-//               off, according to op) the indicate plane(s).
-//
-//               This method is now deprecated.  Use add_on_plane() or
-//               add_off_plane() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ClipPlaneAttrib object that turns on (or off, according to
+ * op) the indicate plane(s).  This method is now deprecated.  Use
+ * add_on_plane() or add_off_plane() instead.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
      PlaneNode *plane3, PlaneNode *plane4) {
@@ -188,7 +171,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane3));
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane4));
     return attrib;
-   
+
   case O_add:
     attrib = make();
     attrib = DCAST(ClipPlaneAttrib, attrib)->add_on_plane(NodePath(plane1));
@@ -210,34 +193,24 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
   return make();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make_default() {
   return return_new(new ClipPlaneAttrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_operation
-//       Access: Published
-//  Description: Returns the basic operation type of the ClipPlaneAttrib.
-//               If this is O_set, the planes listed here completely
-//               replace any planes that were already on.  If this is
-//               O_add, the planes here are added to the set of of
-//               planes that were already on, and if O_remove, the
-//               planes here are removed from the set of planes that
-//               were on.
-//
-//               This method is now deprecated.  ClipPlaneAttribs
-//               nowadays have a separate list of on_planes and
-//               off_planes, so this method doesn't make sense.  Query
-//               the lists independently.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the basic operation type of the ClipPlaneAttrib.  If this is O_set,
+ * the planes listed here completely replace any planes that were already on.
+ * If this is O_add, the planes here are added to the set of of planes that were
+ * already on, and if O_remove, the planes here are removed from the set of
+ * planes that were on.  This method is now deprecated.  ClipPlaneAttribs
+ * nowadays have a separate list of on_planes and off_planes, so this method
+ * doesn't make sense.  Query the lists independently.
+ */
 ClipPlaneAttrib::Operation ClipPlaneAttrib::
 get_operation() const {
   pgraph_cat.warning()
@@ -254,16 +227,12 @@ get_operation() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_num_planes
-//       Access: Published
-//  Description: Returns the number of planes listed in the attribute.
-//
-//               This method is now deprecated.  ClipPlaneAttribs
-//               nowadays have a separate list of on_planes and
-//               off_planes, so this method doesn't make sense.  Query
-//               the lists independently.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of planes listed in the attribute.  This method is now
+ * deprecated.  ClipPlaneAttribs nowadays have a separate list of on_planes and
+ * off_planes, so this method doesn't make sense.  Query the lists
+ * independently.
+ */
 int ClipPlaneAttrib::
 get_num_planes() const {
   pgraph_cat.warning()
@@ -276,16 +245,12 @@ get_num_planes() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_plane
-//       Access: Published
-//  Description: Returns the nth plane listed in the attribute.
-//
-//               This method is now deprecated.  ClipPlaneAttribs
-//               nowadays have a separate list of on_planes and
-//               off_planes, so this method doesn't make sense.  Query
-//               the lists independently.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth plane listed in the attribute.  This method is now
+ * deprecated.  ClipPlaneAttribs nowadays have a separate list of on_planes and
+ * off_planes, so this method doesn't make sense.  Query the lists
+ * independently.
+ */
 PlaneNode *ClipPlaneAttrib::
 get_plane(int n) const {
   pgraph_cat.warning()
@@ -298,17 +263,12 @@ get_plane(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::has_plane
-//       Access: Published
-//  Description: Returns true if the indicated plane is listed in the
-//               attrib, false otherwise.
-//
-//               This method is now deprecated.  ClipPlaneAttribs
-//               nowadays have a separate list of on_planes and
-//               off_planes, so this method doesn't make sense.  Query
-//               the lists independently.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated plane is listed in the attrib, false otherwise.
+ * This method is now deprecated.  ClipPlaneAttribs nowadays have a separate
+ * list of on_planes and off_planes, so this method doesn't make sense.  Query
+ * the lists independently.
+ */
 bool ClipPlaneAttrib::
 has_plane(PlaneNode *plane) const {
   pgraph_cat.warning()
@@ -321,15 +281,11 @@ has_plane(PlaneNode *plane) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::add_plane
-//       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane added to the list of planes.
-//
-//               This method is now deprecated.  Use add_on_plane() or
-//               add_off_plane() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
+ * plane added to the list of planes.  This method is now deprecated.  Use
+ * add_on_plane() or add_off_plane() instead.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 add_plane(PlaneNode *plane) const {
   pgraph_cat.warning()
@@ -342,16 +298,11 @@ add_plane(PlaneNode *plane) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::remove_plane
-//       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane removed from the list of
-//               planes.
-//
-//               This method is now deprecated.  Use remove_on_plane()
-//               or remove_off_plane() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
+ * plane removed from the list of planes.  This method is now deprecated.  Use
+ * remove_on_plane() or remove_off_plane() instead.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 remove_plane(PlaneNode *plane) const {
   pgraph_cat.warning()
@@ -364,12 +315,9 @@ remove_plane(PlaneNode *plane) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new ClipPlaneAttrib object that does
-//               nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ClipPlaneAttrib object that does nothing.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib
@@ -381,12 +329,10 @@ make() {
   return _empty_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make_all_off
-//       Access: Published, Static
-//  Description: Constructs a new ClipPlaneAttrib object that disables 
-//               all planes (and hence disables clipping).
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ClipPlaneAttrib object that disables all planes (and hence
+ * disables clipping).
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib
@@ -400,13 +346,10 @@ make_all_off() {
   return _all_off_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::add_on_plane
-//       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane added to the list of planes
-//               enabled by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
+ * plane added to the list of planes enabled by this attrib.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 add_on_plane(const NodePath &plane) const {
   nassertr(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()), this);
@@ -414,7 +357,7 @@ add_on_plane(const NodePath &plane) const {
   attrib->_on_planes.insert(plane);
   attrib->_off_planes.erase(plane);
 
-  pair<Planes::iterator, bool> insert_result = 
+  pair<Planes::iterator, bool> insert_result =
     attrib->_on_planes.insert(Planes::value_type(plane));
   if (insert_result.second) {
     // Also ensure it is removed from the off_planes list.
@@ -424,13 +367,10 @@ add_on_plane(const NodePath &plane) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::remove_on_plane
-//       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane removed from the list of
-//               planes enabled by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
+ * plane removed from the list of planes enabled by this attrib.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 remove_on_plane(const NodePath &plane) const {
   nassertr(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()), this);
@@ -439,13 +379,10 @@ remove_on_plane(const NodePath &plane) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::add_off_plane
-//       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane added to the list of planes
-//               disabled by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
+ * plane added to the list of planes disabled by this attrib.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 add_off_plane(const NodePath &plane) const {
   nassertr(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()), this);
@@ -457,13 +394,10 @@ add_off_plane(const NodePath &plane) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::remove_off_plane
-//       Access: Published
-//  Description: Returns a new ClipPlaneAttrib, just like this one, but
-//               with the indicated plane removed from the list of
-//               planes disabled by this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ClipPlaneAttrib, just like this one, but with the indicated
+ * plane removed from the list of planes disabled by this attrib.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 remove_off_plane(const NodePath &plane) const {
   nassertr(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()), this);
@@ -472,14 +406,11 @@ remove_off_plane(const NodePath &plane) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::filter_to_max
-//       Access: Public
-//  Description: Returns a new ClipPlaneAttrib, very much like this one,
-//               but with the number of on_planes reduced to be no
-//               more than max_clip_planes.  The number of off_planes in
-//               the new ClipPlaneAttrib is undefined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new ClipPlaneAttrib, very much like this one, but with the number
+ * of on_planes reduced to be no more than max_clip_planes.  The number of
+ * off_planes in the new ClipPlaneAttrib is undefined.
+ */
 CPT(ClipPlaneAttrib) ClipPlaneAttrib::
 filter_to_max(int max_clip_planes) const {
   if (max_clip_planes < 0 || (int)_on_planes.size() <= max_clip_planes) {
@@ -504,7 +435,7 @@ filter_to_max(int max_clip_planes) const {
   Planes priority_planes = _on_planes;
 
   // This sort function uses the STL function object defined above.
-  sort(priority_planes.begin(), priority_planes.end(), 
+  sort(priority_planes.begin(), priority_planes.end(),
        ComparePlaneNodePriorities());
 
   // Now lop off all of the planeNodes after the first max_clip_planes.
@@ -527,19 +458,13 @@ filter_to_max(int max_clip_planes) const {
   return planeNode_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::compose_off
-//       Access: Public
-//  Description: This is a special method which composes two
-//               ClipPlaneAttribs with regard only to their set of
-//               "off" clip planes, for the purposes of deriving
-//               PandaNode::get_off_clip_planes().
-//
-//               The result will be a ClipPlaneAttrib that represents
-//               the union of all of the clip planes turned off in
-//               either attrib.  The set of on planes in the result is
-//               undefined and should be ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special method which composes two ClipPlaneAttribs with regard only
+ * to their set of "off" clip planes, for the purposes of deriving
+ * PandaNode::get_off_clip_planes().  The result will be a ClipPlaneAttrib that
+ * represents the union of all of the clip planes turned off in either attrib.
+ * The set of on planes in the result is undefined and should be ignored.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_off(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
@@ -561,10 +486,10 @@ compose_off(const RenderAttrib *other) const {
 
   // Create a new ClipPlaneAttrib that will hold the result.
   ClipPlaneAttrib *new_attrib = new ClipPlaneAttrib;
-  back_insert_iterator<Planes> result = 
+  back_insert_iterator<Planes> result =
     back_inserter(new_attrib->_on_planes);
 
-  while (ai != _off_planes.end() && 
+  while (ai != _off_planes.end() &&
          bi != ta->_off_planes.end()) {
     if ((*ai) < (*bi)) {
       // Here is a plane that we have in the original, which is not
@@ -604,11 +529,9 @@ compose_off(const RenderAttrib *other) const {
   return return_new(new_attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ClipPlaneAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -639,7 +562,7 @@ output(ostream &out) const {
       out << " on";
     }
   }
-    
+
   Planes::const_iterator li;
   for (li = _on_planes.begin(); li != _on_planes.end(); ++li) {
     NodePath plane = (*li);
@@ -647,21 +570,14 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ClipPlaneAttrib
-//               types to return a unique number indicating whether
-//               this ClipPlaneAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two ClipPlaneAttrib
-//               objects are equivalent, a number less than zero if
-//               this one should be sorted before the other one, and a
-//               number greater than zero otherwise.
-//
-//               This will only be called with two ClipPlaneAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived ClipPlaneAttrib types to return a unique
+ * number indicating whether this ClipPlaneAttrib is equivalent to the other
+ * one.  This should return 0 if the two ClipPlaneAttrib objects are equivalent,
+ * a number less than zero if this one should be sorted before the other one,
+ * and a number greater than zero otherwise.  This will only be called with two
+ * ClipPlaneAttrib objects whose get_type() functions return the same.
+ */
 int ClipPlaneAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
@@ -716,20 +632,16 @@ compare_to_impl(const RenderAttrib *other) const {
   if (ofi != ta->_off_planes.end()) {
     return -1;
   }
-  
+
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t ClipPlaneAttrib::
 get_hash_impl() const {
   size_t hash = 0;
@@ -752,23 +664,16 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               This should return the result of applying the other
-//               RenderAttrib to a node in the scene graph below this
-//               RenderAttrib, which was already applied.  In most
-//               cases, the result is the same as the other
-//               RenderAttrib (that is, a subsequent RenderAttrib
-//               completely replaces the preceding one).  On the other
-//               hand, some kinds of RenderAttrib (for instance,
-//               ColorTransformAttrib) might combine in meaningful
-//               ways.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.  This should
+ * return the result of applying the other RenderAttrib to a node in the scene
+ * graph below this RenderAttrib, which was already applied.  In most cases, the
+ * result is the same as the other RenderAttrib (that is, a subsequent
+ * RenderAttrib completely replaces the preceding one).  On the other hand, some
+ * kinds of RenderAttrib (for instance, ColorTransformAttrib) might combine in
+ * meaningful ways.
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_impl(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
@@ -789,11 +694,11 @@ compose_impl(const RenderAttrib *other) const {
 
   // Create a new ClipPlaneAttrib that will hold the result.
   ClipPlaneAttrib *new_attrib = new ClipPlaneAttrib;
-  back_insert_iterator<Planes> result = 
+  back_insert_iterator<Planes> result =
     back_inserter(new_attrib->_on_planes);
 
-  while (ai != _on_planes.end() && 
-         bi != ta->_on_planes.end() && 
+  while (ai != _on_planes.end() &&
+         bi != ta->_on_planes.end() &&
          ci != ta->_off_planes.end()) {
     if ((*ai) < (*bi)) {
       if ((*ai) < (*ci)) {
@@ -862,12 +767,12 @@ compose_impl(const RenderAttrib *other) const {
       *result = *ai;
       ++ai;
       ++result;
-      
+
     } else if ((*ci) < (*ai)) {
       // Here is a plane that is disabled in the secondary, but
       // was not present in the original.
       ++ci;
-      
+
     } else { // (*ci) == (*ai)
       // Here is a plane that is disabled in the secondary, and
       // was present in the original.
@@ -891,15 +796,11 @@ compose_impl(const RenderAttrib *other) const {
   return return_new(new_attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::invert_compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               See invert_compose() and compose_impl().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.  See
+ * invert_compose() and compose_impl().
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
   // I think in this case the other attrib always wins.  Maybe this
@@ -908,47 +809,36 @@ invert_compose_impl(const RenderAttrib *other) const {
   return other;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::get_auto_shader_attrib_impl
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPT(RenderAttrib) ClipPlaneAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::sort_on_planes
-//       Access: Private
-//  Description: This is patterned after
-//               TextureAttrib::sort_on_stages(), but since planeNodes
-//               don't actually require sorting, this only empties the
-//               _filtered map.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is patterned after TextureAttrib::sort_on_stages(), but since planeNodes
+ * don't actually require sorting, this only empties the _filtered map.
+ */
 void ClipPlaneAttrib::
 sort_on_planes() {
   _sort_seq = PlaneNode::get_sort_seq();
   _filtered.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               ClipPlaneAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type ClipPlaneAttrib.
+ */
 void ClipPlaneAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void ClipPlaneAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
@@ -972,13 +862,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int ClipPlaneAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
@@ -1045,29 +932,22 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::require_fully_complete
-//       Access: Public, Virtual
-//  Description: Some objects require all of their nested pointers to
-//               have been completed before the objects themselves can
-//               be completed.  If this is the case, override this
-//               method to return true, and be careful with circular
-//               references (which would make the object unreadable
-//               from a bam file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Some objects require all of their nested pointers to have been completed
+ * before the objects themselves can be completed.  If this is the case,
+ * override this method to return true, and be careful with circular references
+ * (which would make the object unreadable from a bam file).
+ */
 bool ClipPlaneAttrib::
 require_fully_complete() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type ClipPlaneAttrib is encountered
-//               in the Bam file.  It should create the ClipPlaneAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * ClipPlaneAttrib is encountered in the Bam file.  It should create the
+ * ClipPlaneAttrib and extract its information from the file.
+ */
 TypedWritable *ClipPlaneAttrib::
 make_from_bam(const FactoryParams &params) {
   ClipPlaneAttrib *attrib = new ClipPlaneAttrib;
@@ -1080,13 +960,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClipPlaneAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new ClipPlaneAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new ClipPlaneAttrib.
+ */
 void ClipPlaneAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);

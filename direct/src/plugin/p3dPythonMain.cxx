@@ -1,16 +1,15 @@
-// Filename: p3dPythonMain.cxx
-// Created by:  drose (29Aug09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPythonMain.cxx
+ * @author drose
+ * @date 2009-08-29
+ */
 
 #include "run_p3dpython.h"
 
@@ -62,12 +61,12 @@ parse_unquoted_arg(char *&p) {
   return strdup(result.c_str());
 }
 
-int WINAPI 
+int WINAPI
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 
   vector<char *> argv;
-  
+
   char *p = command_line;
   while (*p != '\0') {
     if (*p == '"') {
@@ -89,13 +88,11 @@ WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 #endif  // NON_CONSOLE
 
-////////////////////////////////////////////////////////////////////
-//     Function: main
-//  Description: This is a trivial main() function that invokes
-//               P3DPythonRun.  It's used to build p3dpython.exe,
-//               which is the preferred way to run Python in a child
-//               process, as a separate executable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a trivial main() function that invokes P3DPythonRun.  It's used to
+ * build p3dpython.exe, which is the preferred way to run Python in a child
+ * process, as a separate executable.
+ */
 int
 main(int argc, char *argv[]) {
   const char *program_name = argv[0];

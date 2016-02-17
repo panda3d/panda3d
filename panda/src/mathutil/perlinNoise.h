@@ -1,16 +1,15 @@
-// Filename: perlinNoise.h
-// Created by:  drose (05Oct05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file perlinNoise.h
+ * @author drose
+ * @date 2005-10-05
+ */
 
 #ifndef PERLINNOISE_H
 #define PERLINNOISE_H
@@ -21,13 +20,11 @@
 #include "luse.h"
 #include "randomizer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PerlinNoise
-// Description : This is the base class for PerlinNoise2 and
-//               PerlinNoise3, different dimensions of Perlin noise
-//               implementation.  The base class just collects the
-//               common functionality.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for PerlinNoise2 and PerlinNoise3, different
+ * dimensions of Perlin noise implementation.  The base class just collects the
+ * common functionality.
+ */
 class EXPCL_PANDA_MATHUTIL PerlinNoise {
 protected:
   PerlinNoise(int table_size, unsigned long seed);

@@ -1,16 +1,15 @@
-// Filename: bulletBodyNode.cxx
-// Created by:  enn0x (19Nov10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletBodyNode.cxx
+ * @author enn0x
+ * @date 2010-11-19
+ */
 
 #include "bulletBodyNode.h"
 #include "bulletShape.h"
@@ -24,11 +23,9 @@
 
 TypeHandle BulletBodyNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletBodyNode::
 BulletBodyNode(const char *name) : PandaNode(name) {
 
@@ -39,115 +36,87 @@ BulletBodyNode(const char *name) : PandaNode(name) {
   set_into_collide_mask(CollideMask::all_on());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_legal_collide_mask
-//       Access: Public, Virtual
-//  Description: Returns the subset of CollideMask bits that may be
-//               set for this particular type of PandaNode.  For
-//               BodyNodes this returns all bits on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the subset of CollideMask bits that may be set for this particular
+ * type of PandaNode.  For BodyNodes this returns all bits on.
+ */
 CollideMask BulletBodyNode::
 get_legal_collide_mask() const {
 
   return CollideMask::all_on();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::safe_to_flatten
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to flatten out
-//               this particular kind of Node by duplicating
-//               instances, false otherwise (for instance, a Camera
-//               cannot be safely flattened, because the Camera
-//               pointer itself is meaningful).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to flatten out this particular kind of
+ * Node by duplicating instances, false otherwise (for instance, a Camera cannot
+ * be safely flattened, because the Camera pointer itself is meaningful).
+ */
 bool BulletBodyNode::
 safe_to_flatten() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::safe_to_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of Node by calling the xform()
-//               method, false otherwise.  For instance, it's usually
-//               a bad idea to attempt to xform a Character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to transform this particular kind of
+ * Node by calling the xform() method, false otherwise.  For instance, it's
+ * usually a bad idea to attempt to xform a Character.
+ */
 bool BulletBodyNode::
 safe_to_transform() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::safe_to_modify_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is safe to automatically adjust
-//               the transform on this kind of node.  Usually, this is
-//               only a bad idea if the user expects to find a
-//               particular transform on the node.
-//
-//               ModelNodes with the preserve_transform flag set are
-//               presently the only kinds of nodes that should not
-//               have their transform even adjusted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is safe to automatically adjust the transform on this kind
+ * of node.  Usually, this is only a bad idea if the user expects to find a
+ * particular transform on the node.  ModelNodes with the preserve_transform
+ * flag set are presently the only kinds of nodes that should not have their
+ * transform even adjusted.
+ */
 bool BulletBodyNode::
 safe_to_modify_transform() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::safe_to_combine
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine this
-//               particular kind of PandaNode with other kinds of
-//               PandaNodes of compatible type, adding children or
-//               whatever.  For instance, an LODNode should not be
-//               combined with any other PandaNode, because its set of
-//               children is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine this particular kind of
+ * PandaNode with other kinds of PandaNodes of compatible type, adding children
+ * or whatever.  For instance, an LODNode should not be combined with any other
+ * PandaNode, because its set of children is meaningful.
+ */
 bool BulletBodyNode::
 safe_to_combine() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::safe_to_combine_children
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine the
-//               children of this PandaNode with each other.  For
-//               instance, an LODNode's children should not be
-//               combined with each other, because the set of children
-//               is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine the children of this
+ * PandaNode with each other.  For instance, an LODNode's children should not be
+ * combined with each other, because the set of children is meaningful.
+ */
 bool BulletBodyNode::
 safe_to_combine_children() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::safe_to_flatten_below
-//       Access: Public, Virtual
-//  Description: Returns true if a flatten operation may safely
-//               continue past this node, or false if nodes below this
-//               node may not be molested.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a flatten operation may safely continue past this node, or
+ * false if nodes below this node may not be molested.
+ */
 bool BulletBodyNode::
 safe_to_flatten_below() const {
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 output(ostream &out) const {
 
@@ -161,11 +130,9 @@ output(ostream &out) const {
   if (is_kinematic()) out << " kinematic";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::add_shape
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
@@ -252,11 +219,9 @@ add_shape(BulletShape *bullet_shape, const TransformState *ts) {
   shape_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::remove_shape
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 remove_shape(BulletShape *shape) {
 
@@ -321,12 +286,9 @@ remove_shape(BulletShape *shape) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::is_identity
-//       Access: Private
-//  Description: Returns TRUE if the transform is an identity
-//               transform, otherwise FALSE.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns TRUE if the transform is an identity transform, otherwise FALSE.
+ */
 bool BulletBodyNode::
 is_identity(btTransform &trans) {
 
@@ -336,11 +298,9 @@ is_identity(btTransform &trans) {
        && trans.getRotation().getAxis() == null);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_shape_pos
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BulletBodyNode::
 get_shape_pos(int idx) const {
 
@@ -357,21 +317,17 @@ get_shape_pos(int idx) const {
   return LPoint3::zero();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_shape_mat
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LMatrix4 BulletBodyNode::
 get_shape_mat(int idx) const {
   return get_shape_transform(idx)->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_shape_transform
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPT(TransformState) BulletBodyNode::
 get_shape_transform(int idx) const {
   nassertr(idx >= 0 && idx < (int)_shapes.size(), TransformState::make_identity());
@@ -401,57 +357,46 @@ get_shape_transform(int idx) const {
   return TransformState::make_identity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::shape_changed
-//       Access: Published
-//  Description: Hook which will be called whenever the total shape
-//               of a body changed. Used for example to update
-//               the mass properties (inertia) of a rigid body.
-//               The default implementation does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Hook which will be called whenever the total shape of a body changed.  Used
+ * for example to update the mass properties (inertia) of a rigid body.  The
+ * default implementation does nothing.
+ */
 void BulletBodyNode::
 shape_changed() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_deactivation_time
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 set_deactivation_time(PN_stdfloat dt) {
 
   get_object()->setDeactivationTime(dt);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_deactivation_time
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat BulletBodyNode::
 get_deactivation_time() const {
 
   return get_object()->getDeactivationTime();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::is_active
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BulletBodyNode::
 is_active() const {
 
   return get_object()->isActive();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_active
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 set_active(bool active, bool force) {
 
@@ -468,13 +413,10 @@ set_active(bool active, bool force) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_deactivation_enabled
-//       Access: Published
-//  Description: If true, this object will be deactivated after a
-//               certain amount of time has passed without movement.
-//               If false, the object will always remain active.
-////////////////////////////////////////////////////////////////////
+/**
+ * If true, this object will be deactivated after a certain amount of time has
+ * passed without movement.  If false, the object will always remain active.
+ */
 void BulletBodyNode::
 set_deactivation_enabled(bool enabled) {
 
@@ -489,22 +431,18 @@ set_deactivation_enabled(bool enabled) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::is_deactivation_enabled
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BulletBodyNode::
 is_deactivation_enabled() const {
 
   return (get_object()->getActivationState() != DISABLE_DEACTIVATION);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::check_collision_with
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BulletBodyNode::
 check_collision_with(PandaNode *node) {
 
@@ -518,22 +456,18 @@ check_collision_with(PandaNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_anisotropic_friction
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LVecBase3 BulletBodyNode::
 get_anisotropic_friction() const {
 
   return btVector3_to_LVecBase3(get_object()->getAnisotropicFriction());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_anisotropic_friction
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 set_anisotropic_friction(const LVecBase3 &friction) {
 
@@ -541,89 +475,73 @@ set_anisotropic_friction(const LVecBase3 &friction) {
   get_object()->setAnisotropicFriction(LVecBase3_to_btVector3(friction));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::has_contact_response
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BulletBodyNode::
 has_contact_response() const {
 
   return get_object()->hasContactResponse();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_contact_processing_threshold
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat BulletBodyNode::
 get_contact_processing_threshold() const {
 
   return get_object()->getContactProcessingThreshold();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_contact_processing_threshold
-//       Access: Published
-//  Description: The constraint solver can discard solving
-//               contacts, if the distance is above this threshold.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constraint solver can discard solving contacts, if the distance is above
+ * this threshold.
+ */
 void BulletBodyNode::
 set_contact_processing_threshold(PN_stdfloat threshold) {
 
   get_object()->setContactProcessingThreshold(threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_ccd_swept_sphere_radius
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat BulletBodyNode::
 get_ccd_swept_sphere_radius() const {
 
   return get_object()->getCcdSweptSphereRadius();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_ccd_swept_sphere_radius
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 set_ccd_swept_sphere_radius(PN_stdfloat radius) {
 
   return get_object()->setCcdSweptSphereRadius(radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_ccd_motion_threshold
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat BulletBodyNode::
 get_ccd_motion_threshold() const {
 
   return get_object()->getCcdMotionThreshold();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_ccd_motion_threshold
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 set_ccd_motion_threshold(PN_stdfloat threshold) {
 
   return get_object()->setCcdMotionThreshold(threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::add_shapes_from_collision_solids
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletBodyNode::
 add_shapes_from_collision_solids(CollisionNode *cnode) {
 
@@ -679,27 +597,20 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::set_transform_dirty
-//       Access: Published
-//  Description: This method enforces an update of the Bullet
-//               transform, that is copies the scene graph transform
-//               to the Bullet transform.
-//               This is achieved by alling the protected PandaNode
-//               hook 'transform_changed'.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method enforces an update of the Bullet transform, that is copies the
+ * scene graph transform to the Bullet transform.  This is achieved by alling
+ * the protected PandaNode hook 'transform_changed'.
+ */
 void BulletBodyNode::
 set_transform_dirty() {
 
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::get_shape_bounds
-//       Access: Published
-//  Description: Returns the current bounds of all collision shapes
-//               owned by this body.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current bounds of all collision shapes owned by this body.
+ */
 BoundingSphere BulletBodyNode::
 get_shape_bounds() const {
 
@@ -726,12 +637,10 @@ cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << 
   return bounds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void BulletBodyNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
@@ -770,13 +679,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_pointer(dg, NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int BulletBodyNode::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
@@ -793,29 +699,22 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::require_fully_complete
-//       Access: Public, Virtual
-//  Description: Some objects require all of their nested pointers to
-//               have been completed before the objects themselves can
-//               be completed.  If this is the case, override this
-//               method to return true, and be careful with circular
-//               references (which would make the object unreadable
-//               from a bam file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Some objects require all of their nested pointers to have been completed
+ * before the objects themselves can be completed.  If this is the case,
+ * override this method to return true, and be careful with circular references
+ * (which would make the object unreadable from a bam file).
+ */
 bool BulletBodyNode::
 require_fully_complete() const {
   // We require the shape pointers to be complete before we add them.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBodyNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BulletBodyNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BulletBodyNode.
+ */
 void BulletBodyNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
