@@ -307,7 +307,7 @@ expand_amp_sequence(StringDecoder &decoder) const {
   // Some unrecognized sequence.
   return 0;
 }
-*/
+
 
 
 /**
