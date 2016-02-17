@@ -1,16 +1,15 @@
-// Filename: pfstreamBuf.h
-// Created by:  cary (12Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pfstreamBuf.h
+ * @author cary
+ * @date 2000-12-12
+ */
 
 #ifndef __PFSTREAMBUF_H__
 #define __PFSTREAMBUF_H__
@@ -20,9 +19,9 @@
 #include <stdio.h>
 
 // By default, we'll use the Windows flavor of pipe functions if we're
-// compiling under Windows.  Turn this off to use popen(), even on
-// Windows.  (popen() doesn't seem to work on Win9x, although it does
-// work on NT-based variants.)
+// compiling under Windows.  Turn this off to use popen(), even on Windows.
+// (popen() doesn't seem to work on Win9x, although it does work on NT-based
+// variants.)
 #ifdef WIN32_VC
 #define WIN_PIPE_CALLS 1
 #endif

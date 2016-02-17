@@ -1,16 +1,15 @@
-// Filename: fltCopy.cxx
-// Created by:  drose (01Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltCopy.cxx
+ * @author drose
+ * @date 2000-11-01
+ */
 
 #include "fltCopy.h"
 
@@ -22,11 +21,9 @@
 #include "dcast.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltCopy::
 FltCopy() {
   set_program_brief("copy MultiGen .flt files into a CVS source hierarchy");
@@ -47,11 +44,9 @@ FltCopy() {
   add_path_replace_options();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FltCopy::
 run() {
   SourceFiles::iterator fi;
@@ -66,14 +61,11 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::copy_file
-//       Access: Protected, Virtual
-//  Description: Called by import() if verify_file() indicates that a
-//               file needs to be copied.  This does the actual copy
-//               of a file from source to destination.  If new_file is
-//               true, then dest does not already exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by import() if verify_file() indicates that a file needs to be
+ * copied.  This does the actual copy of a file from source to destination.
+ * If new_file is true, then dest does not already exist.
+ */
 bool FltCopy::
 copy_file(const Filename &source, const Filename &dest,
           CVSSourceDirectory *dir, void *extra_data, bool new_file) {
@@ -90,18 +82,16 @@ copy_file(const Filename &source, const Filename &dest,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::copy_flt_file
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FltCopy::
 copy_flt_file(const Filename &source, const Filename &dest,
               CVSSourceDirectory *dir) {
   PT(FltHeader) header = new FltHeader(_path_replace);
 
-  // We don't want to automatically generate .attr files--we'd rather
-  // write them out explicitly.
+  // We don't want to automatically generate .attr files--we'd rather write
+  // them out explicitly.
   header->set_auto_attr_update(FltHeader::AU_none);
 
   FltError result = header->read_flt(source);
@@ -135,15 +125,15 @@ copy_flt_file(const Filename &source, const Filename &dest,
         return false;
       }
 
-      // Update the reference to point to the new flt filename, relative
-      // to the base flt file.
+      // Update the reference to point to the new flt filename, relative to
+      // the base flt file.
       ref->set_ref_filename(ref_path.get_rel_from(dir));
     }
   }
 
-  // Remove all the textures from the palette, and then add back only
-  // those we found in use.  This way we don't copy a file that
-  // references bogus textures.
+  // Remove all the textures from the palette, and then add back only those we
+  // found in use.  This way we don't copy a file that references bogus
+  // textures.
   header->clear_textures();
 
   Textures::const_iterator ti;
@@ -165,8 +155,8 @@ copy_flt_file(const Filename &source, const Filename &dest,
         return false;
       }
 
-      // Update the texture reference to point to the new texture
-      // filename, relative to the flt file.
+      // Update the texture reference to point to the new texture filename,
+      // relative to the flt file.
       tex->set_texture_filename(texture_path.get_rel_from(dir));
       header->add_texture(tex);
     }
@@ -182,11 +172,9 @@ copy_flt_file(const Filename &source, const Filename &dest,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::copy_texture
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FltCopy::
 copy_texture(const Filename &source, const Filename &dest,
              CVSSourceDirectory *dir, FltTexture *tex, bool new_file) {
@@ -209,13 +197,10 @@ copy_texture(const Filename &source, const Filename &dest,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::scan_flt
-//       Access: Private
-//  Description: Recursively walks through the flt file hierarchy,
-//               looking for texture references and external flt file
-//               references.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks through the flt file hierarchy, looking for texture
+ * references and external flt file references.
+ */
 void FltCopy::
 scan_flt(FltRecord *record, FltCopy::Refs &refs, FltCopy::Textures &textures) {
   if (record->is_of_type(FltFace::get_class_type())) {

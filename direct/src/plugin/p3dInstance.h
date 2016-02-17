@@ -1,16 +1,15 @@
-// Filename: p3dInstance.h
-// Created by:  drose (29May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dInstance.h
+ * @author drose
+ * @date 2009-05-29
+ */
 
 #ifndef P3DINSTANCE_H
 #define P3DINSTANCE_H
@@ -45,15 +44,14 @@ class P3DObject;
 class P3DMainObject;
 class P3DTemporaryFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DInstance
-// Description : This is an instance of a Panda3D window, as seen in
-//               the parent-level process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an instance of a Panda3D window, as seen in the parent-level
+ * process.
+ */
 class P3DInstance : public P3D_instance, public P3DReferenceCount {
 public:
-  P3DInstance(P3D_request_ready_func *func, 
-              const P3D_token tokens[], size_t num_tokens, 
+  P3DInstance(P3D_request_ready_func *func,
+              const P3D_token tokens[], size_t num_tokens,
               int argc, const char *argv[], void *user_data);
   ~P3DInstance();
   void cleanup();
@@ -78,9 +76,9 @@ public:
 
   bool feed_url_stream(int unique_id,
                        P3D_result_code result_code,
-                       int http_status_code, 
+                       int http_status_code,
                        size_t total_expected_data,
-                       const unsigned char *this_data, 
+                       const unsigned char *this_data,
                        size_t this_data_size);
 
   bool handle_event(const P3D_event_data &event);
@@ -94,14 +92,14 @@ public:
 
   inline P3D_request_ready_func *get_request_ready_func() const;
 
-  void add_package(const string &name, const string &version, 
+  void add_package(const string &name, const string &version,
                    const string &seq, P3DHost *host);
   void add_package(P3DPackage *package);
   void remove_package(P3DPackage *package);
   bool get_packages_info_ready() const;
   bool get_packages_ready() const;
   bool get_packages_failed() const;
-  
+
   inline bool is_trusted() const;
   inline bool get_matches_script_origin() const;
   int start_download(P3DDownload *download, bool add_request = true);
@@ -144,8 +142,7 @@ private:
     P3DInstance *_inst;
   };
 
-  // The different kinds of image files we download for the splash
-  // window.
+  // The different kinds of image files we download for the splash window.
   enum ImageType {
     // Also update _image_type_names when you update this list.
     IT_download,
@@ -186,7 +183,7 @@ private:
   void send_browser_script_object();
   P3D_request *make_p3d_request(TiXmlElement *xrequest);
   void handle_notify_request(const string &message);
-  void handle_script_request(const string &operation, P3D_object *object, 
+  void handle_script_request(const string &operation, P3D_object *object,
                              const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
 
@@ -236,8 +233,8 @@ private:
   string _origin_hostname;
   string _origin_port;
 
-  // We need a list of previous time reports so we can average the
-  // predicted download time over the past few seconds.
+  // We need a list of previous time reports so we can average the predicted
+  // download time over the past few seconds.
   class TimeReport {
   public:
     double _total;
@@ -278,10 +275,10 @@ private:
   bool _p3d_trusted;
   TiXmlElement *_xpackage;
 
-  // Holds the list of certificates that are pre-approved by the
-  // plugin vendor.
+  // Holds the list of certificates that are pre-approved by the plugin
+  // vendor.
   P3DPackage *_certlist_package;
-  
+
   // For downloading the p3dcert authorization program.
   P3DPackage *_p3dcert_package;
 
@@ -307,9 +304,8 @@ private:
   string _log_pathname;
 
 #ifdef __APPLE__
-  // On OSX, we have to get a copy of the framebuffer data back from
-  // the child process, and draw it to the window, here in the parent
-  // process.  Crazy!
+  // On OSX, we have to get a copy of the framebuffer data back from the child
+  // process, and draw it to the window, here in the parent process.  Crazy!
   int _shared_fd;
   size_t _shared_mmap_size;
   string _shared_filename;
@@ -332,17 +328,17 @@ private:
   bool _instance_window_attached;
   bool _stuff_to_download;
 
-  // Keep track of when the download was started, for reporting
-  // purposes.  These members are used both for the instance download,
-  // and for the later package download.
+  // Keep track of when the download was started, for reporting purposes.
+  // These members are used both for the instance download, and for the later
+  // package download.
 #ifdef _WIN32
   int _start_dl_tick;
 #else
   struct timeval _start_dl_timeval;
 #endif
 
-  // This is set false initially, but true if the instance download
-  // continues for more than a couple of seconds.
+  // This is set false initially, but true if the instance download continues
+  // for more than a couple of seconds.
   bool _show_dl_instance_progress;
 
   typedef vector<P3DPackage *> Packages;
@@ -357,22 +353,22 @@ private:
   bool _download_complete;
   bool _instance_started;
 
-  // We keep the _panda3d pointer separately because it's so
-  // important, but it's in the above vector also.
+  // We keep the _panda3d pointer separately because it's so important, but
+  // it's in the above vector also.
   P3DPackage *_panda3d_package;
 
   typedef map<int, P3DDownload *> Downloads;
   Downloads _downloads;
 
-  // The _raw_requests queue might be filled up by the read thread, so
-  // we protect it in a lock.
+  // The _raw_requests queue might be filled up by the read thread, so we
+  // protect it in a lock.
   LOCK _request_lock;
   typedef deque<TiXmlDocument *> RawRequests;
   RawRequests _raw_requests;
   bool _requested_stop;
 
-  // The _baked_requests queue is only touched in the main thread; no
-  // lock needed.
+  // The _baked_requests queue is only touched in the main thread; no lock
+  // needed.
   typedef deque<P3D_request *> BakedRequests;
   BakedRequests _baked_requests;
 

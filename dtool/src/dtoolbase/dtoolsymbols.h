@@ -1,8 +1,4 @@
-/* Filename: dtoolsymbols.h
- * Created by:  drose (18Feb00)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file dtoolsymbols.h
+ * @author drose
+ * @date 2000-02-18
+ */
 
 #ifndef DTOOLSYMBOLS_H
 #define DTOOLSYMBOLS_H

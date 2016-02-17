@@ -1,39 +1,32 @@
-// Filename: glGeomContext_src.cxx
-// Created by:  drose (19Mar04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGeomContext_src.cxx
+ * @author drose
+ * @date 2004-03-19
+ */
 
 TypeHandle CLP(GeomContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomContext)::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(GeomContext)::
 ~CLP(GeomContext)() {
   nassertv(_display_lists.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomContext)::get_display_list
-//       Access: Public
-//  Description: Looks up the display list index associated with the
-//               indicated munger, or creates a new one if the munger
-//               has not yet been used to render this context.  Fills
-//               index with the display list index, and returns true
-//               if the display list is current (that is, it has the
-//               same modified stamp).
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the display list index associated with the indicated munger, or
+ * creates a new one if the munger has not yet been used to render this
+ * context.  Fills index with the display list index, and returns true if the
+ * display list is current (that is, it has the same modified stamp).
+ */
 bool CLP(GeomContext)::
 get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
                  UpdateSeq modified) {
@@ -59,13 +52,11 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
 #endif  // OPENGLES
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomContext)::release_display_lists
-//       Access: Public
-//  Description: Called only from the draw thread by
-//               GLGraphicsStateGuardian::release_geom(), this should
-//               delete all of the queued display lists immediately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only from the draw thread by
+ * GLGraphicsStateGuardian::release_geom(), this should delete all of the
+ * queued display lists immediately.
+ */
 void CLP(GeomContext)::
 release_display_lists() {
 #if defined(OPENGLES) || !defined(SUPPORT_FIXED_FUNCTION)
@@ -94,13 +85,10 @@ release_display_lists() {
 #endif  // OPENGLES
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomContext)::remove_munger
-//       Access: Public
-//  Description: Called when a glGeomMunger that we are pointing to
-//               destructs, this should remove the record of that
-//               munger (and mark the display list for deletion).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a glGeomMunger that we are pointing to destructs, this should
+ * remove the record of that munger (and mark the display list for deletion).
+ */
 void CLP(GeomContext)::
 remove_munger(CLP(GeomMunger) *munger) {
 #if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
@@ -113,9 +101,9 @@ remove_munger(CLP(GeomMunger) *munger) {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, munger->get_gsg());
 
-  // We can't delete the display list immediately, because we might be
-  // running in any thread.  Instead, enqueue the display list index
-  // and let it get deleted at the end of the current or next frame.
+  // We can't delete the display list immediately, because we might be running
+  // in any thread.  Instead, enqueue the display list index and let it get
+  // deleted at the end of the current or next frame.
   glgsg->record_deleted_display_list(index);
 #endif
 }

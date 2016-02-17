@@ -1,27 +1,24 @@
-// Filename: sphereVolumeEmitter.h
-// Created by:  charles (22Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sphereVolumeEmitter.h
+ * @author charles
+ * @date 2000-06-22
+ */
 
 #ifndef SPHEREVOLUMEEMITTER_H
 #define SPHEREVOLUMEEMITTER_H
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SphereVolumeEmitter
-// Description : Describes a voluminous spherical region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a voluminous spherical region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS SphereVolumeEmitter : public BaseParticleEmitter {
 PUBLISHED:
   SphereVolumeEmitter();
@@ -39,8 +36,7 @@ PUBLISHED:
 private:
   PN_stdfloat _radius;
 
-  // CUSTOM EMISSION PARAMETERS
-  // none
+  // CUSTOM EMISSION PARAMETERS none
 
   // scratch variables that carry over from position calc to velocity calc
   LPoint3 _particle_pos;

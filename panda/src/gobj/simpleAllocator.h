@@ -1,16 +1,15 @@
-// Filename: simpleAllocator.h
-// Created by:  drose (12May07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file simpleAllocator.h
+ * @author drose
+ * @date 2007-05-12
+ */
 
 #ifndef SIMPLEALLOCATOR_H
 #define SIMPLEALLOCATOR_H
@@ -22,14 +21,11 @@
 
 class SimpleAllocatorBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleAllocator
-// Description : An implementation of a very simple block allocator.
-//               This class can allocate ranges of nonnegative
-//               integers within a specified upper limit; it uses a
-//               simple first-fit algorithm to find the next available
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * An implementation of a very simple block allocator.  This class can
+ * allocate ranges of nonnegative integers within a specified upper limit; it
+ * uses a simple first-fit algorithm to find the next available space.
+ */
 class EXPCL_PANDA_GOBJ SimpleAllocator : public LinkedListNode {
 PUBLISHED:
   INLINE SimpleAllocator(size_t max_size, Mutex &lock);
@@ -57,41 +53,39 @@ protected:
   virtual void changed_contiguous();
 
 protected:
-  // This is implemented as a linked-list chain of allocated blocks.
-  // Free blocks are implicit.  Blocks are kept in sorted order from
-  // beginning to end.  Allocating a block means creating a new entry
-  // in the chain wherever it may fit; freeing a block means simply
-  // removing the allocated block from the chain.  With this simple
-  // approach, there is no need to merge adjacent free blocks to
-  // straighten out fragmentation, since free blocks are not stored.
-  // However, it does mean we have to walk through a list of adjacent
-  // allocated blocks in order to find the free blocks.
+/*
+ * This is implemented as a linked-list chain of allocated blocks.  Free
+ * blocks are implicit.  Blocks are kept in sorted order from beginning to
+ * end.  Allocating a block means creating a new entry in the chain wherever
+ * it may fit; freeing a block means simply removing the allocated block from
+ * the chain.  With this simple approach, there is no need to merge adjacent
+ * free blocks to straighten out fragmentation, since free blocks are not
+ * stored.  However, it does mean we have to walk through a list of adjacent
+ * allocated blocks in order to find the free blocks.
+ */
   size_t _total_size;
   size_t _max_size;
 
-  // This is what we currently believe our max contiguous space to be.
-  // This guess might be larger than the actual available space, but
-  // it will not be smaller.
+  // This is what we currently believe our max contiguous space to be.  This
+  // guess might be larger than the actual available space, but it will not be
+  // smaller.
   size_t _contiguous;
 
-  // This mutex protects all operations within this class.  The caller
-  // must pass the reference to a mutex in to the constructor, and the
-  // caller remains responsible for owning the mutex.  This allows the
-  // mutex to be shared where appropriate.
+  // This mutex protects all operations within this class.  The caller must
+  // pass the reference to a mutex in to the constructor, and the caller
+  // remains responsible for owning the mutex.  This allows the mutex to be
+  // shared where appropriate.
 
-  // A derived class may also use it to protect itself as well, but
-  // take care to call do_alloc() instead of alloc() etc. as
-  // necessary.
+  // A derived class may also use it to protect itself as well, but take care
+  // to call do_alloc() instead of alloc() etc.  as necessary.
   Mutex &_lock;
 
   friend class SimpleAllocatorBlock;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleAllocatorBlock
-// Description : A single block as returned from
-//               SimpleAllocator::alloc().
-////////////////////////////////////////////////////////////////////
+/**
+ * A single block as returned from SimpleAllocator::alloc().
+ */
 class EXPCL_PANDA_GOBJ SimpleAllocatorBlock : public LinkedListNode {
 protected:
   INLINE SimpleAllocatorBlock(SimpleAllocator *alloc,

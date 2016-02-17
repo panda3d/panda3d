@@ -1,16 +1,15 @@
-// Filename: speedTreeNode.cxx
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file speedTreeNode.cxx
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #include "pandabase.h"
 #include "speedTreeNode.h"
@@ -59,28 +58,25 @@ PStatCollector SpeedTreeNode::_draw_speedtree_trees_pcollector("Draw:SpeedTree:T
 PStatCollector SpeedTreeNode::_draw_speedtree_terrain_pcollector("Draw:SpeedTree:Terrain");
 PStatCollector SpeedTreeNode::_draw_speedtree_terrain_update_pcollector("Draw:SpeedTree:Terrain:Update");
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SpeedTreeNode::
 SpeedTreeNode(const string &name) :
   PandaNode(name),
 #ifdef ST_DELETE_FOREST_HACK
-  // Early versions of SpeedTree don't destruct unused CForestRender
-  // objects correctly.  To avoid crashes, we have to leak these
-  // things.
+  // Early versions of SpeedTree don't destruct unused CForestRender objects
+  // correctly.  To avoid crashes, we have to leak these things.
   _forest_render(*(new SpeedTree::CForestRender)),
 #endif
   _time_delta(0.0)
 {
   init_node();
-  // For now, set an infinite bounding volume.  Maybe in the future
-  // we'll change this to match whatever set of trees we're holding,
-  // though it probably doesn't really matter too much.
-  //set_internal_bounds(new OmniBoundingVolume);
-  //  set_internal_bounds(new BoundingSphere(LPoint3::zero(), 10.0f));
+  // For now, set an infinite bounding volume.  Maybe in the future we'll
+  // change this to match whatever set of trees we're holding, though it
+  // probably doesn't really matter too much.  set_internal_bounds(new
+  // OmniBoundingVolume); set_internal_bounds(new
+  // BoundingSphere(LPoint3::zero(), 10.0f));
 
   // Intialize the render params.  First, get the shader directory.
   Filename shaders_dir = speedtree_shaders_dir;
@@ -126,13 +122,10 @@ SpeedTreeNode(const string &name) :
   reload_config();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::count_total_instances
-//       Access: Published
-//  Description: Returns the total number of trees that will be
-//               rendered by this node, counting all instances of all
-//               trees.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of trees that will be rendered by this node,
+ * counting all instances of all trees.
+ */
 int SpeedTreeNode::
 count_total_instances() const {
   int total_instances = 0;
@@ -145,14 +138,11 @@ count_total_instances() const {
   return total_instances;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_tree
-//       Access: Published
-//  Description: Adds a new tree for rendering.  Returns the
-//               InstanceList which can be used to add to the
-//               instances for this tree.  If the tree has previously
-//               been added, returns the existing InstanceList.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new tree for rendering.  Returns the InstanceList which can be used
+ * to add to the instances for this tree.  If the tree has previously been
+ * added, returns the existing InstanceList.
+ */
 SpeedTreeNode::InstanceList &SpeedTreeNode::
 add_tree(const STTree *tree) {
   nassertr(is_valid(), *(InstanceList *)NULL);
@@ -161,8 +151,7 @@ add_tree(const STTree *tree) {
   InstanceList ilist(tree);
   Trees::iterator ti = _trees.find(&ilist);
   if (ti == _trees.end()) {
-    // This is the first time that this particular tree has been
-    // added.
+    // This is the first time that this particular tree has been added.
     InstanceList *instance_list = new InstanceList(tree);
     pair<Trees::iterator, bool> result = _trees.insert(instance_list);
     ti = result.first;
@@ -182,12 +171,10 @@ add_tree(const STTree *tree) {
   return *instance_list;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::remove_tree
-//       Access: Published
-//  Description: Removes all instances of the indicated tree.  Returns
-//               the number of instances removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all instances of the indicated tree.  Returns the number of
+ * instances removed.
+ */
 int SpeedTreeNode::
 remove_tree(const STTree *tree) {
   InstanceList ilist(tree);
@@ -214,11 +201,9 @@ remove_tree(const STTree *tree) {
   return num_removed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::remove_all_trees
-//       Access: Published
-//  Description: Removes all instances of all trees from the node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all instances of all trees from the node.
+ */
 void SpeedTreeNode::
 remove_all_trees() {
   Trees::iterator ti;
@@ -238,12 +223,10 @@ remove_all_trees() {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::has_instance_list
-//       Access: Published
-//  Description: Returns true if the indicated tree has any instances
-//               within this node, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated tree has any instances within this node,
+ * false otherwise.
+ */
 bool SpeedTreeNode::
 has_instance_list(const STTree *tree) const {
   InstanceList ilist(tree);
@@ -251,14 +234,11 @@ has_instance_list(const STTree *tree) const {
   return (ti != _trees.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::get_instance_list
-//       Access: Published
-//  Description: Returns a list of transforms that corresponds to the
-//               instances at which the indicated tree appears.  You
-//               should ensure that has_instance_list() returns true
-//               before calling this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of transforms that corresponds to the instances at which the
+ * indicated tree appears.  You should ensure that has_instance_list() returns
+ * true before calling this method.
+ */
 const SpeedTreeNode::InstanceList &SpeedTreeNode::
 get_instance_list(const STTree *tree) const {
   InstanceList ilist(tree);
@@ -273,24 +253,18 @@ get_instance_list(const STTree *tree) const {
   return *instance_list;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::modify_instance_list
-//       Access: Published
-//  Description: Returns a modifiable list of transforms that
-//               corresponds to the instances of this tree.  This is
-//               equivalent to add_tree().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable list of transforms that corresponds to the instances
+ * of this tree.  This is equivalent to add_tree().
+ */
 SpeedTreeNode::InstanceList &SpeedTreeNode::
 modify_instance_list(const STTree *tree) {
   return add_tree(tree);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_instance
-//       Access: Published
-//  Description: Adds a new instance of the indicated tree at the
-//               indicated transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new instance of the indicated tree at the indicated transform.
+ */
 void SpeedTreeNode::
 add_instance(const STTree *tree, const STTransform &transform) {
   if (speedtree_follow_terrain && has_terrain()) {
@@ -302,15 +276,12 @@ add_instance(const STTree *tree, const STTransform &transform) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_instances
-//       Access: Published
-//  Description: Walks the scene graph beginning at root, looking for
-//               nested SpeedTreeNodes.  For each SpeedTreeNode found,
-//               adds all of the instances defined within that
-//               SpeedTreeNode as instances of this node, after
-//               applying the indicated scene-graph transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the scene graph beginning at root, looking for nested SpeedTreeNodes.
+ * For each SpeedTreeNode found, adds all of the instances defined within that
+ * SpeedTreeNode as instances of this node, after applying the indicated
+ * scene-graph transform.
+ */
 void SpeedTreeNode::
 add_instances(const NodePath &root, const TransformState *transform) {
   nassertv(!root.is_empty());
@@ -318,13 +289,10 @@ add_instances(const NodePath &root, const TransformState *transform) {
                   Thread::get_current_thread());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_instances_from
-//       Access: Published
-//  Description: Adds all of the instances defined within the
-//               indicated SpeedTreeNode as instances of this node.
-//               Does not recurse to children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the instances defined within the indicated SpeedTreeNode as
+ * instances of this node.  Does not recurse to children.
+ */
 void SpeedTreeNode::
 add_instances_from(const SpeedTreeNode *other) {
   int num_trees = other->get_num_trees();
@@ -341,14 +309,11 @@ add_instances_from(const SpeedTreeNode *other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_instances_from
-//       Access: Published
-//  Description: Adds all of the instances defined within the
-//               indicated SpeedTreeNode as instances of this node,
-//               after applying the indicated scene-graph transform.
-//               Does not recurse to children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the instances defined within the indicated SpeedTreeNode as
+ * instances of this node, after applying the indicated scene-graph transform.
+ * Does not recurse to children.
+ */
 void SpeedTreeNode::
 add_instances_from(const SpeedTreeNode *other, const TransformState *transform) {
   int num_trees = other->get_num_trees();
@@ -374,19 +339,15 @@ add_instances_from(const SpeedTreeNode *other, const TransformState *transform) 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_random_instances
-//       Access: Published
-//  Description: Creates a number of random instances of the indicated
-//               true, within the indicated range.  If a terrain is
-//               present, height_min and height_max restrict trees to
-//               the (x, y) positions that fall within the indicated
-//               terrain, and slope_min and slope_max restrict trees
-//               to the (x, y) positions that have a matching slope.
-//               If a terrain is not present, height_min and
-//               height_max specify a random range of Z heights, and
-//               slope_min and slope_max are ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a number of random instances of the indicated true, within the
+ * indicated range.  If a terrain is present, height_min and height_max
+ * restrict trees to the (x, y) positions that fall within the indicated
+ * terrain, and slope_min and slope_max restrict trees to the (x, y) positions
+ * that have a matching slope.  If a terrain is not present, height_min and
+ * height_max specify a random range of Z heights, and slope_min and slope_max
+ * are ignored.
+ */
 void SpeedTreeNode::
 add_random_instances(const STTree *tree, int quantity,
                      PN_stdfloat x_min, PN_stdfloat x_max,
@@ -426,14 +387,11 @@ add_random_instances(const STTree *tree, int quantity,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_from_stf
-//       Access: Published
-//  Description: Opens and reads the named STF (SpeedTree Forest)
-//               file, and adds the SRT files named within as
-//               instances of this node.  Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens and reads the named STF (SpeedTree Forest) file, and adds the SRT
+ * files named within as instances of this node.  Returns true on success,
+ * false on failure.
+ */
 bool SpeedTreeNode::
 add_from_stf(const Filename &stf_filename, const LoaderOptions &options) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -467,22 +425,17 @@ add_from_stf(const Filename &stf_filename, const LoaderOptions &options) {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_from_stf
-//       Access: Published
-//  Description: Reads text data from the indicated stream, which is
-//               understood to represent the named STF (SpeedTree
-//               Forest) file, and adds the SRT files named within as
-//               instances of this node.  Returns true on success,
-//               false on failure.
-//
-//               The pathname is used for reference only; if nonempty,
-//               it provides a search directory for named SRT files.
-//
-//               The Loader and LoaderOptions, if provided, are used
-//               to load the SRT files.  If the Loader pointer is
-//               NULL, the default global Loader is used instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads text data from the indicated stream, which is understood to represent
+ * the named STF (SpeedTree Forest) file, and adds the SRT files named within
+ * as instances of this node.  Returns true on success, false on failure.
+ *
+ * The pathname is used for reference only; if nonempty, it provides a search
+ * directory for named SRT files.
+ *
+ * The Loader and LoaderOptions, if provided, are used to load the SRT files.
+ * If the Loader pointer is NULL, the default global Loader is used instead.
+ */
 bool SpeedTreeNode::
 add_from_stf(istream &in, const Filename &pathname,
              const LoaderOptions &options, Loader *loader) {
@@ -511,8 +464,8 @@ add_from_stf(istream &in, const Filename &pathname,
       // Resolve the SRT filename relative to the STF file first.
       srt_filename.resolve_filename(search);
 
-      // Now load up the SRT file using the Panda loader (which will
-      // also search the model-path if necessary).
+      // Now load up the SRT file using the Panda loader (which will also
+      // search the model-path if necessary).
       PT(PandaNode) srt_root = loader->load_sync(srt_filename);
 
       if (srt_root != NULL) {
@@ -528,8 +481,8 @@ add_from_stf(istream &in, const Filename &pathname,
       already_loaded[srt_filename] = tree;
     }
 
-    // Now we've loaded the SRT data, so apply it the appropriate
-    // number of times to the locations specified.
+    // Now we've loaded the SRT data, so apply it the appropriate number of
+    // times to the locations specified.
     int num_instances;
     in >> num_instances;
     for (int ni = 0; ni < num_instances && in && !in.eof(); ++ni) {
@@ -538,8 +491,8 @@ add_from_stf(istream &in, const Filename &pathname,
       in >> pos[0] >> pos[1] >> pos[2] >> rotate >> scale;
 
       if (!speedtree_5_2_stf) {
-        // 5.1 or earlier stf files also included these additional
-        // values, which we will ignore:
+        // 5.1 or earlier stf files also included these additional values,
+        // which we will ignore:
         PN_stdfloat height_min, height_max, slope_min, slope_max;
         in >> height_min >> height_max >> slope_min >> slope_max;
       }
@@ -555,8 +508,7 @@ add_from_stf(istream &in, const Filename &pathname,
   in >> ws;
 
   if (!in.eof()) {
-    // If we didn't read all the way to end-of-file, there was an
-    // error.
+    // If we didn't read all the way to end-of-file, there was an error.
     in.clear();
     string text;
     in >> text;
@@ -569,18 +521,15 @@ add_from_stf(istream &in, const Filename &pathname,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::setup_terrain
-//       Access: Published
-//  Description: A convenience function to set up terrain geometry by
-//               reading a terrain.txt file as defined by SpeedTree.
-//               This file names the various map files that define the
-//               terrain, as well as defining parameters size as its
-//               size and color.
-//
-//               This method implicitly creates a STBasicTerrain
-//               object and passes it to set_terrain().
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function to set up terrain geometry by reading a terrain.txt
+ * file as defined by SpeedTree.  This file names the various map files that
+ * define the terrain, as well as defining parameters size as its size and
+ * color.
+ *
+ * This method implicitly creates a STBasicTerrain object and passes it to
+ * set_terrain().
+ */
 bool SpeedTreeNode::
 setup_terrain(const Filename &terrain_file) {
   PT(STBasicTerrain) terrain = new STBasicTerrain;
@@ -592,17 +541,13 @@ setup_terrain(const Filename &terrain_file) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::set_terrain
-//       Access: Published
-//  Description: Associated a terrain with the node.  If the terrain
-//               has not already been loaded prior to this call,
-//               load_data() will be called immediately.
-//
-//               The terrain will be rendered using SpeedTree
-//               callbacks, and trees may be repositioned with a call
-//               to snap_to_terrain().
-////////////////////////////////////////////////////////////////////
+/**
+ * Associated a terrain with the node.  If the terrain has not already been
+ * loaded prior to this call, load_data() will be called immediately.
+ *
+ * The terrain will be rendered using SpeedTree callbacks, and trees may be
+ * repositioned with a call to snap_to_terrain().
+ */
 void SpeedTreeNode::
 set_terrain(STTerrain *terrain) {
   _terrain = NULL;
@@ -650,13 +595,10 @@ set_terrain(STTerrain *terrain) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::snap_to_terrain
-//       Access: Published
-//  Description: Adjusts all the trees in this node so that their Z
-//               position matches the height of the terrain at their
-//               X, Y position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts all the trees in this node so that their Z position matches the
+ * height of the terrain at their X, Y position.
+ */
 void SpeedTreeNode::
 snap_to_terrain() {
   Trees::iterator ti;
@@ -686,14 +628,11 @@ snap_to_terrain() {
   _needs_repopulate = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::reload_config
-//       Access: Published
-//  Description: Re-reads the current setting of all of the relevant
-//               config variables and applies them to this node.  This
-//               can be called after changing config settings, to make
-//               them apply to this particular node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Re-reads the current setting of all of the relevant config variables and
+ * applies them to this node.  This can be called after changing config
+ * settings, to make them apply to this particular node.
+ */
 void SpeedTreeNode::
 reload_config() {
 
@@ -754,29 +693,23 @@ reload_config() {
   _needs_repopulate = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::set_wind
-//       Access: Published
-//  Description: Specifies the overall wind strength and direction.
-//               Gusts are controlled internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the overall wind strength and direction.  Gusts are controlled
+ * internally.
+ */
 void SpeedTreeNode::
 set_wind(double strength, const LVector3 &direction) {
   _forest_render.SetGlobalWindStrength(strength);
   _forest_render.SetGlobalWindDirection(SpeedTree::Vec3(direction[0], direction[1], direction[2]));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::authorize
-//       Access: Published, Static
-//  Description: Make this call to initialized the SpeedTree API and
-//               verify the license.  If an empty string is passed for
-//               the license, the config variable speedtree-license is
-//               consulted.  Returns true on success, false on
-//               failure.  If this call is not made explicitly, it
-//               will be made implicitly the first time a
-//               SpeedTreeNode is created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Make this call to initialized the SpeedTree API and verify the license.  If
+ * an empty string is passed for the license, the config variable speedtree-
+ * license is consulted.  Returns true on success, false on failure.  If this
+ * call is not made explicitly, it will be made implicitly the first time a
+ * SpeedTreeNode is created.
+ */
 bool SpeedTreeNode::
 authorize(const string &license) {
   if (!_authorized) {
@@ -796,20 +729,17 @@ authorize(const string &license) {
   return _authorized;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SpeedTreeNode::
 SpeedTreeNode(const SpeedTreeNode &copy) :
   PandaNode(copy),
   _os_shaders_dir(copy._os_shaders_dir),
   _shadow_infos(copy._shadow_infos),
 #ifdef ST_DELETE_FOREST_HACK
-  // Early versions of SpeedTree don't destruct unused CForestRender
-  // objects correctly.  To avoid crashes, we have to leak these
-  // things.
+  // Early versions of SpeedTree don't destruct unused CForestRender objects
+  // correctly.  To avoid crashes, we have to leak these things.
   _forest_render(*(new SpeedTree::CForestRender)),
 #endif
   _time_delta(copy._time_delta)
@@ -845,11 +775,9 @@ SpeedTreeNode(const SpeedTreeNode &copy) :
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SpeedTreeNode::
 ~SpeedTreeNode() {
   remove_all_trees();
@@ -857,40 +785,32 @@ SpeedTreeNode::
   _forest_render.ClearInstances();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *SpeedTreeNode::
 make_copy() const {
   return new SpeedTreeNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::combine_with
-//       Access: Public, Virtual
-//  Description: Collapses this node with the other node, if possible,
-//               and returns a pointer to the combined node, or NULL
-//               if the two nodes cannot safely be combined.
-//
-//               The return value may be this, other, or a new node
-//               altogether.
-//
-//               This function is called from GraphReducer::flatten(),
-//               and need not deal with children; its job is just to
-//               decide whether to collapse the two nodes and what the
-//               collapsed node should look like.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collapses this node with the other node, if possible, and returns a pointer
+ * to the combined node, or NULL if the two nodes cannot safely be combined.
+ *
+ * The return value may be this, other, or a new node altogether.
+ *
+ * This function is called from GraphReducer::flatten(), and need not deal
+ * with children; its job is just to decide whether to collapse the two nodes
+ * and what the collapsed node should look like.
+ */
 PandaNode *SpeedTreeNode::
 combine_with(PandaNode *other) {
   if (is_exact_type(get_class_type()) &&
       other->is_exact_type(get_class_type())) {
-    // Two SpeedTreeNodes can combine by moving trees from one to the
-    // other, similar to the way GeomNodes combine.
+    // Two SpeedTreeNodes can combine by moving trees from one to the other,
+    // similar to the way GeomNodes combine.
     SpeedTreeNode *gother = DCAST(SpeedTreeNode, other);
 
     // But, not if they both have a terrain set.
@@ -908,18 +828,15 @@ combine_with(PandaNode *other) {
   return PandaNode::combine_with(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::apply_attribs_to_vertices
-//       Access: Public, Virtual
-//  Description: Applies whatever attributes are specified in the
-//               AccumulatedAttribs object (and by the attrib_types
-//               bitmask) to the vertices on this node, if
-//               appropriate.  If this node uses geom arrays like a
-//               GeomNode, the supplied GeomTransformer may be used to
-//               unify shared arrays across multiple different nodes.
-//
-//               This is a generalization of xform().
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies whatever attributes are specified in the AccumulatedAttribs object
+ * (and by the attrib_types bitmask) to the vertices on this node, if
+ * appropriate.  If this node uses geom arrays like a GeomNode, the supplied
+ * GeomTransformer may be used to unify shared arrays across multiple
+ * different nodes.
+ *
+ * This is a generalization of xform().
+ */
 void SpeedTreeNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
@@ -939,31 +856,24 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool SpeedTreeNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (!_is_valid) {
@@ -981,8 +891,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   _forest_render.SetGlobalTime(clock->get_frame_time() + _time_delta + _global_time_delta);
   _forest_render.AdvanceGlobalWind();
 
-  // Compute the modelview and camera transforms, to pass to the
-  // SpeedTree CView structure.
+  // Compute the modelview and camera transforms, to pass to the SpeedTree
+  // CView structure.
   CPT(TransformState) orig_modelview = data.get_modelview_transform(trav);
   CPT(TransformState) modelview = trav->get_scene()->get_cs_transform()->compose(orig_modelview);
   CPT(TransformState) camera_transform = modelview->invert_compose(TransformState::make_identity());
@@ -1002,8 +912,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Convert the render state to SpeedTree's input.
   const RenderState *state = data._state;
 
-  // Check texture state.  If all textures are disabled, then we ask
-  // SpeedTree to disable textures.
+  // Check texture state.  If all textures are disabled, then we ask SpeedTree
+  // to disable textures.
   bool show_textures = true;
   const TextureAttrib *ta = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()));
   if (ta != (TextureAttrib *)NULL) {
@@ -1012,10 +922,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   _forest_render.EnableTexturing(show_textures);
   _terrain_render.EnableTexturing(show_textures);
 
-  // Check lighting state.  SpeedTree only supports a single
-  // directional light; we look for a directional light in the
-  // lighting state and pass its direction and color to SpeedTree.  We
-  // also accumulate the ambient light colors.
+  // Check lighting state.  SpeedTree only supports a single directional
+  // light; we look for a directional light in the lighting state and pass its
+  // direction and color to SpeedTree.  We also accumulate the ambient light
+  // colors.
   LColor ambient_color(0.0f, 0.0f, 0.0f, 0.0f);
   DirectionalLight *dlight = NULL;
   NodePath dlight_np;
@@ -1050,13 +960,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     diffuse_color = dlight->get_color();
 
   } else {
-    // No light.  But there's no way to turn off lighting in
-    // SpeedTree.  In lieu of this, we just shine a light from
-    // above.
+    // No light.  But there's no way to turn off lighting in SpeedTree.  In
+    // lieu of this, we just shine a light from above.
     _light_dir = SpeedTree::Vec3(0.0, 0.0, -1.0);
 
-    // Also, we set ambient and diffuse colors to the same full-white
-    // value.
+    // Also, we set ambient and diffuse colors to the same full-white value.
     ambient_color.set(1.0f, 1.0f, 1.0f, 1.0f);
     diffuse_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   }
@@ -1078,10 +986,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   _forest_render.SetShadowFadePercentage(speedtree_shadow_fade);
 
   if (!_needs_repopulate) {
-    // Don't bother culling now unless we're correctly fully
-    // populated.  (Culling won't be accurate unless the forest has
-    // been populated, but we have to be in the draw traversal to
-    // populate.)
+    // Don't bother culling now unless we're correctly fully populated.
+    // (Culling won't be accurate unless the forest has been populated, but we
+    // have to be in the draw traversal to populate.)
     cull_forest();
   }
 
@@ -1089,35 +996,28 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool SpeedTreeNode::
 is_renderable() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::add_for_draw
-//       Access: Public, Virtual
-//  Description: Adds the node's contents to the CullResult we are
-//               building up during the cull traversal, so that it
-//               will be drawn at render time.  For most nodes other
-//               than GeomNodes, this is a do-nothing operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the node's contents to the CullResult we are building up during the
+ * cull traversal, so that it will be drawn at render time.  For most nodes
+ * other than GeomNodes, this is a do-nothing operation.
+ */
 void SpeedTreeNode::
 add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   if (_is_valid) {
-    // We create a CullableObject that has an explicit draw_callback
-    // into this node, so that we can make the appropriate calls into
-    // SpeedTree to render the forest during the actual draw.
+    // We create a CullableObject that has an explicit draw_callback into this
+    // node, so that we can make the appropriate calls into SpeedTree to
+    // render the forest during the actual draw.
     CullableObject *object =
       new CullableObject(NULL, data._state,
                          TransformState::make_identity());
@@ -1126,21 +1026,16 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::prepare_scene
-//       Access: Published
-//  Description: Walks through the scene graph beginning at this node,
-//               and does whatever initialization is required to
-//               render the scene properly with the indicated GSG.  It
-//               is not strictly necessary to call this, since the GSG
-//               will initialize itself when the scene is rendered,
-//               but this may take some of the overhead away from that
-//               process.
-//
-//               In particular, this will ensure that textures within
-//               the scene are loaded in texture memory, and display
-//               lists are built up from static geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the scene graph beginning at this node, and does whatever
+ * initialization is required to render the scene properly with the indicated
+ * GSG.  It is not strictly necessary to call this, since the GSG will
+ * initialize itself when the scene is rendered, but this may take some of the
+ * overhead away from that process.
+ *
+ * In particular, this will ensure that textures within the scene are loaded
+ * in texture memory, and display lists are built up from static geometry.
+ */
 void SpeedTreeNode::
 prepare_scene(GraphicsStateGuardianBase *gsgbase, const RenderState *) {
   GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, gsgbase);
@@ -1149,14 +1044,11 @@ prepare_scene(GraphicsStateGuardianBase *gsgbase, const RenderState *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated BoundingVolume that
-//               represents the internal contents of the node.  Should
-//               be overridden by PandaNode classes that contain
-//               something internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated BoundingVolume that represents the internal
+ * contents of the node.  Should be overridden by PandaNode classes that
+ * contain something internally.
+ */
 void SpeedTreeNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -1187,14 +1079,11 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                     LPoint3(emax[0], emax[1], emax[2]));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::output
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the node to the
-//               indicated output stream.  This is invoked by the <<
-//               operator.  It may be overridden in derived classes to
-//               include some information relevant to the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the node to the indicated output stream.
+ * This is invoked by the << operator.  It may be overridden in derived
+ * classes to include some information relevant to the class.
+ */
 void SpeedTreeNode::
 output(ostream &out) const {
   PandaNode::output(out);
@@ -1203,11 +1092,9 @@ output(ostream &out) const {
     << count_total_instances() << " total instances)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SpeedTreeNode::
 write(ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
@@ -1224,12 +1111,9 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::write_error
-//       Access: Public, Static
-//  Description: Writes the current SpeedTree error message to the
-//               indicated stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the current SpeedTree error message to the indicated stream.
+ */
 void SpeedTreeNode::
 write_error(ostream &out) {
   const char *error = SpeedTree::CCore::GetError();
@@ -1239,16 +1123,13 @@ write_error(ostream &out) {
   out << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::set_transparent_texture_mode
-//       Access: Protected
-//  Description: Uses SpeedTree::CRenderState to set the indicated
-//               transparency mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses SpeedTree::CRenderState to set the indicated transparency mode.
+ */
 void SpeedTreeNode::
 set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode eMode) const {
-  // turn all modes off (no telling what render state the client
-  // application might be in before this call)
+  // turn all modes off (no telling what render state the client application
+  // might be in before this call)
   SpeedTree::CRenderState::SetBlending(false);
   SpeedTree::CRenderState::SetAlphaTesting(false);
   SpeedTree::CRenderState::SetAlphaToCoverage(false);
@@ -1269,12 +1150,9 @@ set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode eMode) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::init_node
-//       Access: Private
-//  Description: Called from the constructor to initialize some
-//               internal values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from the constructor to initialize some internal values.
+ */
 void SpeedTreeNode::
 init_node() {
   PandaNode::set_cull_callback();
@@ -1295,16 +1173,14 @@ init_node() {
   _forest_render.SetCullCellSize(speedtree_cull_cell_size);
 
   // Doesn't appear to be necessary to call this explicitly.
-  //_forest_render.EnableWind(true);
+  // _forest_render.EnableWind(true);
 
   _is_valid = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::r_add_instances
-//       Access: Private
-//  Description: The recursive implementation of add_instances().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of add_instances().
+ */
 void SpeedTreeNode::
 r_add_instances(PandaNode *node, const TransformState *transform,
                 Thread *current_thread) {
@@ -1322,12 +1198,9 @@ r_add_instances(PandaNode *node, const TransformState *transform,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::repopulate
-//       Access: Private
-//  Description: Rebuilds the internal structures as necessary for
-//               rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the internal structures as necessary for rendering.
+ */
 void SpeedTreeNode::
 repopulate() {
   _forest_render.ClearInstances();
@@ -1338,10 +1211,10 @@ repopulate() {
     const STTree *tree = instance_list->get_tree();
     const STInstances &instances = instance_list->_instances;
     if (instances.empty()) {
-      // There are no instances, so don't bother.  (This shouldn't
-      // happen often, because we remove trees from the SpeedTreeNode
-      // when their instance list goes empty, though it's possible if
-      // the user has explicitly removed all of the instances.)
+      // There are no instances, so don't bother.  (This shouldn't happen
+      // often, because we remove trees from the SpeedTreeNode when their
+      // instance list goes empty, though it's possible if the user has
+      // explicitly removed all of the instances.)
       continue;
     }
 
@@ -1383,12 +1256,9 @@ repopulate() {
                          speedtree_horizontal_billboards);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::update_terrain_cells
-//       Access: Private
-//  Description: Called once a frame to load vertex data for
-//               newly-visible terrain cells.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once a frame to load vertex data for newly-visible terrain cells.
+ */
 void SpeedTreeNode::
 update_terrain_cells() {
   nassertv(has_terrain());
@@ -1412,7 +1282,7 @@ update_terrain_cells() {
     nassertv(cell != NULL && cell->GetVbo() != NULL);
     int cell_yi = cell->Row();
     int cell_xi = cell->Col();
-    //cerr << "populating cell " << cell_xi << " " << cell_yi << "\n";
+    // cerr << "populating cell " << cell_xi << " " << cell_yi << "\n";
 
     _terrain->fill_vertices(vertex_data,
                             cell_xi * cell_size, cell_yi * cell_size,
@@ -1429,13 +1299,10 @@ update_terrain_cells() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::validate_api
-//       Access: Private
-//  Description: Returns true if the indicated GSG shares the
-//               appropriate API for this SpeedTreeNode, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated GSG shares the appropriate API for this
+ * SpeedTreeNode, false otherwise.
+ */
 bool SpeedTreeNode::
 validate_api(GraphicsStateGuardian *gsg) {
   GraphicsPipe *pipe = gsg->get_pipe();
@@ -1461,14 +1328,11 @@ validate_api(GraphicsStateGuardian *gsg) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::draw_callback
-//       Access: Private
-//  Description: Called when the node is visited during the draw
-//               traversal, by virtue of our DrawCallback construct.
-//               This makes the calls into SpeedTree to perform the
-//               actual rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the node is visited during the draw traversal, by virtue of our
+ * DrawCallback construct.  This makes the calls into SpeedTree to perform the
+ * actual rendering.
+ */
 void SpeedTreeNode::
 draw_callback(CallbackData *data) {
   PStatTimer timer(_draw_speedtree_pcollector);
@@ -1486,9 +1350,8 @@ draw_callback(CallbackData *data) {
   _forest_render.StartRender();
 
   if (_forest_render.ShadowsAreEnabled()) {
-    // Update the shadow maps.  TODO: consider updating these only
-    // every once in a while, instead of every frame, as a simple
-    // optimization.
+    // Update the shadow maps.  TODO: consider updating these only every once
+    // in a while, instead of every frame, as a simple optimization.
     PStatTimer timer(_draw_speedtree_shadows_pcollector);
     render_forest_into_shadow_maps();
     _forest_render.ClearBoundTextures( );
@@ -1530,10 +1393,12 @@ draw_callback(CallbackData *data) {
     // Now draw the actual trees.
     PStatTimer timer1(_draw_speedtree_trees_pcollector);
 
-    //  SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TESTING;
+    // SpeedTree::ETextureAlphaRenderMode mode =
+    // SpeedTree::TRANS_TEXTURE_ALPHA_TESTING;
     SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_ALPHA_TO_COVERAGE;
-    //SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_BLENDING;
-    //SpeedTree::ETextureAlphaRenderMode mode = SpeedTree::TRANS_TEXTURE_NOTHING;
+    // SpeedTree::ETextureAlphaRenderMode mode =
+    // SpeedTree::TRANS_TEXTURE_BLENDING; SpeedTree::ETextureAlphaRenderMode
+    // mode = SpeedTree::TRANS_TEXTURE_NOTHING;
     set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode(mode));
 
     bool branches = _forest_render.RenderBranches(_visible_trees, SpeedTree::RENDER_PASS_STANDARD);
@@ -1543,9 +1408,8 @@ draw_callback(CallbackData *data) {
     bool billboards = _forest_render.RenderBillboards(_visible_trees, SpeedTree::RENDER_PASS_STANDARD, _view);
 
     // Sometimes billboards comes back false, particularly if wind is
-    // disabled; but the billboards appear to have been rendered
-    // successfully.  Weird.  Just removing this test from the
-    // condition.
+    // disabled; but the billboards appear to have been rendered successfully.
+    // Weird.  Just removing this test from the condition.
 
     if (!branches || !fronds || !leaf_meshes || !leaf_cards /* || !billboards */) {
       speedtree_cat.warning()
@@ -1561,18 +1425,16 @@ draw_callback(CallbackData *data) {
     _forest_render.RenderOverlays();
   }
 
-  // SpeedTree leaves the graphics state indeterminate.  Make sure
-  // Panda doesn't rely on anything in the state.
+  // SpeedTree leaves the graphics state indeterminate.  Make sure Panda
+  // doesn't rely on anything in the state.
   geom_cbdata->set_lost_state(true);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::render_forest_into_shadow_maps
-//       Access: Private
-//  Description: Renders the forest from the point of view of the
-//               light, to fill up the shadow map(s).
-////////////////////////////////////////////////////////////////////
+/**
+ * Renders the forest from the point of view of the light, to fill up the
+ * shadow map(s).
+ */
 void SpeedTreeNode::
 render_forest_into_shadow_maps() {
   bool success = true;
@@ -1582,8 +1444,7 @@ render_forest_into_shadow_maps() {
   SpeedTree::CRenderState::SetAlphaToCoverage(false);
 
 #if defined(SPEEDTREE_OPENGL)
-  // Ensure the viewport is not constrained.  SpeedTree doesn't expect
-  // that.
+  // Ensure the viewport is not constrained.  SpeedTree doesn't expect that.
   glDisable(GL_SCISSOR_TEST);
 #endif
 
@@ -1594,28 +1455,28 @@ render_forest_into_shadow_maps() {
     if (_forest_render.BeginShadowMap(smi, light_view)) {
       success &= _forest_render.UploadViewShaderParameters(light_view);
 
-      // branch geometry can be rendered with backfacing triangle
-      // removed, so a closer tolerance can be used
+      // branch geometry can be rendered with backfacing triangle removed, so
+      // a closer tolerance can be used
       SpeedTree::CRenderState::SetPolygonOffset(1.0f, 0.125f);
 
       success &= _forest_render.RenderBranches(light_cull, SpeedTree::RENDER_PASS_SHADOW);
 
-      // the remaining geometry types cannot be backface culled, so we
-      // need a much more aggressive offset
+      // the remaining geometry types cannot be backface culled, so we need a
+      // much more aggressive offset
       SpeedTree::CRenderState::SetPolygonOffset(10.0f, 1.0f);
 
       success &= _forest_render.RenderFronds(light_cull, SpeedTree::RENDER_PASS_SHADOW);
       success &= _forest_render.RenderLeafMeshes(light_cull, SpeedTree::RENDER_PASS_SHADOW);
       success &= _forest_render.RenderLeafCards(light_cull, SpeedTree::RENDER_PASS_SHADOW, light_view);
 
-      // We don't bother to render billboard geometry into the shadow
-      // map(s).
+      // We don't bother to render billboard geometry into the shadow map(s).
 
       success &= _forest_render.EndShadowMap(smi);
     }
   }
 
-  //  SpeedTree::CRenderState::SetMultisampling(m_sUserSettings.m_nSampleCount > 0);
+  // SpeedTree::CRenderState::SetMultisampling(m_sUserSettings.m_nSampleCount
+  // > 0);
 
   if (!success) {
     speedtree_cat.warning()
@@ -1624,24 +1485,21 @@ render_forest_into_shadow_maps() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::setup_for_render
-//       Access: Private
-//  Description: Does whatever calls are necessary to set up the
-//               forest for rendering--create vbuffers, load shaders,
-//               and whatnot.  Primarily, this is the calls to
-//               InitTreeGraphics and the like.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does whatever calls are necessary to set up the forest for rendering--
+ * create vbuffers, load shaders, and whatnot.  Primarily, this is the calls
+ * to InitTreeGraphics and the like.
+ */
 void SpeedTreeNode::
 setup_for_render(GraphicsStateGuardian *gsg) {
   if (!_done_first_init) {
-    // This is the first time we have entered the draw callback since
-    // creating any SpeedTreeNode.  Now we have an opportunity to do
-    // any initial setup that requires a graphics context.
+    // This is the first time we have entered the draw callback since creating
+    // any SpeedTreeNode.  Now we have an opportunity to do any initial setup
+    // that requires a graphics context.
 
 #ifdef SPEEDTREE_OPENGL
-    // For OpenGL, we have to ensure GLEW has been initialized.
-    // (SpeedTree uses it, though Panda doesn't.)
+    // For OpenGL, we have to ensure GLEW has been initialized.  (SpeedTree
+    // uses it, though Panda doesn't.)
     GLenum err = glewInit();
     if (err != GLEW_OK) {
       speedtree_cat.error()
@@ -1651,8 +1509,8 @@ setup_for_render(GraphicsStateGuardian *gsg) {
       return;
     }
 
-    // Insist that OpenGL 2.0 is available as the SpeedTree renderer
-    // requires it.
+    // Insist that OpenGL 2.0 is available as the SpeedTree renderer requires
+    // it.
     if (!GLEW_VERSION_2_0) {
       speedtree_cat.error()
         << "The SpeedTree OpenGL implementation requires OpenGL 2.0 or better to run; this system has version " << glGetString(GL_VERSION) << "\n";
@@ -1694,7 +1552,8 @@ setup_for_render(GraphicsStateGuardian *gsg) {
       string os_textures_dir;
       if (!speedtree_textures_dir.empty()) {
         os_textures_dir = speedtree_textures_dir.get_value().to_os_specific();
-        // Ensure the path ends with a terminal slash; SpeedTree requires this.
+        // Ensure the path ends with a terminal slash; SpeedTree requires
+        // this.
 #if defined(WIN32) || defined(WIN64)
         if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '\\') {
           os_textures_dir += "\\";
@@ -1726,9 +1585,8 @@ setup_for_render(GraphicsStateGuardian *gsg) {
       return;
     }
 
-    // This call apparently must be made at draw time, not earlier,
-    // because it might attempt to create OpenGL index buffers and
-    // such.
+    // This call apparently must be made at draw time, not earlier, because it
+    // might attempt to create OpenGL index buffers and such.
     _forest_render.UpdateTreeCellExtents();
 
     if (has_terrain()) {
@@ -1754,12 +1612,9 @@ setup_for_render(GraphicsStateGuardian *gsg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::cull_forest
-//       Access: Private
-//  Description: Calls the SpeedTree methods to perform the needed
-//               cull calculations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the SpeedTree methods to perform the needed cull calculations.
+ */
 void SpeedTreeNode::
 cull_forest() {
   {
@@ -1788,11 +1643,9 @@ cull_forest() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::print_forest_stats
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SpeedTreeNode::
 print_forest_stats(const SpeedTree::CForest::SPopulationStats &forest_stats) const {
   fprintf(stderr, "\n                Forest Population Statistics\n");
@@ -1812,23 +1665,18 @@ print_forest_stats(const SpeedTree::CForest::SPopulationStats &forest_stats) con
   fprintf(stderr, "\n");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               SpeedTreeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type SpeedTreeNode.
+ */
 void SpeedTreeNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void SpeedTreeNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
@@ -1842,14 +1690,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type SpeedTreeNode is encountered
-//               in the Bam file.  It should create the SpeedTreeNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type SpeedTreeNode is encountered in the Bam file.  It should create the
+ * SpeedTreeNode and extract its information from the file.
+ */
 TypedWritable *SpeedTreeNode::
 make_from_bam(const FactoryParams &params) {
   SpeedTreeNode *node = new SpeedTreeNode("");
@@ -1862,13 +1707,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new SpeedTreeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new SpeedTreeNode.
+ */
 void SpeedTreeNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
@@ -1889,21 +1731,17 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _trees.sort();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::InstanceList::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SpeedTreeNode::InstanceList::
 output(ostream &out) const {
   out << *_tree << ": " << _instances.size() << " instances";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::InstanceList::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SpeedTreeNode::InstanceList::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -1915,12 +1753,10 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::InstanceList::write_datagram
-//       Access: Public
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void SpeedTreeNode::InstanceList::
 write_datagram(BamWriter *manager, Datagram &dg) {
   // Compute the relative pathname to the SRT file.
@@ -1947,20 +1783,17 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::InstanceList::fillin
-//       Access: Public
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new SpeedTreeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new SpeedTreeNode.
+ */
 void SpeedTreeNode::InstanceList::
 fillin(DatagramIterator &scan, BamReader *manager) {
   // Get the relative pathname to the SRT file.
   string srt_filename = scan.get_string();
 
-  // Now load up the SRT file using the Panda loader (which will
-  // also search the model-path if necessary).
+  // Now load up the SRT file using the Panda loader (which will also search
+  // the model-path if necessary).
   Loader *loader = Loader::get_global_ptr();
   PT(PandaNode) srt_root = loader->load_sync(srt_filename);
 
@@ -1985,14 +1818,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpeedTreeNode::DrawCallback::do_callback
-//       Access: Public, Virtual
-//  Description: This method called when the callback is triggered; it
-//               *replaces* the original function.  To continue
-//               performing the original function, you must call
-//               cbdata->upcall() during the callback.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method called when the callback is triggered; it *replaces* the
+ * original function.  To continue performing the original function, you must
+ * call cbdata->upcall() during the callback.
+ */
 void SpeedTreeNode::DrawCallback::
 do_callback(CallbackData *data) {
   _node->draw_callback(data);

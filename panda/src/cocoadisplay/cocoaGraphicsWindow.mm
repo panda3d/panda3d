@@ -1,16 +1,15 @@
-// Filename: cocoaGraphicsWindow.mm
-// Created by:  rdb (14May12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cocoaGraphicsWindow.mm
+ * @author rdb
+ * @date 2012-05-14
+ */
 
 #include "cocoaGraphicsWindow.h"
 #include "cocoaGraphicsStateGuardian.h"
@@ -44,11 +43,9 @@
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CocoaGraphicsWindow::
 CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
@@ -77,28 +74,24 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _display = cocoa_pipe->_display;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CocoaGraphicsWindow::
 ~CocoaGraphicsWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if
+ * possible.
+ *
+ * Returns true if successful, false on failure.  This may fail if the mouse
+ * is not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool CocoaGraphicsWindow::
 move_pointer(int device, int x, int y) {
-  //Hack!  Will go away when we have floating-point mouse pos.
+  // Hack!  Will go away when we have floating-point mouse pos.
   MouseData md = get_pointer(device);
   if (md.get_x() == x && md.get_y() == y) {
     return true;
@@ -113,8 +106,8 @@ move_pointer(int device, int x, int y) {
                           y + _properties.get_y_origin() + 1);
     }
 
-    // I don't know what the difference between these two methods is.
-    //if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
+    // I don't know what the difference between these two methods is.  if
+    // (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
     if (CGDisplayMoveCursorToPoint(_display, point) == kCGErrorSuccess) {
       // Generate a mouse event.
       NSPoint pos = [_window mouseLocationOutsideOfEventStream];
@@ -130,15 +123,12 @@ move_pointer(int device, int x, int y) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool CocoaGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -161,11 +151,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // Fullscreen.
     CGLSetFullScreenOnDisplay((CGLContextObj) [cocoagsg->_context CGLContextObj], CGDisplayIDToOpenGLDisplayMask(_display));
   } else {
-    // Although not recommended, it is technically possible to
-    // use the same context with multiple different-sized windows.
-    // If that happens, the context needs to be updated accordingly.
+    // Although not recommended, it is technically possible to use the same
+    // context with multiple different-sized windows.  If that happens, the
+    // context needs to be updated accordingly.
     if ([cocoagsg->_context view] != _view) {
-      //XXX I'm not 100% sure that changing the view requires it to update.
+      // XXX I'm not 100% sure that changing the view requires it to update.
       _context_needs_update = true;
       [cocoagsg->_context setView:_view];
 
@@ -188,10 +178,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   // Make the context current.
   [cocoagsg->_context makeCurrentContext];
 
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
+  // Now that we have made the context current to a window, we can reset the
+  // GSG state if this is the first time it has been used.  (We can't just
+  // call reset() when we construct the GSG, because reset() requires having a
+  // current context.)
   cocoagsg->reset_if_new();
 
   if (mode == FM_render) {
@@ -203,13 +193,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void CocoaGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -221,7 +209,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   // Release the context.
   CocoaGraphicsStateGuardian *cocoagsg;
   DCAST_INTO_V(cocoagsg, _gsg);
-  
+
   CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
 
   if (mode == FM_render) {
@@ -237,16 +225,13 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.
+ *
+ * This should cause the window to wait for the flip, if necessary.
+ */
 void CocoaGraphicsWindow::
 end_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
@@ -267,16 +252,13 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties()
+ *
+ * This function is called only within the window thread.
+ */
 void CocoaGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
@@ -305,19 +287,16 @@ process_events() {
   [pool release];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool CocoaGraphicsWindow::
 open_window() {
   CocoaGraphicsPipe *cocoa_pipe;
   DCAST_INTO_R(cocoa_pipe, _pipe, false);
 
-  // GSG Creation/Initialization
+  // GSG CreationInitialization
   CocoaGraphicsStateGuardian *cocoagsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
@@ -325,8 +304,8 @@ open_window() {
     cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, false);
     _gsg = cocoagsg;
   } else {
-    // If the old gsg has the wrong pixel format, create a
-    // new one that shares with the old gsg.
+    // If the old gsg has the wrong pixel format, create a new one that shares
+    // with the old gsg.
     DCAST_INTO_R(cocoagsg, _gsg, false);
     if (!cocoagsg->get_fb_properties().subsumes(_fb_properties)) {
       cocoagsg = new CocoaGraphicsStateGuardian(_engine, _pipe, cocoagsg);
@@ -406,9 +385,9 @@ open_window() {
     }
   }
 
-  // Center the window if coordinates were set to -1 or -2
-  //TODO: perhaps in future, in the case of -1, it should use the origin
-  // used in a previous run of Panda
+  // Center the window if coordinates were set to -1 or -2 TODO: perhaps in
+  // future, in the case of -1, it should use the origin used in a previous
+  // run of Panda
   NSRect container;
   if (parent_nsview != NULL) {
     container = [parent_nsview bounds];
@@ -486,9 +465,8 @@ open_window() {
     [parent_nsview addSubview:_view];
   }
 
-  // Create a WindowHandle for ourselves.
-  // wxWidgets seems to use the NSView pointer approach,
-  // so let's do the same here.
+  // Create a WindowHandle for ourselves.  wxWidgets seems to use the NSView
+  // pointer approach, so let's do the same here.
   _window_handle = NativeWindowHandle::make_int((size_t) _view);
 
   // And tell our parent window that we're now its child.
@@ -499,9 +477,9 @@ open_window() {
   if (_properties.has_icon_filename()) {
     NSImage *image = load_image(_properties.get_icon_filename());
     if (image != nil) {
-      // We're technically changing the application icon,
-      // but this is most likely what the developer means.
-      // There isn't really a "window icon" in Mac OS X.
+      // We're technically changing the application icon, but this is most
+      // likely what the developer means.  There isn't really a "window icon"
+      // in Mac OS X.
       [NSApp setApplicationIconImage:image];
     } else {
       _properties.clear_icon_filename();
@@ -511,7 +489,7 @@ open_window() {
   if (_properties.has_cursor_filename()) {
     NSImage *image = load_image(_properties.get_cursor_filename());
     NSCursor *cursor = nil;
-    //TODO: allow setting the hotspot, read it from file when loading .cur.
+    // TODO: allow setting the hotspot, read it from file when loading .cur.
     if (image != nil) {
       cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
     }
@@ -520,8 +498,8 @@ open_window() {
     } else {
       _properties.clear_cursor_filename();
     }
-    // This will ensure that NSView's resetCursorRects gets
-    // called, which sets the appropriate cursor rects.
+    // This will ensure that NSView's resetCursorRects gets called, which sets
+    // the appropriate cursor rects.
     [[_view window] invalidateCursorRectsForView:_view];
   }
 
@@ -625,12 +603,9 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void CocoaGraphicsWindow::
 close_window() {
   if (_mouse_hidden) {
@@ -669,43 +644,34 @@ close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::mouse_mode_relative
-//       Access: Protected, Virtual
-//  Description: Overridden from GraphicsWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overridden from GraphicsWindow.
+ */
 void CocoaGraphicsWindow::
 mouse_mode_absolute() {
   CGAssociateMouseAndMouseCursorPosition(YES);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::mouse_mode_relative
-//       Access: Protected, Virtual
-//  Description: Overridden from GraphicsWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Overridden from GraphicsWindow.
+ */
 void CocoaGraphicsWindow::
 mouse_mode_relative() {
   CGAssociateMouseAndMouseCursorPosition(NO);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The return value is true if the properties are set, false if they are
+ * ignored.  This is mainly useful for derived classes to implement extensions
+ * to this function.
+ */
 void CocoaGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (_pipe == (GraphicsPipe *)NULL) {
@@ -747,8 +713,8 @@ set_properties_now(WindowProperties &properties) {
 
         } else if (do_switch_fullscreen(mode)) {
           if (_window != nil) {
-            // For some reason, setting the style mask
-            // makes it give up its first-responder status.
+            // For some reason, setting the style mask makes it give up its
+            // first-responder status.
             if ([_window respondsToSelector:@selector(setStyleMask:)]) {
               [_window setStyleMask:NSBorderlessWindowMask];
             }
@@ -808,9 +774,8 @@ set_properties_now(WindowProperties &properties) {
           << "Setting size to " << width << ", " << height << "\n";
       }
 
-      // Cocoa doesn't send an event, and the other
-      // resize-window handlers will do nothing once the properties
-      // have been changed, so do this now
+      // Cocoa doesn't send an event, and the other resize-window handlers
+      // will do nothing once the properties have been changed, so do this now
       handle_resize_event();
       properties.clear_size();
 
@@ -889,13 +854,13 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_fixed_size() && _window != nil) {
     _properties.set_fixed_size(properties.get_fixed_size());
     [_window setShowsResizeIndicator:!properties.get_fixed_size()];
-    
+
     if (!_properties.get_fullscreen()) {
-      // If our window is decorated, change the style mask
-      // to show or hide the resize button appropriately.
-      // However, if we're specifying the 'undecorated' property also,
-      // then we'll be setting the style mask about 25 LOC further down,
-      // so we won't need to bother setting it here.
+      // If our window is decorated, change the style mask to show or hide the
+      // resize button appropriately.  However, if we're specifying the
+      // 'undecorated' property also, then we'll be setting the style mask
+      // about 25 LOC further down, so we won't need to bother setting it
+      // here.
       if (!properties.has_undecorated() && !_properties.get_undecorated() &&
           [_window respondsToSelector:@selector(setStyleMask:)]) {
         if (properties.get_fixed_size()) {
@@ -944,7 +909,7 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_foreground();
   }
 
-  //TODO: support raw mice.
+  // TODO: support raw mice.
 
   if (properties.has_cursor_hidden()) {
     if (properties.get_cursor_hidden() != _properties.get_cursor_hidden()) {
@@ -965,9 +930,9 @@ set_properties_now(WindowProperties &properties) {
     NSImage *image = load_image(icon_filename);
 
     if (image != nil || icon_filename.empty()) {
-      // We're technically changing the application icon,
-      // but this is most likely what the developer means.
-      // There isn't really a "window icon" in Mac OS X.
+      // We're technically changing the application icon, but this is most
+      // likely what the developer means.  There isn't really a "window icon"
+      // in Mac OS X.
       [NSApp setApplicationIconImage:image];
       _properties.set_icon_filename(icon_filename);
       properties.clear_icon_filename();
@@ -1001,14 +966,14 @@ set_properties_now(WindowProperties &properties) {
         }
       }
     }
-    // This will ensure that NSView's resetCursorRects gets
-    // called, which sets the appropriate cursor rects.
+    // This will ensure that NSView's resetCursorRects gets called, which sets
+    // the appropriate cursor rects.
     [[_view window] invalidateCursorRectsForView:_view];
   }
 
   if (properties.has_z_order() && _window != nil) {
     _properties.set_z_order(properties.get_z_order());
-    
+
     if (!_properties.get_fullscreen()) {
       switch (properties.get_z_order()) {
       case WindowProperties::Z_bottom:
@@ -1045,12 +1010,10 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::find_display_mode
-//       Access: Protected
-//  Description: Returns an appropriate CGDisplayModeRef for the
-//               given width and height, or NULL if none was found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an appropriate CGDisplayModeRef for the given width and height, or
+ * NULL if none was found.
+ */
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 CGDisplayModeRef CocoaGraphicsWindow::
 find_display_mode(int width, int height) {
@@ -1062,13 +1025,13 @@ find_display_mode(int width, int height) {
   CFStringRef current_pixel_encoding;
   int refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
-  
+
   // First check if the current mode is adequate.
   if (CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
     return mode;
   }
-  
+
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
   refresh_rate = CGDisplayModeGetRefreshRate(mode);
   CGDisplayModeRelease(mode);
@@ -1150,13 +1113,10 @@ find_display_mode(int width, int height) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::do_switch_fullscreen
-//       Access: Protected
-//  Description: Switches to the indicated fullscreen mode, or
-//               back to windowed if NULL was given.  Returns true
-//               on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Switches to the indicated fullscreen mode, or back to windowed if NULL was
+ * given.  Returns true on success, false on failure.
+ */
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 bool CocoaGraphicsWindow::
 do_switch_fullscreen(CGDisplayModeRef mode) {
@@ -1226,22 +1186,19 @@ do_switch_fullscreen(CFDictionaryRef mode) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::load_image
-//       Access: Private
-//  Description: Loads the indicated filename and returns an NSImage
-//               pointer, or NULL on failure.
-//               Must be called from the window thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the indicated filename and returns an NSImage pointer, or NULL on
+ * failure.  Must be called from the window thread.
+ */
 NSImage *CocoaGraphicsWindow::
 load_image(const Filename &filename) {
   if (filename.empty()) {
     return nil;
   }
 
-  // Note: perhaps eventually we will need to create
-  // an NSImageRep implementation, but for now, Apple
-  // seems to support the major image formats.
+  // Note: perhaps eventually we will need to create an NSImageRep
+  // implementation, but for now, Apple seems to support the major image
+  // formats.
 
   // Resolve the filename on the model path.
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -1297,12 +1254,10 @@ load_image(const Filename &filename) {
   return image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_move_event
-//       Access: Public
-//  Description: Called by CocoaPandaView or the window delegate
-//               when the frame rect changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CocoaPandaView or the window delegate when the frame rect
+ * changes.
+ */
 void CocoaGraphicsWindow::
 handle_move_event() {
   // Remember, Mac OS X uses flipped coordinates
@@ -1332,12 +1287,10 @@ handle_move_event() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_resize_event
-//       Access: Public
-//  Description: Called by CocoaPandaView or the window delegate
-//               when the frame rect changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CocoaPandaView or the window delegate when the frame rect
+ * changes.
+ */
 void CocoaGraphicsWindow::
 handle_resize_event() {
   if (_window != nil) {
@@ -1364,12 +1317,10 @@ handle_resize_event() {
   _context_needs_update = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_minimize_event
-//       Access: Public
-//  Description: Called by the window delegate when the window is
-//               miniaturized or deminiaturized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the window delegate when the window is miniaturized or
+ * deminiaturized.
+ */
 void CocoaGraphicsWindow::
 handle_minimize_event(bool minimized) {
   if (minimized == _properties.get_minimized()) {
@@ -1389,12 +1340,10 @@ handle_minimize_event(bool minimized) {
   system_changed_properties(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_foreground_event
-//       Access: Public
-//  Description: Called by the window delegate when the window has
-//               become the key window or resigned that status.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the window delegate when the window has become the key window or
+ * resigned that status.
+ */
 void CocoaGraphicsWindow::
 handle_foreground_event(bool foreground) {
   if (cocoadisplay_cat.is_debug()) {
@@ -1410,8 +1359,8 @@ handle_foreground_event(bool foreground) {
   system_changed_properties(properties);
 
   if (foreground && _properties.get_mouse_mode() != WindowProperties::M_relative) {
-    // The mouse position may have changed during
-    // the time that we were not the key window.
+    // The mouse position may have changed during the time that we were not
+    // the key window.
     NSPoint pos = [_window mouseLocationOutsideOfEventStream];
 
     NSPoint loc = [_view convertPoint:pos fromView:nil];
@@ -1421,23 +1370,19 @@ handle_foreground_event(bool foreground) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_close_request
-//       Access: Public
-//  Description: Called by the window delegate when the user
-//               requests to close the window.  This may not always
-//               be called, which is why there is also a
-//               handle_close_event.
-//               Returns false if the user indicated that he wants
-//               to handle the close request himself, true if the
-//               operating system should continue closing the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the window delegate when the user requests to close the window.
+ * This may not always be called, which is why there is also a
+ * handle_close_event.  Returns false if the user indicated that he wants to
+ * handle the close request himself, true if the operating system should
+ * continue closing the window.
+ */
 bool CocoaGraphicsWindow::
 handle_close_request() {
   string close_request_event = get_close_request_event();
   if (!close_request_event.empty()) {
-    // In this case, the app has indicated a desire to intercept
-    // the request and process it directly.
+    // In this case, the app has indicated a desire to intercept the request
+    // and process it directly.
     throw_event(close_request_event);
 
     cocoadisplay_cat.debug()
@@ -1455,11 +1400,9 @@ handle_close_request() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_close_event
-//       Access: Public
-//  Description: Called by the window delegate when the window closes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the window delegate when the window closes.
+ */
 void CocoaGraphicsWindow::
 handle_close_event() {
   cocoadisplay_cat.debug() << "Window is about to close\n";
@@ -1505,20 +1448,17 @@ handle_close_event() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_key_event
-//       Access: Public
-//  Description: This method processes the NSEvent of type NSKeyUp,
-//               NSKeyDown or NSFlagsChanged and passes the
-//               information on to Panda.
-//               Should only be called by CocoaPandaView.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method processes the NSEvent of type NSKeyUp, NSKeyDown or
+ * NSFlagsChanged and passes the information on to Panda.  Should only be
+ * called by CocoaPandaView.
+ */
 void CocoaGraphicsWindow::
 handle_key_event(NSEvent *event) {
   NSUInteger modifierFlags = [event modifierFlags];
 
-  //NB.  This is actually a on-off toggle, not up-down.
-  // Should we instead rapidly fire two successive up-down events?
+  // NB.  This is actually a on-off toggle, not up-down.  Should we instead
+  // rapidly fire two successive up-down events?
   handle_modifier(modifierFlags, NSAlphaShiftKeyMask, KeyboardButton::caps_lock());
 
   // Check if any of the modifier keys have changed.
@@ -1527,8 +1467,8 @@ handle_key_event(NSEvent *event) {
   handle_modifier(modifierFlags, NSAlternateKeyMask, KeyboardButton::alt());
   handle_modifier(modifierFlags, NSCommandKeyMask, KeyboardButton::meta());
 
-  // These are not documented, but they seem to be a reliable indicator
-  // of the status of the left/right modifier keys.
+  // These are not documented, but they seem to be a reliable indicator of the
+  // status of the leftright modifier keys.
   handle_modifier(modifierFlags, 0x0002, KeyboardButton::lshift());
   handle_modifier(modifierFlags, 0x0004, KeyboardButton::rshift());
   handle_modifier(modifierFlags, 0x0001, KeyboardButton::lcontrol());
@@ -1543,12 +1483,10 @@ handle_key_event(NSEvent *event) {
   // Get the raw button and send it.
   ButtonHandle raw_button = map_raw_key([event keyCode]);
   if (raw_button != ButtonHandle::none()) {
-    // This is not perfect.  Eventually, this whole thing should
-    // probably be replaced with something that uses IOKit or so.
-    // In particular, the flaws are:
-    // - OS eats unmodified F11, F12, scroll lock, pause
-    // - no up events for caps lock
-    // - no robust way to distinguish up/down for modkeys
+    // This is not perfect.  Eventually, this whole thing should probably be
+    // replaced with something that uses IOKit or so.  In particular, the
+    // flaws are: - OS eats unmodified F11, F12, scroll lock, pause - no up
+    // events for caps lock - no robust way to distinguish updown for modkeys
     if ([event type] == NSKeyUp) {
       _input_devices[0].raw_button_up(raw_button);
 
@@ -1599,8 +1537,8 @@ handle_key_event(NSEvent *event) {
   ButtonHandle button = map_key(c);
 
   if (c < 0xF700 || c >= 0xF900) {
-    // If a down event and not a special function key,
-    // process it as keystroke as well.
+    // If a down event and not a special function key, process it as keystroke
+    // as well.
     if ([event type] == NSKeyDown) {
       NSString *origstr = [event characters];
       c = [str characterAtIndex: 0];
@@ -1639,12 +1577,9 @@ handle_key_event(NSEvent *event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_modifier
-//       Access: Private
-//  Description: Called by handle_key_event to read the state of
-//               a modifier key.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by handle_key_event to read the state of a modifier key.
+ */
 void CocoaGraphicsWindow::
 handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button) {
   if ((modifierFlags ^ _modifier_keys) & mask) {
@@ -1656,13 +1591,10 @@ handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button) 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_mouse_button_event
-//       Access: Public
-//  Description: This method processes the NSEvents related to
-//               mouse button presses.
-//               Should only be called by CocoaPandaView.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method processes the NSEvents related to mouse button presses.  Should
+ * only be called by CocoaPandaView.
+ */
 void CocoaGraphicsWindow::
 handle_mouse_button_event(int button, bool down) {
   if (down) {
@@ -1682,13 +1614,10 @@ handle_mouse_button_event(int button, bool down) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_mouse_moved_event
-//       Access: Public
-//  Description: This method processes the NSEvents of the
-//               mouseMoved and mouseDragged types.
-//               Should only be called by CocoaPandaView.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method processes the NSEvents of the mouseMoved and mouseDragged
+ * types.  Should only be called by CocoaPandaView.
+ */
 void CocoaGraphicsWindow::
 handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
   double nx, ny;
@@ -1740,8 +1669,8 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
       ClockObject::get_global_clock()->get_frame_time());
 
   if (in_window != _mouse_hidden && _properties.get_cursor_hidden()) {
-    // Hide the cursor if the mouse enters the window,
-    // and unhide it when the mouse leaves the window.
+    // Hide the cursor if the mouse enters the window, and unhide it when the
+    // mouse leaves the window.
     if (in_window) {
       [NSCursor hide];
     } else {
@@ -1751,12 +1680,9 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::handle_wheel_event
-//       Access: Public
-//  Description: Called by CocoaPandaView to inform that the scroll
-//               wheel has been used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CocoaPandaView to inform that the scroll wheel has been used.
+ */
 void CocoaGraphicsWindow::
 handle_wheel_event(double x, double y) {
   cocoadisplay_cat.spam()
@@ -1770,7 +1696,7 @@ handle_wheel_event(double x, double y) {
     _input_devices[0].button_up(MouseButton::wheel_down());
   }
 
-  //TODO: check if this is correct, I don't own a MacBook
+  // TODO: check if this is correct, I don't own a MacBook
   if (x > 0.0) {
     _input_devices[0].button_down(MouseButton::wheel_right());
     _input_devices[0].button_up(MouseButton::wheel_right());
@@ -1780,12 +1706,10 @@ handle_wheel_event(double x, double y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::get_keyboard_map
-//       Access: Published, Virtual
-//  Description: Returns a ButtonMap containing the association
-//               between raw buttons and virtual buttons.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a ButtonMap containing the association between raw buttons and
+ * virtual buttons.
+ */
 ButtonMap *CocoaGraphicsWindow::
 get_keyboard_map() const {
   TISInputSourceRef input_source;
@@ -1802,8 +1726,8 @@ get_keyboard_map() const {
   UniChar chars[4];
   UniCharCount num_chars;
 
-  // Iterate through the known scancode range and see what
-  // every scan code is mapped to.
+  // Iterate through the known scancode range and see what every scan code is
+  // mapped to.
   for (int k = 0; k <= 0x7E; ++k) {
     ButtonHandle raw_button = map_raw_key(k);
     if (raw_button == ButtonHandle::none()) {
@@ -1827,7 +1751,8 @@ get_keyboard_map() const {
           map->map_button(raw_button, button);
         }
       } else {
-        // A special function key or modifier key, which isn't remapped by the OS.
+        // A special function key or modifier key, which isn't remapped by the
+        // OS.
         map->map_button(raw_button, raw_button);
       }
     }
@@ -1837,11 +1762,9 @@ get_keyboard_map() const {
   return map;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::map_key
-//       Access: Private
-//  Description: Maps a unicode key character to a ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a unicode key character to a ButtonHandle.
+ */
 ButtonHandle CocoaGraphicsWindow::
 map_key(unsigned short c) const {
   switch (c) {
@@ -1857,8 +1780,8 @@ map_key(unsigned short c) const {
     return KeyboardButton::tab();
 
   case 0x10:
-    // No idea where this constant comes from, but it
-    // is sent whenever the menu key is pressed.
+    // No idea where this constant comes from, but it is sent whenever the
+    // menu key is pressed.
     return KeyboardButton::menu();
 
   case 0x1e:
@@ -1982,11 +1905,9 @@ map_key(unsigned short c) const {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::map_raw_key
-//       Access: Private
-//  Description: Maps a keycode to a ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a keycode to a ButtonHandle.
+ */
 ButtonHandle CocoaGraphicsWindow::
 map_raw_key(unsigned short keycode) const {
   if (keycode > 0x7f) {

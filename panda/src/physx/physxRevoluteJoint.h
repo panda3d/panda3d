@@ -1,16 +1,15 @@
-// Filename: physxRevoluteJoint.h
-// Created by:  enn0x (02Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxRevoluteJoint.h
+ * @author enn0x
+ * @date 2009-10-02
+ */
 
 #ifndef PHYSXREVOLUTEJOINT_H
 #define PHYSXREVOLUTEJOINT_H
@@ -25,14 +24,12 @@ class PhysxSpringDesc;
 class PhysxMotorDesc;
 class PhysxJointLimitDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxRevoluteJoint
-// Description : A joint which behaves in a similar way to a hinge
-//               or axel. A hinge joint removes all but a single
-//               rotational degree of freedom from two objects. The
-//               axis along which the two bodies may rotate is
-//               specified with a point and a direction vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * A joint which behaves in a similar way to a hinge or axel.  A hinge joint
+ * removes all but a single rotational degree of freedom from two objects.
+ * The axis along which the two bodies may rotate is specified with a point
+ * and a direction vector.
+ */
 class EXPCL_PANDAPHYSX PhysxRevoluteJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -55,7 +52,6 @@ PUBLISHED:
   PhysxMotorDesc get_motor() const;
   PhysxSpringDesc get_spring() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -65,14 +61,13 @@ public:
 private:
   NxRevoluteJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxRevoluteJoint", 
+    register_type(_type_handle, "PhysxRevoluteJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

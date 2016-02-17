@@ -1,16 +1,15 @@
-// Filename: fltGeometry.cxx
-// Created by:  drose (28Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltGeometry.cxx
+ * @author drose
+ * @date 2001-02-28
+ */
 
 #include "fltGeometry.h"
 #include "fltRecordReader.h"
@@ -20,11 +19,9 @@
 
 TypeHandle FltGeometry::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltGeometry::
 FltGeometry(FltHeader *header) : FltBeadID(header) {
   _ir_color = 0;
@@ -51,16 +48,13 @@ FltGeometry(FltHeader *header) : FltBeadID(header) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::get_color
-//       Access: Public
-//  Description: Returns the primary color of the face, as a
-//               four-component value (including alpha as the
-//               transparency channel).
-//
-//               If has_color() is false, the result is white, but
-//               still reflects the transparency correctly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the primary color of the face, as a four-component value (including
+ * alpha as the transparency channel).
+ *
+ * If has_color() is false, the result is white, but still reflects the
+ * transparency correctly.
+ */
 LColor FltGeometry::
 get_color() const {
   LColor color;
@@ -90,24 +84,19 @@ get_color() const {
   return color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::set_color
-//       Access: Public
-//  Description: Sets the primary color of the face, using the packed
-//               color convention.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the primary color of the face, using the packed color convention.
+ */
 void FltGeometry::
 set_color(const LColor &color) {
   set_rgb(LRGBColor(color[0], color[1], color[2]));
   _transparency = (int)floor((1.0 - color[3]) * 65535.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::get_rgb
-//       Access: Public
-//  Description: Returns the primary color of the face, as a
-//               three-component value ignoring transparency.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the primary color of the face, as a three-component value ignoring
+ * transparency.
+ */
 LRGBColor FltGeometry::
 get_rgb() const {
   if (!has_color() || (_texwhite && has_texture())) {
@@ -125,12 +114,10 @@ get_rgb() const {
                           _packed_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::set_rgb
-//       Access: Public
-//  Description: Sets the primary color of the face, using the packed
-//               color convention; does not affect transparency.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the primary color of the face, using the packed color convention; does
+ * not affect transparency.
+ */
 void FltGeometry::
 set_rgb(const LRGBColor &rgb) {
   _packed_color.set_rgb(rgb);
@@ -141,24 +128,18 @@ set_rgb(const LRGBColor &rgb) {
   _texwhite = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::has_alt_color
-//       Access: Public
-//  Description: Returns true if the face has an alternate color
-//               indicated, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the face has an alternate color indicated, false otherwise.
+ */
 bool FltGeometry::
 has_alt_color() const {
   return (_flags & F_no_alt_color) == 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::get_alt_color
-//       Access: Public
-//  Description: If has_alt_color() indicates true, returns the alternate
-//               color of the face, as a four-component value
-//               (including alpha as the transparency channel).
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_alt_color() indicates true, returns the alternate color of the face,
+ * as a four-component value (including alpha as the transparency channel).
+ */
 LColor FltGeometry::
 get_alt_color() const {
   nassertr(has_alt_color(), LColor(0.0, 0.0, 0.0, 0.0));
@@ -167,13 +148,10 @@ get_alt_color() const {
                             _alt_packed_color, _transparency);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::get_alt_rgb
-//       Access: Public
-//  Description: If has_alt_color() indicates true, returns the alternate
-//               color of the face, as a three-component value
-//               ignoring transparency.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_alt_color() indicates true, returns the alternate color of the face,
+ * as a three-component value ignoring transparency.
+ */
 LRGBColor FltGeometry::
 get_alt_rgb() const {
   nassertr(has_alt_color(), LRGBColor(0.0, 0.0, 0.0));
@@ -182,14 +160,11 @@ get_alt_rgb() const {
                           _alt_packed_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltGeometry::
 extract_record(FltRecordReader &reader) {
   DatagramIterator &iterator = reader.get_iterator();
@@ -223,7 +198,7 @@ extract_record(FltRecordReader &reader) {
     if (!_alt_packed_color.extract_record(reader)) {
       return false;
     }
-    
+
     if (_header->get_flt_version() >= 1520) {
       _texture_mapping_index = iterator.get_be_int16();
       iterator.skip_bytes(2);
@@ -236,14 +211,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this
+ * record, but does not advance the writer.  Returns true on success, false if
+ * there is some error.
+ */
 bool FltGeometry::
 build_record(FltRecordWriter &writer) const {
   Datagram &datagram = writer.update_datagram();

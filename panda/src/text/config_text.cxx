@@ -1,16 +1,15 @@
-// Filename: config_text.cxx
-// Created by:  drose (02Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_text.cxx
+ * @author drose
+ * @date 2000-03-02
+ */
 
 #include "config_text.h"
 #include "staticTextFont.h"
@@ -132,7 +131,7 @@ ConfigVariableInt text_embed_graphic_key
 wstring
 get_text_soft_hyphen_output() {
   static wstring *text_soft_hyphen_output = NULL;
-  static ConfigVariableString 
+  static ConfigVariableString
     cv("text-soft-hyphen-output", "-",
        PRC_DESC("This is the string that is output, encoded in the default "
                 "encoding, to represent the hyphen character that is "
@@ -155,7 +154,7 @@ ConfigVariableDouble text_hyphen_ratio
 wstring
 get_text_never_break_before() {
   static wstring *text_never_break_before = NULL;
-  static ConfigVariableString 
+  static ConfigVariableString
     cv("text-never-break-before", ",.-:?!;",
        PRC_DESC("This string represents a list of individual characters "
                 "that should never appear at the beginning of a line "
@@ -200,14 +199,12 @@ ConfigVariableEnum<TextFont::RenderMode> text_render_mode
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libtext
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libtext() {
   static bool initialized = false;

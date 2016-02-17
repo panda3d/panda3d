@@ -1,16 +1,15 @@
-// Filename: linearIntegrator.cxx
-// Created by:  charles (02Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearIntegrator.cxx
+ * @author charles
+ * @date 2000-08-02
+ */
 
 #include "linearIntegrator.h"
 #include "config_physics.h"
@@ -21,30 +20,23 @@ ConfigVariableDouble LinearIntegrator::_max_linear_dt
 ("default_max_linear_dt", 1.0f / 30.0f);
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseLinearIntegrator
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearIntegrator::
 LinearIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LinearIntegrator
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearIntegrator::
 ~LinearIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: integrate
-//       Access: Public
-//  Description: parent integration routine, hands off to child
-//               virtual.
-////////////////////////////////////////////////////////////////////
+/**
+ * parent integration routine, hands off to child virtual.
+ */
 void LinearIntegrator::
 integrate(Physical *physical, LinearForceVector &forces,
           PN_stdfloat dt) {
@@ -60,24 +52,21 @@ integrate(Physical *physical, LinearForceVector &forces,
        ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
 
-    // bail out if this object doesn't exist or doesn't want to be
-    // processed.
+    // bail out if this object doesn't exist or doesn't want to be processed.
     if (current_object == (PhysicsObject *) NULL) {
       continue;
     }
 
-    // set the object's last position to its current position before we move it
+    // set the object's last position to its current position before we move
+    // it
     current_object->set_last_position(current_object->get_position());
   }
   child_integrate(physical, forces, dt);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -85,12 +74,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

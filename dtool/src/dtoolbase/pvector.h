@@ -1,16 +1,15 @@
-// Filename: pvector.h
-// Created by:  drose (05Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pvector.h
+ * @author drose
+ * @date 2001-06-05
+ */
 
 #ifndef PVECTOR_H
 #define PVECTOR_H
@@ -28,13 +27,11 @@
 
 #else
 
-////////////////////////////////////////////////////////////////////
-//       Class : pvector
-// Description : This is our own Panda specialization on the default
-//               STL vector.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL vector.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-
+ * allocated memory.
+ */
 template<class Type>
 class pvector : public vector<Type, pallocator_array<Type> > {
 public:

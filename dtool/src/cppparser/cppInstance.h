@@ -1,16 +1,15 @@
-// Filename: cppInstance.h
-// Created by:  drose (19Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppInstance.h
+ * @author drose
+ * @date 1999-10-19
+ */
 
 #ifndef CPPINSTANCE_H
 #define CPPINSTANCE_H
@@ -27,14 +26,13 @@ class CPPParameterList;
 class CPPScope;
 class CPPExpression;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPInstance
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPInstance : public CPPDeclaration {
 public:
-  // Some of these flags clearly only make sense in certain contexts,
-  // e.g. for a function or method.
+  // Some of these flags clearly only make sense in certain contexts, e.g.
+  // for a function or method.
   enum StorageClass {
     SC_static       = 0x0001,
     SC_extern       = 0x0002,
@@ -51,10 +49,10 @@ public:
     // This bit is only set by CPPStructType::check_virtual().
     SC_inherited_virtual = 0x0800,
 
-    // This is a special "storage class" for methods tagged with the
-    // BLOCKING macro (i.e. the special __blocking keyword).  These
-    // are methods that might block and therefore need to release
-    // Python threads for their duration.
+    // This is a special "storage class" for methods tagged with the BLOCKING
+    // macro (i.e.  the special __blocking keyword).  These are methods that
+    // might block and therefore need to release Python threads for their
+    // duration.
     SC_blocking     = 0x1000,
 
     // And this is for methods tagged with __extension, which declares
@@ -64,6 +62,8 @@ public:
     // These are for =default and =delete functions.
     SC_defaulted    = 0x4000,
     SC_deleted      = 0x8000,
+
+    SC_thread_local = 0x10000,
   };
 
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);
@@ -119,6 +119,7 @@ public:
 
   int _storage_class;
   CPPExpression *_alignment;
+  int _bit_width;
 
 private:
   typedef map<const CPPTemplateParameterList *, CPPInstance *, CPPTPLCompare> Instantiations;
@@ -126,4 +127,3 @@ private:
 };
 
 #endif
-

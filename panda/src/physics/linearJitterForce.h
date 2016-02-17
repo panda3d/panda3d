@@ -1,33 +1,31 @@
-// Filename: linearJitterForce.h
-// Created by:  charles (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearJitterForce.h
+ * @author charles
+ * @date 2000-06-13
+ */
 
 #ifndef LINEARJITTERFORCE_H
 #define LINEARJITTERFORCE_H
 
 #include "linearRandomForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearJitterForce
-// Description : Completely random noise force vector.  Not
-//               repeatable, reliable, or predictable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely random noise force vector.  Not repeatable, reliable, or
+ * predictable.
+ */
 class EXPCL_PANDAPHYSICS LinearJitterForce : public LinearRandomForce {
 PUBLISHED:
   LinearJitterForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);
   virtual ~LinearJitterForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

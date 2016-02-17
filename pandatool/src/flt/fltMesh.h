@@ -1,16 +1,15 @@
-// Filename: fltMesh.h
-// Created by:  drose (28Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltMesh.h
+ * @author drose
+ * @date 2001-02-28
+ */
 
 #ifndef FLTMESH_H
 #define FLTMESH_H
@@ -22,11 +21,9 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltMesh
-// Description : A mesh of connected polygons and tristrips, etc.,
-//               with a local vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A mesh of connected polygons and tristrips, etc., with a local vertex pool.
+ */
 class FltMesh : public FltGeometry {
 public:
   FltMesh(FltHeader *header);
@@ -61,5 +58,3 @@ private:
 #include "fltMesh.I"
 
 #endif
-
-

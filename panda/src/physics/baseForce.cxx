@@ -1,27 +1,24 @@
-// Filename: baseForce.cxx
-// Created by:  charles (08Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file baseForce.cxx
+ * @author charles
+ * @date 2000-08-08
+ */
 
 #include "baseForce.h"
 #include "indent.h"
 
 TypeHandle BaseForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseForce
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 BaseForce::
 BaseForce(bool active) :
   _force_node(NULL),
@@ -29,11 +26,9 @@ BaseForce(bool active) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseForce
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 BaseForce::
 BaseForce(const BaseForce &copy) :
   TypedReferenceCount(copy)
@@ -42,32 +37,24 @@ BaseForce(const BaseForce &copy) :
   _force_node = (ForceNode *) NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~BaseForce
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 BaseForce::
 ~BaseForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseForce::
 output(ostream &out) const {
   out << "BaseForce (id " << this << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseForce::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

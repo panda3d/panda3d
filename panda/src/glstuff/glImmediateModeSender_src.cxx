@@ -1,35 +1,29 @@
-// Filename: glImmediateModeSender_src.cxx
-// Created by:  drose (15Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glImmediateModeSender_src.cxx
+ * @author drose
+ * @date 2005-08-15
+ */
 
 #ifdef SUPPORT_IMMEDIATE_MODE
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(ImmediateModeSender)::
 ~CLP(ImmediateModeSender)() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::clear
-//       Access: Public
-//  Description: Removes (and deletes) all of the senders from the
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes (and deletes) all of the senders from the object.
+ */
 void CLP(ImmediateModeSender)::
 clear() {
   ComponentSenders::iterator si;
@@ -39,13 +33,10 @@ clear() {
   _senders.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::set_vertex
-//       Access: Public
-//  Description: Specifies the vertex index of the next vertex to
-//               send.  If this is not called, the next consecutive
-//               vertex will be sent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the vertex index of the next vertex to send.  If this is not
+ * called, the next consecutive vertex will be sent.
+ */
 void CLP(ImmediateModeSender)::
 set_vertex(int vertex_index) {
   ComponentSenders::iterator si;
@@ -54,11 +45,9 @@ set_vertex(int vertex_index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::issue_vertex
-//       Access: Public
-//  Description: Sends the next vertex to the OpenGL API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the next vertex to the OpenGL API.
+ */
 void CLP(ImmediateModeSender)::
 issue_vertex() {
   ComponentSenders::iterator si;
@@ -67,23 +56,19 @@ issue_vertex() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::add_column
-//       Access: Public
-//  Description: Creates a new ComponentSender for the named data
-//               column, if it exists in the vertex data, and adds it
-//               to the list of senders for this object.
-//
-//               The four function pointers are the four variants on
-//               the function pointer for the possible number of
-//               components of the data column.  The appropriate
-//               pointer will be used, depending on the number of
-//               components the data column actually uses.
-//
-//               The return value is true if the column is added,
-//               false if it is not for some reason (for instance, the
-//               named column doesn't exist in the vertex data).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new ComponentSender for the named data column, if it exists in
+ * the vertex data, and adds it to the list of senders for this object.
+ *
+ * The four function pointers are the four variants on the function pointer
+ * for the possible number of components of the data column.  The appropriate
+ * pointer will be used, depending on the number of components the data column
+ * actually uses.
+ *
+ * The return value is true if the column is added, false if it is not for
+ * some reason (for instance, the named column doesn't exist in the vertex
+ * data).
+ */
 bool CLP(ImmediateModeSender)::
 add_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *name,
            Func1f *func1f, Func2f *func2, Func3f *func3, Func4f *func4) {
@@ -131,25 +116,22 @@ add_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::add_texcoord_column
-//       Access: Public
-//  Description: Creates a new ComponentSender for the named data
-//               column, if it exists in the vertex data, and adds it
-//               to the list of senders for this object.
-//
-//               This works like add_column(), but it specifically
-//               handles a texcoord-style column, which requires one
-//               additional parameter to OpenGL: the texture stage.
-//
-//               The return value is true if the column is added,
-//               false if it is not for some reason (for instance, the
-//               named column doesn't exist in the vertex data).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new ComponentSender for the named data column, if it exists in
+ * the vertex data, and adds it to the list of senders for this object.
+ *
+ * This works like add_column(), but it specifically handles a texcoord-style
+ * column, which requires one additional parameter to OpenGL: the texture
+ * stage.
+ *
+ * The return value is true if the column is added, false if it is not for
+ * some reason (for instance, the named column doesn't exist in the vertex
+ * data).
+ */
 bool CLP(ImmediateModeSender)::
-add_texcoord_column(const GeomVertexDataPipelineReader *data_reader, 
+add_texcoord_column(const GeomVertexDataPipelineReader *data_reader,
                     const InternalName *name, int stage_index,
-                    TexcoordFunc1f *func1f, TexcoordFunc2f *func2, 
+                    TexcoordFunc1f *func1f, TexcoordFunc2f *func2,
                     TexcoordFunc3f *func3, TexcoordFunc4f *func4) {
   if (data_reader->has_column(name)) {
     GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
@@ -187,23 +169,18 @@ add_texcoord_column(const GeomVertexDataPipelineReader *data_reader,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::add_vector_column
-//       Access: Public
-//  Description: Creates a new ComponentSender for the named data
-//               column, if it exists in the vertex data, and adds it
-//               to the list of senders for this object.
-//
-//               This works like add_column(), but it specifically
-//               handles a function that accepts as its first
-//               parameter the size (number of components) of the
-//               floating-point vector, followed by the address of the
-//               vector.
-//
-//               The return value is true if the column is added,
-//               false if it is not for some reason (for instance, the
-//               named column doesn't exist in the vertex data).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new ComponentSender for the named data column, if it exists in
+ * the vertex data, and adds it to the list of senders for this object.
+ *
+ * This works like add_column(), but it specifically handles a function that
+ * accepts as its first parameter the size (number of components) of the
+ * floating-point vector, followed by the address of the vector.
+ *
+ * The return value is true if the column is added, false if it is not for
+ * some reason (for instance, the named column doesn't exist in the vertex
+ * data).
+ */
 bool CLP(ImmediateModeSender)::
 add_vector_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *name,
                   VectorFunc *func) {
@@ -243,22 +220,19 @@ add_vector_column(const GeomVertexDataPipelineReader *data_reader, const Interna
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::add_vector_uint_column
-//       Access: Public
-//  Description: Creates a new ComponentSender for the named data
-//               column, if it exists in the vertex data, and adds it
-//               to the list of senders for this object.
-//
-//               This works like add_vector_column(), but handles a
-//               function that receives a vector of unsigned ints.
-//
-//               The return value is true if the column is added,
-//               false if it is not for some reason (for instance, the
-//               named column doesn't exist in the vertex data).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new ComponentSender for the named data column, if it exists in
+ * the vertex data, and adds it to the list of senders for this object.
+ *
+ * This works like add_vector_column(), but handles a function that receives a
+ * vector of unsigned ints.
+ *
+ * The return value is true if the column is added, false if it is not for
+ * some reason (for instance, the named column doesn't exist in the vertex
+ * data).
+ */
 bool CLP(ImmediateModeSender)::
-add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader, 
+add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader,
                        const InternalName *name, VectorUintFunc *func) {
   if (data_reader->has_column(name)) {
     GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
@@ -296,34 +270,27 @@ add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::add_sender
-//       Access: Public
-//  Description: Adds a new ComponentSender to the list of senders for
-//               this object.  The GLImmediateModeSender object
-//               becomes the owner of the ComponentSender pointer and
-//               will delete it when it is done.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new ComponentSender to the list of senders for this object.  The
+ * GLImmediateModeSender object becomes the owner of the ComponentSender
+ * pointer and will delete it when it is done.
+ */
 void CLP(ImmediateModeSender)::
 add_sender(ComponentSender *sender) {
   _senders.push_back(sender);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(ImmediateModeSender)::ComponentSender::
 ~ComponentSender() {
   delete _reader;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender1f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::ComponentSender1f::
 issue_vertex() {
   PN_stdfloat d = _reader->get_data1f();
@@ -337,11 +304,9 @@ issue_vertex() {
   (*_func)(d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender2f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::ComponentSender2f::
 issue_vertex() {
   const LVecBase2 &d = _reader->get_data2();
@@ -355,11 +320,9 @@ issue_vertex() {
   (*_func)(d[0], d[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender3f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::ComponentSender3f::
 issue_vertex() {
   const LVecBase3 &d = _reader->get_data3();
@@ -373,11 +336,9 @@ issue_vertex() {
   (*_func)(d[0], d[1], d[2]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::ComponentSender4f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::ComponentSender4f::
 issue_vertex() {
   const LVecBase4 &d = _reader->get_data4();
@@ -391,11 +352,9 @@ issue_vertex() {
   (*_func)(d[0], d[1], d[2], d[3]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender1f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::TexcoordSender1f::
 issue_vertex() {
   PN_stdfloat d = _reader->get_data1f();
@@ -410,11 +369,9 @@ issue_vertex() {
   (*_func)(GL_TEXTURE0 + _stage_index, d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender2f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::TexcoordSender2f::
 issue_vertex() {
   const LVecBase2 &d = _reader->get_data2();
@@ -429,11 +386,9 @@ issue_vertex() {
   (*_func)(GL_TEXTURE0 + _stage_index, d[0], d[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender3f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::TexcoordSender3f::
 issue_vertex() {
   const LVecBase3 &d = _reader->get_data3();
@@ -448,11 +403,9 @@ issue_vertex() {
   (*_func)(GL_TEXTURE0 + _stage_index, d[0], d[1], d[2]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::TexcoordSender4f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::TexcoordSender4f::
 issue_vertex() {
   const LVecBase4 &d = _reader->get_data4();
@@ -467,11 +420,9 @@ issue_vertex() {
   (*_func)(GL_TEXTURE0 + _stage_index, d[0], d[1], d[2], d[3]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender1f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender1f::
 issue_vertex() {
   PN_stdfloat d = _reader->get_data1f();
@@ -485,11 +436,9 @@ issue_vertex() {
   (*_func)(1, &d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender2f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender2f::
 issue_vertex() {
   const LVecBase2 &d = _reader->get_data2();
@@ -503,11 +452,9 @@ issue_vertex() {
   (*_func)(2, d.get_data());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender3f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender3f::
 issue_vertex() {
   const LVecBase3 &d = _reader->get_data3();
@@ -521,11 +468,9 @@ issue_vertex() {
   (*_func)(3, d.get_data());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender4f::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender4f::
 issue_vertex() {
   const LVecBase4 &d = _reader->get_data4();
@@ -539,11 +484,9 @@ issue_vertex() {
   (*_func)(4, d.get_data());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender1ui::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender1ui::
 issue_vertex() {
   int d = _reader->get_data1i();
@@ -557,18 +500,16 @@ issue_vertex() {
   (*_func)(1, (const GLuint *)&d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender2fui::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender2fui::
 issue_vertex() {
   const LVecBase2i &d = _reader->get_data2i();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << *_reader->get_column()->get_name() << ": " << d[0] << " " 
+      << *_reader->get_column()->get_name() << ": " << d[0] << " "
       << d[1] << "\n";
   }
 #endif  // NDEBUG
@@ -576,18 +517,16 @@ issue_vertex() {
   (*_func)(2, (const GLuint *)d.get_data());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender3fui::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender3fui::
 issue_vertex() {
   const LVecBase3i &d = _reader->get_data3i();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << *_reader->get_column()->get_name() << ": " << d[0] << " " 
+      << *_reader->get_column()->get_name() << ": " << d[0] << " "
       << d[1] << " " << d[2] << "\n";
   }
 #endif  // NDEBUG
@@ -595,18 +534,16 @@ issue_vertex() {
   (*_func)(3, (const GLuint *)d.get_data());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender4fui::issue_vertex
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(ImmediateModeSender)::VectorSender4fui::
 issue_vertex() {
   const LVecBase4i &d = _reader->get_data4i();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << *_reader->get_column()->get_name() << ": " << d[0] << " " 
+      << *_reader->get_column()->get_name() << ": " << d[0] << " "
       << d[1] << " " << d[2] << " " << d[3] << "\n";
   }
 #endif  // NDEBUG

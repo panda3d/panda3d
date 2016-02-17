@@ -1,16 +1,15 @@
-// Filename: eggCharacterData.cxx
-// Created by:  drose (23Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCharacterData.cxx
+ * @author drose
+ * @date 2001-02-23
+ */
 
 #include "eggCharacterData.h"
 #include "eggCharacterCollection.h"
@@ -21,8 +20,8 @@
 
 #include <algorithm>
 
-// An STL function object to sort the joint list in order from highest
-// to lowest in the new hierarchy.  Used in do_reparent().
+// An STL function object to sort the joint list in order from highest to
+// lowest in the new hierarchy.  Used in do_reparent().
 class OrderJointsByNewDepth {
 public:
   bool operator()(const EggJointData *a, const EggJointData *b) const {
@@ -31,11 +30,9 @@ public:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggCharacterData::
 EggCharacterData(EggCharacterCollection *collection) :
   _component_names("_", "joint_")
@@ -45,11 +42,9 @@ EggCharacterData(EggCharacterCollection *collection) :
   // The fictitious root joint is not added to the _components list.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggCharacterData::
 ~EggCharacterData() {
   delete _root_joint;
@@ -61,16 +56,12 @@ EggCharacterData::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::rename_char
-//       Access: Public
-//  Description: Renames all of the models in the character data to
-//               the indicated name.  This is the name that is used to
-//               identify unique skeleton hierarchies; if you set two
-//               different models to the same name, they will be
-//               loaded together as if they are expected to have the
-//               same skeleton hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renames all of the models in the character data to the indicated name.
+ * This is the name that is used to identify unique skeleton hierarchies; if
+ * you set two different models to the same name, they will be loaded together
+ * as if they are expected to have the same skeleton hierarchy.
+ */
 void EggCharacterData::
 rename_char(const string &name) {
   Models::iterator mi;
@@ -81,19 +72,15 @@ rename_char(const string &name) {
   set_name(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::add_model
-//       Access: Public
-//  Description: Indicates that the given model_index (with the
-//               indicated model_root) is associated with this
-//               character.  This is normally called by the
-//               EggCharacterCollection class as new models are
-//               discovered.
-//
-//               A "model" here is either a character model (or one
-//               LOD of a character model), or a character animation
-//               file: in either case, a hierarchy of joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the given model_index (with the indicated model_root) is
+ * associated with this character.  This is normally called by the
+ * EggCharacterCollection class as new models are discovered.
+ *
+ * A "model" here is either a character model (or one LOD of a character
+ * model), or a character animation file: in either case, a hierarchy of
+ * joints.
+ */
 void EggCharacterData::
 add_model(int model_index, EggNode *model_root, EggData *egg_data) {
   Model m;
@@ -103,16 +90,12 @@ add_model(int model_index, EggNode *model_root, EggData *egg_data) {
   _models.push_back(m);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::get_num_frames
-//       Access: Public
-//  Description: Returns the number of frames of animation of the
-//               indicated model.  This is more reliable than asking a
-//               particular joint or slider of the animation for its
-//               number of frames, since a particular joint may have
-//               only 1 frame (if it is unanimated), even though the
-//               overall animation has many frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames of animation of the indicated model.  This is
+ * more reliable than asking a particular joint or slider of the animation for
+ * its number of frames, since a particular joint may have only 1 frame (if it
+ * is unanimated), even though the overall animation has many frames.
+ */
 int EggCharacterData::
 get_num_frames(int model_index) const {
   int max_num_frames = 0;
@@ -121,24 +104,21 @@ get_num_frames(int model_index) const {
     EggComponentData *component = (*ci);
     int num_frames = component->get_num_frames(model_index);
     if (num_frames > 1) {
-      // We have a winner.  Assume all other components will be
-      // similar.
+      // We have a winner.  Assume all other components will be similar.
       return num_frames;
     }
     max_num_frames = max(max_num_frames, num_frames);
   }
 
-  // Every component had either 1 frame or 0 frames.  Return the
-  // maximum of these.
+  // Every component had either 1 frame or 0 frames.  Return the maximum of
+  // these.
   return max_num_frames;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::get_frame_rate
-//       Access: Public
-//  Description: Returns the stated frame rate of the specified model.
-//               Similar to get_num_frames().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the stated frame rate of the specified model.  Similar to
+ * get_num_frames().
+ */
 double EggCharacterData::
 get_frame_rate(int model_index) const {
   Components::const_iterator ci;
@@ -146,8 +126,7 @@ get_frame_rate(int model_index) const {
     EggComponentData *component = (*ci);
     double frame_rate = component->get_frame_rate(model_index);
     if (frame_rate != 0.0) {
-      // We have a winner.  Assume all other components will be
-      // similar.
+      // We have a winner.  Assume all other components will be similar.
       return frame_rate;
     }
   }
@@ -155,16 +134,12 @@ get_frame_rate(int model_index) const {
   return 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::check_num_frames
-//       Access: Public
-//  Description: Walks through each component and ensures that all
-//               have the same number of frames of animation (except
-//               for those that contain 0 or 1 frames, of course).
-//               Returns true if all are valid, false if there is a
-//               discreprency (in which case the shorter component are
-//               extended).
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through each component and ensures that all have the same number of
+ * frames of animation (except for those that contain 0 or 1 frames, of
+ * course). Returns true if all are valid, false if there is a discreprency
+ * (in which case the shorter component are extended).
+ */
 bool EggCharacterData::
 check_num_frames(int model_index) {
   int max_num_frames = 0;
@@ -173,19 +148,17 @@ check_num_frames(int model_index) {
   for (ci = _components.begin(); ci != _components.end(); ++ci) {
     EggComponentData *component = (*ci);
     int num_frames = component->get_num_frames(model_index);
-    if (num_frames > 1 && max_num_frames > 1 && 
+    if (num_frames > 1 && max_num_frames > 1 &&
         max_num_frames != num_frames) {
-      // If we have two different opinions about the number of frames
-      // (other than 0 or 1), we have a discrepency.  This is an error
-      // condition.
+      // If we have two different opinions about the number of frames (other
+      // than 0 or 1), we have a discrepency.  This is an error condition.
       any_violations = true;
     }
     max_num_frames = max(max_num_frames, num_frames);
   }
 
   if (any_violations) {
-    // Now go back through and force all components to the appropriate
-    // length.
+    // Now go back through and force all components to the appropriate length.
     for (ci = _components.begin(); ci != _components.end(); ++ci) {
       EggComponentData *component = (*ci);
       int num_frames = component->get_num_frames(model_index);
@@ -198,18 +171,14 @@ check_num_frames(int model_index) {
   return !any_violations;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::do_reparent
-//       Access: Public
-//  Description: Begins the process of restructuring the joint
-//               hierarchy according to the previous calls to
-//               reparent_to() on various joints.  This will reparent
-//               the joint hierachy in all models as requested, while
-//               adjusting the transforms as appropriate so that each
-//               joint retains the same net transform across all
-//               frames that it had before the operation.  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins the process of restructuring the joint hierarchy according to the
+ * previous calls to reparent_to() on various joints.  This will reparent the
+ * joint hierachy in all models as requested, while adjusting the transforms
+ * as appropriate so that each joint retains the same net transform across all
+ * frames that it had before the operation.  Returns true on success, false on
+ * failure.
+ */
 bool EggCharacterData::
 do_reparent() {
   typedef pset<EggJointData *> InvalidSet;
@@ -221,14 +190,14 @@ do_reparent() {
     EggJointData *joint_data = (*ji);
     joint_data->do_begin_reparent();
   }
-  // We also need to clear the children on the root joint, but the
-  // root joint doesn't get any of the other operations (including
-  // finish_reparent) applied to it.
+  // We also need to clear the children on the root joint, but the root joint
+  // doesn't get any of the other operations (including finish_reparent)
+  // applied to it.
   _root_joint->do_begin_reparent();
 
 
-  // Now, check for cycles in the new parenting hierarchy, and also
-  // sort the joints in order from top to bottom in the new hierarchy.
+  // Now, check for cycles in the new parenting hierarchy, and also sort the
+  // joints in order from top to bottom in the new hierarchy.
   for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
     EggJointData *joint_data = (*ji);
     pset<EggJointData *> chain;
@@ -239,11 +208,10 @@ do_reparent() {
     }
   }
   sort(_joints.begin(), _joints.end(), OrderJointsByNewDepth());
-  
-  // Now compute the new transforms for the joints' new positions.
-  // This is done recursively through the new parent hierarchy, so we
-  // can take advantage of caching the net value for a particular
-  // frame.
+
+  // Now compute the new transforms for the joints' new positions.  This is
+  // done recursively through the new parent hierarchy, so we can take
+  // advantage of caching the net value for a particular frame.
   Models::const_iterator mi;
   for (mi = _models.begin(); mi != _models.end(); ++mi) {
     EggCharacterDb db;
@@ -251,7 +219,7 @@ do_reparent() {
     int num_frames = get_num_frames(model_index);
     nout << "  computing " << (mi - _models.begin()) + 1
          << " of " << _models.size()
-         << ": " << (*mi)._egg_data->get_egg_filename() 
+         << ": " << (*mi)._egg_data->get_egg_filename()
          << " (" << num_frames << " frames)\n";
     for (int f = 0; f < num_frames; f++) {
       // First, walk through all the joints and flush the computed net
@@ -262,8 +230,8 @@ do_reparent() {
       }
       _root_joint->do_begin_compute_reparent();
 
-      // Now go back through and compute the reparented transforms,
-      // caching net transforms as necessary.
+      // Now go back through and compute the reparented transforms, caching
+      // net transforms as necessary.
       for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
         EggJointData *joint_data = (*ji);
         if (!joint_data->do_compute_reparent(model_index, f, db)) {
@@ -288,16 +256,15 @@ do_reparent() {
     joint_data->do_finish_reparent();
   }
 
-  // Report the set of joints that failed.  It really shouldn't be
-  // possible for any joints to fail, so if you see anything reported
-  // here, something went wrong at a fundamental level.  Perhaps a
-  // problem with decompose_matrix().
+  // Report the set of joints that failed.  It really shouldn't be possible
+  // for any joints to fail, so if you see anything reported here, something
+  // went wrong at a fundamental level.  Perhaps a problem with
+  // decompose_matrix().
   InvalidSet::const_iterator si;
   for (si = invalid_set.begin(); si != invalid_set.end(); ++si) {
     EggJointData *joint_data = (*si);
-    // Don't bother reporting joints that no longer have a parent,
-    // since we don't care about joints that are now outside the
-    // hierarchy.
+    // Don't bother reporting joints that no longer have a parent, since we
+    // don't care about joints that are now outside the hierarchy.
     if (joint_data->get_parent() != (EggJointData *)NULL) {
       nout << "Warning: reparenting " << joint_data->get_name()
            << " to ";
@@ -313,20 +280,16 @@ do_reparent() {
   return invalid_set.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::choose_optimal_hierarchy
-//       Access: Public
-//  Description: Chooses the best possible parent joint for each of
-//               the joints in the hierarchy, based on the score
-//               computed by EggJointData::score_reparent_to().  This
-//               is a fairly expensive operation that involves lots of
-//               recomputing of transforms across the hierarchy.
-//
-//               The joints are not actually reparented yet, but the
-//               new_parent of each joint is set.  Call do_reparent()
-//               to actually perform the suggested reparenting
-//               operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses the best possible parent joint for each of the joints in the
+ * hierarchy, based on the score computed by
+ * EggJointData::score_reparent_to().  This is a fairly expensive operation
+ * that involves lots of recomputing of transforms across the hierarchy.
+ *
+ * The joints are not actually reparented yet, but the new_parent of each
+ * joint is set.  Call do_reparent() to actually perform the suggested
+ * reparenting operation.
+ */
 void EggCharacterData::
 choose_optimal_hierarchy() {
   EggCharacterDb db;
@@ -361,7 +324,7 @@ choose_optimal_hierarchy() {
       }
     }
 
-    if (best_parent != (EggJointData *)NULL && 
+    if (best_parent != (EggJointData *)NULL &&
         best_parent != joint_data->_parent) {
       nout << "best parent for " << joint_data->get_name() << " is "
            << best_parent->get_name() << "\n";
@@ -370,12 +333,10 @@ choose_optimal_hierarchy() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::find_slider
-//       Access: Public
-//  Description: Returns the slider with the indicated name, or NULL
-//               if no slider has that name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the slider with the indicated name, or NULL if no slider has that
+ * name.
+ */
 EggSliderData *EggCharacterData::
 find_slider(const string &name) const {
   SlidersByName::const_iterator si;
@@ -387,12 +348,10 @@ find_slider(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::make_slider
-//       Access: Public
-//  Description: Returns the slider matching the indicated name.  If
-//               no such slider exists already, creates a new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the slider matching the indicated name.  If no such slider exists
+ * already, creates a new one.
+ */
 EggSliderData *EggCharacterData::
 make_slider(const string &name) {
   SlidersByName::const_iterator si;
@@ -409,20 +368,16 @@ make_slider(const string &name) {
   return slider;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::estimate_db_size
-//       Access: Public
-//  Description: Returns the estimated amount of memory, in megabytes,
-//               that will be required to perform the do_reparent()
-//               operation.  This is used mainly be EggCharacterDb to
-//               decide up front whether to store this data in-RAM or
-//               on-disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the estimated amount of memory, in megabytes, that will be required
+ * to perform the do_reparent() operation.  This is used mainly be
+ * EggCharacterDb to decide up front whether to store this data in-RAM or on-
+ * disk.
+ */
 size_t EggCharacterData::
 estimate_db_size() const {
-  // Count how much memory we will need to store the interim
-  // transforms.  This is models * joints * frames * 3 *
-  // sizeof(LMatrix4d).
+  // Count how much memory we will need to store the interim transforms.  This
+  // is models * joints * frames * 3 * sizeof(LMatrix4d).
   size_t mj_frames = 0;
   Models::const_iterator mi;
   for (mi = _models.begin(); mi != _models.end(); ++mi) {
@@ -431,19 +386,16 @@ estimate_db_size() const {
     mj_frames += num_frames * _joints.size();
   }
 
-  // We do this operation a bit carefully, to guard against integer
-  // overflow.
+  // We do this operation a bit carefully, to guard against integer overflow.
   size_t mb_needed = ((mj_frames * 3 / 1024) * sizeof(LMatrix4d)) / 1024;
 
   return mb_needed;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterData::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggCharacterData::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

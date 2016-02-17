@@ -1,16 +1,15 @@
-// Filename: cullBinManager.cxx
-// Created by:  drose (28Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullBinManager.cxx
+ * @author drose
+ * @date 2002-02-28
+ */
 
 #include "cullBinManager.h"
 #include "renderState.h"
@@ -21,15 +20,12 @@
 
 CullBinManager *CullBinManager::_global_ptr = (CullBinManager *)NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::Constructor
-//       Access: Protected
-//  Description: The constructor is not intended to be called
-//               directly; there is only one CullBinManager and it
-//               constructs itself.  This could have been a private
-//               constructor, but gcc issues a spurious warning if the
-//               constructor is private and the class has no friends.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor is not intended to be called directly; there is only one
+ * CullBinManager and it constructs itself.  This could have been a private
+ * constructor, but gcc issues a spurious warning if the constructor is
+ * private and the class has no friends.
+ */
 CullBinManager::
 CullBinManager() {
   _bins_are_sorted = true;
@@ -38,30 +34,24 @@ CullBinManager() {
   setup_initial_bins();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::Destructor
-//       Access: Protected
-//  Description: Don't call the destructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Don't call the destructor.
+ */
 CullBinManager::
 ~CullBinManager() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::add_bin
-//       Access: Published
-//  Description: Defines a new bin with the indicated name, and
-//               returns the new bin_index.  If there is already a bin
-//               with the same name returns its bin_index if it had
-//               the same properties; otherwise, reports an error and
-//               returns -1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new bin with the indicated name, and returns the new bin_index.
+ * If there is already a bin with the same name returns its bin_index if it
+ * had the same properties; otherwise, reports an error and returns -1.
+ */
 int CullBinManager::
 add_bin(const string &name, BinType type, int sort) {
   BinsByName::const_iterator bni = _bins_by_name.find(name);
   if (bni != _bins_by_name.end()) {
-    // We already have such a bin.  This is not a problem if the bin
-    // has the same properties.
+    // We already have such a bin.  This is not a problem if the bin has the
+    // same properties.
     int bin_index = (*bni).second;
     nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), -1);
     const BinDefinition &def = _bin_definitions[bin_index];
@@ -77,12 +67,11 @@ add_bin(const string &name, BinType type, int sort) {
     return -1;
   }
 
-  // No bin by that name already; choose a bin_index to assign to the
-  // newly created bin.
+  // No bin by that name already; choose a bin_index to assign to the newly
+  // created bin.
   int new_bin_index = -1;
   if (_unused_bin_index) {
-    // If there is some bin index that's not being used, we can claim
-    // it.
+    // If there is some bin index that's not being used, we can claim it.
     int i = 0;
     for (i = 0; i < (int)_bin_definitions.size() && new_bin_index == -1; i++) {
       if (!_bin_definitions[i]._in_use) {
@@ -128,17 +117,13 @@ add_bin(const string &name, BinType type, int sort) {
   return new_bin_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::remove_bin
-//       Access: Published
-//  Description: Permanently removes the indicated bin.  This
-//               operation is not protected from the pipeline and will
-//               disturb whatever is currently rendering in draw.  You
-//               should not call this during the normal course of
-//               rendering a frame; it is intended only as an aid to
-//               development, to allow the developer to interactively
-//               fiddle with the set of bins.
-////////////////////////////////////////////////////////////////////
+/**
+ * Permanently removes the indicated bin.  This operation is not protected
+ * from the pipeline and will disturb whatever is currently rendering in draw.
+ * You should not call this during the normal course of rendering a frame; it
+ * is intended only as an aid to development, to allow the developer to
+ * interactively fiddle with the set of bins.
+ */
 void CullBinManager::
 remove_bin(int bin_index) {
   nassertv(bin_index >= 0 && bin_index < (int)_bin_definitions.size());
@@ -151,24 +136,21 @@ remove_bin(int bin_index) {
   _sorted_bins.erase(si);
   _bins_by_name.erase(_bin_definitions[bin_index]._name);
 
-  // Now we have to make sure all of the data objects in the world
-  // that had cached this bin index or have a bin object are correctly
-  // updated.
+  // Now we have to make sure all of the data objects in the world that had
+  // cached this bin index or have a bin object are correctly updated.
 
-  // First, tell all the RenderStates in the world to reset their bin
-  // index cache.
+  // First, tell all the RenderStates in the world to reset their bin index
+  // cache.
   RenderState::bin_removed(bin_index);
 
   // Now tell all the CullResults to clear themselves up too.
   CullResult::bin_removed(bin_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::find_bin
-//       Access: Published
-//  Description: Returns the bin_index associated with the bin of the
-//               given name, or -1 if no bin has that name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the bin_index associated with the bin of the given name, or -1 if
+ * no bin has that name.
+ */
 int CullBinManager::
 find_bin(const string &name) const {
   BinsByName::const_iterator bni;
@@ -179,11 +161,9 @@ find_bin(const string &name) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CullBinManager::
 write(ostream &out) const {
   if (!_bins_are_sorted) {
@@ -197,14 +177,11 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::make_new_bin
-//       Access: Public
-//  Description: Intended to be called by CullResult when a new
-//               CullBin pointer corresponding to the indicated
-//               bin_index is required.  It allocates and returns a
-//               brand new CullBin object of the appropriate type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called by CullResult when a new CullBin pointer
+ * corresponding to the indicated bin_index is required.  It allocates and
+ * returns a brand new CullBin object of the appropriate type.
+ */
 PT(CullBin) CullBinManager::
 make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
              const PStatCollector &draw_region_pcollector) {
@@ -224,37 +201,29 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::register_bin_type
-//       Access: Public
-//  Description: Intended to be called at startup type by each CullBin
-//               type, to register the constructor for each type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called at startup type by each CullBin type, to register the
+ * constructor for each type.
+ */
 void CullBinManager::
 register_bin_type(BinType type, CullBinManager::BinConstructor *constructor) {
   bool inserted = _bin_constructors.insert(BinConstructors::value_type(type, constructor)).second;
   nassertv(inserted);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::do_sort_bins
-//       Access: Private
-//  Description: Puts the _sorted_bins vector in proper rendering
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Puts the _sorted_bins vector in proper rendering order.
+ */
 void CullBinManager::
 do_sort_bins() {
   sort(_sorted_bins.begin(), _sorted_bins.end(), SortBins(this));
   _bins_are_sorted = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::setup_initial_bins
-//       Access: Private
-//  Description: Called only at construction time to create the
-//               default bins and the bins specified in the Configrc
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only at construction time to create the default bins and the bins
+ * specified in the Configrc file.
+ */
 void CullBinManager::
 setup_initial_bins() {
   ConfigVariableList cull_bin
@@ -269,8 +238,8 @@ setup_initial_bins() {
   for (int bi = 0; bi < num_bins; bi++) {
     string def = cull_bin.get_unique_value(bi);
 
-    // This is a string in three tokens, separated by whitespace:
-    //    bin_name sort type
+    // This is a string in three tokens, separated by whitespace: bin_name
+    // sort type
 
     vector_string words;
     extract_words(def, words);
@@ -299,8 +268,8 @@ setup_initial_bins() {
     }
   }
 
-  // Now add the default bins, unless the names have already been
-  // specified explicitly in the Config file, above.
+  // Now add the default bins, unless the names have already been specified
+  // explicitly in the Config file, above.
   if (find_bin("background") == -1) {
     add_bin("background", BT_fixed, 10);
   }
@@ -318,13 +287,10 @@ setup_initial_bins() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::parse_bin_type
-//       Access: Private, Static
-//  Description: Given the name of a bin type, returns the
-//               corresponding BinType value, or BT_invalid if it is
-//               an unknown type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given the name of a bin type, returns the corresponding BinType value, or
+ * BT_invalid if it is an unknown type.
+ */
 CullBinManager::BinType CullBinManager::
 parse_bin_type(const string &bin_type) {
   if (cmp_nocase_uh(bin_type, "unsorted") == 0) {
@@ -347,10 +313,9 @@ parse_bin_type(const string &bin_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::BinType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, CullBinManager::BinType bin_type) {
   switch (bin_type) {

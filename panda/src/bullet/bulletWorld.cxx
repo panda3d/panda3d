@@ -1,16 +1,15 @@
-// Filename: bulletWorld.cxx
-// Created by:  enn0x (23Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletWorld.cxx
+ * @author enn0x
+ * @date 2010-01-23
+ */
 
 #include "bulletWorld.h"
 #include "bulletPersistentManifold.h"
@@ -31,11 +30,9 @@ PStatCollector BulletWorld::_pstat_b2p("App:Bullet:DoPhysics:SyncB2P");
 
 PT(CallbackObject) bullet_contact_added_callback;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletWorld::
 BulletWorld() {
 
@@ -121,22 +118,18 @@ BulletWorld() {
   _world->getSolverInfo().m_numIterations = bullet_solver_iterations;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_world_info
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletSoftBodyWorldInfo BulletWorld::
 get_world_info() {
 
   return BulletSoftBodyWorldInfo(_info);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_gravity
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 set_gravity(const LVector3 &gravity) {
 
@@ -144,11 +137,9 @@ set_gravity(const LVector3 &gravity) {
   _info.m_gravity.setValue(gravity.get_x(), gravity.get_y(), gravity.get_z());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_gravity
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz) {
 
@@ -156,22 +147,18 @@ set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz) {
   _info.m_gravity.setValue((btScalar)gx, (btScalar)gy, (btScalar)gz);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_gravity
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LVector3 BulletWorld::
 get_gravity() const {
 
   return btVector3_to_LVector3(_world->getGravity());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::do_physics
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int BulletWorld::
 do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
 
@@ -207,11 +194,9 @@ do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
   return n;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::sync_p2b
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 sync_p2b(PN_stdfloat dt, int num_substeps) {
 
@@ -232,11 +217,9 @@ sync_p2b(PN_stdfloat dt, int num_substeps) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::sync_b2p
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 sync_b2p() {
 
@@ -261,11 +244,9 @@ sync_b2p() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 attach(TypedObject *object) {
 
@@ -292,11 +273,9 @@ attach(TypedObject *object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::remove
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 remove(TypedObject *object) {
 
@@ -323,12 +302,9 @@ remove(TypedObject *object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach_rigid_body
-//       Access: Published
-//  Description: Deprecated!
-//               Please use BulletWorld::attach
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated!  Please use BulletWorld::attach
+ */
 void BulletWorld::
 attach_rigid_body(BulletRigidBodyNode *node) {
 
@@ -349,12 +325,9 @@ attach_rigid_body(BulletRigidBodyNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::remove_rigid_body
-//       Access: Published
-//  Description: Deprecated.!
-//               Please use BulletWorld::remove
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated.! Please use BulletWorld::remove
+ */
 void BulletWorld::
 remove_rigid_body(BulletRigidBodyNode *node) {
 
@@ -375,12 +348,9 @@ remove_rigid_body(BulletRigidBodyNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach_soft_body
-//       Access: Published
-//  Description: Deprecated!
-//               Please use BulletWorld::attach
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated!  Please use BulletWorld::attach
+ */
 void BulletWorld::
 attach_soft_body(BulletSoftBodyNode *node) {
 
@@ -388,7 +358,7 @@ attach_soft_body(BulletSoftBodyNode *node) {
 
   btSoftBody *ptr = btSoftBody::upcast(node->get_object());
 
-  // TODO: group/filter settings (see ghost objects too)
+  // TODO: groupfilter settings (see ghost objects too)
   short group = btBroadphaseProxy::DefaultFilter;
   short mask = btBroadphaseProxy::AllFilter;
 
@@ -405,12 +375,9 @@ attach_soft_body(BulletSoftBodyNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::remove_soft_body
-//       Access: Published
-//  Description: Deprecated.!
-//               Please use BulletWorld::remove
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated.! Please use BulletWorld::remove
+ */
 void BulletWorld::
 remove_soft_body(BulletSoftBodyNode *node) {
 
@@ -431,18 +398,15 @@ remove_soft_body(BulletSoftBodyNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach_ghost
-//       Access: Published
-//  Description: Deprecated!
-//               Please use BulletWorld::attach
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated!  Please use BulletWorld::attach
+ */
 void BulletWorld::
 attach_ghost(BulletGhostNode *node) {
 
   nassertv(node);
 
-  // TODO group/filter settings...
+  // TODO groupfilter settings...
 /*
 enum CollisionFilterGroups {
   DefaultFilter = 1,
@@ -475,12 +439,9 @@ enum CollisionFilterGroups {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::remove_ghost
-//       Access: Published
-//  Description: Deprecated.!
-//               Please use BulletWorld::remove
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated.! Please use BulletWorld::remove
+ */
 void BulletWorld::
 remove_ghost(BulletGhostNode *node) {
 
@@ -501,12 +462,9 @@ remove_ghost(BulletGhostNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach_character
-//       Access: Published
-//  Description: Deprecated!
-//               Please use BulletWorld::attach
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated!  Please use BulletWorld::attach
+ */
 void BulletWorld::
 attach_character(BulletBaseCharacterControllerNode *node) {
 
@@ -530,12 +488,9 @@ attach_character(BulletBaseCharacterControllerNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::remove_character
-//       Access: Published
-//  Description: Deprecated.!
-//               Please use BulletWorld::remove
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated.! Please use BulletWorld::remove
+ */
 void BulletWorld::
 remove_character(BulletBaseCharacterControllerNode *node) {
 
@@ -555,12 +510,9 @@ remove_character(BulletBaseCharacterControllerNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach_vehicle
-//       Access: Published
-//  Description: Deprecated!
-//               Please use BulletWorld::attach
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated!  Please use BulletWorld::attach
+ */
 void BulletWorld::
 attach_vehicle(BulletVehicle *vehicle) {
 
@@ -579,12 +531,9 @@ attach_vehicle(BulletVehicle *vehicle) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::remove_vehicle
-//       Access: Published
-//  Description: Deprecated.!
-//               Please use BulletWorld::remove
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated.! Please use BulletWorld::remove
+ */
 void BulletWorld::
 remove_vehicle(BulletVehicle *vehicle) {
 
@@ -605,13 +554,10 @@ remove_vehicle(BulletVehicle *vehicle) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach_constraint
-//       Access: Published
-//  Description: Attaches a single constraint to a world. Collision
-//               checks between the linked objects will be disabled
-//               if the second parameter is set to TRUE.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches a single constraint to a world.  Collision checks between the
+ * linked objects will be disabled if the second parameter is set to TRUE.
+ */
 void BulletWorld::
 attach_constraint(BulletConstraint *constraint, bool linked_collision) {
 
@@ -630,12 +576,9 @@ attach_constraint(BulletConstraint *constraint, bool linked_collision) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::remove_constraint
-//       Access: Published
-//  Description: Deprecated.!
-//               Please use BulletWorld::remove
-////////////////////////////////////////////////////////////////////
+/**
+ * Deprecated.! Please use BulletWorld::remove
+ */
 void BulletWorld::
 remove_constraint(BulletConstraint *constraint) {
 
@@ -654,11 +597,9 @@ remove_constraint(BulletConstraint *constraint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::ray_test_closest
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletClosestHitRayResult BulletWorld::
 ray_test_closest(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMask &mask) const {
 
@@ -673,11 +614,9 @@ ray_test_closest(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMa
   return cb;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::ray_test_all
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletAllHitsRayResult BulletWorld::
 ray_test_all(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMask &mask) const {
 
@@ -692,11 +631,9 @@ ray_test_all(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMask &
   return cb;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::sweep_test_closest
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletClosestHitSweepResult BulletWorld::
 sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const TransformState &to_ts, const CollideMask &mask, PN_stdfloat penetration) const {
 
@@ -716,12 +653,10 @@ sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const Tran
   return cb;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::filter_test
-//       Access: Published
-//  Description: Performs a test if two bodies should collide or
-//               not, based on the collision filter setting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a test if two bodies should collide or not, based on the collision
+ * filter setting.
+ */
 bool BulletWorld::
 filter_test(PandaNode *node0, PandaNode *node1) const {
 
@@ -744,19 +679,15 @@ filter_test(PandaNode *node0, PandaNode *node1) const {
   return _filter_cb->needBroadphaseCollision(proxy0, proxy1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::contact_test
-//       Access: Published
-//  Description: Performas a test for all bodies which are
-//               currently in contact with the given body.
-//               The test returns a BulletContactResult object
-//               which may contain zero, one or more contacts.
-//
-//               If the optional parameter use_filter is set to
-//               TRUE this test will consider filter settings.
-//               Otherwise all objects in contact are reported,
-//               no matter if they would collide or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performas a test for all bodies which are currently in contact with the
+ * given body.  The test returns a BulletContactResult object which may
+ * contain zero, one or more contacts.
+ *
+ * If the optional parameter use_filter is set to TRUE this test will consider
+ * filter settings.  Otherwise all objects in contact are reported, no matter
+ * if they would collide or not.
+ */
 BulletContactResult BulletWorld::
 contact_test(PandaNode *node, bool use_filter) const {
 
@@ -777,14 +708,11 @@ contact_test(PandaNode *node, bool use_filter) const {
   return cb;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::contact_pair_test
-//       Access: Published
-//  Description: Performas a test if the two bodies given as
-//               parameters are in contact or not.
-//               The test returns a BulletContactResult object
-//               which may contain zero or one contacts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performas a test if the two bodies given as parameters are in contact or
+ * not.  The test returns a BulletContactResult object which may contain zero
+ * or one contacts.
+ */
 BulletContactResult BulletWorld::
 contact_test_pair(PandaNode *node0, PandaNode *node1) const {
 
@@ -801,11 +729,9 @@ contact_test_pair(PandaNode *node0, PandaNode *node1) const {
   return cb;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_manifold
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletPersistentManifold *BulletWorld::
 get_manifold(int idx) const {
 
@@ -815,11 +741,9 @@ get_manifold(int idx) const {
   return (ptr) ? new BulletPersistentManifold(ptr) : NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_collision_object
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 btCollisionObject *BulletWorld::
 get_collision_object(PandaNode *node) {
 
@@ -839,11 +763,9 @@ get_collision_object(PandaNode *node) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_group_collision_flag
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable) {
 
@@ -855,22 +777,18 @@ set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable) 
   _filter_cb2._collide[group2].set_bit_to(group1, enable);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_group_collision_flag
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BulletWorld::
 get_group_collision_flag(unsigned int group1, unsigned int group2) const {
 
   return _filter_cb2._collide[group1].get_bit(group2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_contact_added_callback
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 set_contact_added_callback(CallbackObject *obj) {
 
@@ -881,11 +799,9 @@ set_contact_added_callback(CallbackObject *obj) {
   bullet_contact_added_callback = obj;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::clear_contact_added_callback
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 clear_contact_added_callback() {
 
@@ -896,11 +812,9 @@ clear_contact_added_callback() {
   bullet_contact_added_callback = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_tick_callback
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 set_tick_callback(CallbackObject *obj, bool is_pretick) {
 
@@ -909,11 +823,9 @@ set_tick_callback(CallbackObject *obj, bool is_pretick) {
   _world->setInternalTickCallback(&BulletWorld::tick_callback, this, is_pretick);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::clear_tick_callback
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 clear_tick_callback() {
 
@@ -921,11 +833,9 @@ clear_tick_callback() {
   _world->setInternalTickCallback(NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::tick_callback
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 tick_callback(btDynamicsWorld *world, btScalar timestep) {
 
@@ -939,11 +849,9 @@ tick_callback(btDynamicsWorld *world, btScalar timestep) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_filter_callback
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 set_filter_callback(CallbackObject *obj) {
 
@@ -956,22 +864,18 @@ set_filter_callback(CallbackObject *obj) {
   _filter_cb3._filter_callback_obj = obj;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::clear_filter_callback
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletWorld::
 clear_filter_callback() {
 
   _filter_cb3._filter_callback_obj = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::FilterCallback1::needBroadphaseCollision
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BulletWorld::btFilterCallback1::
 needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const {
 
@@ -993,11 +897,9 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   return (mask0 & mask1) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::FilterCallback2::needBroadphaseCollision
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BulletWorld::btFilterCallback2::
 needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const {
 
@@ -1016,12 +918,12 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   CollideMask mask0 = node0->get_into_collide_mask();
   CollideMask mask1 = node1->get_into_collide_mask();
 
-//cout << mask0 << "   " << mask1 << endl;
+// cout << mask0 << "   " << mask1 << endl;
 
   for (int i=0; i<32; i++) {
     if (mask0.get_bit(i)) {
       if ((_collide[i] & mask1) != 0)
-//cout << "collide: i=" << i << " _collide[i]" << _collide[i] << endl;
+// cout << "collide: i=" << i << " _collide[i]" << _collide[i] << endl;
         return true;
     }
   }
@@ -1029,11 +931,9 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::FilterCallback3::needBroadphaseCollision
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BulletWorld::btFilterCallback3::
 needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const {
 
@@ -1056,10 +956,9 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   return cbdata.get_collide();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::BroadphaseAlgorithm ostream operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, BulletWorld::BroadphaseAlgorithm algorithm) {
 
@@ -1074,10 +973,9 @@ operator << (ostream &out, BulletWorld::BroadphaseAlgorithm algorithm) {
   return out << "**invalid BulletWorld::BroadphaseAlgorithm(" << (int)algorithm << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::BroadphaseAlgorithm istream operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 istream &
 operator >> (istream &in, BulletWorld::BroadphaseAlgorithm &algorithm) {
   string word;
@@ -1098,10 +996,9 @@ operator >> (istream &in, BulletWorld::BroadphaseAlgorithm &algorithm) {
   return in;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::FilterAlgorithm ostream operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, BulletWorld::FilterAlgorithm algorithm) {
 
@@ -1116,10 +1013,9 @@ operator << (ostream &out, BulletWorld::FilterAlgorithm algorithm) {
   return out << "**invalid BulletWorld::FilterAlgorithm(" << (int)algorithm << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::FilterAlgorithm istream operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 istream &
 operator >> (istream &in, BulletWorld::FilterAlgorithm &algorithm) {
   string word;
@@ -1141,4 +1037,3 @@ operator >> (istream &in, BulletWorld::FilterAlgorithm &algorithm) {
   }
   return in;
 }
-

@@ -1,16 +1,15 @@
-// Filename: executionEnvironment.cxx
-// Created by:  drose (15May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file executionEnvironment.cxx
+ * @author drose
+ * @date 2000-05-15
+ */
 
 #include "executionEnvironment.h"
 #include "pandaVersion.h"
@@ -66,52 +65,46 @@ extern char **environ;
 #include <dlfcn.h>
 #endif
 
-// We define the symbol PREREAD_ENVIRONMENT if we cannot rely on
-// getenv() to read environment variables at static init time.  In
-// this case, we must read all of the environment variables directly
-// and cache them locally.
+// We define the symbol PREREAD_ENVIRONMENT if we cannot rely on getenv() to
+// read environment variables at static init time.  In this case, we must read
+// all of the environment variables directly and cache them locally.
 
 #ifndef STATIC_INIT_GETENV
 #define PREREAD_ENVIRONMENT
 #endif
 
-// We define the symbol HAVE_GLOBAL_ARGV if we have global variables
-// named GLOBAL_ARGC/GLOBAL_ARGV that we can read at static init time
-// to determine our command-line arguments.
+// We define the symbol HAVE_GLOBAL_ARGV if we have global variables named
+// GLOBAL_ARGCGLOBAL_ARGV that we can read at static init time to determine
+// our command-line arguments.
 
 #if !defined(WIN32_VC) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
 extern char **GLOBAL_ARGV;
 extern int GLOBAL_ARGC;
 #endif
 
-// Linux with GNU libc does have global argv/argc variables, but we
-// can't safely access them at stat init time--at least, not in libc5.
-// (It does seem to work with glibc2, however.)
+// Linux with GNU libc does have global argvargc variables, but we can't
+// safely access them at stat init time--at least, not in libc5. (It does seem
+// to work with glibc2, however.)
 
 ExecutionEnvironment *ExecutionEnvironment::_global_ptr = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::Constructor
-//       Access: Private
-//  Description: You shouldn't need to construct one of these; there's
-//               only one and it constructs itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * You shouldn't need to construct one of these; there's only one and it
+ * constructs itself.
+ */
 ExecutionEnvironment::
 ExecutionEnvironment() {
   read_environment_variables();
   read_args();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnviroment::expand_string
-//       Access: Public, Static
-//  Description: Reads the string, looking for environment variable
-//               names marked by a $.  Expands all such variable
-//               names.  A repeated dollar sign ($$) is mapped to a
-//               single dollar sign.
-//
-//               Returns the expanded string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the string, looking for environment variable names marked by a $.
+ * Expands all such variable names.  A repeated dollar sign ($$) is mapped to
+ * a single dollar sign.
+ *
+ * Returns the expanded string.
+ */
 string ExecutionEnvironment::
 expand_string(const string &str) {
   string result;
@@ -161,16 +154,13 @@ expand_string(const string &str) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnviroment::get_cwd
-//       Access: Public, Static
-//  Description: Returns the name of the current working directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the current working directory.
+ */
 Filename ExecutionEnvironment::
 get_cwd() {
 #ifdef WIN32_VC
-  // getcwd() requires us to allocate a dynamic buffer and grow it on
-  // demand.
+  // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
   static wchar_t *buffer = NULL;
 
@@ -193,8 +183,7 @@ get_cwd() {
   cwd.make_true_case();
   return cwd;
 #else  // WIN32_VC
-  // getcwd() requires us to allocate a dynamic buffer and grow it on
-  // demand.
+  // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
   static char *buffer = NULL;
 
@@ -219,12 +208,10 @@ get_cwd() {
 #endif  // WIN32_VC
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_has_environment_variable
-//       Access: Private
-//  Description: Returns true if the indicated environment variable
-//               is defined.  The nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated environment variable is defined.  The
+ * nonstatic implementation.
+ */
 bool ExecutionEnvironment::
 ns_has_environment_variable(const string &var) const {
 #ifdef PREREAD_ENVIRONMENT
@@ -234,13 +221,10 @@ ns_has_environment_variable(const string &var) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_environment_variable
-//       Access: Private
-//  Description: Returns the definition of the indicated environment
-//               variable, or the empty string if the variable is
-//               undefined.  The nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the definition of the indicated environment variable, or the empty
+ * string if the variable is undefined.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_environment_variable(const string &var) const {
   EnvironmentVariables::const_iterator evi;
@@ -249,9 +233,9 @@ ns_get_environment_variable(const string &var) const {
     return (*evi).second;
   }
 
-  // Some special case variables.  We virtually stuff these values
-  // into the Panda environment, shadowing whatever values they have
-  // in the true environment, so they can be used in config files.
+  // Some special case variables.  We virtually stuff these values into the
+  // Panda environment, shadowing whatever values they have in the true
+  // environment, so they can be used in config files.
   if (var == "HOME") {
     return Filename::get_home_directory().to_os_specific();
   } else if (var == "TEMP") {
@@ -261,9 +245,9 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "COMMON_APPDATA") {
     return Filename::get_common_appdata_directory().to_os_specific();
   } else if (var == "MAIN_DIR") {
-    // Return the binary name's parent directory.  If we're running
-    // inside the Python interpreter, this will be overridden by
-    // a setting from panda3d/core.py.
+    // Return the binary name's parent directory.  If we're running inside the
+    // Python interpreter, this will be overridden by a setting from
+    // panda3dcore.py.
     if (!_binary_name.empty()) {
       Filename main_dir (_binary_name);
       main_dir.make_absolute();
@@ -279,11 +263,11 @@ ns_get_environment_variable(const string &var) const {
 #endif
 
 #ifdef _WIN32
-  // On Windows only, we also simulate several standard folder names
-  // as "environment" variables.  I know we're supposed to be using
-  // KnownFolderID's these days, but those calls aren't compatible
-  // with XP, so we'll continue to use SHGetSpecialFolderPath() until
-  // we're forced out of it.
+  // On Windows only, we also simulate several standard folder names as
+  // "environment" variables.  I know we're supposed to be using
+  // KnownFolderID's these days, but those calls aren't compatible with XP, so
+  // we'll continue to use SHGetSpecialFolderPath() until we're forced out of
+  // it.
 
   static struct { int id; const char *name; } csidl_table[] = {
     { CSIDL_ADMINTOOLS, "ADMINTOOLS" },
@@ -362,12 +346,10 @@ ns_get_environment_variable(const string &var) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_set_environment_variable
-//       Access: Private
-//  Description: Changes the definition of the indicated environment
-//               variable.  The nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the definition of the indicated environment variable.  The
+ * nonstatic implementation.
+ */
 void ExecutionEnvironment::
 ns_set_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
@@ -379,22 +361,18 @@ ns_set_environment_variable(const string &var, const string &value) {
   putenv(put);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_shadow_environment_variable
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ExecutionEnvironment::
 ns_shadow_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
   string putstr = var + "=" + value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_clear_shadow
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ExecutionEnvironment::
 ns_clear_shadow(const string &var) {
   EnvironmentVariables::iterator vi = _variables.find(var);
@@ -413,40 +391,30 @@ ns_clear_shadow(const string &var) {
 #endif  // PREREAD_ENVIRONMENT
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_num_args
-//       Access: Private
-//  Description: Returns the number of command-line arguments
-//               available, not counting arg 0, the binary name.  The
-//               nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of command-line arguments available, not counting arg 0,
+ * the binary name.  The nonstatic implementation.
+ */
 size_t ExecutionEnvironment::
 ns_get_num_args() const {
   return _args.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_arg
-//       Access: Private
-//  Description: Returns the nth command-line argument.  The index n
-//               must be in the range [0 .. get_num_args()).  The
-//               first parameter, n == 0, is the first actual
-//               parameter, not the binary name.  The nonstatic
-//               implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth command-line argument.  The index n must be in the range [0
+ * .. get_num_args()).  The first parameter, n == 0, is the first actual
+ * parameter, not the binary name.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_arg(size_t n) const {
   assert(n < ns_get_num_args());
   return _args[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_binary_name
-//       Access: Private
-//  Description: Returns the name of the binary executable that
-//               started this program, if it can be determined.  The
-//               nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the binary executable that started this program, if it
+ * can be determined.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_binary_name() const {
   if (_binary_name.empty()) {
@@ -455,13 +423,10 @@ ns_get_binary_name() const {
   return _binary_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_dtool_name
-//       Access: Private
-//  Description: Returns the name of the libp3dtool DLL that
-//               is used in this program, if it can be determined.  The
-//               nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the libp3dtool DLL that is used in this program, if it
+ * can be determined.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_dtool_name() const {
   if (_dtool_name.empty()) {
@@ -470,12 +435,10 @@ ns_get_dtool_name() const {
   return _dtool_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::get_ptr
-//       Access: Private, Static
-//  Description: Returns a static pointer that may be used to access
-//               the global ExecutionEnvironment object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a static pointer that may be used to access the global
+ * ExecutionEnvironment object.
+ */
 ExecutionEnvironment *ExecutionEnvironment::
 get_ptr() {
   if (_global_ptr == (ExecutionEnvironment *)NULL) {
@@ -485,19 +448,16 @@ get_ptr() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::read_environment_variables
-//       Access: Private
-//  Description: Fills up the internal table of existing environment
-//               variables, if we are in PREREAD_ENVIRONMENT mode.
-//               Otherwise, does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the internal table of existing environment variables, if we are in
+ * PREREAD_ENVIRONMENT mode.  Otherwise, does nothing.
+ */
 void ExecutionEnvironment::
 read_environment_variables() {
 #ifdef PREREAD_ENVIRONMENT
 #if defined(IS_OSX) || defined(IS_FREEBSD) || defined(IS_LINUX)
-  // In the case of Mac, we'll try reading _NSGetEnviron().
-  // In the case of FreeBSD and Linux, use the "environ" variable.
+  // In the case of Mac, we'll try reading _NSGetEnviron(). In the case of
+  // FreeBSD and Linux, use the "environ" variable.
 
   char **envp;
   for (envp = environ; envp && *envp; envp++) {
@@ -523,8 +483,8 @@ read_environment_variables() {
   // Emscripten has no environment vars.  Don't even try.
 
 #elif defined(HAVE_PROC_SELF_ENVIRON)
-  // In some cases, we may have a file called /proc/self/environ
-  // that may be read to determine all of our environment variables.
+  // In some cases, we may have a file called procselfenviron that may be read
+  // to determine all of our environment variables.
 
   pifstream proc("/proc/self/environ");
   if (proc.fail()) {
@@ -561,17 +521,15 @@ read_environment_variables() {
 #endif // PREREAD_ENVIRONMENT
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::read_args
-//       Access: Private
-//  Description: Reads all the command-line arguments and the name of
-//               the binary file, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads all the command-line arguments and the name of the binary file, if
+ * possible.
+ */
 void ExecutionEnvironment::
 read_args() {
 #ifndef ANDROID
-  // First, we need to fill in _dtool_name.  This contains
-  // the full path to the p3dtool library.
+  // First, we need to fill in _dtool_name.  This contains the full path to
+  // the p3dtool library.
 
 #ifdef WIN32_VC
 #ifdef _DEBUG
@@ -592,7 +550,7 @@ read_args() {
 #endif
 
 #if defined(__APPLE__)
-  // And on OSX we don't have /proc/self/maps, but some _dyld_* functions.
+  // And on OSX we don't have procselfmaps, but some _dyld_* functions.
 
   if (_dtool_name.empty()) {
     uint32_t ic = _dyld_image_count();
@@ -648,7 +606,7 @@ read_args() {
 #endif
 
 #if defined(HAVE_PROC_SELF_MAPS) || defined(HAVE_PROC_CURPROC_MAP)
-  // Some operating systems provide a file in the /proc filesystem.
+  // Some operating systems provide a file in the proc filesystem.
 
   if (_dtool_name.empty()) {
 #ifdef HAVE_PROC_CURPROC_MAP
@@ -671,8 +629,8 @@ read_args() {
   }
 #endif
 
-  // Now, we need to fill in _binary_name.  This contains
-  // the full path to the currently running executable.
+  // Now, we need to fill in _binary_name.  This contains the full path to the
+  // currently running executable.
 
 #ifdef WIN32_VC
   if (_binary_name.empty()) {
@@ -716,8 +674,8 @@ read_args() {
 #endif
 
 #if defined(HAVE_PROC_SELF_EXE) || defined(HAVE_PROC_CURPROC_FILE)
-  // Some operating systems provide a symbolic link to the executable
-  // in the /proc filesystem.  Use readlink to resolve that link.
+  // Some operating systems provide a symbolic link to the executable in the
+  // proc filesystem.  Use readlink to resolve that link.
 
   if (_binary_name.empty()) {
     char readlinkbuf [PATH_MAX];
@@ -733,13 +691,13 @@ read_args() {
   }
 #endif
 
-  // Next we need to fill in _args, which is a vector containing
-  // the command-line arguments that the executable was invoked with.
+  // Next we need to fill in _args, which is a vector containing the command-
+  // line arguments that the executable was invoked with.
 
 #if defined(WIN32_VC)
 
-  // We cannot rely on __argv when Python is linked in Unicode mode.
-  // Instead, let's use GetCommandLine.
+  // We cannot rely on __argv when Python is linked in Unicode mode.  Instead,
+  // let's use GetCommandLine.
 
   LPWSTR cmdline = GetCommandLineW();
   int argc = 0;
@@ -792,8 +750,8 @@ read_args() {
 #elif defined(HAVE_GLOBAL_ARGV)
   int argc = GLOBAL_ARGC;
 
-  // On Windows, __argv can be NULL when the main entry point is
-  // compiled in Unicode mode (as is the case with Python 3)
+  // On Windows, __argv can be NULL when the main entry point is compiled in
+  // Unicode mode (as is the case with Python 3)
   if (GLOBAL_ARGV != NULL) {
     if (_binary_name.empty() && argc > 0) {
       _binary_name = GLOBAL_ARGV[0];
@@ -806,11 +764,10 @@ read_args() {
   }
 
 #elif defined(HAVE_PROC_SELF_CMDLINE) || defined(HAVE_PROC_CURPROC_CMDLINE)
-  // In Linux, and possibly in other systems as well, we might not be
-  // able to use the global ARGC/ARGV variables at static init time.
-  // However, we may be lucky and have a file called
-  // /proc/self/cmdline that may be read to determine all of our
-  // command-line arguments.
+  // In Linux, and possibly in other systems as well, we might not be able to
+  // use the global ARGCARGV variables at static init time.  However, we may
+  // be lucky and have a file called procselfcmdline that may be read to
+  // determine all of our command-line arguments.
 
 #ifdef HAVE_PROC_CURPROC_CMDLINE
   pifstream proc("/proc/curproc/cmdline");

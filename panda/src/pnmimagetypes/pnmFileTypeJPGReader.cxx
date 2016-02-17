@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeJPGReader.cxx
-// Created by:  mike (19Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeJPGReader.cxx
+ * @author mike
+ * @date 2000-06-19
+ */
 
 #include "pnmFileTypeJPG.h"
 
@@ -19,11 +18,8 @@
 #include "config_pnmimagetypes.h"
 #include "thread.h"
 
-//
-// The following bit of code, for setting up jpeg_istream_src(), was
-// lifted from jpeglib, and modified to work with istream instead of
-// stdio.
-//
+// The following bit of code, for setting up jpeg_istream_src(), was lifted
+// from jpeglib, and modified to work with istream instead of stdio.
 
 /*
  * jdatasrc.c
@@ -243,15 +239,11 @@ jpeg_istream_src (j_decompress_ptr cinfo, istream * infile)
 
 
 
-//
 // The rest of the code in this file is new to Panda.
-//
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeJPG::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeJPG::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -302,18 +294,14 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   _cinfo.scale_denom = 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeJPG::Reader::prepare_read
-//       Access: Public, Virtual
-//  Description: This method will be called before read_data() or
-//               read_row() is called.  It instructs the reader to
-//               initialize its data structures as necessary to
-//               actually perform the read operation.  
-//
-//               After this call, _x_size and _y_size should reflect
-//               the actual size that will be filled by read_data()
-//               (as possibly modified by set_read_size()).
-////////////////////////////////////////////////////////////////////
+/**
+ * This method will be called before read_data() or read_row() is called.  It
+ * instructs the reader to initialize its data structures as necessary to
+ * actually perform the read operation.
+ *
+ * After this call, _x_size and _y_size should reflect the actual size that
+ * will be filled by read_data() (as possibly modified by set_read_size()).
+ */
 void PNMFileTypeJPG::Reader::
 prepare_read() {
   if (_has_read_size && _read_x_size != 0 && _read_y_size != 0) {
@@ -335,11 +323,9 @@ prepare_read() {
   _y_size = (int)_cinfo.output_height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeJPG::Reader::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeJPG::Reader::
 ~Reader() {
   if (_is_valid) {
@@ -348,19 +334,15 @@ PNMFileTypeJPG::Reader::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeJPG::Reader::read_data
-//       Access: Public, Virtual
-//  Description: Reads in an entire image all at once, storing it in
-//               the pre-allocated _x_size * _y_size array and alpha
-//               pointers.  (If the image type has no alpha channel,
-//               alpha is ignored.)  Returns the number of rows
-//               correctly read.
-//
-//               Derived classes need not override this if they
-//               instead provide supports_read_row() and read_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in an entire image all at once, storing it in the pre-allocated
+ * _x_size * _y_size array and alpha pointers.  (If the image type has no
+ * alpha channel, alpha is ignored.)  Returns the number of rows correctly
+ * read.
+ *
+ * Derived classes need not override this if they instead provide
+ * supports_read_row() and read_row(), below.
+ */
 int PNMFileTypeJPG::Reader::
 read_data(xel *array, xelval *) {
   if (!_is_valid) {
@@ -398,7 +380,7 @@ read_data(xel *array, xelval *) {
      */
     jpeg_read_scanlines(&_cinfo, buffer, 1);
     /* Assume put_scanline_someplace wants a pointer and sample count. */
-    //put_scanline_someplace(buffer[0], row_stride);
+    // put_scanline_someplace(buffer[0], row_stride);
     JSAMPROW bufptr = buffer[0];
     for (int i = 0; i < row_stride; i += _cinfo.output_components) {
       if (_cinfo.output_components == 1) {

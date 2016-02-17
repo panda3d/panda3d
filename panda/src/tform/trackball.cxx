@@ -1,16 +1,15 @@
-// Filename: trackball.cxx
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file trackball.cxx
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #include "trackball.h"
 #include "buttonEvent.h"
@@ -31,11 +30,9 @@ TypeHandle Trackball::_type_handle;
 #define B2_MASK 0x02
 #define B3_MASK 0x04
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Trackball::
 Trackball(const string &name) :
   MouseInterfaceNode(name)
@@ -66,28 +63,24 @@ Trackball(const string &name) :
   watch_button(MouseButton::three());
 
   if (trackball_use_alt_keys) {
-    // In OSX mode, we need to use the command and option key in
-    // conjunction with the (one) mouse button.
+    // In OSX mode, we need to use the command and option key in conjunction
+    // with the (one) mouse button.
     watch_button(KeyboardButton::control());
     watch_button(KeyboardButton::meta());
     watch_button(KeyboardButton::alt());
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Trackball::
 ~Trackball() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::reset
-//       Access: Published
-//  Description: Reinitializes all transforms to identity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reinitializes all transforms to identity.
+ */
 void Trackball::
 reset() {
   _rotation = LMatrix4::ident_mat();
@@ -96,36 +89,29 @@ reset() {
   _mat = LMatrix4::ident_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_forward_scale
-//       Access: Published
-//  Description: Returns the scale factor applied to forward and
-//               backward motion.  See set_forward_scale().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scale factor applied to forward and backward motion.  See
+ * set_forward_scale().
+ */
 PN_stdfloat Trackball::
 get_forward_scale() const {
   return _fwdscale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_forward_scale
-//       Access: Published
-//  Description: Changes the scale factor applied to forward and
-//               backward motion.  The larger this number, the faster
-//               the model will move in response to dollying in and
-//               out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the scale factor applied to forward and backward motion.  The
+ * larger this number, the faster the model will move in response to dollying
+ * in and out.
+ */
 void Trackball::
 set_forward_scale(PN_stdfloat fwdscale) {
   _fwdscale = fwdscale;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_pos
-//       Access: Published
-//  Description: Return the offset from the center of rotation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the offset from the center of rotation.
+ */
 const LPoint3 &Trackball::
 get_pos() const {
   return _translation;
@@ -147,11 +133,9 @@ get_z() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_pos
-//       Access: Published
-//  Description: Directly set the offset from the rotational origin.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly set the offset from the rotational origin.
+ */
 void Trackball::
 set_pos(const LVecBase3 &vec) {
   _translation = vec;
@@ -183,11 +167,9 @@ set_z(PN_stdfloat z) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_hpr
-//       Access: Published
-//  Description: Return the trackball's orientation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the trackball's orientation.
+ */
 LVecBase3 Trackball::
 get_hpr() const {
   LVecBase3 scale, shear, hpr, translate;
@@ -217,11 +199,9 @@ get_r() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_hpr
-//       Access: Published
-//  Description: Directly set the mover's orientation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly set the mover's orientation.
+ */
 void Trackball::
 set_hpr(const LVecBase3 &hpr) {
   LVecBase3 scale, shear, old_hpr, translate;
@@ -267,13 +247,10 @@ set_r(PN_stdfloat r) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::reset_origin_here
-//       Access: Published
-//  Description: Reposition the center of rotation to coincide with
-//               the current translation offset.  Future rotations
-//               will be about the current origin.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reposition the center of rotation to coincide with the current translation
+ * offset.  Future rotations will be about the current origin.
+ */
 void Trackball::
 reset_origin_here() {
   recompute();
@@ -282,31 +259,25 @@ reset_origin_here() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::move_origin
-//       Access: Published
-//  Description: Moves the center of rotation by the given amount.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the center of rotation by the given amount.
+ */
 void Trackball::
 move_origin(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _rotation = LMatrix4::translate_mat(LVecBase3(x, y, z)) *  _rotation;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_origin
-//       Access: Published
-//  Description: Returns the current center of rotation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current center of rotation.
+ */
 LPoint3 Trackball::
 get_origin() const {
   return _rotation.get_row3(3);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_origin
-//       Access: Published
-//  Description: Directly sets the center of rotation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly sets the center of rotation.
+ */
 void Trackball::
 set_origin(const LVecBase3 &origin) {
   _rotation.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
@@ -314,115 +285,89 @@ set_origin(const LVecBase3 &origin) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_invert
-//       Access: Published
-//  Description: Sets the invert flag.  When this is set, the inverse
-//               matrix is generated, suitable for joining to a
-//               camera, instead of parenting the scene under it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the invert flag.  When this is set, the inverse matrix is generated,
+ * suitable for joining to a camera, instead of parenting the scene under it.
+ */
 void Trackball::
 set_invert(bool flag) {
   _invert = flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_invert
-//       Access: Published
-//  Description: Returns the invert flag.  When this is set, the
-//               inverse matrix is generated, suitable for joining to
-//               a camera, instead of parenting the scene under it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the invert flag.  When this is set, the inverse matrix is
+ * generated, suitable for joining to a camera, instead of parenting the scene
+ * under it.
+ */
 bool Trackball::
 get_invert() const {
   return _invert;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_control_mode
-//       Access: Published
-//  Description: Sets the control mode.  Normally this is CM_default,
-//               which means each mouse button serves its normal
-//               function.  When it is CM_truck, CM_pan, CM_dolly, or
-//               CM_roll, all of the mouse buttons serve the indicated
-//               function instead of their normal function.  This can
-//               be used in conjunction with some external way of
-//               changing modes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the control mode.  Normally this is CM_default, which means each mouse
+ * button serves its normal function.  When it is CM_truck, CM_pan, CM_dolly,
+ * or CM_roll, all of the mouse buttons serve the indicated function instead
+ * of their normal function.  This can be used in conjunction with some
+ * external way of changing modes.
+ */
 void Trackball::
 set_control_mode(ControlMode control_mode) {
   _control_mode = control_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_control_mode
-//       Access: Published
-//  Description: Returns the control mode.  See set_control_mode().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the control mode.  See set_control_mode().
+ */
 Trackball::ControlMode Trackball::
 get_control_mode() const {
   return _control_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_rel_to
-//       Access: Published
-//  Description: Sets the NodePath that all trackball manipulations
-//               are to be assumed to be relative to.  For instance,
-//               set your camera node here to make the trackball
-//               motion camera relative.  The default is the empty
-//               path, which means trackball motion is in global
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the NodePath that all trackball manipulations are to be assumed to be
+ * relative to.  For instance, set your camera node here to make the trackball
+ * motion camera relative.  The default is the empty path, which means
+ * trackball motion is in global space.
+ */
 void Trackball::
 set_rel_to(const NodePath &rel_to) {
   _rel_to = rel_to;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_rel_to
-//       Access: Published
-//  Description: Returns the NodePath that all trackball manipulations
-//               are relative to, or the empty path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the NodePath that all trackball manipulations are relative to, or
+ * the empty path.
+ */
 const NodePath &Trackball::
 get_rel_to() const {
   return _rel_to;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_coordinate_system
-//       Access: Published
-//  Description: Sets the coordinate system of the Trackball.
-//               Normally, this is the default coordinate system.
-//               This changes the axes the Trackball manipulates so
-//               that the user interface remains consistent across
-//               different coordinate systems.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the coordinate system of the Trackball.  Normally, this is the default
+ * coordinate system.  This changes the axes the Trackball manipulates so that
+ * the user interface remains consistent across different coordinate systems.
+ */
 void Trackball::
 set_coordinate_system(CoordinateSystem cs) {
   _cs = cs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_coordinate_system
-//       Access: Published
-//  Description: Returns the coordinate system of the Trackball.
-//               See set_coordinate_system().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the coordinate system of the Trackball.  See
+ * set_coordinate_system().
+ */
 CoordinateSystem Trackball::
 get_coordinate_system() const {
   return _cs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::set_mat
-//       Access: Published
-//  Description: Stores the indicated transform in the trackball.
-//               This is a transform in global space, regardless of
-//               the rel_to node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated transform in the trackball.  This is a transform in
+ * global space, regardless of the rel_to node.
+ */
 void Trackball::
 set_mat(const LMatrix4 &mat) {
   _orig = mat;
@@ -436,37 +381,28 @@ set_mat(const LMatrix4 &mat) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_mat
-//       Access: Published
-//  Description: Returns the matrix represented by the trackball
-//               rotation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the matrix represented by the trackball rotation.
+ */
 const LMatrix4 &Trackball::
 get_mat() const {
   return _orig;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::get_trans_mat
-//       Access: Published
-//  Description: Returns the actual transform that will be applied to
-//               the scene graph.  This is the same as get_mat(),
-//               unless invert is in effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the actual transform that will be applied to the scene graph.  This
+ * is the same as get_mat(), unless invert is in effect.
+ */
 const LMatrix4 &Trackball::
 get_trans_mat() const {
   return _mat;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::apply
-//       Access: Private
-//  Description: Applies the operation indicated by the user's mouse
-//               motion to the current state.  Returns the matrix
-//               indicating the new state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the operation indicated by the user's mouse motion to the current
+ * state.  Returns the matrix indicating the new state.
+ */
 void Trackball::
 apply(double x, double y, int button) {
   if (button && !_rel_to.is_empty()) {
@@ -476,9 +412,8 @@ apply(double x, double y, int button) {
   }
 
   if (button == B1_MASK && _control_mode != CM_default) {
-    // We have a control mode set; this may change the meaning of
-    // button 1.  Remap button to match the current control mode
-    // setting.
+    // We have a control mode set; this may change the meaning of button 1.
+    // Remap button to match the current control mode setting.
     switch (_control_mode) {
     case CM_truck:
       button = B1_MASK;
@@ -510,26 +445,24 @@ apply(double x, double y, int button) {
       y * _fwdscale * LVector3::down(_cs);
 
   } else if (button == (B2_MASK | B3_MASK)) {
-    // Buttons 2 + 3: rotate about the vector perpendicular to the
-    // screen.
+    // Buttons 2 + 3: rotate about the vector perpendicular to the screen.
 
     _rotation *=
       LMatrix4::rotate_mat_normaxis((x - y) * _rotscale,
                             LVector3::forward(_cs), _cs);
 
   } else if ((button == B2_MASK) || (button == (B1_MASK | B3_MASK))) {
-    // Button 2, or buttons 1 + 3: rotate about the right and up
-    // vectors.  (We alternately define this as buttons 1 + 3, to
-    // support two-button mice.)
+    // Button 2, or buttons 1 + 3: rotate about the right and up vectors.  (We
+    // alternately define this as buttons 1 + 3, to support two-button mice.)
 
     _rotation *=
       LMatrix4::rotate_mat_normaxis(x * _rotscale, LVector3::up(_cs), _cs) *
       LMatrix4::rotate_mat_normaxis(y * _rotscale, LVector3::right(_cs), _cs);
 
   } else if ((button == B3_MASK) || (button == (B1_MASK | B2_MASK))) {
-    // Button 3, or buttons 1 + 2: dolly in and out along the forward
-    // vector.  (We alternately define this as buttons 1 + 2, to
-    // support two-button mice.)
+    // Button 3, or buttons 1 + 2: dolly in and out along the forward vector.
+    // (We alternately define this as buttons 1 + 2, to support two-button
+    // mice.)
     _translation -= y * _fwdscale * LVector3::forward(_cs);
   }
 
@@ -539,12 +472,10 @@ apply(double x, double y, int button) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::reextract
-//       Access: Private
-//  Description: Given a correctly computed _orig matrix, rederive the
-//               translation and rotation elements.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a correctly computed _orig matrix, rederive the translation and
+ * rotation elements.
+ */
 void Trackball::
 reextract() {
   LMatrix4 m = _orig;
@@ -558,12 +489,10 @@ reextract() {
   _rotation.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::recompute
-//       Access: Private
-//  Description: Rebuilds the matrix according to the stored rotation
-//               and translation components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the matrix according to the stored rotation and translation
+ * components.
+ */
 void Trackball::
 recompute() {
   _orig = _rotation * LMatrix4::translate_mat(_translation);
@@ -581,19 +510,14 @@ recompute() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Trackball::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output
+ * parameters.  The input parameters may be accessed with the index numbers
+ * returned by the define_input() calls that were made earlier (presumably in
+ * the constructor); likewise, the output parameters should be set with the
+ * index numbers returned by the define_output() calls.
+ */
 void Trackball::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
@@ -609,7 +533,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     PN_stdfloat this_x = p[0];
     PN_stdfloat this_y = p[1];
     int this_button = 0;
-    
+
     if (is_down(MouseButton::one())) {
       if (is_down(KeyboardButton::alt())) {
         // B1 + alt (option) = B2.
@@ -633,14 +557,14 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     if (is_down(MouseButton::three())) {
       this_button |= B3_MASK;
     }
-    
+
     PN_stdfloat x = this_x - _lastx;
     PN_stdfloat y = this_y - _lasty;
 
     if (this_button == _last_button) {
       apply(x, y, this_button);
     }
-    
+
     _last_button = this_button;
     _lastx = this_x;
     _lasty = this_y;

@@ -1,16 +1,15 @@
-// Filename: softNodeTree.h
-// Created by:  masad (03Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file softNodeTree.h
+ * @author masad
+ * @date 2003-10-03
+ */
 
 #ifndef SOFTNODETREE_H
 #define SOFTNODETREE_H
@@ -27,18 +26,17 @@ class EggData;
 class EggGroupNode;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftNodeTree
-// Description : Describes a complete tree of soft nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a complete tree of soft nodes for conversion.
+ */
 class SoftNodeTree {
 public:
   SoftNodeTree();
   SoftNodeDesc *build_node(SAA_Scene *scene, SAA_Elem *model);
   bool build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database);
   void handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, const char *node_name);
-  //  bool build_selected_hierarchy(SAA_Scene *s, SAA_Database *d, char *scene_name);
+  // bool build_selected_hierarchy(SAA_Scene *s, SAA_Database *d, char
+  // *scene_name);
 
   int get_num_nodes() const;
   SoftNodeDesc *get_node(int n) const;
@@ -60,7 +58,7 @@ public:
   PN_stdfloat _fps;
   int _use_prefix;
   char *_search_prefix;
-  
+
 
 private:
 

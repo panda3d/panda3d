@@ -1,16 +1,15 @@
-// Filename: mainThread.h
-// Created by:  drose (15Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mainThread.h
+ * @author drose
+ * @date 2006-01-15
+ */
 
 #ifndef MAINTHREAD_H
 #define MAINTHREAD_H
@@ -18,12 +17,10 @@
 #include "pandabase.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MainThread
-// Description : The special "main thread" class.  There is one
-//               instance of these in the world, and it is returned by
-//               Thread::get_main_thread().
-////////////////////////////////////////////////////////////////////
+/**
+ * The special "main thread" class.  There is one instance of these in the
+ * world, and it is returned by Thread::get_main_thread().
+ */
 class EXPCL_PANDA_PIPELINE MainThread : public Thread {
 private:
   MainThread();

@@ -1,24 +1,19 @@
-// Filename: cullableObject.I
-// Created by:  drose (04Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullableObject.I
+ * @author drose
+ * @date 2002-03-04
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::Constructor
-//       Access: Public
-//  Description: Creates an empty CullableObject whose pointers can be
-//               filled in later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an empty CullableObject whose pointers can be filled in later.
+ */
 INLINE CullableObject::
 CullableObject() {
 #ifdef DO_MEMORY_USAGE
@@ -26,12 +21,10 @@ CullableObject() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::Constructor
-//       Access: Public
-//  Description: Creates a CullableObject based the indicated geom,
-//               with the indicated render state and transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a CullableObject based the indicated geom, with the indicated
+ * render state and transform.
+ */
 INLINE CullableObject::
 CullableObject(const Geom *geom, const RenderState *state,
                const TransformState *internal_transform) :
@@ -44,11 +37,9 @@ CullableObject(const Geom *geom, const RenderState *state,
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::Copy Constructor
-//       Access: Public
-//  Description: Copies the CullableObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the CullableObject.
+ */
 INLINE CullableObject::
 CullableObject(const CullableObject &copy) :
   _geom(copy._geom),
@@ -62,11 +53,9 @@ CullableObject(const CullableObject &copy) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::Copy Assignment Operator
-//       Access: Public
-//  Description: Copies the CullableObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the CullableObject.
+ */
 INLINE void CullableObject::
 operator = (const CullableObject &copy) {
   _geom = copy._geom;
@@ -77,13 +66,10 @@ operator = (const CullableObject &copy) {
   _draw_callback = copy._draw_callback;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::draw
-//       Access: Public
-//  Description: Draws the cullable object on the GSG immediately, in
-//               the GSG's current state.  This should only be called
-//               from the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the cullable object on the GSG immediately, in the GSG's current
+ * state.  This should only be called from the draw thread.
+ */
 INLINE void CullableObject::
 draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
   if (_draw_callback != (CallbackObject *)NULL) {
@@ -104,14 +90,11 @@ draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::request_resident
-//       Access: Public
-//  Description: Returns true if all the data necessary to render this
-//               object is currently resident in memory.  If this
-//               returns false, the data will be brought back into
-//               memory shortly; try again later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all the data necessary to render this object is currently
+ * resident in memory.  If this returns false, the data will be brought back
+ * into memory shortly; try again later.
+ */
 INLINE bool CullableObject::
 request_resident() const {
   bool resident = true;
@@ -125,67 +108,54 @@ request_resident() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::set_draw_callback
-//       Access: Public
-//  Description: Specifies a CallbackObject that will be responsible
-//               for drawing this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a CallbackObject that will be responsible for drawing this
+ * object.
+ */
 INLINE void CullableObject::
 set_draw_callback(CallbackObject *draw_callback) {
   _draw_callback = draw_callback;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::flush_level
-//       Access: Public, Static
-//  Description: Flushes the PStatCollectors used during traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flushes the PStatCollectors used during traversal.
+ */
 INLINE void CullableObject::
 flush_level() {
   _sw_sprites_pcollector.flush_level();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::draw_inline
-//       Access: Private
-//  Description: Draws the cullable object on the GSG immediately, in
-//               the GSG's current state.  This should only be called
-//               from the draw thread.  Assumes the GSG has already
-//               been set to the appropriate state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the cullable object on the GSG immediately, in the GSG's current
+ * state.  This should only be called from the draw thread.  Assumes the GSG
+ * has already been set to the appropriate state.
+ */
 INLINE void CullableObject::
 draw_inline(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
   _geom->draw(gsg, _munger, _munged_data, force, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::SortPoints::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE CullableObject::SortPoints::
 SortPoints(const CullableObject::PointData *array) :
   _array(array)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::SortPoints::operator ()
-//       Access: Public
-//  Description: Orders the points from back-to-front for correct
-//               transparency sorting in munge_points_to_quads
-////////////////////////////////////////////////////////////////////
+/**
+ * Orders the points from back-to-front for correct transparency sorting in
+ * munge_points_to_quads
+ */
 INLINE bool CullableObject::SortPoints::
 operator () (unsigned short a, unsigned short b) const {
   return _array[a]._dist > _array[b]._dist;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::SourceFormat::operator <
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool CullableObject::SourceFormat::
 operator < (const CullableObject::SourceFormat &other) const {
   if (_format != other._format) {

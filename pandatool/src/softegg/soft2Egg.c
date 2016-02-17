@@ -1,16 +1,15 @@
-// Filename: soft2Egg.c
-// Created by:  masad (26Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file soft2Egg.c
+ * @author masad
+ * @date 2003-09-26
+ */
 
 #include <SAA.h>
 
@@ -46,7 +45,7 @@ int init_soft2egg(int, char **);
 
 static const int    TEX_PER_MAT = 1;
 static FILE            *outStream  = stdout;
-//static FILE        *outStream  = stderr;
+// static FILE        *outStream  = stderr;
 
 class soft2egg : public EggBase
 {
@@ -200,13 +199,10 @@ class soft2egg : public EggBase
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Help
-//       Access: Public, Virtual
-//  Description: Displays the "what is this program" message, along
-//               with the usage message.  Should be overridden in base
-//               classes to describe the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the "what is this program" message, along with the usage message.
+ * Should be overridden in base classes to describe the current program.
+ */
 void soft2egg::
 Help()
 {
@@ -217,11 +213,9 @@ Help()
     Usage();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Usage
-//       Access: Public, Virtual
-//  Description: Displays the usage message.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the usage message.
+ */
 void soft2egg::
 Usage() {
   cerr << "\nUsage:\n"
@@ -234,20 +228,17 @@ Usage() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShowOpts
-//       Access: Public, Virtual
-//  Description: Displays the valid options.  Should be extended in
-//               base classes to show additional options relevant to
-//               the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the valid options.  Should be extended in base classes to show
+ * additional options relevant to the current program.
+ */
 void soft2egg::
 ShowOpts()
 {
     cerr <<
     "  -r <path>  - Used to provide soft with the resource\n"
     "               Defaults to 'c:/Softimage/SOFT_3.9.2/3D/test'.\n"
-      //    "               Defaults to '/ful/ufs/soft371_mips2/3D/rsrc'.\n"
+      // "               Defaults to 'fulufssoft371_mips23Drsrc'.\n"
     "  -d <path>  - Database path.\n"
     "  -s <scene> - Indicates that a scene will be converted.\n"
     "  -m <model> - Indicates that a model will be converted.\n"
@@ -279,11 +270,9 @@ ShowOpts()
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleGetopts
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 boolean soft2egg::
 HandleGetopts(char flag, char *optarg, int &optind, int argc, char **argv)
 {
@@ -407,8 +396,7 @@ HandleGetopts(char flag, char *optarg, int &optind, int argc, char **argv)
         break;
 
     case 'k':    // Enable soft skinning
-        //make_soft = TRUE;
-        //fprintf( outStream, "enabling soft skinning\n" );
+        // make_soft = TRUE; fprintf( outStream, "enabling soft skinning\n" );
         fprintf( outStream, "-k flag no longer necessary\n" );
         break;
 
@@ -500,11 +488,9 @@ HandleGetopts(char flag, char *optarg, int &optind, int argc, char **argv)
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: isNum
-//       Access: Public, Virtual
-//  Description: Take a float and make sure it is of the body.
-////////////////////////////////////////////////////////////////////
+/**
+ * Take a float and make sure it is of the body.
+ */
 int soft2egg::
 isNum( float num )
 {
@@ -512,12 +498,10 @@ isNum( float num )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetRootName
-//       Access: Public
-//  Description: Given a string, return a copy of the string up to
-//               the first occurrence of '-'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return a copy of the string up to the first occurrence of
+ * '-'.
+ */
 char *soft2egg::
 GetRootName( const char *name )
 {
@@ -544,12 +528,9 @@ GetRootName( const char *name )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: RemovePathName
-//       Access: Public
-//  Description: Given a string, return a copy of the string after
-//               the last occurence of '/
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return a copy of the string after the last occurence of '
+ */
 char *soft2egg::
 RemovePathName( const char *name )
 {
@@ -574,13 +555,10 @@ RemovePathName( const char *name )
     return ( (char *)name );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetSliderName
-//       Access: Public
-//  Description: Given a string, return that part of the string after
-//               the first occurence of '-' and before the last
-//               occurance of '.'
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return that part of the string after the first occurence of
+ * '-' and before the last occurance of '.'
+ */
 char *soft2egg::
 GetSliderName( const char *name )
 {
@@ -618,12 +596,9 @@ GetSliderName( const char *name )
     return( (char *)name );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetName
-//       Access: Public
-//  Description: Given an element, return a copy of the element's
-//               name WITHOUT prefix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an element, return a copy of the element's name WITHOUT prefix.
+ */
 char *soft2egg::
 GetName( SAA_Scene *scene, SAA_Elem *element )
 {
@@ -638,12 +613,9 @@ GetName( SAA_Scene *scene, SAA_Elem *element )
     return name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetFullName
-//       Access: Public
-//  Description: Given an element, return a copy of the element's
-//               name complete with prefix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an element, return a copy of the element's name complete with prefix.
+ */
 char *soft2egg::
 GetFullName( SAA_Scene *scene, SAA_Elem *element )
 {
@@ -668,18 +640,15 @@ GetFullName( SAA_Scene *scene, SAA_Elem *element )
     // add 'em together
     fullNameStrm << prefix << "-" << name << ends;
 
-    //free( name );
-    //free( prefix );
+    // free( name ); free( prefix );
 
     return fullNameStrm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetModelNoteInfo
-//       Access: Public
-//  Description: Given an element, return a string containing the
-//               contents of its MODEL NOTE entry
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an element, return a string containing the contents of its MODEL NOTE
+ * entry
+ */
 char *soft2egg::
 GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model )
 {
@@ -700,7 +669,7 @@ GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model )
         SAA_elementGetUserData( scene, model, "MNOT", size,
             &bigEndian, (void *)modelNote );
 
-        //strip off newline, if present
+        // strip off newline, if present
         char *eol = strchr( modelNote, '\n' );
         if ( eol != NULL)
             *eol = '\0';
@@ -716,12 +685,10 @@ GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeTableName
-//       Access: Public
-//  Description: Given a string, and a number, return a new string
-//               consisting of "string.number".
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, and a number, return a new string consisting of
+ * "string.number".
+ */
 char *soft2egg::
 MakeTableName( const char *name, int number )
 {
@@ -731,12 +698,10 @@ MakeTableName( const char *name, int number )
     return namestrm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindModelByName
-//       Access: Public
-//  Description: Given a string, find the model in the scene
-//               whose name corresponds to the given string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, find the model in the scene whose name corresponds to the
+ * given string.
+ */
 SAA_Elem *soft2egg::
 FindModelByName( char *name, SAA_Scene *scene, SAA_Elem *models,
     int numModels )
@@ -766,12 +731,9 @@ FindModelByName( char *name, SAA_Scene *scene, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DepointellizeName
-//       Access: Public
-//  Description: Given a string, return the string up to the first
-//                 period.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return the string up to the first period.
+ */
 char *soft2egg::
 DepointellizeName( char *name )
 {
@@ -789,13 +751,10 @@ DepointellizeName( char *name )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConvertTexture
-//       Access: Public
-//  Description: Given a string, return a copy of the string without
-//               the leading file path, and make an rgb file of the
-//               same name in the tex_path directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a string, return a copy of the string without the leading file path,
+ * and make an rgb file of the same name in the tex_path directory.
+ */
 char *soft2egg::
 ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
 {
@@ -811,8 +770,8 @@ ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
         SAA_texture2DGetPicName( scene, texture, fileNameLen, fileName );
   }
 
-  // make sure we are not being passed a NULL image, an empty image
-  // string or the default image created by egg2soft
+  // make sure we are not being passed a NULL image, an empty image string or
+  // the default image created by egg2soft
   if ( (fileName != NULL) && strlen( fileName ) && strcmp( fileName,
         "/fat/people/gregw/new_test/PICTURES/default") &&
                                 ( strstr( fileName, "noIcon" ) == NULL) )
@@ -878,7 +837,7 @@ ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
 
                 system( command );
 
-                //free( command );
+                // free( command );
             }
             else
                 if ( verbose >=1 )
@@ -899,7 +858,7 @@ ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
             fileNameExt );
     }
 
-    //free( fileNameExt );
+    // free( fileNameExt );
 
     if (tex_path)
         return( texNamePath );
@@ -913,13 +872,11 @@ ConvertTexture( SAA_Scene *scene, SAA_Elem *texture )
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindClosestTriVert
-//       Access: Public
-//  Description: Given an egg vertex pool, map each vertex therein to
-//               a vertex within an array of SAA model vertices of
-//               size numVert. Mapping is done by closest proximity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an egg vertex pool, map each vertex therein to a vertex within an
+ * array of SAA model vertices of size numVert.  Mapping is done by closest
+ * proximity.
+ */
 int *soft2egg::
 FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert )
 {
@@ -970,13 +927,11 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeIndexMap
-//       Access: Public
-//  Description: Given an array of indices that is a map from one
-//               set of vertices to another, return an array that
-//               performs the reverse mapping of the indices array
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an array of indices that is a map from one set of vertices to
+ * another, return an array that performs the reverse mapping of the indices
+ * array
+ */
 int *soft2egg::
 MakeIndexMap( int *indices, int numIndices, int mapSize )
 {
@@ -1018,12 +973,9 @@ MakeIndexMap( int *indices, int numIndices, int mapSize )
     return( map );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: findShapeVert
-//       Access: Public
-//  Description: given a vertex, find its corresponding shape vertex
-//               and return its index.
-////////////////////////////////////////////////////////////////////
+/**
+ * given a vertex, find its corresponding shape vertex and return its index.
+ */
 int     soft2egg::
 findShapeVert( SAA_DVector vertex, SAA_DVector *vertices, int numVert )
 {
@@ -1052,11 +1004,9 @@ findShapeVert( SAA_DVector vertex, SAA_DVector *vertices, int numVert )
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoadSoft
-//       Access: Public
-//  Description: Open the SI database and grab the scene & model info
-////////////////////////////////////////////////////////////////////
+/**
+ * Open the SI database and grab the scene & model info
+ */
 void soft2egg::
 LoadSoft()
 {
@@ -1131,7 +1081,7 @@ LoadSoft()
                 float time;
 
                 fprintf( outStream, "setting Scene to frame %d...\n", pose_frame );
-                //SAA_sceneSetPlayCtrlCurrentFrame( &scene, pose_frame );
+                // SAA_sceneSetPlayCtrlCurrentFrame( &scene, pose_frame );
                 SAA_frame2Seconds( &scene, pose_frame, &time );
                 SAA_updatelistEvalScene( &scene, time );
                 sginap( 100 );
@@ -1199,11 +1149,9 @@ LoadSoft()
 
             if ( make_poly || make_nurbs )
             {
-                // generate soft skinning assignments if desired
-                //
-                //disabled 1/1/99 to streamline joint assignments.
-                // all joint assignments now done here. Hard & Soft.
-                //if ( make_soft)
+                // generate soft skinning assignments if desired disabled 1199
+                // to streamline joint assignments.  all joint assignments now
+                // done here.  Hard & Soft.  if ( make_soft)
                 {
                     char        *name;
                     char        *fullname;
@@ -1214,8 +1162,8 @@ LoadSoft()
                     {
                         SAA_modelIsSkeleton( &scene, &models[i], &isSkeleton );
 
-                        // get fullname for splitting files, but
-                        // only use it in file if requested
+                        // get fullname for splitting files, but only use it
+                        // in file if requested
                         fullname = GetFullName( &scene, &models[i] );
                         if ( use_prefix )
                             name = fullname;
@@ -1231,15 +1179,15 @@ LoadSoft()
                                     numModels, name );
                         }
 
-                        //free( name );
+                        // free( name );
                     }
 
-                    // make sure all vertices were assigned
-                    // via soft skinning - if not hard assign them
+                    // make sure all vertices were assigned via soft skinning
+                    // - if not hard assign them
                     for ( i = 0; i < numModels; i++ )
                     {
-                        // get fullname for splitting files, but
-                        // only use it in file if requested
+                        // get fullname for splitting files, but only use it
+                        // in file if requested
                         fullname = GetFullName( &scene, &models[i] );
                         if ( use_prefix )
                             name = fullname;
@@ -1250,7 +1198,7 @@ LoadSoft()
                         if ( strstr( fullname, search_prefix ) != NULL )
                             CleanUpSoftSkin( &scene, &models[i], name );
 
-                        //free( name );
+                        // free( name );
                     }
 
                 }
@@ -1262,9 +1210,8 @@ LoadSoft()
                 // make sure all elements have unique names
                 _data.UniquifyNames();
 
-                // write out the geometry data if requested
-                //if ( make_poly || make_nurbs )
-                //{
+                // write out the geometry data if requested if ( make_poly ||
+                // make_nurbs ) {
                     eggFile << _data << "\n";
                     fprintf( outStream, "\nwriting out %s...\n", eggFileName );
                     eggFile.close();
@@ -1296,22 +1243,22 @@ LoadSoft()
                 }
 
                 int frame;
-                //int frameStep;
+                // int frameStep;
                 float time;
 
-                // get all the animation frame info if not specified
-                // on the command line
+                // get all the animation frame info if not specified on the
+                // command line
                 if (anim_start == -1000)
                     SAA_sceneGetPlayCtrlStartFrame( &scene, &anim_start );
 
                 if (anim_end == -1000)
                     SAA_sceneGetPlayCtrlEndFrame( &scene, &anim_end );
 
-                //SAA_sceneGetPlayCtrlFrameStep( &scene, &frameStep );
+                // SAA_sceneGetPlayCtrlFrameStep( &scene, &frameStep );
 
                 fprintf( outStream, "\nframeStart = %d\n", anim_start );
                 fprintf( outStream, "frameEnd = %d\n", anim_end );
-                //fprintf( outStream, "frameStep = %d\n", frameStep );
+                // fprintf( outStream, "frameStep = %d\n", frameStep );
 
                 // start at first frame and go to last
                 for ( frame = anim_start; frame <= anim_end;
@@ -1333,8 +1280,8 @@ LoadSoft()
 
                         SAA_modelIsSkeleton( &scene, &models[i], &isSkeleton );
 
-                        // get fullname for splitting files, but
-                        // only use it in file if requested
+                        // get fullname for splitting files, but only use it
+                        // in file if requested
                         fullname = GetFullName( &scene, &models[i] );
                         if ( use_prefix )
                             name = fullname;
@@ -1365,13 +1312,13 @@ LoadSoft()
                         if ( ( size != 0 ) && make_duv )
                             MakeTexAnim( &scene, &models[i], name );
 
-                        // if we have a skeleton or something that acts
-                        // like one - build anim tables
+                        // if we have a skeleton or something that acts like
+                        // one - build anim tables
                         if ( isSkeleton  ||
                             ( strstr( name, "joint") != NULL ) )
                                 MakeAnimTable( &scene, &models[i], name );
 
-                        //free( name );
+                        // free( name );
                     }
 
                     if ( verbose >= 1 )
@@ -1383,7 +1330,7 @@ LoadSoft()
                 animFile.close();
                 }
 
-                //free( models );
+                // free( models );
 
                 }
                 else
@@ -1428,12 +1375,10 @@ LoadSoft()
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeEgg
-//       Access: Public
-//  Description: Make egg geometry from a given model. This include
-//               textures, tex coords, colors, normals, and joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Make egg geometry from a given model.  This include textures, tex coords,
+ * colors, normals, and joints.
+ */
 void soft2egg::
 MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
             SAA_Scene *scene, SAA_Elem *model )
@@ -1536,8 +1481,8 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
              matrix[3][1],  matrix[3][2],  matrix[3][3] );
     }
 
-    // check to see if this is a branch we don't want to descend - this
-    // will prevent creating geometry for animation control structures
+    // check to see if this is a branch we don't want to descend - this will
+    // prevent creating geometry for animation control structures
     if ( (strstr( name, "con-" ) == NULL) &&
          (strstr( name, "con_" ) == NULL) &&
          (strstr( name, "fly_" ) == NULL) &&
@@ -1568,8 +1513,8 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
 
         char   *tableName;
 
-        // create morph table entry for each key shape
-        // (start at second shape - as first is the original geometry)
+        // create morph table entry for each key shape (start at second shape
+        // - as first is the original geometry)
         for ( i = 1; i < numShapes; i++ )
         {
             tableName = MakeTableName( name, i );
@@ -1581,15 +1526,15 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 fprintf( outStream, "created table named: '%s'\n", tableName );
         }
 
-        //free( tableName );
+        // free( tableName );
     }
 
     SAA_modelGetNodeVisibility( scene, model, &visible );
     if ( verbose >= 1 )
         fprintf( outStream, "model visibility: %d\n", visible );
 
-    // Only create egg polygon data if: the node is visible, and its not
-    // a NULL or a Joint, and we're outputing polys (or if we are outputing
+    // Only create egg polygon data if: the node is visible, and its not a
+    // NULL or a Joint, and we're outputing polys (or if we are outputing
     // NURBS and the model is a poly mesh or a face)
     if ( visible &&
          (type != SAA_MNILL) &&
@@ -1628,10 +1573,9 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
 
       SAA_modelIsSkeleton( scene, model, &isSkeleton );
 
-      // check to see if this surface is used as a skeleton
-      // or is animated via constraint only ( these nodes are
-      // tagged by the animator with the keyword "joint"
-      // somewhere in the nodes name)
+      // check to see if this surface is used as a skeleton or is animated via
+      // constraint only ( these nodes are tagged by the animator with the
+      // keyword "joint" somewhere in the nodes name)
       if ( isSkeleton || (strstr( name, "joint" ) != NULL) )
       {
           if ( verbose >= 1 )
@@ -1683,8 +1627,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 numTexLoc += numTexTri[i];
         }
 
-        // don't need this anymore...
-        //free( numTexTri );
+        // don't need this anymore... free( numTexTri );
 
         // get local textures if present
         if ( numTexLoc )
@@ -1747,9 +1690,9 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
         else
             fprintf( outStream, "Not enough Memory for control vertices...\n");
 
-        // allocate array of control vertex indices
-        // this array maps from the redundant cvertices array into
-        // the unique vertices array (cvertices->vertices)
+        // allocate array of control vertex indices this array maps from the
+        // redundant cvertices array into the unique vertices array
+        // (cvertices->vertices)
         indices = (int *)malloc(sizeof(int)*numTri*3);
         if ( indices != NULL )
         {
@@ -1772,7 +1715,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
         if ( verbose >= 2 )
             fprintf( outStream, "num unique verts = %d\n", numVert );
 
-        //allocate array of vertices
+        // allocate array of vertices
         vertices = (SAA_DVector *)malloc(sizeof(SAA_DVector)*numVert);
 
         // get the UNIQUE vertices of all triangles in model
@@ -1788,10 +1731,9 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
             }
         }
 
-        // allocate indexMap array
-        // we contruct this array to map from the unique vertices
-        // array to the redundant cvertices array - it will save
-        // us from doing repetitive searches later
+        // allocate indexMap array we contruct this array to map from the
+        // unique vertices array to the redundant cvertices array - it will
+        // save us from doing repetitive searches later
         indexMap = MakeIndexMap( indices, numTri*3, numVert );
 
         // allocate array of normals
@@ -1906,15 +1848,11 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 }
             }
 
-            //debug
-            //for ( i = 0; i < numTri; i++ )
-            //{
-                //if ( texNameArray[i] != NULL )
-                    //fprintf( outStream, " tritex[%d] named: %s\n", i,
-                        //texNameArray[i] );
-                //else
-                    //fprintf( outStream, " tritex[%d] named: (null)\n", i );
-            //}
+/*
+ * debug for ( i = 0; i < numTri; i++ ) { if ( texNameArray[i] != NULL )
+ * fprintf( outStream, " tritex[%d] named: %s\n", i, texNameArray[i] ); else
+ * fprintf( outStream, " tritex[%d] named: (null)\n", i ); }
+ */
         }
         // make sure we have textures before we get t-coords
         else if ( numTexGlb )
@@ -2005,18 +1943,16 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
             pfVec3    eggVert;
             pfVec3    eggNorm;
 
-            //convert to global coords
+            // convert to global coords
             SAA_DVector local = vertices[i];
             SAA_DVector global;
 
             _VCT_X_MAT( global, local, matrix );
 
-            // set vertices array to reflect global coords
-            //vertices[i].x = global.x;
-            //vertices[i].y = global.y;
-            //vertices[i].z = global.z;
+            // set vertices array to reflect global coords vertices[i].x =
+            // global.x; vertices[i].y = global.y; vertices[i].z = global.z;
 
-            //eggVert.set( vertices[i].x, vertices[i].y, vertices[i].z );
+            // eggVert.set( vertices[i].x, vertices[i].y, vertices[i].z );
 
             // we'll preserve original verts for now
             eggVert.set( global.x, global.y, global.z );
@@ -2095,16 +2031,16 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 // if it has expressions we'll assume its animated
                 if ( numExp )
                 {
-                    // if animated object make base duv's, animtables
-                    // for the duv's and store the original offsets
+                    // if animated object make base duv's, animtables for the
+                    // duv's and store the original offsets
                     strstream uName, vName;
 
                     // create duv target names
                     uName << name << ".u" << ends;
                     vName << name << ".v" << ends;
 
-                    // only create tables and store offsets
-                    // on a per model basis (not per vertex)
+                    // only create tables and store offsets on a per model
+                    // basis (not per vertex)
                     if ( !i )
                     {
 
@@ -2178,25 +2114,19 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
         vref = new EggVertexRef( pool);
         for ( i = 0; i < numVert; i++ )
         {
-            //add each vert in pool to last joint for hard skinning
+            // add each vert in pool to last joint for hard skinning
             vref->indices.push_back( EggVertexIndex( i ) );
         }
 
-        // hard assign poly geometry if no soft-skinning requested
-        //
-        //disabled 1/1/99 to streamline joint assignments.
-        // all hard-skinning now done in CleanUpSoftSkin.
-        //if ( !make_soft )
-        //{
-            //if ( lastJoint != NULL )
-            //{
-                //lastJoint->vrefs.AddUniqueNode( *vref );
+/*
+ * hard assign poly geometry if no soft-skinning requested disabled 1199 to
+ * streamline joint assignments.  all hard-skinning now done in
+ * CleanUpSoftSkin.  if ( !make_soft ) { if ( lastJoint != NULL ) {
+ * lastJoint->vrefs.AddUniqueNode( *vref );
+ */
 
-                //if ( verbose >= 1 )
-                    //fprintf( outStream, "hard-skinning %s (%d vertices)\n",
-                        //name, i+1 );
-            //}
-        //}
+                // if ( verbose >= 1 ) fprintf( outStream, "hard-skinning %s
+                // (%d vertices)\n", name, i+1 ); } }
 
         // make an egg group to hold all triangles
         EggGroup *group = _data.CreateGroup( parent, name);
@@ -2214,8 +2144,8 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
             float    r,g,b,a;
             pfVec4    color;
 
-            // make egg poly for each traingle and reference
-            // the appropriate vertex in the pool
+            // make egg poly for each traingle and reference the appropriate
+            // vertex in the pool
             poly = _data.CreatePolygon( group, pool );
             poly->AddVertex(indices[i]);
             poly->AddVertex(indices[i+1]);
@@ -2256,8 +2186,8 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 if ( (texNameArray[i/3] != NULL) &&
                         (strcmp(texNameArray[i/3], "NULL") != 0) )
                 {
-                    // append unique identifier to texname for
-                    // this particular object
+                    // append unique identifier to texname for this particular
+                    // object
                     uniqueTexName << name << "-"
                         << RemovePathName(texNameArray[i/3]);
 
@@ -2273,8 +2203,8 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
             {
                 if ( texNameArray != NULL )
                 {
-                    // append unique identifier to texname for
-                    // this particular object
+                    // append unique identifier to texname for this particular
+                    // object
                     uniqueTexName << name << "-"
                         << RemovePathName(*texNameArray);
 
@@ -2308,26 +2238,18 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
         // we're done - trash triangles...
         SAA_modelClearTriangles( scene, model );
 
-        // free molloc'd memory
-        //free( triangles );
-        //free( materials );
-        //free( normals );
-        //free( cvertices );
-        //free( vertices );
-        //free( indices );
-        //free( indexMap );
+/*
+ * free molloc'd memory free( triangles ); free( materials ); free( normals );
+ * free( cvertices ); free( vertices ); free( indices ); free( indexMap );
+ */
 
         // free these only if they were malloc'd for textures
         if (numTexLoc || numTexGlb)
         {
-            //free( textures );
-            //free( uCoords );
-            //free( vCoords );
-            //free( texNameArray );
-            //free( uScale );
-            //free( vScale );
-            //free( uOffset );
-            //free( vOffset );
+/*
+ * free( textures ); free( uCoords ); free( vCoords ); free( texNameArray );
+ * free( uScale ); free( vScale ); free( uOffset ); free( vOffset );
+ */
         }
       }
     }
@@ -2342,10 +2264,9 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
 
             SAA_modelIsSkeleton( scene, model, &isSkeleton );
 
-            // check to see if this NURBS is used as a skeleton
-            // or is animated via constraint only ( these nodes are
-            // tagged by the animator with the keyword "joint"
-            // somewhere in the nodes name)
+            // check to see if this NURBS is used as a skeleton or is animated
+            // via constraint only ( these nodes are tagged by the animator
+            // with the keyword "joint" somewhere in the nodes name)
             if ( isSkeleton || (strstr( name, "joint" ) != NULL) )
             {
                 MakeJoint( scene, lastJoint, lastAnim, model, name );
@@ -2438,8 +2359,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
 
             AddKnots( eggNurbsSurf->v_knots, knotsV, numKnotsV, vClosed, vDegree);
 
-            //free( knotsU );
-            //free( knotsV );
+            // free( knotsU ); free( knotsV );
 
             // set sub_div so we can see it in perfly
             eggNurbsSurf->u_subdiv = (uRows-1)*nurbs_step;
@@ -2480,7 +2400,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
 
                 _VCT_X_MAT( global, vertices[k], matrix );
 
-                //preserve original weight
+                // preserve original weight
                 global.w = vertices[k].w;
 
                 // normalize coords to weight
@@ -2488,25 +2408,19 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 global.y *= global.w;
                 global.z *= global.w;
 
-                // this code is commented out because I
-                // am no longer sending global data to
-                // the other routines (ie makevertexoffset)
+                // this code is commented out because I am no longer sending
+                // global data to the other routines (ie makevertexoffset)
 
-                // set vertices array to reflect global coords
-                //vertices[k].x = global.x;
-                //vertices[k].y = global.y;
-                //vertices[k].z = global.z;
-                //vertices[k].w = global.w;
+                // set vertices array to reflect global coords vertices[k].x =
+                // global.x; vertices[k].y = global.y; vertices[k].z =
+                // global.z; vertices[k].w = global.w;
 
-                //if ( verbose >= 2 )
-                //{
-                    //fprintf( outStream, "global cv[%d] = %f %f %f %f\n", k,
-                        //vertices[k].x, vertices[k].y, vertices[k].z,
-                        //vertices[k].w );
-                //}
+                // if ( verbose >= 2 ) { fprintf( outStream, "global cv[%d] =
+                // %f %f %f %f\n", k, vertices[k].x, vertices[k].y,
+                // vertices[k].z, vertices[k].w ); }
 
-                //eggVert.set( vertices[k].x, vertices[k].y, vertices[k].z,
-                    //vertices[k].w );
+                // eggVert.set( vertices[k].x, vertices[k].y, vertices[k].z,
+                // vertices[k].w );
 
                 if ( verbose >= 2 )
                 {
@@ -2524,7 +2438,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 // add vref's to NURBS info
                 eggNurbsSurf->AddVertex( k );
 
-                //add each vert in pool to vref for hard skinning
+                // add each vert in pool to vref for hard skinning
                 vref->indices.push_back( EggVertexIndex( k ) );
 
                 // check to see if the NURB is closed in u
@@ -2537,29 +2451,21 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                         // add vref's to NURBS info
                         eggNurbsSurf->AddVertex( i+((k/uRows)*uRows) );
 
-                        //add each vert to vref
+                        // add each vert to vref
                         vref->indices.push_back(
                             EggVertexIndex( i+((k/uRows)*uRows) ) );
                     }
                 }
             }
 
-            // if hard skinned or this nurb is also a joint
-            //
-            //disabled 1/1/99 to streamline joint assignments.
-            // all hard skinning now done in CleanUpSoftSkin.
-            //if (!make_soft || geom_as_joint)
-            //{
-                //add the new cv references to the last
-                //joint for hard skinning only
-                //if ( lastJoint != NULL )
-                //{
-                    //lastJoint->vrefs.AddUniqueNode( *vref );
-                    //geom_as_joint = 0;
-                    //if ( verbose >= 1 )
-                        //fprintf( outStream, "Doing NURBS hard skinning...\n");
-                //}
-            //}
+/*
+ * if hard skinned or this nurb is also a joint disabled 1199 to streamline
+ * joint assignments.  all hard skinning now done in CleanUpSoftSkin.  if
+ * (!make_soft || geom_as_joint) { add the new cv references to the last joint
+ * for hard skinning only if ( lastJoint != NULL ) {
+ * lastJoint->vrefs.AddUniqueNode( *vref ); geom_as_joint = 0; if ( verbose >=
+ * 1 ) fprintf( outStream, "Doing NURBS hard skinning...\n"); } }
+ */
 
             // check to see if the NURB is closed in v
             if ( vClosed && !uClosed )
@@ -2571,16 +2477,16 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
             // check to see if the NURB is closed in u and v
             else if ( vClosed && uClosed )
             {
-                // add the first (degree) v verts and a few
-                // extra - for good measure
+                // add the first (degree) v verts and a few extra - for good
+                // measure
                 for ( i = 0; i < vDegree; i++ )
                 {
                     // add first vDegree rows of verts to end of list
                     for ( j = 0; j < uRows; j++ )
                         eggNurbsSurf->AddVertex( j+(i*uRows) );
 
-                    // if u is closed to we have added uDegree
-                    // verts onto the ends of the rows - add them here too
+                    // if u is closed to we have added uDegree verts onto the
+                    // ends of the rows - add them here too
                     for ( k = 0; k < uDegree; k++ )
                         eggNurbsSurf->AddVertex( k+(i*uRows)+((k/uRows)*uRows) );
                 }
@@ -2611,20 +2517,20 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                 SAA_materialGetDiffuse( scene, &materials[0], &r, &g, &b );
                 SAA_materialGetTransparency( scene, &materials[0], &a );
                 nurbColor.set( r, g, b, 1.0f - a );
-                //nurbColor.set( r, g, b, 1.0 );
+                // nurbColor.set( r, g, b, 1.0 );
 
                 nurbCref = _data.CreateColor(nurbColor);
                 eggNurbsSurf->attrib.SetCRef(nurbCref);
 
-                //get the texture of the NURBS surface from the material
+                // get the texture of the NURBS surface from the material
                 int numNurbTexLoc = 0;
                 int numNurbTexGlb = 0;
 
                 // ASSUME only one texture per material
                 SAA_Elem nurbTex;
 
-                // find out how many local textures per NURBS surface
-                // ASSUME it only has one material
+                // find out how many local textures per NURBS surface ASSUME
+                // it only has one material
                 SAA_materialRelationGetT2DLocNbElements( scene, &materials[0],
                     FALSE, &relinfo, &numNurbTexLoc );
 
@@ -2670,8 +2576,8 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                     // convert the texture to .rgb and adjust name
                     texName = ConvertTexture( scene, &nurbTex );
 
-                    // append unique identifier to texname for
-                    // this particular object
+                    // append unique identifier to texname for this particular
+                    // object
                     uniqueTexName = (char *)malloc(sizeof(char)*
                         (strlen(name)+strlen(texName)+3) );
                     sprintf( uniqueTexName, "%s-%s", name,
@@ -2733,7 +2639,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                     }
 
 
-    //call printMat
+    // call printMat
     if ( verbose >= 2 )
     {
     fprintf( outStream, "nurb tex matrix = %f %f %f %f\n", nurbTexMat[0][0],
@@ -2769,8 +2675,8 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                         if ( verbose > 1 )
                             printf( "nurbTex has %d expressions...\n", numExp );
 
-                        // if animated object make base duv's, animtables
-                        // for the duv's and store the original offsets
+                        // if animated object make base duv's, animtables for
+                        // the duv's and store the original offsets
                         strstream uName, vName;
 
                         // create duv target names
@@ -2815,7 +2721,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                             EggMorphOffset *duvU;
                             EggMorphOffset *duvV;
 
-                            //create uv's so we can store duv's
+                            // create uv's so we can store duv's
                             eggNurbsSurf->CalcActualUV( i, tmpUV );
                             pool->Vertex(i)->attrib.SetUV( tmpUV[0], tmpUV[1] );
 
@@ -2830,12 +2736,10 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                   } // if ( numExp )
                 } // if ( numTexLoc || numTexGlb )
 
-                //free( uScale );
-                //free( vScale );
-                //free( uOffset );
-                //free( vOffset );
+                // free( uScale ); free( vScale ); free( uOffset ); free(
+                // vOffset );
 
-                //free( materials );
+                // free( materials );
             }
             else
             {
@@ -2869,7 +2773,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                         numTrims, trims, isTrim );
                 }
 
-                //free( trims );
+                // free( trims );
             }
 
             // check NURBS surface for surface curves
@@ -2896,7 +2800,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                         numTrims, trims, isTrim );
                 }
 
-                //free( trims );
+                // free( trims );
             }
 
             // push the NURBS into the egg data
@@ -2908,17 +2812,16 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
                     vertices, matrix, name );
 
 
-            //free( vertices );
+            // free( vertices );
 
         }
 
         // check to see if its a NURBS curve
         else if ( (type == SAA_MNCRV) && ( visible ) && ( make_nurbs ) )
         {
-            // ignore for now
-            // make the NURBS curve and push it into the egg data
-            //parent->children.push_back( MakeNurbsCurve( scene, model, parent,
-                //matrix, name ) );
+            // ignore for now make the NURBS curve and push it into the egg
+            // data parent->children.push_back( MakeNurbsCurve( scene, model,
+            // parent, matrix, name ) );
            }
         else if ( type == SAA_MJNT )
         {
@@ -2957,10 +2860,10 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
 
                 SAA_modelIsSkeleton( scene, model, &isSkeleton );
 
-                // check to see if this NULL is used as a skeleton
-                // or is animated via constraint only ( these nodes are
-                // tagged by the animator with the keyword "joint"
-                // somewhere in the nodes name)
+                // check to see if this NULL is used as a skeleton or is
+                // animated via constraint only ( these nodes are tagged by
+                // the animator with the keyword "joint" somewhere in the
+                // nodes name)
                 if ( isSkeleton || (strstr( name, "joint" ) != NULL) )
                 {
                     MakeJoint( scene, lastJoint, lastAnim, model, name );
@@ -3001,7 +2904,7 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
         }
         else
             fprintf( outStream, "Not enough Memory for children...\n");
-        //free( children );
+        // free( children );
     }
     fflush( outStream );
   }
@@ -3009,17 +2912,14 @@ MakeEgg( EggGroup *parent, EggJoint *lastJoint, AnimGroup *lastAnim,
     if ( verbose >= 1 )
         fprintf( outStream, "Don't descend this branch!\n" );
 
-  // we are done for the most part - start cleaning up memory
-  //free( name );
+  // we are done for the most part - start cleaning up memory free( name );
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeSurfaceCurve
-//       Access: Public
-//  Description: Given a scene and lists of u and v samples create a
-//                an egg NURBS curve of degree two from the samples
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and lists of u and v samples create a an egg NURBS curve of
+ * degree two from the samples
+ */
 void  soft2egg::
 MakeSurfaceCurve(  SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     EggNurbsSurface *&nurbsSurf, int numTrims, SAA_SubElem *trims,
@@ -3033,7 +2933,7 @@ MakeSurfaceCurve(  SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     SAA_Elem *trimCurves;
     char    *name;
 
-    //get UV coord data
+    // get UV coord data
     numSamples = (long *)malloc(sizeof(long)*numTrims);
 
     SAA_surfaceCurveGetNbLinearSamples( scene, model,  numTrims, trims,
@@ -3067,8 +2967,8 @@ MakeSurfaceCurve(  SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     // if it's a trim create a trim to assign trim curves to
     EggNurbsSurface::Trim *eggTrim = new EggNurbsSurface::Trim();
 
-    // for each trim curve, make an egg curve and
-    // add it to the trims of the NURBS surface
+    // for each trim curve, make an egg curve and add it to the trims of the
+    // NURBS surface
     for ( i = 0; i < numTrims; i++ )
     {
         if ( use_prefix )
@@ -3099,18 +2999,13 @@ MakeSurfaceCurve(  SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
         // pus trim list onto trims list
         nurbsSurf->trims.push_back( *eggTrim );
 
-    //free( name );
-    //free( trimCurves );
-    //free( uSamples );
-    //free( vSamples );
+    // free( name ); free( trimCurves ); free( uSamples ); free( vSamples );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeUVNurbsCurve
-//       Access: Public
-//  Description: Given a scene and lists of u and v samples create a
-//                an egg NURBS curve of degree two from the samples
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and lists of u and v samples create a an egg NURBS curve of
+ * degree two from the samples
+ */
 EggNurbsCurve  *soft2egg::
 MakeUVNurbsCurve( int numCurve, long *numSamples, double *uSamples,
     double *vSamples, EggGroup *parent, char *name )
@@ -3123,17 +3018,16 @@ MakeUVNurbsCurve( int numCurve, long *numSamples, double *uSamples,
     if ( verbose >= 2 )
         fprintf( outStream, "nurbs UV curve %s:\n", name );
 
-    //set sub_div so we can see it in perfly
-    //eggNurbsCurve->subdiv = numSamples[numCurve]/4;
-    // perfly chokes on big numbers - keep it reasonable
+    // set sub_div so we can see it in perfly eggNurbsCurve->subdiv =
+    // numSamples[numCurve]4; perfly chokes on big numbers - keep it
+    // reasonable
     eggNurbsCurve->subdiv = 150;
 
-    //create pool of NURBS vertices
+    // create pool of NURBS vertices
     EggVertexPool *pool = _data.CreateVertexPool( parent, name );
     eggNurbsCurve->SetVertexPool( pool );
 
-    // calculate offset to this curve's samples
-    // in list of all curve samples
+    // calculate offset to this curve's samples in list of all curve samples
     int offset = 0;
 
     for ( int o = 0; o < numCurve; o++ )
@@ -3150,10 +3044,10 @@ MakeUVNurbsCurve( int numCurve, long *numSamples, double *uSamples,
             fprintf( outStream, "cv[%d] = %f %f %f\n", k, eggVert[0],
                 eggVert[1], eggVert[2] );
 
-        //populate vertex pool
+        // populate vertex pool
         pool->AddVertex( eggVert, k );
 
-        //add vref's to NURBS info
+        // add vref's to NURBS info
         eggNurbsCurve->AddVertex( k );
     }
 
@@ -3163,7 +3057,7 @@ MakeUVNurbsCurve( int numCurve, long *numSamples, double *uSamples,
         eggNurbsCurve->knots.push_back( k  );
     eggNurbsCurve->knots.push_back( numSamples[numCurve] - 1 );
 
-    //set color to bright green for now
+    // set color to bright green for now
     EggColor *nurbCref;
     pfVec4    nurbColor;
 
@@ -3174,12 +3068,10 @@ MakeUVNurbsCurve( int numCurve, long *numSamples, double *uSamples,
     return( eggNurbsCurve );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeNurbsCurve
-//       Access: Public
-//  Description: Given a scene and a NURBS curve model create the
-//               the appropriate egg structures
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and a NURBS curve model create the the appropriate egg
+ * structures
+ */
 EggNurbsCurve  *soft2egg::
 MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     float matrix[4][4], char *name )
@@ -3190,7 +3082,7 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     if ( verbose >= 2 )
         fprintf( outStream, "nurbs curve %s:\n", name );
 
-    //create nurbs representation of surface
+    // create nurbs representation of surface
     SAA_nurbsCurveGetDegree( scene, model, &degree );
     eggNurbsCurve->order = degree + 1;
     if ( verbose >= 2 )
@@ -3217,7 +3109,7 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
 
     AddKnots( eggNurbsCurve->knots, knots, numKnots, closed, degree );
 
-    //free( knots );
+    // free( knots );
 
     int    numCV;
 
@@ -3225,7 +3117,7 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     if ( verbose >= 2 )
         fprintf( outStream, "%d CV's (=? %d)\n", numCV, (numKnots-(degree+1)) );
 
-    //set sub_div so we can see it in perfly
+    // set sub_div so we can see it in perfly
     eggNurbsCurve->subdiv = (numCV-1)*nurbs_step;
 
     // get the CV's
@@ -3234,7 +3126,7 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     SAA_modelGetVertices( scene, model, SAA_GEOM_ORIGINAL, 0,
         numCV, cvArray );
 
-    //create pool of NURBS vertices
+    // create pool of NURBS vertices
     EggVertexPool *pool = _data.CreateVertexPool( parent, name );
     eggNurbsCurve->SetVertexPool( pool );
 
@@ -3246,7 +3138,7 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
 
         pfVec4  eggVert;
 
-        //convert to global coords
+        // convert to global coords
         SAA_DVector local = cvArray[k];
         SAA_DVector global;
 
@@ -3254,10 +3146,10 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
 
         eggVert.set( global.x, global.y, global.z, global.w );
 
-        //populate vertex pool
+        // populate vertex pool
         pool->AddVertex( eggVert, k );
 
-        //add vref's to NURBS info
+        // add vref's to NURBS info
         eggNurbsCurve->AddVertex( k );
     }
 
@@ -3273,9 +3165,9 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
         }
     }
 
-    //free( cvArray );
+    // free( cvArray );
 
-    //set color to bright green for now
+    // set color to bright green for now
     EggColor *nurbCref;
     pfVec4    nurbColor;
 
@@ -3286,13 +3178,11 @@ MakeNurbsCurve( SAA_Scene *scene, SAA_Elem *model, EggGroup *parent,
     return( eggNurbsCurve );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AddKnots
-//       Access: Public
-//  Description: Given a parametric surface, and its knots, create
-//               the appropriate egg structure by filling in Soft's
-//               implicit knots and assigning the rest to eggKnots.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a parametric surface, and its knots, create the appropriate egg
+ * structure by filling in Soft's implicit knots and assigning the rest to
+ * eggKnots.
+ */
 void soft2egg::
 AddKnots( perf_vector<double> &eggKnots, double *knots, int numKnots,
     SAA_Boolean closed, int degree )
@@ -3310,8 +3200,8 @@ AddKnots( perf_vector<double> &eggKnots, double *knots, int numKnots,
         // need to add (degree) number of knots
         for ( k = numKnots - 1; k >= numKnots - degree; k-- )
         {
-            // we have to know these in order to calculate
-            // next knot value so hold them in temp array
+            // we have to know these in order to calculate next knot value so
+            // hold them in temp array
             newKnots[i] =  lastKnot - (knots[k] - knots[k-1]);
             lastKnot = newKnots[i];
             i++;
@@ -3323,7 +3213,7 @@ AddKnots( perf_vector<double> &eggKnots, double *knots, int numKnots,
                 fprintf( outStream, "knots[%d] = %f\n", k, newKnots[k] );
         }
 
-        //free( newKnots );
+        // free( newKnots );
     }
     else
     {
@@ -3364,12 +3254,10 @@ AddKnots( perf_vector<double> &eggKnots, double *knots, int numKnots,
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeJoint
-//       Access: Public
-//  Description: Given a name, a parent and a model create a new
-//               a new EggJoint for that model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a name, a parent and a model create a new a new EggJoint for that
+ * model.
+ */
 void soft2egg::
 MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
     SAA_Elem *model, char *name )
@@ -3381,9 +3269,9 @@ MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
     int    scale_joint = 0;
 
 
-    // this is a quick fix to make scaled skeletons possible
-    // if the parent contains the keyword "scale" make this joint
-    // a global root joint instead of a child...
+    // this is a quick fix to make scaled skeletons possible if the parent
+    // contains the keyword "scale" make this joint a global root joint
+    // instead of a child...
     if (lastJoint != NULL)
     {
         if ( strstr( lastJoint->name.Str(), "scale" ) != NULL )
@@ -3394,8 +3282,8 @@ MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
         }
     }
 
-    // if not root, flatten is false, and last joint had no scaling
-    // applied to it, then create joint in skeleton tree
+    // if not root, flatten is false, and last joint had no scaling applied to
+    // it, then create joint in skeleton tree
     if ( (lastJoint != NULL) && !flatten && !scale_joint )
     {
         if ( verbose >= 1 )
@@ -3470,8 +3358,8 @@ MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
         joint->transform = Matrix;
         lastAnim = rootAnim;
     }
-    // if root, make a seperate tree for skeleton and
-    // create required Table for the Egg heirarchy
+    // if root, make a seperate tree for skeleton and create required Table
+    // for the Egg heirarchy
     else
     {
         if ( verbose >= 1 )
@@ -3528,8 +3416,7 @@ MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
 
     joint->flags |= EF_TRANSFORM;
 
-    //if ( make_anim)
-    //{
+    // if ( make_anim) {
         AnimGroup *anim = animData.CreateTable( lastAnim, name );
         XfmSAnimTable *table = new XfmSAnimTable( );
         if ( verbose >= 1 )
@@ -3538,20 +3425,18 @@ MakeJoint( SAA_Scene *scene, EggJoint *&lastJoint, AnimGroup *&lastAnim,
         table->fps = anim_rate;
         anim->children.push_back( table );
         lastAnim = anim;
-    //}
+    // }
 
     // make this joint current parent of chain
     lastJoint = joint;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeSoftSkin
-//       Access: Public
-//  Description: Given a skeleton part find its envelopes (if any)
-//               get the vertices associated with the envelopes and
-//               their weights and make vertex ref's for the joint
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a skeleton part find its envelopes (if any) get the vertices
+ * associated with the envelopes and their weights and make vertex ref's for
+ * the joint
+ */
 void soft2egg::
 MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels, char *name )
@@ -3703,9 +3588,8 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                                 fprintf( outStream, "envelope name %s\n", envName );
 
                             // find out if envelope geometry is poly or nurb
-                            //SAA_modelGetType( scene,
-                                //FindModelByName( envName, scene,
-                                    //models, numModels ), &type );
+                            // SAA_modelGetType( scene, FindModelByName(
+                            // envName, scene, models, numModels ), &type );
 
                             SAA_modelGetType( scene, &envelopes[i], &type );
 
@@ -3758,15 +3642,15 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                                     modelVertices[j], matrix );
                             }
 
-                            // find the egg vertex pool that corresponds
-                            // to this envelope model
+                            // find the egg vertex pool that corresponds to
+                            // this envelope model
                             EggVertexPool *envPool =
                                 (EggVertexPool *)(_data.pools.FindName( envName ));
-                            // If we are outputting triangles:
-                            // create an array that maps from a referenced
-                            // vertex in the envelope to a corresponding
-                            // vertex in the egg vertex pool
-                            //if ( (type == SAA_MNSRF) && !make_nurbs )
+                            // If we are outputting triangles: create an array
+                            // that maps from a referenced vertex in the
+                            // envelope to a corresponding vertex in the egg
+                            // vertex pool if ( (type == SAA_MNSRF) &&
+                            // !make_nurbs )
                             if ( !make_nurbs || (type == SAA_MSMSH) )
                             {
                                 vpoolMap = FindClosestTriVert( envPool,
@@ -3777,13 +3661,14 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                             if ( envPool != NULL )
                             {
 
-                            // find the egg joint that corresponds to this model
+                            // find the egg joint that corresponds to this
+                            // model
                             EggJoint *joint =
                                 (EggJoint *)(skeleton->FindDescendent( name ));
 
-                            // this doesn't seem to be necessary 4/7/99
-                            //EggJoint *parent = (EggJoint *)joint->parent;
-                            //assert(parent->IsA(NT_EggJoint));
+                            // this doesn't seem to be necessary 4799 EggJoint
+                            // *parent = (EggJoint *)joint->parent;
+                            // assert(parent->IsA(NT_EggJoint));
 
                             // for every envelope vertex
                             for (j = 0; j < numEnvVertices[i]; j++)
@@ -3805,21 +3690,21 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                                             j, envVtxIndices[j], scaledWeight );
 
                                     envPool->Vertex(envVtxIndices[j])->AddJoint( joint, scaledWeight );
-                                    // set flag to show this vertex has
-                                    // been assigned
+                                    // set flag to show this vertex has been
+                                    // assigned
                                     envPool->Vertex(envVtxIndices[j])->multipleJoints = 1;
                                   }
                                   else
                                   {
-                                    //assign all the tri verts associated
+                                    // assign all the tri verts associated
                                     // with this control vertex to joint
                                     for ( k = 0; k < envPool->NumVertices(); k++ )
                                     {
                                       if ( vpoolMap[k] == envVtxIndices[j] )
                                       {
 
-                                        // add each vert in pool to last
-                                        // joint for soft skinning
+                                        // add each vert in pool to last joint
+                                        // for soft skinning
                                         joint->AddVertex(envPool->Vertex(k),
                                             scaledWeight);
 
@@ -3848,25 +3733,24 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                                 if ( verbose >= 2 )
                                     fprintf( outStream, "Couldn't find vpool %s!\n", envName );
 
-                            //free( modelVertices );
-                            //free( globalModelVertices );
-                            //free( envVtxIndices );
-                            //free( envName );
+                            // free( modelVertices ); free(
+                            // globalModelVertices ); free( envVtxIndices );
+                            // free( envName );
                             } //if (weights)
-                            //free( weights );
+                            // free( weights );
 
                         } // for i
 
                     } // if (envVertices != NULL)
                     else
                         fprintf( outStream, "Not enough memory for envelope vertices...\n");
-                    //free( envVertices );
+                    // free( envVertices );
                     } // if (totalEnvVertices)
                     else
                         if ( verbose >= 1 )
                             fprintf( outStream, "No envelope vertices present...\n");
 
-                    //free( numEnvVertices );
+                    // free( numEnvVertices );
 
             } // if (numEnvVertices != NULL)
 
@@ -3876,7 +3760,7 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
         else
             fprintf( outStream, "Not enough memory for envelopes...\n" );
 
-        //free( envelopes );
+        // free( envelopes );
 
     } //if (numEnv)
 
@@ -3886,13 +3770,10 @@ MakeSoftSkin( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CleanUpSoftSkin
-//       Access: Public
-//  Description: Given a model, make sure all its vertices have been
-//               soft assigned. If not hard assign to the last
-//               joint we saw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a model, make sure all its vertices have been soft assigned.  If not
+ * hard assign to the last joint we saw.
+ */
 void soft2egg::
 CleanUpSoftSkin( SAA_Scene *scene, SAA_Elem *model, char *name )
 {
@@ -3911,10 +3792,10 @@ CleanUpSoftSkin( SAA_Scene *scene, SAA_Elem *model, char *name )
     if ( verbose >= 1 )
         fprintf( outStream, "\nCleaning up model %s\n", name );
 
-    // this step is weird - I think I want it here but it seems
-    // to break some models. Files like props-props_wh_cookietime.3-0 in
-    // /ful/rnd/pub/vrml/chip/chips_adventure/char/zone1/rooms/warehouse_final
-    // need to do the "if (skel)" bit.
+    // this step is weird - I think I want it here but it seems to break some
+    // models.  Files like props-props_wh_cookietime.3-0 in
+    // fulrndpubvrmlchipchips_adventurecharzone1roomswarehouse_final need to
+    // do the "if (skel)" bit.
 
     // am I a skeleton too?
     SAA_modelIsSkeleton( scene, model, &skel );
@@ -3985,7 +3866,7 @@ CleanUpSoftSkin( SAA_Scene *scene, SAA_Elem *model, char *name )
         if ( verbose >= 1 )
             fprintf( outStream, "setting joint to %s\n", parentName );
 
-        //find the vpool for this model
+        // find the vpool for this model
         EggVertexPool *vPool =
             (EggVertexPool *)(_data.pools.FindName( name ));
 
@@ -4049,14 +3930,11 @@ CleanUpSoftSkin( SAA_Scene *scene, SAA_Elem *model, char *name )
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeAnimTable
-//       Access: Public
-//  Description: Given a scene and a skeleton part ,get all the
-//               position, rotation, and scale for the skeleton
-//               part for this frame and write them out as Egg
-//               animation tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene and a skeleton part ,get all the position, rotation, and
+ * scale for the skeleton part for this frame and write them out as Egg
+ * animation tables.
+ */
 void soft2egg::
 MakeAnimTable( SAA_Scene *scene, SAA_Elem *skeletonPart, char *name )
 {
@@ -4084,15 +3962,15 @@ MakeAnimTable( SAA_Scene *scene, SAA_Elem *skeletonPart, char *name )
             if ( verbose >= 1 )
                 fprintf( outStream, " using global matrix\n" );
 
-            //get SAA orientation
+            // get SAA orientation
             SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL,
                 &p, &h, &r );
 
-            //get SAA translation
+            // get SAA translation
             SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_GLOBAL,
                 &x, &y, &z );
 
-            //get SAA scaling
+            // get SAA scaling
             SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_GLOBAL,
                 &i, &j, &k );
         }
@@ -4101,15 +3979,15 @@ MakeAnimTable( SAA_Scene *scene, SAA_Elem *skeletonPart, char *name )
             if ( verbose >= 1 )
                 fprintf( outStream, "using local matrix\n" );
 
-            //get SAA orientation
+            // get SAA orientation
             SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_LOCAL,
                 &p, &h, &r );
 
-            //get SAA translation
+            // get SAA translation
             SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_LOCAL,
                 &x, &y, &z );
 
-            //get SAA scaling
+            // get SAA scaling
             SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_LOCAL,
                 &i, &j, &k );
         }
@@ -4123,7 +4001,7 @@ MakeAnimTable( SAA_Scene *scene, SAA_Elem *skeletonPart, char *name )
         AnimGroup     *thisGroup;
         XfmSAnimTable *thisTable;
 
-        //find the anim table associated with this group
+        // find the anim table associated with this group
         thisGroup = (AnimGroup *)(animRoot->FindDescendent( name ));
         if ( verbose >= 2 )
             fprintf( outStream, "\nlooking for anim group %s\n", name );
@@ -4157,15 +4035,12 @@ MakeAnimTable( SAA_Scene *scene, SAA_Elem *skeletonPart, char *name )
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeVertexOffsets
-//       Access: Public
-//  Description: Given a scene, a model , the vertices of its original
-//               shape and its name find the difference between the
-//               geometry of its key shapes and the models original
-//               geometry and add morph vertices to the egg data to
-//               reflect these changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model , the vertices of its original shape and its name
+ * find the difference between the geometry of its key shapes and the models
+ * original geometry and add morph vertices to the egg data to reflect these
+ * changes.
+ */
 void soft2egg::
 MakeVertexOffsets( SAA_Scene *scene, SAA_Elem *model, SAA_ModelType type,
     int numShapes, int numOrigVert, SAA_DVector *originalVerts, float
@@ -4233,25 +4108,27 @@ MakeVertexOffsets( SAA_Scene *scene, SAA_Elem *model, SAA_ModelType type,
         EggVertexPool *vPool =
             (EggVertexPool *)(_data.pools.FindName( name ));
 
-        // for every original vertex, compare to the corresponding
-        // key shape vertex and see if a vertex offset is needed
+        // for every original vertex, compare to the corresponding key shape
+        // vertex and see if a vertex offset is needed
         for ( j=0; j < numOrigVert; j++ )
         {
             double    dx, dy, dz;
 
             if ( (type == SAA_MNSRF) && make_nurbs )
             {
-                //dx = shapeVerts[j].x - (originalVerts[j].x/originalVerts[j].w);
-                //dy = shapeVerts[j].y - (originalVerts[j].y/originalVerts[j].w);
-                //dz = shapeVerts[j].z - (originalVerts[j].z/originalVerts[j].w);
+                // dx = shapeVerts[j].x -
+                // (originalVerts[j].xoriginalVerts[j].w); dy =
+                // shapeVerts[j].y - (originalVerts[j].yoriginalVerts[j].w);
+                // dz = shapeVerts[j].z -
+                // (originalVerts[j].zoriginalVerts[j].w);
                 dx = shapeVerts[j].x - originalVerts[j].x;
                 dy = shapeVerts[j].y - originalVerts[j].y;
                 dz = shapeVerts[j].z - originalVerts[j].z;
             }
             else
             {
-                // we need to map from original vertices
-                // to triangle shape vertices here
+                // we need to map from original vertices to triangle shape
+                // vertices here
                 offset = findShapeVert( originalVerts[j], uniqueVerts,
                     numCV );
 
@@ -4310,14 +4187,11 @@ MakeVertexOffsets( SAA_Scene *scene, SAA_Elem *model, SAA_ModelType type,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeMorphTable
-//       Access: Public
-//  Description: Given a scene, a model, a name and a frame time,
-//               determine what type of shape interpolation is
-//               used and call the appropriate function to extract
-//               the shape weight info for this frame...
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, a name and a frame time, determine what type of
+ * shape interpolation is used and call the appropriate function to extract
+ * the shape weight info for this frame...
+ */
 void soft2egg::
 MakeMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels, char *name, float time )
@@ -4351,14 +4225,11 @@ MakeMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeLinearMorphTable
-//       Access: Public
-//  Description: Given a scene, a model, its name, and the time,
-//               get the shape fcurve for the model and determine
-//               the shape weights for the given time and use them
-//               to populate the morph table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, its name, and the time, get the shape fcurve for
+ * the model and determine the shape weights for the given time and use them
+ * to populate the morph table.
+ */
 void soft2egg::
 MakeLinearMorphTable( SAA_Scene *scene, SAA_Elem *model, int numShapes,
     char *name, float time )
@@ -4391,7 +4262,7 @@ MakeLinearMorphTable( SAA_Scene *scene, SAA_Elem *model, int numShapes,
         if ( verbose >= 2 )
             fprintf( outStream, "Linear: looking for table '%s'\n", tableName );
 
-        //find the morph table associated with this key shape
+        // find the morph table associated with this key shape
         thisTable = (SAnimTable *)(morphRoot->FindDescendent( tableName ));
 
         if ( thisTable != NULL )
@@ -4439,16 +4310,12 @@ MakeLinearMorphTable( SAA_Scene *scene, SAA_Elem *model, int numShapes,
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeWeightedMorphTable
-//       Access: Public
-//  Description: Given a scene, a model, a list of all models in the
-//               scene, the number of models in the scece, the number
-//               of key shapes for this model, the name of the model
-//               and the current time, determine what method of
-//               controlling the shape weights is used and call the
-//               appropriate routine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model, a list of all models in the scene, the number of
+ * models in the scece, the number of key shapes for this model, the name of
+ * the model and the current time, determine what method of controlling the
+ * shape weights is used and call the appropriate routine.
+ */
 void soft2egg::
 MakeWeightedMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels,  int numShapes, char *name, float time )
@@ -4471,7 +4338,8 @@ MakeWeightedMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
         {
                                                 SAA_fcurveEval( scene, &weightCurves[i], time, &curveVal );
 
-                                                // make sure soft gave us a reasonable number
+                                                // make sure soft gave us a
+                                                // reasonable number
                                                 if (!isNum(curveVal))
                                                         curveVal = 0.0f;
 
@@ -4482,12 +4350,13 @@ MakeWeightedMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
             // derive table name from the model name
             tableName = MakeTableName( name, i );
 
-                                                // find and populate shape table
+                                                // find and populate shape
+                                                // table
             if ( verbose >= 2 )
                 fprintf( outStream, "Weight: looking for table '%s'\n",
                                                                 tableName );
 
-            //find the morph table associated with this key shape
+            // find the morph table associated with this key shape
             thisTable = (SAnimTable *)(morphRoot->FindDescendent( tableName ));
 
             if ( thisTable != NULL )
@@ -4504,14 +4373,11 @@ MakeWeightedMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeExpressionMorphTable
-//       Access: Public
-//  Description: Given a scene, a model and its number of key shapes
-//               generate a morph table describing transitions btwn
-//               the key shapes by evaluating the positions of the
-//               controlling sliders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a model and its number of key shapes generate a morph table
+ * describing transitions btwn the key shapes by evaluating the positions of
+ * the controlling sliders.
+ */
 void soft2egg::
 MakeExpressionMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
     int numModels,  int numShapes, char *name, float time )
@@ -4627,7 +4493,7 @@ MakeExpressionMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
                     fprintf( outStream, "Exp: looking for table '%s'\n",
                         tableName );
 
-                //find the morph table associated with this key shape
+                // find the morph table associated with this key shape
                 thisTable = (SAnimTable *)
                     (morphRoot->FindDescendent( tableName ));
 
@@ -4659,13 +4525,10 @@ MakeExpressionMorphTable( SAA_Scene *scene, SAA_Elem *model, SAA_Elem *models,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MakeTexAnim
-//       Access: Public
-//  Description: Given a scene, a POLYGON model, and the name
-//               of the that model, get the u and v offsets for
-//               the current frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a scene, a POLYGON model, and the name of the that model, get the u
+ * and v offsets for the current frame.
+ */
 void soft2egg::
 MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
 {
@@ -4704,8 +4567,8 @@ MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
         // ASSUME only one texture per material
         SAA_Elem tex;
 
-        // find out how many local textures per surface
-        // ASSUME it only has one material
+        // find out how many local textures per surface ASSUME it only has one
+        // material
         SAA_materialRelationGetT2DLocNbElements( scene, &materials[0],
             FALSE, &relinfo, &numTexLoc );
 
@@ -4752,8 +4615,7 @@ MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
             SAA_texture2DGetPicName( scene, &tex, texNameLen,
                 fullTexName );
 
-            // append unique identifier to texname for
-            // this particular object
+            // append unique identifier to texname for this particular object
             uniqueTexName = (char *)malloc(sizeof(char)*
                 (strlen(modelName)+strlen(texName)+3) );
             sprintf( uniqueTexName, "%s-%s", modelName, texName );
@@ -4832,11 +4694,11 @@ MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
                     uName << modelName << ".u" << ends;
                     vName << modelName << ".v" << ends;
 
-                    // find the appropriate table to store the
-                    // duv animation info into
+                    // find the appropriate table to store the duv animation
+                    // info into
                     SAnimTable *thisTable;
 
-                    //find the duv U table associated with this model
+                    // find the duv U table associated with this model
                     thisTable = (SAnimTable *)(morphRoot->FindDescendent(
                         uName.str() ));
 
@@ -4851,7 +4713,7 @@ MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
                         fprintf( outStream, "Couldn't find uTable %s\n",
                             uName.str() );
 
-                    //find the duv V table associated with this model
+                    // find the duv V table associated with this model
                     thisTable = (SAnimTable *)(morphRoot->FindDescendent(
                         vName.str() ));
 
@@ -4872,16 +4734,14 @@ MakeTexAnim( SAA_Scene *scene, SAA_Elem *model, char *modelName )
                     fprintf( outStream, "Couldn't find vpool %s\n", modelName );
         }
 
-        //free( materials );
+        // free( materials );
     }
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: Main
-//       Access: Private
-//  Description: Instantiate converter and process a file
-////////////////////////////////////////////////////////////////////
+/**
+ * Instantiate converter and process a file
+ */
 EXPCL_MISC SI_Error soft2egg(int argc, char *argv[]) {
   // pass control to the c++ system
   init_soft2egg(argc, argv);

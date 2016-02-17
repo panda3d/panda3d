@@ -1,25 +1,23 @@
-// Filename: cmath.h
-// Created by:  drose (19May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cmath.h
+ * @author drose
+ * @date 2000-05-19
+ */
 
 #ifndef CMATH_H
 #define CMATH_H
 
-// This file declares a number of C++-style overloading wrappers
-// around the standard math library functions, so we can use
-// overloading to differentiate on type instead of having to know
-// explicitly whether we need to call, for instance, sqrtf() or
-// sqrt().
+// This file declares a number of C++-style overloading wrappers around the
+// standard math library functions, so we can use overloading to differentiate
+// on type instead of having to know explicitly whether we need to call, for
+// instance, sqrtf() or sqrt().
 
 #include "dtoolbase.h"
 
@@ -59,8 +57,8 @@ INLINE double cpow(double x, double y);
 
 INLINE int cpow(int x, int y);
 
-// Returns true if the number is NaN, false if it's a genuine number
-// or infinity.
+// Returns true if the number is NaN, false if it's a genuine number or
+// infinity.
 INLINE bool cnan(float v);
 INLINE bool cnan(double v);
 

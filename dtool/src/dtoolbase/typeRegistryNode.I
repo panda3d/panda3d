@@ -1,23 +1,19 @@
-// Filename: typeRegistryNode.I
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeRegistryNode.I
+ * @author drose
+ * @date 2001-08-06
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistryNode::Inherit::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE TypeRegistryNode::Inherit::
 Inherit() {
   _top = (TypeRegistryNode *)NULL;
@@ -25,11 +21,9 @@ Inherit() {
   _bits = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistryNode::Inherit::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE TypeRegistryNode::Inherit::
 Inherit(TypeRegistryNode *top, int bit_count,
         TypeRegistryNode::SubtreeMaskType bits) {
@@ -44,11 +38,9 @@ Inherit(TypeRegistryNode *top, int bit_count,
   _bits = bits;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistryNode::Inherit::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE TypeRegistryNode::Inherit::
 Inherit(const TypeRegistryNode::Inherit &copy) :
   _top(copy._top),
@@ -57,11 +49,9 @@ Inherit(const TypeRegistryNode::Inherit &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistryNode::Inherit::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void TypeRegistryNode::Inherit::
 operator = (const TypeRegistryNode::Inherit &copy) {
   _top = copy._top;
@@ -69,32 +59,27 @@ operator = (const TypeRegistryNode::Inherit &copy) {
   _bits = copy._bits;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistryNode::Inherit::Ordering operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool TypeRegistryNode::Inherit::
 operator < (const Inherit &other) const {
   return _top < other._top;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeRegistryNode::Inherit::is_derived_from
-//       Access: Public
-//  Description: Assuming the two Inherit objects share the same
-//               subtree top, this returns true if the bitmasks
-//               indicate that child inherits from base, or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming the two Inherit objects share the same subtree top, this returns
+ * true if the bitmasks indicate that child inherits from base, or false
+ * otherwise.
+ */
 INLINE bool TypeRegistryNode::Inherit::
-is_derived_from(const TypeRegistryNode::Inherit &child, 
+is_derived_from(const TypeRegistryNode::Inherit &child,
                 const TypeRegistryNode::Inherit &base) {
   assert(child._top == base._top);
 
-  // Child derives from base if and only if its subtree mask contains
-  // more bits (or the same number of bits), and the n low-order
-  // subtree bits that are in common are identical.
+  // Child derives from base if and only if its subtree mask contains more
+  // bits (or the same number of bits), and the n low-order subtree bits that
+  // are in common are identical.
   return ((child._mask & base._mask) == base._mask &&
           (child._bits & base._mask) == base._bits);
 }

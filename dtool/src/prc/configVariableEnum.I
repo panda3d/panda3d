@@ -1,26 +1,22 @@
-// Filename: configVariableEnum.I
-// Created by:  drose (21Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableEnum.I
+ * @author drose
+ * @date 2004-10-21
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const string &name, EnumType default_value, 
+ConfigVariableEnum(const string &name, EnumType default_value,
                    const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),
@@ -35,14 +31,12 @@ ConfigVariableEnum(const string &name, EnumType default_value,
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const string &name, const string &default_value, 
+ConfigVariableEnum(const string &name, const string &default_value,
                    const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),
@@ -57,76 +51,62 @@ ConfigVariableEnum(const string &name, const string &default_value,
   _core->set_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
 ~ConfigVariableEnum() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::operator =
-//       Access: Public
-//  Description: Reassigns the variable's local value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reassigns the variable's local value.
+ */
 template<class EnumType>
 INLINE void ConfigVariableEnum<EnumType>::
 operator = (EnumType value) {
   set_value(value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::typecast operator
-//       Access: Public
-//  Description: Returns the variable's value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's value.
+ */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
 operator EnumType () const {
   return get_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::size()
-//       Access: Public
-//  Description: Returns the number of unique words in the variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of unique words in the variable.
+ */
 template<class EnumType>
 INLINE size_t ConfigVariableEnum<EnumType>::
 size() const {
   return get_num_words();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::operator []
-//       Access: Public
-//  Description: Returns the value of the variable's nth word.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the variable's nth word.
+ */
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 operator [] (size_t n) const {
   return get_word(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::set_value
-//       Access: Public
-//  Description: Reassigns the variable's local value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reassigns the variable's local value.
+ */
 template<class EnumType>
 INLINE void ConfigVariableEnum<EnumType>::
 set_value(EnumType value) {
   set_string_value(format_enum(value));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::get_value
-//       Access: Public
-//  Description: Returns the variable's value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's value.
+ */
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 get_value() const {
@@ -138,11 +118,9 @@ get_value() const {
   return _cache;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::get_default_value
-//       Access: Public
-//  Description: Returns the variable's default value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's default value.
+ */
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 get_default_value() const {
@@ -156,36 +134,29 @@ get_default_value() const {
   return _default_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::get_word
-//       Access: Public
-//  Description: Returns the variable's nth value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable's nth value.
+ */
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 get_word(size_t n) const {
   return (EnumType)parse_string(get_string_word(n));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::set_word
-//       Access: Public
-//  Description: Reassigns the variable's nth value.  This makes a
-//               local copy of the variable's overall value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reassigns the variable's nth value.  This makes a local copy of the
+ * variable's overall value.
+ */
 template<class EnumType>
 INLINE void ConfigVariableEnum<EnumType>::
 set_word(size_t n, EnumType value) {
   set_string_word(n, format_enum(value));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::parse_string
-//       Access: Public, Virtual
-//  Description: Turns the string value into a value of the enumerated
-//               type by invoking its predefined operator >> (istream)
-//               operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Turns the string value into a value of the enumerated type by invoking its
+ * predefined operator >> (istream) operator.
+ */
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 parse_string(const string &value) const {
@@ -195,13 +166,11 @@ parse_string(const string &value) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableEnum::format_enum
-//       Access: Public, Virtual
-//  Description: The format_enum() method assumes the enumerated type
-//               has a valid operator << (ostream) defined, which
-//               balances against the operator >> (istream) operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * The format_enum() method assumes the enumerated type has a valid operator
+ * << (ostream) defined, which balances against the operator >> (istream)
+ * operator.
+ */
 template<class EnumType>
 INLINE string ConfigVariableEnum<EnumType>::
 format_enum(EnumType value) const {

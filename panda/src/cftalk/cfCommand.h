@@ -1,16 +1,15 @@
-// Filename: cfCommand.h
-// Created by:  drose (19Feb09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cfCommand.h
+ * @author drose
+ * @date 2009-02-19
+ */
 
 #ifndef CFCOMMAND_H
 #define CFCOMMAND_H
@@ -20,15 +19,13 @@
 #include "typedWritableReferenceCount.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CFCommand
-// Description : A single command in the Connected-Frame protocol.
-//               This can be sent client-to-server or
-//               server-to-client.
-//
-//               This is an abstract base class.  Individual commands
-//               will specialize from this.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single command in the Connected-Frame protocol.  This can be sent client-
+ * to-server or server-to-client.
+ *
+ * This is an abstract base class.  Individual commands will specialize from
+ * this.
+ */
 class EXPCL_CFTALK CFCommand : public TypedWritableReferenceCount {
 protected:
   CFCommand();
@@ -54,11 +51,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : CFDoCullCommand
-// Description : Starts the cull process for a particular
-//               DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the cull process for a particular DisplayRegion.
+ */
 class EXPCL_CFTALK CFDoCullCommand : public CFCommand {
 protected:
   INLINE CFDoCullCommand();

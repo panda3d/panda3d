@@ -1,16 +1,15 @@
-// Filename: eggVertexPointer.h
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggVertexPointer.h
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #ifndef EGGVERTEXPOINTER_H
 #define EGGVERTEXPOINTER_H
@@ -22,12 +21,10 @@
 #include "eggGroup.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggVertexPointer
-// Description : This stores a pointer back to a <Vertex>, or to a
-//               particular pritimive like a <Polygon>, representing a
-//               morph offset.
-////////////////////////////////////////////////////////////////////
+/**
+ * This stores a pointer back to a <Vertex>, or to a particular pritimive like
+ * a <Polygon>, representing a morph offset.
+ */
 class EggVertexPointer : public EggSliderPointer {
 public:
   EggVertexPointer(EggObject *egg_object);
@@ -56,5 +53,3 @@ private:
 };
 
 #endif
-
-

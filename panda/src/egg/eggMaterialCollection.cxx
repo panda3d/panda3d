@@ -1,16 +1,15 @@
-// Filename: eggMaterialCollection.cxx
-// Created by:  drose (30Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMaterialCollection.cxx
+ * @author drose
+ * @date 2001-04-30
+ */
 
 #include "eggMaterialCollection.h"
 #include "eggGroupNode.h"
@@ -22,20 +21,16 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMaterialCollection::
 EggMaterialCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMaterialCollection::
 EggMaterialCollection(const EggMaterialCollection &copy) :
   _materials(copy._materials),
@@ -43,11 +38,9 @@ EggMaterialCollection(const EggMaterialCollection &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMaterialCollection &EggMaterialCollection::
 operator = (const EggMaterialCollection &copy) {
   _materials = copy._materials;
@@ -55,34 +48,27 @@ operator = (const EggMaterialCollection &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMaterialCollection::
 ~EggMaterialCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::clear
-//       Access: Public
-//  Description: Removes all materials from the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all materials from the collection.
+ */
 void EggMaterialCollection::
 clear() {
   _materials.clear();
   _ordered_materials.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::extract_materials
-//       Access: Public
-//  Description: Walks the egg hierarchy beginning at the indicated
-//               node, and removes any EggMaterials encountered in the
-//               hierarchy, adding them to the collection.  Returns
-//               the number of EggMaterials encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the egg hierarchy beginning at the indicated node, and removes any
+ * EggMaterials encountered in the hierarchy, adding them to the collection.
+ * Returns the number of EggMaterials encountered.
+ */
 int EggMaterialCollection::
 extract_materials(EggGroupNode *node) {
   // Since this traversal is destructive, we'll handle it within the
@@ -90,27 +76,21 @@ extract_materials(EggGroupNode *node) {
   return node->find_materials(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::insert_materials
-//       Access: Public
-//  Description: Adds a series of EggMaterial nodes to the beginning of
-//               the indicated node to reflect each of the materials in
-//               the collection.  Returns an iterator representing the
-//               first position after the newly inserted materials.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a series of EggMaterial nodes to the beginning of the indicated node
+ * to reflect each of the materials in the collection.  Returns an iterator
+ * representing the first position after the newly inserted materials.
+ */
 EggGroupNode::iterator EggMaterialCollection::
 insert_materials(EggGroupNode *node) {
   return insert_materials(node, node->begin());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::insert_materials
-//       Access: Public
-//  Description: Adds a series of EggMaterial nodes to the beginning of
-//               the indicated node to reflect each of the materials in
-//               the collection.  Returns an iterator representing the
-//               first position after the newly inserted materials.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a series of EggMaterial nodes to the beginning of the indicated node
+ * to reflect each of the materials in the collection.  Returns an iterator
+ * representing the first position after the newly inserted materials.
+ */
 EggGroupNode::iterator EggMaterialCollection::
 insert_materials(EggGroupNode *node, EggGroupNode::iterator position) {
   OrderedMaterials::iterator oti;
@@ -124,32 +104,24 @@ insert_materials(EggGroupNode *node, EggGroupNode::iterator position) {
   return position;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::find_used_materials
-//       Access: Public
-//  Description: Walks the egg hierarchy beginning at the indicated
-//               node, looking for materials that are referenced by
-//               primitives but are not already members of the
-//               collection, adding them to the collection.
-//
-//               If this is called following extract_materials(), it
-//               can be used to pick up any additional material
-//               references that appeared in the egg hierarchy (but
-//               whose EggMaterial node was not actually part of the
-//               hierarchy).
-//
-//               If this is called in lieu of extract_materials(), it
-//               will fill up the collection with all of the
-//               referenced materials (and only the referenced
-//               materials), without destructively removing the
-//               EggMaterials from the hierarchy.
-//
-//               This also has the side effect of incrementing the
-//               internal usage count for a material in the collection
-//               each time a material reference is encountered.  This
-//               side effect is taken advantage of by
-//               remove_unused_materials().
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the egg hierarchy beginning at the indicated node, looking for
+ * materials that are referenced by primitives but are not already members of
+ * the collection, adding them to the collection.
+ *
+ * If this is called following extract_materials(), it can be used to pick up
+ * any additional material references that appeared in the egg hierarchy (but
+ * whose EggMaterial node was not actually part of the hierarchy).
+ *
+ * If this is called in lieu of extract_materials(), it will fill up the
+ * collection with all of the referenced materials (and only the referenced
+ * materials), without destructively removing the EggMaterials from the
+ * hierarchy.
+ *
+ * This also has the side effect of incrementing the internal usage count for
+ * a material in the collection each time a material reference is encountered.
+ * This side effect is taken advantage of by remove_unused_materials().
+ */
 int EggMaterialCollection::
 find_used_materials(EggNode *node) {
   int num_found = 0;
@@ -165,8 +137,8 @@ find_used_materials(EggNode *node) {
         _materials.insert(Materials::value_type(tex, 1));
         _ordered_materials.push_back(tex);
       } else {
-        // Here's a material we'd already known about.  Increment its
-        // usage count.
+        // Here's a material we'd already known about.  Increment its usage
+        // count.
         (*ti).second++;
       }
     }
@@ -185,66 +157,54 @@ find_used_materials(EggNode *node) {
   return num_found;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::remove_unused_materials
-//       Access: Public
-//  Description: Removes any materials from the collection that aren't
-//               referenced by any primitives in the indicated egg
-//               hierarchy.  This also, incidentally, adds materials to
-//               the collection that had been referenced by primitives
-//               but had not previously appeared in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any materials from the collection that aren't referenced by any
+ * primitives in the indicated egg hierarchy.  This also, incidentally, adds
+ * materials to the collection that had been referenced by primitives but had
+ * not previously appeared in the collection.
+ */
 void EggMaterialCollection::
 remove_unused_materials(EggNode *node) {
-  // We'll do this the easy way: First, we'll remove *all* the
-  // materials from the collection, and then we'll add back only those
-  // that appear in the hierarchy.
+  // We'll do this the easy way: First, we'll remove *all* the materials from
+  // the collection, and then we'll add back only those that appear in the
+  // hierarchy.
   clear();
   find_used_materials(node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::collapse_equivalent_materials
-//       Access: Public
-//  Description: Walks through the collection and collapses together
-//               any separate materials that are equivalent according
-//               to the indicated equivalence factor, eq (see
-//               EggMaterial::is_equivalent_to()).  The return value is
-//               the number of materials removed.
-//
-//               This flavor of collapse_equivalent_materials()
-//               automatically adjusts all the primitives in the egg
-//               hierarchy to refer to the new material pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the collection and collapses together any separate materials
+ * that are equivalent according to the indicated equivalence factor, eq (see
+ * EggMaterial::is_equivalent_to()).  The return value is the number of
+ * materials removed.
+ *
+ * This flavor of collapse_equivalent_materials() automatically adjusts all
+ * the primitives in the egg hierarchy to refer to the new material pointers.
+ */
 int EggMaterialCollection::
 collapse_equivalent_materials(int eq, EggGroupNode *node) {
   MaterialReplacement removed;
   int num_collapsed = collapse_equivalent_materials(eq, removed);
 
-  // And now walk the egg hierarchy and replace any references to a
-  // removed material with its replacement.
+  // And now walk the egg hierarchy and replace any references to a removed
+  // material with its replacement.
   replace_materials(node, removed);
 
   return num_collapsed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::collapse_equivalent_materials
-//       Access: Public
-//  Description: Walks through the collection and collapses together
-//               any separate materials that are equivalent according
-//               to the indicated equivalence factor, eq (see
-//               EggMaterial::is_equivalent_to()).  The return value is
-//               the number of materials removed.
-//
-//               This flavor of collapse_equivalent_materials() does
-//               not adjust any primitives in the egg hierarchy;
-//               instead, it fills up the 'removed' map with an entry
-//               for each removed material, mapping it back to the
-//               equivalent retained material.  It's up to the user to
-//               then call replace_materials() with this map, if
-//               desired, to apply these changes to the egg hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the collection and collapses together any separate materials
+ * that are equivalent according to the indicated equivalence factor, eq (see
+ * EggMaterial::is_equivalent_to()).  The return value is the number of
+ * materials removed.
+ *
+ * This flavor of collapse_equivalent_materials() does not adjust any
+ * primitives in the egg hierarchy; instead, it fills up the 'removed' map
+ * with an entry for each removed material, mapping it back to the equivalent
+ * retained material.  It's up to the user to then call replace_materials()
+ * with this map, if desired, to apply these changes to the egg hierarchy.
+ */
 int EggMaterialCollection::
 collapse_equivalent_materials(int eq, EggMaterialCollection::MaterialReplacement &removed) {
   int num_collapsed = 0;
@@ -253,8 +213,8 @@ collapse_equivalent_materials(int eq, EggMaterialCollection::MaterialReplacement
   UniqueEggMaterials uet(eq);
   Collapser collapser(uet);
 
-  // First, put all of the materials into the Collapser structure, to
-  // find out the unique materials.
+  // First, put all of the materials into the Collapser structure, to find out
+  // the unique materials.
   OrderedMaterials::const_iterator oti;
   for (oti = _ordered_materials.begin();
        oti != _ordered_materials.end();
@@ -280,16 +240,13 @@ collapse_equivalent_materials(int eq, EggMaterialCollection::MaterialReplacement
   return num_collapsed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::replace_materials
-//       Access: Public, Static
-//  Description: Walks the egg hierarchy, changing out any reference
-//               to a material appearing on the left side of the map
-//               with its corresponding material on the right side.
-//               This is most often done following a call to
-//               collapse_equivalent_materials().  It does not directly
-//               affect the Collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the egg hierarchy, changing out any reference to a material appearing
+ * on the left side of the map with its corresponding material on the right
+ * side.  This is most often done following a call to
+ * collapse_equivalent_materials().  It does not directly affect the
+ * Collection.
+ */
 void EggMaterialCollection::
 replace_materials(EggGroupNode *node,
                  const EggMaterialCollection::MaterialReplacement &replace) {
@@ -317,13 +274,10 @@ replace_materials(EggGroupNode *node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::uniquify_mrefs
-//       Access: Public
-//  Description: Guarantees that each material in the collection has a
-//               unique MRef name.  This is essential before writing
-//               an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Guarantees that each material in the collection has a unique MRef name.
+ * This is essential before writing an egg file.
+ */
 void EggMaterialCollection::
 uniquify_mrefs() {
   NameUniquifier nu(".mref", "mref");
@@ -338,26 +292,21 @@ uniquify_mrefs() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::sort_by_mref
-//       Access: Public
-//  Description: Sorts all the materials into alphabetical order by
-//               MRef name.  Subsequent operations using begin()/end()
-//               will traverse in this sorted order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts all the materials into alphabetical order by MRef name.  Subsequent
+ * operations using begin()/end() will traverse in this sorted order.
+ */
 void EggMaterialCollection::
 sort_by_mref() {
   sort(_ordered_materials.begin(), _ordered_materials.end(),
        NamableOrderByName());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::add_material
-//       Access: Public
-//  Description: Explicitly adds a new material to the collection.
-//               Returns true if the material was added, false if it
-//               was already there or if there was some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly adds a new material to the collection.  Returns true if the
+ * material was added, false if it was already there or if there was some
+ * error.
+ */
 bool EggMaterialCollection::
 add_material(EggMaterial *material) {
   nassertr(_materials.size() == _ordered_materials.size(), false);
@@ -378,13 +327,10 @@ add_material(EggMaterial *material) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::remove_material
-//       Access: Public
-//  Description: Explicitly removes a material from the collection.
-//               Returns true if the material was removed, false if it
-//               wasn't there or if there was some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly removes a material from the collection.  Returns true if the
+ * material was removed, false if it wasn't there or if there was some error.
+ */
 bool EggMaterialCollection::
 remove_material(EggMaterial *material) {
   nassertr(_materials.size() == _ordered_materials.size(), false);
@@ -409,18 +355,14 @@ remove_material(EggMaterial *material) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::create_unique_material
-//       Access: Public
-//  Description: Creates a new material if there is not already one
-//               equivalent (according to eq, see
-//               EggMaterial::is_equivalent_to()) to the indicated
-//               material, or returns the existing one if there is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new material if there is not already one equivalent (according to
+ * eq, see EggMaterial::is_equivalent_to()) to the indicated material, or
+ * returns the existing one if there is.
+ */
 EggMaterial *EggMaterialCollection::
 create_unique_material(const EggMaterial &copy, int eq) {
-  // This requires a complete linear traversal, not terribly
-  // efficient.
+  // This requires a complete linear traversal, not terribly efficient.
   OrderedMaterials::const_iterator oti;
   for (oti = _ordered_materials.begin();
        oti != _ordered_materials.end();
@@ -436,16 +378,13 @@ create_unique_material(const EggMaterial &copy, int eq) {
   return new_material;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterialCollection::find_mref
-//       Access: Public
-//  Description: Returns the material with the indicated MRef name, or
-//               NULL if no material matches.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the material with the indicated MRef name, or NULL if no material
+ * matches.
+ */
 EggMaterial *EggMaterialCollection::
 find_mref(const string &mref_name) const {
-  // This requires a complete linear traversal, not terribly
-  // efficient.
+  // This requires a complete linear traversal, not terribly efficient.
   OrderedMaterials::const_iterator oti;
   for (oti = _ordered_materials.begin();
        oti != _ordered_materials.end();

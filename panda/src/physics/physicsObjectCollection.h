@@ -1,16 +1,15 @@
-// Filename: physicsObjectCollection.h
-// Created by:  joswilso (12Jul06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicsObjectCollection.h
+ * @author joswilso
+ * @date 2006-07-12
+ */
 
 #ifndef PHYSICSOBJECTCOLLECTION_H
 #define PHYSICSOBJECTCOLLECTION_H
@@ -19,19 +18,17 @@
 #include "physicsObject.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysicsObjectCollection
-// Description : This is a set of zero or more PhysicsObjects.  It's handy
-//               for returning from functions that need to return
-//               multiple PhysicsObjects.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a set of zero or more PhysicsObjects.  It's handy for returning
+ * from functions that need to return multiple PhysicsObjects.
+ */
 class EXPCL_PANDAPHYSICS PhysicsObjectCollection {
 PUBLISHED:
   PhysicsObjectCollection();
   PhysicsObjectCollection(const PhysicsObjectCollection &copy);
   void operator = (const PhysicsObjectCollection &copy);
   INLINE ~PhysicsObjectCollection();
-  
+
   void add_physics_object(PT(PhysicsObject) physics_object);
   bool remove_physics_object(PT(PhysicsObject) physics_object);
   void add_physics_objects_from(const PhysicsObjectCollection &other);
@@ -66,5 +63,3 @@ INLINE ostream &operator << (ostream &out, const PhysicsObjectCollection &col) {
 #include "physicsObjectCollection.I"
 
 #endif
-
-

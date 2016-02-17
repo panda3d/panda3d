@@ -1,48 +1,43 @@
-// Filename: baseForce.I
-// Created by:  charles (08Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file baseForce.I
+ * @author charles
+ * @date 2000-08-08
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_force_node
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ForceNode *BaseForce::
 get_force_node() const {
   return _force_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_force_node_path
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE NodePath BaseForce::
 get_force_node_path() const {
   return _force_node_path;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_active
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BaseForce::
 set_active(bool active) {
   _active = active;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_active
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool BaseForce::
 get_active() const {
   return _active;

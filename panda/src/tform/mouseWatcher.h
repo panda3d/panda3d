@@ -1,16 +1,15 @@
-// Filename: mouseWatcher.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mouseWatcher.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef MOUSEWATCHER_H
 #define MOUSEWATCHER_H
@@ -37,34 +36,28 @@
 class MouseWatcherParameter;
 class DisplayRegion;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseWatcher
-// Description : This TFormer maintains a list of rectangular regions
-//               on the screen that are considered special mouse
-//               regions; typically these will be click buttons.  When
-//               the mouse passes in or out of one of these regions,
-//               or when a button is clicked while the mouse is in one
-//               of these regions, an event is thrown.
-//
-//               Mouse events may also be suppressed from the rest of
-//               the datagraph in these special regions.
-//
-//               This class can also implement a software mouse
-//               pointer by automatically generating a transform to
-//               apply to a piece of geometry placed under the 2-d
-//               scene graph.  It will move the geometry around
-//               according to the mouse's known position.
-//
-//               Finally, this class can keep a record of the mouse
-//               trail.  This is useful if you want to know, not just
-//               where the mouse is, but the exact sequence of movements
-//               it took to get there.  This information is mainly useful
-//               for gesture-recognition code.  To use trail logging,
-//               you need to enable the generation of pointer events
-//               in the GraphicsWindowInputDevice and set the trail
-//               log duration in the MouseWatcher. Otherwise, the
-//               trail log will be empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * This TFormer maintains a list of rectangular regions on the screen that are
+ * considered special mouse regions; typically these will be click buttons.
+ * When the mouse passes in or out of one of these regions, or when a button
+ * is clicked while the mouse is in one of these regions, an event is thrown.
+ *
+ * Mouse events may also be suppressed from the rest of the datagraph in these
+ * special regions.
+ *
+ * This class can also implement a software mouse pointer by automatically
+ * generating a transform to apply to a piece of geometry placed under the 2-d
+ * scene graph.  It will move the geometry around according to the mouse's
+ * known position.
+ *
+ * Finally, this class can keep a record of the mouse trail.  This is useful
+ * if you want to know, not just where the mouse is, but the exact sequence of
+ * movements it took to get there.  This information is mainly useful for
+ * gesture-recognition code.  To use trail logging, you need to enable the
+ * generation of pointer events in the GraphicsWindowInputDevice and set the
+ * trail log duration in the MouseWatcher.  Otherwise, the trail log will be
+ * empty.
+ */
 class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherBase {
 PUBLISHED:
   MouseWatcher(const string &name = "");
@@ -212,8 +205,8 @@ private:
                                 Thread *current_thread);
 
 private:
-  // This wants to be a set, but because you cannot export sets across
-  // dlls in windows, we will make it a vector instead
+  // This wants to be a set, but because you cannot export sets across dlls in
+  // windows, we will make it a vector instead
   typedef pvector< PT(MouseWatcherGroup) > Groups;
   Groups _groups;
 

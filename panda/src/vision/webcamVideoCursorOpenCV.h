@@ -1,16 +1,15 @@
-// Filename: webcamVideoCursorOpenCV.h
-// Created by:  drose (20Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webcamVideoCursorOpenCV.h
+ * @author drose
+ * @date 2010-10-20
+ */
 
 #ifndef WEBCAMVIDEOCURSOROPENCV_H
 #define WEBCAMVIDEOCURSOROPENCV_H
@@ -24,10 +23,9 @@
 
 class WebcamVideoOpenCV;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoCursorOpenCV
-// Description : The Video4Linux implementation of webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Video4Linux implementation of webcams.
+ */
 class WebcamVideoCursorOpenCV : public MovieVideoCursor {
 public:
   WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src);

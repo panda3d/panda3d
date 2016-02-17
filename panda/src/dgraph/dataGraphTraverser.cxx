@@ -1,16 +1,15 @@
-// Filename: dataGraphTraverser.cxx
-// Created by:  drose (11Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dataGraphTraverser.cxx
+ * @author drose
+ * @date 2002-03-11
+ */
 
 #include "dataGraphTraverser.h"
 #include "dataNode.h"
@@ -18,12 +17,10 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::CollectedData::set_data
-//       Access: Public
-//  Description: Sets the data associated with the indicated parent of
-//               this CollectedData object's node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the data associated with the indicated parent of this CollectedData
+ * object's node.
+ */
 void DataGraphTraverser::CollectedData::
 set_data(int parent_index, const DataNodeTransmit &data) {
   if ((int)_data.size() <= parent_index) {
@@ -37,30 +34,23 @@ set_data(int parent_index, const DataNodeTransmit &data) {
   _data[parent_index] = data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DataGraphTraverser::
 DataGraphTraverser(Thread *current_thread) : _current_thread(current_thread) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DataGraphTraverser::
 ~DataGraphTraverser() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::traverse
-//       Access: Public
-//  Description: Starts the traversal of the data graph at the
-//               indicated root node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the traversal of the data graph at the indicated root node.
+ */
 void DataGraphTraverser::
 traverse(PandaNode *node) {
   if (node->is_of_type(DataNode::get_class_type())) {
@@ -77,13 +67,11 @@ traverse(PandaNode *node) {
   collect_leftovers();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::traverse_below
-//       Access: Public
-//  Description: Continues the traversal to all the children of the
-//               indicated node, passing in the given data, without
-//               actually calling transmit_data() on the given node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Continues the traversal to all the children of the indicated node, passing
+ * in the given data, without actually calling transmit_data() on the given
+ * node.
+ */
 void DataGraphTraverser::
 traverse_below(PandaNode *node, const DataNodeTransmit &output) {
   PandaNode::Children cr = node->get_children(_current_thread);
@@ -93,19 +81,17 @@ traverse_below(PandaNode *node, const DataNodeTransmit &output) {
     PandaNode *child_node = cr.get_child(i);
     if (child_node->is_of_type(DataNode::get_class_type())) {
       DataNode *data_node = DCAST(DataNode, child_node);
-      // If it's a DataNode-type child, we need to pass it the data.
-      // Maybe it has only one parent, and can accept the data
-      // immediately.
+      // If it's a DataNode-type child, we need to pass it the data.  Maybe it
+      // has only one parent, and can accept the data immediately.
       int num_parents = data_node->get_num_parents(_current_thread);
       if (num_parents == 1) {
-        // The easy, common case: only one parent.  We make our output
-        // into a one-element array of inputs by turning it into a
-        // pointer.
+        // The easy, common case: only one parent.  We make our output into a
+        // one-element array of inputs by turning it into a pointer.
         r_transmit(data_node, &output);
       } else {
-        // A more difficult case: multiple parents.  We must collect
-        // instances together, meaning we must hold onto this node
-        // until we have reached it through all paths.
+        // A more difficult case: multiple parents.  We must collect instances
+        // together, meaning we must hold onto this node until we have reached
+        // it through all paths.
         CollectedData &collected_data = _multipass_data[data_node];
         int parent_index = data_node->find_parent(node, _current_thread);
         nassertv(parent_index != -1);
@@ -121,24 +107,21 @@ traverse_below(PandaNode *node, const DataNodeTransmit &output) {
       }
     } else {
       // The child node is not a DataNode-type child.  We continue the
-      // traversal, but data does not pass through this node, and
-      // instances are not collected together.  (Although we appear to
-      // be passing the data through here, it doesn't do any good
-      // anyway, since the child nodes of this node will not know how
-      // to interpret the data from a non-DataNode parent.)
+      // traversal, but data does not pass through this node, and instances
+      // are not collected together.  (Although we appear to be passing the
+      // data through here, it doesn't do any good anyway, since the child
+      // nodes of this node will not know how to interpret the data from a
+      // non-DataNode parent.)
       traverse_below(child_node, output);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::collect_leftovers
-//       Access: Public
-//  Description: Pick up any nodes that didn't get completely
-//               traversed.  These must be nodes that have multiple
-//               parents, with at least one parent completely outside
-//               of the data graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pick up any nodes that didn't get completely traversed.  These must be
+ * nodes that have multiple parents, with at least one parent completely
+ * outside of the data graph.
+ */
 void DataGraphTraverser::
 collect_leftovers() {
   while (!_multipass_data.empty()) {
@@ -151,17 +134,14 @@ collect_leftovers() {
 
     r_transmit(data_node, &collected_data._data[0]);
     _multipass_data.erase(mi);
-  }  
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::r_transmit
-//       Access: Private
-//  Description: Part of the recursive implementation of traverse().
-//               This transmits the given data into the indicated
-//               DataNode, and then sends the output data to each of
-//               the node's children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Part of the recursive implementation of traverse(). This transmits the
+ * given data into the indicated DataNode, and then sends the output data to
+ * each of the node's children.
+ */
 void DataGraphTraverser::
 r_transmit(DataNode *data_node, const DataNodeTransmit inputs[]) {
   DataNodeTransmit output;

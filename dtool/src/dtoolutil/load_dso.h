@@ -1,16 +1,15 @@
-// Filename: load_dso.h
-// Created by:  drose (12May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file load_dso.h
+ * @author drose
+ * @date 2000-05-12
+ */
 
 #ifndef LOAD_DSO_H
 #define LOAD_DSO_H
@@ -19,10 +18,9 @@
 #include "dSearchPath.h"
 #include "filename.h"
 
-// Loads in a dynamic library like an .so or .dll.  Returns NULL if
-// failure, otherwise on success.  If the filename is not absolute,
-// searches the path.  If the path is empty, searches the dtool
-// directory.
+// Loads in a dynamic library like an .so or .dll.  Returns NULL if failure,
+// otherwise on success.  If the filename is not absolute, searches the path.
+// If the path is empty, searches the dtool directory.
 
 EXPCL_DTOOL void *
 load_dso(const DSearchPath &path, const Filename &filename);
@@ -41,4 +39,3 @@ EXPCL_DTOOL void *
 get_dso_symbol(void *handle, const string &name);
 
 #endif
-

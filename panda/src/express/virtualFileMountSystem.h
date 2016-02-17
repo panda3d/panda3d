@@ -1,16 +1,15 @@
-// Filename: virtualFileMountSystem.h
-// Created by:  drose (03Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFileMountSystem.h
+ * @author drose
+ * @date 2002-08-03
+ */
 
 #ifndef VIRTUALFILEMOUNTSYSTEM_H
 #define VIRTUALFILEMOUNTSYSTEM_H
@@ -19,11 +18,9 @@
 
 #include "virtualFileMount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountSystem
-// Description : Maps an actual OS directory into the
-//               VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps an actual OS directory into the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMountSystem : public VirtualFileMount {
 PUBLISHED:
   INLINE VirtualFileMountSystem(const Filename &physical_filename);
@@ -52,7 +49,7 @@ public:
   virtual time_t get_timestamp(const Filename &file) const;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
   virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);

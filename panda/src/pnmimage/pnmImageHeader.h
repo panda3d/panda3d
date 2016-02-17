@@ -1,16 +1,15 @@
-// Filename: pnmImageHeader.h
-// Created by:  drose (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmImageHeader.h
+ * @author drose
+ * @date 2000-06-14
+ */
 
 #ifndef PNMIMAGEHEADER_H
 #define PNMIMAGEHEADER_H
@@ -31,16 +30,13 @@ class PNMFileType;
 class PNMReader;
 class PNMWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMImageHeader
-// Description : This is the base class of PNMImage, PNMReader, and
-//               PNMWriter.  It encapsulates all the information
-//               associated with an image that describes its size,
-//               number of channels, etc; that is, all the information
-//               about the image except the image data itself.  It's
-//               the sort of information you typically read from the
-//               image file's header.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class of PNMImage, PNMReader, and PNMWriter.  It
+ * encapsulates all the information associated with an image that describes
+ * its size, number of channels, etc; that is, all the information about the
+ * image except the image data itself.  It's the sort of information you
+ * typically read from the image file's header.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMImageHeader {
 PUBLISHED:
   INLINE PNMImageHeader();
@@ -48,9 +44,9 @@ PUBLISHED:
   INLINE void operator = (const PNMImageHeader &copy);
   INLINE ~PNMImageHeader();
 
-  // This enumerated type indicates the number of channels in the
-  // image, and also implies an image type.  You can treat it either
-  // as an integer number of channels or as an enumerated image type.
+  // This enumerated type indicates the number of channels in the image, and
+  // also implies an image type.  You can treat it either as an integer number
+  // of channels or as an enumerated image type.
   enum ColorType {
     CT_invalid      = 0,
     CT_grayscale    = 1,
@@ -113,9 +109,9 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
-  // Contains a single pixel specification used in compute_histogram()
-  // and make_histogram().  Note that pixels are stored by integer
-  // value, not by floating-point scaled value.
+  // Contains a single pixel specification used in compute_histogram() and
+  // make_histogram().  Note that pixels are stored by integer value, not by
+  // floating-point scaled value.
   class EXPCL_PANDA_PNMIMAGE PixelSpec {
   PUBLISHED:
     INLINE PixelSpec(xelval gray_value);
@@ -151,8 +147,8 @@ PUBLISHED:
     xelval _red, _green, _blue, _alpha;
   };
 
-  // Associates a pixel specification with an appearance count, for
-  // use in Histogram, below.
+  // Associates a pixel specification with an appearance count, for use in
+  // Histogram, below.
   class EXPCL_PANDA_PNMIMAGE PixelSpecCount {
   public:
     INLINE PixelSpecCount(const PixelSpec &pixel, int count);

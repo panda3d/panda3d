@@ -1,16 +1,15 @@
-// Filename: webGLGraphicsWindow.cxx
-// Created by:  rdb (31Mar15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webGLGraphicsWindow.cxx
+ * @author rdb
+ * @date 2015-03-31
+ */
 
 #include "webGLGraphicsWindow.h"
 #include "webGLGraphicsStateGuardian.h"
@@ -23,11 +22,9 @@
 
 TypeHandle WebGLGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WebGLGraphicsWindow::
 WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
@@ -43,45 +40,38 @@ WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WebGLGraphicsWindow::
 ~WebGLGraphicsWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if
+ * possible.
+ *
+ * Returns true if successful, false on failure.  This may fail if the mouse
+ * is not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool WebGLGraphicsWindow::
 move_pointer(int device, int x, int y) {
   if (device == 0 && _properties.get_mouse_mode() == WindowProperties::M_relative) {
-    // The pointer position is meaningless in relative mode, so we
-    // silently pretend that this worked.
+    // The pointer position is meaningless in relative mode, so we silently
+    // pretend that this worked.
     _input_devices[0].set_pointer_in_window(x, y);
     return true;
   }
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool WebGLGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -114,13 +104,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void WebGLGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -139,53 +127,42 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.
+ *
+ * This should cause the window to wait for the flip, if necessary.
+ */
 void WebGLGraphicsWindow::
 end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties()
+ *
+ * This function is called only within the window thread.
+ */
 void WebGLGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The return value is true if the properties are set, false if they are
+ * ignored.  This is mainly useful for derived classes to implement extensions
+ * to this function.
+ */
 void WebGLGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
@@ -260,12 +237,9 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void WebGLGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -298,13 +272,10 @@ close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool WebGLGraphicsWindow::
 open_window() {
   //WebGLGraphicsPipe *webgl_pipe;
@@ -392,11 +363,9 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_fullscreen_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
@@ -412,11 +381,9 @@ on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_pointerlock_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
@@ -440,11 +407,9 @@ on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, vo
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_visibility_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
@@ -460,11 +425,9 @@ on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_focus_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
@@ -485,11 +448,9 @@ on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_keyboard_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;
@@ -592,11 +553,9 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_mouse_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;
@@ -651,11 +610,9 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_wheel_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;

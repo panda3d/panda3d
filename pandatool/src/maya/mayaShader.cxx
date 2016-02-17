@@ -1,18 +1,17 @@
-// Filename: mayaShader.cxx
-// Created by:  drose (01Feb00)
-// Modified 19Mar10 by ETC PandaSE team (see
-//   header comment for mayaToEgg.cxx for details)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaShader.cxx
+ * @author drose
+ * @date 2000-02-01
+ * Modified 19Mar10 by ETC PandaSE team (see
+ *   header comment for mayaToEgg.cxx for details)
+ */
 
 #include "mayaShader.h"
 #include "maya_funcs.h"
@@ -33,12 +32,10 @@
 #include <maya/MStatus.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::Constructor
-//       Access: Public
-//  Description: Reads the Maya "shading engine" to determine the
-//               relevant shader properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the Maya "shading engine" to determine the relevant shader
+ * properties.
+ */
 MayaShader::
 MayaShader(MObject engine, bool legacy_shader) {
   MFnDependencyNode engine_fn(engine);
@@ -60,7 +57,7 @@ MayaShader(MObject engine, bool legacy_shader) {
     maya_cat.spam() << "shader plug connected to: " << shader_pa.length() << endl;
     for (size_t i = 0; i < shader_pa.length() && !found_shader; i++) {
       MObject shader = shader_pa[0].node();
-      if (shader.hasFn(MFn::kPhong)) { 
+      if (shader.hasFn(MFn::kPhong)) {
         if (legacy_shader) {
           found_shader = find_textures_legacy(shader);
         } else {
@@ -84,41 +81,33 @@ MayaShader(MObject engine, bool legacy_shader) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaShader::
 ~MayaShader() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void MayaShader::
 output(ostream &out) const {
   out << "Shader " << get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void MayaShader::
 write(ostream &out) const {
   out << "Shader " << get_name() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::get_color_def
-//       Access: Public
-//  Description: This is part of the deprecated codepath.
-//               return the color def i.e. texture at idx
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the deprecated codepath.  return the color def i.e.
+ * texture at idx
+ */
 MayaShaderColorDef *MayaShader::
 get_color_def(size_t idx) const {
   if (_color.size() > 0)
@@ -126,19 +115,15 @@ get_color_def(size_t idx) const {
   else
     return (MayaShaderColorDef *)NULL;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::get_rgba
-//       Access: Public
-//  Description: Returns the overall color of the shader as a
-//               single-precision rgba value, where the alpha
-//               component represents transparency according to the
-//               Panda convention.  If no overall color is specified
-//               (_has_flat_color is not true), this returns white.
-//
-//               Normally, Maya makes texture color override the flat
-//               color, so if a texture is also applied (_has_texture
-//               is true), this value is not used by Maya.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the overall color of the shader as a single-precision rgba value,
+ * where the alpha component represents transparency according to the Panda
+ * convention.  If no overall color is specified (_has_flat_color is not
+ * true), this returns white.
+ *
+ * Normally, Maya makes texture color override the flat color, so if a texture
+ * is also applied (_has_texture is true), this value is not used by Maya.
+ */
 LColor MayaShader::
 get_rgba(size_t idx) const {
   LColor rgba(1.0f, 1.0f, 1.0f, 1.0f);
@@ -150,12 +135,12 @@ get_rgba(size_t idx) const {
   }
 
   if (_transparency._has_flat_color) {
-    // Maya supports colored transparency, but we only support
-    // grayscale transparency.  Use the pnmimage constants to
-    // convert color to grayscale.
+    // Maya supports colored transparency, but we only support grayscale
+    // transparency.  Use the pnmimage constants to convert color to
+    // grayscale.
     double trans =
-      _transparency._flat_color[0] * lumin_red + 
-      _transparency._flat_color[1] * lumin_grn + 
+      _transparency._flat_color[0] * lumin_red +
+      _transparency._flat_color[1] * lumin_grn +
       _transparency._flat_color[2] * lumin_blu;
     rgba[3] = 1.0f - (PN_stdfloat)trans;
   }
@@ -163,11 +148,9 @@ get_rgba(size_t idx) const {
   return rgba;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::collect_maps
-//       Access: Private
-//  Description: Recalculates the all_maps list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recalculates the all_maps list.
+ */
 void MayaShader::
 collect_maps() {
   _all_maps.clear();
@@ -190,7 +173,7 @@ collect_maps() {
   for (size_t i=0; i<_height_maps.size(); i++) {
     _all_maps.push_back(_height_maps[i]);
   }
-  
+
   for (size_t i=0; i<_color.size(); i++) {
     if (_color[i]->_has_texture) {
       _all_maps.push_back(_color[i]);
@@ -201,30 +184,27 @@ collect_maps() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::find_textures_modern
-//       Access: Private
-//  Description: Locates all file textures leading into the given
-//               shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Locates all file textures leading into the given shader.
+ */
 bool MayaShader::
 find_textures_modern(MObject shader) {
   if (!shader.hasFn(MFn::kPhong)) {
-    maya_cat.warning() 
+    maya_cat.warning()
       << "The new codepath expects to see phong shaders only.\n";
     return false;
   }
   MStatus status;
   MFnPhongShader phong_fn(shader);
   MFnDependencyNode shader_fn(shader);
-  
+
   if (maya_cat.is_spam()) {
     maya_cat.spam()
       << "  Reading modern surface shader " << shader_fn.name().asChar() << "\n";
   }
 
   string n = shader_fn.name().asChar();
-  
+
   MayaShaderColorDef::find_textures_modern(n, _color_maps,  shader_fn.findPlug("color"), false);
   if (_color_maps.size() == 0) {
     MayaShaderColorDef::find_textures_modern(n, _color_maps,  shader_fn.findPlug("colorR"), false);
@@ -249,14 +229,14 @@ find_textures_modern(MObject shader) {
   if (_height_maps.size() == 0) {
     MayaShaderColorDef::find_textures_modern(n, _height_maps,  shader_fn.findPlug("surfaceThicknessR"), true);
   }
-  
+
   collect_maps();
 
   MColor color = phong_fn.color(&status);
   if (status) {
     _flat_color.set(color.r, color.g, color.b, color.a);
   }
-  
+
   color = phong_fn.transparency(&status);
   if (status) {
     _flat_color[3] = 1.0 - ((color[0] + color[1] + color[2]) * (1.0/3.0));
@@ -264,12 +244,10 @@ find_textures_modern(MObject shader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::bind_uvsets
-//       Access: Public
-//  Description: Assigns the uvset_name of each MayaShaderColorDef
-//               using the given file-to-uvset map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the uvset_name of each MayaShaderColorDef using the given file-to-
+ * uvset map.
+ */
 void MayaShader::
 bind_uvsets(MayaFileToUVSetMap &map) {
   for (size_t i=0; i<_all_maps.size(); i++) {
@@ -281,32 +259,28 @@ bind_uvsets(MayaFileToUVSetMap &map) {
       def->_uvset_name = (*p).second;
     }
   }
-  
+
   calculate_pairings();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::calculate_pairings
-//       Access: Public
-//  Description: For each Alpha texture, try to find an RGB texture
-//               that has the same properties.  Attempt to make it
-//               so that the alpha texture isn't a separate texture,
-//               but rather, an Alpha-Filename associated with an
-//               existing texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * For each Alpha texture, try to find an RGB texture that has the same
+ * properties.  Attempt to make it so that the alpha texture isn't a separate
+ * texture, but rather, an Alpha-Filename associated with an existing texture.
+ */
 void MayaShader::
 calculate_pairings() {
 
   if (_legacy_mode) {
     return;
   }
-  
+
   for (size_t i=0; i<_all_maps.size(); i++) {
     _all_maps[i]->_opposite = 0;
   }
-  
+
   bool using_transparency = (_trans_maps.size() > 0);
-  
+
   for (int retry=0; retry<2; retry++) {
     bool perfect=(retry==0);
     for (size_t i=0; i<_color_maps.size(); i++) {
@@ -318,7 +292,7 @@ calculate_pairings() {
       }
     }
   }
-  
+
   if (!using_transparency) {
     for (int retry=0; retry<2; retry++) {
       bool perfect=(retry==0);
@@ -332,7 +306,7 @@ calculate_pairings() {
       }
     }
   }
-  
+
   for (int retry=0; retry<2; retry++) {
     bool perfect=(retry==0);
     for (size_t i=0; i<_normal_maps.size(); i++) {
@@ -341,7 +315,7 @@ calculate_pairings() {
       }
     }
   }
-  
+
   for (size_t i=0; i<_normal_maps.size(); i++) {
     _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal;
   }
@@ -379,11 +353,9 @@ calculate_pairings() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::try_pair
-//       Access: Private
-//  Description: Try to associate an RGB tex with an Alpha tex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Try to associate an RGB tex with an Alpha tex.
+ */
 bool MayaShader::try_pair(MayaShaderColorDef *map1,
                           MayaShaderColorDef *map2,
                           bool perfect) {
@@ -404,7 +376,7 @@ bool MayaShader::try_pair(MayaShaderColorDef *map1,
       return false;
     }
   }
-  
+
   if ((map1->_projection_type   != map2->_projection_type) ||
       (map1->_projection_matrix != map2->_projection_matrix) ||
       (map1->_u_angle           != map2->_u_angle) ||
@@ -425,11 +397,9 @@ bool MayaShader::try_pair(MayaShaderColorDef *map1,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::get_file_prefix
-//       Access: Private
-//  Description: Try to associate an RGB tex with an Alpha tex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Try to associate an RGB tex with an Alpha tex.
+ */
 string MayaShader::
 get_file_prefix(const string &fn) {
   Filename pfn = Filename::from_os_specific(fn);
@@ -445,32 +415,28 @@ get_file_prefix(const string &fn) {
   return base;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::find_textures_legacy
-//       Access: Private
-//  Description: This is part of the legacy codepath.  
-//               Extracts out the shading information from the Maya
-//               surface shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the legacy codepath.  Extracts out the shading information
+ * from the Maya surface shader.
+ */
 bool MayaShader::
 find_textures_legacy(MObject shader) {
   MStatus status;
   MFnDependencyNode shader_fn(shader);
-  
+
   if (maya_cat.is_spam()) {
     maya_cat.spam()
       << "  Reading legacy surface shader " << shader_fn.name().asChar() << "\n";
   }
 
-  // First, check for a connection to the color attribute.  This could
-  // be a texture map or something, and will override whatever the
-  // shader says for color.
+  // First, check for a connection to the color attribute.  This could be a
+  // texture map or something, and will override whatever the shader says for
+  // color.
 
   MPlug color_plug = shader_fn.findPlug("color");
   if (color_plug.isNull()) {
-    // Or maybe a connection to outColor.  Not sure how this differs
-    // from just color, but empirically it seems that either might be
-    // used.
+    // Or maybe a connection to outColor.  Not sure how this differs from just
+    // color, but empirically it seems that either might be used.
     color_plug = shader_fn.findPlug("outColor");
   }
 
@@ -496,7 +462,7 @@ find_textures_legacy(MObject shader) {
   if (trans_plug.isNull()) {
     trans_plug = shader_fn.findPlug("outTransparency");
   }
-    
+
   if (!trans_plug.isNull()) {
     MPlugArray trans_pa;
     trans_plug.connectedTo(trans_pa, true, false);
@@ -507,15 +473,14 @@ find_textures_legacy(MObject shader) {
     }
   }
 
-  // Also try to get the ordinary color directly from the surface
-  // shader.
+  // Also try to get the ordinary color directly from the surface shader.
   bool b_color_def = true;
   if (shader.hasFn(MFn::kLambert)) {
     MFnLambertShader lambert_fn(shader);
     MColor color = lambert_fn.color(&status);
     if (status) {
-      // Warning! The alpha component of color doesn't mean
-      // transparency in Maya.
+      // Warning!  The alpha component of color doesn't mean transparency in
+      // Maya.
       for (size_t i=0; i<_color.size(); ++i) {
         _color[i]->_has_flat_color = true;
         _color[i]->_flat_color.set(color.r, color.g, color.b, color.a);
@@ -525,7 +490,7 @@ find_textures_legacy(MObject shader) {
           b_color_def = false;
 
         _transparency._flat_color.set(0.0, 0.0, 0.0, 0.0);
-        
+
         // Get the transparency separately.
         color = lambert_fn.transparency(&status);
         if (status) {
@@ -535,7 +500,7 @@ find_textures_legacy(MObject shader) {
       }
     }
   }
-  //  if (!_color._has_flat_color && !_color._has_texture) {
+  // if (!_color._has_flat_color && !_color._has_texture) {
   if (!b_color_def) {
     maya_cat.info() << shader_fn.name().asChar() << "Color def not found" << endl;
     if (maya_cat.is_spam()) {

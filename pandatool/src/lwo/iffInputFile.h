@@ -1,16 +1,15 @@
-// Filename: iffInputFile.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iffInputFile.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef IFFINPUTFILE_H
 #define IFFINPUTFILE_H
@@ -25,11 +24,9 @@
 
 class Datagram;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IffInputFile
-// Description : A wrapper around an istream used for reading an IFF
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A wrapper around an istream used for reading an IFF file.
+ */
 class IffInputFile : public TypedObject {
 public:
   IffInputFile();
@@ -99,5 +96,3 @@ private:
 #include "iffInputFile.I"
 
 #endif
-
-

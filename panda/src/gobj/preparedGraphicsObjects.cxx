@@ -1,16 +1,15 @@
-// Filename: preparedGraphicsObjects.cxx
-// Created by:  drose (19Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file preparedGraphicsObjects.cxx
+ * @author drose
+ * @date 2004-02-19
+ */
 
 #include "preparedGraphicsObjects.h"
 #include "textureContext.h"
@@ -30,11 +29,9 @@
 
 int PreparedGraphicsObjects::_name_index = 0;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PreparedGraphicsObjects::
 PreparedGraphicsObjects() :
   _lock("PreparedGraphicsObjects::_lock"),
@@ -47,25 +44,22 @@ PreparedGraphicsObjects() :
   _graphics_memory_lru("graphics_memory_lru", graphics_memory_limit),
   _sampler_object_lru("sampler_object_lru", sampler_object_limit)
 {
-  // GLGSG will turn this flag on.  This is a temporary hack to
-  // disable this feature for DX8/DX9 for now, until we work out the
-  // fine points of updating the fvf properly.
+  // GLGSG will turn this flag on.  This is a temporary hack to disable this
+  // feature for DX8DX9 for now, until we work out the fine points of updating
+  // the fvf properly.
   _support_released_buffer_cache = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PreparedGraphicsObjects::
 ~PreparedGraphicsObjects() {
-  // There may be objects that are still prepared when we destruct.
-  // If this is so, then all of the GSG's that own them have already
-  // destructed, so we can assume their resources were internally
-  // cleaned up.  Besides, we may not even be allowed to call the
-  // GSG release methods since some APIs (eg. OpenGL) require a
-  // context current.  So we just call the destructors.
+  // There may be objects that are still prepared when we destruct.  If this
+  // is so, then all of the GSG's that own them have already destructed, so we
+  // can assume their resources were internally cleaned up.  Besides, we may
+  // not even be allowed to call the GSG release methods since some APIs (eg.
+  // OpenGL) require a context current.  So we just call the destructors.
   ReMutexHolder holder(_lock);
 
   release_all_textures();
@@ -129,21 +123,16 @@ PreparedGraphicsObjects::
   _released_index_buffers.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::set_graphics_memory_limit
-//       Access: Public
-//  Description: Sets an artificial cap on graphics memory that
-//               will be imposed on this GSG.
-//
-//               This limits the total amount of graphics memory,
-//               including texture memory and vertex buffer memory,
-//               that will be consumed by the GSG, regardless of
-//               whether the hardware claims to provide more graphics
-//               memory than this. It is useful to put a ceiling on
-//               graphics memory consumed, since some drivers seem to
-//               allow the application to consume more memory than the
-//               hardware can realistically support.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets an artificial cap on graphics memory that will be imposed on this GSG.
+ *
+ * This limits the total amount of graphics memory, including texture memory
+ * and vertex buffer memory, that will be consumed by the GSG, regardless of
+ * whether the hardware claims to provide more graphics memory than this.  It
+ * is useful to put a ceiling on graphics memory consumed, since some drivers
+ * seem to allow the application to consume more memory than the hardware can
+ * realistically support.
+ */
 void PreparedGraphicsObjects::
 set_graphics_memory_limit(size_t limit) {
   if (limit != _graphics_memory_lru.get_max_size()) {
@@ -155,25 +144,19 @@ set_graphics_memory_limit(size_t limit) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::show_graphics_memory_lru
-//       Access: Public
-//  Description: Writes to the indicated ostream a report of how the
-//               various textures and vertex buffers are allocated in
-//               the LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes to the indicated ostream a report of how the various textures and
+ * vertex buffers are allocated in the LRU.
+ */
 void PreparedGraphicsObjects::
 show_graphics_memory_lru(ostream &out) const {
   _graphics_memory_lru.write(out, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::show_residency_trackers
-//       Access: Public
-//  Description: Writes to the indicated ostream a report of how the
-//               various textures and vertex buffers are allocated in
-//               the LRU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes to the indicated ostream a report of how the various textures and
+ * vertex buffers are allocated in the LRU.
+ */
 void PreparedGraphicsObjects::
 show_residency_trackers(ostream &out) const {
   out << "Textures:\n";
@@ -186,13 +169,10 @@ show_residency_trackers(ostream &out) const {
   _ibuffer_residency.write(out, 2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::enqueue_texture
-//       Access: Public
-//  Description: Indicates that a texture would like to be put on the
-//               list to be prepared when the GSG is next ready to
-//               do this (presumably at the next frame).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a texture would like to be put on the list to be prepared
+ * when the GSG is next ready to do this (presumably at the next frame).
+ */
 void PreparedGraphicsObjects::
 enqueue_texture(Texture *tex) {
   ReMutexHolder holder(_lock);
@@ -200,12 +180,9 @@ enqueue_texture(Texture *tex) {
   _enqueued_textures.insert(tex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_texture_queued
-//       Access: Public
-//  Description: Returns true if the texture has been queued on this
-//               GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the texture has been queued on this GSG, false otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_texture_queued(const Texture *tex) const {
   ReMutexHolder holder(_lock);
@@ -214,20 +191,15 @@ is_texture_queued(const Texture *tex) const {
   return (qi != _enqueued_textures.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::dequeue_texture
-//       Access: Public
-//  Description: Removes a texture from the queued list of textures to
-//               be prepared.  Normally it is not necessary to call
-//               this, unless you change your mind about preparing it
-//               at the last minute, since the texture will
-//               automatically be dequeued and prepared at the next
-//               frame.
-//
-//               The return value is true if the texture is
-//               successfully dequeued, false if it had not been
-//               queued.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a texture from the queued list of textures to be prepared.
+ * Normally it is not necessary to call this, unless you change your mind
+ * about preparing it at the last minute, since the texture will automatically
+ * be dequeued and prepared at the next frame.
+ *
+ * The return value is true if the texture is successfully dequeued, false if
+ * it had not been queued.
+ */
 bool PreparedGraphicsObjects::
 dequeue_texture(Texture *tex) {
   ReMutexHolder holder(_lock);
@@ -240,39 +212,31 @@ dequeue_texture(Texture *tex) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_texture_prepared
-//       Access: Public
-//  Description: Returns true if the texture has been prepared on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the texture has been prepared on this GSG, false otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_texture_prepared(const Texture *tex) const {
   return tex->is_prepared((PreparedGraphicsObjects *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_texture
-//       Access: Public
-//  Description: Indicates that a texture context, created by a
-//               previous call to prepare_texture(), is no longer
-//               needed.  The driver resources will not be freed until
-//               some GSG calls update(), indicating it is at a
-//               stage where it is ready to release textures--this
-//               prevents conflicts from threading or multiple GSG's
-//               sharing textures (we have no way of knowing which
-//               graphics context is currently active, or what state
-//               it's in, at the time release_texture is called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a texture context, created by a previous call to
+ * prepare_texture(), is no longer needed.  The driver resources will not be
+ * freed until some GSG calls update(), indicating it is at a stage where it
+ * is ready to release textures--this prevents conflicts from threading or
+ * multiple GSG's sharing textures (we have no way of knowing which graphics
+ * context is currently active, or what state it's in, at the time
+ * release_texture is called).
+ */
 void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
   tc->_texture->clear_prepared(tc->get_view(), this);
 
-  // We have to set the Texture pointer to NULL at this point, since
-  // the Texture itself might destruct at any time after it has been
-  // released.
+  // We have to set the Texture pointer to NULL at this point, since the
+  // Texture itself might destruct at any time after it has been released.
   tc->_texture = (Texture *)NULL;
 
   bool removed = (_prepared_textures.erase(tc) != 0);
@@ -281,25 +245,20 @@ release_texture(TextureContext *tc) {
   _released_textures.insert(tc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_texture
-//       Access: Public
-//  Description: Releases a texture if it has already been prepared,
-//               or removes it from the preparation queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases a texture if it has already been prepared, or removes it from the
+ * preparation queue.
+ */
 void PreparedGraphicsObjects::
 release_texture(Texture *tex) {
   tex->release(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_all_textures
-//       Access: Public
-//  Description: Releases all textures at once.  This will force them
-//               to be reloaded into texture memory for all GSG's that
-//               share this object.  Returns the number of textures
-//               released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases all textures at once.  This will force them to be reloaded into
+ * texture memory for all GSG's that share this object.  Returns the number of
+ * textures released.
+ */
 int PreparedGraphicsObjects::
 release_all_textures() {
   ReMutexHolder holder(_lock);
@@ -323,58 +282,46 @@ release_all_textures() {
   return num_textures;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_queued_textures
-//       Access: Public
-//  Description: Returns the number of textures that have been
-//               enqueued to be prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of textures that have been enqueued to be prepared on
+ * this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_queued_textures() const {
   return _enqueued_textures.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_prepared_textures
-//       Access: Public
-//  Description: Returns the number of textures that have already been
-//               prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of textures that have already been prepared on this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_prepared_textures() const {
   return _prepared_textures.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::prepare_texture_now
-//       Access: Public
-//  Description: Immediately creates a new TextureContext for the
-//               indicated texture and returns it.  This assumes that
-//               the GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               textures.  If this is not necessarily the case, you
-//               should use enqueue_texture() instead.
-//
-//               Normally, this function is not called directly.  Call
-//               Texture::prepare_now() instead.
-//
-//               The TextureContext contains all of the pertinent
-//               information needed by the GSG to keep track of this
-//               one particular texture, and will exist as long as the
-//               texture is ready to be rendered.
-//
-//               When either the Texture or the
-//               PreparedGraphicsObjects object destructs, the
-//               TextureContext will be deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately creates a new TextureContext for the indicated texture and
+ * returns it.  This assumes that the GraphicsStateGuardian is the currently
+ * active rendering context and that it is ready to accept new textures.  If
+ * this is not necessarily the case, you should use enqueue_texture() instead.
+ *
+ * Normally, this function is not called directly.  Call
+ * Texture::prepare_now() instead.
+ *
+ * The TextureContext contains all of the pertinent information needed by the
+ * GSG to keep track of this one particular texture, and will exist as long as
+ * the texture is ready to be rendered.
+ *
+ * When either the Texture or the PreparedGraphicsObjects object destructs,
+ * the TextureContext will be deleted.
+ */
 TextureContext *PreparedGraphicsObjects::
 prepare_texture_now(Texture *tex, int view, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
-  // Ask the GSG to create a brand new TextureContext.  There might
-  // be several GSG's sharing the same set of textures; if so, it
-  // doesn't matter which of them creates the context (since they're
-  // all shared anyway).
+  // Ask the GSG to create a brand new TextureContext.  There might be several
+  // GSG's sharing the same set of textures; if so, it doesn't matter which of
+  // them creates the context (since they're all shared anyway).
   TextureContext *tc = gsg->prepare_texture(tex, view);
 
   if (tc != (TextureContext *)NULL) {
@@ -385,13 +332,10 @@ prepare_texture_now(Texture *tex, int view, GraphicsStateGuardianBase *gsg) {
   return tc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::enqueue_sampler
-//       Access: Public
-//  Description: Indicates that a sampler would like to be put on the
-//               list to be prepared when the GSG is next ready to
-//               do this (presumably at the next frame).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a sampler would like to be put on the list to be prepared
+ * when the GSG is next ready to do this (presumably at the next frame).
+ */
 void PreparedGraphicsObjects::
 enqueue_sampler(const SamplerState &sampler) {
   ReMutexHolder holder(_lock);
@@ -399,12 +343,9 @@ enqueue_sampler(const SamplerState &sampler) {
   _enqueued_samplers.insert(sampler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_sampler_queued
-//       Access: Public
-//  Description: Returns true if the sampler has been queued on this
-//               GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the sampler has been queued on this GSG, false otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_sampler_queued(const SamplerState &sampler) const {
   ReMutexHolder holder(_lock);
@@ -413,20 +354,15 @@ is_sampler_queued(const SamplerState &sampler) const {
   return (qi != _enqueued_samplers.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::dequeue_sampler
-//       Access: Public
-//  Description: Removes a sampler from the queued list of samplers to
-//               be prepared.  Normally it is not necessary to call
-//               this, unless you change your mind about preparing it
-//               at the last minute, since the sampler will
-//               automatically be dequeued and prepared at the next
-//               frame.
-//
-//               The return value is true if the sampler is
-//               successfully dequeued, false if it had not been
-//               queued.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a sampler from the queued list of samplers to be prepared.
+ * Normally it is not necessary to call this, unless you change your mind
+ * about preparing it at the last minute, since the sampler will automatically
+ * be dequeued and prepared at the next frame.
+ *
+ * The return value is true if the sampler is successfully dequeued, false if
+ * it had not been queued.
+ */
 bool PreparedGraphicsObjects::
 dequeue_sampler(const SamplerState &sampler) {
   ReMutexHolder holder(_lock);
@@ -439,12 +375,9 @@ dequeue_sampler(const SamplerState &sampler) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_sampler_prepared
-//       Access: Public
-//  Description: Returns true if the sampler has been prepared on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the sampler has been prepared on this GSG, false otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_sampler_prepared(const SamplerState &sampler) const {
   ReMutexHolder holder(_lock);
@@ -453,15 +386,12 @@ is_sampler_prepared(const SamplerState &sampler) const {
   return (it != _prepared_samplers.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_sampler
-//       Access: Public
-//  Description: Indicates that a sampler context, created by a
-//               previous call to prepare_sampler(), is no longer
-//               needed.  The driver resources will not be freed until
-//               some GSG calls update(), indicating it is at a
-//               stage where it is ready to release samplers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a sampler context, created by a previous call to
+ * prepare_sampler(), is no longer needed.  The driver resources will not be
+ * freed until some GSG calls update(), indicating it is at a stage where it
+ * is ready to release samplers.
+ */
 void PreparedGraphicsObjects::
 release_sampler(SamplerContext *sc) {
   ReMutexHolder holder(_lock);
@@ -469,12 +399,10 @@ release_sampler(SamplerContext *sc) {
   _released_samplers.insert(sc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_sampler
-//       Access: Public
-//  Description: Releases a sampler if it has already been prepared,
-//               or removes it from the preparation queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases a sampler if it has already been prepared, or removes it from the
+ * preparation queue.
+ */
 void PreparedGraphicsObjects::
 release_sampler(const SamplerState &sampler) {
   ReMutexHolder holder(_lock);
@@ -488,13 +416,10 @@ release_sampler(const SamplerState &sampler) {
   _enqueued_samplers.erase(sampler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_all_samplers
-//       Access: Public
-//  Description: Releases all samplers at once.  This will force them
-//               to be reloaded for all GSG's that share this object.
-//               Returns the number of samplers released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases all samplers at once.  This will force them to be reloaded for all
+ * GSG's that share this object.  Returns the number of samplers released.
+ */
 int PreparedGraphicsObjects::
 release_all_samplers() {
   ReMutexHolder holder(_lock);
@@ -514,50 +439,39 @@ release_all_samplers() {
   return num_samplers;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_queued_samplers
-//       Access: Public
-//  Description: Returns the number of samplers that have been
-//               enqueued to be prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of samplers that have been enqueued to be prepared on
+ * this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_queued_samplers() const {
   return _enqueued_samplers.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_prepared_samplers
-//       Access: Public
-//  Description: Returns the number of samplers that have already been
-//               prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of samplers that have already been prepared on this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_prepared_samplers() const {
   return _prepared_samplers.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::prepare_sampler_now
-//       Access: Public
-//  Description: Immediately creates a new SamplerContext for the
-//               indicated sampler and returns it.  This assumes that
-//               the GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               samplers.  If this is not necessarily the case, you
-//               should use enqueue_sampler() instead.
-//
-//               Normally, this function is not called directly.
-//               Call Sampler::prepare_now() instead.
-//
-//               The SamplerContext contains all of the pertinent
-//               information needed by the GSG to keep track of this
-//               one particular sampler, and will exist as long as the
-//               sampler is ready to be rendered.
-//
-//               When either the Sampler or the
-//               PreparedGraphicsObjects object destructs, the
-//               SamplerContext will be deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately creates a new SamplerContext for the indicated sampler and
+ * returns it.  This assumes that the GraphicsStateGuardian is the currently
+ * active rendering context and that it is ready to accept new samplers.  If
+ * this is not necessarily the case, you should use enqueue_sampler() instead.
+ *
+ * Normally, this function is not called directly.  Call
+ * Sampler::prepare_now() instead.
+ *
+ * The SamplerContext contains all of the pertinent information needed by the
+ * GSG to keep track of this one particular sampler, and will exist as long as
+ * the sampler is ready to be rendered.
+ *
+ * When either the Sampler or the PreparedGraphicsObjects object destructs,
+ * the SamplerContext will be deleted.
+ */
 SamplerContext *PreparedGraphicsObjects::
 prepare_sampler_now(const SamplerState &sampler, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
@@ -577,13 +491,10 @@ prepare_sampler_now(const SamplerState &sampler, GraphicsStateGuardianBase *gsg)
   return sc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::enqueue_geom
-//       Access: Public
-//  Description: Indicates that a geom would like to be put on the
-//               list to be prepared when the GSG is next ready to
-//               do this (presumably at the next frame).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a geom would like to be put on the list to be prepared when
+ * the GSG is next ready to do this (presumably at the next frame).
+ */
 void PreparedGraphicsObjects::
 enqueue_geom(Geom *geom) {
   ReMutexHolder holder(_lock);
@@ -591,12 +502,9 @@ enqueue_geom(Geom *geom) {
   _enqueued_geoms.insert(geom);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_geom_queued
-//       Access: Public
-//  Description: Returns true if the geom has been queued on this
-//               GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the geom has been queued on this GSG, false otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_geom_queued(const Geom *geom) const {
   ReMutexHolder holder(_lock);
@@ -605,20 +513,15 @@ is_geom_queued(const Geom *geom) const {
   return (qi != _enqueued_geoms.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::dequeue_geom
-//       Access: Public
-//  Description: Removes a geom from the queued list of geoms to
-//               be prepared.  Normally it is not necessary to call
-//               this, unless you change your mind about preparing it
-//               at the last minute, since the geom will
-//               automatically be dequeued and prepared at the next
-//               frame.
-//
-//               The return value is true if the geom is
-//               successfully dequeued, false if it had not been
-//               queued.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a geom from the queued list of geoms to be prepared.  Normally it
+ * is not necessary to call this, unless you change your mind about preparing
+ * it at the last minute, since the geom will automatically be dequeued and
+ * prepared at the next frame.
+ *
+ * The return value is true if the geom is successfully dequeued, false if it
+ * had not been queued.
+ */
 bool PreparedGraphicsObjects::
 dequeue_geom(Geom *geom) {
   ReMutexHolder holder(_lock);
@@ -631,39 +534,32 @@ dequeue_geom(Geom *geom) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_geom_prepared
-//       Access: Public
-//  Description: Returns true if the vertex buffer has been prepared on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex buffer has been prepared on this GSG, false
+ * otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_geom_prepared(const Geom *geom) const {
   return geom->is_prepared((PreparedGraphicsObjects *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_geom
-//       Access: Public
-//  Description: Indicates that a geom context, created by a
-//               previous call to prepare_geom(), is no longer
-//               needed.  The driver resources will not be freed until
-//               some GSG calls update(), indicating it is at a
-//               stage where it is ready to release geoms--this
-//               prevents conflicts from threading or multiple GSG's
-//               sharing geoms (we have no way of knowing which
-//               graphics context is currently active, or what state
-//               it's in, at the time release_geom is called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a geom context, created by a previous call to
+ * prepare_geom(), is no longer needed.  The driver resources will not be
+ * freed until some GSG calls update(), indicating it is at a stage where it
+ * is ready to release geoms--this prevents conflicts from threading or
+ * multiple GSG's sharing geoms (we have no way of knowing which graphics
+ * context is currently active, or what state it's in, at the time
+ * release_geom is called).
+ */
 void PreparedGraphicsObjects::
 release_geom(GeomContext *gc) {
   ReMutexHolder holder(_lock);
 
   gc->_geom->clear_prepared(this);
 
-  // We have to set the Geom pointer to NULL at this point, since
-  // the Geom itself might destruct at any time after it has been
-  // released.
+  // We have to set the Geom pointer to NULL at this point, since the Geom
+  // itself might destruct at any time after it has been released.
   gc->_geom = (Geom *)NULL;
 
   bool removed = (_prepared_geoms.erase(gc) != 0);
@@ -672,14 +568,11 @@ release_geom(GeomContext *gc) {
   _released_geoms.insert(gc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_all_geoms
-//       Access: Public
-//  Description: Releases all geoms at once.  This will force them
-//               to be reloaded into geom memory for all GSG's that
-//               share this object.  Returns the number of geoms
-//               released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases all geoms at once.  This will force them to be reloaded into geom
+ * memory for all GSG's that share this object.  Returns the number of geoms
+ * released.
+ */
 int PreparedGraphicsObjects::
 release_all_geoms() {
   ReMutexHolder holder(_lock);
@@ -703,58 +596,46 @@ release_all_geoms() {
   return num_geoms;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_queued_geoms
-//       Access: Public
-//  Description: Returns the number of geoms that have been
-//               enqueued to be prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of geoms that have been enqueued to be prepared on this
+ * GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_queued_geoms() const {
   return _enqueued_geoms.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_prepared_geoms
-//       Access: Public
-//  Description: Returns the number of geoms that have already been
-//               prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of geoms that have already been prepared on this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_prepared_geoms() const {
   return _prepared_geoms.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::prepare_geom_now
-//       Access: Public
-//  Description: Immediately creates a new GeomContext for the
-//               indicated geom and returns it.  This assumes that
-//               the GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               geoms.  If this is not necessarily the case, you
-//               should use enqueue_geom() instead.
-//
-//               Normally, this function is not called directly.  Call
-//               Geom::prepare_now() instead.
-//
-//               The GeomContext contains all of the pertinent
-//               information needed by the GSG to keep track of this
-//               one particular geom, and will exist as long as the
-//               geom is ready to be rendered.
-//
-//               When either the Geom or the
-//               PreparedGraphicsObjects object destructs, the
-//               GeomContext will be deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately creates a new GeomContext for the indicated geom and returns
+ * it.  This assumes that the GraphicsStateGuardian is the currently active
+ * rendering context and that it is ready to accept new geoms.  If this is not
+ * necessarily the case, you should use enqueue_geom() instead.
+ *
+ * Normally, this function is not called directly.  Call Geom::prepare_now()
+ * instead.
+ *
+ * The GeomContext contains all of the pertinent information needed by the GSG
+ * to keep track of this one particular geom, and will exist as long as the
+ * geom is ready to be rendered.
+ *
+ * When either the Geom or the PreparedGraphicsObjects object destructs, the
+ * GeomContext will be deleted.
+ */
 GeomContext *PreparedGraphicsObjects::
 prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
-  // Ask the GSG to create a brand new GeomContext.  There might
-  // be several GSG's sharing the same set of geoms; if so, it
-  // doesn't matter which of them creates the context (since they're
-  // all shared anyway).
+  // Ask the GSG to create a brand new GeomContext.  There might be several
+  // GSG's sharing the same set of geoms; if so, it doesn't matter which of
+  // them creates the context (since they're all shared anyway).
   GeomContext *gc = gsg->prepare_geom(geom);
 
   if (gc != (GeomContext *)NULL) {
@@ -765,13 +646,10 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
   return gc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::enqueue_shader
-//       Access: Public
-//  Description: Indicates that a shader would like to be put on the
-//               list to be prepared when the GSG is next ready to
-//               do this (presumably at the next frame).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a shader would like to be put on the list to be prepared
+ * when the GSG is next ready to do this (presumably at the next frame).
+ */
 void PreparedGraphicsObjects::
 enqueue_shader(Shader *se) {
   ReMutexHolder holder(_lock);
@@ -779,12 +657,9 @@ enqueue_shader(Shader *se) {
   _enqueued_shaders.insert(se);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_shader_queued
-//       Access: Public
-//  Description: Returns true if the shader has been queued on this
-//               GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the shader has been queued on this GSG, false otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_shader_queued(const Shader *shader) const {
   ReMutexHolder holder(_lock);
@@ -793,20 +668,15 @@ is_shader_queued(const Shader *shader) const {
   return (qi != _enqueued_shaders.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::dequeue_shader
-//       Access: Public
-//  Description: Removes a shader from the queued list of shaders to
-//               be prepared.  Normally it is not necessary to call
-//               this, unless you change your mind about preparing it
-//               at the last minute, since the shader will
-//               automatically be dequeued and prepared at the next
-//               frame.
-//
-//               The return value is true if the shader is
-//               successfully dequeued, false if it had not been
-//               queued.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a shader from the queued list of shaders to be prepared.  Normally
+ * it is not necessary to call this, unless you change your mind about
+ * preparing it at the last minute, since the shader will automatically be
+ * dequeued and prepared at the next frame.
+ *
+ * The return value is true if the shader is successfully dequeued, false if
+ * it had not been queued.
+ */
 bool PreparedGraphicsObjects::
 dequeue_shader(Shader *se) {
   ReMutexHolder holder(_lock);
@@ -819,39 +689,31 @@ dequeue_shader(Shader *se) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_shader_prepared
-//       Access: Public
-//  Description: Returns true if the shader has been prepared on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the shader has been prepared on this GSG, false otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_shader_prepared(const Shader *shader) const {
   return shader->is_prepared((PreparedGraphicsObjects *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_shader
-//       Access: Public
-//  Description: Indicates that a shader context, created by a
-//               previous call to prepare_shader(), is no longer
-//               needed.  The driver resources will not be freed until
-//               some GSG calls update(), indicating it is at a
-//               stage where it is ready to release shaders--this
-//               prevents conflicts from threading or multiple GSG's
-//               sharing shaders (we have no way of knowing which
-//               graphics context is currently active, or what state
-//               it's in, at the time release_shader is called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a shader context, created by a previous call to
+ * prepare_shader(), is no longer needed.  The driver resources will not be
+ * freed until some GSG calls update(), indicating it is at a stage where it
+ * is ready to release shaders--this prevents conflicts from threading or
+ * multiple GSG's sharing shaders (we have no way of knowing which graphics
+ * context is currently active, or what state it's in, at the time
+ * release_shader is called).
+ */
 void PreparedGraphicsObjects::
 release_shader(ShaderContext *sc) {
   ReMutexHolder holder(_lock);
 
   sc->_shader->clear_prepared(this);
 
-  // We have to set the Shader pointer to NULL at this point, since
-  // the Shader itself might destruct at any time after it has been
-  // released.
+  // We have to set the Shader pointer to NULL at this point, since the Shader
+  // itself might destruct at any time after it has been released.
   sc->_shader = (Shader *)NULL;
 
   bool removed = (_prepared_shaders.erase(sc) != 0);
@@ -860,14 +722,11 @@ release_shader(ShaderContext *sc) {
   _released_shaders.insert(sc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_all_shaders
-//       Access: Public
-//  Description: Releases all shaders at once.  This will force them
-//               to be reloaded into shader memory for all GSG's that
-//               share this object.  Returns the number of shaders
-//               released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases all shaders at once.  This will force them to be reloaded into
+ * shader memory for all GSG's that share this object.  Returns the number of
+ * shaders released.
+ */
 int PreparedGraphicsObjects::
 release_all_shaders() {
   ReMutexHolder holder(_lock);
@@ -891,58 +750,46 @@ release_all_shaders() {
   return num_shaders;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_queued_shaders
-//       Access: Public
-//  Description: Returns the number of shaders that have been
-//               enqueued to be prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of shaders that have been enqueued to be prepared on
+ * this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_queued_shaders() const {
   return _enqueued_shaders.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_prepared_shaders
-//       Access: Public
-//  Description: Returns the number of shaders that have already been
-//               prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of shaders that have already been prepared on this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_prepared_shaders() const {
   return _prepared_shaders.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::prepare_shader_now
-//       Access: Public
-//  Description: Immediately creates a new ShaderContext for the
-//               indicated shader and returns it.  This assumes that
-//               the GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               shaders.  If this is not necessarily the case, you
-//               should use enqueue_shader() instead.
-//
-//               Normally, this function is not called directly.  Call
-//               Shader::prepare_now() instead.
-//
-//               The ShaderContext contains all of the pertinent
-//               information needed by the GSG to keep track of this
-//               one particular shader, and will exist as long as the
-//               shader is ready to be rendered.
-//
-//               When either the Shader or the
-//               PreparedGraphicsObjects object destructs, the
-//               ShaderContext will be deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately creates a new ShaderContext for the indicated shader and
+ * returns it.  This assumes that the GraphicsStateGuardian is the currently
+ * active rendering context and that it is ready to accept new shaders.  If
+ * this is not necessarily the case, you should use enqueue_shader() instead.
+ *
+ * Normally, this function is not called directly.  Call Shader::prepare_now()
+ * instead.
+ *
+ * The ShaderContext contains all of the pertinent information needed by the
+ * GSG to keep track of this one particular shader, and will exist as long as
+ * the shader is ready to be rendered.
+ *
+ * When either the Shader or the PreparedGraphicsObjects object destructs, the
+ * ShaderContext will be deleted.
+ */
 ShaderContext *PreparedGraphicsObjects::
 prepare_shader_now(Shader *se, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
-  // Ask the GSG to create a brand new ShaderContext.  There might
-  // be several GSG's sharing the same set of shaders; if so, it
-  // doesn't matter which of them creates the context (since they're
-  // all shared anyway).
+  // Ask the GSG to create a brand new ShaderContext.  There might be several
+  // GSG's sharing the same set of shaders; if so, it doesn't matter which of
+  // them creates the context (since they're all shared anyway).
   ShaderContext *sc = gsg->prepare_shader(se);
 
   if (sc != (ShaderContext *)NULL) {
@@ -953,13 +800,10 @@ prepare_shader_now(Shader *se, GraphicsStateGuardianBase *gsg) {
   return sc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::enqueue_vertex_buffer
-//       Access: Public
-//  Description: Indicates that a buffer would like to be put on the
-//               list to be prepared when the GSG is next ready to
-//               do this (presumably at the next frame).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a buffer would like to be put on the list to be prepared
+ * when the GSG is next ready to do this (presumably at the next frame).
+ */
 void PreparedGraphicsObjects::
 enqueue_vertex_buffer(GeomVertexArrayData *data) {
   ReMutexHolder holder(_lock);
@@ -967,12 +811,10 @@ enqueue_vertex_buffer(GeomVertexArrayData *data) {
   _enqueued_vertex_buffers.insert(data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_vertex_buffer_queued
-//       Access: Public
-//  Description: Returns true if the vertex buffer has been queued on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex buffer has been queued on this GSG, false
+ * otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_vertex_buffer_queued(const GeomVertexArrayData *data) const {
   ReMutexHolder holder(_lock);
@@ -981,20 +823,15 @@ is_vertex_buffer_queued(const GeomVertexArrayData *data) const {
   return (qi != _enqueued_vertex_buffers.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::dequeue_vertex_buffer
-//       Access: Public
-//  Description: Removes a buffer from the queued list of data
-//               arrays to be prepared.  Normally it is not necessary
-//               to call this, unless you change your mind about
-//               preparing it at the last minute, since the data will
-//               automatically be dequeued and prepared at the next
-//               frame.
-//
-//               The return value is true if the buffer is
-//               successfully dequeued, false if it had not been
-//               queued.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a buffer from the queued list of data arrays to be prepared.
+ * Normally it is not necessary to call this, unless you change your mind
+ * about preparing it at the last minute, since the data will automatically be
+ * dequeued and prepared at the next frame.
+ *
+ * The return value is true if the buffer is successfully dequeued, false if
+ * it had not been queued.
+ */
 bool PreparedGraphicsObjects::
 dequeue_vertex_buffer(GeomVertexArrayData *data) {
   ReMutexHolder holder(_lock);
@@ -1007,30 +844,24 @@ dequeue_vertex_buffer(GeomVertexArrayData *data) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_vertex_buffer_prepared
-//       Access: Public
-//  Description: Returns true if the vertex buffer has been prepared on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex buffer has been prepared on this GSG, false
+ * otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_vertex_buffer_prepared(const GeomVertexArrayData *data) const {
   return data->is_prepared((PreparedGraphicsObjects *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_vertex_buffer
-//       Access: Public
-//  Description: Indicates that a data context, created by a
-//               previous call to prepare_vertex_buffer(), is no longer
-//               needed.  The driver resources will not be freed until
-//               some GSG calls update(), indicating it is at a
-//               stage where it is ready to release datas--this
-//               prevents conflicts from threading or multiple GSG's
-//               sharing datas (we have no way of knowing which
-//               graphics context is currently active, or what state
-//               it's in, at the time release_vertex_buffer is called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a data context, created by a previous call to
+ * prepare_vertex_buffer(), is no longer needed.  The driver resources will
+ * not be freed until some GSG calls update(), indicating it is at a stage
+ * where it is ready to release datas--this prevents conflicts from threading
+ * or multiple GSG's sharing datas (we have no way of knowing which graphics
+ * context is currently active, or what state it's in, at the time
+ * release_vertex_buffer is called).
+ */
 void PreparedGraphicsObjects::
 release_vertex_buffer(VertexBufferContext *vbc) {
   ReMutexHolder holder(_lock);
@@ -1040,9 +871,8 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   size_t data_size_bytes = vbc->_data->get_data_size_bytes();
   GeomEnums::UsageHint usage_hint = vbc->_data->get_usage_hint();
 
-  // We have to set the Data pointer to NULL at this point, since
-  // the Data itself might destruct at any time after it has been
-  // released.
+  // We have to set the Data pointer to NULL at this point, since the Data
+  // itself might destruct at any time after it has been released.
   vbc->_data = (GeomVertexArrayData *)NULL;
 
   bool removed = (_prepared_vertex_buffers.erase(vbc) != 0);
@@ -1059,14 +889,11 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_all_vertex_buffers
-//       Access: Public
-//  Description: Releases all datas at once.  This will force them
-//               to be reloaded into data memory for all GSG's that
-//               share this object.  Returns the number of datas
-//               released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases all datas at once.  This will force them to be reloaded into data
+ * memory for all GSG's that share this object.  Returns the number of datas
+ * released.
+ */
 int PreparedGraphicsObjects::
 release_all_vertex_buffers() {
   ReMutexHolder holder(_lock);
@@ -1107,56 +934,46 @@ release_all_vertex_buffers() {
   return num_vertex_buffers;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_queued_vertex_buffers
-//       Access: Public
-//  Description: Returns the number of vertex buffers that have been
-//               enqueued to be prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vertex buffers that have been enqueued to be prepared
+ * on this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_queued_vertex_buffers() const {
   return _enqueued_vertex_buffers.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_prepared_vertex_buffers
-//       Access: Public
-//  Description: Returns the number of vertex buffers that have
-//               already been prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vertex buffers that have already been prepared on
+ * this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_prepared_vertex_buffers() const {
   return _prepared_vertex_buffers.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::prepare_vertex_buffer_now
-//       Access: Public
-//  Description: Immediately creates a new VertexBufferContext for the
-//               indicated data and returns it.  This assumes that
-//               the GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               datas.  If this is not necessarily the case, you
-//               should use enqueue_vertex_buffer() instead.
-//
-//               Normally, this function is not called directly.  Call
-//               Data::prepare_now() instead.
-//
-//               The VertexBufferContext contains all of the pertinent
-//               information needed by the GSG to keep track of this
-//               one particular data, and will exist as long as the
-//               data is ready to be rendered.
-//
-//               When either the Data or the
-//               PreparedGraphicsObjects object destructs, the
-//               VertexBufferContext will be deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately creates a new VertexBufferContext for the indicated data and
+ * returns it.  This assumes that the GraphicsStateGuardian is the currently
+ * active rendering context and that it is ready to accept new datas.  If this
+ * is not necessarily the case, you should use enqueue_vertex_buffer()
+ * instead.
+ *
+ * Normally, this function is not called directly.  Call Data::prepare_now()
+ * instead.
+ *
+ * The VertexBufferContext contains all of the pertinent information needed by
+ * the GSG to keep track of this one particular data, and will exist as long
+ * as the data is ready to be rendered.
+ *
+ * When either the Data or the PreparedGraphicsObjects object destructs, the
+ * VertexBufferContext will be deleted.
+ */
 VertexBufferContext *PreparedGraphicsObjects::
 prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
-  // First, see if there might be a cached context of the appropriate
-  // size.
+  // First, see if there might be a cached context of the appropriate size.
   size_t data_size_bytes = data->get_data_size_bytes();
   GeomEnums::UsageHint usage_hint = data->get_usage_hint();
   VertexBufferContext *vbc = (VertexBufferContext *)
@@ -1167,10 +984,9 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
     vbc->_data = data;
 
   } else {
-    // Ask the GSG to create a brand new VertexBufferContext.  There
-    // might be several GSG's sharing the same set of datas; if so, it
-    // doesn't matter which of them creates the context (since they're
-    // all shared anyway).
+    // Ask the GSG to create a brand new VertexBufferContext.  There might be
+    // several GSG's sharing the same set of datas; if so, it doesn't matter
+    // which of them creates the context (since they're all shared anyway).
     vbc = gsg->prepare_vertex_buffer(data);
   }
 
@@ -1182,13 +998,10 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
   return vbc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::enqueue_index_buffer
-//       Access: Public
-//  Description: Indicates that a buffer would like to be put on the
-//               list to be prepared when the GSG is next ready to
-//               do this (presumably at the next frame).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a buffer would like to be put on the list to be prepared
+ * when the GSG is next ready to do this (presumably at the next frame).
+ */
 void PreparedGraphicsObjects::
 enqueue_index_buffer(GeomPrimitive *data) {
   ReMutexHolder holder(_lock);
@@ -1196,12 +1009,10 @@ enqueue_index_buffer(GeomPrimitive *data) {
   _enqueued_index_buffers.insert(data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_index_buffer_queued
-//       Access: Public
-//  Description: Returns true if the index buffer has been queued on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the index buffer has been queued on this GSG, false
+ * otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_index_buffer_queued(const GeomPrimitive *data) const {
   ReMutexHolder holder(_lock);
@@ -1210,20 +1021,15 @@ is_index_buffer_queued(const GeomPrimitive *data) const {
   return (qi != _enqueued_index_buffers.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::dequeue_index_buffer
-//       Access: Public
-//  Description: Removes a buffer from the queued list of data
-//               arrays to be prepared.  Normally it is not necessary
-//               to call this, unless you change your mind about
-//               preparing it at the last minute, since the data will
-//               automatically be dequeued and prepared at the next
-//               frame.
-//
-//               The return value is true if the buffer is
-//               successfully dequeued, false if it had not been
-//               queued.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a buffer from the queued list of data arrays to be prepared.
+ * Normally it is not necessary to call this, unless you change your mind
+ * about preparing it at the last minute, since the data will automatically be
+ * dequeued and prepared at the next frame.
+ *
+ * The return value is true if the buffer is successfully dequeued, false if
+ * it had not been queued.
+ */
 bool PreparedGraphicsObjects::
 dequeue_index_buffer(GeomPrimitive *data) {
   ReMutexHolder holder(_lock);
@@ -1236,30 +1042,24 @@ dequeue_index_buffer(GeomPrimitive *data) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::is_index_buffer_prepared
-//       Access: Public
-//  Description: Returns true if the index buffer has been prepared on
-//               this GSG, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the index buffer has been prepared on this GSG, false
+ * otherwise.
+ */
 bool PreparedGraphicsObjects::
 is_index_buffer_prepared(const GeomPrimitive *data) const {
   return data->is_prepared((PreparedGraphicsObjects *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_index_buffer
-//       Access: Public
-//  Description: Indicates that a data context, created by a
-//               previous call to prepare_index_buffer(), is no longer
-//               needed.  The driver resources will not be freed until
-//               some GSG calls update(), indicating it is at a
-//               stage where it is ready to release datas--this
-//               prevents conflicts from threading or multiple GSG's
-//               sharing datas (we have no way of knowing which
-//               graphics context is currently active, or what state
-//               it's in, at the time release_index_buffer is called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that a data context, created by a previous call to
+ * prepare_index_buffer(), is no longer needed.  The driver resources will not
+ * be freed until some GSG calls update(), indicating it is at a stage where
+ * it is ready to release datas--this prevents conflicts from threading or
+ * multiple GSG's sharing datas (we have no way of knowing which graphics
+ * context is currently active, or what state it's in, at the time
+ * release_index_buffer is called).
+ */
 void PreparedGraphicsObjects::
 release_index_buffer(IndexBufferContext *ibc) {
   ReMutexHolder holder(_lock);
@@ -1269,9 +1069,8 @@ release_index_buffer(IndexBufferContext *ibc) {
   size_t data_size_bytes = ibc->_data->get_data_size_bytes();
   GeomEnums::UsageHint usage_hint = ibc->_data->get_usage_hint();
 
-  // We have to set the Data pointer to NULL at this point, since
-  // the Data itself might destruct at any time after it has been
-  // released.
+  // We have to set the Data pointer to NULL at this point, since the Data
+  // itself might destruct at any time after it has been released.
   ibc->_data = (GeomPrimitive *)NULL;
 
   bool removed = (_prepared_index_buffers.erase(ibc) != 0);
@@ -1288,14 +1087,11 @@ release_index_buffer(IndexBufferContext *ibc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::release_all_index_buffers
-//       Access: Public
-//  Description: Releases all datas at once.  This will force them
-//               to be reloaded into data memory for all GSG's that
-//               share this object.  Returns the number of datas
-//               released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases all datas at once.  This will force them to be reloaded into data
+ * memory for all GSG's that share this object.  Returns the number of datas
+ * released.
+ */
 int PreparedGraphicsObjects::
 release_all_index_buffers() {
   ReMutexHolder holder(_lock);
@@ -1336,56 +1132,45 @@ release_all_index_buffers() {
   return num_index_buffers;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_queued_index_buffers
-//       Access: Public
-//  Description: Returns the number of index buffers that have been
-//               enqueued to be prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of index buffers that have been enqueued to be prepared
+ * on this GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_queued_index_buffers() const {
   return _enqueued_index_buffers.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_num_prepared_index_buffers
-//       Access: Public
-//  Description: Returns the number of index buffers that have
-//               already been prepared on this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of index buffers that have already been prepared on this
+ * GSG.
+ */
 int PreparedGraphicsObjects::
 get_num_prepared_index_buffers() const {
   return _prepared_index_buffers.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::prepare_index_buffer_now
-//       Access: Public
-//  Description: Immediately creates a new IndexBufferContext for the
-//               indicated data and returns it.  This assumes that
-//               the GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               datas.  If this is not necessarily the case, you
-//               should use enqueue_index_buffer() instead.
-//
-//               Normally, this function is not called directly.  Call
-//               Data::prepare_now() instead.
-//
-//               The IndexBufferContext contains all of the pertinent
-//               information needed by the GSG to keep track of this
-//               one particular data, and will exist as long as the
-//               data is ready to be rendered.
-//
-//               When either the Data or the
-//               PreparedGraphicsObjects object destructs, the
-//               IndexBufferContext will be deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately creates a new IndexBufferContext for the indicated data and
+ * returns it.  This assumes that the GraphicsStateGuardian is the currently
+ * active rendering context and that it is ready to accept new datas.  If this
+ * is not necessarily the case, you should use enqueue_index_buffer() instead.
+ *
+ * Normally, this function is not called directly.  Call Data::prepare_now()
+ * instead.
+ *
+ * The IndexBufferContext contains all of the pertinent information needed by
+ * the GSG to keep track of this one particular data, and will exist as long
+ * as the data is ready to be rendered.
+ *
+ * When either the Data or the PreparedGraphicsObjects object destructs, the
+ * IndexBufferContext will be deleted.
+ */
 IndexBufferContext *PreparedGraphicsObjects::
 prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
-  // First, see if there might be a cached context of the appropriate
-  // size.
+  // First, see if there might be a cached context of the appropriate size.
   size_t data_size_bytes = data->get_data_size_bytes();
   GeomEnums::UsageHint usage_hint = data->get_usage_hint();
   IndexBufferContext *ibc = (IndexBufferContext *)
@@ -1396,10 +1181,9 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
     ibc->_data = data;
 
   } else {
-    // Ask the GSG to create a brand new IndexBufferContext.  There
-    // might be several GSG's sharing the same set of datas; if so, it
-    // doesn't matter which of them creates the context (since they're
-    // all shared anyway).
+    // Ask the GSG to create a brand new IndexBufferContext.  There might be
+    // several GSG's sharing the same set of datas; if so, it doesn't matter
+    // which of them creates the context (since they're all shared anyway).
     ibc = gsg->prepare_index_buffer(data);
   }
 
@@ -1411,24 +1195,19 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
   return ibc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::begin_frame
-//       Access: Public
-//  Description: This is called by the GraphicsStateGuardian to
-//               indicate that it is about to begin processing of the
-//               frame.
-//
-//               Any texture contexts that were previously passed to
-//               release_texture() are actually passed to the GSG to
-//               be freed at this point; textures that were previously
-//               passed to prepare_texture are actually loaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsStateGuardian to indicate that it is about to
+ * begin processing of the frame.
+ *
+ * Any texture contexts that were previously passed to release_texture() are
+ * actually passed to the GSG to be freed at this point; textures that were
+ * previously passed to prepare_texture are actually loaded.
+ */
 void PreparedGraphicsObjects::
 begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   ReMutexHolder holder(_lock, current_thread);
 
-  // First, release all the textures, geoms, and buffers awaiting
-  // release.
+  // First, release all the textures, geoms, and buffers awaiting release.
   if (!_released_textures.empty()) {
     Textures::iterator tci;
     for (tci = _released_textures.begin();
@@ -1498,8 +1277,7 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   _vbuffer_residency.begin_frame(current_thread);
   _ibuffer_residency.begin_frame(current_thread);
 
-  // Now prepare all the textures, geoms, and buffers awaiting
-  // preparation.
+  // Now prepare all the textures, geoms, and buffers awaiting preparation.
   EnqueuedTextures::iterator qti;
   for (qti = _enqueued_textures.begin();
        qti != _enqueued_textures.end();
@@ -1560,8 +1338,8 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qibi != _enqueued_index_buffers.end();
        ++qibi) {
     GeomPrimitive *data = (*qibi);
-    // We need this check because the actual index data may
-    // not actually have propagated to the draw thread yet.
+    // We need this check because the actual index data may not actually have
+    // propagated to the draw thread yet.
     if (data->is_indexed()) {
       data->prepare_now(this, gsg);
     }
@@ -1570,13 +1348,10 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   _enqueued_index_buffers.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::end_frame
-//       Access: Public
-//  Description: This is called by the GraphicsStateGuardian to
-//               indicate that it has finished processing of the
-//               frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsStateGuardian to indicate that it has
+ * finished processing of the frame.
+ */
 void PreparedGraphicsObjects::
 end_frame(Thread *current_thread) {
   ReMutexHolder holder(_lock, current_thread);
@@ -1586,12 +1361,9 @@ end_frame(Thread *current_thread) {
   _ibuffer_residency.end_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::init_name
-//       Access: Private, Static
-//  Description: Returns a new, unique name for a newly-constructed
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new, unique name for a newly-constructed object.
+ */
 string PreparedGraphicsObjects::
 init_name() {
   ++_name_index;
@@ -1600,17 +1372,13 @@ init_name() {
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::cache_unprepared_buffer
-//       Access: Private
-//  Description: Called when a vertex or index buffer is no longer
-//               officially "prepared".  However, we still have the
-//               context on the graphics card, and we might be able to
-//               reuse that context if we're about to re-prepare a
-//               different buffer, especially one exactly the same
-//               size.  So instead of immediately enqueuing the vertex
-//               buffer for release, we cache it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a vertex or index buffer is no longer officially "prepared".
+ * However, we still have the context on the graphics card, and we might be
+ * able to reuse that context if we're about to re-prepare a different buffer,
+ * especially one exactly the same size.  So instead of immediately enqueuing
+ * the vertex buffer for release, we cache it.
+ */
 void PreparedGraphicsObjects::
 cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
                         GeomEnums::UsageHint usage_hint,
@@ -1634,8 +1402,8 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
   }
   buffer_cache_lru.insert(buffer_cache_lru.begin(), key);
 
-  // Now release not-recently-used buffers until we fit within the
-  // constrained size.
+  // Now release not-recently-used buffers until we fit within the constrained
+  // size.
   while ((int)buffer_cache_size > released_buffer_cache_size) {
     nassertv(!buffer_cache_lru.empty());
     const BufferCacheKey &release_key = *buffer_cache_lru.rbegin();
@@ -1655,12 +1423,10 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PreparedGraphicsObjects::get_cached_buffer
-//       Access: Private
-//  Description: Returns a previously-cached buffer from the cache, or
-//               NULL if there is no such buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a previously-cached buffer from the cache, or NULL if there is no
+ * such buffer.
+ */
 BufferContext *PreparedGraphicsObjects::
 get_cached_buffer(size_t data_size_bytes, GeomEnums::UsageHint usage_hint,
                   PreparedGraphicsObjects::BufferCache &buffer_cache,

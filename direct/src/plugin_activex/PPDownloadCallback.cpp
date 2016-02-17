@@ -1,31 +1,30 @@
-// Filename: PPDownloadCallback.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PPDownloadCallback.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #include "stdafx.h"
 #include "PPDownloadCallback.h"
 #include "PPInstance.h"
 
 
-PPDownloadCallback::PPDownloadCallback( PPDownloadCallbackSync& downloadSync ) 
-    : m_downloadSync( downloadSync ), m_dwTotalRead( 0 ), 
-      m_dwTotalInStream( 0 ), m_ulObjRefCount( 1 ) 
+PPDownloadCallback::PPDownloadCallback( PPDownloadCallbackSync& downloadSync )
+    : m_downloadSync( downloadSync ), m_dwTotalRead( 0 ),
+      m_dwTotalInStream( 0 ), m_ulObjRefCount( 1 )
 {
 }
 
 PPDownloadCallback::~PPDownloadCallback()
 {
-	m_spStream.Release();
+  m_spStream.Release();
 }
 
 STDMETHODIMP PPDownloadCallback::QueryInterface(REFIID riid, void **ppvObject)
@@ -57,7 +56,7 @@ STDMETHODIMP PPDownloadCallback::QueryInterface(REFIID riid, void **ppvObject)
     }
 
     return E_NOINTERFACE;
-}                                             
+}
 
 STDMETHODIMP_(ULONG) PPDownloadCallback::AddRef()
 {
@@ -102,7 +101,7 @@ STDMETHODIMP PPDownloadCallback::OnProgress(ULONG ulProgress,
                                          LPCWSTR szStatusText)
 {
 #ifdef _DEBUG
-    static const LPCTSTR plpszStatus[] = 
+    static const LPCTSTR plpszStatus[] =
     {
         _T("BINDSTATUS_FINDINGRESOURCE"),  // 1
         _T("BINDSTATUS_CONNECTING"),

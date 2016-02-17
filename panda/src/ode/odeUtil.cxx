@@ -1,37 +1,31 @@
-// Filename: odeUtil.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeUtil.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #include "odeUtil.h"
 
 dReal OdeUtil::OC_infinity = dInfinity;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeUtil::get_connecting_joint
-//       Access: Public, Static
-//  Description: Returns the joint that connects the given bodies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the joint that connects the given bodies.
+ */
 OdeJoint OdeUtil::
 get_connecting_joint(const OdeBody &body1, const OdeBody &body2) {
   return OdeJoint(dConnectingJoint(body1.get_id(),body2.get_id()));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeUtil::get_connecting_joint_list
-//       Access: Public, Static
-//  Description: Returns a collection of joints connecting the
-//               specified bodies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a collection of joints connecting the specified bodies.
+ */
 OdeJointCollection OdeUtil::
 get_connecting_joint_list(const OdeBody &body1, const OdeBody &body2) {
   const int max_possible_joints = min(body1.get_num_joints(), body1.get_num_joints());
@@ -48,29 +42,23 @@ get_connecting_joint_list(const OdeBody &body1, const OdeBody &body2) {
   return joints;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeUtil::are_connected
-//       Access: Public, Static
-//  Description: Returns 1 if the given bodies are connected
-//               by a joint, returns 0 otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 1 if the given bodies are connected by a joint, returns 0
+ * otherwise.
+ */
 int OdeUtil::
 are_connected(const OdeBody &body1, const OdeBody &body2) {
   return dAreConnected(body1.get_id(),body2.get_id());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeUtil::are_connected_excluding
-//       Access: Public, Static
-//  Description: Returns 1 if the given bodies are connected
-//               by a joint that does not match the given
-//               joint_type, returns 0 otherwise. This is useful
-//               for deciding whether to add contact joints between
-//               two bodies: if they are already connected by
-//               non-contact joints then it may not be appropriate
-//               to add contacts, however it is okay to add more
-//               contact between bodies that already have contacts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 1 if the given bodies are connected by a joint that does not match
+ * the given joint_type, returns 0 otherwise.  This is useful for deciding
+ * whether to add contact joints between two bodies: if they are already
+ * connected by non-contact joints then it may not be appropriate to add
+ * contacts, however it is okay to add more contact between bodies that
+ * already have contacts.
+ */
 int OdeUtil::
 are_connected_excluding(const OdeBody &body1,
                         const OdeBody &body2,
@@ -80,13 +68,10 @@ are_connected_excluding(const OdeBody &body1,
         joint_type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeUtil::collide
-//       Access: Public, Static
-//  Description: Given two geometry objects that potentially touch
-//               (geom1 and geom2), generate contact information
-//               for them. Returns an OdeCollisionEntry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given two geometry objects that potentially touch (geom1 and geom2),
+ * generate contact information for them.  Returns an OdeCollisionEntry.
+ */
 PT(OdeCollisionEntry) OdeUtil::
 collide(const OdeGeom &geom1, const OdeGeom &geom2, const short int max_contacts) {
   dContactGeom *contact_list = (dContactGeom *)PANDA_MALLOC_ARRAY(max_contacts * sizeof(dContactGeom));

@@ -1,31 +1,27 @@
-// Filename: p3dCert_strings.cxx
-// Created by:  rdb (25Mar15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dCert_strings.cxx
+ * @author rdb
+ * @date 2015-03-25
+ */
 
 #include "p3dCert_strings.h"
 
-// Translations kindly provided by:
-// eng: drwr
-// nld: rdb
-// deu: Sebastian Hoffmann <TheCheapestPixels at googlemail dot com>
-// spa: Imanol Celaya <imanol at celaya dot me>
-// ita: Flavio Clava
-// rus: montreal
+// Translations kindly provided by: eng: drwr nld: rdb deu: Sebastian Hoffmann
+// <TheCheapestPixels at googlemail dot com> spa: Imanol Celaya <imanol at
+// celaya dot me> ita: Flavio Clava rus: montreal
 
 const char *language_codes[LI_COUNT] =
   {"en", "nl", "de", "es", "it", "eo", "ru"};
 
-// https://msdn.microsoft.com/en-us/library/windows/desktop/dd318693%28v=vs.85%29.aspx
+// https:msdn.microsoft.comen-
+// uslibrarywindowsdesktopdd318693%28v=vs.85%29.aspx
 const unsigned char language_ids[LI_COUNT] =
   {0x09, 0x13, 0x07, 0x0A, 0x10, 0x8F, 0x19};
 

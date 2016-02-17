@@ -1,16 +1,15 @@
-// Filename: interrogateFunction.h
-// Created by:  drose (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateFunction.h
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #ifndef INTERROGATEFUNCTION_H
 #define INTERROGATEFUNCTION_H
@@ -25,10 +24,9 @@
 class IndexRemapper;
 class CPPInstance;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateFunction
-// Description : An internal representation of a function.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a function.
+ */
 class EXPCL_INTERROGATEDB InterrogateFunction : public InterrogateComponent {
 public:
   InterrogateFunction(InterrogateModuleDef *def = NULL);
@@ -85,15 +83,15 @@ private:
   Wrappers _python_wrappers;
 
 public:
-  // The rest of the members in this class aren't part of the public
-  // interface to interrogate, but are used internally as the
-  // interrogate database is built.  They are valid only during the
-  // session of interrogate that generates the database, and will not
-  // be filled in when the database is reloaded from disk.
+  // The rest of the members in this class aren't part of the public interface
+  // to interrogate, but are used internally as the interrogate database is
+  // built.  They are valid only during the session of interrogate that
+  // generates the database, and will not be filled in when the database is
+  // reloaded from disk.
 
-  // This must be a pointer, rather than a concrete map, so we don't
-  // risk trying to create a map in one DLL and access it in another.
-  // Silly Windows.
+  // This must be a pointer, rather than a concrete map, so we don't risk
+  // trying to create a map in one DLL and access it in another.  Silly
+  // Windows.
   typedef map<string, CPPInstance *> Instances;
   Instances *_instances;
   string _expression;

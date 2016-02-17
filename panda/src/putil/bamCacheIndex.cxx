@@ -1,16 +1,15 @@
-// Filename: bamCacheIndex.cxx
-// Created by:  drose (19Jun06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamCacheIndex.cxx
+ * @author drose
+ * @date 2006-06-19
+ */
 
 #include "bamCacheIndex.h"
 #include "bamReader.h"
@@ -22,25 +21,21 @@
 TypeHandle BamCacheIndex::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BamCacheIndex::
 ~BamCacheIndex() {
 #ifndef NDEBUG
-  // We need to "empty" the linked list to make the LinkedListNode
-  // destructors happy.
+  // We need to "empty" the linked list to make the LinkedListNode destructors
+  // happy.
   release_records();
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BamCacheIndex::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -59,19 +54,15 @@ write(ostream &out, int indent_level) const {
     << setw(12) << _cache_size << " bytes total\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::process_new_records
-//       Access: Private
-//  Description: Should be called after the _records index has been
-//               filled externally, this will sort the records by
-//               access time and calculate _cache_size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called after the _records index has been filled externally, this
+ * will sort the records by access time and calculate _cache_size.
+ */
 void BamCacheIndex::
 process_new_records() {
   nassertv(_cache_size == 0);
 
-  // Fill up a vector so we can sort the records into order by access
-  // time.
+  // Fill up a vector so we can sort the records into order by access time.
   RecordVector rv;
   rv.reserve(_records.size());
 
@@ -92,15 +83,12 @@ process_new_records() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::release_records
-//       Access: Private
-//  Description: This is the inverse of process_new_records: it
-//               releases the records from the linked list, so that
-//               they may be added to another index or whatever.
-//               Calling this, of course, invalidates the index until
-//               process_new_records() is called again.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the inverse of process_new_records: it releases the records from
+ * the linked list, so that they may be added to another index or whatever.
+ * Calling this, of course, invalidates the index until process_new_records()
+ * is called again.
+ */
 void BamCacheIndex::
 release_records() {
   Records::const_iterator ri;
@@ -114,12 +102,10 @@ release_records() {
   _cache_size = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::evict_old_file
-//       Access: Private
-//  Description: Evicts an old file from the cache.  Records the
-//               record.  Returns NULL if the cache is empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts an old file from the cache.  Records the record.  Returns NULL if
+ * the cache is empty.
+ */
 PT(BamCacheRecord) BamCacheIndex::
 evict_old_file() {
   if (_next == this) {
@@ -127,8 +113,7 @@ evict_old_file() {
     return NULL;
   }
 
-  // The first record in the linked list is the least-recently-used
-  // one.
+  // The first record in the linked list is the least-recently-used one.
   PT(BamCacheRecord) record = (BamCacheRecord *)_next;
   bool removed = remove_record(record->get_source_pathname());
   nassertr(removed, NULL);
@@ -136,18 +121,15 @@ evict_old_file() {
   return record;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::add_record
-//       Access: Private
-//  Description: Adds a newly-created BamCacheRecord into the index.
-//               If a matching record is already in the index, it is
-//               replaced with the new record.  Returns true if the
-//               record was added, or false if the equivalent record
-//               was already there and the index is unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a newly-created BamCacheRecord into the index.  If a matching record
+ * is already in the index, it is replaced with the new record.  Returns true
+ * if the record was added, or false if the equivalent record was already
+ * there and the index is unchanged.
+ */
 bool BamCacheIndex::
 add_record(BamCacheRecord *record) {
-  pair<Records::iterator, bool> result = 
+  pair<Records::iterator, bool> result =
     _records.insert(Records::value_type(record->get_source_pathname(), record));
   if (!result.second) {
     // We already had a record for this filename; it gets replaced.
@@ -168,14 +150,11 @@ add_record(BamCacheRecord *record) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::remove_record
-//       Access: Private
-//  Description: Searches for the matching record in the index and
-//               removes it if it is found.  Returns true if the
-//               record was found and removed, or false if there was
-//               no such record and the index is unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the matching record in the index and removes it if it is
+ * found.  Returns true if the record was found and removed, or false if there
+ * was no such record and the index is unchanged.
+ */
 bool BamCacheIndex::
 remove_record(const Filename &source_pathname) {
   Records::iterator ri = _records.find(source_pathname);
@@ -191,23 +170,18 @@ remove_record(const Filename &source_pathname) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               BamCacheRecord.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type BamCacheRecord.
+ */
 void BamCacheIndex::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void BamCacheIndex::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -219,14 +193,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type BamCacheIndex is encountered
-//               in the Bam file.  It should create the BamCacheIndex
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BamCacheIndex is encountered in the Bam file.  It should create the
+ * BamCacheIndex and extract its information from the file.
+ */
 TypedWritable *BamCacheIndex::
 make_from_bam(const FactoryParams &params) {
   BamCacheIndex *object = new BamCacheIndex;
@@ -239,13 +210,10 @@ make_from_bam(const FactoryParams &params) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int BamCacheIndex::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
@@ -270,13 +238,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BamCacheIndex.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BamCacheIndex.
+ */
 void BamCacheIndex::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

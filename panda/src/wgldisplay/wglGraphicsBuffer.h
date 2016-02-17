@@ -1,16 +1,15 @@
-// Filename: wglGraphicsBuffer.h
-// Created by:  drose (08Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wglGraphicsBuffer.h
+ * @author drose
+ * @date 2004-02-08
+ */
 
 #ifndef WGLGRAPHICSBUFFER_H
 #define WGLGRAPHICSBUFFER_H
@@ -19,27 +18,23 @@
 #include "graphicsBuffer.h"
 #include "glgsg.h"
 
-// This must be included after we have included glgsg.h (which
-// includes gl.h).
+// This must be included after we have included glgsg.h (which includes gl.h).
 #include "wglext.h"
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 #include <windows.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsBuffer
-// Description : An offscreen render buffer.  In OpenGL under Windows,
-//               this simply renders into a window that is never made
-//               visible.  There's a Windows interface for rendering
-//               into a DIB, but this puts restrictions on the kind of
-//               pixelformat we can use, and thus makes it difficult
-//               to support one GSG rendering into an offscreen buffer
-//               and also into a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen render buffer.  In OpenGL under Windows, this simply renders
+ * into a window that is never made visible.  There's a Windows interface for
+ * rendering into a DIB, but this puts restrictions on the kind of pixelformat
+ * we can use, and thus makes it difficult to support one GSG rendering into
+ * an offscreen buffer and also into a window.
+ */
 class EXPCL_PANDAGL wglGraphicsBuffer : public GraphicsBuffer {
 public:
-  wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -75,7 +70,7 @@ private:
   int _pbuffer_sizex;
   int _pbuffer_sizey;
   PT(Texture) _pbuffer_bound;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

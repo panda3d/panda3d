@@ -1,16 +1,15 @@
-// Filename: odeContact.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeContact.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODECONTACT_H
 #define ODECONTACT_H
@@ -24,10 +23,9 @@
 #include "odeContactGeom.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeContact
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeContact : public TypedReferenceCount {
 PUBLISHED:
   OdeContact();

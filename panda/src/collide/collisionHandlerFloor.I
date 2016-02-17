@@ -1,84 +1,66 @@
-// Filename: collisionHandlerFloor.I
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandlerFloor.I
+ * @author drose
+ * @date 2002-03-16
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::set_offset
-//       Access: Public
-//  Description: Sets the linear offset to add to (or subtract from)
-//               the highest detected collision point to determine the
-//               actual height at which to set the collider.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the linear offset to add to (or subtract from) the highest detected
+ * collision point to determine the actual height at which to set the
+ * collider.
+ */
 INLINE void CollisionHandlerFloor::
 set_offset(PN_stdfloat offset) {
   _offset = offset;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::get_offset
-//       Access: Public
-//  Description: Returns the linear offset to add to (or subtract from)
-//               the highest detected collision point to determine the
-//               actual height at which to set the collider.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear offset to add to (or subtract from) the highest detected
+ * collision point to determine the actual height at which to set the
+ * collider.
+ */
 INLINE PN_stdfloat CollisionHandlerFloor::
 get_offset() const {
   return _offset;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::set_reach
-//       Access: Public
-//  Description: Sets the reach to add to (or subtract from)
-//               the highest collision point
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the reach to add to (or subtract from) the highest collision point
+ */
 INLINE void CollisionHandlerFloor::
 set_reach(PN_stdfloat reach) {
   _reach = reach;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::get_reach
-//       Access: Public
-//  Description: Returns the reach to add to (or subtract from)
-//               the highest collision point
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reach to add to (or subtract from) the highest collision point
+ */
 INLINE PN_stdfloat CollisionHandlerFloor::
 get_reach() const {
   return _reach;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::set_max_velocity
-//       Access: Public
-//  Description: Sets the maximum speed at which the object will be
-//               allowed to descend towards a floor below it, in units
-//               per second.  Set this to zero to allow it to
-//               instantly teleport any distance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the maximum speed at which the object will be allowed to descend
+ * towards a floor below it, in units per second.  Set this to zero to allow
+ * it to instantly teleport any distance.
+ */
 INLINE void CollisionHandlerFloor::
 set_max_velocity(PN_stdfloat max_velocity) {
   _max_velocity = max_velocity;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::get_max_velocity
-//       Access: Public
-//  Description: Retrieves the maximum speed at which the object will
-//               be allowed to descend towards a floor below it, in
-//               units per second.  See set_max_velocity().
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the maximum speed at which the object will be allowed to descend
+ * towards a floor below it, in units per second.  See set_max_velocity().
+ */
 INLINE PN_stdfloat CollisionHandlerFloor::
 get_max_velocity() const {
   return _max_velocity;

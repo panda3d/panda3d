@@ -1,17 +1,14 @@
-// Filename: openalAudioSound.h
-// Created by:  Ben Buchwald <bb2@alumni.cmu.edu>
-//
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file openalAudioSound.h
+ * @author Ben Buchwald <bb2@alumni.cmu.edu>
+ */
 
 #ifndef __OPENAL_AUDIO_SOUND_H__
 #define __OPENAL_AUDIO_SOUND_H__
@@ -39,42 +36,33 @@ public:
 
   ~OpenALAudioSound();
 
-  // For best compatibility, set the loop_count, start_time,
-  // volume, and balance, prior to calling play().  You may
-  // set them while they're playing, but it's implementation
-  // specific whether you get the results.
+  // For best compatibility, set the loop_count, start_time, volume, and
+  // balance, prior to calling play().  You may set them while they're
+  // playing, but it's implementation specific whether you get the results.
   void play();
   void stop();
 
-  // loop: false = play once; true = play forever.
-  // inits to false.
+  // loop: false = play once; true = play forever.  inits to false.
   void set_loop(bool loop=true);
   bool get_loop() const;
 
-  // loop_count: 0 = forever; 1 = play once; n = play n times.
-  // inits to 1.
+  // loop_count: 0 = forever; 1 = play once; n = play n times.  inits to 1.
   void set_loop_count(unsigned long loop_count=1);
   unsigned long get_loop_count() const;
 
-  // 0 = beginning; length() = end.
-  // inits to 0.0.
+  // 0 = beginning; length() = end.  inits to 0.0.
   void set_time(PN_stdfloat time=0.0);
   PN_stdfloat get_time() const;
 
-  // 0 = minimum; 1.0 = maximum.
-  // inits to 1.0.
+  // 0 = minimum; 1.0 = maximum.  inits to 1.0.
   void set_volume(PN_stdfloat volume=1.0);
   PN_stdfloat get_volume() const;
 
-  // -1.0 is hard left
-  // 0.0 is centered
-  // 1.0 is hard right
-  // inits to 0.0.
+  // -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0.
   void set_balance(PN_stdfloat balance_right=0.0);
   PN_stdfloat get_balance() const;
 
-  // play_rate is any positive float value.
-  // inits to 1.0.
+  // play_rate is any positive float value.  inits to 1.0.
   void set_play_rate(PN_stdfloat play_rate=1.0f);
   PN_stdfloat get_play_rate() const;
 
@@ -82,9 +70,8 @@ public:
   void set_active(bool active=true);
   bool get_active() const;
 
-  // This is the string that throw_event() will throw
-  // when the sound finishes playing.  It is not triggered
-  // when the sound is stopped with stop().
+  // This is the string that throw_event() will throw when the sound finishes
+  // playing.  It is not triggered when the sound is stopped with stop().
   void set_finished_event(const string& event);
   const string& get_finished_event() const;
 
@@ -93,9 +80,9 @@ public:
   // return: playing time in seconds.
   PN_stdfloat length() const;
 
-  // Controls the position of this sound's emitter.
-  // pos is a pointer to an xyz triplet of the emitter's position.
-  // vel is a pointer to an xyz triplet of the emitter's velocity.
+  // Controls the position of this sound's emitter.  pos is a pointer to an
+  // xyz triplet of the emitter's position.  vel is a pointer to an xyz
+  // triplet of the emitter's velocity.
   void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
   void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
 
@@ -172,9 +159,8 @@ private:
 
   int    _desired_mode;
 
-  // The calibrated clock is initialized when the
-  // sound starts playing, and is periodically corrected
-  // thereafter.
+  // The calibrated clock is initialized when the sound starts playing, and is
+  // periodically corrected thereafter.
   double _calibrated_clock_base;
   double _calibrated_clock_scale;
   double _calibrated_clock_decavg;
@@ -182,23 +168,20 @@ private:
   // The start_time field affects the next call to play.
   double _start_time;
 
-  // The current_time field is updated every frame
-  // during the AudioManager update.  Updates need
-  // to be atomic, because get_time can be called
-  // in the cull thread.
+  // The current_time field is updated every frame during the AudioManager
+  // update.  Updates need to be atomic, because get_time can be called in the
+  // cull thread.
   PN_stdfloat  _current_time;
 
-  // This is the string that throw_event() will throw
-  // when the sound finishes playing.  It is not triggered
-  // when the sound is stopped with stop().
+  // This is the string that throw_event() will throw when the sound finishes
+  // playing.  It is not triggered when the sound is stopped with stop().
   string _finished_event;
 
   Filename _basename;
 
-  // _active is for things like a 'turn off sound effects' in
-  // a preferences pannel.
-  // _active is not about whether a sound is currently playing.
-  // Use status() for info on whether the sound is playing.
+  // _active is for things like a 'turn off sound effects' in a preferences
+  // pannel.  _active is not about whether a sound is currently playing.  Use
+  // status() for info on whether the sound is playing.
   bool _active;
   bool _paused;
 

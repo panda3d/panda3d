@@ -1,16 +1,15 @@
-// Filename: antialiasAttrib.h
-// Created by:  drose (26Jan05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file antialiasAttrib.h
+ * @author drose
+ * @date 2005-01-26
+ */
 
 #ifndef ANTIALIASATTRIB_H
 #define ANTIALIASATTRIB_H
@@ -21,11 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AntialiasAttrib
-// Description : Specifies whether or how to enable antialiasing, if
-//               supported by the backend renderer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether or how to enable antialiasing, if supported by the
+ * backend renderer.
+ */
 class EXPCL_PANDA_PGRAPH AntialiasAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -37,7 +35,7 @@ PUBLISHED:
     M_auto        = 0x001f,
     M_type_mask   = 0x001f,
 
-    // Extra add-on bits for performance/quality hints.
+    // Extra add-on bits for performancequality hints.
     M_faster      = 0x0020,
     M_better      = 0x0040,
     M_dont_care   = 0x0060,
@@ -99,4 +97,3 @@ private:
 #include "antialiasAttrib.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: bullet_utils.h
-// Created by:  enn0x (23Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bullet_utils.h
+ * @author enn0x
+ * @date 2010-01-23
+ */
 
 #ifndef __BULLET_UTILS_H__
 #define __BULLET_UTILS_H__
@@ -39,7 +38,7 @@ EXPCL_PANDABULLET LMatrix4 btTrans_to_LMatrix4(const btTransform &tf);
 EXPCL_PANDABULLET LQuaternion btQuat_to_LQuaternion(const btQuaternion &q);
 
 EXPCL_PANDABULLET CPT(TransformState) btTrans_to_TransformState(
-  const btTransform &tf, 
+  const btTransform &tf,
   const LVecBase3 &scale=LVecBase3(1.0f, 1.0f, 1.0f));
 
 EXPCL_PANDABULLET btTransform TransformState_to_btTrans(

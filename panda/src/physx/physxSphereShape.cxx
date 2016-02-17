@@ -1,27 +1,24 @@
-// Filename: physxSphereShape.cxx
-// Created by:  enn0x (16Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxSphereShape.cxx
+ * @author enn0x
+ * @date 2009-09-16
+ */
 
 #include "physxSphereShape.h"
 #include "physxSphereShapeDesc.h"
 
 TypeHandle PhysxSphereShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereShape::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSphereShape::
 link(NxShape *shapePtr) {
 
@@ -35,11 +32,9 @@ link(NxShape *shapePtr) {
   actor->_shapes.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereShape::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSphereShape::
 unlink() {
 
@@ -50,12 +45,9 @@ unlink() {
   actor->_shapes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereShape::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the shape object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the shape object to a descriptor.
+ */
 void PhysxSphereShape::
 save_to_desc(PhysxSphereShapeDesc &shapeDesc) const {
 
@@ -63,11 +55,9 @@ save_to_desc(PhysxSphereShapeDesc &shapeDesc) const {
   _ptr->saveToDesc(shapeDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereShape::set_radius
-//       Access: Published
-//  Description: Sets the sphere radius.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the sphere radius.
+ */
 void PhysxSphereShape::
 set_radius(float radius) {
 
@@ -75,15 +65,12 @@ set_radius(float radius) {
   _ptr->setRadius(radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereShape::get_radius
-//       Access: Published
-//  Description: Returns the radius of the sphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the radius of the sphere.
+ */
 float PhysxSphereShape::
 get_radius() const {
 
   nassertr(_error_type == ET_ok, 0.0f);
   return _ptr->getRadius();
 }
-

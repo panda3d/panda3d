@@ -1,16 +1,15 @@
-// Filename: odeSpace.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeSpace.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODESPACE_H
 #define ODESPACE_H
@@ -20,7 +19,7 @@
 #include "luse.h"
 #include "bitMask.h"
 
-//included for collision tests
+// included for collision tests
 #include "odeWorld.h"
 #include "odeJointGroup.h"
 
@@ -32,10 +31,9 @@ class OdeSimpleSpace;
 class OdeHashSpace;
 class OdeQuadTreeSpace;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeSpace
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeSpace : public TypedObject {
   friend class OdeGeom;
   static const int MAX_CONTACTS;
@@ -73,7 +71,7 @@ PUBLISHED:
   void remove(OdeSpace& space);
   void clean();
   OdeGeom get_geom(int i); // Not INLINE because of forward declaration
-  //static int get_surface_type(OdeSpace * self, dGeomID o1);
+  // static int get_surface_type(OdeSpace * self, dGeomID o1);
 
   INLINE OdeSpace get_space() const;
 

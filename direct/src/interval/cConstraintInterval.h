@@ -1,16 +1,15 @@
-// Filename: cConstraintInterval.h
-// Created by:  pratt (29Sep06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cConstraintInterval.h
+ * @author pratt
+ * @date 2006-09-29
+ */
 
 #ifndef CCONSTRAINTINTERVAL_H
 #define CCONSTRAINTINTERVAL_H
@@ -18,11 +17,10 @@
 #include "directbase.h"
 #include "cInterval.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConstraintInterval
-// Description : The base class for a family of intervals that
-//               constrain some property to a value over time.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for a family of intervals that constrain some property to a
+ * value over time.
+ */
 class EXPCL_DIRECT CConstraintInterval : public CInterval {
 PUBLISHED:
  bool bogus_variable;
@@ -51,4 +49,3 @@ private:
 #include "cConstraintInterval.I"
 
 #endif
-

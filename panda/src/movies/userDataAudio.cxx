@@ -1,28 +1,25 @@
-// Filename: userDataAudio.cxx
-// Created by: jyelon (02Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file userDataAudio.cxx
+ * @author jyelon
+ * @date 2007-07-02
+ */
 
 #include "userDataAudio.h"
 #include "userDataAudioCursor.h"
 
 TypeHandle UserDataAudio::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::Constructor
-//       Access: Public
-//  Description: This constructor returns a UserDataAudio --- 
-//               a means to supply raw audio samples manually.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor returns a UserDataAudio --- a means to supply raw audio
+ * samples manually.
+ */
 UserDataAudio::
 UserDataAudio(int rate, int channels, bool remove_after_read) :
   MovieAudio("User Data Audio"),
@@ -34,22 +31,17 @@ UserDataAudio(int rate, int channels, bool remove_after_read) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 UserDataAudio::
 ~UserDataAudio() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::open
-//       Access: Published, Virtual
-//  Description: Open this audio, returning a UserDataAudioCursor.  A
-//               UserDataAudio can only be opened by one consumer
-//               at a time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this audio, returning a UserDataAudioCursor.  A UserDataAudio can only
+ * be opened by one consumer at a time.
+ */
 PT(MovieAudioCursor) UserDataAudio::
 open() {
   if (_cursor) {
@@ -60,14 +52,11 @@ open() {
   return _cursor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::read_samples
-//       Access: Private
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.  
-//               Multiple-channel audio will be interleaved. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Read audio samples from the stream.  N is the number of samples you wish to
+ * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
+ * audio will be interleaved.
+ */
 void UserDataAudio::
 read_samples(int n, PN_int16 *data) {
   int ready = (_data.size() / _desired_channels);
@@ -85,11 +74,9 @@ read_samples(int n, PN_int16 *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::append
-//       Access: Public
-//  Description: Appends audio samples to the buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends audio samples to the buffer.
+ */
 void UserDataAudio::
 append(PN_int16 *data, int n) {
   nassertv(!_aborted);
@@ -99,13 +86,10 @@ append(PN_int16 *data, int n) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::append
-//       Access: Published
-//  Description: Appends audio samples to the buffer from a 
-//               datagram.  This is intended to make it easy to 
-//               send streaming raw audio over a network.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends audio samples to the buffer from a datagram.  This is intended to
+ * make it easy to send streaming raw audio over a network.
+ */
 void UserDataAudio::
 append(DatagramIterator *src, int n) {
   nassertv(!_aborted);
@@ -117,15 +101,11 @@ append(DatagramIterator *src, int n) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::append
-//       Access: Published
-//  Description: Appends audio samples to the buffer from a 
-//               string.  The samples must be stored little-endian
-//               in the string.  This is not particularly efficient,
-//               but it may be convenient to deal with samples in
-//               python.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends audio samples to the buffer from a string.  The samples must be
+ * stored little-endian in the string.  This is not particularly efficient,
+ * but it may be convenient to deal with samples in python.
+ */
 void UserDataAudio::
 append(const string &str) {
   nassertv(!_aborted);
@@ -139,12 +119,10 @@ append(const string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::done
-//       Access: Published
-//  Description: Promises not to append any more samples, ie, this
-//               marks the end of the audio stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Promises not to append any more samples, ie, this marks the end of the
+ * audio stream.
+ */
 void UserDataAudio::
 done() {
   _aborted = true;

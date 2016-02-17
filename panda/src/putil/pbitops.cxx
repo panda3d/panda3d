@@ -1,26 +1,21 @@
-// Filename: pbitops.cxx
-// Created by:  drose (10May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pbitops.cxx
+ * @author drose
+ * @date 2008-05-10
+ */
 
 #include "pbitops.h"
 
-// The following table can be generated using this code:
-//for (int bit = 0; bit < 16; ++bit) {
-//  int w = (1 << bit);
-//  for (int i = 0; i < w; ++i) {
-//    num_bits_on[i + w] = num_bits_on[i] + 1;
-//  }
-//}
+// The following table can be generated using this code: for (int bit = 0; bit
+// < 16; ++bit) { int w = (1 << bit); for (int i = 0; i < w; ++i) {
+// num_bits_on[i + w] = num_bits_on[i] + 1; } }
 
 const unsigned char num_bits_on[65536] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3,
   2, 3, 3, 4, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 1, 2, 2, 3, 2,

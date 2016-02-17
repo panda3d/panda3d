@@ -1,27 +1,25 @@
-// Filename: webcamVideo.h
-// Created by: jyelon (01Nov2007)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webcamVideo.h
+ * @author jyelon
+ * @date 2007-11-01
+ */
 
 #ifndef WEBCAMVIDEO_H
 #define WEBCAMVIDEO_H
 
 #include "movieVideo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideo
-// Description : Allows you to open a webcam or other video capture
-//               device as a video stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allows you to open a webcam or other video capture device as a video
+ * stream.
+ */
 class EXPCL_VISION WebcamVideo : public MovieVideo {
 
 PUBLISHED:

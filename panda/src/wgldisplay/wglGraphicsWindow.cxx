@@ -1,16 +1,15 @@
-// Filename: wglGraphicsWindow.cxx
-// Created by:  drose (20Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wglGraphicsWindow.cxx
+ * @author drose
+ * @date 2002-12-20
+ */
 
 #include "wglGraphicsWindow.h"
 #include "config_wgldisplay.h"
@@ -24,13 +23,11 @@
 
 TypeHandle wglGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 wglGraphicsWindow::
-wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -42,24 +39,19 @@ wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _hdc = (HDC)0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 wglGraphicsWindow::
 ~wglGraphicsWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool wglGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
@@ -80,31 +72,29 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     wgldisplay_cat.spam()
       << "Drawing " << this << ": exposed.\n";
   }
-  
+
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
-  
+
   HGLRC context = wglgsg->get_context(_hdc);
   nassertr(context, false);
-  
+
   wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
   wglgsg->reset_if_new();
 
   if (mode == FM_render) {
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void wglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -123,46 +113,39 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.
+ *
+ * This should instruct the window to prepare for the flip at the next video
+ * sync, but it should not wait.
+ *
+ * We have the two separate functions, begin_flip() and end_flip(), to make it
+ * easier to flip all of the windows at the same time.
+ */
 void wglGraphicsWindow::
 begin_flip() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::ready_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip when command, but will not actually flip
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.
+ *
+ * This should instruct the window to prepare for the flip when command, but
+ * will not actually flip
+ *
+ * We have the two separate functions, begin_flip() and end_flip(), to make it
+ * easier to flip all of the windows at the same time.
+ */
 void wglGraphicsWindow::
 ready_flip() {
   if (_hdc) {
-    // The documentation on SwapBuffers() is not at all clear on
-    // whether the GL context needs to be current before it can be
-    // called.  Empirically, it appears that it is not necessary in
-    // many cases, but it definitely is necessary at least in the case
-    // of Mesa on Windows.
+    // The documentation on SwapBuffers() is not at all clear on whether the
+    // GL context needs to be current before it can be called.  Empirically,
+    // it appears that it is not necessary in many cases, but it definitely is
+    // necessary at least in the case of Mesa on Windows.
     wglGraphicsStateGuardian *wglgsg;
     DCAST_INTO_V(wglgsg, _gsg);
     HGLRC context = wglgsg->get_context(_hdc);
@@ -172,24 +155,20 @@ ready_flip() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.
+ *
+ * This should cause the window to wait for the flip, if necessary.
+ */
 void wglGraphicsWindow::
 end_flip() {
   if (_hdc != NULL && _flip_ready) {
-    // The documentation on SwapBuffers() is not at all clear on
-    // whether the GL context needs to be current before it can be
-    // called.  Empirically, it appears that it is not necessary in
-    // many cases, but it definitely is necessary at least in the case
-    // of Mesa on Windows.
+    // The documentation on SwapBuffers() is not at all clear on whether the
+    // GL context needs to be current before it can be called.  Empirically,
+    // it appears that it is not necessary in many cases, but it definitely is
+    // necessary at least in the case of Mesa on Windows.
     wglGraphicsStateGuardian *wglgsg;
     DCAST_INTO_V(wglgsg, _gsg);
     HGLRC context = wglgsg->get_context(_hdc);
@@ -200,12 +179,9 @@ end_flip() {
   WinGraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void wglGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -217,20 +193,17 @@ close_window() {
   WinGraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool wglGraphicsWindow::
 open_window() {
   if (!WinGraphicsWindow::open_window()) {
     return false;
   }
 
-  // GSG creation/initialization.
+  // GSG creationinitialization.
 
   wglGraphicsStateGuardian *wglgsg;
   if (_gsg == 0) {
@@ -239,8 +212,8 @@ open_window() {
     wglgsg->choose_pixel_format(_fb_properties, false);
     _gsg = wglgsg;
   } else {
-    // If the old gsg has the wrong pixel format, create a
-    // new one that shares with the old gsg.
+    // If the old gsg has the wrong pixel format, create a new one that shares
+    // with the old gsg.
     DCAST_INTO_R(wglgsg, _gsg, false);
     if (!wglgsg->get_fb_properties().subsumes(_fb_properties)) {
       wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, wglgsg);
@@ -248,13 +221,13 @@ open_window() {
       _gsg = wglgsg;
     }
   }
-  
+
   // Set up the pixel format of the window appropriately for GL.
 
   _hdc = GetDC(_hWnd);
   int pfnum = wglgsg->get_pfnum();
   PIXELFORMATDESCRIPTOR pixelformat;
-  DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
+  DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR),
                       &pixelformat);
 
 #ifdef NOTIFY_DEBUG
@@ -268,19 +241,19 @@ open_window() {
   if (!set_pfnum) {
     if (wglgsg->fail_pfnum()) {
       wgldisplay_cat.error()
-        << "SetPixelFormat(" << pfnum << ") failed; trying " 
+        << "SetPixelFormat(" << pfnum << ") failed; trying "
         << wglgsg->get_pfnum() << " instead\n";
 
       pfnum = wglgsg->get_pfnum();
-      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
+      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR),
                           &pixelformat);
 
 #ifdef NOTIFY_DEBUG
       sprintf(msg, "Selected GL PixelFormat is #%d", pfnum);
       print_pfd(&pixelformat, msg);
 #endif
-      
-      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
+
+      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR),
                           &pixelformat);
       set_pfnum = SetPixelFormat(_hdc, pfnum, &pixelformat);
     }
@@ -329,13 +302,10 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::setup_colormap
-//       Access: Private
-//  Description: Sets up a colormap for the window matching the
-//               selected pixel format.  This is necessary before
-//               creating a GL context.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up a colormap for the window matching the selected pixel format.  This
+ * is necessary before creating a GL context.
+ */
 void wglGraphicsWindow::
 setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat) {
   LOGPALETTE *logical;
@@ -387,15 +357,13 @@ setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat) {
 
 #ifdef NOTIFY_DEBUG
 
-//typedef enum {Software, MCD, ICD} OGLDriverType;
+// typedef enum {Software, MCD, ICD} OGLDriverType;
 static char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::print_pfd
-//       Access: Private, Static
-//  Description: Reports information about the selected pixel format
-//               descriptor, along with the indicated message.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports information about the selected pixel format descriptor, along with
+ * the indicated message.
+ */
 void wglGraphicsWindow::
 print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
   if (!wgldisplay_cat.is_debug()) {
@@ -403,7 +371,7 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
   }
 
   OGLDriverType drvtype;
-  if ((pfd->dwFlags & PFD_GENERIC_ACCELERATED) && 
+  if ((pfd->dwFlags & PFD_GENERIC_ACCELERATED) &&
       (pfd->dwFlags & PFD_GENERIC_FORMAT)) {
     drvtype=MCD;
   } else if (!(pfd->dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd->dwFlags & PFD_GENERIC_FORMAT)) {
@@ -418,8 +386,8 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
 
   wgldisplay_cat.debug()
     << msg << ", " << OGLDrvStrings[drvtype] << " driver\n"
-    << "PFD flags: 0x" << (void*)pfd->dwFlags << " (" 
-    << PRINT_FLAG(GENERIC_ACCELERATED) 
+    << "PFD flags: 0x" << (void*)pfd->dwFlags << " ("
+    << PRINT_FLAG(GENERIC_ACCELERATED)
     << PRINT_FLAG(GENERIC_FORMAT)
     << PRINT_FLAG(DOUBLEBUFFER)
     << PRINT_FLAG(SUPPORT_OPENGL)
@@ -447,4 +415,3 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
     << endl;
 }
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: cMotionTrail.cxx
-// Created by:  aignacio (29Jan07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cMotionTrail.cxx
+ * @author aignacio
+ * @date 2007-01-29
+ */
 
 #include "directbase.h"
 #include "cMotionTrail.h"
@@ -20,11 +19,9 @@
 
 TypeHandle CMotionTrail::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::Constructor
-//       Access: Published
-//  Description: Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor
+ */
 CMotionTrail::
 CMotionTrail ( ) {
 
@@ -68,61 +65,49 @@ CMotionTrail ( ) {
   _vertex_array = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::Destructor
-//       Access: Published
-//  Description: Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 CMotionTrail::
 ~CMotionTrail ( ) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::reset
-//       Access: Published
-//  Description: Reset the frame sample history.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reset the frame sample history.
+ */
 void CMotionTrail::
 reset ( ) {
   _frame_list.clear ( );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::reset_vertex_list
-//       Access: Published
-//  Description: Reset the vertex list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reset the vertex list.
+ */
 void CMotionTrail::
 reset_vertex_list ( ) {
   _vertex_list.clear ( );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::enable
-//       Access: Published
-//  Description: Enable/disable the motion trail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enable/disable the motion trail.
+ */
 void CMotionTrail::
 enable (bool enable) {
   _enable = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::set_geom_node
-//       Access: Published
-//  Description: Set the GeomNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the GeomNode.
+ */
 void CMotionTrail::
 set_geom_node (GeomNode *geom_node) {
   _geom_node = geom_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::add_vertex
-//       Access: Published
-//  Description: Add a vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Add a vertex.
+ */
 void CMotionTrail::
 add_vertex (LVector4 *vertex, LVector4 *start_color, LVector4 *end_color, PN_stdfloat v) {
 
@@ -138,31 +123,25 @@ add_vertex (LVector4 *vertex, LVector4 *start_color, LVector4 *end_color, PN_std
   _vertex_list.push_back (motion_trail_vertex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::set_parameters
-//       Access: Published
-//  Description: Set motion trail parameters.
-//
-//               sampling_time = Can be used to specify a lower
-//               sampling rate than the frame rate. Use 0.0 with
-//               nurbs.
-//
-//               time_window = a component for the "length" of the
-//               motion trail.  The motion trail length =
-//               time_window * velocity of the object.
-//
-//               use_texture = texture option on/off.
-//
-//               calculate_relative_matrix = calculate relative
-//               matrix on/off.
-//
-//               use_nurbs = nurbs option on/off
-//
-//               resolution_distance = the distance used to
-//               determine the number of geometry samples.
-//               samples = motion trail length / resolution_distance.
-//               Applicable only if nurbs is on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set motion trail parameters.
+ *
+ * sampling_time = Can be used to specify a lower sampling rate than the frame
+ * rate.  Use 0.0 with nurbs.
+ *
+ * time_window = a component for the "length" of the motion trail.  The motion
+ * trail length = time_window * velocity of the object.
+ *
+ * use_texture = texture option on/off.
+ *
+ * calculate_relative_matrix = calculate relative matrix on/off.
+ *
+ * use_nurbs = nurbs option on/off
+ *
+ * resolution_distance = the distance used to determine the number of geometry
+ * samples.  samples = motion trail length / resolution_distance.  Applicable
+ * only if nurbs is on.
+ */
 void CMotionTrail::
 set_parameters (PN_stdfloat sampling_time, PN_stdfloat time_window, bool use_texture, bool calculate_relative_matrix, bool use_nurbs, PN_stdfloat resolution_distance) {
 
@@ -174,11 +153,9 @@ set_parameters (PN_stdfloat sampling_time, PN_stdfloat time_window, bool use_tex
   _resolution_distance = resolution_distance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::check_for_update
-//       Access: Published
-//  Description: Check if a sample can be submitted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Check if a sample can be submitted.
+ */
 int CMotionTrail::
 check_for_update (PN_stdfloat current_time) {
 
@@ -205,11 +182,9 @@ PN_stdfloat one_minus_x (PN_stdfloat x) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::begin_geometry
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CMotionTrail::
 begin_geometry ( ) {
 
@@ -223,9 +198,9 @@ begin_geometry ( ) {
     format = GeomVertexFormat::get_v3c4 ( );
   }
 
-  // Clear the previous writers before we create a new vertex data
-  // object--this seems to work around an ordering problem in the
-  // low-level vertex data destructors.
+  // Clear the previous writers before we create a new vertex data object--
+  // this seems to work around an ordering problem in the low-level vertex
+  // data destructors.
   _vertex_writer.clear();
   _color_writer.clear();
   _texture_writer.clear();
@@ -240,11 +215,9 @@ begin_geometry ( ) {
   _triangles = new GeomTriangles (Geom::UH_static);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::add_geometry_quad
-//       Access: Public
-//  Description: LVector3 vertex version.
-////////////////////////////////////////////////////////////////////
+/**
+ * LVector3 vertex version.
+ */
 void CMotionTrail::
 add_geometry_quad (LVector3 &v0, LVector3 &v1, LVector3 &v2, LVector3 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3) {
 
@@ -281,11 +254,9 @@ add_geometry_quad (LVector3 &v0, LVector3 &v1, LVector3 &v2, LVector3 &v3, LVect
   _vertex_index += 4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::add_geometry_quad
-//       Access: Public
-//  Description: LVector4 vertex version.
-////////////////////////////////////////////////////////////////////
+/**
+ * LVector4 vertex version.
+ */
 void CMotionTrail::
 add_geometry_quad (LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3) {
 
@@ -322,11 +293,9 @@ add_geometry_quad (LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVect
   _vertex_index += 4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::end_geometry
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CMotionTrail::end_geometry ( ) {
   static CPT(RenderState) state;
   if (state == (RenderState *)NULL) {
@@ -344,11 +313,9 @@ void CMotionTrail::end_geometry ( ) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CMotionTrail::update_motion_trail
-//       Access: Published
-//  Description: See class header comments.
-////////////////////////////////////////////////////////////////////
+/**
+ * See class header comments.
+ */
 void CMotionTrail::
 update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
 
@@ -474,7 +441,8 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
       total_vertex_segments = total_vertices - 1;
       total_distance = 0.0f;
 
-      // reset NurbsCurveEvaluators for each vertex (the starting point for the trail)
+      // reset NurbsCurveEvaluators for each vertex (the starting point for
+      // the trail)
       {
         CMotionTrailVertex *motion_trail_vertex;
         PT(NurbsCurveEvaluator) nurbs_curve_evaluator;

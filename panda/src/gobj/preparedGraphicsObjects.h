@@ -1,16 +1,15 @@
-// Filename: preparedGraphicsObjects.h
-// Created by:  drose (19Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file preparedGraphicsObjects.h
+ * @author drose
+ * @date 2004-02-19
+ */
 
 #ifndef PREPAREDGRAPHICSOBJECTS_H
 #define PREPAREDGRAPHICSOBJECTS_H
@@ -38,25 +37,20 @@ class VertexBufferContext;
 class IndexBufferContext;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PreparedGraphicsObjects
-// Description : A table of objects that are saved within the graphics
-//               context for reference by handle later.  Generally,
-//               this represents things like OpenGL texture objects or
-//               display lists (or their equivalent on other
-//               platforms).
-//
-//               This object simply records the pointers to the
-//               context objects created by the individual GSG's;
-//               these context objects will contain enough information
-//               to reference or release the actual object stored
-//               within the graphics context.
-//
-//               These tables may potentially be shared between
-//               related graphics contexts, hence their storage here
-//               in a separate object rather than as a part of the
-//               GraphicsStateGuardian.
-////////////////////////////////////////////////////////////////////
+/**
+ * A table of objects that are saved within the graphics context for reference
+ * by handle later.  Generally, this represents things like OpenGL texture
+ * objects or display lists (or their equivalent on other platforms).
+ *
+ * This object simply records the pointers to the context objects created by
+ * the individual GSG's; these context objects will contain enough information
+ * to reference or release the actual object stored within the graphics
+ * context.
+ *
+ * These tables may potentially be shared between related graphics contexts,
+ * hence their storage here in a separate object rather than as a part of the
+ * GraphicsStateGuardian.
+ */
 class EXPCL_PANDA_GOBJ PreparedGraphicsObjects : public ReferenceCount {
 public:
   PreparedGraphicsObjects();
@@ -167,8 +161,8 @@ private:
   typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;
 
-  // Sampler states are stored a little bit differently, as they are
-  // mapped by value and can't store the list of prepared samplers.
+  // Sampler states are stored a little bit differently, as they are mapped by
+  // value and can't store the list of prepared samplers.
   typedef pmap<SamplerState, SamplerContext *> PreparedSamplers;
   typedef pset<SamplerContext *, pointer_hash> ReleasedSamplers;
   typedef pset<SamplerState> EnqueuedSamplers;
@@ -231,8 +225,8 @@ public:
   SimpleLru _sampler_object_lru;
 
 public:
-  // This is only public as a temporary hack.  Don't mess with it
-  // unless you know what you're doing.
+  // This is only public as a temporary hack.  Don't mess with it unless you
+  // know what you're doing.
   bool _support_released_buffer_cache;
 
 private:

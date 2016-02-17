@@ -1,16 +1,15 @@
-// Filename: shaderPool.cxx
-// Created by:  aignacio (Mar06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderPool.cxx
+ * @author aignacio
+ * @date 2006-03
+ */
 
 #include "shaderPool.h"
 #include "config_util.h"
@@ -22,22 +21,17 @@
 
 ShaderPool *ShaderPool::_global_ptr = (ShaderPool *)NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::write
-//       Access: Published, Static
-//  Description: Lists the contents of the shader pool to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists the contents of the shader pool to the indicated output stream.
+ */
 void ShaderPool::
 write(ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::ns_has_shader
-//       Access: Private
-//  Description: The nonstatic implementation of has_shader().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of has_shader().
+ */
 bool ShaderPool::
 ns_has_shader(const Filename &orig_filename) {
   Filename filename;
@@ -54,11 +48,9 @@ ns_has_shader(const Filename &orig_filename) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::ns_load_shader
-//       Access: Private
-//  Description: The nonstatic implementation of load_shader().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_shader().
+ */
 CPT(Shader) ShaderPool::
 ns_load_shader(const Filename &orig_filename) {
   Filename filename;
@@ -81,10 +73,10 @@ ns_load_shader(const Filename &orig_filename) {
 
   Shader::ShaderLanguage lang = Shader::SL_none;
 
-  // Do some guesswork to see if we can figure out the shader language
-  // from the file extension.  This is really just guesswork - there are
-  // no standardized extensions for shaders, especially for GLSL.
-  // These are the ones that appear to be closest to "standard".
+  // Do some guesswork to see if we can figure out the shader language from
+  // the file extension.  This is really just guesswork - there are no
+  // standardized extensions for shaders, especially for GLSL. These are the
+  // ones that appear to be closest to "standard".
   string ext = downcase(filename.get_extension());
   if (ext == "cg" || ext == "sha") {
     // "sha" is for historical reasons.
@@ -105,8 +97,7 @@ ns_load_shader(const Filename &orig_filename) {
   {
     LightMutexHolder holder(_lock);
 
-    // Now try again.  Someone may have loaded the shader in another
-    // thread.
+    // Now try again.  Someone may have loaded the shader in another thread.
     Shaders::const_iterator ti;
     ti = _shaders.find(filename);
     if (ti != _shaders.end()) {
@@ -120,11 +111,9 @@ ns_load_shader(const Filename &orig_filename) {
   return shader;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::ns_add_shader
-//       Access: Private
-//  Description: The nonstatic implementation of add_shader().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of add_shader().
+ */
 void ShaderPool::
 ns_add_shader(const Filename &orig_filename, Shader *shader) {
   Filename filename;
@@ -135,11 +124,9 @@ ns_add_shader(const Filename &orig_filename, Shader *shader) {
   _shaders[filename] = shader;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::ns_release_shader
-//       Access: Private
-//  Description: The nonstatic implementation of release_shader().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_shader().
+ */
 void ShaderPool::
 ns_release_shader(const Filename &filename) {
   LightMutexHolder holder(_lock);
@@ -151,11 +138,9 @@ ns_release_shader(const Filename &filename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::ns_release_all_shaders
-//       Access: Private
-//  Description: The nonstatic implementation of release_all_shaders().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_all_shaders().
+ */
 void ShaderPool::
 ns_release_all_shaders() {
   LightMutexHolder holder(_lock);
@@ -163,11 +148,9 @@ ns_release_all_shaders() {
   _shaders.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::ns_garbage_collect
-//       Access: Private
-//  Description: The nonstatic implementation of garbage_collect().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of garbage_collect().
+ */
 int ShaderPool::
 ns_garbage_collect() {
   LightMutexHolder holder(_lock);
@@ -195,11 +178,9 @@ ns_garbage_collect() {
   return num_released;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::ns_list_contents
-//       Access: Private
-//  Description: The nonstatic implementation of list_contents().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of list_contents().
+ */
 void ShaderPool::
 ns_list_contents(ostream &out) const {
   LightMutexHolder holder(_lock);
@@ -214,12 +195,9 @@ ns_list_contents(ostream &out) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::resolve_filename
-//       Access: Private
-//  Description: Searches for the indicated filename along the
-//               model path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the indicated filename along the model path.
+ */
 void ShaderPool::
 resolve_filename(Filename &new_filename, const Filename &orig_filename) {
   new_filename = orig_filename;
@@ -227,12 +205,10 @@ resolve_filename(Filename &new_filename, const Filename &orig_filename) {
   vfs->resolve_filename(new_filename, get_model_path());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::get_ptr
-//       Access: Private, Static
-//  Description: Initializes and/or returns the global pointer to the
-//               one ShaderPool object in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes and/or returns the global pointer to the one ShaderPool object
+ * in the system.
+ */
 ShaderPool *ShaderPool::
 get_ptr() {
   if (_global_ptr == (ShaderPool *)NULL) {

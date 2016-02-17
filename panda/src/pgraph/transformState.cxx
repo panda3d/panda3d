@@ -1,16 +1,15 @@
-// Filename: transformState.cxx
-// Created by:  drose (25Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transformState.cxx
+ * @author drose
+ * @date 2002-02-25
+ */
 
 #include "transformState.h"
 #include "compose_matrix.h"
@@ -49,13 +48,11 @@ CacheStats TransformState::_cache_stats;
 
 TypeHandle TransformState::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Constructor
-//       Access: Protected
-//  Description: Actually, this could be a private constructor, since
-//               no one inherits from TransformState, but gcc gives us a
-//               spurious warning if all constructors are private.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually, this could be a private constructor, since no one inherits from
+ * TransformState, but gcc gives us a spurious warning if all constructors are
+ * private.
+ */
 TransformState::
 TransformState() : _lock("TransformState") {
   if (_states == (States *)NULL) {
@@ -67,32 +64,26 @@ TransformState() : _lock("TransformState") {
   _cache_stats.add_num_states(1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Copy Constructor
-//       Access: Private
-//  Description: TransformStates are not meant to be copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * TransformStates are not meant to be copied.
+ */
 TransformState::
 TransformState(const TransformState &) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Copy Assignment Operator
-//       Access: Private
-//  Description: TransformStates are not meant to be copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * TransformStates are not meant to be copied.
+ */
 void TransformState::
 operator = (const TransformState &) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Destructor
-//       Access: Public, Virtual
-//  Description: The destructor is responsible for removing the
-//               TransformState from the global set if it is there.
-////////////////////////////////////////////////////////////////////
+/**
+ * The destructor is responsible for removing the TransformState from the
+ * global set if it is there.
+ */
 TransformState::
 ~TransformState() {
   // We'd better not call the destructor twice on a particular object.
@@ -111,29 +102,23 @@ TransformState::
   nassertv(_saved_entry == -1);
   nassertv(_composition_cache.is_empty() && _invert_composition_cache.is_empty());
 
-  // If this was true at the beginning of the destructor, but is no
-  // longer true now, probably we've been double-deleted.
+  // If this was true at the beginning of the destructor, but is no longer
+  // true now, probably we've been double-deleted.
   nassertv(get_ref_count() == 0);
   _cache_stats.add_num_states(-1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::compare_to
-//       Access: Published
-//  Description: Provides an arbitrary ordering among all unique
-//               TransformStates, so we can store the essentially
-//               different ones in a big set and throw away the rest.
-//
-//               Note that if this returns 0, it doesn't necessarily
-//               imply that operator == returns true; it uses a very
-//               slightly different comparison threshold.
-//
-//               If uniquify_matrix is true, then matrix-defined
-//               TransformStates are also uniqified.  If
-//               uniquify_matrix is false, then only component-defined
-//               TransformStates are uniquified, which is less
-//               expensive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides an arbitrary ordering among all unique TransformStates, so we can
+ * store the essentially different ones in a big set and throw away the rest.
+ *
+ * Note that if this returns 0, it doesn't necessarily imply that operator ==
+ * returns true; it uses a very slightly different comparison threshold.
+ *
+ * If uniquify_matrix is true, then matrix-defined TransformStates are also
+ * uniqified.  If uniquify_matrix is false, then only component-defined
+ * TransformStates are uniquified, which is less expensive.
+ */
 int TransformState::
 compare_to(const TransformState &other, bool uniquify_matrix) const {
   static const int significant_flags =
@@ -146,8 +131,8 @@ compare_to(const TransformState &other, bool uniquify_matrix) const {
   }
 
   if ((_flags & (F_is_invalid | F_is_identity)) != 0) {
-    // All invalid transforms are equivalent to each other, and all
-    // identity transforms are equivalent to each other.
+    // All invalid transforms are equivalent to each other, and all identity
+    // transforms are equivalent to each other.
     return 0;
   }
 
@@ -182,8 +167,7 @@ compare_to(const TransformState &other, bool uniquify_matrix) const {
 
   // Otherwise, compare the matrices . . .
   if (uniquify_matrix) {
-    // . . . but only if the user thinks that's a worthwhile
-    // comparison.
+    // . . . but only if the user thinks that's a worthwhile comparison.
     return get_mat().compare_to(other.get_mat());
 
   } else {
@@ -195,20 +179,15 @@ compare_to(const TransformState &other, bool uniquify_matrix) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::operator ==
-//       Access: Published
-//  Description: Tests equivalence between two transform states.
-//               We use this instead of compare_to since this is
-//               faster, and we don't need an ordering between
-//               TransformStates because we use a hash map.
-//
-//               If uniquify_matrix is true, then matrix-defined
-//               TransformStates are also uniqified.  If
-//               uniquify_matrix is false, then only component-defined
-//               TransformStates are uniquified, which is less
-//               expensive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tests equivalence between two transform states.  We use this instead of
+ * compare_to since this is faster, and we don't need an ordering between
+ * TransformStates because we use a hash map.
+ *
+ * If uniquify_matrix is true, then matrix-defined TransformStates are also
+ * uniqified.  If uniquify_matrix is false, then only component-defined
+ * TransformStates are uniquified, which is less expensive.
+ */
 bool TransformState::
 operator == (const TransformState &other) const {
   static const int significant_flags =
@@ -221,8 +200,8 @@ operator == (const TransformState &other) const {
   }
 
   if ((_flags & (F_is_invalid | F_is_identity)) != 0) {
-    // All invalid transforms are equivalent to each other, and all
-    // identity transforms are equivalent to each other.
+    // All invalid transforms are equivalent to each other, and all identity
+    // transforms are equivalent to each other.
     return true;
   }
 
@@ -252,8 +231,7 @@ operator == (const TransformState &other) const {
 
   // Otherwise, compare the matrices . . .
   if (_uniquify_matrix) {
-    // . . . but only if the user thinks that's a worthwhile
-    // comparison.
+    // . . . but only if the user thinks that's a worthwhile comparison.
     return get_mat().almost_equal(other.get_mat());
 
   } else {
@@ -262,15 +240,13 @@ operator == (const TransformState &other) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_identity
-//       Access: Published, Static
-//  Description: Constructs an identity transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an identity transform.
+ */
 CPT(TransformState) TransformState::
 make_identity() {
-  // The identity state is asked for so often, we make it a special case
-  // and store a pointer forever once we find it the first time.
+  // The identity state is asked for so often, we make it a special case and
+  // store a pointer forever once we find it the first time.
   if (_identity_state == (TransformState *)NULL) {
     TransformState *state = new TransformState;
     _identity_state = return_unique(state);
@@ -279,12 +255,10 @@ make_identity() {
   return _identity_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_invalid
-//       Access: Published, Static
-//  Description: Constructs an invalid transform; for instance, the
-//               result of inverting a singular matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an invalid transform; for instance, the result of inverting a
+ * singular matrix.
+ */
 CPT(TransformState) TransformState::
 make_invalid() {
   if (_invalid_state == (TransformState *)NULL) {
@@ -296,12 +270,9 @@ make_invalid() {
   return _invalid_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_hpr_scale_shear
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 CPT(TransformState) TransformState::
 make_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
                          const LVecBase3 &scale, const LVecBase3 &shear) {
@@ -324,12 +295,9 @@ make_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_quat_scale_shear
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified components.
+ */
 CPT(TransformState) TransformState::
 make_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat,
                           const LVecBase3 &scale, const LVecBase3 &shear) {
@@ -352,12 +320,9 @@ make_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat,
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_mat
-//       Access: Published, Static
-//  Description: Makes a new TransformState with the specified
-//               transformation matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new TransformState with the specified transformation matrix.
+ */
 CPT(TransformState) TransformState::
 make_mat(const LMatrix4 &mat) {
   nassertr(!mat.is_nan(), make_invalid());
@@ -372,12 +337,9 @@ make_mat(const LMatrix4 &mat) {
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_pos_rotate_scale_shear2d
-//       Access: Published, Static
-//  Description: Makes a new two-dimensional TransformState with the
-//               specified components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new two-dimensional TransformState with the specified components.
+ */
 CPT(TransformState) TransformState::
 make_pos_rotate_scale_shear2d(const LVecBase2 &pos, PN_stdfloat rotate,
                               const LVecBase2 &scale,
@@ -416,12 +378,10 @@ make_pos_rotate_scale_shear2d(const LVecBase2 &pos, PN_stdfloat rotate,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_mat3
-//       Access: Published, Static
-//  Description: Makes a new two-dimensional TransformState with the
-//               specified 3x3 transformation matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new two-dimensional TransformState with the specified 3x3
+ * transformation matrix.
+ */
 CPT(TransformState) TransformState::
 make_mat3(const LMatrix3 &mat) {
   nassertr(!mat.is_nan(), make_invalid());
@@ -439,20 +399,16 @@ make_mat3(const LMatrix3 &mat) {
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_pos
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original TransformState with its pos component
-//               replaced with the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original
+ * TransformState with its pos component replaced with the indicated value.
+ */
 CPT(TransformState) TransformState::
 set_pos(const LVecBase3 &pos) const {
   nassertr(!pos.is_nan(), this);
   nassertr(!is_invalid(), this);
   if (is_identity() || components_given()) {
-    // If we started with a componentwise transform, we keep it that
-    // way.
+    // If we started with a componentwise transform, we keep it that way.
     if (quat_given()) {
       return make_pos_quat_scale_shear(pos, get_quat(), get_scale(), get_shear());
     } else {
@@ -467,57 +423,50 @@ set_pos(const LVecBase3 &pos) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_hpr
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original TransformState with its rotation component
-//               replaced with the indicated value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original
+ * TransformState with its rotation component replaced with the indicated
+ * value, if possible.
+ */
 CPT(TransformState) TransformState::
 set_hpr(const LVecBase3 &hpr) const {
   nassertr(!hpr.is_nan(), this);
   nassertr(!is_invalid(), this);
-  //  nassertr(has_components(), this);
+  // nassertr(has_components(), this);
   return make_pos_hpr_scale_shear(get_pos(), hpr, get_scale(), get_shear());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_quat
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original TransformState with its rotation component
-//               replaced with the indicated value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original
+ * TransformState with its rotation component replaced with the indicated
+ * value, if possible.
+ */
 CPT(TransformState) TransformState::
 set_quat(const LQuaternion &quat) const {
   nassertr(!quat.is_nan(), this);
   nassertr(!is_invalid(), this);
-  //  nassertr(has_components(), this);
+  // nassertr(has_components(), this);
   return make_pos_quat_scale_shear(get_pos(), quat, get_scale(), get_shear());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_scale
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original TransformState with its scale component
-//               replaced with the indicated value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original
+ * TransformState with its scale component replaced with the indicated value,
+ * if possible.
+ */
 CPT(TransformState) TransformState::
 set_scale(const LVecBase3 &scale) const {
   nassertr(!scale.is_nan(), this);
   nassertr(!is_invalid(), this);
 
   if (is_2d() && scale[0] == scale[1] && scale[1] == scale[2]) {
-    // Don't inflate from 2-d to 3-d just because we got a uniform
-    // scale.
+    // Don't inflate from 2-d to 3-d just because we got a uniform scale.
     return make_pos_rotate_scale_shear2d(get_pos2d(), get_rotate2d(),
                                          LVecBase2(scale[0], scale[0]),
                                          get_shear2d());
   }
 
-  //  nassertr(has_components(), this);
+  // nassertr(has_components(), this);
   if (quat_given()) {
     return make_pos_quat_scale_shear(get_pos(), get_quat(), scale, get_shear());
   } else {
@@ -525,18 +474,16 @@ set_scale(const LVecBase3 &scale) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_shear
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original TransformState with its shear component
-//               replaced with the indicated value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original
+ * TransformState with its shear component replaced with the indicated value,
+ * if possible.
+ */
 CPT(TransformState) TransformState::
 set_shear(const LVecBase3 &shear) const {
   nassertr(!shear.is_nan(), this);
   nassertr(!is_invalid(), this);
-  //  nassertr(has_components(), this);
+  // nassertr(has_components(), this);
   if (quat_given()) {
     return make_pos_quat_scale_shear(get_pos(), get_quat(), get_scale(), shear);
   } else {
@@ -544,13 +491,10 @@ set_shear(const LVecBase3 &shear) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_pos2d
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original 2-d TransformState with its pos component
-//               replaced with the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original 2-d
+ * TransformState with its pos component replaced with the indicated value.
+ */
 CPT(TransformState) TransformState::
 set_pos2d(const LVecBase2 &pos) const {
   nassertr(!pos.is_nan(), this);
@@ -560,8 +504,7 @@ set_pos2d(const LVecBase2 &pos) const {
   }
 
   if (is_identity() || components_given()) {
-    // If we started with a componentwise transform, we keep it that
-    // way.
+    // If we started with a componentwise transform, we keep it that way.
     return make_pos_rotate_scale_shear2d(pos, get_rotate2d(), get_scale2d(),
                                          get_shear2d());
 
@@ -573,13 +516,11 @@ set_pos2d(const LVecBase2 &pos) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_rotate2d
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original 2-d TransformState with its rotation component
-//               replaced with the indicated value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original 2-d
+ * TransformState with its rotation component replaced with the indicated
+ * value, if possible.
+ */
 CPT(TransformState) TransformState::
 set_rotate2d(PN_stdfloat rotate) const {
   nassertr(!cnan(rotate), this);
@@ -603,13 +544,11 @@ set_rotate2d(PN_stdfloat rotate) const {
                                        get_shear2d());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_scale2d
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original 2-d TransformState with its scale component
-//               replaced with the indicated value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original 2-d
+ * TransformState with its scale component replaced with the indicated value,
+ * if possible.
+ */
 CPT(TransformState) TransformState::
 set_scale2d(const LVecBase2 &scale) const {
   nassertr(!scale.is_nan(), this);
@@ -622,13 +561,11 @@ set_scale2d(const LVecBase2 &scale) const {
                                        scale, get_shear2d());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::set_shear2d
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               original 2-d TransformState with its shear component
-//               replaced with the indicated value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the original 2-d
+ * TransformState with its shear component replaced with the indicated value,
+ * if possible.
+ */
 CPT(TransformState) TransformState::
 set_shear2d(PN_stdfloat shear) const {
   nassertr(!cnan(shear), this);
@@ -640,19 +577,15 @@ set_shear2d(PN_stdfloat shear) const {
                                        get_scale2d(), shear);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::compose
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               composition of this state with the other state.
-//
-//               The result of this operation is cached, and will be
-//               retained as long as both this TransformState object and
-//               the other TransformState object continue to exist.
-//               Should one of them destruct, the cached entry will be
-//               removed, and its pointer will be allowed to destruct
-//               as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the composition of this
+ * state with the other state.
+ *
+ * The result of this operation is cached, and will be retained as long as
+ * both this TransformState object and the other TransformState object
+ * continue to exist.  Should one of them destruct, the cached entry will be
+ * removed, and its pointer will be allowed to destruct as well.
+ */
 CPT(TransformState) TransformState::
 compose(const TransformState *other) const {
   // We handle identity as a trivial special case.
@@ -694,32 +627,28 @@ compose(const TransformState *other) const {
     return result;
   }
 
-  // Not in the cache.  Compute a new result.  It's important that we
-  // don't hold the lock while we do this, or we lose the benefit of
+  // Not in the cache.  Compute a new result.  It's important that we don't
+  // hold the lock while we do this, or we lose the benefit of
   // parallelization.
   result = do_compose(other);
 
-  // It's OK to cast away the constness of this pointer, because the
-  // cache is a transparent property of the class.
+  // It's OK to cast away the constness of this pointer, because the cache is
+  // a transparent property of the class.
   return ((TransformState *)this)->store_compose(other, result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::invert_compose
-//       Access: Published
-//  Description: Returns a new TransformState object that represents the
-//               composition of this state's inverse with the other
-//               state.
-//
-//               This is similar to compose(), but is particularly
-//               useful for computing the relative state of a node as
-//               viewed from some other node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TransformState object that represents the composition of this
+ * state's inverse with the other state.
+ *
+ * This is similar to compose(), but is particularly useful for computing the
+ * relative state of a node as viewed from some other node.
+ */
 CPT(TransformState) TransformState::
 invert_compose(const TransformState *other) const {
-  // This method isn't strictly const, because it updates the cache,
-  // but we pretend that it is because it's only a cache which is
-  // transparent to the rest of the interface.
+  // This method isn't strictly const, because it updates the cache, but we
+  // pretend that it is because it's only a cache which is transparent to the
+  // rest of the interface.
 
   // We handle identity as a trivial special case.
   if (is_identity()) {
@@ -765,51 +694,46 @@ invert_compose(const TransformState *other) const {
     return result;
   }
 
-  // Not in the cache.  Compute a new result.  It's important that we
-  // don't hold the lock while we do this, or we lose the benefit of
+  // Not in the cache.  Compute a new result.  It's important that we don't
+  // hold the lock while we do this, or we lose the benefit of
   // parallelization.
   result = do_invert_compose(other);
 
-  // It's OK to cast away the constness of this pointer, because the
-  // cache is a transparent property of the class.
+  // It's OK to cast away the constness of this pointer, because the cache is
+  // a transparent property of the class.
   return ((TransformState *)this)->store_invert_compose(other, result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::unref
-//       Access: Published, Virtual
-//  Description: This method overrides ReferenceCount::unref() to
-//               check whether the remaining reference count is
-//               entirely in the cache, and if so, it checks for and
-//               breaks a cycle in the cache involving this object.
-//               This is designed to prevent leaks from cyclical
-//               references within the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method overrides ReferenceCount::unref() to check whether the
+ * remaining reference count is entirely in the cache, and if so, it checks
+ * for and breaks a cycle in the cache involving this object.  This is
+ * designed to prevent leaks from cyclical references within the cache.
+ */
 bool TransformState::
 unref() const {
   if (!transform_cache || garbage_collect_states) {
-    // If we're not using the cache at all, or if we're relying on
-    // garbage collection, just allow the pointer to unref normally.
+    // If we're not using the cache at all, or if we're relying on garbage
+    // collection, just allow the pointer to unref normally.
     return ReferenceCount::unref();
   }
 
-  // Here is the normal refcounting case, with a normal cache, and
-  // without garbage collection in effect.  In this case we will pull
-  // the object out of the cache when its reference count goes to 0.
+  // Here is the normal refcounting case, with a normal cache, and without
+  // garbage collection in effect.  In this case we will pull the object out
+  // of the cache when its reference count goes to 0.
 
-  // We always have to grab the lock, since we will definitely need to
-  // be holding it if we happen to drop the reference count to 0.
-  // Having to grab the lock at every call to unref() is a big
-  // limiting factor on parallelization.
+  // We always have to grab the lock, since we will definitely need to be
+  // holding it if we happen to drop the reference count to 0. Having to grab
+  // the lock at every call to unref() is a big limiting factor on
+  // parallelization.
   LightReMutexHolder holder(*_states_lock);
 
   if (auto_break_cycles && uniquify_transforms) {
     if (get_cache_ref_count() > 0 &&
         get_ref_count() == get_cache_ref_count() + 1) {
-      // If we are about to remove the one reference that is not in the
-      // cache, leaving only references in the cache, then we need to
-      // check for a cycle involving this TransformState and break it if
-      // it exists.
+      // If we are about to remove the one reference that is not in the cache,
+      // leaving only references in the cache, then we need to check for a
+      // cycle involving this TransformState and break it if it exists.
       ((TransformState *)this)->detect_and_break_cycles();
     }
   }
@@ -819,22 +743,19 @@ unref() const {
     return true;
   }
 
-  // The reference count has just reached zero.  Make sure the object
-  // is removed from the global object pool, before anyone else finds
-  // it and tries to ref it.
+  // The reference count has just reached zero.  Make sure the object is
+  // removed from the global object pool, before anyone else finds it and
+  // tries to ref it.
   ((TransformState *)this)->release_new();
   ((TransformState *)this)->remove_cache_pointers();
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::validate_composition_cache
-//       Access: Published
-//  Description: Returns true if the composition cache and invert
-//               composition cache for this particular TransformState
-//               are self-consistent and valid, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the composition cache and invert composition cache for this
+ * particular TransformState are self-consistent and valid, false otherwise.
+ */
 bool TransformState::
 validate_composition_cache() const {
   LightReMutexHolder holder(*_states_lock);
@@ -846,8 +767,8 @@ validate_composition_cache() const {
     }
     const TransformState *source = _composition_cache.get_key(i);
     if (source != (TransformState *)NULL) {
-      // Check that the source also has a pointer back to this one.  We
-      // always add entries to the composition cache in pairs.
+      // Check that the source also has a pointer back to this one.  We always
+      // add entries to the composition cache in pairs.
       int ri = source->_composition_cache.find(this);
       if (ri == -1) {
         // Failure!  There is no back-pointer.
@@ -869,8 +790,8 @@ validate_composition_cache() const {
     }
     const TransformState *source = _invert_composition_cache.get_key(i);
     if (source != (TransformState *)NULL) {
-      // Check that the source also has a pointer back to this one.  We
-      // always add entries to the composition cache in pairs.
+      // Check that the source also has a pointer back to this one.  We always
+      // add entries to the composition cache in pairs.
       int ri = source->_invert_composition_cache.find(this);
       if (ri == -1) {
         // Failure!  There is no back-pointer.
@@ -888,11 +809,9 @@ validate_composition_cache() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TransformState::
 output(ostream &out) const {
   out << "T:";
@@ -906,16 +825,14 @@ output(ostream &out) const {
     bool output_hpr = !get_hpr().almost_equal(LVecBase3(0.0f, 0.0f, 0.0f));
 
     if (!components_given()) {
-      // A leading "m" indicates the transform was described as a full
-      // matrix, and we are decomposing it for the benefit of the
-      // user.
+      // A leading "m" indicates the transform was described as a full matrix,
+      // and we are decomposing it for the benefit of the user.
       out << "m";
 
     } else if (output_hpr && quat_given()) {
-      // A leading "q" indicates that the pos, scale, and shear are
-      // exactly as specified, but the rotation was described as a
-      // quaternion, and we are decomposing that to hpr for the
-      // benefit of the user.
+      // A leading "q" indicates that the pos, scale, and shear are exactly as
+      // specified, but the rotation was described as a quaternion, and we are
+      // decomposing that to hpr for the benefit of the user.
       out << "q";
     }
 
@@ -980,37 +897,29 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TransformState::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::write_composition_cache
-//       Access: Published
-//  Description: Writes a brief description of the composition cache
-//               and invert composition cache to the indicated
-//               ostream.  This is not useful except for performance
-//               analysis, to examine the cache structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the composition cache and invert composition
+ * cache to the indicated ostream.  This is not useful except for performance
+ * analysis, to examine the cache structure.
+ */
 void TransformState::
 write_composition_cache(ostream &out, int indent_level) const {
   indent(out, indent_level + 2) << _composition_cache << "\n";
   indent(out, indent_level + 2) << _invert_composition_cache << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_num_states
-//       Access: Published, Static
-//  Description: Returns the total number of unique TransformState
-//               objects allocated in the world.  This will go up and
-//               down during normal operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of unique TransformState objects allocated in the
+ * world.  This will go up and down during normal operations.
+ */
 int TransformState::
 get_num_states() {
   if (_states == (States *)NULL) {
@@ -1020,24 +929,19 @@ get_num_states() {
   return _states->get_num_entries();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_num_unused_states
-//       Access: Published, Static
-//  Description: Returns the total number of TransformState objects that
-//               have been allocated but have no references outside of
-//               the internal TransformState cache.
-//
-//               A nonzero return value is not necessarily indicative
-//               of leaked references; it is normal for two
-//               TransformState objects, both of which have references
-//               held outside the cache, to have the result of their
-//               composition stored within the cache.  This result
-//               will be retained within the cache until one of the
-//               base TransformStates is released.
-//
-//               Use list_cycles() to get an idea of the number of
-//               actual "leaked" TransformState objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of TransformState objects that have been allocated
+ * but have no references outside of the internal TransformState cache.
+ *
+ * A nonzero return value is not necessarily indicative of leaked references;
+ * it is normal for two TransformState objects, both of which have references
+ * held outside the cache, to have the result of their composition stored
+ * within the cache.  This result will be retained within the cache until one
+ * of the base TransformStates is released.
+ *
+ * Use list_cycles() to get an idea of the number of actual "leaked"
+ * TransformState objects.
+ */
 int TransformState::
 get_num_unused_states() {
   if (_states == (States *)NULL) {
@@ -1045,9 +949,9 @@ get_num_unused_states() {
   }
   LightReMutexHolder holder(*_states_lock);
 
-  // First, we need to count the number of times each TransformState
-  // object is recorded in the cache.  We could just trust
-  // get_cache_ref_count(), but we'll be extra cautious for now.
+  // First, we need to count the number of times each TransformState object is
+  // recorded in the cache.  We could just trust get_cache_ref_count(), but
+  // we'll be extra cautious for now.
   typedef pmap<const TransformState *, int> StateCount;
   StateCount state_count;
 
@@ -1064,13 +968,12 @@ get_num_unused_states() {
       if (state->_composition_cache.has_element(i)) {
         const TransformState *result = state->_composition_cache.get_data(i)._result;
         if (result != (const TransformState *)NULL && result != state) {
-          // Here's a TransformState that's recorded in the cache.
-          // Count it.
+          // Here's a TransformState that's recorded in the cache.  Count it.
           pair<StateCount::iterator, bool> ir =
             state_count.insert(StateCount::value_type(result, 1));
           if (!ir.second) {
-            // If the above insert operation fails, then it's already in
-            // the cache; increment its value.
+            // If the above insert operation fails, then it's already in the
+            // cache; increment its value.
             (*(ir.first)).second++;
           }
         }
@@ -1091,9 +994,9 @@ get_num_unused_states() {
     }
   }
 
-  // Now that we have the appearance count of each TransformState
-  // object, we can tell which ones are unreferenced outside of the
-  // TransformState cache, by comparing these to the reference counts.
+  // Now that we have the appearance count of each TransformState object, we
+  // can tell which ones are unreferenced outside of the TransformState cache,
+  // by comparing these to the reference counts.
   int num_unused = 0;
 
   StateCount::iterator sci;
@@ -1117,26 +1020,20 @@ get_num_unused_states() {
   return num_unused;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::clear_cache
-//       Access: Published, Static
-//  Description: Empties the cache of composed TransformStates.  This
-//               makes every TransformState forget what results when
-//               it is composed with other TransformStates.
-//
-//               This will eliminate any TransformState objects that
-//               have been allocated but have no references outside of
-//               the internal TransformState map.  It will not
-//               eliminate TransformState objects that are still in
-//               use.
-//
-//               Nowadays, this method should not be necessary, as
-//               reference-count cycles in the composition cache
-//               should be automatically detected and broken.
-//
-//               The return value is the number of TransformStates
-//               freed by this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the cache of composed TransformStates.  This makes every
+ * TransformState forget what results when it is composed with other
+ * TransformStates.
+ *
+ * This will eliminate any TransformState objects that have been allocated but
+ * have no references outside of the internal TransformState map.  It will not
+ * eliminate TransformState objects that are still in use.
+ *
+ * Nowadays, this method should not be necessary, as reference-count cycles in
+ * the composition cache should be automatically detected and broken.
+ *
+ * The return value is the number of TransformStates freed by this operation.
+ */
 int TransformState::
 clear_cache() {
   if (_states == (States *)NULL) {
@@ -1147,10 +1044,10 @@ clear_cache() {
   PStatTimer timer(_cache_update_pcollector);
   int orig_size = _states->get_num_entries();
 
-  // First, we need to copy the entire set of states to a temporary
-  // vector, reference-counting each object.  That way we can walk
-  // through the copy, without fear of dereferencing (and deleting)
-  // the objects in the map as we go.
+  // First, we need to copy the entire set of states to a temporary vector,
+  // reference-counting each object.  That way we can walk through the copy,
+  // without fear of dereferencing (and deleting) the objects in the map as we
+  // go.
   {
     typedef pvector< CPT(TransformState) > TempStates;
     TempStates temp_states;
@@ -1165,9 +1062,8 @@ clear_cache() {
       temp_states.push_back(state);
     }
 
-    // Now it's safe to walk through the list, destroying the cache
-    // within each object as we go.  Nothing will be destructed till
-    // we're done.
+    // Now it's safe to walk through the list, destroying the cache within
+    // each object as we go.  Nothing will be destructed till we're done.
     TempStates::iterator ti;
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       TransformState *state = (TransformState *)(*ti).p();
@@ -1200,25 +1096,21 @@ clear_cache() {
       state->_invert_composition_cache.clear();
     }
 
-    // Once this block closes and the temp_states object goes away,
-    // all the destruction will begin.  Anything whose reference was
-    // held only within the various objects' caches will go away.
+    // Once this block closes and the temp_states object goes away, all the
+    // destruction will begin.  Anything whose reference was held only within
+    // the various objects' caches will go away.
   }
 
   int new_size = _states->get_num_entries();
   return orig_size - new_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::garbage_collect
-//       Access: Published, Static
-//  Description: Performs a garbage-collection cycle.  This must be
-//               called periodically if garbage-collect-states is true
-//               to ensure that TransformStates get cleaned up
-//               appropriately.  It does no harm to call it even if
-//               this variable is not true, but there is probably no
-//               advantage in that case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a garbage-collection cycle.  This must be called periodically if
+ * garbage-collect-states is true to ensure that TransformStates get cleaned
+ * up appropriately.  It does no harm to call it even if this variable is not
+ * true, but there is probably no advantage in that case.
+ */
 int TransformState::
 garbage_collect() {
   if (_states == (States *)NULL || !garbage_collect_states) {
@@ -1247,21 +1139,20 @@ garbage_collect() {
       if (auto_break_cycles && uniquify_transforms) {
         if (state->get_cache_ref_count() > 0 &&
             state->get_ref_count() == state->get_cache_ref_count()) {
-          // If we have removed all the references to this state not in
-          // the cache, leaving only references in the cache, then we
-          // need to check for a cycle involving this TransformState and
-          // break it if it exists.
+          // If we have removed all the references to this state not in the
+          // cache, leaving only references in the cache, then we need to
+          // check for a cycle involving this TransformState and break it if
+          // it exists.
           state->detect_and_break_cycles();
         }
       }
 
       if (state->get_ref_count() == 1) {
-        // This state has recently been unreffed to 1 (the one we
-        // added when we stored it in the cache).  Now it's time to
-        // delete it.  This is safe, because we're holding the
-        // _states_lock, so it's not possible for some other thread to
-        // find the state in the cache and ref it while we're doing
-        // this.
+        // This state has recently been unreffed to 1 (the one we added when
+        // we stored it in the cache).  Now it's time to delete it.  This is
+        // safe, because we're holding the _states_lock, so it's not possible
+        // for some other thread to find the state in the cache and ref it
+        // while we're doing this.
         state->release_new();
         state->remove_cache_pointers();
         state->cache_unref();
@@ -1278,24 +1169,19 @@ garbage_collect() {
   return orig_size - new_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::list_cycles
-//       Access: Published, Static
-//  Description: Detects all of the reference-count cycles in the
-//               cache and reports them to standard output.
-//
-//               These cycles may be inadvertently created when state
-//               compositions cycle back to a starting point.
-//               Nowadays, these cycles should be automatically
-//               detected and broken, so this method should never list
-//               any cycles unless there is a bug in that detection
-//               logic.
-//
-//               The cycles listed here are not leaks in the strictest
-//               sense of the word, since they can be reclaimed by a
-//               call to clear_cache(); but they will not be reclaimed
-//               automatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detects all of the reference-count cycles in the cache and reports them to
+ * standard output.
+ *
+ * These cycles may be inadvertently created when state compositions cycle
+ * back to a starting point.  Nowadays, these cycles should be automatically
+ * detected and broken, so this method should never list any cycles unless
+ * there is a bug in that detection logic.
+ *
+ * The cycles listed here are not leaks in the strictest sense of the word,
+ * since they can be reclaimed by a call to clear_cache(); but they will not
+ * be reclaimed automatically.
+ */
 void TransformState::
 list_cycles(ostream &out) {
   if (_states == (States *)NULL) {
@@ -1371,13 +1257,11 @@ list_cycles(ostream &out) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::list_states
-//       Access: Published, Static
-//  Description: Lists all of the TransformStates in the cache to the
-//               output stream, one per line.  This can be quite a lot
-//               of output if the cache is large, so be prepared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists all of the TransformStates in the cache to the output stream, one per
+ * line.  This can be quite a lot of output if the cache is large, so be
+ * prepared.
+ */
 void TransformState::
 list_states(ostream &out) {
   if (_states == (States *)NULL) {
@@ -1398,16 +1282,12 @@ list_states(ostream &out) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::validate_states
-//       Access: Published, Static
-//  Description: Ensures that the cache is still stored in sorted
-//               order, and that none of the cache elements have been
-//               inadvertently deleted.  Returns true if so, false if
-//               there is a problem (which implies someone has
-//               modified one of the supposedly-const TransformState
-//               objects).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the cache is still stored in sorted order, and that none of
+ * the cache elements have been inadvertently deleted.  Returns true if so,
+ * false if there is a problem (which implies someone has modified one of the
+ * supposedly-const TransformState objects).
+ */
 bool TransformState::
 validate_states() {
   if (_states == (States *)NULL) {
@@ -1469,16 +1349,13 @@ validate_states() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::init_states
-//       Access: Public, Static
-//  Description: Make sure the global _states map is allocated.  This
-//               only has to be done once.  We could make this map
-//               static, but then we run into problems if anyone
-//               creates a TransformState object at static init time;
-//               it also seems to cause problems when the Panda shared
-//               library is unloaded at application exit time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Make sure the global _states map is allocated.  This only has to be done
+ * once.  We could make this map static, but then we run into problems if
+ * anyone creates a TransformState object at static init time; it also seems
+ * to cause problems when the Panda shared library is unloaded at application
+ * exit time.
+ */
 void TransformState::
 init_states() {
   _states = new States;
@@ -1491,30 +1368,26 @@ init_states() {
             "a single pointer.  Nowadays, with the transforms stored in a "
             "hashtable, we're generally better off with this set true."));
 
-  // Store this at the beginning, so that we don't have to query this
-  // every time that the comparison operator is invoked.
+  // Store this at the beginning, so that we don't have to query this every
+  // time that the comparison operator is invoked.
   _uniquify_matrix = uniquify_matrix;
 
-  // TODO: we should have a global Panda mutex to allow us to safely
-  // create _states_lock without a startup race condition.  For the
-  // meantime, this is OK because we guarantee that this method is
-  // called at static init time, presumably when there is still only
-  // one thread in the world.
+  // TODO: we should have a global Panda mutex to allow us to safely create
+  // _states_lock without a startup race condition.  For the meantime, this is
+  // OK because we guarantee that this method is called at static init time,
+  // presumably when there is still only one thread in the world.
   _states_lock = new LightReMutex("TransformState::_states_lock");
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::return_new
-//       Access: Private, Static
-//  Description: This function is used to share a common TransformState
-//               pointer for all equivalent TransformState objects.
-//
-//               This is different from return_unique() in that it
-//               does not actually guarantee a unique pointer, unless
-//               uniquify-transforms is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used to share a common TransformState pointer for all
+ * equivalent TransformState objects.
+ *
+ * This is different from return_unique() in that it does not actually
+ * guarantee a unique pointer, unless uniquify-transforms is set.
+ */
 CPT(TransformState) TransformState::
 return_new(TransformState *state) {
   nassertr(state != (TransformState *)NULL, state);
@@ -1525,18 +1398,15 @@ return_new(TransformState *state) {
   return return_unique(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::return_unique
-//       Access: Private, Static
-//  Description: This function is used to share a common TransformState
-//               pointer for all equivalent TransformState objects.
-//
-//               See the similar logic in RenderState.  The idea is to
-//               create a new TransformState object and pass it
-//               through this function, which will share the pointer
-//               with a previously-created TransformState object if it
-//               is equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used to share a common TransformState pointer for all
+ * equivalent TransformState objects.
+ *
+ * See the similar logic in RenderState.  The idea is to create a new
+ * TransformState object and pass it through this function, which will share
+ * the pointer with a previously-created TransformState object if it is
+ * equivalent.
+ */
 CPT(TransformState) TransformState::
 return_unique(TransformState *state) {
   nassertr(state != (TransformState *)NULL, state);
@@ -1556,13 +1426,13 @@ return_unique(TransformState *state) {
   LightReMutexHolder holder(*_states_lock);
 
   if (state->_saved_entry != -1) {
-    // This state is already in the cache.
-    //nassertr(_states->find(state) == state->_saved_entry, state);
+    // This state is already in the cache.  nassertr(_states->find(state) ==
+    // state->_saved_entry, state);
     return state;
   }
 
-  // Save the state in a local PointerTo so that it will be freed at
-  // the end of this function if no one else uses it.
+  // Save the state in a local PointerTo so that it will be freed at the end
+  // of this function if no one else uses it.
   CPT(TransformState) pt_state = state;
 
   int si = _states->find(state);
@@ -1573,9 +1443,9 @@ return_unique(TransformState *state) {
 
   // Not already in the set; add it.
   if (garbage_collect_states) {
-    // If we'll be garbage collecting states explicitly, we'll
-    // increment the reference count when we store it in the cache, so
-    // that it won't be deleted while it's in it.
+    // If we'll be garbage collecting states explicitly, we'll increment the
+    // reference count when we store it in the cache, so that it won't be
+    // deleted while it's in it.
     state->cache_ref();
   }
   si = _states->store(state, Empty());
@@ -1585,13 +1455,10 @@ return_unique(TransformState *state) {
   return pt_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_compose
-//       Access: Private
-//  Description: The private implemention of compose(); this actually
-//               composes two TransformStates, without bothering with the
-//               cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implemention of compose(); this actually composes two
+ * TransformStates, without bothering with the cache.
+ */
 CPT(TransformState) TransformState::
 do_compose(const TransformState *other) const {
   PStatTimer timer(_transform_compose_pcollector);
@@ -1604,9 +1471,8 @@ do_compose(const TransformState *other) const {
       !has_nonzero_shear() && !other->has_nonzero_shear() &&
       ((components_given() && other->has_components()) ||
        (other->components_given() && has_components()))) {
-    // We will do this operation componentwise if *either* transform
-    // was given componentwise (and there is no non-uniform scale in
-    // the way).
+    // We will do this operation componentwise if *either* transform was given
+    // componentwise (and there is no non-uniform scale in the way).
 
     CPT(TransformState) result;
     if (is_2d() && other->is_2d()) {
@@ -1667,14 +1533,11 @@ do_compose(const TransformState *other) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::store_compose
-//       Access: Private
-//  Description: Stores the result of a composition in the cache.
-//               Returns the stored result (it may be a different
-//               object than the one passed in, due to another thread
-//               having computed the composition first).
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the result of a composition in the cache.  Returns the stored result
+ * (it may be a different object than the one passed in, due to another thread
+ * having computed the composition first).
+ */
 CPT(TransformState) TransformState::
 store_compose(const TransformState *other, const TransformState *result) {
   // Identity should have already been screened.
@@ -1692,14 +1555,14 @@ store_compose(const TransformState *other, const TransformState *result) {
   if (index != -1) {
     Composition &comp = _composition_cache.modify_data(index);
     if (comp._result == (const TransformState *)NULL) {
-      // Well, it wasn't cached already, but we already had an entry
-      // (probably created for the reverse direction), so use the same
-      // entry to store the new result.
+      // Well, it wasn't cached already, but we already had an entry (probably
+      // created for the reverse direction), so use the same entry to store
+      // the new result.
       comp._result = result;
 
       if (result != (const TransformState *)this) {
-        // See the comments below about the need to up the reference
-        // count only when the result is not the same as this.
+        // See the comments below about the need to up the reference count
+        // only when the result is not the same as this.
         result->cache_ref();
       }
     }
@@ -1709,13 +1572,13 @@ store_compose(const TransformState *other, const TransformState *result) {
   }
   _cache_stats.inc_misses();
 
-  // We need to make a new cache entry, both in this object and in the
-  // other object.  We make both records so the other TransformState
-  // object will know to delete the entry from this object when it
-  // destructs, and vice-versa.
+  // We need to make a new cache entry, both in this object and in the other
+  // object.  We make both records so the other TransformState object will
+  // know to delete the entry from this object when it destructs, and vice-
+  // versa.
 
-  // The cache entry in this object is the only one that indicates the
-  // result; the other will be NULL for now.
+  // The cache entry in this object is the only one that indicates the result;
+  // the other will be NULL for now.
   _cache_stats.add_total_size(1);
   _cache_stats.inc_adds(_composition_cache.get_size() == 0);
 
@@ -1728,15 +1591,14 @@ store_compose(const TransformState *other, const TransformState *result) {
   }
 
   if (result != (TransformState *)this) {
-    // If the result of do_compose() is something other than this,
-    // explicitly increment the reference count.  We have to be sure
-    // to decrement it again later, when the composition entry is
-    // removed from the cache.
+    // If the result of do_compose() is something other than this, explicitly
+    // increment the reference count.  We have to be sure to decrement it
+    // again later, when the composition entry is removed from the cache.
     result->cache_ref();
 
-    // (If the result was just this again, we still store the
-    // result, but we don't increment the reference count, since
-    // that would be a self-referential leak.)
+    // (If the result was just this again, we still store the result, but we
+    // don't increment the reference count, since that would be a self-
+    // referential leak.)
   }
 
   _cache_stats.maybe_report("TransformState");
@@ -1744,14 +1606,11 @@ store_compose(const TransformState *other, const TransformState *result) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::store_invert_compose
-//       Access: Private
-//  Description: Stores the result of a composition in the cache.
-//               Returns the stored result (it may be a different
-//               object than the one passed in, due to another thread
-//               having computed the composition first).
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the result of a composition in the cache.  Returns the stored result
+ * (it may be a different object than the one passed in, due to another thread
+ * having computed the composition first).
+ */
 CPT(TransformState) TransformState::
 store_invert_compose(const TransformState *other, const TransformState *result) {
   // Identity should have already been screened.
@@ -1770,14 +1629,14 @@ store_invert_compose(const TransformState *other, const TransformState *result) 
   if (index != -1) {
     Composition &comp = ((TransformState *)this)->_invert_composition_cache.modify_data(index);
     if (comp._result == (const TransformState *)NULL) {
-      // Well, it wasn't cached already, but we already had an entry
-      // (probably created for the reverse direction), so use the same
-      // entry to store the new result.
+      // Well, it wasn't cached already, but we already had an entry (probably
+      // created for the reverse direction), so use the same entry to store
+      // the new result.
       comp._result = result;
 
       if (result != (const TransformState *)this) {
-        // See the comments below about the need to up the reference
-        // count only when the result is not the same as this.
+        // See the comments below about the need to up the reference count
+        // only when the result is not the same as this.
         result->cache_ref();
       }
     }
@@ -1787,13 +1646,13 @@ store_invert_compose(const TransformState *other, const TransformState *result) 
   }
   _cache_stats.inc_misses();
 
-  // We need to make a new cache entry, both in this object and in the
-  // other object.  We make both records so the other TransformState
-  // object will know to delete the entry from this object when it
-  // destructs, and vice-versa.
+  // We need to make a new cache entry, both in this object and in the other
+  // object.  We make both records so the other TransformState object will
+  // know to delete the entry from this object when it destructs, and vice-
+  // versa.
 
-  // The cache entry in this object is the only one that indicates the
-  // result; the other will be NULL for now.
+  // The cache entry in this object is the only one that indicates the result;
+  // the other will be NULL for now.
   _cache_stats.add_total_size(1);
   _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
   _invert_composition_cache[other]._result = result;
@@ -1805,25 +1664,22 @@ store_invert_compose(const TransformState *other, const TransformState *result) 
   }
 
   if (result != (TransformState *)this) {
-    // If the result of compose() is something other than this,
-    // explicitly increment the reference count.  We have to be sure
-    // to decrement it again later, when the composition entry is
-    // removed from the cache.
+    // If the result of compose() is something other than this, explicitly
+    // increment the reference count.  We have to be sure to decrement it
+    // again later, when the composition entry is removed from the cache.
     result->cache_ref();
 
-    // (If the result was just this again, we still store the
-    // result, but we don't increment the reference count, since
-    // that would be a self-referential leak.)
+    // (If the result was just this again, we still store the result, but we
+    // don't increment the reference count, since that would be a self-
+    // referential leak.)
   }
 
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_invert_compose
-//       Access: Private
-//  Description: The private implemention of invert_compose().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implemention of invert_compose().
+ */
 CPT(TransformState) TransformState::
 do_invert_compose(const TransformState *other) const {
   PStatTimer timer(_transform_invert_pcollector);
@@ -1836,9 +1692,8 @@ do_invert_compose(const TransformState *other) const {
       !has_nonzero_shear() && !other->has_nonzero_shear() &&
       ((components_given() && other->has_components()) ||
        (other->components_given() && has_components()))) {
-    // We will do this operation componentwise if *either* transform
-    // was given componentwise (and there is no non-uniform scale in
-    // the way).
+    // We will do this operation componentwise if *either* transform was given
+    // componentwise (and there is no non-uniform scale in the way).
 
     CPT(TransformState) result;
     if (is_2d() && other->is_2d()) {
@@ -1926,8 +1781,8 @@ do_invert_compose(const TransformState *other) const {
     return make_invalid();
   }
 
-  // Now that is_singular() has returned false, we can assume that
-  // _inv_mat has been allocated and filled in.
+  // Now that is_singular() has returned false, we can assume that _inv_mat
+  // has been allocated and filled in.
   nassertr(_inv_mat != (LMatrix4 *)NULL, make_invalid());
 
   if (is_2d() && other->is_2d()) {
@@ -1949,21 +1804,18 @@ do_invert_compose(const TransformState *other) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::detect_and_break_cycles
-//       Access: Private
-//  Description: Detects whether there is a cycle in the cache that
-//               begins with this state.  If any are detected, breaks
-//               them by removing this state from the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detects whether there is a cycle in the cache that begins with this state.
+ * If any are detected, breaks them by removing this state from the cache.
+ */
 void TransformState::
 detect_and_break_cycles() {
   PStatTimer timer(_transform_break_cycles_pcollector);
 
   ++_last_cycle_detect;
   if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
-    // Ok, we have a cycle.  This will be a leak unless we break the
-    // cycle by freeing the cache on this object.
+    // Ok, we have a cycle.  This will be a leak unless we break the cycle by
+    // freeing the cache on this object.
     if (pgraph_cat.is_debug()) {
       pgraph_cat.debug()
         << "Breaking cycle involving " << (*this) << "\n";
@@ -1983,17 +1835,13 @@ detect_and_break_cycles() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::r_detect_cycles
-//       Access: Private, Static
-//  Description: Detects whether there is a cycle in the cache that
-//               begins with the indicated state.  Returns true if at
-//               least one cycle is found, false if this state is not
-//               part of any cycles.  If a cycle is found and
-//               cycle_desc is not NULL, then cycle_desc is filled in
-//               with the list of the steps of the cycle, in reverse
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detects whether there is a cycle in the cache that begins with the
+ * indicated state.  Returns true if at least one cycle is found, false if
+ * this state is not part of any cycles.  If a cycle is found and cycle_desc
+ * is not NULL, then cycle_desc is filled in with the list of the steps of the
+ * cycle, in reverse order.
+ */
 bool TransformState::
 r_detect_cycles(const TransformState *start_state,
                 const TransformState *current_state,
@@ -2002,10 +1850,9 @@ r_detect_cycles(const TransformState *start_state,
   if (current_state->_cycle_detect == this_seq) {
     // We've already seen this state; therefore, we've found a cycle.
 
-    // However, we only care about cycles that return to the starting
-    // state and involve more than two steps.  If only one or two
-    // nodes are involved, it doesn't represent a memory leak, so no
-    // problem there.
+    // However, we only care about cycles that return to the starting state
+    // and involve more than two steps.  If only one or two nodes are
+    // involved, it doesn't represent a memory leak, so no problem there.
     return (current_state == start_state && length > 2);
   }
   ((TransformState *)current_state)->_cycle_detect = this_seq;
@@ -2053,14 +1900,11 @@ r_detect_cycles(const TransformState *start_state,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::r_detect_reverse_cycles
-//       Access: Private, Static
-//  Description: Works the same as r_detect_cycles, but checks for
-//               cycles in the reverse direction along the cache
-//               chain.  (A cycle may appear in either direction, and
-//               we must check both.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Works the same as r_detect_cycles, but checks for cycles in the reverse
+ * direction along the cache chain.  (A cycle may appear in either direction,
+ * and we must check both.)
+ */
 bool TransformState::
 r_detect_reverse_cycles(const TransformState *start_state,
                         const TransformState *current_state,
@@ -2069,10 +1913,9 @@ r_detect_reverse_cycles(const TransformState *start_state,
   if (current_state->_cycle_detect == this_seq) {
     // We've already seen this state; therefore, we've found a cycle.
 
-    // However, we only care about cycles that return to the starting
-    // state and involve more than two steps.  If only one or two
-    // nodes are involved, it doesn't represent a memory leak, so no
-    // problem there.
+    // However, we only care about cycles that return to the starting state
+    // and involve more than two steps.  If only one or two nodes are
+    // involved, it doesn't represent a memory leak, so no problem there.
     return (current_state == start_state && length > 2);
   }
   ((TransformState *)current_state)->_cycle_detect = this_seq;
@@ -2133,56 +1976,49 @@ r_detect_reverse_cycles(const TransformState *start_state,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::release_new
-//       Access: Private
-//  Description: This inverse of return_new, this releases this object
-//               from the global TransformState table.
-//
-//               You must already be holding _states_lock before you
-//               call this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * This inverse of return_new, this releases this object from the global
+ * TransformState table.
+ *
+ * You must already be holding _states_lock before you call this method.
+ */
 void TransformState::
 release_new() {
   nassertv(_states_lock->debug_is_locked());
 
   if (_saved_entry != -1) {
-    //nassertv(_states->find(this) == _saved_entry);
+    // nassertv(_states->find(this) == _saved_entry);
     _saved_entry = _states->find(this);
     _states->remove_element(_saved_entry);
     _saved_entry = -1;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::remove_cache_pointers
-//       Access: Private
-//  Description: Remove all pointers within the cache from and to this
-//               particular TransformState.  The pointers to this
-//               object may be scattered around in the various
-//               CompositionCaches from other TransformState objects.
-//
-//               You must already be holding _states_lock before you
-//               call this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Remove all pointers within the cache from and to this particular
+ * TransformState.  The pointers to this object may be scattered around in the
+ * various CompositionCaches from other TransformState objects.
+ *
+ * You must already be holding _states_lock before you call this method.
+ */
 void TransformState::
 remove_cache_pointers() {
   nassertv(_states_lock->debug_is_locked());
 
-  // Fortunately, since we added CompositionCache records in pairs, we
-  // know exactly the set of TransformState objects that have us in their
-  // cache: it's the same set of TransformState objects that we have in
-  // our own cache.
+  // Fortunately, since we added CompositionCache records in pairs, we know
+  // exactly the set of TransformState objects that have us in their cache:
+  // it's the same set of TransformState objects that we have in our own
+  // cache.
 
-  // We do need to put considerable thought into this loop, because as
-  // we clear out cache entries we'll cause other TransformState
-  // objects to destruct, which could cause things to get pulled out
-  // of our own _composition_cache map.  We want to allow this (so
-  // that we don't encounter any just-destructed pointers in our
-  // cache), but we don't want to get bitten by this cascading effect.
-  // Instead of walking through the map from beginning to end,
-  // therefore, we just pull out the first one each time, and erase
-  // it.
+/*
+ * We do need to put considerable thought into this loop, because as we clear
+ * out cache entries we'll cause other TransformState objects to destruct,
+ * which could cause things to get pulled out of our own _composition_cache
+ * map.  We want to allow this (so that we don't encounter any just-destructed
+ * pointers in our cache), but we don't want to get bitten by this cascading
+ * effect.  Instead of walking through the map from beginning to end,
+ * therefore, we just pull out the first one each time, and erase it.
+ */
 
 #ifdef DO_PSTATS
   if (_composition_cache.is_empty() && _invert_composition_cache.is_empty()) {
@@ -2191,8 +2027,8 @@ remove_cache_pointers() {
   PStatTimer timer(_cache_update_pcollector);
 #endif  // DO_PSTATS
 
-  // There are lots of ways to do this loop wrong.  Be very careful if
-  // you need to modify it for any reason.
+  // There are lots of ways to do this loop wrong.  Be very careful if you
+  // need to modify it for any reason.
   int i = 0;
   while (!_composition_cache.is_empty()) {
     // Scan for the next used slot in the table.
@@ -2200,23 +2036,22 @@ remove_cache_pointers() {
       ++i;
     }
 
-    // It is possible that the "other" TransformState object is
-    // currently within its own destructor.  We therefore can't use a
-    // PT() to hold its pointer; that could end up calling its
-    // destructor twice.  Fortunately, we don't need to hold its
-    // reference count to ensure it doesn't destruct while we process
-    // this loop; as long as we ensure that no *other* TransformState
-    // objects destruct, there will be no reason for that one to.
+    // It is possible that the "other" TransformState object is currently
+    // within its own destructor.  We therefore can't use a PT() to hold its
+    // pointer; that could end up calling its destructor twice.  Fortunately,
+    // we don't need to hold its reference count to ensure it doesn't destruct
+    // while we process this loop; as long as we ensure that no *other*
+    // TransformState objects destruct, there will be no reason for that one
+    // to.
     TransformState *other = (TransformState *)_composition_cache.get_key(i);
 
-    // We hold a copy of the composition result so we can dereference
-    // it later.
+    // We hold a copy of the composition result so we can dereference it
+    // later.
     Composition comp = _composition_cache.get_data(i);
 
-    // Now we can remove the element from our cache.  We do this now,
-    // rather than later, before any other TransformState objects have
-    // had a chance to destruct, so we are confident that our iterator
-    // is still valid.
+    // Now we can remove the element from our cache.  We do this now, rather
+    // than later, before any other TransformState objects have had a chance
+    // to destruct, so we are confident that our iterator is still valid.
     _composition_cache.remove_element(i);
     _cache_stats.add_total_size(-1);
     _cache_stats.inc_dels();
@@ -2224,9 +2059,8 @@ remove_cache_pointers() {
     if (other != this) {
       int oi = other->_composition_cache.find(this);
 
-      // We may or may not still be listed in the other's cache (it
-      // might be halfway through pulling entries out, from within its
-      // own destructor).
+      // We may or may not still be listed in the other's cache (it might be
+      // halfway through pulling entries out, from within its own destructor).
       if (oi != -1) {
         // Hold a copy of the other composition result, too.
         Composition ocomp = other->_composition_cache.get_data(oi);
@@ -2235,18 +2069,17 @@ remove_cache_pointers() {
         _cache_stats.add_total_size(-1);
         _cache_stats.inc_dels();
 
-        // It's finally safe to let our held pointers go away.  This may
-        // have cascading effects as other TransformState objects are
-        // destructed, but there will be no harm done if they destruct
-        // now.
+        // It's finally safe to let our held pointers go away.  This may have
+        // cascading effects as other TransformState objects are destructed,
+        // but there will be no harm done if they destruct now.
         if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
       }
     }
 
-    // It's finally safe to let our held pointers go away.  (See
-    // comment above.)
+    // It's finally safe to let our held pointers go away.  (See comment
+    // above.)
     if (comp._result != (const TransformState *)NULL && comp._result != this) {
       cache_unref_delete(comp._result);
     }
@@ -2283,11 +2116,9 @@ remove_cache_pointers() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_calc_hash
-//       Access: Private
-//  Description: Computes a suitable hash value for phash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a suitable hash value for phash_map.
+ */
 void TransformState::
 do_calc_hash() {
   PStatTimer timer(_transform_hash_pcollector);
@@ -2300,12 +2131,11 @@ do_calc_hash() {
   _hash = int_hash::add_hash(_hash, flags);
 
   if ((_flags & (F_is_invalid | F_is_identity)) == 0) {
-    // Only bother to put the rest of the stuff in the hash if the
-    // transform is not invalid or empty.
+    // Only bother to put the rest of the stuff in the hash if the transform
+    // is not invalid or empty.
 
     if ((_flags & F_components_given) != 0) {
-      // If the transform was specified componentwise, hash it
-      // componentwise.
+      // If the transform was specified componentwise, hash it componentwise.
       _hash = _pos.add_hash(_hash);
       if ((_flags & F_hpr_given) != 0) {
         _hash = _hpr.add_hash(_hash);
@@ -2328,9 +2158,9 @@ do_calc_hash() {
         _hash = _mat.add_hash(_hash);
 
       } else {
-        // Otherwise, hash the pointer only--any two different
-        // matrix-based TransformStates are considered to be different,
-        // even if their matrices have the same values.
+        // Otherwise, hash the pointer only--any two different matrix-based
+        // TransformStates are considered to be different, even if their
+        // matrices have the same values.
 
         _hash = pointer_hash::add_hash(_hash, this);
       }
@@ -2340,12 +2170,10 @@ do_calc_hash() {
   _flags |= F_hash_known;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_singular
-//       Access: Private
-//  Description: Determines whether the transform is singular (i.e. it
-//               scales to zero, and has no inverse).
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines whether the transform is singular (i.e.  it scales to zero, and
+ * has no inverse).
+ */
 void TransformState::
 calc_singular() {
   LightMutexHolder holder(_lock);
@@ -2358,10 +2186,10 @@ calc_singular() {
 
   nassertv((_flags & F_is_invalid) == 0);
 
-  // We determine if a matrix is singular by attempting to invert it
-  // (and we save the result of this invert operation for a subsequent
-  // do_invert_compose() call, which is almost certain to be made if
-  // someone is asking whether we're singular).
+  // We determine if a matrix is singular by attempting to invert it (and we
+  // save the result of this invert operation for a subsequent
+  // do_invert_compose() call, which is almost certain to be made if someone
+  // is asking whether we're singular).
 
   // This should be NULL if no one has called calc_singular() yet.
   nassertv(_inv_mat == (LMatrix4 *)NULL);
@@ -2380,12 +2208,10 @@ calc_singular() {
   _flags |= F_singular_known;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_calc_components
-//       Access: Private
-//  Description: This is the implementation of calc_components(); it
-//               assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the implementation of calc_components(); it assumes the lock is
+ * already held.
+ */
 void TransformState::
 do_calc_components() {
   if ((_flags & F_components_known) != 0) {
@@ -2405,8 +2231,8 @@ do_calc_components() {
     _flags |= F_has_components | F_components_known | F_hpr_known | F_quat_known | F_uniform_scale | F_identity_scale;
 
   } else {
-    // If we don't have components and we're not identity, the only
-    // other explanation is that we were constructed via a matrix.
+    // If we don't have components and we're not identity, the only other
+    // explanation is that we were constructed via a matrix.
     nassertv((_flags & F_mat_known) != 0);
 
     if ((_flags & F_mat_known) == 0) {
@@ -2414,9 +2240,9 @@ do_calc_components() {
     }
     bool possible = decompose_matrix(_mat, _scale, _shear, _hpr, _pos);
     if (!possible) {
-      // Some matrices can't be decomposed into scale, hpr, pos.  In
-      // this case, we now know that we cannot compute the components;
-      // but the closest approximations are stored, at least.
+      // Some matrices can't be decomposed into scale, hpr, pos.  In this
+      // case, we now know that we cannot compute the components; but the
+      // closest approximations are stored, at least.
       _flags |= F_components_known | F_hpr_known;
 
     } else {
@@ -2430,12 +2256,10 @@ do_calc_components() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_calc_hpr
-//       Access: Private
-//  Description: This is the implementation of calc_hpr(); it
-//               assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the implementation of calc_hpr(); it assumes the lock is already
+ * held.
+ */
 void TransformState::
 do_calc_hpr() {
   if ((_flags & F_hpr_known) != 0) {
@@ -2458,11 +2282,9 @@ do_calc_hpr() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_quat
-//       Access: Private
-//  Description: Derives the quat from the hpr.
-////////////////////////////////////////////////////////////////////
+/**
+ * Derives the quat from the hpr.
+ */
 void TransformState::
 calc_quat() {
   LightMutexHolder holder(_lock);
@@ -2486,11 +2308,9 @@ calc_quat() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::calc_norm_quat
-//       Access: Private
-//  Description: Derives the normalized quat from the quat.
-////////////////////////////////////////////////////////////////////
+/**
+ * Derives the normalized quat from the quat.
+ */
 void TransformState::
 calc_norm_quat() {
   PStatTimer timer(_transform_calc_pcollector);
@@ -2502,12 +2322,10 @@ calc_norm_quat() {
   _flags |= F_norm_quat_known;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::do_calc_mat
-//       Access: Private
-//  Description: This is the implementation of calc_mat(); it
-//               assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the implementation of calc_mat(); it assumes the lock is already
+ * held.
+ */
 void TransformState::
 do_calc_mat() {
   if ((_flags & F_mat_known) != 0) {
@@ -2522,8 +2340,8 @@ do_calc_mat() {
     _mat = LMatrix4::ident_mat();
 
   } else {
-    // If we don't have a matrix and we're not identity, the only
-    // other explanation is that we were constructed via components.
+    // If we don't have a matrix and we're not identity, the only other
+    // explanation is that we were constructed via components.
     nassertv((_flags & F_components_known) != 0);
     if ((_flags & F_hpr_known) == 0) {
       do_calc_hpr();
@@ -2534,14 +2352,11 @@ do_calc_mat() {
   _flags |= F_mat_known;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::update_pstats
-//       Access: Private
-//  Description: Moves the TransformState object from one PStats category
-//               to another, so that we can track in PStats how many
-//               pointers are held by nodes, and how many are held in
-//               the cache only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the TransformState object from one PStats category to another, so
+ * that we can track in PStats how many pointers are held by nodes, and how
+ * many are held in the cache only.
+ */
 void TransformState::
 update_pstats(int old_referenced_bits, int new_referenced_bits) {
 #ifdef DO_PSTATS
@@ -2558,23 +2373,18 @@ update_pstats(int old_referenced_bits, int new_referenced_bits) {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               TransformState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type TransformState.
+ */
 void TransformState::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void TransformState::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -2620,36 +2430,30 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::change_this
-//       Access: Public, Static
-//  Description: Called immediately after complete_pointers(), this
-//               gives the object a chance to adjust its own pointer
-//               if desired.  Most objects don't change pointers after
-//               completion, but some need to.
-//
-//               Once this function has been called, the old pointer
-//               will no longer be accessed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called immediately after complete_pointers(), this gives the object a
+ * chance to adjust its own pointer if desired.  Most objects don't change
+ * pointers after completion, but some need to.
+ *
+ * Once this function has been called, the old pointer will no longer be
+ * accessed.
+ */
 PT(TypedWritableReferenceCount) TransformState::
 change_this(TypedWritableReferenceCount *old_ptr, BamReader *manager) {
   // First, uniquify the pointer.
   TransformState *state = DCAST(TransformState, old_ptr);
   CPT(TransformState) pointer = return_unique(state);
 
-  // We have to cast the pointer back to non-const, because the bam
-  // reader expects that.
+  // We have to cast the pointer back to non-const, because the bam reader
+  // expects that.
   return (TransformState *)pointer.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type TransformState is encountered
-//               in the Bam file.  It should create the TransformState
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type TransformState is encountered in the Bam file.  It should create the
+ * TransformState and extract its information from the file.
+ */
 TypedWritable *TransformState::
 make_from_bam(const FactoryParams &params) {
   TransformState *state = new TransformState;
@@ -2663,13 +2467,10 @@ make_from_bam(const FactoryParams &params) {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new TransformState.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new TransformState.
+ */
 void TransformState::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

@@ -1,15 +1,13 @@
-// Filename: tinyOsxGraphicsWindow.mm
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyOsxGraphicsWindow.mm
+ */
 
 #include "pandabase.h"
 
@@ -33,7 +31,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 #include "pmutex.h"
-//#include "mutexHolder.h"
+// #include "mutexHolder.h"
 
 
 Mutex &OSXGloablMutex() {
@@ -96,20 +94,19 @@ bool checkmywindow(WindowRef window) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetCurrentOSxWindow
-//       Access: Static,
-//  Description: How to find the active window for events  on osx..
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * How to find the active window for events  on osx..
+ *
+ */
 TinyOsxGraphicsWindow* TinyOsxGraphicsWindow::GetCurrentOSxWindow(WindowRef window) {
     if (FullScreenWindow != NULL)
        return FullScreenWindow;
 
     if (NULL == window)  // HID use this path
     {
-        //    Assume first we are a child window. If we cant find a window of that class, then we
-        //    are standalone and can jsut grab the front window.
+        // Assume first we are a child window.  If we cant find a window of
+        // that class, then we are standalone and can jsut grab the front
+        // window.
         window    =    GetFrontWindowOfClass(kSimpleWindowClass, TRUE);
         if (NULL == window)
             window    =    FrontNonFloatingWindow();
@@ -122,12 +119,9 @@ TinyOsxGraphicsWindow* TinyOsxGraphicsWindow::GetCurrentOSxWindow(WindowRef wind
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::event_handler
-//       Access: Public
-//  Description: The standard window event handler for non-fullscreen
-//               windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * The standard window event handler for non-fullscreen windows.
+ */
 OSStatus TinyOsxGraphicsWindow::
 event_handler(EventHandlerCallRef myHandler, EventRef event) {
 
@@ -171,8 +165,8 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
           SystemSetWindowForground(false);
           break;
         case kEventWindowClose: // called when window is being closed (close box)
-          // This is a message from the window manager indicating that
-          // the user has requested to close the window.
+          // This is a message from the window manager indicating that the
+          // user has requested to close the window.
           user_close_request();
           result = noErr;
           break;
@@ -223,49 +217,44 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::user_close_request
-//       Access: Private
-//  Description: The user has requested to close the window, for
-//               instance with Cmd-W, or by clicking on the close
-//               button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user has requested to close the window, for instance with Cmd-W, or by
+ * clicking on the close button.
+ */
 void TinyOsxGraphicsWindow::user_close_request() {
   string close_request_event = get_close_request_event();
   if (!close_request_event.empty()) {
-    // In this case, the app has indicated a desire to intercept the request and process it directly.
+    // In this case, the app has indicated a desire to intercept the request
+    // and process it directly.
     throw_event(close_request_event);
   } else {
-    // In this case, the default case, the app does not intend to service the request, so we do by closing the window.
+    // In this case, the default case, the app does not intend to service the
+    // request, so we do by closing the window.
     close_window();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::SystemCloseWindow
-//       Access: Private
-//  Description: The Windows is closed by a OS resource not by a internal request
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The Windows is closed by a OS resource not by a internal request
+ *
+ */
 void TinyOsxGraphicsWindow::SystemCloseWindow() {
     if (tinydisplay_cat.is_debug())
         tinydisplay_cat.debug() << "System Closing Window \n";
     ReleaseSystemResources();
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: windowEvtHndlr
-//       Access: file scope Static
-//  Description: The C callback for Window Events ..
-//
-//  We only hook this up for non fullscreen window... so we only
-//  handle system window events..
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The C callback for Window Events ..
+ *
+ * We only hook this up for non fullscreen window... so we only handle system
+ * window events..
+ *
+ */
 static pascal OSStatus    windowEvtHndlr(EventHandlerCallRef myHandler, EventRef event, void *userData) {
 #pragma unused (userData)
 
-//  volatile().lock();
+// volatile().lock();
 
   WindowRef window = NULL;
   GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
@@ -273,23 +262,22 @@ static pascal OSStatus    windowEvtHndlr(EventHandlerCallRef myHandler, EventRef
   if (window != NULL) {
     TinyOsxGraphicsWindow *osx_win = TinyOsxGraphicsWindow::GetCurrentOSxWindow(window);
     if (osx_win != (TinyOsxGraphicsWindow *)NULL) {
-      //OSXGloablMutex().release();
+      // OSXGloablMutex().release();
       return osx_win->event_handler(myHandler, event);
     }
   }
 
-  //OSXGloablMutex().release();
+  // OSXGloablMutex().release();
   return eventNotHandledErr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::DoResize
-//       Access:
-//  Description: The C callback for Window Events ..
-//
-//   We only hook this up for none fullscreen window... so we only handle system window events..
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The C callback for Window Events ..
+ *
+ * We only hook this up for none fullscreen window... so we only handle system
+ * window events..
+ *
+ */
 void TinyOsxGraphicsWindow::DoResize(void) {
   tinydisplay_cat.info() << "In Resize....." << _properties << "\n";
 
@@ -314,20 +302,18 @@ void TinyOsxGraphicsWindow::DoResize(void) {
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: appEvtHndlr
-//       Access:
-//  Description: The C callback for APlication Events..
-//
-//    Hooked  once for application
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The C callback for APlication Events..
+ *
+ * Hooked  once for application
+ *
+ */
 static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef event, void* userData) {
 #pragma unused (myHandler)
   OSStatus result = eventNotHandledErr;
   {
 
-  //OSXGloablMutex().lock();
+  // OSXGloablMutex().lock();
 
   TinyOsxGraphicsWindow *osx_win = NULL;
   WindowRef window = NULL;
@@ -337,66 +323,63 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
   GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, (void*) &window);
   osx_win = TinyOsxGraphicsWindow::GetCurrentOSxWindow(window);
   if (osx_win == NULL) {
-    //OSXGloablMutex().release();
+    // OSXGloablMutex().release();
     return eventNotHandledErr;
   }
 
   switch (the_class) {
     case kEventClassTextInput:
       if (kind == kEventTextInputUnicodeForKeyEvent) {
-	osx_win->handleTextInput(myHandler, event);
+  osx_win->handleTextInput(myHandler, event);
       }
-      //result = noErr;
-      //
-      // can not report handled .. the os will not sent the raw key strokes then
-      //    if (osx_win->handleTextInput(myHandler, event) == noErr)
-      //          result = noErr;
+      // result = noErr; can not report handled .. the os will not sent the
+      // raw key strokes then if (osx_win->handleTextInput(myHandler, event)
+      // == noErr) result = noErr;
       break;
     case kEventClassKeyboard:
       {
       switch (kind) {
-	case kEventRawKeyRepeat:
-	case kEventRawKeyDown:
-	    result = osx_win->handleKeyInput  (myHandler, event, true);
-	    break;
-	case kEventRawKeyUp:
-	    result = osx_win->handleKeyInput  (myHandler, event, false);
-	    break;
+  case kEventRawKeyRepeat:
+  case kEventRawKeyDown:
+      result = osx_win->handleKeyInput  (myHandler, event, true);
+      break;
+  case kEventRawKeyUp:
+      result = osx_win->handleKeyInput  (myHandler, event, false);
+      break;
         case kEventRawKeyModifiersChanged:
-	  {
-	    UInt32 newModifiers;
-	    OSStatus error = GetEventParameter(event, kEventParamKeyModifiers,typeUInt32, NULL,sizeof(UInt32), NULL, &newModifiers);
-	    if (error == noErr) {
-	      osx_win->HandleModifireDeleta(newModifiers);
-	      result = noErr;
-	    }
-	  }
-	  break;
+    {
+      UInt32 newModifiers;
+      OSStatus error = GetEventParameter(event, kEventParamKeyModifiers,typeUInt32, NULL,sizeof(UInt32), NULL, &newModifiers);
+      if (error == noErr) {
+        osx_win->HandleModifireDeleta(newModifiers);
+        result = noErr;
+      }
+    }
+    break;
         }
       }
       break;
 
     case kEventClassMouse:
-	    // tinydisplay_cat.info() << "Mouse movement handled by Application handler\n";
-      //if (TinyOsxGraphicsWindow::FullScreenWindow != NULL)
-	  result = osx_win->handleWindowMouseEvents (myHandler, event);
-       //result = noErr;
+      // tinydisplay_cat.info() << "Mouse movement handled by Application
+      // handler\n"; if (TinyOsxGraphicsWindow::FullScreenWindow != NULL)
+    result = osx_win->handleWindowMouseEvents (myHandler, event);
+       // result = noErr;
       break;
   }
 
-  //OSXGloablMutex().release();
+  // OSXGloablMutex().release();
   }
 
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::handleTextInput
-//       Access:
-//  Description:  Trap Unicode  Input.
-//
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Trap Unicode  Input.
+ *
+
+ *
+ */
 OSStatus TinyOsxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, EventRef theTextEvent) {
   UniChar      *text = NULL;
   UInt32       actualSize = 0;
@@ -421,11 +404,9 @@ OSStatus TinyOsxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, 
 
   return ret;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::ReleaseSystemResources
-//       Access: Private
-//  Description: Clean up the OS level messes..
-////////////////////////////////////////////////////////////////////
+/**
+ * Clean up the OS level messes..
+ */
 void TinyOsxGraphicsWindow::ReleaseSystemResources() {
   if (_is_fullscreen) {
     _is_fullscreen = false;
@@ -468,11 +449,9 @@ void TinyOsxGraphicsWindow::ReleaseSystemResources() {
 
 static int id_seed = 100;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyOsxGraphicsWindow::TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                                              const string &name,
                                              const FrameBufferProperties &fb_prop,
@@ -505,17 +484,15 @@ TinyOsxGraphicsWindow::TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPip
     tinydisplay_cat.debug() << "TinyOsxGraphicsWindow::TinyOsxGraphicsWindow() -" <<_ID << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyOsxGraphicsWindow::~TinyOsxGraphicsWindow() {
   if (tinydisplay_cat.is_debug())
     tinydisplay_cat.debug() << "TinyOsxGraphicsWindow::~TinyOsxGraphicsWindow() -" <<_ID << "\n";
 
-  // Make sure the window callback won't come back to this
-  // (destructed) object any more.
+  // Make sure the window callback won't come back to this (destructed) object
+  // any more.
   if (_osx_window) {
     SetWRefCon (_osx_window, (long) NULL);
   }
@@ -523,13 +500,10 @@ TinyOsxGraphicsWindow::~TinyOsxGraphicsWindow() {
   ReleaseSystemResources();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::set_icon_filename
-//       Access: Private
-//  Description: Called internally to load up an icon file that should
-//               be applied to the window.  Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to load up an icon file that should be applied to the
+ * window.  Returns true on success, false on failure.
+ */
 bool TinyOsxGraphicsWindow::set_icon_filename(const Filename &icon_filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
@@ -566,12 +540,9 @@ bool TinyOsxGraphicsWindow::set_icon_filename(const Filename &icon_filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::set_pointer_in_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is seen within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is seen within the window.
+ */
 void TinyOsxGraphicsWindow::
 set_pointer_in_window(int x, int y) {
   _input_devices[0].set_pointer_in_window(x, y);
@@ -587,12 +558,9 @@ set_pointer_in_window(int x, int y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::set_pointer_out_of_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is no longer within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is no longer within the window.
+ */
 void TinyOsxGraphicsWindow::
 set_pointer_out_of_window() {
   _input_devices[0].set_pointer_out_of_window();
@@ -604,15 +572,12 @@ set_pointer_out_of_window() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool TinyOsxGraphicsWindow::begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector);
 
@@ -623,9 +588,9 @@ bool TinyOsxGraphicsWindow::begin_frame(FrameMode mode, Thread *current_thread) 
     return false;
   }
 
-  // Now is a good time to apply the icon change that may have
-  // recently been requested.  By this point, we should be able to get
-  // a handle to the dock context.
+  // Now is a good time to apply the icon change that may have recently been
+  // requested.  By this point, we should be able to get a handle to the dock
+  // context.
   if (_pending_icon != NULL) {
     CGContextRef context = BeginCGContextForApplicationDockTile();
     if (context != NULL) {
@@ -651,13 +616,11 @@ bool TinyOsxGraphicsWindow::begin_frame(FrameMode mode, Thread *current_thread) 
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void TinyOsxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
 
@@ -672,20 +635,17 @@ void TinyOsxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.
+ *
+ * This should instruct the window to prepare for the flip at the next video
+ * sync, but it should not wait.
+ *
+ * We have the two separate functions, begin_flip() and end_flip(), to make it
+ * easier to flip all of the windows at the same time.
+ */
 void TinyOsxGraphicsWindow::begin_flip() {
   if (_osx_window == NULL) {
     return;
@@ -730,12 +690,9 @@ void TinyOsxGraphicsWindow::begin_flip() {
   DisposeGWorld(pGWorld);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void TinyOsxGraphicsWindow::close_window() {
   SystemCloseWindow();
 
@@ -748,30 +705,23 @@ void TinyOsxGraphicsWindow::close_window() {
  GraphicsWindow::close_window();
 }
 
-// HACK ALLERT ************ Undocumented OSX calls...
-// I can not find any other way to get the mouse focus to a window in OSX..
-//extern "C" {
-//    struct  CPSProcessSerNum
-//    {
-//        UInt32 lo;
-//        UInt32 hi;
-//    };
+/*
+ * HACK ALLERT ************ Undocumented OSX calls... I can not find any other
+ * way to get the mouse focus to a window in OSX.. extern "C" { struct
+ * CPSProcessSerNum { UInt32 lo; UInt32 hi; };
+ */
 
-//extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn);
-//extern OSErr CPSEnableForegroundOperation( struct CPSProcessSerNum *psn);
-//extern OSErr CPSSetProcessName ( struct CPSProcessSerNum *psn, char *processname);
-//extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn);
-//};
+// extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn); extern OSErr
+// CPSEnableForegroundOperation( struct CPSProcessSerNum *psn); extern OSErr
+// CPSSetProcessName ( struct CPSProcessSerNum *psn, char *processname);
+// extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn); };
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool TinyOsxGraphicsWindow::open_window() {
-  // GSG Creation/Initialization
+  // GSG CreationInitialization
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
@@ -797,9 +747,9 @@ bool TinyOsxGraphicsWindow::open_window() {
   }
 
   WindowProperties req_properties  = _properties;
-  //OSXGloablMutex().lock();
+  // OSXGloablMutex().lock();
   bool answer =  OSOpenWindow(req_properties);
-  //OSXGloablMutex().release();
+  // OSXGloablMutex().release();
   return answer;
 }
 
@@ -808,22 +758,22 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
   OSErr err = noErr;
 
   if (_current_icon != NULL && _pending_icon == NULL) {
-      // If we already have an icon specified, we'll need to reapply it
-      // when the window is successfully created.
+      // If we already have an icon specified, we'll need to reapply it when
+      // the window is successfully created.
       _pending_icon = _current_icon;
       _current_icon = NULL;
   }
 
   static bool GlobalInits = false;
   if (!GlobalInits) {
-    //
-    // one time aplication inits.. to get a window open from a standalone aplication..
+    // one time aplication inits.. to get a window open from a standalone
+    // aplication..
 
     EventHandlerRef    application_event_ref_ref1;
     EventTypeSpec    list1[] =
       {
-        //{ kEventClassCommand,  kEventProcessCommand },
-        //{ kEventClassCommand,  kEventCommandUpdateStatus },
+        // { kEventClassCommand,  kEventProcessCommand }, {
+        // kEventClassCommand,  kEventCommandUpdateStatus },
         { kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
         { kEventClassMouse, kEventMouseUp },
         { kEventClassMouse, kEventMouseMoved },
@@ -845,22 +795,19 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     // Determine if we're running from a bundle.
     CFDictionaryRef dref =
       ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
-    // If the dictionary doesn't have "BundlePath" (or the BundlePath
-    // is the same as the executable path), then we're not running
-    // from a bundle, and we need to call TransformProcessType to make
-    // the process a "foreground" application, with its own icon in
-    // the dock and such.
+    // If the dictionary doesn't have "BundlePath" (or the BundlePath is the
+    // same as the executable path), then we're not running from a bundle, and
+    // we need to call TransformProcessType to make the process a "foreground"
+    // application, with its own icon in the dock and such.
 
     bool has_bundle = false;
 
     CFStringRef bundle_path = (CFStringRef)CFDictionaryGetValue(dref, CFSTR("BundlePath"));
     if (bundle_path != NULL) {
-      // OK, we have a bundle path.  We're probably running in a
-      // bundle . . .
+      // OK, we have a bundle path.  We're probably running in a bundle . . .
       has_bundle = true;
 
-      // . . . unless it turns out it's the same as the executable
-      // path.
+      // . . . unless it turns out it's the same as the executable path.
       CFStringRef exe_path = (CFStringRef)CFDictionaryGetValue(dref, kCFBundleExecutableKey);
       if (exe_path != NULL) {
         if (CFStringCompare(bundle_path, exe_path, kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
@@ -978,28 +925,27 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
       }
 
       if (req_properties.has_undecorated() && req_properties.get_undecorated()) { // create a unmovable .. no edge window..
-	tinydisplay_cat.info() << "Creating undecorated window\n";
+  tinydisplay_cat.info() << "Creating undecorated window\n";
 
         // We don't want a resize box either.
         attributes &= ~kWindowResizableAttribute;
         attributes |= kWindowNoTitleBarAttribute;
-	CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
+  CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
       }
       else
       { // create a window with crome and sizing and sucj
-	// In this case, we want to constrain the window to the
-	// available size.
-	Rect bounds;
-	GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
+  // In this case, we want to constrain the window to the available size.
+  Rect bounds;
+  GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
 
-	r.left = max(r.left, bounds.left);
-	r.right = min(r.right, bounds.right);
-	r.top = max(r.top, bounds.top);
-	r.bottom = min(r.bottom, bounds.bottom);
+  r.left = max(r.left, bounds.left);
+  r.right = min(r.right, bounds.right);
+  r.top = max(r.top, bounds.top);
+  r.bottom = min(r.bottom, bounds.bottom);
 
-	tinydisplay_cat.info() << "Creating standard window\n";
-	CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
-	AddAWindow(_osx_window);
+  tinydisplay_cat.info() << "Creating standard window\n";
+  CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
+  AddAWindow(_osx_window);
       }
     }
 
@@ -1036,21 +982,23 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
       {
 
           NSWindow*    parentWindow        =    (NSWindow *)req_properties.get_parent_window();
-      //    NSView*        aView                =    [[parentWindow contentView] viewWithTag:378];
-      //    NSRect        aRect                =    [aView frame];
-      //    NSPoint        origin                =    [parentWindow convertBaseToScreen:aRect.origin];
+      // NSView*        aView                =    [[parentWindow contentView]
+      // viewWithTag:378]; NSRect        aRect                =    [aView
+      // frame]; NSPoint        origin                =    [parentWindow
+      // convertBaseToScreen:aRect.origin];
 
-      //    NSWindow*    childWindow            =    [[NSWindow alloc] initWithWindowRef:_osx_window];
+      // NSWindow*    childWindow            =    [[NSWindow alloc]
+      // initWithWindowRef:_osx_window];
 
 
           Post_Event_Wait(PANDA_CREATE_WINDOW,(unsigned long) _osx_window,1,[parentWindow windowNumber]);
 
-      //    [childWindow setFrameOrigin:origin];
-      //    [childWindow setAcceptsMouseMovedEvents:YES];
-      //    [childWindow setBackgroundColor:[NSColor blackColor]];
-           // this seems to block till the parent accepts the connection ?
-//                [parentWindow addChildWindow:childWindow ordered:NSWindowAbove];
-//                [childWindow orderFront:nil];
+      // [childWindow setFrameOrigin:origin]; [childWindow
+      // setAcceptsMouseMovedEvents:YES]; [childWindow
+      // setBackgroundColor:[NSColor blackColor]]; this seems to block till
+      // the parent accepts the connection ? [parentWindow
+      // addChildWindow:childWindow ordered:NSWindowAbove]; [childWindow
+      // orderFront:nil];
 
 
           _properties.set_parent_window(req_properties.get_parent_window());
@@ -1079,8 +1027,8 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
       }
     }
 
-    // Now measure the size and placement of the window we
-    // actually ended up with.
+    // Now measure the size and placement of the window we actually ended up
+    // with.
     Rect rectPort = {0,0,0,0};
     GetWindowPortBounds (_osx_window, &rectPort);
     _properties.set_origin((int) rectPort.left, (int) rectPort.top);
@@ -1102,13 +1050,11 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
   return (err == noErr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::process_events()
-//       Access: Virtual, Protected
-//  Description: Required Event upcall . Used to dispatch Window and Aplication Events
-//               back into panda
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Required Event upcall . Used to dispatch Window and Aplication Events back
+ * into panda
+ *
+ */
 void TinyOsxGraphicsWindow::process_events() {
   GraphicsWindow::process_events();
 
@@ -1119,38 +1065,32 @@ void TinyOsxGraphicsWindow::process_events() {
     /*if (!_properties.has_parent_window())*/
     {
       while  (ReceiveNextEvent(0, NULL, kEventDurationNoWait, true, &theEvent)== noErr) {
-	SendEventToEventTarget (theEvent, theTarget);
-	ReleaseEvent(theEvent);
+  SendEventToEventTarget (theEvent, theTarget);
+  ReleaseEvent(theEvent);
       }
     }
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::supports_pixel_zoom
-//       Access: Published, Virtual
-//  Description: Returns true if a call to set_pixel_zoom() will be
-//               respected, false if it will be ignored.  If this
-//               returns false, then get_pixel_factor() will always
-//               return 1.0, regardless of what value you specify for
-//               set_pixel_zoom().
-//
-//               This may return false if the underlying renderer
-//               doesn't support pixel zooming, or if you have called
-//               this on a DisplayRegion that doesn't have both
-//               set_clear_color() and set_clear_depth() enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a call to set_pixel_zoom() will be respected, false if it
+ * will be ignored.  If this returns false, then get_pixel_factor() will
+ * always return 1.0, regardless of what value you specify for
+ * set_pixel_zoom().
+ *
+ * This may return false if the underlying renderer doesn't support pixel
+ * zooming, or if you have called this on a DisplayRegion that doesn't have
+ * both set_clear_color() and set_clear_depth() enabled.
+ */
 bool TinyOsxGraphicsWindow::
 supports_pixel_zoom() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::handleKeyInput()
-//       Access: Virtual, Protected
-//  Description: Required Event upcall . Used to dispatch Window and Aplication Events
-//               back into panda
-////////////////////////////////////////////////////////////////////
+/**
+ * Required Event upcall . Used to dispatch Window and Aplication Events back
+ * into panda
+ */
 OSStatus TinyOsxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown) {
   // key input handler
 
@@ -1164,14 +1104,13 @@ OSStatus TinyOsxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, E
       << ", " << (int)keyDown << "\n";
   }
 
-  //CallNextEventHandler(myHandler, event);
+  // CallNextEventHandler(myHandler, event);
 
-  // We don't check the result of the above function.  In principle,
-  // this should return eventNotHandledErr if the key event is not
-  // handled by the OS, but in practice, testing this just seems to
-  // eat the Escape keypress meaninglessly.  Keypresses like F11 that
-  // are already mapped in the desktop seem to not even come into this
-  // function in the first place.
+  // We don't check the result of the above function.  In principle, this
+  // should return eventNotHandledErr if the key event is not handled by the
+  // OS, but in practice, testing this just seems to eat the Escape keypress
+  // meaninglessly.  Keypresses like F11 that are already mapped in the
+  // desktop seem to not even come into this function in the first place.
   UInt32 newModifiers = 0;
   OSStatus error = GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &newModifiers);
   if (error == noErr) {
@@ -1185,9 +1124,9 @@ OSStatus TinyOsxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, E
   if (keyDown) {
     if ((newModifiers & cmdKey) != 0) {
       if (button == KeyboardButton::ascii_key('q') || button == KeyboardButton::ascii_key('w')) {
-        // Command-Q or Command-W: quit the application or close the
-        // window, respectively.  For now, we treat them both the
-        // same: close the window.
+        // Command-Q or Command-W: quit the application or close the window,
+        // respectively.  For now, we treat them both the same: close the
+        // window.
         user_close_request();
       }
     }
@@ -1196,25 +1135,21 @@ OSStatus TinyOsxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, E
     SendKeyEvent(button, false);
   }
   return   CallNextEventHandler(myHandler, event);
-//  return noErr;
+// return noErr;
 }
 
- ////////////////////////////////////////////////////////////////////
- //     Function:
- //       Access:
- //  Description:
- ////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyOsxGraphicsWindow::SystemSetWindowForground(bool forground) {
   WindowProperties properties;
   properties.set_foreground(forground);
   system_changed_properties(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function:
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
   if (_osx_window != NULL) {
     GrafPtr savePort;
@@ -1227,11 +1162,9 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
   }
 }
 
- ////////////////////////////////////////////////////////////////////
- //     Function:
- //       Access:
- //  Description:
- ////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
  OSStatus TinyOsxGraphicsWindow::handleWindowMouseEvents (EventHandlerCallRef myHandler, EventRef event) {
   WindowRef            window = NULL;
   OSStatus            result = eventNotHandledErr;
@@ -1242,10 +1175,9 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
   SInt32 this_wheel_delta;
   EventMouseWheelAxis wheelAxis;
 
-  //cerr <<" Start Mouse Event " << _ID << "\n";
+  // cerr <<" Start Mouse Event " << _ID << "\n";
 
-  // Mac OS X v10.1 and later
-  // should this be front window???
+  // Mac OS X v10.1 and later should this be front window???
   GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
   if (!_is_fullscreen && (window == NULL || window != _osx_window )) {
@@ -1259,33 +1191,33 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
 
   GetWindowPortBounds (window, &rectPort);
 
-  // result = CallNextEventHandler(myHandler, event);
-  // if (eventNotHandledErr == result) { // only handle events not already handled (prevents wierd resize interaction)
+  // result = CallNextEventHandler(myHandler, event); if (eventNotHandledErr
+  // == result) {  only handle events not already handled (prevents wierd
+  // resize interaction)
   switch (kind) {
-     // Whenever mouse button state changes, generate the
-     // appropriate Panda down/up events to represent the
-     // change.
+     // Whenever mouse button state changes, generate the appropriate Panda
+     // downup events to represent the change.
 
     case kEventMouseDown:
     case kEventMouseUp:
       {
-	GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
-	if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
-	  GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
-	  MouseData currMouse = get_pointer(0);
-	  qdGlobalPoint.h += currMouse.get_x();
-	  qdGlobalPoint.v += currMouse.get_y();
-	}
-	else
-	{
-	  GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
-	  SystemPointToLocalPoint(qdGlobalPoint);
-	}
+  GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
+  if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
+    GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
+    MouseData currMouse = get_pointer(0);
+    qdGlobalPoint.h += currMouse.get_x();
+    qdGlobalPoint.v += currMouse.get_y();
+  }
+  else
+  {
+    GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
+    SystemPointToLocalPoint(qdGlobalPoint);
+  }
 
-	set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+  set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
 
-	UInt32 new_buttons = GetCurrentEventButtonState();
-	HandleButtonDelta(new_buttons);
+  UInt32 new_buttons = GetCurrentEventButtonState();
+  HandleButtonDelta(new_buttons);
       }
       result = noErr;
       break;
@@ -1293,22 +1225,22 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
     case kEventMouseMoved:
     case kEventMouseDragged:
       if (_properties.get_mouse_mode()==WindowProperties::M_relative) {
-	GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
+  GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
 
-	MouseData currMouse=get_pointer(0);
-	qdGlobalPoint.h+=currMouse.get_x();
-	qdGlobalPoint.v+=currMouse.get_y();
+  MouseData currMouse=get_pointer(0);
+  qdGlobalPoint.h+=currMouse.get_x();
+  qdGlobalPoint.v+=currMouse.get_y();
       } else {
-	GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
-	SystemPointToLocalPoint(qdGlobalPoint);
+  GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL    , (void*) &qdGlobalPoint);
+  SystemPointToLocalPoint(qdGlobalPoint);
       }
       if (kind == kEventMouseMoved &&
-	  (qdGlobalPoint.h < 0 || qdGlobalPoint.v < 0)) {
-	// Moving into the titlebar region.
-	set_pointer_out_of_window();
+    (qdGlobalPoint.h < 0 || qdGlobalPoint.v < 0)) {
+  // Moving into the titlebar region.
+  set_pointer_out_of_window();
       } else {
-	// Moving within the window itself (or dragging anywhere).
-	set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+  // Moving within the window itself (or dragging anywhere).
+  set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
       }
       result = noErr;
 
@@ -1321,33 +1253,31 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
       SystemPointToLocalPoint(qdGlobalPoint);
 
       if (wheelAxis == kEventMouseWheelAxisY) {
-	set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
-	_wheel_delta += this_wheel_delta;
-	SInt32 wheel_scale = osx_mouse_wheel_scale;
-	while (_wheel_delta > wheel_scale) {
-	  _input_devices[0].button_down(MouseButton::wheel_up());
-	  _input_devices[0].button_up(MouseButton::wheel_up());
-	  _wheel_delta -= wheel_scale;
-	}
-	while (_wheel_delta < -wheel_scale) {
-	  _input_devices[0].button_down(MouseButton::wheel_down());
-	  _input_devices[0].button_up(MouseButton::wheel_down());
-	  _wheel_delta += wheel_scale;
-	}
+  set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+  _wheel_delta += this_wheel_delta;
+  SInt32 wheel_scale = osx_mouse_wheel_scale;
+  while (_wheel_delta > wheel_scale) {
+    _input_devices[0].button_down(MouseButton::wheel_up());
+    _input_devices[0].button_up(MouseButton::wheel_up());
+    _wheel_delta -= wheel_scale;
+  }
+  while (_wheel_delta < -wheel_scale) {
+    _input_devices[0].button_down(MouseButton::wheel_down());
+    _input_devices[0].button_up(MouseButton::wheel_down());
+    _wheel_delta += wheel_scale;
+  }
       }
       result = noErr;
       break;
     }
-    //result = noErr;
+    // result = noErr;
 
    return result;
  }
 
- ////////////////////////////////////////////////////////////////////
- //     Function: TinyOsxGraphicsWindow::OSX_TranslateKey
- //       Access: Private
- //  Description: MAC Key Codes to Panda Key Codes
- ////////////////////////////////////////////////////////////////////
+/**
+ * MAC Key Codes to Panda Key Codes
+ */
  ButtonHandle TinyOsxGraphicsWindow::OSX_TranslateKey(UInt32 key, EventRef event) {
 
    ButtonHandle nk = ButtonHandle::none();
@@ -1404,7 +1334,8 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
    case 92:   nk = KeyboardButton::ascii_key('9');       break;
 
 
-       //    case 36:   nk = KeyboardButton::ret();              break;   // no return  in panda ???
+       // case 36:   nk = KeyboardButton::ret();              break;    no
+       // return  in panda ???
    case 49:   nk = KeyboardButton::space();               break;
    case 51:   nk = KeyboardButton::backspace();          break;
    case 48:   nk = KeyboardButton::tab();                  break;
@@ -1423,7 +1354,7 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
    case 114:  nk = KeyboardButton::help();              break;
    case 117:  nk = KeyboardButton::del();                  break;
 
-       //    case  71:  nk = KeyboardButton::num_lock()        break;
+       // case  71:  nk = KeyboardButton::num_lock()        break;
 
    case 122:  nk = KeyboardButton::f1();                  break;
    case 120:  nk = KeyboardButton::f2();                  break;
@@ -1459,12 +1390,12 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
    default:
      if (tinydisplay_cat.is_debug()) {
        tinydisplay_cat.debug()
-	 << " Untranslated KeyCode: " << key
-	 << " (0x" << hex << key << dec << ")\n";
+   << " Untranslated KeyCode: " << key
+   << " (0x" << hex << key << dec << ")\n";
      }
 
-     // not sure this is right .. but no mapping for keypad and such
-     // this at least does a best gess..
+     // not sure this is right .. but no mapping for keypad and such this at
+     // least does a best gess..
 
      char charCode =  0;
      if (GetEventParameter( event, kEventParamKeyMacCharCodes, typeChar, nil, sizeof( charCode ), nil, &charCode ) == noErr)
@@ -1472,11 +1403,9 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
    }
    return nk;
  }
- ////////////////////////////////////////////////////////////////////
- //     Function: TinyOsxGraphicsWindow::HandleModifireDeleta
- //       Access: Private
- //  Description: Used to emulate key events for the MAC key Modifiers..
- ////////////////////////////////////////////////////////////////////
+/**
+ * Used to emulate key events for the MAC key Modifiers..
+ */
  void TinyOsxGraphicsWindow::HandleModifireDeleta(UInt32 newModifiers) {
   UInt32 changed = _last_key_modifiers ^ newModifiers;
 
@@ -1500,11 +1429,9 @@ void TinyOsxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint) {
   _last_key_modifiers = newModifiers;
  };
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::HandleButtonDelta
-//       Access: Private
-//  Description: Used to emulate buttons events/
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to emulate buttons events
+ */
 void TinyOsxGraphicsWindow::
 HandleButtonDelta(UInt32 new_buttons) {
   UInt32 changed = _last_buttons ^ new_buttons;
@@ -1536,16 +1463,14 @@ HandleButtonDelta(UInt32 new_buttons) {
   _last_buttons = new_buttons;
 }
 
- ////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if
+ * possible.
+ *
+ * Returns true if successful, false on failure.  This may fail if the mouse
+ * is not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool TinyOsxGraphicsWindow::move_pointer(int device, int x, int y) {
   if (_osx_window == NULL) {
     return false;
@@ -1609,8 +1534,8 @@ bool TinyOsxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool 
   }
   else*/
   {
-    // We sometimes get a bogus origin of (0, 0).  As a special hack,
-    // treat this as a special case, and ignore it.
+    // We sometimes get a bogus origin of (0, 0).  As a special hack, treat
+    // this as a special case, and ignore it.
     if (has_origin) {
       if (x_origin != 0 || y_origin != 0) {
         MoveWindow(_osx_window, x_origin, y_origin, false);
@@ -1634,25 +1559,20 @@ bool TinyOsxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The properties that have been applied are cleared
-//               from the structure by this function; so on return,
-//               whatever remains in the properties structure are
-//               those that were unchanged for some reason (probably
-//               because the underlying interface does not support
-//               changing that property on an open window).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The properties that have been applied are cleared from the structure by
+ * this function; so on return, whatever remains in the properties structure
+ * are those that were unchanged for some reason (probably because the
+ * underlying interface does not support changing that property on an open
+ * window).
+ */
 void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
   if (tinydisplay_cat.is_debug()) {
     tinydisplay_cat.debug()
@@ -1669,7 +1589,7 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
   }
 
   // for some changes .. a full rebuild is required for the OS layer Window.
-  //    I think it is the crome atribute and full screen behaviour.
+  // I think it is the crome atribute and full screen behaviour.
   bool need_full_rebuild = false;
 
   // if we are not full and transitioning to full
@@ -1694,9 +1614,9 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
   }
 
   if (need_full_rebuild) {
-    // Logic here is ..  take a union of the properties .. with the
-    // new allowed to overwrite the old states.  and start a bootstrap
-    // of a new window ..
+    // Logic here is ..  take a union of the properties .. with the new
+    // allowed to overwrite the old states.  and start a bootstrap of a new
+    // window ..
 
     // get a copy of my properties..
     WindowProperties req_properties(_properties);
@@ -1720,8 +1640,8 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
   }
 
   // An icon filename means to load up the icon and save it.  We can't
-  // necessarily apply it immediately; it will get applied later, in
-  // the window event handler.
+  // necessarily apply it immediately; it will get applied later, in the
+  // window event handler.
   if (properties.has_icon_filename()) {
     if (set_icon_filename(properties.get_icon_filename())) {
       properties.clear_icon_filename();
@@ -1768,9 +1688,9 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::LocalPointToSystemPoint
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TinyOsxGraphicsWindow::LocalPointToSystemPoint(Point &qdLocalPoint) {
   if (_osx_window != NULL) {
     GrafPtr savePort;
@@ -1784,30 +1704,23 @@ void TinyOsxGraphicsWindow::LocalPointToSystemPoint(Point &qdLocalPoint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::mouse_mode_relative
-//       Access: Protected, Virtual
-//  Description: Detaches mouse. Only mouse delta from now on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detaches mouse.  Only mouse delta from now on.
+ */
 void TinyOsxGraphicsWindow::mouse_mode_relative() {
   CGAssociateMouseAndMouseCursorPosition(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::mouse_mode_absolute
-//       Access: Protected, Virtual
-//  Description: Reattaches mouse to location
-////////////////////////////////////////////////////////////////////
+/**
+ * Reattaches mouse to location
+ */
 void TinyOsxGraphicsWindow::mouse_mode_absolute() {
   CGAssociateMouseAndMouseCursorPosition(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsWindow::create_frame_buffer
-//       Access: Private
-//  Description: Creates a suitable frame buffer for the current
-//               window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable frame buffer for the current window size.
+ */
 void TinyOsxGraphicsWindow::
 create_frame_buffer() {
   if (_frame_buffer != NULL) {

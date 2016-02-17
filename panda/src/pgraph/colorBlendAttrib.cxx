@@ -1,16 +1,15 @@
-// Filename: colorBlendAttrib.cxx
-// Created by:  drose (29Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorBlendAttrib.cxx
+ * @author drose
+ * @date 2002-03-29
+ */
 
 #include "colorBlendAttrib.h"
 #include "graphicsStateGuardianBase.h"
@@ -23,26 +22,20 @@
 TypeHandle ColorBlendAttrib::_type_handle;
 int ColorBlendAttrib::_attrib_slot;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::make_off
-//       Access: Published, Static
-//  Description: Constructs a new ColorBlendAttrib object that
-//               disables special-effect blending, allowing normal
-//               transparency to be used instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ColorBlendAttrib object that disables special-effect
+ * blending, allowing normal transparency to be used instead.
+ */
 CPT(RenderAttrib) ColorBlendAttrib::
 make_off() {
   ColorBlendAttrib *attrib = new ColorBlendAttrib;
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new ColorBlendAttrib object.  This
-//               constructor is deprecated; use the one below, which
-//               takes three or four parameters, instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ColorBlendAttrib object.  This constructor is deprecated;
+ * use the one below, which takes three or four parameters, instead.
+ */
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode) {
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, O_one, O_one,
@@ -50,38 +43,30 @@ make(ColorBlendAttrib::Mode mode) {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new ColorBlendAttrib object that enables
-//               special-effect blending.  This supercedes
-//               transparency.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new ColorBlendAttrib object that enables special-effect
+ * blending.  This supercedes transparency.
+ */
 CPT(RenderAttrib) ColorBlendAttrib::
-make(ColorBlendAttrib::Mode mode, 
+make(ColorBlendAttrib::Mode mode,
      ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
      const LColor &color) {
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b, color);
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) ColorBlendAttrib::
 make_default() {
   return return_new(new ColorBlendAttrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ColorBlendAttrib::
 output(ostream &out) const {
   out << get_type() << ":" << get_mode();
@@ -96,21 +81,18 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ColorBlendAttrib
-//               types to return a unique number indicating whether
-//               this ColorBlendAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two ColorBlendAttrib objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two ColorBlendAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived ColorBlendAttrib types to return a
+ * unique number indicating whether this ColorBlendAttrib is equivalent to the
+ * other one.
+ *
+ * This should return 0 if the two ColorBlendAttrib objects are equivalent, a
+ * number less than zero if this one should be sorted before the other one,
+ * and a number greater than zero otherwise.
+ *
+ * This will only be called with two ColorBlendAttrib objects whose get_type()
+ * functions return the same.
+ */
 int ColorBlendAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ColorBlendAttrib *ta = (const ColorBlendAttrib *)other;
@@ -130,16 +112,12 @@ compare_to_impl(const RenderAttrib *other) const {
   return _color.compare_to(ta->_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t ColorBlendAttrib::
 get_hash_impl() const {
   size_t hash = 0;
@@ -151,33 +129,26 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::get_auto_shader_attrib_impl
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPT(RenderAttrib) ColorBlendAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               ColorBlendAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type ColorBlendAttrib.
+ */
 void ColorBlendAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void ColorBlendAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
@@ -188,14 +159,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   _color.write_datagram(dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type ColorBlendAttrib is encountered
-//               in the Bam file.  It should create the ColorBlendAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type ColorBlendAttrib is encountered in the Bam file.  It should create the
+ * ColorBlendAttrib and extract its information from the file.
+ */
 TypedWritable *ColorBlendAttrib::
 make_from_bam(const FactoryParams &params) {
   ColorBlendAttrib *attrib = new ColorBlendAttrib;
@@ -208,13 +176,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorBlendAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new ColorBlendAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new ColorBlendAttrib.
+ */
 void ColorBlendAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
@@ -228,10 +193,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _involves_color_scale = involves_color_scale(_a) || involves_color_scale(_b);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ostream << ColorBlendAttrib::Mode
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, ColorBlendAttrib::Mode mode) {
   switch (mode) {
@@ -257,10 +221,9 @@ operator << (ostream &out, ColorBlendAttrib::Mode mode) {
   return out << "**invalid ColorBlendAttrib::Mode(" << (int)mode << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ostream << ColorBlendAttrib::Operand
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, ColorBlendAttrib::Operand operand) {
   switch (operand) {

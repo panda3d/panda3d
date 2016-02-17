@@ -1,19 +1,19 @@
-// Filename: graphicsStateGuardian.cxx
-// Created by:  drose (02eb99)
-// Updated by: fperazzi, PandaSE (05May10) (added fetch_ptr_parameter,
-//  _max_2d_texture_array_layers, _supports_2d_texture_array,
-//  get_supports_cg_profile)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsStateGuardian.cxx
+ * @author drose
+ * @date 1999-02-02
+ * @author fperazzi, PandaSE
+ * @date 2010-05-05
+ *  _max_2d_texture_array_layers, _supports_2d_texture_array,
+ *  get_supports_cg_profile)
+ */
 
 #include "graphicsStateGuardian.h"
 #include "graphicsEngine.h"
@@ -133,11 +133,9 @@ PT(TextureStage) GraphicsStateGuardian::_alpha_scale_texture_stage = NULL;
 
 TypeHandle GraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 
 GraphicsStateGuardian::
 GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
@@ -175,21 +173,19 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _max_vertices_per_array = INT_MAX;
   _max_vertices_per_primitive = INT_MAX;
 
-  // Initially, we set this to 1 (the default--no multitexturing
-  // supported).  A derived GSG may set this differently if it
-  // supports multitexturing.
+  // Initially, we set this to 1 (the default--no multitexturing supported).
+  // A derived GSG may set this differently if it supports multitexturing.
   _max_texture_stages = 1;
 
-  // Also initially, we assume there are no limits on texture sizes,
-  // and that 3-d and cube-map textures are not supported.
+  // Also initially, we assume there are no limits on texture sizes, and that
+  // 3-d and cube-map textures are not supported.
   _max_texture_dimension = -1;
   _max_3d_texture_dimension = 0;
   _max_2d_texture_array_layers = 0;
   _max_cube_map_dimension = 0;
   _max_buffer_texture_size = 0;
 
-  // Assume we don't support these fairly advanced texture combiner
-  // modes.
+  // Assume we don't support these fairly advanced texture combiner modes.
   _supports_texture_combine = false;
   _supports_texture_saved_result = false;
   _supports_texture_dot3 = false;
@@ -220,13 +216,13 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _timer_queries_active = false;
   _last_query_frame = 0;
   _last_num_queried = 0;
-  //_timer_delta = 0.0;
+  // _timer_delta = 0.0;
 
   _pstats_gpu_thread = -1;
 #endif
 
-  // Initially, we set this to false; a GSG that knows it has this
-  // property should set it to true.
+  // Initially, we set this to false; a GSG that knows it has this property
+  // should set it to true.
   _copy_texture_inverted = false;
 
   // Similarly with these capabilities flags.
@@ -253,17 +249,16 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   _supported_geom_rendering = 0;
 
-  // If this is true, then we can apply a color and/or color scale by
-  // twiddling the material and/or ambient light (which could mean
-  // enabling lighting even without a LightAttrib).
+  // If this is true, then we can apply a color andor color scale by twiddling
+  // the material andor ambient light (which could mean enabling lighting even
+  // without a LightAttrib).
   _color_scale_via_lighting = color_scale_via_lighting;
 
-  // Similarly for applying a texture to achieve uniform alpha
-  // scaling.
+  // Similarly for applying a texture to achieve uniform alpha scaling.
   _alpha_scale_via_texture = alpha_scale_via_texture;
 
-  // Few GSG's can do this, since it requires touching each vertex as
-  // it is rendered.
+  // Few GSG's can do this, since it requires touching each vertex as it is
+  // rendered.
   _runtime_color_scale = false;
 
   // The default is no shader support.
@@ -274,90 +269,72 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _texture_quality_override = Texture::QL_default;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
   remove_gsg(this);
   GeomMunger::unregister_mungers_for_gsg(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_engine
-//       Access: Published
-//  Description: Returns the graphics engine that created this GSG.
-//               Since there is normally only one GraphicsEngine
-//               object in an application, this is usually the same as
-//               the global GraphicsEngine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the graphics engine that created this GSG. Since there is normally
+ * only one GraphicsEngine object in an application, this is usually the same
+ * as the global GraphicsEngine.
+ */
 GraphicsEngine *GraphicsStateGuardian::
 get_engine() const {
   nassertr(_engine != (GraphicsEngine *)NULL, GraphicsEngine::get_global_ptr());
   return _engine;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_supports_multisample
-//       Access: Published, Virtual
-//  Description: Returns true if this particular GSG supports using
-//               the multisample bits to provide antialiasing, and
-//               also supports M_multisample and M_multisample_mask
-//               transparency modes.  If this is not true for a
-//               particular GSG, Panda will map the M_multisample
-//               modes to M_binary.
-//
-//               This method is declared virtual solely so that it can
-//               be queried from cullResult.cxx.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GSG supports using the multisample bits to
+ * provide antialiasing, and also supports M_multisample and
+ * M_multisample_mask transparency modes.  If this is not true for a
+ * particular GSG, Panda will map the M_multisample modes to M_binary.
+ *
+ * This method is declared virtual solely so that it can be queried from
+ * cullResult.cxx.
+ */
 bool GraphicsStateGuardian::
 get_supports_multisample() const {
   return _supports_multisample;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_supported_geom_rendering
-//       Access: Published, Virtual
-//  Description: Returns the union of Geom::GeomRendering values that
-//               this particular GSG can support directly.  If a Geom
-//               needs to be rendered that requires some additional
-//               properties, the StandardMunger and/or the
-//               CullableObject will convert it as needed.
-//
-//               This method is declared virtual solely so that it can
-//               be queried from cullableObject.cxx.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of Geom::GeomRendering values that this particular GSG
+ * can support directly.  If a Geom needs to be rendered that requires some
+ * additional properties, the StandardMunger and/or the CullableObject will
+ * convert it as needed.
+ *
+ * This method is declared virtual solely so that it can be queried from
+ * cullableObject.cxx.
+ */
 int GraphicsStateGuardian::
 get_supported_geom_rendering() const {
   return _supported_geom_rendering;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_supports_cg_profile
-//       Access: Published, Virtual
-//  Description: Returns true if this particular GSG supports the
-//               specified Cg Shader Profile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GSG supports the specified Cg Shader
+ * Profile.
+ */
 bool GraphicsStateGuardian::
 get_supports_cg_profile(const string &name) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_coordinate_system
-//       Access: Published
-//  Description: Changes the coordinate system in effect on this
-//               particular gsg.  This is also called the "external"
-//               coordinate system, since it is the coordinate system
-//               used by the scene graph, external to to GSG.
-//
-//               Normally, this will be the default coordinate system,
-//               but it might be set differently at runtime.  It will
-//               automatically be copied from the current lens's
-//               coordinate system as each DisplayRegion is rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the coordinate system in effect on this particular gsg.  This is
+ * also called the "external" coordinate system, since it is the coordinate
+ * system used by the scene graph, external to to GSG.
+ *
+ * Normally, this will be the default coordinate system, but it might be set
+ * differently at runtime.  It will automatically be copied from the current
+ * lens's coordinate system as each DisplayRegion is rendered.
+ */
 void GraphicsStateGuardian::
 set_coordinate_system(CoordinateSystem cs) {
   if (cs == CS_default) {
@@ -386,41 +363,32 @@ set_coordinate_system(CoordinateSystem cs) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_internal_coordinate_system
-//       Access: Published, Virtual
-//  Description: Returns the coordinate system used internally by the
-//               GSG.  This may be the same as the external coordinate
-//               system reported by get_coordinate_system(), or it may
-//               be something different.
-//
-//               In any case, vertices that have been transformed
-//               before being handed to the GSG (that is, vertices
-//               with a contents value of C_clip_point) will be
-//               expected to be in this coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the coordinate system used internally by the GSG.  This may be the
+ * same as the external coordinate system reported by get_coordinate_system(),
+ * or it may be something different.
+ *
+ * In any case, vertices that have been transformed before being handed to the
+ * GSG (that is, vertices with a contents value of C_clip_point) will be
+ * expected to be in this coordinate system.
+ */
 CoordinateSystem GraphicsStateGuardian::
 get_internal_coordinate_system() const {
   return _internal_coordinate_system;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_prepared_objects
-//       Access: Public, Virtual
-//  Description: Returns the set of texture and geom objects that have
-//               been prepared with this GSG (and possibly other GSG's
-//               that share objects).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of texture and geom objects that have been prepared with
+ * this GSG (and possibly other GSG's that share objects).
+ */
 PreparedGraphicsObjects *GraphicsStateGuardian::
 get_prepared_objects() {
   return _prepared_objects;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_gamma
-//       Access: Published, Virtual
-//  Description: Set gamma.  Returns true on success.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set gamma.  Returns true on success.
+ */
 bool GraphicsStateGuardian::
 set_gamma(PN_stdfloat gamma) {
   _gamma = gamma;
@@ -428,32 +396,25 @@ set_gamma(PN_stdfloat gamma) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_gamma
-//       Access: Published
-//  Description: Get the current gamma setting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Get the current gamma setting.
+ */
 PN_stdfloat GraphicsStateGuardian::
 get_gamma() const {
   return _gamma;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::restore_gamma
-//       Access: Published, Virtual
-//  Description: Restore original gamma setting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Restore original gamma setting.
+ */
 void GraphicsStateGuardian::
 restore_gamma() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::traverse_prepared_textures
-//       Access: Public
-//  Description: Calls the indicated function on all
-//               currently-prepared textures, or until the callback
-//               function returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the indicated function on all currently-prepared textures, or until
+ * the callback function returns false.
+ */
 void GraphicsStateGuardian::
 traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
                            void *callback_arg) {
@@ -470,29 +431,23 @@ traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
 }
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_flash_texture
-//       Access: Published
-//  Description: Sets the "flash texture".  This is a debug feature;
-//               when enabled, the specified texture will begin
-//               flashing in the scene, helping you to find it
-//               visually.
-//
-//               The texture also flashes with a color code: blue for
-//               mipmap level 0, yellow for mipmap level 1, and red
-//               for mipmap level 2 or higher (even for textures that
-//               don't have mipmaps).  This gives you an idea of the
-//               choice of the texture size.  If it is blue, the
-//               texture is being drawn the proper size or magnified;
-//               if it is yellow, it is being minified a little bit;
-//               and if it red, it is being minified considerably.  If
-//               you see a red texture when you are right in front of
-//               it, you should consider reducing the size of the
-//               texture to avoid wasting texture memory.
-//
-//               Not all rendering backends support the flash_texture
-//               feature.  Presently, it is only supported by OpenGL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the "flash texture".  This is a debug feature; when enabled, the
+ * specified texture will begin flashing in the scene, helping you to find it
+ * visually.
+ *
+ * The texture also flashes with a color code: blue for mipmap level 0, yellow
+ * for mipmap level 1, and red for mipmap level 2 or higher (even for textures
+ * that don't have mipmaps).  This gives you an idea of the choice of the
+ * texture size.  If it is blue, the texture is being drawn the proper size or
+ * magnified; if it is yellow, it is being minified a little bit; and if it
+ * red, it is being minified considerably.  If you see a red texture when you
+ * are right in front of it, you should consider reducing the size of the
+ * texture to avoid wasting texture memory.
+ *
+ * Not all rendering backends support the flash_texture feature.  Presently,
+ * it is only supported by OpenGL.
+ */
 void GraphicsStateGuardian::
 set_flash_texture(Texture *tex) {
   _flash_texture = tex;
@@ -500,12 +455,10 @@ set_flash_texture(Texture *tex) {
 #endif  // NDEBUG
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear_flash_texture
-//       Access: Published
-//  Description: Resets the "flash texture", so that no textures will
-//               flash.  See set_flash_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the "flash texture", so that no textures will flash.  See
+ * set_flash_texture().
+ */
 void GraphicsStateGuardian::
 clear_flash_texture() {
   _flash_texture = NULL;
@@ -513,27 +466,22 @@ clear_flash_texture() {
 #endif  // NDEBUG
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_flash_texture
-//       Access: Published
-//  Description: Returns the current "flash texture", if any, or NULL
-//               if none.  See set_flash_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current "flash texture", if any, or NULL if none.  See
+ * set_flash_texture().
+ */
 Texture *GraphicsStateGuardian::
 get_flash_texture() const {
   return _flash_texture;
 }
 #endif  // NDEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_scene
-//       Access: Published
-//  Description: Sets the SceneSetup object that indicates the initial
-//               camera position, etc.  This must be called before
-//               traversal begins.  Returns true if the scene is
-//               acceptable, false if something's wrong.  This should
-//               be called in the draw thread only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the SceneSetup object that indicates the initial camera position, etc.
+ * This must be called before traversal begins.  Returns true if the scene is
+ * acceptable, false if something's wrong.  This should be called in the draw
+ * thread only.
+ */
 bool GraphicsStateGuardian::
 set_scene(SceneSetup *scene_setup) {
   _scene_setup = scene_setup;
@@ -552,233 +500,179 @@ set_scene(SceneSetup *scene_setup) {
   return prepare_lens();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_scene
-//       Access: Published, Virtual
-//  Description: Returns the current SceneSetup object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current SceneSetup object.
+ */
 SceneSetup *GraphicsStateGuardian::
 get_scene() const {
   return _scene_setup;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_texture
-//       Access: Public, Virtual
-//  Description: Creates whatever structures the GSG requires to
-//               represent the texture internally, and returns a
-//               newly-allocated TextureContext object with this data.
-//               It is the responsibility of the calling function to
-//               later call release_texture() with this same pointer
-//               (which will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a texture.  Instead, call Texture::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates whatever structures the GSG requires to represent the texture
+ * internally, and returns a newly-allocated TextureContext object with this
+ * data.  It is the responsibility of the calling function to later call
+ * release_texture() with this same pointer (which will also delete the
+ * pointer).
+ *
+ * This function should not be called directly to prepare a texture.  Instead,
+ * call Texture::prepare().
+ */
 TextureContext *GraphicsStateGuardian::
 prepare_texture(Texture *) {
   return (TextureContext *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::update_texture
-//       Access: Public, Virtual
-//  Description: Ensures that the current Texture data is refreshed
-//               onto the GSG.  This means updating the texture
-//               properties and/or re-uploading the texture image, if
-//               necessary.  This should only be called within the
-//               draw thread.
-//
-//               If force is true, this function will not return until
-//               the texture has been fully uploaded.  If force is
-//               false, the function may choose to upload a simple
-//               version of the texture instead, if the texture is not
-//               fully resident (and if get_incomplete_render() is
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the current Texture data is refreshed onto the GSG.  This
+ * means updating the texture properties and/or re-uploading the texture
+ * image, if necessary.  This should only be called within the draw thread.
+ *
+ * If force is true, this function will not return until the texture has been
+ * fully uploaded.  If force is false, the function may choose to upload a
+ * simple version of the texture instead, if the texture is not fully resident
+ * (and if get_incomplete_render() is true).
+ */
 bool GraphicsStateGuardian::
 update_texture(TextureContext *, bool) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_texture
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_texture(), including deleting the
-//               TextureContext itself, if it is non-NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the resources previously allocated via a call to prepare_texture(),
+ * including deleting the TextureContext itself, if it is non-NULL.
+ */
 void GraphicsStateGuardian::
 release_texture(TextureContext *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::extract_texture_data
-//       Access: Public, Virtual
-//  Description: This method should only be called by the
-//               GraphicsEngine.  Do not call it directly; call
-//               GraphicsEngine::extract_texture_data() instead.
-//
-//               This method will be called in the draw thread to
-//               download the texture memory's image into its
-//               ram_image value.  It returns true on success, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.
+ *
+ * This method will be called in the draw thread to download the texture
+ * memory's image into its ram_image value.  It returns true on success, false
+ * otherwise.
+ */
 bool GraphicsStateGuardian::
 extract_texture_data(Texture *) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_sampler
-//       Access: Public, Virtual
-//  Description: Creates whatever structures the GSG requires to
-//               represent the sampler internally, and returns a
-//               newly-allocated SamplerContext object with this data.
-//               It is the responsibility of the calling function to
-//               later call release_sampler() with this same pointer
-//               (which will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a sampler.  Instead, call Texture::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates whatever structures the GSG requires to represent the sampler
+ * internally, and returns a newly-allocated SamplerContext object with this
+ * data.  It is the responsibility of the calling function to later call
+ * release_sampler() with this same pointer (which will also delete the
+ * pointer).
+ *
+ * This function should not be called directly to prepare a sampler.  Instead,
+ * call Texture::prepare().
+ */
 SamplerContext *GraphicsStateGuardian::
 prepare_sampler(const SamplerState &sampler) {
   return (SamplerContext *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_sampler
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_sampler(), including deleting the
-//               SamplerContext itself, if it is non-NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the resources previously allocated via a call to prepare_sampler(),
+ * including deleting the SamplerContext itself, if it is non-NULL.
+ */
 void GraphicsStateGuardian::
 release_sampler(SamplerContext *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_geom
-//       Access: Public, Virtual
-//  Description: Prepares the indicated Geom for retained-mode
-//               rendering, by creating whatever structures are
-//               necessary in the GSG (for instance, vertex buffers).
-//               Returns the newly-allocated GeomContext that can be
-//               used to render the geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepares the indicated Geom for retained-mode rendering, by creating
+ * whatever structures are necessary in the GSG (for instance, vertex
+ * buffers). Returns the newly-allocated GeomContext that can be used to
+ * render the geom.
+ */
 GeomContext *GraphicsStateGuardian::
 prepare_geom(Geom *) {
   return (GeomContext *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_geom
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_geom(), including deleting the GeomContext
-//               itself, if it is non-NULL.
-//
-//               This function should not be called directly to
-//               prepare a Geom.  Instead, call Geom::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the resources previously allocated via a call to prepare_geom(),
+ * including deleting the GeomContext itself, if it is non-NULL.
+ *
+ * This function should not be called directly to prepare a Geom.  Instead,
+ * call Geom::prepare().
+ */
 void GraphicsStateGuardian::
 release_geom(GeomContext *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_shader
-//       Access: Public, Virtual
-//  Description: Compile a vertex/fragment shader body.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compile a vertex/fragment shader body.
+ */
 ShaderContext *GraphicsStateGuardian::
 prepare_shader(Shader *shader) {
   return (ShaderContext *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_shader
-//       Access: Public, Virtual
-//  Description: Releases the resources allocated by prepare_shader
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the resources allocated by prepare_shader
+ */
 void GraphicsStateGuardian::
 release_shader(ShaderContext *sc) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_vertex_buffer
-//       Access: Public, Virtual
-//  Description: Prepares the indicated buffer for retained-mode
-//               rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepares the indicated buffer for retained-mode rendering.
+ */
 VertexBufferContext *GraphicsStateGuardian::
 prepare_vertex_buffer(GeomVertexArrayData *) {
   return (VertexBufferContext *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_vertex_buffer
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_data(), including deleting the
-//               VertexBufferContext itself, if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the VertexBufferContext itself, if necessary.
+ */
 void GraphicsStateGuardian::
 release_vertex_buffer(VertexBufferContext *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_index_buffer
-//       Access: Public, Virtual
-//  Description: Prepares the indicated buffer for retained-mode
-//               rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepares the indicated buffer for retained-mode rendering.
+ */
 IndexBufferContext *GraphicsStateGuardian::
 prepare_index_buffer(GeomPrimitive *) {
   return (IndexBufferContext *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_index_buffer
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_data(), including deleting the
-//               IndexBufferContext itself, if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the IndexBufferContext itself, if necessary.
+ */
 void GraphicsStateGuardian::
 release_index_buffer(IndexBufferContext *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_occlusion_query
-//       Access: Public, Virtual
-//  Description: Begins a new occlusion query.  After this call, you
-//               may call begin_draw_primitives() and
-//               draw_triangles()/draw_whatever() repeatedly.
-//               Eventually, you should call end_occlusion_query()
-//               before the end of the frame; that will return a new
-//               OcclusionQueryContext object that will tell you how
-//               many pixels represented by the bracketed geometry
-//               passed the depth test.
-//
-//               It is not valid to call begin_occlusion_query()
-//               between another begin_occlusion_query()
-//               .. end_occlusion_query() sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins a new occlusion query.  After this call, you may call
+ * begin_draw_primitives() and draw_triangles()/draw_whatever() repeatedly.
+ * Eventually, you should call end_occlusion_query() before the end of the
+ * frame; that will return a new OcclusionQueryContext object that will tell
+ * you how many pixels represented by the bracketed geometry passed the depth
+ * test.
+ *
+ * It is not valid to call begin_occlusion_query() between another
+ * begin_occlusion_query() .. end_occlusion_query() sequence.
+ */
 void GraphicsStateGuardian::
 begin_occlusion_query() {
   nassertv(_current_occlusion_query == (OcclusionQueryContext *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::end_occlusion_query
-//       Access: Public, Virtual
-//  Description: Ends a previous call to begin_occlusion_query().
-//               This call returns the OcclusionQueryContext object
-//               that will (eventually) report the number of pixels
-//               that passed the depth test between the call to
-//               begin_occlusion_query() and end_occlusion_query().
-////////////////////////////////////////////////////////////////////
+/**
+ * Ends a previous call to begin_occlusion_query(). This call returns the
+ * OcclusionQueryContext object that will (eventually) report the number of
+ * pixels that passed the depth test between the call to
+ * begin_occlusion_query() and end_occlusion_query().
+ */
 PT(OcclusionQueryContext) GraphicsStateGuardian::
 end_occlusion_query() {
   nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
@@ -787,44 +681,37 @@ end_occlusion_query() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::issue_timer_query
-//       Access: Public, Virtual
-//  Description: Adds a timer query to the command stream, associated
-//               with the given PStats collector index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a timer query to the command stream, associated with the given PStats
+ * collector index.
+ */
 PT(TimerQueryContext) GraphicsStateGuardian::
 issue_timer_query(int pstats_index) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::dispatch_compute
-//       Access: Public, Virtual
-//  Description: Dispatches a currently bound compute shader using
-//               the given work group counts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatches a currently bound compute shader using the given work group
+ * counts.
+ */
 void GraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   nassertv(false /* Compute shaders not supported by GSG */);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_geom_munger
-//       Access: Public, Virtual
-//  Description: Looks up or creates a GeomMunger object to munge
-//               vertices appropriate to this GSG for the indicated
-//               state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up or creates a GeomMunger object to munge vertices appropriate to
+ * this GSG for the indicated state.
+ */
 PT(GeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state, Thread *current_thread) {
   RenderState::Mungers &mungers = state->_mungers;
 
   if (!mungers.is_empty()) {
-    // Before we even look up the map, see if the _last_mi value points
-    // to this GSG.  This is likely because we tend to visit the same
-    // state multiple times during a frame.  Also, this might well be
-    // the only GSG in the world anyway.
+    // Before we even look up the map, see if the _last_mi value points to
+    // this GSG.  This is likely because we tend to visit the same state
+    // multiple times during a frame.  Also, this might well be the only GSG
+    // in the world anyway.
     int mi = state->_last_mi;
     if (mi >= 0 && mungers.has_element(mi) && mungers.get_key(mi) == this) {
       PT(GeomMunger) munger = mungers.get_data(mi);
@@ -841,8 +728,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
         state->_last_mi = mi;
         return munger;
       } else {
-        // This GeomMunger is no longer registered.  Remove it from
-        // the map.
+        // This GeomMunger is no longer registered.  Remove it from the map.
         mungers.remove_element(mi);
       }
     }
@@ -857,29 +743,23 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
   return munger;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::make_geom_munger
-//       Access: Public, Virtual
-//  Description: Creates a new GeomMunger object to munge vertices
-//               appropriate to this GSG for the indicated state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new GeomMunger object to munge vertices appropriate to this GSG
+ * for the indicated state.
+ */
 PT(GeomMunger) GraphicsStateGuardian::
 make_geom_munger(const RenderState *state, Thread *current_thread) {
-  // The default implementation returns no munger at all, but
-  // presumably, every kind of GSG needs some special munging action,
-  // so real GSG's will override this to return something more
-  // useful.
+  // The default implementation returns no munger at all, but presumably,
+  // every kind of GSG needs some special munging action, so real GSG's will
+  // override this to return something more useful.
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::compute_distance_to
-//       Access: Public, Virtual
-//  Description: This function will compute the distance to the
-//               indicated point, assumed to be in eye coordinates,
-//               from the camera plane.  The point is assumed to be
-//               in the GSG's internal coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will compute the distance to the indicated point, assumed to
+ * be in eye coordinates, from the camera plane.  The point is assumed to be
+ * in the GSG's internal coordinate system.
+ */
 PN_stdfloat GraphicsStateGuardian::
 compute_distance_to(const LPoint3 &point) const {
   switch (_internal_coordinate_system) {
@@ -903,39 +783,31 @@ compute_distance_to(const LPoint3 &point) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::fetch_specified_value
-//       Access: Public
-//  Description: The gsg contains a large number of useful matrices:
-//
-//                  * the world transform,
-//                  * the modelview matrix,
-//                  * the cs_transform,
-//                  * etc, etc.
-//
-//               A shader can request any of these values, and
-//               furthermore, it can request that various compositions,
-//               inverses, and transposes be performed.  The
-//               ShaderMatSpec is a data structure indicating what
-//               datum is desired and what conversions to perform.
-//               This routine, fetch_specified_value, is responsible for
-//               doing the actual retrieval and conversions.
-//
-//               Some values, like the following, aren't matrices:
-//
-//                  * window size
-//                  * texture coordinates of card center
-//
-//               This routine can fetch these values as well, by
-//               shoehorning them into a matrix.  In this way, we avoid
-//               the need for a separate routine to fetch these values.
-//
-//               The "altered" bits indicate what parts of the
-//               state_and_transform have changed since the last
-//               time this particular ShaderMatSpec was evaluated.
-//               This may allow data to be cached and not reevaluated.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The gsg contains a large number of useful matrices:
+ *
+ * * the world transform, * the modelview matrix, * the cs_transform, * etc,
+ * etc.
+ *
+ * A shader can request any of these values, and furthermore, it can request
+ * that various compositions, inverses, and transposes be performed.  The
+ * ShaderMatSpec is a data structure indicating what datum is desired and what
+ * conversions to perform.  This routine, fetch_specified_value, is
+ * responsible for doing the actual retrieval and conversions.
+ *
+ * Some values, like the following, aren't matrices:
+ *
+ * * window size * texture coordinates of card center
+ *
+ * This routine can fetch these values as well, by shoehorning them into a
+ * matrix.  In this way, we avoid the need for a separate routine to fetch
+ * these values.
+ *
+ * The "altered" bits indicate what parts of the state_and_transform have
+ * changed since the last time this particular ShaderMatSpec was evaluated.
+ * This may allow data to be cached and not reevaluated.
+ *
+ */
 const LMatrix4 *GraphicsStateGuardian::
 fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
   LVecBase3 v;
@@ -992,11 +864,9 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::fetch_specified_part
-//       Access: Public
-//  Description: See fetch_specified_value
-////////////////////////////////////////////////////////////////////
+/**
+ * See fetch_specified_value
+ */
 const LMatrix4 *GraphicsStateGuardian::
 fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
                      LMatrix4 &t, int index) {
@@ -1240,8 +1110,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     }
   }
   case Shader::SMO_tex_is_alpha_i: {
-    // This is a hack so we can support both F_alpha and other
-    // formats in the default shader, to fix font rendering in GLES2
+    // This is a hack so we can support both F_alpha and other formats in the
+    // default shader, to fix font rendering in GLES2
     const TextureAttrib *ta;
     if (_target_rs->get_attrib(ta) &&
         index < ta->get_num_on_stages()) {
@@ -1441,8 +1311,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_mat_constant_x_attrib: {
     if (_target_shader->has_shader_input(name)) {
-      // There is an input specifying precisely this whole thing, with
-      // dot and all.  Support this, even if only for backward compatibility.
+      // There is an input specifying precisely this whole thing, with dot and
+      // all.  Support this, even if only for backward compatibility.
       return &_target_shader->get_shader_input_matrix(name, t);
     }
 
@@ -1453,8 +1323,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_vec_constant_x_attrib: {
     if (_target_shader->has_shader_input(name)) {
-      // There is an input specifying precisely this whole thing, with
-      // dot and all.  Support this, even if only for backward compatibility.
+      // There is an input specifying precisely this whole thing, with dot and
+      // all.  Support this, even if only for backward compatibility.
       const LVecBase4 &data = _target_shader->get_shader_input_vector(name);
       t = LMatrix4(data[0],data[1],data[2],data[3],
                    data[0],data[1],data[2],data[3],
@@ -1472,9 +1342,9 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LightAttrib *target_light;
     _target_rs->get_attrib_def(target_light);
 
-    // We want to ignore ambient lights.  To that effect, iterate through
-    // the list of lights.  In the future, we will improve this system, by
-    // also filtering down to the number of lights specified by the shader.
+    // We want to ignore ambient lights.  To that effect, iterate through the
+    // list of lights.  In the future, we will improve this system, by also
+    // filtering down to the number of lights specified by the shader.
     int i = 0;
 
     int num_on_lights = target_light->get_num_on_lights();
@@ -1500,12 +1370,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::fetch_specified_member
-//       Access: Public
-//  Description: Given a NodePath passed into a shader input that is
-//               a structure, fetches the value for the given member.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a NodePath passed into a shader input that is a structure, fetches
+ * the value for the given member.
+ */
 const LMatrix4 *GraphicsStateGuardian::
 fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t) {
   // This system is not ideal.  It will be improved in the future.
@@ -1743,11 +1611,9 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::fetch_specified_texture
-//       Access: Public
-//  Description: Like fetch_specified_value, but for texture inputs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Like fetch_specified_value, but for texture inputs.
+ */
 PT(Texture) GraphicsStateGuardian::
 fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
                         int &view) {
@@ -1849,23 +1715,18 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::fetch_ptr_parameter
-//       Access: Public
-//  Description: Return a pointer to struct ShaderPtrData
-////////////////////////////////////////////////////////////////////
+/**
+ * Return a pointer to struct ShaderPtrData
+ */
 const Shader::ShaderPtrData *GraphicsStateGuardian::
 fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec) {
   return (_target_shader->get_shader_input_ptr(spec._arg));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_display_region
-//       Access: Public, Virtual
-//  Description: Makes the specified DisplayRegion current.  All
-//               future drawing and clear operations will be
-//               constrained within the given DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the specified DisplayRegion current.  All future drawing and clear
+ * operations will be constrained within the given DisplayRegion.
+ */
 void GraphicsStateGuardian::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
   _current_display_region = dr->get_object();
@@ -1913,29 +1774,22 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear_before_callback
-//       Access: Public, Virtual
-//  Description: Resets any non-standard graphics state that might
-//               give a callback apoplexy.  Some drivers require that
-//               the graphics state be restored to neutral before
-//               performing certain operations.  In OpenGL, for
-//               instance, this closes any open vertex buffers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets any non-standard graphics state that might give a callback apoplexy.
+ * Some drivers require that the graphics state be restored to neutral before
+ * performing certain operations.  In OpenGL, for instance, this closes any
+ * open vertex buffers.
+ */
 void GraphicsStateGuardian::
 clear_before_callback() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear_state_and_transform
-//       Access: Public, Virtual
-//  Description: Forgets the current graphics state and current
-//               transform, so that the next call to
-//               set_state_and_transform() will have to reload
-//               everything.  This is a good thing to call when you
-//               are no longer sure what the graphics state is.  This
-//               should only be called from the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forgets the current graphics state and current transform, so that the next
+ * call to set_state_and_transform() will have to reload everything.  This is
+ * a good thing to call when you are no longer sure what the graphics state
+ * is.  This should only be called from the draw thread.
+ */
 void GraphicsStateGuardian::
 clear_state_and_transform() {
   // Re-issue the modelview and projection transforms.
@@ -1946,15 +1800,11 @@ clear_state_and_transform() {
   _state_mask.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::remove_window
-//       Access: Public, Virtual
-//  Description: This is simply a transparent call to
-//               GraphicsEngine::remove_window().  It exists primary
-//               to support removing a window from that compiles
-//               before the display module, and therefore has no
-//               knowledge of a GraphicsEngine object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is simply a transparent call to GraphicsEngine::remove_window().  It
+ * exists primary to support removing a window from that compiles before the
+ * display module, and therefore has no knowledge of a GraphicsEngine object.
+ */
 void GraphicsStateGuardian::
 remove_window(GraphicsOutputBase *window) {
   nassertv(_engine != (GraphicsEngine *)NULL);
@@ -1963,30 +1813,24 @@ remove_window(GraphicsOutputBase *window) {
   _engine->remove_window(win);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_lens
-//       Access: Public, Virtual
-//  Description: Makes the current lens (whichever lens was most
-//               recently specified with set_scene()) active, so
-//               that it will transform future rendered geometry.
-//               Normally this is only called from the draw process,
-//               and usually it is called by set_scene().
-//
-//               The return value is true if the lens is acceptable,
-//               false if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the current lens (whichever lens was most recently specified with
+ * set_scene()) active, so that it will transform future rendered geometry.
+ * Normally this is only called from the draw process, and usually it is
+ * called by set_scene().
+ *
+ * The return value is true if the lens is acceptable, false if it is not.
+ */
 bool GraphicsStateGuardian::
 prepare_lens() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::calc_projection_mat
-//       Access: Public, Virtual
-//  Description: Given a lens, this function calculates the appropriate
-//               projection matrix for this gsg.  The result depends
-//               on the peculiarities of the rendering API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a lens, this function calculates the appropriate projection matrix
+ * for this gsg.  The result depends on the peculiarities of the rendering
+ * API.
+ */
 CPT(TransformState) GraphicsStateGuardian::
 calc_projection_mat(const Lens *lens) {
   if (lens == (Lens *)NULL) {
@@ -2000,49 +1844,42 @@ calc_projection_mat(const Lens *lens) {
   return TransformState::make_identity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_frame
-//       Access: Public, Virtual
-//  Description: Called before each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup before
-//               beginning the frame.
-//
-//               The return value is true if successful (in which case
-//               the frame will be drawn and end_frame() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_frame() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup before beginning the frame.
+ *
+ * The return value is true if successful (in which case the frame will be
+ * drawn and end_frame() will be called later), or false if unsuccessful (in
+ * which case nothing will be drawn and end_frame() will not be called).
+ */
 bool GraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
   _prepared_objects->begin_frame(this, current_thread);
 
-  // We should reset the state to the default at the beginning of
-  // every frame.  Although this will incur additional overhead,
-  // particularly in a simple scene, it helps ensure that states that
-  // have changed properties since last time without changing
-  // attribute pointers--like textures, lighting, or fog--will still
-  // be accurately updated.
+  // We should reset the state to the default at the beginning of every frame.
+  // Although this will incur additional overhead, particularly in a simple
+  // scene, it helps ensure that states that have changed properties since
+  // last time without changing attribute pointers--like textures, lighting,
+  // or fog--will still be accurately updated.
   _state_rs = RenderState::make_empty();
   _state_mask.clear();
 
 #ifdef DO_PSTATS
-  // We have to do this here instead of in GraphicsEngine because
-  // we need a current context to issue timer queries.
+  // We have to do this here instead of in GraphicsEngine because we need a
+  // current context to issue timer queries.
   int frame = ClockObject::get_global_clock()->get_frame_count();
   if (_last_query_frame < frame) {
     _last_query_frame = frame;
     _timer_queries_pcollector.clear_level();
 
-    // Now is a good time to flush previous frame's queries.  We
-    // may not actually have all of the previous frame's results
-    // in yet, but that's okay; the GPU data is allowed to lag a
-    // few frames behind.
+    // Now is a good time to flush previous frame's queries.  We may not
+    // actually have all of the previous frame's results in yet, but that's
+    // okay; the GPU data is allowed to lag a few frames behind.
     flush_timer_queries();
 
     if (_timer_queries_active) {
-      // Issue a stop and start event for collector 0, marking the
-      // beginning of the new frame.
+      // Issue a stop and start event for collector 0, marking the beginning
+      // of the new frame.
       issue_timer_query(0x8000);
       issue_timer_query(0x0000);
     }
@@ -2052,47 +1889,39 @@ begin_frame(Thread *current_thread) {
   return !_needs_reset;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_scene
-//       Access: Published, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the beginning of drawing commands for a "scene"
-//               (usually a particular DisplayRegion) within a frame.
-//               All 3-D drawing commands, except the clear operation,
-//               must be enclosed within begin_scene() .. end_scene().
-//               This must be called in the draw thread.
-//
-//               The return value is true if successful (in which case
-//               the scene will be drawn and end_scene() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_scene() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the beginning of
+ * drawing commands for a "scene" (usually a particular DisplayRegion) within
+ * a frame.  All 3-D drawing commands, except the clear operation, must be
+ * enclosed within begin_scene() .. end_scene(). This must be called in the
+ * draw thread.
+ *
+ * The return value is true if successful (in which case the scene will be
+ * drawn and end_scene() will be called later), or false if unsuccessful (in
+ * which case nothing will be drawn and end_scene() will not be called).
+ */
 bool GraphicsStateGuardian::
 begin_scene() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::end_scene
-//       Access: Published, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the end of drawing commands for a "scene" (usually a
-//               particular DisplayRegion) within a frame.  All 3-D
-//               drawing commands, except the clear operation, must be
-//               enclosed within begin_scene() .. end_scene().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the end of drawing
+ * commands for a "scene" (usually a particular DisplayRegion) within a frame.
+ * All 3-D drawing commands, except the clear operation, must be enclosed
+ * within begin_scene() .. end_scene().
+ */
 void GraphicsStateGuardian::
 end_scene() {
   // We should clear this pointer now, so that we don't keep unneeded
-  // reference counts dangling.  We keep around a "null" scene setup
-  // object instead of using a null pointer to avoid special-case code
-  // in set_state_and_transform.
+  // reference counts dangling.  We keep around a "null" scene setup object
+  // instead of using a null pointer to avoid special-case code in
+  // set_state_and_transform.
   _scene_setup = _scene_null;
 
-  // Undo any lighting we had enabled last scene, to force the lights
-  // to be reissued, in case their parameters or positions have
-  // changed between scenes.
+  // Undo any lighting we had enabled last scene, to force the lights to be
+  // reissued, in case their parameters or positions have changed between
+  // scenes.
   int i;
   for (i = 0; i < _num_lights_enabled; ++i) {
     enable_light(i, false);
@@ -2110,13 +1939,10 @@ end_scene() {
   _state_mask.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::end_frame
-//       Access: Public, Virtual
-//  Description: Called after each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup after
-//               rendering the frame, and before the window flips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup after rendering the frame, and before the window flips.
+ */
 void GraphicsStateGuardian::
 end_frame(Thread *current_thread) {
   _prepared_objects->end_frame(current_thread);
@@ -2141,23 +1967,20 @@ end_frame(Thread *current_thread) {
   _transform_state_pcollector.flush_level();
   _draw_primitive_pcollector.flush_level();
 
-  // Evict any textures and/or vbuffers that exceed our texture memory.
+  // Evict any textures andor vbuffers that exceed our texture memory.
   _prepared_objects->_graphics_memory_lru.begin_epoch();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::flush_timer_queries
-//       Access: Public
-//  Description: Called by the graphics engine on the draw thread
-//               to check the status of the running timer queries
-//               and submit their results to the PStats server.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the graphics engine on the draw thread to check the status of the
+ * running timer queries and submit their results to the PStats server.
+ */
 void GraphicsStateGuardian::
 flush_timer_queries() {
 #ifdef DO_PSTATS
-  // This uses the lower-level PStats interfaces for now because
-  // of all the unnecessary overhead that would otherwise be incurred
-  // when adding such a large amount of data at once.
+  // This uses the lower-level PStats interfaces for now because of all the
+  // unnecessary overhead that would otherwise be incurred when adding such a
+  // large amount of data at once.
 
   PStatClient *client = PStatClient::get_global_pstats();
 
@@ -2175,8 +1998,8 @@ flush_timer_queries() {
     }
   }
 
-  // Currently, we use one thread per GSG, for convenience.  In the
-  // future, we may want to try and use one thread per graphics card.
+  // Currently, we use one thread per GSG, for convenience.  In the future, we
+  // may want to try and use one thread per graphics card.
   if (_pstats_gpu_thread == -1) {
     _pstats_gpu_thread = client->make_gpu_thread(get_driver_renderer()).get_index();
   }
@@ -2193,8 +2016,8 @@ flush_timer_queries() {
     PStatGPUTimer timer(this, _wait_timer_pcollector);
 
     if (_last_num_queried > 0) {
-      // We know how many queries were available last frame, and this
-      // usually stays fairly constant, so use this as a starting point.
+      // We know how many queries were available last frame, and this usually
+      // stays fairly constant, so use this as a starting point.
       int i = min(_last_num_queried, count) - 1;
 
       if (_pending_timer_queries[i]->is_answer_ready()) {
@@ -2215,9 +2038,9 @@ flush_timer_queries() {
         }
       }
     } else {
-      // We figure out which tasks the GPU has already finished by doing
-      // a binary search for the first query that does not have an answer
-      // ready.  We know then that everything before that must be ready.
+      // We figure out which tasks the GPU has already finished by doing a
+      // binary search for the first query that does not have an answer ready.
+      // We know then that everything before that must be ready.
       while (count > 0) {
         int step = count / 2;
         int i = first + step;
@@ -2256,9 +2079,9 @@ flush_timer_queries() {
         _pstats_gpu_data.add_start(query->_pstats_index & 0x7fff, time_data);
       }
 
-      // We found an end-frame marker (a stop event for collector 0).
-      // This means that the GPU actually caught up with that frame,
-      // and we can flush the GPU thread's frame data to the pstats server.
+      // We found an end-frame marker (a stop event for collector 0). This
+      // means that the GPU actually caught up with that frame, and we can
+      // flush the GPU thread's frame data to the pstats server.
       if (query->_pstats_index == 0x8000) {
         gpu_thread.add_frame(_pstats_gpu_data);
         _pstats_gpu_data.clear();
@@ -2277,30 +2100,23 @@ flush_timer_queries() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::depth_offset_decals
-//       Access: Public, Virtual
-//  Description: Returns true if this GSG can implement decals using a
-//               DepthOffsetAttrib, or false if that is unreliable
-//               and the three-step rendering process should be used
-//               instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this GSG can implement decals using a DepthOffsetAttrib, or
+ * false if that is unreliable and the three-step rendering process should be
+ * used instead.
+ */
 bool GraphicsStateGuardian::
 depth_offset_decals() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_decal_base_first
-//       Access: Public, Virtual
-//  Description: Called during draw to begin a three-step rendering
-//               phase to draw decals.  The first step,
-//               begin_decal_base_first(), is called prior to drawing the
-//               base geometry.  It should set up whatever internal
-//               state is appropriate, as well as returning a
-//               RenderState object that should be applied to the base
-//               geometry for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called during draw to begin a three-step rendering phase to draw decals.
+ * The first step, begin_decal_base_first(), is called prior to drawing the
+ * base geometry.  It should set up whatever internal state is appropriate, as
+ * well as returning a RenderState object that should be applied to the base
+ * geometry for rendering.
+ */
 CPT(RenderState) GraphicsStateGuardian::
 begin_decal_base_first() {
   // Turn off writing the depth buffer to render the base geometry.
@@ -2313,20 +2129,16 @@ begin_decal_base_first() {
   return decal_base_first;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_decal_nested
-//       Access: Public, Virtual
-//  Description: Called during draw to begin a three-step rendering
-//               phase to draw decals.  The second step,
-//               begin_decal_nested(), is called after drawing the
-//               base geometry and prior to drawing any of the nested
-//               decal geometry that is to be applied to the base
-//               geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called during draw to begin a three-step rendering phase to draw decals.
+ * The second step, begin_decal_nested(), is called after drawing the base
+ * geometry and prior to drawing any of the nested decal geometry that is to
+ * be applied to the base geometry.
+ */
 CPT(RenderState) GraphicsStateGuardian::
 begin_decal_nested() {
-  // We should keep the depth buffer off during this operation, so
-  // that decals on decals will render properly.
+  // We should keep the depth buffer off during this operation, so that decals
+  // on decals will render properly.
   static CPT(RenderState) decal_nested;
   if (decal_nested == (const RenderState *)NULL) {
     decal_nested = RenderState::make
@@ -2336,58 +2148,46 @@ begin_decal_nested() {
   return decal_nested;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_decal_base_second
-//       Access: Public, Virtual
-//  Description: Called during draw to begin a three-step rendering
-//               phase to draw decals.  The third step,
-//               begin_decal_base_second(), is called after drawing the
-//               base geometry and the nested decal geometry, and
-//               prior to drawing the base geometry one more time (if
-//               needed).
-//
-//               It should return a RenderState object appropriate for
-//               rendering the base geometry the second time, or NULL
-//               if it is not necessary to re-render the base
-//               geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called during draw to begin a three-step rendering phase to draw decals.
+ * The third step, begin_decal_base_second(), is called after drawing the base
+ * geometry and the nested decal geometry, and prior to drawing the base
+ * geometry one more time (if needed).
+ *
+ * It should return a RenderState object appropriate for rendering the base
+ * geometry the second time, or NULL if it is not necessary to re-render the
+ * base geometry.
+ */
 CPT(RenderState) GraphicsStateGuardian::
 begin_decal_base_second() {
-  // Now let the depth buffer go back on, but turn off writing the
-  // color buffer to render the base geometry after the second pass.
-  // Also, turn off texturing since there's no need for it now.
+  // Now let the depth buffer go back on, but turn off writing the color
+  // buffer to render the base geometry after the second pass.  Also, turn off
+  // texturing since there's no need for it now.
   static CPT(RenderState) decal_base_second;
   if (decal_base_second == (const RenderState *)NULL) {
     decal_base_second = RenderState::make
       (ColorWriteAttrib::make(ColorWriteAttrib::C_off),
-       // On reflection, we need to leave texturing on so the alpha
-       // test mechanism can work (if it is enabled, e.g. we are
-       // rendering an object with M_dual transparency).
-       //       TextureAttrib::make_off(),
+       // On reflection, we need to leave texturing on so the alpha test
+       // mechanism can work (if it is enabled, e.g.  we are rendering an
+       // object with M_dual transparency). TextureAttrib::make_off(),
        RenderState::get_max_priority());
   }
   return decal_base_second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::finish_decal
-//       Access: Public, Virtual
-//  Description: Called during draw to clean up after decals are
-//               finished.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called during draw to clean up after decals are finished.
+ */
 void GraphicsStateGuardian::
 finish_decal() {
   // No need to do anything special here.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_draw_primitives()
-//       Access: Public, Virtual
-//  Description: Called before a sequence of draw_primitive()
-//               functions are called, this should prepare the vertex
-//               data for rendering.  It returns true if the vertices
-//               are ok, false to abort this group of primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before a sequence of draw_primitive() functions are called, this
+ * should prepare the vertex data for rendering.  It returns true if the
+ * vertices are ok, false to abort this group of primitives.
+ */
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
@@ -2398,96 +2198,76 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   return _data_reader->has_vertex();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_triangles
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected triangles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected triangles.
+ */
 bool GraphicsStateGuardian::
 draw_triangles(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_tristrips
-//       Access: Public, Virtual
-//  Description: Draws a series of triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of triangle strips.
+ */
 bool GraphicsStateGuardian::
 draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_trifans
-//       Access: Public, Virtual
-//  Description: Draws a series of triangle fans.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of triangle fans.
+ */
 bool GraphicsStateGuardian::
 draw_trifans(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_patches
-//       Access: Public, Virtual
-//  Description: Draws a series of "patches", which can only be
-//               processed by a tessellation shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of "patches", which can only be processed by a tessellation
+ * shader.
+ */
 bool GraphicsStateGuardian::
 draw_patches(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_lines
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected line segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected line segments.
+ */
 bool GraphicsStateGuardian::
 draw_lines(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_linestrips
-//       Access: Public, Virtual
-//  Description: Draws a series of line strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of line strips.
+ */
 bool GraphicsStateGuardian::
 draw_linestrips(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_points
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected points.
+ */
 bool GraphicsStateGuardian::
 draw_points(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::end_draw_primitives()
-//       Access: Public, Virtual
-//  Description: Called after a sequence of draw_primitive()
-//               functions are called, this should do whatever cleanup
-//               is appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a sequence of draw_primitive() functions are called, this
+ * should do whatever cleanup is appropriate.
+ */
 void GraphicsStateGuardian::
 end_draw_primitives() {
   _munger = NULL;
   _data_reader = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
 void GraphicsStateGuardian::
 reset() {
   _needs_reset = false;
@@ -2527,64 +2307,50 @@ reset() {
   _is_valid = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_state_and_transform
-//       Access: Public
-//  Description: Simultaneously resets the render state and the
-//               transform state.
-//
-//               This transform specified is the "internal" net
-//               transform, already converted into the GSG's internal
-//               coordinate space by composing it to
-//               get_cs_transform().  (Previously, this used to be the
-//               "external" net transform, with the assumption that
-//               that GSG would convert it internally, but that is no
-//               longer the case.)
-//
-//               Special case: if (state==NULL), then the target
-//               state is already stored in _target.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously resets the render state and the transform state.
+ *
+ * This transform specified is the "internal" net transform, already converted
+ * into the GSG's internal coordinate space by composing it to
+ * get_cs_transform().  (Previously, this used to be the "external" net
+ * transform, with the assumption that that GSG would convert it internally,
+ * but that is no longer the case.)
+ *
+ * Special case: if (state==NULL), then the target state is already stored in
+ * _target.
+ */
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *trans) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear
-//       Access: Public
-//  Description: Clears the framebuffer within the current
-//               DisplayRegion, according to the flags indicated by
-//               the given DrawableRegion object.
-//
-//               This does not set the DisplayRegion first.  You
-//               should call prepare_display_region() to specify the
-//               region you wish the clear operation to apply to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the framebuffer within the current DisplayRegion, according to the
+ * flags indicated by the given DrawableRegion object.
+ *
+ * This does not set the DisplayRegion first.  You should call
+ * prepare_display_region() to specify the region you wish the clear operation
+ * to apply to.
+ */
 void GraphicsStateGuardian::
 clear(DrawableRegion *clearable) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_render_buffer
-//       Access: Public
-//  Description: Returns a RenderBuffer object suitable for operating
-//               on the requested set of buffers.  buffer_type is the
-//               union of all the desired RenderBuffer::Type values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderBuffer object suitable for operating on the requested set
+ * of buffers.  buffer_type is the union of all the desired RenderBuffer::Type
+ * values.
+ */
 RenderBuffer GraphicsStateGuardian::
 get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
   return RenderBuffer(this, buffer_type & prop.get_buffer_mask() & _stereo_buffer_mask);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_cs_transform_for
-//       Access: Public, Virtual
-//  Description: Returns what the cs_transform would be set to after a
-//               call to set_coordinate_system(cs).  This is another
-//               way of saying the cs_transform when rendering the
-//               scene for a camera with the indicated coordinate
-//               system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns what the cs_transform would be set to after a call to
+ * set_coordinate_system(cs).  This is another way of saying the cs_transform
+ * when rendering the scene for a camera with the indicated coordinate system.
+ */
 CPT(TransformState) GraphicsStateGuardian::
 get_cs_transform_for(CoordinateSystem cs) const {
   if (_coordinate_system == cs) {
@@ -2601,28 +2367,21 @@ get_cs_transform_for(CoordinateSystem cs) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_cs_transform
-//       Access: Public, Virtual
-//  Description: Returns a transform that converts from the GSG's
-//               external coordinate system (as returned by
-//               get_coordinate_system()) to its internal coordinate
-//               system (as returned by
-//               get_internal_coordinate_system()).  This is used for
-//               rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a transform that converts from the GSG's external coordinate system
+ * (as returned by get_coordinate_system()) to its internal coordinate system
+ * (as returned by get_internal_coordinate_system()).  This is used for
+ * rendering.
+ */
 CPT(TransformState) GraphicsStateGuardian::
 get_cs_transform() const {
   return _cs_transform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_clip_plane
-//       Access: Public
-//  Description: This is fundametically similar to do_issue_light(), with
-//               calls to apply_clip_plane() and enable_clip_planes(),
-//               as appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is fundametically similar to do_issue_light(), with calls to
+ * apply_clip_plane() and enable_clip_planes(), as appropriate.
+ */
 void GraphicsStateGuardian::
 do_issue_clip_plane() {
   int num_enabled = 0;
@@ -2675,19 +2434,14 @@ do_issue_clip_plane() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_color
-//       Access: Public
-//  Description: This method is defined in the base class because it
-//               is likely that this functionality will be used for
-//               all (or at least most) kinds of
-//               GraphicsStateGuardians--it's not specific to any one
-//               rendering backend.
-//
-//               The ColorAttribute just changes the interpretation of
-//               the color on the vertices, and fiddles with
-//               _vertex_colors_enabled, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is defined in the base class because it is likely that this
+ * functionality will be used for all (or at least most) kinds of
+ * GraphicsStateGuardians--it's not specific to any one rendering backend.
+ *
+ * The ColorAttribute just changes the interpretation of the color on the
+ * vertices, and fiddles with _vertex_colors_enabled, etc.
+ */
 void GraphicsStateGuardian::
 do_issue_color() {
   const ColorAttrib *target_color = (const ColorAttrib *)
@@ -2695,24 +2449,24 @@ do_issue_color() {
 
   switch (target_color->get_color_type()) {
   case ColorAttrib::T_flat:
-    // Color attribute flat: it specifies a scene graph color that
-    // overrides the vertex color.
+    // Color attribute flat: it specifies a scene graph color that overrides
+    // the vertex color.
     _scene_graph_color = target_color->get_color();
     _has_scene_graph_color = true;
     _vertex_colors_enabled = false;
     break;
 
   case ColorAttrib::T_off:
-    // Color attribute off: it specifies that no scene graph color is
-    // in effect, and vertex color is not important either.
+    // Color attribute off: it specifies that no scene graph color is in
+    // effect, and vertex color is not important either.
     _scene_graph_color.set(1.0f, 1.0f, 1.0f, 1.0f);
     _has_scene_graph_color = false;
     _vertex_colors_enabled = false;
     break;
 
   case ColorAttrib::T_vertex:
-    // Color attribute vertex: it specifies that vertex color should
-    // be revealed.
+    // Color attribute vertex: it specifies that vertex color should be
+    // revealed.
     _scene_graph_color.set(1.0f, 1.0f, 1.0f, 1.0f);
     _has_scene_graph_color = false;
     _vertex_colors_enabled = true;
@@ -2727,15 +2481,13 @@ do_issue_color() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_color_scale
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void GraphicsStateGuardian::
 do_issue_color_scale() {
-  // If the previous color scale had set a special texture, clear the
-  // texture now.
+  // If the previous color scale had set a special texture, clear the texture
+  // now.
   if (_has_texture_alpha_scale) {
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
@@ -2762,8 +2514,8 @@ do_issue_color_scale() {
 
   if (_alpha_scale_via_texture && !_has_scene_graph_color &&
       target_color_scale->has_alpha_scale()) {
-    // This color scale will set a special texture--so again, clear
-    // the texture.
+    // This color scale will set a special texture--so again, clear the
+    // texture.
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
     _state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
 
@@ -2771,30 +2523,22 @@ do_issue_color_scale() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::do_issue_light
-//       Access: Protected, Virtual
-//  Description: This implementation of do_issue_light() assumes
-//               we have a limited number of hardware lights
-//               available.  This function assigns each light to a
-//               different hardware light id, trying to keep each
-//               light associated with the same id where possible, but
-//               reusing id's when necessary.  When it is no longer
-//               possible to reuse existing id's (e.g. all id's are in
-//               use), the next sequential id is assigned (if
-//               available).
-//
-//               It will call apply_light() each time a light is
-//               assigned to a particular id for the first time in a
-//               given frame, and it will subsequently call
-//               enable_light() to enable or disable each light as the
-//               frame is rendered, as well as enable_lighting() to
-//               enable or disable overall lighting.
-////////////////////////////////////////////////////////////////////
+/**
+ * This implementation of do_issue_light() assumes we have a limited number of
+ * hardware lights available.  This function assigns each light to a different
+ * hardware light id, trying to keep each light associated with the same id
+ * where possible, but reusing id's when necessary.  When it is no longer
+ * possible to reuse existing id's (e.g.  all id's are in use), the next
+ * sequential id is assigned (if available).
+ *
+ * It will call apply_light() each time a light is assigned to a particular id
+ * for the first time in a given frame, and it will subsequently call
+ * enable_light() to enable or disable each light as the frame is rendered, as
+ * well as enable_lighting() to enable or disable overall lighting.
+ */
 void GraphicsStateGuardian::
 do_issue_light() {
-  // Initialize the current ambient light total and newly enabled
-  // light list
+  // Initialize the current ambient light total and newly enabled light list
   LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
   int i;
 
@@ -2828,8 +2572,8 @@ do_issue_light() {
       }
 
       if (light_obj->get_type() == AmbientLight::get_class_type()) {
-        // Ambient lights don't require specific light ids; simply add
-        // in the ambient contribution to the current total
+        // Ambient lights don't require specific light ids; simply add in the
+        // ambient contribution to the current total
         cur_ambient_light += light_obj->get_color();
 
       } else {
@@ -2856,8 +2600,7 @@ do_issue_light() {
   // If no lights were set, disable lighting
   if (num_on_lights == 0) {
     if (_color_scale_via_lighting && (_has_material_force_color || _light_color_scale != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f))) {
-      // Unless we need lighting anyway to apply a color or color
-      // scale.
+      // Unless we need lighting anyway to apply a color or color scale.
       if (!_lighting_enabled) {
         enable_lighting(true);
         _lighting_enabled = true;
@@ -2880,15 +2623,12 @@ do_issue_light() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::framebuffer_copy_to_texture
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display
-//               region from the framebuffer into texture memory.
-//
-//               If z > -1, it is the cube map index into which to
-//               copy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer
+ * into texture memory.
+ *
+ * If z > -1, it is the cube map index into which to copy.
+ */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
                             const RenderBuffer &) {
@@ -2896,65 +2636,50 @@ framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::framebuffer_copy_to_ram
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display region
-//               from the framebuffer into system memory, not texture
-//               memory.  Returns true on success, false on failure.
-//
-//               This completely redefines the ram image of the
-//               indicated texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer
+ * into system memory, not texture memory.  Returns true on success, false on
+ * failure.
+ *
+ * This completely redefines the ram image of the indicated texture.
+ */
 bool GraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,
                         const RenderBuffer &) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id
+ * within a frame, this should set up the associated hardware light with the
+ * light's properties.
+ */
 void GraphicsStateGuardian::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id
+ * within a frame, this should set up the associated hardware light with the
+ * light's properties.
+ */
 void GraphicsStateGuardian::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id
+ * within a frame, this should set up the associated hardware light with the
+ * light's properties.
+ */
 void GraphicsStateGuardian::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 }
 
 #ifdef DO_PSTATS
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::init_frame_pstats
-//       Access: Public, Static
-//  Description: Initializes the relevant PStats data at the beginning
-//               of the frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the relevant PStats data at the beginning of the frame.
+ */
 void GraphicsStateGuardian::
 init_frame_pstats() {
   if (PStatClient::is_connected()) {
@@ -2982,11 +2707,9 @@ init_frame_pstats() {
 #endif  // DO_PSTATS
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::create_gamma_table
-//       Access: Public, Static
-//  Description: Create a gamma table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a gamma table.
+ */
 void GraphicsStateGuardian::
 create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
   int i;
@@ -3015,153 +2738,116 @@ create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::reissue_transforms
-//       Access: Protected, Virtual
-//  Description: Called by clear_state_and_transform() to ensure that
-//               the current modelview and projection matrices are
-//               properly loaded in the graphics state, after a
-//               callback might have mucked them up.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by clear_state_and_transform() to ensure that the current modelview
+ * and projection matrices are properly loaded in the graphics state, after a
+ * callback might have mucked them up.
+ */
 void GraphicsStateGuardian::
 reissue_transforms() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::enable_lighting
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable or disable the use of lighting overall.  This
-//               is called by do_issue_light() according to whether any
-//               lights are in use or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable or disable the use
+ * of lighting overall.  This is called by do_issue_light() according to
+ * whether any lights are in use or not.
+ */
 void GraphicsStateGuardian::
 enable_lighting(bool enable) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_ambient_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               indicate the color of the ambient light that should
-//               be in effect.  This is called by do_issue_light() after
-//               all other lights have been enabled or disabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to indicate the color of the
+ * ambient light that should be in effect.  This is called by do_issue_light()
+ * after all other lights have been enabled or disabled.
+ */
 void GraphicsStateGuardian::
 set_ambient_light(const LColor &color) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::enable_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated light id.  A specific Light will
-//               already have been bound to this id via bind_light().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable the indicated light
+ * id.  A specific Light will already have been bound to this id via
+ * bind_light().
+ */
 void GraphicsStateGuardian::
 enable_light(int light_id, bool enable) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_bind_lights
-//       Access: Protected, Virtual
-//  Description: Called immediately before bind_light() is called,
-//               this is intended to provide the derived class a hook
-//               in which to set up some state (like transform) that
-//               might apply to several lights.
-//
-//               The sequence is: begin_bind_lights() will be called,
-//               then one or more bind_light() calls, then
-//               end_bind_lights().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called immediately before bind_light() is called, this is intended to
+ * provide the derived class a hook in which to set up some state (like
+ * transform) that might apply to several lights.
+ *
+ * The sequence is: begin_bind_lights() will be called, then one or more
+ * bind_light() calls, then end_bind_lights().
+ */
 void GraphicsStateGuardian::
 begin_bind_lights() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::end_bind_lights
-//       Access: Protected, Virtual
-//  Description: Called after before bind_light() has been called one
-//               or more times (but before any geometry is issued or
-//               additional state is changed), this is intended to
-//               clean up any temporary changes to the state that may
-//               have been made by begin_bind_lights().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after before bind_light() has been called one or more times (but
+ * before any geometry is issued or additional state is changed), this is
+ * intended to clean up any temporary changes to the state that may have been
+ * made by begin_bind_lights().
+ */
 void GraphicsStateGuardian::
 end_bind_lights() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::enable_clip_planes
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable or disable the use of clipping planes overall.
-//               This is called by do_issue_clip_plane() according to
-//               whether any planes are in use or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable or disable the use
+ * of clipping planes overall.  This is called by do_issue_clip_plane()
+ * according to whether any planes are in use or not.
+ */
 void GraphicsStateGuardian::
 enable_clip_planes(bool enable) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::enable_clip_plane
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated plane id.  A specific PlaneNode
-//               will already have been bound to this id via
-//               bind_clip_plane().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by a derived class to enable the indicated plane
+ * id.  A specific PlaneNode will already have been bound to this id via
+ * bind_clip_plane().
+ */
 void GraphicsStateGuardian::
 enable_clip_plane(int plane_id, bool enable) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_bind_clip_planes
-//       Access: Protected, Virtual
-//  Description: Called immediately before bind_clip_plane() is called,
-//               this is intended to provide the derived class a hook
-//               in which to set up some state (like transform) that
-//               might apply to several planes.
-//
-//               The sequence is: begin_bind_clip_planes() will be
-//               called, then one or more bind_clip_plane() calls,
-//               then end_bind_clip_planes().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called immediately before bind_clip_plane() is called, this is intended to
+ * provide the derived class a hook in which to set up some state (like
+ * transform) that might apply to several planes.
+ *
+ * The sequence is: begin_bind_clip_planes() will be called, then one or more
+ * bind_clip_plane() calls, then end_bind_clip_planes().
+ */
 void GraphicsStateGuardian::
 begin_bind_clip_planes() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::bind_clip_plane
-//       Access: Public, Virtual
-//  Description: Called the first time a particular clipping plane has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware (or API) clipping plane
-//               with the plane's properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular clipping plane has been bound to a given
+ * id within a frame, this should set up the associated hardware (or API)
+ * clipping plane with the plane's properties.
+ */
 void GraphicsStateGuardian::
 bind_clip_plane(const NodePath &plane, int plane_id) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::end_bind_clip_planes
-//       Access: Protected, Virtual
-//  Description: Called after before bind_clip_plane() has been called one
-//               or more times (but before any geometry is issued or
-//               additional state is changed), this is intended to
-//               clean up any temporary changes to the state that may
-//               have been made by begin_bind_clip_planes().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after before bind_clip_plane() has been called one or more times
+ * (but before any geometry is issued or additional state is changed), this is
+ * intended to clean up any temporary changes to the state that may have been
+ * made by begin_bind_clip_planes().
+ */
 void GraphicsStateGuardian::
 end_bind_clip_planes() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::determine_target_texture
-//       Access: Protected
-//  Description: Assigns _target_texture and _target_tex_gen
-//               based on the _target_rs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns _target_texture and _target_tex_gen based on the _target_rs.
+ */
 void GraphicsStateGuardian::
 determine_target_texture() {
   const TextureAttrib *target_texture = (const TextureAttrib *)
@@ -3188,28 +2874,22 @@ determine_target_texture() {
   nassertv(_target_texture->get_num_on_stages() <= max_texture_stages);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::free_pointers
-//       Access: Protected, Virtual
-//  Description: Frees some memory that was explicitly allocated
-//               within the glgsg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees some memory that was explicitly allocated within the glgsg.
+ */
 void GraphicsStateGuardian::
 free_pointers() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::close_gsg
-//       Access: Protected, Virtual
-//  Description: This is called by the associated GraphicsWindow when
-//               close_window() is called.  It should null out the
-//               _win pointer and possibly free any open resources
-//               associated with the GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the associated GraphicsWindow when close_window() is
+ * called.  It should null out the _win pointer and possibly free any open
+ * resources associated with the GSG.
+ */
 void GraphicsStateGuardian::
 close_gsg() {
-  // Protect from multiple calls, and also inform any other functions
-  // not to try to create new stuff while we're going down.
+  // Protect from multiple calls, and also inform any other functions not to
+  // try to create new stuff while we're going down.
   if (_closing_gsg) {
     return;
   }
@@ -3220,16 +2900,15 @@ close_gsg() {
       << this << " close_gsg " << get_type() << "\n";
   }
 
-  // As tempting as it may be to try to release all the textures and
-  // geoms now, we can't, because we might not be the currently-active
-  // GSG (this is particularly important in OpenGL, which maintains
-  // one currently-active GL state in each thread).  If we start
-  // deleting textures, we'll be inadvertently deleting textures from
-  // some other OpenGL state.
+  // As tempting as it may be to try to release all the textures and geoms
+  // now, we can't, because we might not be the currently-active GSG (this is
+  // particularly important in OpenGL, which maintains one currently-active GL
+  // state in each thread).  If we start deleting textures, we'll be
+  // inadvertently deleting textures from some other OpenGL state.
 
-  // Fortunately, it doesn't really matter, since the graphics API
-  // will be responsible for cleaning up anything we don't clean up
-  // explicitly.  We'll just let them drop.
+  // Fortunately, it doesn't really matter, since the graphics API will be
+  // responsible for cleaning up anything we don't clean up explicitly.  We'll
+  // just let them drop.
 
   // Make sure that all the contexts belonging to the GSG are deleted.
   _prepared_objects.clear();
@@ -3240,15 +2919,11 @@ close_gsg() {
   free_pointers();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::panic_deactivate
-//       Access: Protected
-//  Description: This is called internally when it is determined that
-//               things are just fubar.  It temporarily deactivates
-//               the GSG just so things don't get out of hand, and
-//               throws an event so the application can deal with this
-//               if it needs to.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called internally when it is determined that things are just fubar.
+ * It temporarily deactivates the GSG just so things don't get out of hand,
+ * and throws an event so the application can deal with this if it needs to.
+ */
 void GraphicsStateGuardian::
 panic_deactivate() {
   if (_active) {
@@ -3259,20 +2934,17 @@ panic_deactivate() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::determine_light_color_scale
-//       Access: Protected
-//  Description: Called whenever the color or color scale is changed,
-//               if _color_scale_via_lighting is true.  This will
-//               rederive _material_force_color and _light_color_scale
-//               appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the color or color scale is changed, if
+ * _color_scale_via_lighting is true.  This will rederive
+ * _material_force_color and _light_color_scale appropriately.
+ */
 void GraphicsStateGuardian::
 determine_light_color_scale() {
   if (_has_scene_graph_color) {
-    // If we have a scene graph color, it, plus the color scale, goes
-    // directly into the material; we don't color scale the
-    // lights--this allows an alpha color scale to work properly.
+    // If we have a scene graph color, it, plus the color scale, goes directly
+    // into the material; we don't color scale the lights--this allows an
+    // alpha color scale to work properly.
     _has_material_force_color = true;
     _material_force_color = _scene_graph_color;
     _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -3284,8 +2956,8 @@ determine_light_color_scale() {
     }
 
   } else {
-    // Otherise, leave the materials alone, but we might still scale
-    // the lights.
+    // Otherise, leave the materials alone, but we might still scale the
+    // lights.
     _has_material_force_color = false;
     _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
     if (!_color_blend_involves_color_scale && _color_scale_enabled) {
@@ -3294,11 +2966,9 @@ determine_light_color_scale() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_unlit_state
-//       Access: Protected, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPT(RenderState) GraphicsStateGuardian::
 get_unlit_state() {
   static CPT(RenderState) state = NULL;
@@ -3308,11 +2978,9 @@ get_unlit_state() {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_unclipped_state
-//       Access: Protected, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPT(RenderState) GraphicsStateGuardian::
 get_unclipped_state() {
   static CPT(RenderState) state = NULL;
@@ -3322,11 +2990,9 @@ get_unclipped_state() {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_untextured_state
-//       Access: Protected, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPT(RenderState) GraphicsStateGuardian::
 get_untextured_state() {
   static CPT(RenderState) state = NULL;
@@ -3336,17 +3002,13 @@ get_untextured_state() {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::async_reload_texture
-//       Access: Protected
-//  Description: Should be called when a texture is encountered that
-//               needs to have its RAM image reloaded, and
-//               get_incomplete_render() is true.  This will fire off
-//               a thread on the current Loader object that will
-//               request the texture to load its image.  The image
-//               will be available at some point in the future (no
-//               event will be generated).
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called when a texture is encountered that needs to have its RAM
+ * image reloaded, and get_incomplete_render() is true.  This will fire off a
+ * thread on the current Loader object that will request the texture to load
+ * its image.  The image will be available at some point in the future (no
+ * event will be generated).
+ */
 void GraphicsStateGuardian::
 async_reload_texture(TextureContext *tc) {
   nassertv(_loader != (Loader *)NULL);
@@ -3366,15 +3028,14 @@ async_reload_texture(TextureContext *tc) {
     AsyncTask *task = orig_tasks.get_task(ti);
     if (task->is_exact_type(TextureReloadRequest::get_class_type()) &&
         DCAST(TextureReloadRequest, task)->get_texture() == tc->get_texture()) {
-      // This texture is already queued to be reloaded.  Don't queue
-      // it again, just make sure the priority is updated, and return.
+      // This texture is already queued to be reloaded.  Don't queue it again,
+      // just make sure the priority is updated, and return.
       task->set_priority(max(task->get_priority(), priority));
       return;
     }
   }
 
-  // This texture has not yet been queued to be reloaded.  Queue it up
-  // now.
+  // This texture has not yet been queued to be reloaded.  Queue it up now.
   PT(AsyncTask) request =
     new TextureReloadRequest(task_name,
                              _prepared_objects, tc->get_texture(),
@@ -3383,14 +3044,11 @@ async_reload_texture(TextureContext *tc) {
   _loader->load_async(request);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_shadow_map
-//       Access: Protected
-//  Description: Returns a shadow map for the given light source.
-//               If none exists, it is created, using the given host
-//               window to create the buffer, or the current window
-//               if that is set to NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a shadow map for the given light source.  If none exists, it is
+ * created, using the given host window to create the buffer, or the current
+ * window if that is set to NULL.
+ */
 PT(Texture) GraphicsStateGuardian::
 get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
   nassertr(light_np.node()->is_of_type(DirectionalLight::get_class_type()) ||
@@ -3399,11 +3057,11 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
 
   PT(LightLensNode) light = DCAST(LightLensNode, light_np.node());
   if (light == NULL || !light->_shadow_caster) {
-    //TODO: return dummy shadow map (all white).
+    // TODO: return dummy shadow map (all white).
     return NULL;
   }
 
-  // See if we already have a buffer. If not, create one.
+  // See if we already have a buffer.  If not, create one.
   if (light->_sbuffers.count(this) == 0) {
     if (host == (GraphicsOutputBase *)NULL) {
       host = _current_display_region->get_window();
@@ -3419,15 +3077,11 @@ get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::make_shadow_buffer
-//       Access: Protected
-//  Description: Creates a depth buffer for shadow mapping. This
-//               is a convenience function for the ShaderGenerator;
-//               putting this directly in the ShaderGenerator would
-//               cause circular dependency issues.
-//               Returns the depth texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a depth buffer for shadow mapping.  This is a convenience function
+ * for the ShaderGenerator; putting this directly in the ShaderGenerator would
+ * cause circular dependency issues.  Returns the depth texture.
+ */
 PT(Texture) GraphicsStateGuardian::
 make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   // Make sure everything is valid.
@@ -3466,7 +3120,8 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
       light->_sb_sort, fbp, props, flags, this, DCAST(GraphicsOutput, host));
   nassertr(sbuffer != NULL, NULL);
 
-  // Create a texture and fill it in with some data to workaround an OpenGL error
+  // Create a texture and fill it in with some data to workaround an OpenGL
+  // error
   PT(Texture) tex = new Texture(light->get_name());
   if (is_point) {
     if (light->_sb_xsize != light->_sb_ysize) {
@@ -3519,91 +3174,71 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::has_extension
-//       Access: Public, Virtual
-//  Description: Returns true if the GSG implements the extension
-//               identified by the given string.  This currently
-//               is only implemented by the OpenGL back-end.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the GSG implements the extension identified by the given
+ * string.  This currently is only implemented by the OpenGL back-end.
+ */
 bool GraphicsStateGuardian::
 has_extension(const string &extension) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_vendor
-//       Access: Public, Virtual
-//  Description: Returns the vendor of the video card driver
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the vendor of the video card driver
+ */
 string GraphicsStateGuardian::
 get_driver_vendor() {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_renderer
-//       Access: Public, Virtual
-//  Description: Returns GL_Renderer
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns GL_Renderer
+ */
 string GraphicsStateGuardian::get_driver_renderer() {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_version
-//       Access: Public, Virtual
-//  Description: Returns driver version
-//               This has an implementation-defined meaning, and may
-//               be "" if the particular graphics implementation
-//               does not provide a way to query this information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns driver version This has an implementation-defined meaning, and may
+ * be "" if the particular graphics implementation does not provide a way to
+ * query this information.
+ */
 string GraphicsStateGuardian::
 get_driver_version() {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_version_major
-//       Access: Public, Virtual
-//  Description: Returns major version of the video driver.
-//               This has an implementation-defined meaning, and may
-//               be -1 if the particular graphics implementation
-//               does not provide a way to query this information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns major version of the video driver.  This has an implementation-
+ * defined meaning, and may be -1 if the particular graphics implementation
+ * does not provide a way to query this information.
+ */
 int GraphicsStateGuardian::
 get_driver_version_major() {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_version_minor
-//       Access: Public, Virtual
-//  Description: Returns the minor version of the video driver.
-//               This has an implementation-defined meaning, and may
-//               be -1 if the particular graphics implementation
-//               does not provide a way to query this information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minor version of the video driver.  This has an implementation-
+ * defined meaning, and may be -1 if the particular graphics implementation
+ * does not provide a way to query this information.
+ */
 int GraphicsStateGuardian::
 get_driver_version_minor() {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_shader_version_major
-//       Access: Public, Virtual
-//  Description: Returns the major version of the shader model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the major version of the shader model.
+ */
 int GraphicsStateGuardian::
 get_driver_shader_version_major() {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_shader_version_minor
-//       Access: Public, Virtual
-//  Description: Returns the minor version of the shader model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minor version of the shader model.
+ */
 int GraphicsStateGuardian::
 get_driver_shader_version_minor() {
   return -1;

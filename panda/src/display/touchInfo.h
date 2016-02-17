@@ -1,26 +1,24 @@
-// Filename: touchInfo.h
-// Created by:  Walt Destler (May 25, 2010)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file touchInfo.h
+ * @author Walt Destler
+ * @date 2010-05-25
+ */
 
 #ifndef TOUCHINFO_H
 #define TOUCHINFO_H
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TouchInfo
-// Description : Stores information for a single touch event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores information for a single touch event.
+ */
 class EXPCL_PANDA_DISPLAY TouchInfo {
 
 PUBLISHED:
@@ -48,7 +46,7 @@ PUBLISHED:
   int get_flags();
 
 private:
-  
+
   int _x;
   int _y;
   int _id;

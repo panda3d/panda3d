@@ -1,16 +1,15 @@
-// Filename: cullableObject.cxx
-// Created by:  drose (04Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullableObject.cxx
+ * @author drose
+ * @date 2002-03-04
+ */
 
 #include "cullableObject.h"
 #include "lightAttrib.h"
@@ -43,17 +42,13 @@ PStatCollector CullableObject::_sw_sprites_pcollector("SW Sprites");
 
 TypeHandle CullableObject::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::munge_geom
-//       Access: Public
-//  Description: Uses the indicated GeomMunger to transform the geom
-//               and/or its vertices.
-//
-//               If force is false, this may do nothing and return
-//               false if the vertex data is nonresident.  If force is
-//               true, this will always return true, but it may have
-//               to block while the vertex data is paged in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the indicated GeomMunger to transform the geom and/or its vertices.
+ *
+ * If force is false, this may do nothing and return false if the vertex data
+ * is nonresident.  If force is true, this will always return true, but it may
+ * have to block while the vertex data is paged in.
+ */
 bool CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
            GeomMunger *munger, const CullTraverser *traverser,
@@ -95,9 +90,8 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     GraphicsStateGuardianBase *gsg = traverser->get_gsg();
     int gsg_bits = gsg->get_supported_geom_rendering();
     if (!hardware_point_sprites) {
-      // If support for hardware point sprites or perspective-scaled
-      // points is disabled, we don't allow the GSG to tell us it
-      // supports them.
+      // If support for hardware point sprites or perspective-scaled points is
+      // disabled, we don't allow the GSG to tell us it supports them.
       gsg_bits &= ~(Geom::GR_point_perspective | Geom::GR_point_sprite);
     }
     if (!hardware_points) {
@@ -108,10 +102,10 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     int unsupported_bits = geom_rendering & ~gsg_bits;
 
     if ((unsupported_bits & Geom::GR_point_bits) != 0) {
-      // The GSG doesn't support rendering these fancy points
-      // directly; we have to render them in software instead.
-      // Munge them into quads.  This will replace the _geom and
-      // _munged_data, and might also replace _state.
+      // The GSG doesn't support rendering these fancy points directly; we
+      // have to render them in software instead.  Munge them into quads.
+      // This will replace the _geom and _munged_data, and might also replace
+      // _state.
       if (pgraph_cat.is_spam()) {
         pgraph_cat.spam()
           << "munge_points_to_quads() for geometry with bits: "
@@ -123,15 +117,15 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       }
     }
 
-    // Now invoke the munger to ensure the resulting geometry is in
-    // a GSG-friendly form.
+    // Now invoke the munger to ensure the resulting geometry is in a GSG-
+    // friendly form.
     if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
       return false;
     }
 
-    // If we have prepared it for skinning via the shader generator,
-    // mark a flag on the state so that the shader generator will do this.
-    // We should probably find a cleaner way to do this.
+    // If we have prepared it for skinning via the shader generator, mark a
+    // flag on the state so that the shader generator will do this.  We should
+    // probably find a cleaner way to do this.
     const ShaderAttrib *sattr;
     if (_state->get_attrib(sattr) && sattr->auto_shader()) {
       GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
@@ -145,10 +139,9 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     StateMunger *state_munger = (StateMunger *)munger;
     _state = state_munger->munge_state(_state);
 
-    // If there is any animation left in the vertex data after it
-    // has been munged--that is, we couldn't arrange to handle the
-    // animation in hardware--then we have to calculate that
-    // animation now.
+    // If there is any animation left in the vertex data after it has been
+    // munged--that is, we couldn't arrange to handle the animation in
+    // hardware--then we have to calculate that animation now.
     bool cpu_animated = false;
 
     CPT(GeomVertexData) animated_vertices =
@@ -177,11 +170,9 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CullableObject::
 output(ostream &out) const {
   if (_geom != (Geom *)NULL) {
@@ -191,20 +182,18 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::munge_points_to_quads
-//       Access: Private
-//  Description: Converts a table of points to quads for rendering on
-//               systems that don't support fancy points.
-//
-//               This may replace _geom, _munged_data, and _state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a table of points to quads for rendering on systems that don't
+ * support fancy points.
+ *
+ * This may replace _geom, _munged_data, and _state.
+ */
 bool CullableObject::
 munge_points_to_quads(const CullTraverser *traverser, bool force) {
   Thread *current_thread = traverser->get_current_thread();
 
-  // Better get the animated vertices, in case we're showing sprites
-  // on an animated model for some reason.
+  // Better get the animated vertices, in case we're showing sprites on an
+  // animated model for some reason.
   CPT(GeomVertexData) source_data =
     _munged_data->animate_vertices(force, current_thread);
 
@@ -258,8 +247,8 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     perspective = render_mode->get_perspective();
 
     if (render_mode->get_mode() != RenderModeAttrib::M_filled_flat) {
-      // Render the new polygons with M_filled_flat, for a slight
-      // performance advantage when software rendering.
+      // Render the new polygons with M_filled_flat, for a slight performance
+      // advantage when software rendering.
       _state = _state->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_flat));
     }
   }
@@ -278,15 +267,15 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
       // We have to construct the format now.
       PT(GeomVertexArrayFormat) new_array_format;
       if (sformat._retransform_sprites) {
-        // With retransform_sprites in effect, we will be sending ordinary
-        // 3-D points to the graphics API.
+        // With retransform_sprites in effect, we will be sending ordinary 3-D
+        // points to the graphics API.
         new_array_format =
           new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
                                     Geom::NT_stdfloat,
                                     Geom::C_point);
       } else {
-        // Without retransform_sprites, we will be sending 4-component
-        // clip-space points.
+        // Without retransform_sprites, we will be sending 4-component clip-
+        // space points.
         new_array_format =
           new GeomVertexArrayFormat(InternalName::get_vertex(), 4,
                                     Geom::NT_stdfloat,
@@ -335,8 +324,8 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   int viewport_width = scene->get_viewport_width();
   int viewport_height = scene->get_viewport_height();
 
-  // We need a standard projection matrix, in a known coordinate
-  // system, to compute the perspective height.
+  // We need a standard projection matrix, in a known coordinate system, to
+  // compute the perspective height.
   LMatrix4 height_projection;
   if (perspective) {
     height_projection =
@@ -348,10 +337,9 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   LMatrix4 inv_render_transform;
   inv_render_transform.invert_from(render_transform);
 
-  // Now convert all of the vertices in the GeomVertexData to quads.
-  // We always convert all the vertices, assuming all the vertices are
-  // referenced by GeomPrimitives, because we want to optimize for the
-  // most common case.
+  // Now convert all of the vertices in the GeomVertexData to quads.  We
+  // always convert all the vertices, assuming all the vertices are referenced
+  // by GeomPrimitives, because we want to optimize for the most common case.
   int orig_verts = source_data->get_num_rows();
   int new_verts = 4 * orig_verts;        // each vertex becomes four.
 
@@ -364,9 +352,9 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   GeomVertexWriter new_color(new_data, InternalName::get_color());
   GeomVertexWriter new_texcoord(new_data, InternalName::get_texcoord());
 
-  // We'll keep an array of all of the points' eye-space coordinates,
-  // and their distance from the camera, so we can sort the points for
-  // each primitive, below.
+  // We'll keep an array of all of the points' eye-space coordinates, and
+  // their distance from the camera, so we can sort the points for each
+  // primitive, below.
   PointData *points;
   {
     PStatTimer t2(_munge_sprites_verts_pcollector, current_thread);
@@ -387,23 +375,22 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
       PN_stdfloat scale_y = point_size;
       if (perspective) {
-        // Perspective-sized points.  Here point_size is the point's
-        // height in 3-d units.  To arrange that, we need to figure out
-        // the appropriate scaling factor based on the current viewport
-        // and projection matrix.
+        // Perspective-sized points.  Here point_size is the point's height in
+        // 3-d units.  To arrange that, we need to figure out the appropriate
+        // scaling factor based on the current viewport and projection matrix.
         LVector3 height(0.0f, point_size * scale, scale);
         height = height * height_projection;
         scale_y = height[1] * viewport_height;
 
-        // We should then divide the radius by the distance from the
-        // camera plane, to emulate the glPointParameters() behavior.
+        // We should then divide the radius by the distance from the camera
+        // plane, to emulate the glPointParameters() behavior.
         if (!lens->is_orthographic()) {
           scale_y /= dist;
         }
       }
 
-      // Also factor in the homogeneous scale for being in clip
-      // coordinates still.
+      // Also factor in the homogeneous scale for being in clip coordinates
+      // still.
       scale_y *= p4[3];
 
       PN_stdfloat scale_x = scale_y;
@@ -423,16 +410,16 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         c1 = c1 * mat;
       }
 
-      // Finally, scale the corners in their newly-rotated position,
-      // to compensate for the aspect ratio of the viewport.
+      // Finally, scale the corners in their newly-rotated position, to
+      // compensate for the aspect ratio of the viewport.
       PN_stdfloat rx = 1.0f / viewport_width;
       PN_stdfloat ry = 1.0f / viewport_height;
       c0.set(c0[0] * rx, c0[1] * ry);
       c1.set(c1[0] * rx, c1[1] * ry);
 
       if (retransform_sprites) {
-        // With retransform_sprites in effect, we must reconvert the
-        // resulting quad back into the original 3-D space.
+        // With retransform_sprites in effect, we must reconvert the resulting
+        // quad back into the original 3-D space.
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3])));
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3])));
         new_vertex.set_data4(inv_render_transform.xform(LPoint4(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3])));
@@ -447,8 +434,8 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         }
 
       } else {
-        // Without retransform_sprites, we can simply load the
-        // clip-space coordinates.
+        // Without retransform_sprites, we can simply load the clip-space
+        // coordinates.
         new_vertex.set_data4(p4[0] + c0[0], p4[1] + c0[1], p4[2], p4[3]);
         new_vertex.set_data4(p4[0] + c1[0], p4[1] + c1[1], p4[2], p4[3]);
         new_vertex.set_data4(p4[0] - c1[0], p4[1] - c1[1], p4[2], p4[3]);
@@ -489,8 +476,8 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     nassertr(new_data->get_num_rows() == new_verts, false);
   }
 
-  // Determine the format we should use to store the indices.
-  // Don't choose NT_uint8, as Direct3D 9 doesn't support it.
+  // Determine the format we should use to store the indices.  Don't choose
+  // NT_uint8, as Direct3D 9 doesn't support it.
   const GeomVertexArrayFormat *new_prim_format = NULL;
   if (new_verts < 0xffff) {
     new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint16);
@@ -502,17 +489,16 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   PT(Geom) new_geom = new Geom(new_data);
 
   // Replace each primitive in the Geom (it's presumably a GeomPoints
-  // primitive, although it might be some other kind of primitive if
-  // we got here because RenderModeAttrib::M_point is enabled) with a
-  // new primitive that replaces each vertex with a quad of the
-  // appropriate scale and orientation.
+  // primitive, although it might be some other kind of primitive if we got
+  // here because RenderModeAttrib::M_point is enabled) with a new primitive
+  // that replaces each vertex with a quad of the appropriate scale and
+  // orientation.
 
-  // BUG: if we're rendering polygons in M_point mode with a
-  // CullFaceAttrib in effect, we won't actually apply the
-  // CullFaceAttrib but will always render all of the vertices of the
-  // polygons.  This is certainly a bug, but a very minor one; and in
-  // order to fix it we'd have to do the face culling ourselves--not
-  // sure if it's worth it.
+  // BUG: if we're rendering polygons in M_point mode with a CullFaceAttrib in
+  // effect, we won't actually apply the CullFaceAttrib but will always render
+  // all of the vertices of the polygons.  This is certainly a bug, but a very
+  // minor one; and in order to fix it we'd have to do the face culling
+  // ourselves--not sure if it's worth it.
 
   {
     PStatTimer t3(_munge_sprites_prims_pcollector, current_thread);
@@ -544,16 +530,15 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
           }
         }
 
-        // Now sort the points in order from back-to-front so they will
-        // render properly with transparency, at least with each other.
+        // Now sort the points in order from back-to-front so they will render
+        // properly with transparency, at least with each other.
         sort(vertices, vertices_end, SortPoints(points));
 
-        // Go through the points, now in sorted order, and generate a pair
-        // of triangles for each one.  We generate indexed triangles
-        // instead of two-triangle strips, since this seems to be
-        // generally faster on PC hardware (otherwise, we'd have to nearly
-        // double the vertices to stitch all the little triangle strips
-        // together).
+        // Go through the points, now in sorted order, and generate a pair of
+        // triangles for each one.  We generate indexed triangles instead of
+        // two-triangle strips, since this seems to be generally faster on PC
+        // hardware (otherwise, we'd have to nearly double the vertices to
+        // stitch all the little triangle strips together).
         PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_stream);
         int new_prim_verts = 6 * num_vertices;  // two triangles per point.
 
@@ -595,19 +580,16 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::get_flash_cpu_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for flashing the object red, to
-//               show it is animated by the CPU when
-//               show-vertex-animation is on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for flashing the object red, to show it is animated
+ * by the CPU when show-vertex-animation is on.
+ */
 CPT(RenderState) CullableObject::
 get_flash_cpu_state() {
   static const LColor flash_cpu_color(0.8f, 0.2, 0.2, 1.0f);
 
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
+  // Once someone asks for this pointer, we hold its reference count and never
+  // free it.
   static CPT(RenderState) flash_cpu_state = (const RenderState *)NULL;
   if (flash_cpu_state == (const RenderState *)NULL) {
     flash_cpu_state = RenderState::make
@@ -619,19 +601,16 @@ get_flash_cpu_state() {
   return flash_cpu_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::get_flash_hardware_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for flashing the object blue,
-//               to show it is animated by the hardware when
-//               show-vertex-animation is on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for flashing the object blue, to show it is animated
+ * by the hardware when show-vertex-animation is on.
+ */
 CPT(RenderState) CullableObject::
 get_flash_hardware_state() {
   static const LColor flash_hardware_color(0.2, 0.2, 0.8, 1.0);
 
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
+  // Once someone asks for this pointer, we hold its reference count and never
+  // free it.
   static CPT(RenderState) flash_hardware_state = (const RenderState *)NULL;
   if (flash_hardware_state == (const RenderState *)NULL) {
     flash_hardware_state = RenderState::make
@@ -643,11 +622,9 @@ get_flash_hardware_state() {
   return flash_hardware_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::SourceFormat::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CullableObject::SourceFormat::
 SourceFormat(const GeomVertexFormat *format, bool sprite_texcoord) :
   _format(format),

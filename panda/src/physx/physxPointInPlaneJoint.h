@@ -1,16 +1,15 @@
-// Filename: physxPointInPlaneJoint.h
-// Created by:  enn0x (02Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxPointInPlaneJoint.h
+ * @author enn0x
+ * @date 2009-10-02
+ */
 
 #ifndef PHYSXPOINTINPLANEJOINT_H
 #define PHYSXPOINTINPLANEJOINT_H
@@ -22,16 +21,12 @@
 
 class PhysxPointInPlaneJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPointInPlaneJoint
-// Description : A point in plane joint constrains a point on one
-//               body to only move inside a plane attached to another
-//               body. 
-//               The starting point of the point is defined as the
-//               anchor point. The plane through this point is
-//               specified by its normal which is the joint axis
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * A point in plane joint constrains a point on one body to only move inside a
+ * plane attached to another body.  The starting point of the point is defined
+ * as the anchor point.  The plane through this point is specified by its
+ * normal which is the joint axis vector.
+ */
 class EXPCL_PANDAPHYSX PhysxPointInPlaneJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -41,7 +36,6 @@ PUBLISHED:
   void save_to_desc(PhysxPointInPlaneJointDesc &jointDesc) const;
   void load_from_desc(const PhysxPointInPlaneJointDesc &jointDesc);
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -51,14 +45,13 @@ public:
 private:
   NxPointInPlaneJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxPointInPlaneJoint", 
+    register_type(_type_handle, "PhysxPointInPlaneJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

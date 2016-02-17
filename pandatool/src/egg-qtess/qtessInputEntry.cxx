@@ -1,16 +1,15 @@
-// Filename: qtessInputEntry.cxx
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file qtessInputEntry.cxx
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #include "qtessInputEntry.h"
 #include "qtessSurface.h"
@@ -22,11 +21,9 @@
 #include <ctype.h>
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 QtessInputEntry::
 QtessInputEntry(const string &name) {
   _type = T_undefined;
@@ -39,11 +36,9 @@ QtessInputEntry(const string &name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void QtessInputEntry::
 operator = (const QtessInputEntry &copy) {
   _node_names = copy._node_names;
@@ -64,11 +59,10 @@ operator = (const QtessInputEntry &copy) {
   _constrain_v = copy._constrain_v;
 }
 
-////////////////////////////////////////////////////////////////////
-//       Class : DoublesAlmostEqual
-// Description : An STL function object to determine if two doubles
-//               are very nearly equal.  Used in set_uv(), below.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object to determine if two doubles are very nearly equal.
+ * Used in set_uv(), below.
+ */
 class DoublesAlmostEqual {
 public:
   int operator ()(double a, double b) const {
@@ -76,12 +70,10 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : DoubleAlmostMatches
-// Description : An STL function object to determine if a double
-//               is vert nearly equal the supplied value .  Used in
-//               set_uv(), below.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object to determine if a double is vert nearly equal the
+ * supplied value .  Used in set_uv(), below.
+ */
 class DoubleAlmostMatches {
 public:
   DoubleAlmostMatches(double v) : _v(v) {}
@@ -92,13 +84,10 @@ public:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_uv
-//       Access: Public
-//  Description: Sets specific tesselation.  The tesselation will be u
-//               by v quads, with the addition of any isoparams
-//               described in the list of params.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets specific tesselation.  The tesselation will be u by v quads, with the
+ * addition of any isoparams described in the list of params.
+ */
 void QtessInputEntry::
 set_uv(int u, int v, const string params[], int num_params) {
   _num_u = u;
@@ -126,11 +115,11 @@ set_uv(int u, int v, const string params[], int num_params) {
         switch (tolower(param[1])) {
         case 'u':
           _auto_place = false;
-          _iso_u.erase(remove_if(_iso_u.begin(), _iso_u.end(), 
+          _iso_u.erase(remove_if(_iso_u.begin(), _iso_u.end(),
                                  DoubleAlmostMatches(value)),
                        _iso_u.end());
           break;
-          
+
         case 'v':
           _auto_place = false;
           _iso_v.erase(remove_if(_iso_v.begin(), _iso_v.end(),
@@ -154,12 +143,12 @@ set_uv(int u, int v, const string params[], int num_params) {
           _auto_place = false;
           _iso_u.push_back(value);
           break;
-          
+
         case 'v':
           _auto_place = false;
           _iso_v.push_back(value);
           break;
-          
+
         default:
           qtess_cat.warning()
             << "Ignoring invalid parameter: " << params[i] << "\n";
@@ -178,37 +167,30 @@ set_uv(int u, int v, const string params[], int num_params) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::add_extra_u_isoparam
-//       Access: Public
-//  Description: May be called a number of times before set_uv() to add
-//               specific additional isoparams to the tesselation.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called a number of times before set_uv() to add specific additional
+ * isoparams to the tesselation.
+ */
 void QtessInputEntry::
 add_extra_u_isoparam(double u) {
   _iso_u.push_back(u);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::add_extra_v_isoparam
-//       Access: Public
-//  Description: May be called a number of times before set_uv() to add
-//               specific additional isoparams to the tesselation.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called a number of times before set_uv() to add specific additional
+ * isoparams to the tesselation.
+ */
 void QtessInputEntry::
 add_extra_v_isoparam(double v) {
   _iso_v.push_back(v);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::match
-//       Access: Public
-//  Description: Tests the surface to see if it matches any of the
-//               regular expressions that define this node entry.  If
-//               so, adds it to the set of matched surfaces and
-//               returns the type of the matching entry.  If no match
-//               is found, returns T_undefined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tests the surface to see if it matches any of the regular expressions that
+ * define this node entry.  If so, adds it to the set of matched surfaces and
+ * returns the type of the matching entry.  If no match is found, returns
+ * T_undefined.
+ */
 QtessInputEntry::Type QtessInputEntry::
 match(QtessSurface *surface) {
   const string &name = surface->get_name();
@@ -222,14 +204,14 @@ match(QtessSurface *surface) {
       // We have a winner!
       switch (_type) {
       case T_importance:
-        // A type of "Importance" is a special case.  This entry
-        // doesn't specify any kind of tesselation on the surface, and
-        // in fact doesn't preclude the surface from matching anything
-        // later.  It just specifies the relative importance of the
-        // surface to all the other surfaces.
+        // A type of "Importance" is a special case.  This entry doesn't
+        // specify any kind of tesselation on the surface, and in fact doesn't
+        // preclude the surface from matching anything later.  It just
+        // specifies the relative importance of the surface to all the other
+        // surfaces.
         if (qtess_cat.is_debug()) {
-          qtess_cat.debug() 
-            << "Assigning importance of " << _importance*100.0 
+          qtess_cat.debug()
+            << "Assigning importance of " << _importance*100.0
             << "% to " << name << "\n";
         }
         surface->set_importance(_importance);
@@ -237,10 +219,9 @@ match(QtessSurface *surface) {
 
       case T_match_uu:
       case T_match_uv:
-        // Similarly for type "matchUU".  This indicates that all the
-        // surfaces that match this one must all share the
-        // U-tesselation with whichever surface first matched against
-        // the first node name.
+        // Similarly for type "matchUU".  This indicates that all the surfaces
+        // that match this one must all share the U-tesselation with whichever
+        // surface first matched against the first node name.
         if (nni == _node_names.begin() && _constrain_u==NULL) {
           // This is the lucky surface that dominates!
           _constrain_u = surface;
@@ -302,23 +283,19 @@ match(QtessSurface *surface) {
   return T_undefined;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::count_tris
-//       Access: Public
-//  Description: Determines the tesselation u,v amounts of each
-//               attached surface, and stores this information in the
-//               surface pointer.  Returns the total number of tris
-//               that will be produced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the tesselation u,v amounts of each attached surface, and stores
+ * this information in the surface pointer.  Returns the total number of tris
+ * that will be produced.
+ */
 int QtessInputEntry::
 count_tris(double tri_factor, int attempts) {
   int total_tris = 0;
   bool aim_for_tris = false;
 
   if (_type == T_num_tris && _num_patches > 0.0) {
-    // If we wanted to aim for a particular number of triangles for
-    // the group, choose a per-isoparam setting that will approximately
-    // achieve this.
+    // If we wanted to aim for a particular number of triangles for the group,
+    // choose a per-isoparam setting that will approximately achieve this.
     if (_auto_distribute) {
       set_per_score(sqrt(0.5 * (double)_num_tris / _num_patches / tri_factor));
     } else {
@@ -336,7 +313,7 @@ count_tris(double tri_factor, int attempts) {
     case T_omit:
       surface->omit();
       break;
-      
+
     case T_uv:
       if (!_iso_u.empty() && !_iso_v.empty() && !_auto_place) {
         surface->tesselate_specific(_iso_u, _iso_v);
@@ -344,11 +321,11 @@ count_tris(double tri_factor, int attempts) {
         surface->tesselate_uv(_num_u, _num_v, _auto_place, _curvature_ratio);
       }
       break;
-      
+
     case T_per_isoparam:
       surface->tesselate_per_isoparam(_per_isoparam, _auto_place, _curvature_ratio);
       break;
-      
+
     case T_per_score:
       surface->tesselate_per_score(_per_isoparam, _auto_place, _curvature_ratio);
       break;
@@ -360,11 +337,10 @@ count_tris(double tri_factor, int attempts) {
     total_tris += surface->count_tris();
   }
 
-  if (aim_for_tris && attempts < 10 && 
+  if (aim_for_tris && attempts < 10 &&
       (double)total_tris / (double)_num_tris > 1.1) {
-    // We'd like to get within 10% of the requested number of
-    // triangles, if possible.  Keep trying until we do, or until we
-    // just need to give up.
+    // We'd like to get within 10% of the requested number of triangles, if
+    // possible.  Keep trying until we do, or until we just need to give up.
     set_num_tris(_num_tris);
     return count_tris(tri_factor * total_tris / _num_tris, attempts + 1);
   }
@@ -373,12 +349,10 @@ count_tris(double tri_factor, int attempts) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::output_extra
-//       Access: Public, Static
-//  Description: This function is used to identify the extra isoparams
-//               in the list added by user control.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used to identify the extra isoparams in the list added by
+ * user control.
+ */
 void QtessInputEntry::
 output_extra(ostream &out, const pvector<double> &iso, char axis) {
   pvector<double>::const_iterator di;
@@ -398,11 +372,9 @@ output_extra(ostream &out, const pvector<double> &iso, char axis) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void QtessInputEntry::
 output(ostream &out) const {
   NodeNames::const_iterator nni;
@@ -427,7 +399,7 @@ output(ostream &out) const {
     out << _num_tris;
     show_auto = true;
     break;
-    
+
   case T_uv:
     out << _num_u << " " << _num_v;
     output_extra(out, _iso_u, 'u');
@@ -482,11 +454,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void QtessInputEntry::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";

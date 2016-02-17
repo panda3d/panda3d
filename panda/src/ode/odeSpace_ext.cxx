@@ -1,16 +1,15 @@
-// Filename: odeSpace_ext.cxx
-// Created by:  rdb (10Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeSpace_ext.cxx
+ * @author rdb
+ * @date 2013-12-10
+ */
 
 #include "odeSpace_ext.h"
 #include "config_ode.h"
@@ -32,12 +31,10 @@ extern Dtool_PyTypedObject Dtool_OdeQuadTreeSpace;
 
 PyObject *Extension<OdeSpace>::_python_callback = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeSpace::convert
-//       Access: Published
-//  Description: Do a sort of pseudo-downcast on this space in
-//               order to expose its specialized functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do a sort of pseudo-downcast on this space in order to expose its
+ * specialized functions.
+ */
 PyObject *Extension<OdeSpace>::
 convert() const {
   Dtool_PyTypedObject *class_type;
@@ -60,8 +57,8 @@ convert() const {
     break;
 
   default:
-    // This shouldn't happen, but if it does, we
-    // should just return a regular OdeSpace.
+    // This shouldn't happen, but if it does, we should just return a regular
+    // OdeSpace.
     space = new OdeSpace(_this->get_id());
     class_type = &Dtool_OdeSpace;
   }
@@ -79,7 +76,8 @@ collide(PyObject* arg, PyObject* callback) {
     return -1;
 
   } else if (_this->get_id() == NULL) {
-    // Well, while we're in the mood of python exceptions, let's make this one too.
+    // Well, while we're in the mood of python exceptions, let's make this one
+    // too.
     PyErr_Format(PyExc_TypeError, "OdeSpace is not valid!");
     return -1;
 

@@ -1,16 +1,15 @@
-// Filename: mayaToEgg_server.cxx
-// Adapted by: cbrunner (09Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaToEgg_server.cxx
+ * @author cbrunner
+ * @date 2009-11-09
+ */
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 #include <direct.h>  // for chdir
@@ -24,11 +23,9 @@
   #include "pystub.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaToEggServer::
 MayaToEggServer() :
   SomethingToEgg("Maya", ".mb")
@@ -155,10 +152,10 @@ MayaToEggServer() :
      "and treat all shaders as if they were Lamberts (legacy).",
      &MayaToEggServer::dispatch_none, &_legacy_shader);
 
-  // Unfortunately, the Maya API doesn't allow us to differentiate
-  // between relative and absolute pathnames--everything comes out as
-  // an absolute pathname, even if it is stored in the Maya file as a
-  // relative path.  So we can't support -noabs.
+  // Unfortunately, the Maya API doesn't allow us to differentiate between
+  // relative and absolute pathnames--everything comes out as an absolute
+  // pathname, even if it is stored in the Maya file as a relative path.  So
+  // we can't support -noabs.
   remove_option("noabs");
 
   _verbose = 0;
@@ -170,18 +167,16 @@ MayaToEggServer() :
   qReader = new QueuedConnectionReader(qManager, 0);
   cWriter = new ConnectionWriter(qManager, 0);
   dummy = new MayaToEggConverter();
-  
+
   nout << "Initializing Maya...\n";
   if (!dummy->open_api()) {
     nout << "Unable to initialize Maya.\n";
     exit(1);
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaToEggServer::
 ~MayaToEggServer() {
   delete qManager;
@@ -191,11 +186,9 @@ MayaToEggServer::
   delete dummy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void MayaToEggServer::
 run() {
   // Make sure we have good clean data to start with
@@ -213,9 +206,8 @@ run() {
     mayaegg_cat->set_severity(NS_info);
   }
 
-  // Let's convert the output file to a full path before we initialize
-  // Maya, since Maya now has a nasty habit of changing the current
-  // directory.
+  // Let's convert the output file to a full path before we initialize Maya,
+  // since Maya now has a nasty habit of changing the current directory.
   if (_got_output_filename) {
     _output_filename.make_absolute();
     _path_replace->_path_directory.make_absolute();
@@ -285,10 +277,10 @@ run() {
     exit(1);
   }
 
-  // Use the standard Maya units, if the user didn't specify
-  // otherwise.  This always returns centimeters, which is the way all
-  // Maya files are stored internally (and is the units returned by
-  // all of the API functions called here).
+  // Use the standard Maya units, if the user didn't specify otherwise.  This
+  // always returns centimeters, which is the way all Maya files are stored
+  // internally (and is the units returned by all of the API functions called
+  // here).
   if (_input_units == DU_invalid) {
     _input_units = converter.get_input_units();
   }
@@ -297,7 +289,7 @@ run() {
   append_command_comment(_data);
 
   write_egg_file();
-  
+
   // Clean and out
   close_output();
   _verbose = 0;
@@ -335,12 +327,10 @@ run() {
   dummy->clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::dispatch_transform_type
-//       Access: Protected, Static
-//  Description: Dispatches a parameter that expects a
-//               MayaToEggConverter::TransformType option.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatches a parameter that expects a MayaToEggConverter::TransformType
+ * option.
+ */
 bool MayaToEggServer::
 dispatch_transform_type(const string &opt, const string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
@@ -355,20 +345,17 @@ dispatch_transform_type(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::poll
-//       Access: Public
-//  Description: Checks for any network activity and handles it, if
-//               appropriate, and then returns.  This must be called
-//               periodically
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks for any network activity and handles it, if appropriate, and then
+ * returns.  This must be called periodically
+ */
 void MayaToEggServer::
 poll() {
   // Listen for new connections
   qListener->poll();
 
-  // If we have a new connection from a client create a new connection
-  // pointer and add it to the reader list
+  // If we have a new connection from a client create a new connection pointer
+  // and add it to the reader list
   if (qListener->new_connection_available()) {
     PT(Connection) con;
     PT(Connection) rv;
@@ -387,7 +374,7 @@ poll() {
       qManager->close_connection(connection);
     }
   }
-  
+
   // Poll the readers (created above) and if they have data process it
   qReader->poll();
   if (qReader->data_available()) {
@@ -398,12 +385,12 @@ poll() {
       // First data should be the "argc" (argument count) from the client
       int argc = data.get_uint8();
 
-      // Now we have to get clever because the rest of the data comes as strings
-      // and parse_command_line() expects arguments of the standard argc, argv*[]
-      // variety.
-      // First, we need a string vector to hold all the strings from the datagram.
-      // We also need a char * array to keep track of all the pointers we're gonna
-      // malloc.  Needed later for cleanup.
+      // Now we have to get clever because the rest of the data comes as
+      // strings and parse_command_line() expects arguments of the standard
+      // argc, argv*[] variety.  First, we need a string vector to hold all
+      // the strings from the datagram.  We also need a char * array to keep
+      // track of all the pointers we're gonna malloc.  Needed later for
+      // cleanup.
       vector_string vargv;
       vector<char *> buffers;
 
@@ -413,18 +400,18 @@ poll() {
         vargv.push_back(data.get_string());
       }
 
-      // Last string is the current directory the client was run from. Not part of
-      // the argument list, but we still need it
+      // Last string is the current directory the client was run from.  Not
+      // part of the argument list, but we still need it
       string cwd = data.get_string();
 
-      // We allocate some memory to hold the pointers to the pointers we're going to
-      // pass in to parse_command_line().
+      // We allocate some memory to hold the pointers to the pointers we're
+      // going to pass in to parse_command_line().
       char ** cargv = (char**) malloc(sizeof(char**) * argc);
 
-      // Loop through the string arguments we got from the datagram and convert
-      // them to const char *'s.  parse_command_line() expects char *'s, so we have
-      // to copy these const versions into fresh char *, since there is no casting
-      // from const char * to char *.
+      // Loop through the string arguments we got from the datagram and
+      // convert them to const char *'s.  parse_command_line() expects char
+      // *'s, so we have to copy these const versions into fresh char *, since
+      // there is no casting from const char * to char *.
       for ( i = 0; i < argc; i++) {
         // string to const char *
         const char * cptr = vargv[i].c_str();
@@ -432,10 +419,11 @@ poll() {
         char * buffer = (char*) malloc(vargv[i].capacity()+1);
         // Copy the const char * to the char *
         strcpy(buffer, cptr);
-        // put this into the arry we defined above.  This is what will eventually
-        // be passed to parse_command_line()
+        // put this into the arry we defined above.  This is what will
+        // eventually be passed to parse_command_line()
         cargv[i] = buffer;
-        // keep track of the pointers to the  allocated memory for cleanup later
+        // keep track of the pointers to the  allocated memory for cleanup
+        // later
         buffers.push_back(buffer);
       }
       // Change to the client's current dir
@@ -450,8 +438,7 @@ poll() {
       // Actually run the damn thing
       this->run();
 
-      // Cleanup
-      // First, release the string vector
+      // Cleanup First, release the string vector
       vargv.clear();
       // No, iterate through the char * vector and cleanup the malloc'd
       // pointers
@@ -471,7 +458,8 @@ poll() {
 } // poll
 
 int main(int argc, char *argv[]) {
-  // We don't want pystub on linux, since it gives problems with Maya's python.
+  // We don't want pystub on linux, since it gives problems with Maya's
+  // python.
 #ifdef _WIN32
   // A call to pystub() to force libpystub.so to be linked in.
   pystub();
@@ -494,4 +482,3 @@ int main(int argc, char *argv[]) {
   }
   return 0;
 }
-

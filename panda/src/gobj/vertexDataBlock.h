@@ -1,16 +1,15 @@
-// Filename: vertexDataBlock.h
-// Created by:  drose (04Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexDataBlock.h
+ * @author drose
+ * @date 2007-06-04
+ */
 
 #ifndef VERTEXDATABLOCK_H
 #define VERTEXDATABLOCK_H
@@ -23,11 +22,10 @@
 class VertexDataPage;
 class VertexDataBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexDataBlock
-// Description : A block of bytes that stores the actual raw vertex
-//               data referenced by a GeomVertexArrayData object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A block of bytes that stores the actual raw vertex data referenced by a
+ * GeomVertexArrayData object.
+ */
 class EXPCL_PANDA_GOBJ VertexDataBlock : public SimpleAllocatorBlock, public ReferenceCount {
 protected:
   INLINE VertexDataBlock(VertexDataPage *page,

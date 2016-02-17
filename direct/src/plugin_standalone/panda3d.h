@@ -1,16 +1,15 @@
-// Filename: panda3d.h
-// Created by:  drose (30Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file panda3d.h
+ * @author drose
+ * @date 2009-06-30
+ */
 
 #ifndef PANDA3D_H
 #define PANDA3D_H
@@ -28,11 +27,9 @@
 #include "pset.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Panda3D
-// Description : A standalone program that invokes the Panda3D plugin
-//               to launch .p3d files.
-////////////////////////////////////////////////////////////////////
+/**
+ * A standalone program that invokes the Panda3D plugin to launch .p3d files.
+ */
 class Panda3D : public Panda3DBase {
 public:
   Panda3D(bool console_environment);
@@ -60,7 +57,7 @@ protected:
   string _super_mirror_url_prefix;
   typedef pvector<string> Mirrors;
   Mirrors _mirrors;
-  
+
   string _coreapi_set_ver;
   FileSpec _coreapi_dll;
 };
@@ -68,4 +65,3 @@ protected:
 #include "panda3d.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: nurbsCurveResult.h
-// Created by:  drose (03Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsCurveResult.h
+ * @author drose
+ * @date 2002-12-03
+ */
 
 #ifndef NURBSCURVERESULT_H
 #define NURBSCURVERESULT_H
@@ -23,22 +22,19 @@
 
 class NurbsVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsCurveResult
-// Description : The result of a NurbsCurveEvaluator.  This object
-//               represents a curve in a particular coordinate space.
-//               It can return the point and/or tangent to the curve
-//               at any point.
-//
-//               This is not related to NurbsCurve, CubicCurveseg or
-//               any of the ParametricCurve-derived objects in this
-//               module.  It is a completely parallel implementation
-//               of NURBS curves, and will probably eventually replace
-//               the whole ParametricCurve class hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * The result of a NurbsCurveEvaluator.  This object represents a curve in a
+ * particular coordinate space.  It can return the point and/or tangent to the
+ * curve at any point.
+ *
+ * This is not related to NurbsCurve, CubicCurveseg or any of the
+ * ParametricCurve-derived objects in this module.  It is a completely
+ * parallel implementation of NURBS curves, and will probably eventually
+ * replace the whole ParametricCurve class hierarchy.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsCurveResult : public ReferenceCount {
 public:
-  NurbsCurveResult(const NurbsBasisVector &basis, 
+  NurbsCurveResult(const NurbsBasisVector &basis,
                    const LVecBase4 vecs[], const NurbsVertex *verts,
                    int num_vertices);
 
@@ -51,7 +47,7 @@ PUBLISHED:
   INLINE bool eval_point(PN_stdfloat t, LVecBase3 &point);
   INLINE bool eval_tangent(PN_stdfloat t, LVecBase3 &tangent);
   INLINE PN_stdfloat eval_extended_point(PN_stdfloat t, int d);
-  INLINE bool eval_extended_points(PN_stdfloat t, int d, 
+  INLINE bool eval_extended_points(PN_stdfloat t, int d,
                                    PN_stdfloat result[], int num_values);
 
   INLINE int get_num_segments() const;
@@ -81,9 +77,9 @@ private:
   NurbsBasisVector _basis;
   const NurbsVertex *_verts;
 
-  // We pre-compose the basis matrix and the geometry vectors, so we
-  // have these handy for evaluation.  There is one entry in the
-  // _composed for each entry in basis._segments.
+  // We pre-compose the basis matrix and the geometry vectors, so we have
+  // these handy for evaluation.  There is one entry in the _composed for each
+  // entry in basis._segments.
   typedef epvector<LMatrix4> ComposedGeom;
   ComposedGeom _composed;
 
@@ -104,4 +100,3 @@ private:
 #include "nurbsCurveResult.I"
 
 #endif
-

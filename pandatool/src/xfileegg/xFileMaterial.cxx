@@ -1,16 +1,15 @@
-// Filename: xFileMaterial.cxx
-// Created by:  drose (19Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileMaterial.cxx
+ * @author drose
+ * @date 2001-06-19
+ */
 
 #include "xFileMaterial.h"
 #include "xFileToEggConverter.h"
@@ -22,11 +21,9 @@
 
 #include <string.h>  // for strcmp, strdup
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileMaterial::
 XFileMaterial() {
   _face_color.set(1.0, 1.0, 1.0, 1.0);
@@ -38,20 +35,16 @@ XFileMaterial() {
   _has_texture = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileMaterial::
 ~XFileMaterial() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::set_from_egg
-//       Access: Public
-//  Description: Sets the structure up from the indicated egg data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the structure up from the indicated egg data.
+ */
 void XFileMaterial::
 set_from_egg(EggPrimitive *egg_prim) {
   // First, determine the face color.
@@ -89,12 +82,9 @@ set_from_egg(EggPrimitive *egg_prim) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::apply_to_egg
-//       Access: Public
-//  Description: Applies the properties in the material to the
-//               indicated egg primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the properties in the material to the indicated egg primitive.
+ */
 void XFileMaterial::
 apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter) {
   // Is there a texture?
@@ -128,11 +118,9 @@ apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter) {
   egg_prim->set_color(_face_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::compare_to
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int XFileMaterial::
 compare_to(const XFileMaterial &other) const {
   int ct;
@@ -152,37 +140,29 @@ compare_to(const XFileMaterial &other) const {
   return ct;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::has_material
-//       Access: Public
-//  Description: Returns true if this material represents something
-//               meaningful, or false if the default material is
-//               sufficient.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this material represents something meaningful, or false if
+ * the default material is sufficient.
+ */
 bool XFileMaterial::
 has_material() const {
   return _has_material;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::has_texture
-//       Access: Public
-//  Description: Returns true if this material includes a texture map,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this material includes a texture map, false otherwise.
+ */
 bool XFileMaterial::
 has_texture() const {
   return _has_texture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::make_x_material
-//       Access: Public
-//  Description: Creates a Material object for the material list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a Material object for the material list.
+ */
 XFileDataNode *XFileMaterial::
 make_x_material(XFileNode *x_meshMaterials, const string &suffix) {
-  XFileDataNode *x_material = 
+  XFileDataNode *x_material =
     x_meshMaterials->add_Material("material" + suffix,
                                   _face_color, _power,
                                   _specular_color, _emissive_color);
@@ -194,12 +174,10 @@ make_x_material(XFileNode *x_meshMaterials, const string &suffix) {
   return x_material;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::fill_material
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               X file's Material object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the structure based on the raw data from the X file's Material
+ * object.
+ */
 bool XFileMaterial::
 fill_material(XFileDataNode *obj) {
   _face_color = LCAST(PN_stdfloat, (*obj)["faceColor"].vec4());
@@ -208,8 +186,8 @@ fill_material(XFileDataNode *obj) {
   _emissive_color = LCAST(PN_stdfloat, (*obj)["emissiveColor"].vec3());
   _has_material = true;
 
-  // Walk through the children of the material.  If there are any,
-  // there should be only one, and it should be just a Texture.
+  // Walk through the children of the material.  If there are any, there
+  // should be only one, and it should be just a Texture.
   int num_objects = obj->get_num_objects();
   for (int i = 0; i < num_objects; i++) {
     XFileDataNode *child = obj->get_object(i);

@@ -1,16 +1,15 @@
-// Filename: renderBuffer.h
-// Created by:  drose (02Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderBuffer.h
+ * @author drose
+ * @date 1999-02-02
+ */
 
 #ifndef RENDERBUFFER_H
 #define RENDERBUFFER_H
@@ -19,14 +18,12 @@
 
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderBuffer
-// Description : A RenderBuffer is an arbitrary subset of the various
-//               layers (depth buffer, color buffer, etc.) of a
-//               drawing region.  It consists of a
-//               GraphicsStateGuardian pointer, along with a bitmask
-//               of the layers we're interested in.
-////////////////////////////////////////////////////////////////////
+/**
+ * A RenderBuffer is an arbitrary subset of the various layers (depth buffer,
+ * color buffer, etc.) of a drawing region.  It consists of a
+ * GraphicsStateGuardian pointer, along with a bitmask of the layers we're
+ * interested in.
+ */
 class EXPCL_PANDA_DISPLAY RenderBuffer {
 public:
   enum Type {
@@ -36,13 +33,13 @@ public:
     T_aux_rgba_3       = 0x00000008,
     T_aux_rgba_ALL     = 0x0000000F,
 
-    T_aux_hrgba_0      = 0x00000010, // These can't really be implemented until 
+    T_aux_hrgba_0      = 0x00000010, // These can't really be implemented until
     T_aux_hrgba_1      = 0x00000020, // we have support for hrgba textures.
     T_aux_hrgba_2      = 0x00000040, // I've just added the bits for the future.
     T_aux_hrgba_3      = 0x00000080,
     T_aux_hrgba_ALL    = 0x000000F0,
 
-    T_aux_float_0      = 0x00000100, // These can't really be implemented until 
+    T_aux_float_0      = 0x00000100, // These can't really be implemented until
     T_aux_float_1      = 0x00000200, // we have support for float textures.
     T_aux_float_2      = 0x00000400, // I've just added the bits for the future.
     T_aux_float_3      = 0x00000800,
@@ -64,7 +61,7 @@ public:
     T_back             = 0x000a0000,
     T_left             = 0x00030000,
     T_right            = 0x000c0000,
-    
+
     T_color            = 0x000F0000,
 
     T_depth            = 0x00100000,

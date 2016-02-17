@@ -1,16 +1,15 @@
-// Filename: autoTextureScale.cxx
-// Created by:  drose (28Nov11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file autoTextureScale.cxx
+ * @author drose
+ * @date 2011-11-28
+ */
 
 #include "autoTextureScale.h"
 #include "string_utils.h"
@@ -21,13 +20,13 @@ operator << (ostream &out, AutoTextureScale ats) {
   switch (ats) {
   case ATS_none:
     return out << "none";
-   
+
   case ATS_down:
     return out << "down";
-    
+
   case ATS_up:
     return out << "up";
-    
+
   case ATS_pad:
     return out << "pad";
 

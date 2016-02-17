@@ -1,22 +1,19 @@
-// Filename: linearRandomForce.I
-// Created by:  charles (19Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearRandomForce.I
+ * @author charles
+ * @date 2000-06-19
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: random_unit_vector
-//       Access: Protected
-//  Description: generates a random unit vector
-////////////////////////////////////////////////////////////////////
+/**
+ * generates a random unit vector
+ */
 INLINE LVector3 LinearRandomForce::
 random_unit_vector() {
   PN_stdfloat z, r, theta;
@@ -27,4 +24,3 @@ random_unit_vector() {
 
   return LVector3(r * ccos(theta), r * csin(theta), z);
 }
-

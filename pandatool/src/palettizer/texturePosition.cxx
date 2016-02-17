@@ -1,16 +1,15 @@
-// Filename: texturePosition.cxx
-// Created by:  drose (04Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texturePosition.cxx
+ * @author drose
+ * @date 2000-12-04
+ */
 
 #include "texturePosition.h"
 
@@ -21,11 +20,9 @@
 
 TypeHandle TexturePosition::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePosition::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TexturePosition::
 TexturePosition() {
   _margin = 0;
@@ -39,11 +36,9 @@ TexturePosition() {
   _wrap_v = EggTexture::WM_unspecified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePosition::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TexturePosition::
 TexturePosition(const TexturePosition &copy) :
   _margin(copy._margin),
@@ -58,11 +53,9 @@ TexturePosition(const TexturePosition &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePosition::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TexturePosition::
 operator = (const TexturePosition &copy) {
   _margin = copy._margin;
@@ -76,25 +69,19 @@ operator = (const TexturePosition &copy) {
   _wrap_v = copy._wrap_v;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePosition::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void TexturePosition::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_TexturePosition);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePosition::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void TexturePosition::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
@@ -111,14 +98,11 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32((int)_wrap_v);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePosition::make_TexturePosition
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable* TexturePosition::
 make_TexturePosition(const FactoryParams &params) {
   TexturePosition *me = new TexturePosition;
@@ -130,13 +114,10 @@ make_TexturePosition(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePosition::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written
+ * by a previous call to write_datagram().
+ */
 void TexturePosition::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

@@ -1,21 +1,19 @@
-// Filename: lvector2_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvector2_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVector2
-// Description : This is a two-component vector offset.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a two-component vector offset.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
 

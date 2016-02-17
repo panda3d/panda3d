@@ -1,17 +1,16 @@
-// Filename: profileTimer.h
-// Created by: skyler 
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#ifndef PROFILETIMER_H //[
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file profileTimer.h
+ * @author skyler
+ */
+
+#ifndef PROFILETIMER_H
 #define PROFILETIMER_H
 
 #include "pandabase.h"
@@ -52,8 +51,8 @@ PUBLISHED:
   void off();
   void off(const char* tag);
 
-  // Don't call any of the following during timing:
-  // (Because they are slow, not because anything will break).
+  // Don't call any of the following during timing: (Because they are slow,
+  // not because anything will break).
   double getTotalTime() const;
   static void consolidateAllTo(ostream &out=cout);
   void consolidateTo(ostream &out=cout) const;

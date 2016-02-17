@@ -1,16 +1,15 @@
-// Filename: cppSimpleType.h
-// Created by:  drose (19Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppSimpleType.h
+ * @author drose
+ * @date 1999-10-19
+ */
 
 #ifndef CPPSIMPLETYPE_H
 #define CPPSIMPLETYPE_H
@@ -19,10 +18,9 @@
 
 #include "cppType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPSimpleType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPSimpleType : public CPPType {
 public:
   enum Type {
@@ -37,30 +35,23 @@ public:
     T_double,
     T_void,
 
-    // We need something to represent the type of nullptr so that we
-    // can return it from decltype(nullptr).  Note that this is not
-    // the same as nullptr_t, which is a typedef of decltype(nullptr).
+    // We need something to represent the type of nullptr so that we can
+    // return it from decltype(nullptr).  Note that this is not the same as
+    // nullptr_t, which is a typedef of decltype(nullptr).
     T_nullptr,
 
-    // T_parameter is a special type which is assigned to expressions
-    // that are discovered where a formal parameter was expected.
-    // This is a special case for handling cases like this:
-    //
-    //   int foo(0);
-    //
-    // which really means the same thing as:
-    //
-    //   int foo = 0;
-    //
-    // but it initially looks like a function prototype.
-    //
+/*
+ * T_parameter is a special type which is assigned to expressions that are
+ * discovered where a formal parameter was expected.  This is a special case
+ * for handling cases like this: int foo(0); which really means the same thing
+ * as: int foo = 0; but it initially looks like a function prototype.
+ */
     T_parameter,
 
-    // T_auto is also a special type that corresponds to the "auto"
-    // keyword used in a variable assignment.  The type of it is
-    // automatically determined at a later stage based on the type
-    // of the expression that is assigned to it.
-    //
+    // T_auto is also a special type that corresponds to the "auto" keyword
+    // used in a variable assignment.  The type of it is automatically
+    // determined at a later stage based on the type of the expression that is
+    // assigned to it.
     T_auto,
   };
 

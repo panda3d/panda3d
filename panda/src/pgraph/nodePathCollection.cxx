@@ -1,16 +1,15 @@
-// Filename: nodePathCollection.cxx
-// Created by:  drose (06Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePathCollection.cxx
+ * @author drose
+ * @date 2002-03-06
+ */
 
 #include "nodePathCollection.h"
 #include "findApproxPath.h"
@@ -20,47 +19,38 @@
 #include "colorAttrib.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 NodePathCollection::
 NodePathCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 NodePathCollection::
 NodePathCollection(const NodePathCollection &copy) :
   _node_paths(copy._node_paths)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void NodePathCollection::
 operator = (const NodePathCollection &copy) {
   _node_paths = copy._node_paths;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::add_path
-//       Access: Published
-//  Description: Adds a new NodePath to the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new NodePath to the collection.
+ */
 void NodePathCollection::
 add_path(const NodePath &node_path) {
   // If the pointer to our internal array is shared by any other
   // NodePathCollections, we have to copy the array now so we won't
-  // inadvertently modify any of our brethren NodePathCollection
-  // objects.
+  // inadvertently modify any of our brethren NodePathCollection objects.
 
   if (_node_paths.get_ref_count() > 1) {
     NodePaths old_node_paths = _node_paths;
@@ -71,13 +61,10 @@ add_path(const NodePath &node_path) {
   _node_paths.push_back(node_path);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::remove_path
-//       Access: Published
-//  Description: Removes the indicated NodePath from the collection.
-//               Returns true if the path was removed, false if it was
-//               not a member of the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated NodePath from the collection.  Returns true if the
+ * path was removed, false if it was not a member of the collection.
+ */
 bool NodePathCollection::
 remove_path(const NodePath &node_path) {
   int path_index = -1;
@@ -94,8 +81,7 @@ remove_path(const NodePath &node_path) {
 
   // If the pointer to our internal array is shared by any other
   // NodePathCollections, we have to copy the array now so we won't
-  // inadvertently modify any of our brethren NodePathCollection
-  // objects.
+  // inadvertently modify any of our brethren NodePathCollection objects.
 
   if (_node_paths.get_ref_count() > 1) {
     NodePaths old_node_paths = _node_paths;
@@ -107,14 +93,11 @@ remove_path(const NodePath &node_path) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::add_paths_from
-//       Access: Published
-//  Description: Adds all the NodePaths indicated in the other
-//               collection to this path.  The other paths are simply
-//               appended to the end of the paths in this list;
-//               duplicates are not automatically removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all the NodePaths indicated in the other collection to this path.  The
+ * other paths are simply appended to the end of the paths in this list;
+ * duplicates are not automatically removed.
+ */
 void NodePathCollection::
 add_paths_from(const NodePathCollection &other) {
   int other_num_paths = other.get_num_paths();
@@ -124,12 +107,10 @@ add_paths_from(const NodePathCollection &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::remove_paths_from
-//       Access: Published
-//  Description: Removes from this collection all of the NodePaths
-//               listed in the other collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from this collection all of the NodePaths listed in the other
+ * collection.
+ */
 void NodePathCollection::
 remove_paths_from(const NodePathCollection &other) {
   NodePaths new_paths;
@@ -143,14 +124,11 @@ remove_paths_from(const NodePathCollection &other) {
   _node_paths = new_paths;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::remove_duplicate_paths
-//       Access: Published
-//  Description: Removes any duplicate entries of the same NodePaths
-//               on this collection.  If a NodePath appears multiple
-//               times, the first appearance is retained; subsequent
-//               appearances are removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any duplicate entries of the same NodePaths on this collection.  If
+ * a NodePath appears multiple times, the first appearance is retained;
+ * subsequent appearances are removed.
+ */
 void NodePathCollection::
 remove_duplicate_paths() {
   NodePaths new_paths;
@@ -172,12 +150,10 @@ remove_duplicate_paths() {
   _node_paths = new_paths;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::has_path
-//       Access: Published
-//  Description: Returns true if the indicated NodePath appears in
-//               this collection, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated NodePath appears in this collection, false
+ * otherwise.
+ */
 bool NodePathCollection::
 has_path(const NodePath &path) const {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -188,54 +164,42 @@ has_path(const NodePath &path) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::clear
-//       Access: Published
-//  Description: Removes all NodePaths from the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all NodePaths from the collection.
+ */
 void NodePathCollection::
 clear() {
   _node_paths.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::reserve
-//       Access: Published
-//  Description: This is a hint to Panda to allocate enough memory
-//               to hold the given number of NodePaths, if you know
-//               ahead of time how many you will be adding.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a hint to Panda to allocate enough memory to hold the given number
+ * of NodePaths, if you know ahead of time how many you will be adding.
+ */
 void NodePathCollection::
 reserve(size_t num) {
   _node_paths.reserve(num);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::is_empty
-//       Access: Published
-//  Description: Returns true if there are no NodePaths in the
-//               collection, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are no NodePaths in the collection, false otherwise.
+ */
 bool NodePathCollection::
 is_empty() const {
   return _node_paths.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::get_num_paths
-//       Access: Published
-//  Description: Returns the number of NodePaths in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of NodePaths in the collection.
+ */
 int NodePathCollection::
 get_num_paths() const {
   return _node_paths.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::get_path
-//       Access: Published
-//  Description: Returns the nth NodePath in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth NodePath in the collection.
+ */
 NodePath NodePathCollection::
 get_path(int index) const {
   nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
@@ -243,13 +207,10 @@ get_path(int index) const {
   return _node_paths[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::operator []
-//       Access: Published
-//  Description: Returns the nth NodePath in the collection.  This is
-//               the same as get_path(), but it may be a more
-//               convenient way to access it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth NodePath in the collection.  This is the same as
+ * get_path(), but it may be a more convenient way to access it.
+ */
 NodePath NodePathCollection::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
@@ -257,23 +218,19 @@ operator [] (int index) const {
   return _node_paths[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::size
-//       Access: Published
-//  Description: Returns the number of paths in the collection.  This
-//               is the same thing as get_num_paths().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of paths in the collection.  This is the same thing as
+ * get_num_paths().
+ */
 int NodePathCollection::
 size() const {
   return _node_paths.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::ls
-//       Access: Published
-//  Description: Lists all the nodes at and below each node in the
-//               collection hierarchically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists all the nodes at and below each node in the collection
+ * hierarchically.
+ */
 void NodePathCollection::
 ls(ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -284,14 +241,11 @@ ls(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::find_all_matches
-//       Access: Published
-//  Description: Returns the complete set of all NodePaths that begin
-//               with any NodePath in this collection and can be
-//               extended by path.  The shortest paths will be listed
-//               first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the complete set of all NodePaths that begin with any NodePath in
+ * this collection and can be extended by path.  The shortest paths will be
+ * listed first.
+ */
 NodePathCollection NodePathCollection::
 find_all_matches(const string &path) const {
   NodePathCollection result;
@@ -313,12 +267,9 @@ find_all_matches(const string &path) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::reparent_to
-//       Access: Published
-//  Description: Reparents all the NodePaths in the collection to the
-//               indicated node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reparents all the NodePaths in the collection to the indicated node.
+ */
 void NodePathCollection::
 reparent_to(const NodePath &other) {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -326,13 +277,10 @@ reparent_to(const NodePath &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::wrt_reparent_to
-//       Access: Published
-//  Description: Reparents all the NodePaths in the collection to the
-//               indicated node, adjusting each transform so as not to
-//               move in world coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reparents all the NodePaths in the collection to the indicated node,
+ * adjusting each transform so as not to move in world coordinates.
+ */
 void NodePathCollection::
 wrt_reparent_to(const NodePath &other) {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -340,11 +288,9 @@ wrt_reparent_to(const NodePath &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::show
-//       Access: Published
-//  Description: Shows all NodePaths in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows all NodePaths in the collection.
+ */
 void NodePathCollection::
 show() {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -352,11 +298,9 @@ show() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::show
-//       Access: Published
-//  Description: Hides all NodePaths in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Hides all NodePaths in the collection.
+ */
 void NodePathCollection::
 hide() {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -364,11 +308,9 @@ hide() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::stash
-//       Access: Published
-//  Description: Stashes all NodePaths in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stashes all NodePaths in the collection.
+ */
 void NodePathCollection::
 stash() {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -376,11 +318,9 @@ stash() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::unstash
-//       Access: Published
-//  Description: Unstashes all NodePaths in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unstashes all NodePaths in the collection.
+ */
 void NodePathCollection::
 unstash() {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -388,11 +328,9 @@ unstash() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::detach
-//       Access: Published
-//  Description: Detaches all NodePaths in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detaches all NodePaths in the collection.
+ */
 void NodePathCollection::
 detach() {
   for (int i = 0; i < get_num_paths(); i++) {
@@ -400,17 +338,13 @@ detach() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::get_collide_mask
-//       Access: Published
-//  Description: Returns the union of all of the into_collide_masks
-//               for nodes at this level and below.  This is the same
-//               thing as node()->get_net_collide_mask().
-//
-//               If you want to return what the into_collide_mask of
-//               this node itself is, without regard to its children,
-//               use node()->get_into_collide_mask().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of all of the into_collide_masks for nodes at this level
+ * and below.  This is the same thing as node()->get_net_collide_mask().
+ *
+ * If you want to return what the into_collide_mask of this node itself is,
+ * without regard to its children, use node()->get_into_collide_mask().
+ */
 CollideMask NodePathCollection::
 get_collide_mask() const {
   CollideMask collide_mask;
@@ -420,19 +354,14 @@ get_collide_mask() const {
   return collide_mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_collide_mask
-//       Access: Published
-//  Description: Recursively applies the indicated CollideMask to the
-//               into_collide_masks for all nodes at this level and
-//               below.
-//
-//               The default is to change all bits, but if
-//               bits_to_change is not all bits on, then only the bits
-//               that are set in bits_to_change are modified, allowing
-//               this call to change only a subset of the bits in the
-//               subgraph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively applies the indicated CollideMask to the into_collide_masks for
+ * all nodes at this level and below.
+ *
+ * The default is to change all bits, but if bits_to_change is not all bits
+ * on, then only the bits that are set in bits_to_change are modified,
+ * allowing this call to change only a subset of the bits in the subgraph.
+ */
 void NodePathCollection::
 set_collide_mask(CollideMask new_mask, CollideMask bits_to_change,
                  TypeHandle node_type) {
@@ -441,18 +370,15 @@ set_collide_mask(CollideMask new_mask, CollideMask bits_to_change,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::calc_tight_bounds
-//       Access: Published
-//  Description: Calculates the minimum and maximum vertices of all
-//               Geoms at these NodePath's bottom nodes and below
-//               This is a tight bounding box; it will generally be
-//               tighter than the bounding volume returned by
-//               get_bounds() (but it is more expensive to compute).
-//
-//               The return value is true if any points are within the
-//               bounding volume, or false if none are.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the minimum and maximum vertices of all Geoms at these
+ * NodePath's bottom nodes and below This is a tight bounding box; it will
+ * generally be tighter than the bounding volume returned by get_bounds() (but
+ * it is more expensive to compute).
+ *
+ * The return value is true if any points are within the bounding volume, or
+ * false if none are.
+ */
 bool NodePathCollection::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point) const {
   bool have_bounds = false;
@@ -484,35 +410,28 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point) const {
   return have_bounds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_texture
-//       Access: Published
-//  Description: Adds the indicated texture to the list of textures
-//               that will be rendered on the default texture stage.
-//
-//               This is the deprecated single-texture variant of this
-//               method; it is now superceded by set_texture() that
-//               accepts a stage and texture.  However, this method
-//               may be used in the presence of multitexture if you
-//               just want to adjust the default stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated texture to the list of textures that will be rendered on
+ * the default texture stage.
+ *
+ * This is the deprecated single-texture variant of this method; it is now
+ * superceded by set_texture() that accepts a stage and texture.  However,
+ * this method may be used in the presence of multitexture if you just want to
+ * adjust the default stage.
+ */
 void NodePathCollection::
 set_texture(Texture *tex, int priority) {
   PT(TextureStage) stage = TextureStage::get_default();
   set_texture(stage, tex, priority);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_texture
-//       Access: Published
-//  Description: Adds the indicated texture to the list of textures
-//               that will be rendered on the indicated multitexture
-//               stage.  If there are multiple texture stages
-//               specified (possibly on multiple different nodes at
-//               different levels), they will all be applied to
-//               geometry together, according to the stage
-//               specification set up in the TextureStage object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated texture to the list of textures that will be rendered on
+ * the indicated multitexture stage.  If there are multiple texture stages
+ * specified (possibly on multiple different nodes at different levels), they
+ * will all be applied to geometry together, according to the stage
+ * specification set up in the TextureStage object.
+ */
 void NodePathCollection::
 set_texture(TextureStage *stage, Texture *tex, int priority) {
   StateMap state_map;
@@ -526,40 +445,32 @@ set_texture(TextureStage *stage, Texture *tex, int priority) {
       // This RenderState has already been encountered; reuse it.
       np.set_state((*smi).second);
     } else {
-      // This RenderState has not yet been encountered; apply the
-      // attrib to it.
+      // This RenderState has not yet been encountered; apply the attrib to
+      // it.
       np.set_texture(stage, tex, priority);
       state_map[orig_state] = np.get_state();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_texture_off
-//       Access: Published
-//  Description: Sets the geometry at this level and below to render
-//               using no texture, on any stage.  This is different
-//               from not specifying a texture; rather, this
-//               specifically contradicts set_texture() at a higher
-//               node level (or, with a priority, overrides a
-//               set_texture() at a lower level).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the geometry at this level and below to render using no texture, on
+ * any stage.  This is different from not specifying a texture; rather, this
+ * specifically contradicts set_texture() at a higher node level (or, with a
+ * priority, overrides a set_texture() at a lower level).
+ */
 void NodePathCollection::
 set_texture_off(int priority) {
   nassertv_always(!is_empty());
   set_attrib(TextureAttrib::make_all_off(), priority);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_texture_off
-//       Access: Published
-//  Description: Sets the geometry at this level and below to render
-//               using no texture, on the indicated stage.  This is
-//               different from not specifying a texture; rather, this
-//               specifically contradicts set_texture() at a higher
-//               node level (or, with a priority, overrides a
-//               set_texture() at a lower level).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the geometry at this level and below to render using no texture, on
+ * the indicated stage.  This is different from not specifying a texture;
+ * rather, this specifically contradicts set_texture() at a higher node level
+ * (or, with a priority, overrides a set_texture() at a lower level).
+ */
 void NodePathCollection::
 set_texture_off(TextureStage *stage, int priority) {
   StateMap state_map;
@@ -573,30 +484,26 @@ set_texture_off(TextureStage *stage, int priority) {
       // This RenderState has already been encountered; reuse it.
       np.set_state((*smi).second);
     } else {
-      // This RenderState has not yet been encountered; apply the
-      // attrib to it.
+      // This RenderState has not yet been encountered; apply the attrib to
+      // it.
       np.set_texture_off(stage, priority);
       state_map[orig_state] = np.get_state();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_color
-//       Access: Published
-//  Description: Colors all NodePaths in the collection
-////////////////////////////////////////////////////////////////////
+/**
+ * Colors all NodePaths in the collection
+ */
 void NodePathCollection::
 set_color(const LColor &color, int priority) {
   set_attrib(ColorAttrib::make_flat(color), priority);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_color_scale
-//       Access: Published
-//  Description: Applies color scales to all NodePaths in the
-//               collection.  The existing color scale is replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies color scales to all NodePaths in the collection.  The existing
+ * color scale is replaced.
+ */
 void NodePathCollection::
 set_color_scale(const LVecBase4 &scale, int priority) {
   StateMap state_map;
@@ -610,21 +517,18 @@ set_color_scale(const LVecBase4 &scale, int priority) {
       // This RenderState has already been encountered; reuse it.
       np.set_state((*smi).second);
     } else {
-      // This RenderState has not yet been encountered; apply the
-      // attrib to it.
+      // This RenderState has not yet been encountered; apply the attrib to
+      // it.
       np.set_color_scale(scale, priority);
       state_map[orig_state] = np.get_state();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::compose_color_scale
-//       Access: Published
-//  Description: Applies color scales to all NodePaths in the
-//               collection.  The existing color scale, if any, is
-//               multiplied by the specified color scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies color scales to all NodePaths in the collection.  The existing
+ * color scale, if any, is multiplied by the specified color scale.
+ */
 void NodePathCollection::
 compose_color_scale(const LVecBase4 &scale, int priority) {
   StateMap state_map;
@@ -638,23 +542,19 @@ compose_color_scale(const LVecBase4 &scale, int priority) {
       // This RenderState has already been encountered; reuse it.
       np.set_state((*smi).second);
     } else {
-      // This RenderState has not yet been encountered; apply the
-      // attrib to it.
+      // This RenderState has not yet been encountered; apply the attrib to
+      // it.
       np.compose_color_scale(scale, priority);
       state_map[orig_state] = np.get_state();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_attrib
-//       Access: Published
-//  Description: Applies the indicated RenderAttrib to all NodePaths
-//               in the collection.  An effort is made to apply the
-//               attrib to many NodePaths as quickly as possible;
-//               redundant RenderState compositions are not
-//               duplicated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated RenderAttrib to all NodePaths in the collection.  An
+ * effort is made to apply the attrib to many NodePaths as quickly as
+ * possible; redundant RenderState compositions are not duplicated.
+ */
 void NodePathCollection::
 set_attrib(const RenderAttrib *attrib, int priority) {
   StateMap state_map;
@@ -668,20 +568,18 @@ set_attrib(const RenderAttrib *attrib, int priority) {
       // This RenderState has already been encountered; reuse it.
       np.set_state((*smi).second);
     } else {
-      // This RenderState has not yet been encountered; apply the
-      // attrib to it.
+      // This RenderState has not yet been encountered; apply the attrib to
+      // it.
       np.set_attrib(attrib, priority);
       state_map[orig_state] = np.get_state();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::output
-//       Access: Published
-//  Description: Writes a brief one-line description of the
-//               NodePathCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief one-line description of the NodePathCollection to the
+ * indicated output stream.
+ */
 void NodePathCollection::
 output(ostream &out) const {
   if (get_num_paths() == 1) {
@@ -691,12 +589,10 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::write
-//       Access: Published
-//  Description: Writes a complete multi-line description of the
-//               NodePathCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a complete multi-line description of the NodePathCollection to the
+ * indicated output stream.
+ */
 void NodePathCollection::
 write(ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_paths(); i++) {

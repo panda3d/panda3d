@@ -1,16 +1,15 @@
-// Filename: textureProperties.h
-// Created by:  drose (28Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureProperties.h
+ * @author drose
+ * @date 2000-11-28
+ */
 
 #ifndef TEXTUREPROPERTIES_H
 #define TEXTUREPROPERTIES_H
@@ -23,14 +22,11 @@
 class PNMFileType;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureProperties
-// Description : This is the set of characteristics of a texture that,
-//               if different from another texture, prevent the two
-//               textures from sharing a PaletteImage.  It includes
-//               properties such as mipmapping, number of channels,
-//               etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the set of characteristics of a texture that, if different from
+ * another texture, prevent the two textures from sharing a PaletteImage.  It
+ * includes properties such as mipmapping, number of channels, etc.
+ */
 class TextureProperties : public TypedWritable {
 public:
   TextureProperties();
@@ -118,4 +114,3 @@ private:
 };
 
 #endif
-

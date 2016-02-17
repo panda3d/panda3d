@@ -1,17 +1,16 @@
-// Filename: colorInterpolationManager.cxx
-// Created by:  joswilso (02Jun05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#include "colorInterpolationManager.h"
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorInterpolationManager.cxx
+ * @author joswilso
+ * @date 2005-06-02
+ */
+
 #include "mathNumbers.h"
 
 TypeHandle ColorInterpolationFunction::_type_handle;
@@ -20,75 +19,61 @@ TypeHandle ColorInterpolationFunctionLinear::_type_handle;
 TypeHandle ColorInterpolationFunctionStepwave::_type_handle;
 TypeHandle ColorInterpolationFunctionSinusoid::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunction::ColorInterpolationFunction
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 ColorInterpolationFunction::
 ColorInterpolationFunction() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunction::~ColorInterpolationFunction
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 
 ColorInterpolationFunction::
 ~ColorInterpolationFunction() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionConstant::ColorInterpolationFunctionConstant
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 
 ColorInterpolationFunctionConstant::
 ColorInterpolationFunctionConstant() :
   _c_a(1.0f,1.0f,1.0f,1.0f) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionConstant::ColorInterpolationFunctionConstant
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 ColorInterpolationFunctionConstant::
 ColorInterpolationFunctionConstant(const LColor &color_a) :
   _c_a(color_a) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionConstant::interpolate
-//       Access: Protected
-//  Description: Returns the color associated with this instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the color associated with this instance.
+ */
 
 LColor ColorInterpolationFunctionConstant::
 interpolate(const PN_stdfloat t) const {
   return _c_a;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionLinear::ColorInterpolationFunctionLinear
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 
 ColorInterpolationFunctionLinear::
 ColorInterpolationFunctionLinear() :
   _c_b(1.0f,1.0f,1.0f,1.0f) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionLinear::ColorInterpolationFunctionLinear
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 ColorInterpolationFunctionLinear::
 ColorInterpolationFunctionLinear(const LColor &color_a,
@@ -97,22 +82,18 @@ ColorInterpolationFunctionLinear(const LColor &color_a,
   _c_b(color_b) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionLinear::interpolate
-//       Access: Protected
-//  Description: Returns the linear mixture of A and B according to 't'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear mixture of A and B according to 't'.
+ */
 
 LColor ColorInterpolationFunctionLinear::
 interpolate(const PN_stdfloat t) const {
   return (1.0f-t)*_c_a + t*_c_b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionStepwave::ColorInterpolationFunctionStepwave
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 
 ColorInterpolationFunctionStepwave::
 ColorInterpolationFunctionStepwave() :
@@ -120,11 +101,9 @@ ColorInterpolationFunctionStepwave() :
   _w_b(0.5f) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionStepwave::ColorInterpolationFunctionStepwave
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 ColorInterpolationFunctionStepwave::
 ColorInterpolationFunctionStepwave(const LColor &color_a,
@@ -136,11 +115,9 @@ ColorInterpolationFunctionStepwave(const LColor &color_a,
   _w_b(width_b) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionStepwave::interpolate
-//       Access: Protected
-//  Description: Returns either A or B.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns either A or B.
+ */
 
 LColor ColorInterpolationFunctionStepwave::
 interpolate(const PN_stdfloat t) const {
@@ -150,22 +127,18 @@ interpolate(const PN_stdfloat t) const {
   return _c_b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionSinusoid::ColorInterpolationFunctionSinusoid
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 
 ColorInterpolationFunctionSinusoid::
 ColorInterpolationFunctionSinusoid() :
   _period(1.0f) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionSinusoid::ColorInterpolationFunctionSinusoid
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 ColorInterpolationFunctionSinusoid::
 ColorInterpolationFunctionSinusoid(const LColor &color_a,
@@ -175,13 +148,10 @@ ColorInterpolationFunctionSinusoid(const LColor &color_a,
   _period(period) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationFunctionSinusoid::interpolate
-//       Access: Protected
-//  Description: Returns a sinusoidal blended color between A and B.
-//               Period defines the time it will take to return to
-//               A.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a sinusoidal blended color between A and B. Period defines the time
+ * it will take to return to A.
+ */
 
 LColor ColorInterpolationFunctionSinusoid::
 interpolate(const PN_stdfloat t) const {
@@ -189,11 +159,9 @@ interpolate(const PN_stdfloat t) const {
   return (weight_a*_c_a)+((1.0f-weight_a)*_c_b);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationSegment::ColorInterpolationSegment
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 ColorInterpolationSegment::
 ColorInterpolationSegment(ColorInterpolationFunction* function,
@@ -210,11 +178,9 @@ ColorInterpolationSegment(ColorInterpolationFunction* function,
   _id(id) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationSegment::ColorInterpolationSegment
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 
 ColorInterpolationSegment::
 ColorInterpolationSegment(const ColorInterpolationSegment &copy) :
@@ -227,35 +193,28 @@ ColorInterpolationSegment(const ColorInterpolationSegment &copy) :
   _id(copy._id) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationSegment::~ColorInterpolationSegment
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 
 ColorInterpolationSegment::
 ~ColorInterpolationSegment() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationSegment::interpolateColor
-//       Access: Public
-//  Description: Returns the interpolated color according to the
-//               segment's function and start and end times.  't' is
-//               a value in [0-1] where corresponds to beginning of
-//               the segment and 1 corresponds to the end.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the interpolated color according to the segment's function and
+ * start and end times.  't' is a value in [0-1] where corresponds to
+ * beginning of the segment and 1 corresponds to the end.
+ */
 
 LColor ColorInterpolationSegment::
 interpolateColor(const PN_stdfloat t) const {
   return _color_inter_func->interpolate((t-_t_begin)/_t_total);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::ColorInterpolationManager
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 
 ColorInterpolationManager::
 ColorInterpolationManager() :
@@ -263,11 +222,9 @@ ColorInterpolationManager() :
   _id_generator(0) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::ColorInterpolationManager
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 ColorInterpolationManager::
 ColorInterpolationManager(const LColor &c) :
@@ -275,11 +232,9 @@ ColorInterpolationManager(const LColor &c) :
   _id_generator(0) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::ColorInterpolationManager
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 
 ColorInterpolationManager::
 ColorInterpolationManager(const ColorInterpolationManager& copy) :
@@ -288,23 +243,18 @@ ColorInterpolationManager(const ColorInterpolationManager& copy) :
   _id_generator(copy._id_generator) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::~ColorInterpolationManager
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 
 ColorInterpolationManager::
 ~ColorInterpolationManager() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::add_constant
-//       Access: Public
-//  Description: Adds a constant segment of the specified color to the
-//               manager and returns the segment's id as known
-//               by the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a constant segment of the specified color to the manager and returns
+ * the segment's id as known by the manager.
+ */
 
 int ColorInterpolationManager::
 add_constant(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color, const bool is_modulated) {
@@ -316,12 +266,10 @@ add_constant(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LCo
   return _id_generator++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::add_linear
-//       Access: Public
-//  Description: Adds a linear segment between two colors to the manager
-//               and returns the segment's id as known by the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a linear segment between two colors to the manager and returns the
+ * segment's id as known by the manager.
+ */
 
 int ColorInterpolationManager::
 add_linear(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color_a, const LColor &color_b, const bool is_modulated) {
@@ -333,12 +281,10 @@ add_linear(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColo
   return _id_generator++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::add_stepwave
-//       Access: Public
-//  Description: Adds a stepwave segment of two colors to the manager
-//               and returns the segment's id as known by the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a stepwave segment of two colors to the manager and returns the
+ * segment's id as known by the manager.
+ */
 
 int ColorInterpolationManager::
 add_stepwave(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color_a, const LColor &color_b, const PN_stdfloat width_a, const PN_stdfloat width_b,const bool is_modulated) {
@@ -350,13 +296,10 @@ add_stepwave(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LCo
   return _id_generator++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::add_sinusoid
-//       Access: Public
-//  Description: Adds a stepwave segment of two colors and a specified
-//               period to the manager and returns the segment's
-//               id as known by the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a stepwave segment of two colors and a specified period to the manager
+ * and returns the segment's id as known by the manager.
+ */
 
 int ColorInterpolationManager::
 add_sinusoid(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color_a, const LColor &color_b, const PN_stdfloat period,const bool is_modulated) {
@@ -368,11 +311,9 @@ add_sinusoid(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LCo
   return _id_generator++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::clear_segment
-//       Access: Public
-//  Description: Removes the segment of 'id' from the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the segment of 'id' from the manager.
+ */
 
 void ColorInterpolationManager::
 clear_segment(const int seg_id) {
@@ -386,11 +327,9 @@ clear_segment(const int seg_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::clear_to_initial
-//       Access: Public
-//  Description: Removes all segments from the manager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all segments from the manager.
+ */
 
 void ColorInterpolationManager::
 clear_to_initial() {
@@ -398,14 +337,11 @@ clear_to_initial() {
   _id_generator = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColorInterpolationManager::
-//       Access: Public
-//  Description: For time 'interpolated_time', this returns the
-//               additive composite color of all segments that influence
-//               that instant in the particle's lifetime. If no segments
-//               cover that time, the manager's default color is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * For time 'interpolated_time', this returns the additive composite color of
+ * all segments that influence that instant in the particle's lifetime.  If no
+ * segments cover that time, the manager's default color is returned.
+ */
 
 LColor ColorInterpolationManager::
 generateColor(const PN_stdfloat interpolated_time) {

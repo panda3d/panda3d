@@ -1,16 +1,15 @@
-// Filename: sceneGraphReducer.cxx
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneGraphReducer.cxx
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #include "sceneGraphReducer.h"
 #include "config_pgraph.h"
@@ -34,17 +33,13 @@ PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
 PStatCollector SceneGraphReducer::_remove_unused_collector("*:Flatten:remove unused vertices");
 PStatCollector SceneGraphReducer::_premunge_collector("*:Premunge");
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::set_gsg
-//       Access: Published
-//  Description: Specifies the particular GraphicsStateGuardian that
-//               this object will attempt to optimize to.  The GSG may
-//               specify parameters such as maximum number of vertices
-//               per vertex data, max number of vertices per
-//               primitive, and whether triangle strips are preferred.
-//               It also affects the types of vertex column data that
-//               is created by premunge().
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the particular GraphicsStateGuardian that this object will
+ * attempt to optimize to.  The GSG may specify parameters such as maximum
+ * number of vertices per vertex data, max number of vertices per primitive,
+ * and whether triangle strips are preferred.  It also affects the types of
+ * vertex column data that is created by premunge().
+ */
 void SceneGraphReducer::
 set_gsg(GraphicsStateGuardianBase *gsg) {
   if (gsg != (GraphicsStateGuardianBase *)NULL) {
@@ -62,39 +57,30 @@ set_gsg(GraphicsStateGuardianBase *gsg) {
   _transformer.set_max_collect_vertices(max_vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::clear_gsg
-//       Access: Published
-//  Description: Specifies that no particular GraphicsStateGuardian
-//               will be used to guide the optimization.  The
-//               SceneGraphReducer will instead use config variables
-//               such as max-collect-vertices and max-collect-indices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies that no particular GraphicsStateGuardian will be used to guide
+ * the optimization.  The SceneGraphReducer will instead use config variables
+ * such as max-collect-vertices and max-collect-indices.
+ */
 void SceneGraphReducer::
 clear_gsg() {
   _gsg = NULL;
   _transformer.set_max_collect_vertices(max_collect_vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::flatten
-//       Access: Published
-//  Description: Simplifies the graph by removing unnecessary nodes
-//               and nodes.
-//
-//               In general, a node (and its parent node) is a
-//               candidate for removal if the node has no siblings and
-//               the node has no special properties.
-//
-//               If combine_siblings_bits is nonzero, some sibling
-//               nodes (according to the bits set in
-//               combine_siblings_bits) may also be collapsed into a
-//               single node.  This will further reduce scene graph
-//               complexity, sometimes substantially, at the cost of
-//               reduced spatial separation.
-//
-//               Returns the number of nodes removed from the graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simplifies the graph by removing unnecessary nodes and nodes.
+ *
+ * In general, a node (and its parent node) is a candidate for removal if the
+ * node has no siblings and the node has no special properties.
+ *
+ * If combine_siblings_bits is nonzero, some sibling nodes (according to the
+ * bits set in combine_siblings_bits) may also be collapsed into a single
+ * node.  This will further reduce scene graph complexity, sometimes
+ * substantially, at the cost of reduced spatial separation.
+ *
+ * Returns the number of nodes removed from the graph.
+ */
 int SceneGraphReducer::
 flatten(PandaNode *root, int combine_siblings_bits) {
   nassertr(check_live_flatten(root), 0);
@@ -106,8 +92,8 @@ flatten(PandaNode *root, int combine_siblings_bits) {
   do {
     num_pass_nodes = 0;
 
-    // Get a copy of the children list, so we don't have to worry
-    // about self-modifications.
+    // Get a copy of the children list, so we don't have to worry about self-
+    // modifications.
     PandaNode::Children cr = root->get_children();
 
     // Now visit each of the children in turn.
@@ -125,22 +111,18 @@ flatten(PandaNode *root, int combine_siblings_bits) {
 
     num_total_nodes += num_pass_nodes;
 
-    // If combine_siblings_bits has CS_recurse set, we should repeat
-    // the above until we don't get any more benefit from flattening,
-    // because each pass could convert cousins into siblings, which
-    // may get flattened next pass.
+    // If combine_siblings_bits has CS_recurse set, we should repeat the above
+    // until we don't get any more benefit from flattening, because each pass
+    // could convert cousins into siblings, which may get flattened next pass.
   } while ((combine_siblings_bits & CS_recurse) != 0 && num_pass_nodes != 0);
 
   return num_total_nodes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::remove_column
-//       Access: Published
-//  Description: Removes the indicated data column from any
-//               GeomVertexDatas found at the indicated root and
-//               below.  Returns the number of GeomNodes modified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated data column from any GeomVertexDatas found at the
+ * indicated root and below.  Returns the number of GeomNodes modified.
+ */
 int SceneGraphReducer::
 remove_column(PandaNode *root, const InternalName *column) {
   nassertr(check_live_flatten(root), 0);
@@ -151,15 +133,12 @@ remove_column(PandaNode *root, const InternalName *column) {
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::make_compatible_state
-//       Access: Published
-//  Description: Searches for GeomNodes that contain multiple Geoms
-//               that differ only in their ColorAttribs.  If such a
-//               GeomNode is found, then all the colors are pushed
-//               down into the vertices.  This makes it feasible for
-//               the geoms to be unified later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for GeomNodes that contain multiple Geoms that differ only in
+ * their ColorAttribs.  If such a GeomNode is found, then all the colors are
+ * pushed down into the vertices.  This makes it feasible for the geoms to be
+ * unified later.
+ */
 int SceneGraphReducer::
 make_compatible_state(PandaNode *root) {
   nassertr(check_live_flatten(root), 0);
@@ -170,20 +149,16 @@ make_compatible_state(PandaNode *root) {
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::decompose
-//       Access: Published
-//  Description: Calls decompose() on every GeomNode at this level and
-//               below.
-//
-//               There is usually no reason to call this explicitly,
-//               since unify() will do this anyway if it needs to be
-//               done.  However, calling it ahead of time can make
-//               that future call to unify() run a little bit faster.
-//
-//               This operation has no effect if the config variable
-//               preserve-triangle-strips has been set true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls decompose() on every GeomNode at this level and below.
+ *
+ * There is usually no reason to call this explicitly, since unify() will do
+ * this anyway if it needs to be done.  However, calling it ahead of time can
+ * make that future call to unify() run a little bit faster.
+ *
+ * This operation has no effect if the config variable preserve-triangle-
+ * strips has been set true.
+ */
 void SceneGraphReducer::
 decompose(PandaNode *root) {
   nassertv(check_live_flatten(root));
@@ -194,15 +169,11 @@ decompose(PandaNode *root) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::unify
-//       Access: Published
-//  Description: Calls unify() on every GeomNode at this level and
-//               below.  This attempts to reduce the total number of
-//               individual Geoms and GeomPrimitives by combining
-//               these objects wherever possible.  See
-//               GeomNode::unify().
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls unify() on every GeomNode at this level and below.  This attempts to
+ * reduce the total number of individual Geoms and GeomPrimitives by combining
+ * these objects wherever possible.  See GeomNode::unify().
+ */
 void SceneGraphReducer::
 unify(PandaNode *root, bool preserve_order) {
   nassertv(check_live_flatten(root));
@@ -215,16 +186,12 @@ unify(PandaNode *root, bool preserve_order) {
   r_unify(root, max_indices, preserve_order);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::remove_unused_vertices
-//       Access: Published
-//  Description: Removes any vertices in GeomVertexDatas that are no
-//               longer used at this level and below.  This requires
-//               remapping vertex indices in all of the
-//               GeomPrimitives, to remove holes in the
-//               GeomVertexDatas.  It is normally not necessary to
-//               call this explicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any vertices in GeomVertexDatas that are no longer used at this
+ * level and below.  This requires remapping vertex indices in all of the
+ * GeomPrimitives, to remove holes in the GeomVertexDatas.  It is normally not
+ * necessary to call this explicitly.
+ */
 void SceneGraphReducer::
 remove_unused_vertices(PandaNode *root) {
   nassertv(check_live_flatten(root));
@@ -235,18 +202,15 @@ remove_unused_vertices(PandaNode *root) {
   Thread::consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::check_live_flatten
-//       Access: Published
-//  Description: In a non-release build, returns false if the node is
-//               correctly not in a live scene graph.  (Calling
-//               flatten on a node that is part of a live scene graph,
-//               for instance, a node somewhere under render, can
-//               cause problems in a multithreaded environment.)
-//
-//               If allow_live_flatten is true, or in a release build,
-//               this always returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * In a non-release build, returns false if the node is correctly not in a
+ * live scene graph.  (Calling flatten on a node that is part of a live scene
+ * graph, for instance, a node somewhere under render, can cause problems in a
+ * multithreaded environment.)
+ *
+ * If allow_live_flatten is true, or in a release build, this always returns
+ * true.
+ */
 bool SceneGraphReducer::
 check_live_flatten(PandaNode *node) {
 #ifndef NDEBUG
@@ -262,11 +226,9 @@ check_live_flatten(PandaNode *node) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_apply_attribs
-//       Access: Protected
-//  Description: The recursive implementation of apply_attribs().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of apply_attribs().
+ */
 void SceneGraphReducer::
 r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                 int attrib_types, GeomTransformer &transformer) {
@@ -288,8 +250,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
     next_attribs.write(pgraph_cat.spam(false), attrib_types, 2);
   }
 
-  // Check to see if we can't propagate any of these attribs past
-  // this node for some reason.
+  // Check to see if we can't propagate any of these attribs past this node
+  // for some reason.
   if (!node->safe_to_flatten_below()) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
@@ -322,9 +284,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
   }
   apply_types |= node->get_unsafe_to_apply_attribs();
 
-  // Also, check the children of this node.  If any of them indicates
-  // it is not safe to modify its transform, we must drop our
-  // transform here.
+  // Also, check the children of this node.  If any of them indicates it is
+  // not safe to modify its transform, we must drop our transform here.
   int num_children = node->get_num_children();
   int i;
   if ((apply_types & TT_transform) == 0) {
@@ -391,8 +352,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
   }
 
   if (resist_copy) {
-    // If any of our children should have been copied but weren't, we
-    // need to drop the state here before continuing.
+    // If any of our children should have been copied but weren't, we need to
+    // drop the state here before continuing.
     next_attribs.apply_to_node(node, attrib_types);
   }
 
@@ -406,11 +367,9 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_flatten
-//       Access: Protected
-//  Description: The recursive implementation of flatten().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of flatten().
+ */
 int SceneGraphReducer::
 r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
           int combine_siblings_bits) {
@@ -422,8 +381,8 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
   }
 
   if ((combine_siblings_bits & (CS_geom_node | CS_other | CS_recurse)) != 0) {
-    // Unset CS_within_radius, since we're going to flatten everything
-    // anyway.  This avoids needlessly calculating the bounding volume.
+    // Unset CS_within_radius, since we're going to flatten everything anyway.
+    // This avoids needlessly calculating the bounding volume.
     combine_siblings_bits &= ~CS_within_radius;
   }
 
@@ -447,9 +406,8 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
             << ": " << *bs << " vs. " << _combine_radius << "\n";
         }
         if (!bs->is_infinite() && (bs->is_empty() || bs->get_radius() <= _combine_radius)) {
-          // This node fits within the specified radius; from here on
-          // down, we will have CS_other set, instead of
-          // CS_within_radius.
+          // This node fits within the specified radius; from here on down, we
+          // will have CS_other set, instead of CS_within_radius.
           if (pgraph_cat.is_spam()) {
             pgraph_cat.spam()
               << "node fits within radius; flattening tighter.\n";
@@ -470,14 +428,13 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
       }
     }
 
-    // Now that the above loop has removed some children, the child
-    // list saved above is no longer accurate, so hereafter we must
-    // ask the node for its real child list.
+    // Now that the above loop has removed some children, the child list saved
+    // above is no longer accurate, so hereafter we must ask the node for its
+    // real child list.
 
-    // If we have CS_recurse set, then we flatten siblings before
-    // trying to flatten children.  Otherwise, we flatten children
-    // first, and then flatten siblings, which avoids overly
-    // enthusiastic flattening.
+    // If we have CS_recurse set, then we flatten siblings before trying to
+    // flatten children.  Otherwise, we flatten children first, and then
+    // flatten siblings, which avoids overly enthusiastic flattening.
     if ((combine_siblings_bits & CS_recurse) != 0 &&
         parent_node->get_num_children() >= 2 &&
         parent_node->safe_to_combine_children()) {
@@ -485,8 +442,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
     }
 
     if (parent_node->get_num_children() == 1) {
-      // If we now have exactly one child, consider flattening the node
-      // out.
+      // If we now have exactly one child, consider flattening the node out.
       PT(PandaNode) child_node = parent_node->get_child(0);
       int child_sort = parent_node->get_child_sort(0);
 
@@ -511,8 +467,8 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
       num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
     }
 
-    // Finally, if any of our remaining children are plain PandaNodes
-    // with no children, just remove them.
+    // Finally, if any of our remaining children are plain PandaNodes with no
+    // children, just remove them.
     if (parent_node->safe_to_combine_children()) {
       for (int i = parent_node->get_num_children() - 1; i >= 0; --i) {
         PandaNode *child_node = parent_node->get_child(i);
@@ -562,26 +518,22 @@ operator () (const PandaNode *node1, const PandaNode *node2) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::flatten_siblings
-//       Access: Protected
-//  Description: Attempts to collapse together any pairs of siblings
-//               of the indicated node that share the same properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to collapse together any pairs of siblings of the indicated node
+ * that share the same properties.
+ */
 int SceneGraphReducer::
 flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
   int num_nodes = 0;
 
-  // First, collect the children into groups of nodes with common
-  // properties.
+  // First, collect the children into groups of nodes with common properties.
   typedef plist< PT(PandaNode) > NodeList;
   typedef pmap<PandaNode *, NodeList, SortByState> Collected;
   Collected collected;
 
   {
-    // Protect this within a local scope, so the Children member will
-    // destruct and free the read pointer before we try to write to
-    // these nodes.
+    // Protect this within a local scope, so the Children member will destruct
+    // and free the read pointer before we try to write to these nodes.
     PandaNode::Children cr = parent_node->get_children();
     int num_children = cr.get_num_children();
     for (int i = 0; i < num_children; i++) {
@@ -601,10 +553,10 @@ flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
     }
   }
 
-  // Now visit each of those groups and try to collapse them together.
-  // A O(n^2) operation, but presumably the number of nodes in each
-  // group is small.  And if each node in the group can collapse with
-  // any other node, it becomes a O(n) operation.
+  // Now visit each of those groups and try to collapse them together.  A
+  // O(n^2) operation, but presumably the number of nodes in each group is
+  // small.  And if each node in the group can collapse with any other node,
+  // it becomes a O(n) operation.
   Collected::iterator ci;
   for (ci = collected.begin(); ci != collected.end(); ++ci) {
     const RenderEffects *effects = (*ci).first->get_effects();
@@ -643,19 +595,17 @@ flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
   return num_nodes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::consider_child
-//       Access: Protected
-//  Description: Decides whether or not the indicated child node is a
-//               suitable candidate for removal.  Returns true if the
-//               node may be removed, false if it should be kept.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decides whether or not the indicated child node is a suitable candidate for
+ * removal.  Returns true if the node may be removed, false if it should be
+ * kept.
+ */
 bool SceneGraphReducer::
 consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
                PandaNode *child_node) {
   if (!parent_node->safe_to_combine() || !child_node->safe_to_combine()) {
-    // One or both nodes cannot be safely combined with another node;
-    // do nothing.
+    // One or both nodes cannot be safely combined with another node; do
+    // nothing.
     return false;
   }
 
@@ -677,31 +627,25 @@ consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::consider_siblings
-//       Access: Protected
-//  Description: Decides whether or not the indicated sibling nodes
-//               should be collapsed into a single node or not.
-//               Returns true if the nodes may be collapsed, false if
-//               they should be kept distinct.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decides whether or not the indicated sibling nodes should be collapsed into
+ * a single node or not.  Returns true if the nodes may be collapsed, false if
+ * they should be kept distinct.
+ */
 bool SceneGraphReducer::
 consider_siblings(PandaNode *parent_node, PandaNode *child1,
                   PandaNode *child2) {
-  // We don't have to worry about the states being different betweeen
-  // child1 and child2, since the SortByState object already
-  // guaranteed we only consider children that have the same state.
+  // We don't have to worry about the states being different betweeen child1
+  // and child2, since the SortByState object already guaranteed we only
+  // consider children that have the same state.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::do_flatten_child
-//       Access: Protected
-//  Description: Collapses together the indicated parent node and
-//               child node and leaves the result attached to the
-//               grandparent.  The return value is true if the node is
-//               successfully collapsed, false if we chickened out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collapses together the indicated parent node and child node and leaves the
+ * result attached to the grandparent.  The return value is true if the node
+ * is successfully collapsed, false if we chickened out.
+ */
 bool SceneGraphReducer::
 do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
                  PandaNode *child_node) {
@@ -728,18 +672,14 @@ do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::do_flatten_siblings
-//       Access: Protected
-//  Description: Performs the work of collapsing two sibling nodes
-//               together into a single node, leaving the resulting
-//               node attached to the parent.
-//
-//               Returns a pointer to a PandaNode that reflects the
-//               combined node (which may be either of the source nodes,
-//               or a new node altogether) if the siblings are
-//               successfully collapsed, or NULL if we chickened out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the work of collapsing two sibling nodes together into a single
+ * node, leaving the resulting node attached to the parent.
+ *
+ * Returns a pointer to a PandaNode that reflects the combined node (which may
+ * be either of the source nodes, or a new node altogether) if the siblings
+ * are successfully collapsed, or NULL if we chickened out.
+ */
 PandaNode *SceneGraphReducer::
 do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
                     PandaNode *child2) {
@@ -759,25 +699,21 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
 
   choose_name(new_child, child2, child1);
 
-  // Make sure the new child list has child1's children first,
-  // followed by child2's children.
+  // Make sure the new child list has child1's children first, followed by
+  // child2's children.
   child1->replace_node(child2);
   new_child->replace_node(child1);
 
   return new_child;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::collapse_nodes
-//       Access: Protected
-//  Description: Collapses the two nodes into a single node, if
-//               possible.  The 'siblings' flag is true if the two
-//               nodes are siblings nodes; otherwise, node1 is a
-//               parent of node2.  The return value is the resulting
-//               node, which may be either one of the source nodes, or
-//               a new node altogether, or it may be NULL to indicate
-//               that the collapse operation could not take place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collapses the two nodes into a single node, if possible.  The 'siblings'
+ * flag is true if the two nodes are siblings nodes; otherwise, node1 is a
+ * parent of node2.  The return value is the resulting node, which may be
+ * either one of the source nodes, or a new node altogether, or it may be NULL
+ * to indicate that the collapse operation could not take place.
+ */
 PT(PandaNode) SceneGraphReducer::
 collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
   PT(PandaNode) result = node2->combine_with(node1);
@@ -788,12 +724,10 @@ collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::choose_name
-//       Access: Protected
-//  Description: Chooses a suitable name for the collapsed node, based
-//               on the names of the two sources nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses a suitable name for the collapsed node, based on the names of the
+ * two sources nodes.
+ */
 void SceneGraphReducer::
 choose_name(PandaNode *preserve, PandaNode *source1, PandaNode *source2) {
   string name;
@@ -812,11 +746,9 @@ choose_name(PandaNode *preserve, PandaNode *source1, PandaNode *source2) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_remove_column
-//       Access: Private
-//  Description: The recursive implementation of remove_column().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of remove_column().
+ */
 int SceneGraphReducer::
 r_remove_column(PandaNode *node, const InternalName *column,
                 GeomTransformer &transformer) {
@@ -838,11 +770,9 @@ r_remove_column(PandaNode *node, const InternalName *column,
   return num_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_make_compatible_state
-//       Access: Private
-//  Description: The recursive implementation of make_compatible_state().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of make_compatible_state().
+ */
 int SceneGraphReducer::
 r_make_compatible_state(PandaNode *node, GeomTransformer &transformer) {
   int num_changed = 0;
@@ -863,12 +793,9 @@ r_make_compatible_state(PandaNode *node, GeomTransformer &transformer) {
   return num_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_collect_vertex_data
-//       Access: Private
-//  Description: The recursive implementation of
-//               collect_vertex_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of collect_vertex_data().
+ */
 int SceneGraphReducer::
 r_collect_vertex_data(PandaNode *node, int collect_bits,
                       GeomTransformer &transformer, bool format_only) {
@@ -922,12 +849,9 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
   return num_adjusted;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_make_nonindexed
-//       Access: Private
-//  Description: The recursive implementation of
-//               make_nonindexed().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of make_nonindexed().
+ */
 int SceneGraphReducer::
 r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
   int num_changed = 0;
@@ -938,8 +862,8 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
     for (int i = 0; i < num_geoms; ++i) {
       const Geom *geom = geom_node->get_geom(i);
 
-      // Check whether the geom is animated or dynamic, and skip it
-      // if the user specified so.
+      // Check whether the geom is animated or dynamic, and skip it if the
+      // user specified so.
       const GeomVertexData *data = geom->get_vertex_data();
       int this_geom_bits = 0;
       if (data->get_format()->get_animation().get_animation_type() !=
@@ -952,8 +876,8 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
       }
 
       if ((nonindexed_bits & this_geom_bits) == 0) {
-        // The geom meets the user's qualifications for making
-        // nonindexed, so do it.
+        // The geom meets the user's qualifications for making nonindexed, so
+        // do it.
         PT(Geom) mgeom = geom_node->modify_geom(i);
         num_changed += mgeom->make_nonindexed((nonindexed_bits & MN_composite_only) != 0);
       }
@@ -970,11 +894,9 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
   return num_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_unify
-//       Access: Private
-//  Description: The recursive implementation of unify().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of unify().
+ */
 void SceneGraphReducer::
 r_unify(PandaNode *node, int max_indices, bool preserve_order) {
   if (node->is_geom_node()) {
@@ -990,13 +912,10 @@ r_unify(PandaNode *node, int max_indices, bool preserve_order) {
   Thread::consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_register_vertices
-//       Access: Private
-//  Description: Recursively calls
-//               GeomTransformer::register_vertices() on all GeomNodes
-//               at the indicated root and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively calls GeomTransformer::register_vertices() on all GeomNodes at
+ * the indicated root and below.
+ */
 void SceneGraphReducer::
 r_register_vertices(PandaNode *node, GeomTransformer &transformer) {
   if (node->is_geom_node()) {
@@ -1011,11 +930,9 @@ r_register_vertices(PandaNode *node, GeomTransformer &transformer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_decompose
-//       Access: Private
-//  Description: The recursive implementation of decompose().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of decompose().
+ */
 void SceneGraphReducer::
 r_decompose(PandaNode *node) {
   if (node->is_geom_node()) {
@@ -1030,11 +947,9 @@ r_decompose(PandaNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_premunge
-//       Access: Private
-//  Description: The recursive implementation of premunge().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of premunge().
+ */
 void SceneGraphReducer::
 r_premunge(PandaNode *node, const RenderState *state) {
   CPT(RenderState) next_state = state->compose(node->get_state());

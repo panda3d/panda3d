@@ -1,16 +1,15 @@
-// Filename: softToEggConverter.h
-// Created by:  masad (25Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file softToEggConverter.h
+ * @author masad
+ * @date 2003-09-25
+ */
 
 #ifndef SOFTTOEGGCONVERTER_H
 #define SOFTTOEGGCONVERTER_H
@@ -43,13 +42,12 @@ class EggXfmSAnim;
 class EggSAnimData;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from a single Softimage file, or from the data
-//               already in th    cout << "egg name = " << eggFilename << endl;e global Softimage model space.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a
+ * single Softimage file, or from the data already in th    cout << "egg name
+ * = " << eggFilename << endl;e global Softimage model space.
+ *
+ */
 class SoftToEggConverter : public SomethingToEggConverter {
 public:
   SoftToEggConverter(const string &program_name = "");
@@ -76,7 +74,7 @@ public:
   void close_api();
 
 private:
-  bool convert_flip(double start_frame, double end_frame, 
+  bool convert_flip(double start_frame, double end_frame,
                     double frame_inc, double output_frame_rate);
 
   bool make_soft_skin();
@@ -109,7 +107,7 @@ public:
   SAA_Scene           scene;
 
   char *_getopts;
-  
+
   // This is argv[0].
   const char *_commandName;
 
@@ -137,7 +135,7 @@ public:
   int                    shift_textures;
   int                    ignore_tex_offsets;
   int                    use_prefix;
-  
+
   bool                foundRoot;
   bool                geom_as_joint;
   bool                make_anim;
@@ -150,7 +148,7 @@ public:
   bool                has_morph;
   bool                make_pose;
 
-  
+
   char *GetTextureName( SAA_Scene *scene, SAA_Elem *texture );
 
   EggTextureCollection _textures;

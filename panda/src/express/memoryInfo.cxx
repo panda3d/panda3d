@@ -1,16 +1,15 @@
-// Filename: memoryInfo.cxx
-// Created by:  drose (04Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memoryInfo.cxx
+ * @author drose
+ * @date 2001-06-04
+ */
 
 #include "memoryInfo.h"
 
@@ -19,11 +18,9 @@
 #include "typedReferenceCount.h"
 #include "typeHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryInfo::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MemoryInfo::
 MemoryInfo() {
   _void_ptr = (void *)NULL;
@@ -36,16 +33,13 @@ MemoryInfo() {
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryInfo::get_type
-//       Access: Public
-//  Description: Returns the best known type, dynamic or static, of
-//               the pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the best known type, dynamic or static, of the pointer.
+ */
 TypeHandle MemoryInfo::
 get_type() {
-  // If we don't want to consider the dynamic type any further, use
-  // what we've got.
+  // If we don't want to consider the dynamic type any further, use what we've
+  // got.
   if ((_flags & F_reconsider_dynamic_type) == 0) {
     if (_dynamic_type == TypeHandle::none()) {
       return _static_type;
@@ -53,12 +47,11 @@ get_type() {
     return _dynamic_type;
   }
 
-  // Otherwise, examine the pointer again and make sure it's still the
-  // best information we have.  We have to do this each time because
-  // if we happen to be examining the pointer from within the
-  // constructor or destructor, its dynamic type will appear to be
-  // less-specific than it actually is, so our idea of what type this
-  // thing is could change from time to time.
+  // Otherwise, examine the pointer again and make sure it's still the best
+  // information we have.  We have to do this each time because if we happen
+  // to be examining the pointer from within the constructor or destructor,
+  // its dynamic type will appear to be less-specific than it actually is, so
+  // our idea of what type this thing is could change from time to time.
   determine_dynamic_type();
 
   // Now return the more specific of the two.
@@ -76,33 +69,28 @@ get_type() {
   return type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryInfo::determine_dynamic_type
-//       Access: Private
-//  Description: Tries to determine the actual type of the object to
-//               which this thing is pointed, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tries to determine the actual type of the object to which this thing is
+ * pointed, if possible.
+ */
 void MemoryInfo::
 determine_dynamic_type() {
   if ((_flags & F_reconsider_dynamic_type) != 0 &&
       _static_type != TypeHandle::none()) {
-    // See if we know enough now to infer the dynamic type from the
-    // pointer.
+    // See if we know enough now to infer the dynamic type from the pointer.
 
     if (_typed_ptr == (TypedObject *)NULL) {
-      // If our static type is known to inherit from
-      // TypedReferenceCount, then we can directly downcast to get the
-      // TypedObject pointer.
+      // If our static type is known to inherit from TypedReferenceCount, then
+      // we can directly downcast to get the TypedObject pointer.
       if (_static_type.is_derived_from(TypedReferenceCount::get_class_type())) {
         _typed_ptr = (TypedReferenceCount *)_ref_ptr;
       }
     }
 
     if (_typed_ptr != (TypedObject *)NULL) {
-      // If we have a TypedObject pointer, we can determine the type.
-      // This might still not return the exact type, particularly if
-      // we are being called within the destructor or constructor of
-      // this object.
+      // If we have a TypedObject pointer, we can determine the type.  This
+      // might still not return the exact type, particularly if we are being
+      // called within the destructor or constructor of this object.
       TypeHandle got_type = _typed_ptr->get_type();
 
       if (got_type == TypeHandle::none()) {
@@ -122,20 +110,17 @@ determine_dynamic_type() {
 
       TypeHandle orig_type = _dynamic_type;
       update_type_handle(_dynamic_type, got_type);
-    }    
+    }
   }
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryInfo::update_type_handle
-//       Access: Private
-//  Description: Updates the given destination TypeHandle with the
-//               refined TypeHandle, if it is in fact more specific
-//               than the original value for the destination.  Returns
-//               true if the update was trouble-free, or false if the
-//               two types were not apparently related.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the given destination TypeHandle with the refined TypeHandle, if it
+ * is in fact more specific than the original value for the destination.
+ * Returns true if the update was trouble-free, or false if the two types were
+ * not apparently related.
+ */
 bool MemoryInfo::
 update_type_handle(TypeHandle &destination, TypeHandle refined) {
   if (refined == TypeHandle::none()) {
@@ -150,7 +135,7 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
   } else if (destination.is_derived_from(refined)) {
     // Updating with a less-specific type, no problem.
 
-  } else if (destination == TypeHandle::none() || 
+  } else if (destination == TypeHandle::none() ||
              refined.is_derived_from(destination)) {
     // Updating with a more-specific type, no problem.
     if (express_cat.is_spam()) {
@@ -167,7 +152,7 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
       << destination << " is now type " << refined << "!\n";
     return false;
   }
-  
+
   return true;
 }
 

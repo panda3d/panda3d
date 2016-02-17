@@ -1,16 +1,15 @@
-// Filename: configVariable.h
-// Created by:  drose (18Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariable.h
+ * @author drose
+ * @date 2004-10-18
+ */
 
 #ifndef CONFIGVARIABLE_H
 #define CONFIGVARIABLE_H
@@ -19,19 +18,16 @@
 #include "configVariableBase.h"
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariable
-// Description : This is a generic, untyped ConfigVariable.  It is
-//               also the base class for the typed ConfigVariables,
-//               and contains all of the code common to
-//               ConfigVariables of all types (except
-//               ConfigVariableList, which is a bit of a special
-//               case).
-//
-//               Mostly, this class serves as a thin wrapper around
-//               ConfigVariableCore and/or ConfigDeclaration, more or
-//               less duplicating the interface presented there.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a generic, untyped ConfigVariable.  It is also the base class for
+ * the typed ConfigVariables, and contains all of the code common to
+ * ConfigVariables of all types (except ConfigVariableList, which is a bit of
+ * a special case).
+ *
+ * Mostly, this class serves as a thin wrapper around ConfigVariableCore
+ * and/or ConfigDeclaration, more or less duplicating the interface presented
+ * there.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariable : public ConfigVariableBase {
 protected:
   INLINE ConfigVariable(const string &name, ValueType type);

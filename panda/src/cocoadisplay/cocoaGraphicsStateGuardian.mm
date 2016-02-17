@@ -1,16 +1,15 @@
-// Filename: cocoaGraphicsStateGuardian.mm
-// Created by:  rdb (14May12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cocoaGraphicsStateGuardian.mm
+ * @author rdb
+ * @date 2012-05-14
+ */
 
 #include "cocoaGraphicsStateGuardian.h"
 #include "config_cocoadisplay.h"
@@ -27,11 +26,9 @@
 
 TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CocoaGraphicsStateGuardian::
 CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            CocoaGraphicsStateGuardian *share_with) :
@@ -46,11 +43,9 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CocoaGraphicsStateGuardian::
 ~CocoaGraphicsStateGuardian() {
   if (_context != nil) {
@@ -59,12 +54,9 @@ CocoaGraphicsStateGuardian::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::get_properties
-//       Access: Private
-//  Description: Gets the FrameBufferProperties to match the
-//               indicated config.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties to match the indicated config.
+ */
 void CocoaGraphicsStateGuardian::
 get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_format, int screen) {
 
@@ -103,10 +95,10 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   if (sample_buffers > 0) {
     properties.set_multisamples(samples);
   }
-  //TODO: add aux buffers
+  // TODO: add aux buffers
 
-  // Extract the renderer ID bits and check if our
-  // renderer matches the known software renderers.
+  // Extract the renderer ID bits and check if our renderer matches the known
+  // software renderers.
   renderer_id &= kCGLRendererIDMatchingMask;
   if (renderer_id == kCGLRendererGenericID ||
       renderer_id == kCGLRendererGenericFloatID ||
@@ -120,13 +112,10 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::choose_pixel_format
-//       Access: Private
-//  Description: Selects a visual or fbconfig for all the windows
-//               and buffers that use this gsg.  Also creates the GL
-//               context and obtains the visual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects a visual or fbconfig for all the windows and buffers that use this
+ * gsg.  Also creates the GL context and obtains the visual.
+ */
 void CocoaGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
                     CGDirectDisplayID display,
@@ -136,20 +125,20 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _fbprops.clear();
 
   // Neither Cocoa nor CGL seem to have a mechanism to query the available
-  // pixel formats, unfortunately, so the only thing we can do is ask for
-  // one with the properties we have requested.
+  // pixel formats, unfortunately, so the only thing we can do is ask for one
+  // with the properties we have requested.
   pvector<NSOpenGLPixelFormatAttribute> attribs;
   attribs.reserve(15);
 
-  // Picked this up from the pyglet source - seems
-  // to be necessary to support RAGE-II, which is not compliant.
+  // Picked this up from the pyglet source - seems to be necessary to support
+  // RAGE-II, which is not compliant.
   attribs.push_back(NSOpenGLPFAAllRenderers);
 
   // Don't let it fall back to a different renderer.
   attribs.push_back(NSOpenGLPFANoRecovery);
 
-  // Consider pixel formats with properties equal
-  // to or better than we requested.
+  // Consider pixel formats with properties equal to or better than we
+  // requested.
   attribs.push_back(NSOpenGLPFAMinimumPolicy);
 
   if (!properties.is_single_buffered()) {
@@ -170,12 +159,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(NSOpenGLPFAStencilSize);
   attribs.push_back(properties.get_stencil_bits());
 
-  // Curious case - if we request anything less than 8 alpha bits,
-  // then on some ATI cards, it will grab a pixel format with just
-  // 2 alpha bits, which just shows a white window and nothing else.
-  // Might have something to do with the compositing window manager.
-  // Omitting it altogether seems to make it grab one with 8 bits, though.
-  // Dirty hack.  Needs more research.
+  // Curious case - if we request anything less than 8 alpha bits, then on
+  // some ATI cards, it will grab a pixel format with just 2 alpha bits, which
+  // just shows a white window and nothing else.  Might have something to do
+  // with the compositing window manager.  Omitting it altogether seems to
+  // make it grab one with 8 bits, though.  Dirty hack.  Needs more research.
   if (properties.get_alpha_bits() > 0) {
     attribs.push_back(NSOpenGLPFAAlphaSize);
     attribs.push_back(max(8, properties.get_alpha_bits()));
@@ -225,7 +213,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     "Pixel format has " << [format numberOfVirtualScreens] << " virtual screens.\n";
   get_properties(_fbprops, format, 0);
 
-  //TODO: print out renderer
+  // TODO: print out renderer
 
   _context = [[NSOpenGLContext alloc] initWithFormat:format shareContext:_share_context];
   [format release];
@@ -243,48 +231,41 @@ choose_pixel_format(const FrameBufferProperties &properties,
     << "Created context " << _context << ": " << _fbprops << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::query_gl_version
-//       Access: Protected, Virtual
-//  Description: Queries the runtime version of OpenGL in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the runtime version of OpenGL in use.
+ */
 void CocoaGraphicsStateGuardian::
 query_gl_version() {
   GLGraphicsStateGuardian::query_gl_version();
 
-  // We output to glgsg_cat instead of glxdisplay_cat, since this is
-  // where the GL version has been output, and it's nice to see the
-  // two of these together.
+  // We output to glgsg_cat instead of glxdisplay_cat, since this is where the
+  // GL version has been output, and it's nice to see the two of these
+  // together.
   if (glgsg_cat.is_debug()) {
-    //XXX this is supposed to work, but the NSOpenGLGetVersion
-    // symbol cannot be found when I do this
+    // XXX this is supposed to work, but the NSOpenGLGetVersion symbol cannot
+    // be found when I do this
 
-    //GLint major, minor;
-    //NSOpenGLGetVersion(&major, &minor);
+    // GLint major, minor; NSOpenGLGetVersion(&major, &minor);
 
-    //glgsg_cat.debug()
-    //  << "NSOpenGLVersion = " << major << "." << minor << "\n";
+    // glgsg_cat.debug() << "NSOpenGLVersion = " << major << "." << minor <<
+    // "\n";
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name.
+ * It is the responsibility of the caller to ensure that the required
+ * extension is defined in the OpenGL runtime prior to calling this; it is an
+ * error to call this for a function that is not defined.
+ */
 void *CocoaGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   char* fullname = (char*) malloc(strlen(name) + 2);
   strcpy(fullname + 1, name);
   fullname[0] = '_';
 
-  // Believe it or not, but this is actually the
-  // Apple-recommended way to do it.  I know, right?
+  // Believe it or not, but this is actually the Apple-recommended way to do
+  // it.  I know, right?
 
   if (NSIsSymbolNameDefined(fullname)) {
     NSSymbol symbol = NSLookupAndBindSymbol(fullname);

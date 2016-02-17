@@ -1,16 +1,15 @@
-// Filename: cppExpression.h
-// Created by:  drose (25Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppExpression.h
+ * @author drose
+ * @date 1999-10-25
+ */
 
 #ifndef CPPEXPRESSION_H
 #define CPPEXPRESSION_H
@@ -24,12 +23,48 @@ class CPPType;
 class CPPPreprocessor;
 class CPPFunctionGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPExpression
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPExpression : public CPPDeclaration {
 public:
+  enum Type {
+    T_nullptr,
+    T_boolean,
+    T_integer,
+    T_real,
+    T_string,
+    T_wstring,
+    T_u8string,
+    T_u16string,
+    T_u32string,
+    T_variable,
+    T_function,
+    T_unknown_ident,
+    T_typecast,
+    T_static_cast,
+    T_dynamic_cast,
+    T_const_cast,
+    T_reinterpret_cast,
+    T_construct,
+    T_default_construct,
+    T_new,
+    T_default_new,
+    T_sizeof,
+    T_alignof,
+    T_unary_operation,
+    T_binary_operation,
+    T_trinary_operation,
+    T_literal,
+    T_raw_literal,
+    T_typeid_type,
+    T_typeid_expr,
+
+    // These are used when parsing =default and =delete methods.
+    T_default,
+    T_delete,
+  };
+
   CPPExpression(bool value);
   CPPExpression(unsigned long long value);
   CPPExpression(int value);
@@ -41,9 +76,11 @@ public:
   CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2);
   CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2, CPPExpression *op3);
 
-  static CPPExpression typecast_op(CPPType *type, CPPExpression *op1);
+  static CPPExpression typecast_op(CPPType *type, CPPExpression *op1, Type cast_type = T_typecast);
   static CPPExpression construct_op(CPPType *type, CPPExpression *op1);
   static CPPExpression new_op(CPPType *type, CPPExpression *op1 = NULL);
+  static CPPExpression typeid_op(CPPType *type, CPPType *std_type_info);
+  static CPPExpression typeid_op(CPPExpression *op1, CPPType *std_type_info);
   static CPPExpression sizeof_func(CPPType *type);
   static CPPExpression alignof_func(CPPType *type);
 
@@ -102,38 +139,6 @@ public:
 
   virtual CPPExpression *as_expression();
 
-
-  enum Type {
-    T_nullptr,
-    T_boolean,
-    T_integer,
-    T_real,
-    T_string,
-    T_wstring,
-    T_u8string,
-    T_u16string,
-    T_u32string,
-    T_variable,
-    T_function,
-    T_unknown_ident,
-    T_typecast,
-    T_construct,
-    T_default_construct,
-    T_new,
-    T_default_new,
-    T_sizeof,
-    T_alignof,
-    T_unary_operation,
-    T_binary_operation,
-    T_trinary_operation,
-    T_literal,
-    T_raw_literal,
-
-    // These are used when parsing =default and =delete methods.
-    T_default,
-    T_delete,
-  };
-
   Type _type;
   string _str;
   union {
@@ -143,22 +148,25 @@ public:
     CPPInstance *_variable;
     CPPFunctionGroup *_fgroup;
     CPPIdentifier *_ident;
-    class {
-    public:
+    struct {
+      union {
+        CPPType *_type;
+        CPPExpression *_expr;
+      };
+      CPPType *_std_type_info;
+    } _typeid;
+    struct {
       CPPType *_to;
       CPPExpression *_op1;
     } _typecast;
-    class {
-    public:
-      // One of the yytoken values: a character, or something
-      // like EQCOMPARE.
+    struct {
+      // One of the yytoken values: a character, or something like EQCOMPARE.
       int _operator;
       CPPExpression *_op1;
       CPPExpression *_op2;
       CPPExpression *_op3;
     } _op;
-    class {
-    public:
+    struct {
       CPPInstance *_operator;
       CPPExpression *_value;
     } _literal;

@@ -1,16 +1,15 @@
-// Filename: textFont.h
-// Created by:  drose (08Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textFont.h
+ * @author drose
+ * @date 2002-02-08
+ */
 
 #ifndef TEXTFONT_H
 #define TEXTFONT_H
@@ -23,16 +22,13 @@
 #include "pmap.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextFont
-// Description : An encapsulation of a font; i.e. a set of glyphs that
-//               may be assembled together by a TextNode to represent
-//               a string of text.
-//
-//               This is just an abstract interface; see
-//               StaticTextFont or DynamicTextFont for an actual
-//               implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * An encapsulation of a font; i.e.  a set of glyphs that may be assembled
+ * together by a TextNode to represent a string of text.
+ *
+ * This is just an abstract interface; see StaticTextFont or DynamicTextFont
+ * for an actual implementation.
+ */
 class EXPCL_PANDA_TEXT TextFont : public TypedReferenceCount, public Namable {
 public:
   TextFont();

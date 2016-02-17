@@ -1,16 +1,15 @@
-// Filename: destTextureImage.cxx
-// Created by:  drose (05Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file destTextureImage.cxx
+ * @author drose
+ * @date 2000-12-05
+ */
 
 #include "destTextureImage.h"
 #include "sourceTextureImage.h"
@@ -26,21 +25,16 @@
 TypeHandle DestTextureImage::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::Default Constructor
-//       Access: Private
-//  Description: The default constructor is only for the convenience
-//               of the Bam reader.
-////////////////////////////////////////////////////////////////////
+/**
+ * The default constructor is only for the convenience of the Bam reader.
+ */
 DestTextureImage::
 DestTextureImage() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DestTextureImage::
 DestTextureImage(TexturePlacement *placement) {
   TextureImage *texture = placement->get_texture();
@@ -62,12 +56,9 @@ DestTextureImage(TexturePlacement *placement) {
   set_filename(placement->get_group(), texture->get_name());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::copy
-//       Access: Public
-//  Description: Unconditionally copies the source texture into the
-//               appropriate filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unconditionally copies the source texture into the appropriate filename.
+ */
 void DestTextureImage::
 copy(TextureImage *texture) {
   const PNMImage &source_image = texture->read_source_image();
@@ -91,14 +82,11 @@ copy(TextureImage *texture) {
   texture->release_source_image();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::copy_if_stale
-//       Access: Public
-//  Description: Copies the source texture into the appropriate
-//               filename only if the indicated old reference, which
-//               represents the way it was last copied, is now
-//               out-of-date.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the source texture into the appropriate filename only if the
+ * indicated old reference, which represents the way it was last copied, is
+ * now out-of-date.
+ */
 void DestTextureImage::
 copy_if_stale(const DestTextureImage *other, TextureImage *texture) {
   if (other->get_x_size() != get_x_size() ||
@@ -117,12 +105,9 @@ copy_if_stale(const DestTextureImage *other, TextureImage *texture) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::to_power_2
-//       Access: Private, Static
-//  Description: Returns the largest power of 2 less than or equal to
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the largest power of 2 less than or equal to value.
+ */
 int DestTextureImage::
 to_power_2(int value) {
   int x = 1;
@@ -132,38 +117,29 @@ to_power_2(int value) {
   return x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void DestTextureImage::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_DestTextureImage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void DestTextureImage::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   ImageFile::write_datagram(writer, datagram);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::make_DestTextureImage
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable* DestTextureImage::
 make_DestTextureImage(const FactoryParams &params) {
   DestTextureImage *me = new DestTextureImage;
@@ -175,13 +151,10 @@ make_DestTextureImage(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DestTextureImage::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written
+ * by a previous call to write_datagram().
+ */
 void DestTextureImage::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ImageFile::fillin(scan, manager);

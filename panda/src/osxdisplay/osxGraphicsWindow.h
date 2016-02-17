@@ -1,15 +1,13 @@
-// Filename: osxGraphicsWindow.h
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsWindow.h
+ */
 
 #ifndef OSXGRAPHICSWINDOW_H
 #define OSXGRAPHICSWINDOW_H
@@ -27,11 +25,9 @@
 #define HACK_SCREEN_HASH_CONTEXT true
 OSStatus report_agl_error(const string &comment);
 
-////////////////////////////////////////////////////////////////////
-//       Class : osxGraphicsWindow
-// Description : An interface to the osx/ system for managing GL
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the osx/ system for managing GL windows under X.
+ */
 class osxGraphicsWindow : public GraphicsWindow {
 public:
   osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -70,9 +66,8 @@ protected:
 private:
   bool os_open_window(WindowProperties &properties);
 
-  //
-  // a singleton .. for the events to find the right pipe to push the event into
-  //
+  // a singleton .. for the events to find the right pipe to push the event
+  // into
 
 public: // do not call direct ..
   OSStatus handle_key_input(EventHandlerCallRef myHandler, EventRef event,
@@ -148,4 +143,3 @@ private:
 #include "osxGraphicsWindow.I"
 
 #endif
-

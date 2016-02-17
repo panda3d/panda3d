@@ -1,16 +1,15 @@
-// Filename: load_collada_file.cxx
-// Created by:  rdb (16Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file load_collada_file.cxx
+ * @author rdb
+ * @date 2011-03-16
+ */
 
 #include "load_collada_file.h"
 #include "colladaLoader.h"
@@ -62,14 +61,11 @@ load_from_loader(ColladaLoader &loader) {
   return DCAST(ModelRoot, loader._root);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: load_collada_file
-//  Description: A convenience function.  Loads up the indicated
-//               dae file, and returns the root of a scene graph.
-//               Returns NULL if the file cannot be read for some
-//               reason.  Does not search along the model path for
-//               the filename first.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function.  Loads up the indicated dae file, and returns the
+ * root of a scene graph.  Returns NULL if the file cannot be read for some
+ * reason.  Does not search along the model path for the filename first.
+ */
 PT(PandaNode)
 load_collada_file(const Filename &filename, CoordinateSystem cs,
                   BamCacheRecord *record) {

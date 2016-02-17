@@ -1,16 +1,15 @@
-// Filename: loaderFileTypeRegistry.cxx
-// Created by:  drose (20Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file loaderFileTypeRegistry.cxx
+ * @author drose
+ * @date 2000-06-20
+ */
 
 #include "loaderFileTypeRegistry.h"
 #include "loaderFileType.h"
@@ -24,29 +23,23 @@
 
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LoaderFileTypeRegistry::
 LoaderFileTypeRegistry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LoaderFileTypeRegistry::
 ~LoaderFileTypeRegistry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::register_type
-//       Access: Public
-//  Description: Defines a new LoaderFileType in the universe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new LoaderFileType in the universe.
+ */
 void LoaderFileTypeRegistry::
 register_type(LoaderFileType *type) {
   // Make sure we haven't already registered this type.
@@ -73,16 +66,12 @@ register_type(LoaderFileType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::register_deferred_type
-//       Access: Public
-//  Description: Records a type associated with a particular extension
-//               to be loaded in the future.  The named library will
-//               be dynamically loaded the first time files of this
-//               extension are loaded; presumably this library will
-//               call register_type() when it initializes, thus making
-//               the extension loadable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a type associated with a particular extension to be loaded in the
+ * future.  The named library will be dynamically loaded the first time files
+ * of this extension are loaded; presumably this library will call
+ * register_type() when it initializes, thus making the extension loadable.
+ */
 void LoaderFileTypeRegistry::
 register_deferred_type(const string &extension, const string &library) {
   string dcextension = downcase(extension);
@@ -90,8 +79,8 @@ register_deferred_type(const string &extension, const string &library) {
   Extensions::const_iterator ei;
   ei = _extensions.find(dcextension);
   if (ei != _extensions.end()) {
-    // We already have a loader for this type; no need to register
-    // another one.
+    // We already have a loader for this type; no need to register another
+    // one.
     if (loader_cat->is_debug()) {
       loader_cat->debug()
         << "Attempt to register loader library " << library
@@ -122,34 +111,27 @@ register_deferred_type(const string &extension, const string &library) {
   _deferred_types[dcextension] = library;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_num_types
-//       Access: Published
-//  Description: Returns the total number of types registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of types registered.
+ */
 int LoaderFileTypeRegistry::
 get_num_types() const {
   return _types.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_type
-//       Access: Published
-//  Description: Returns the nth type registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth type registered.
+ */
 LoaderFileType *LoaderFileTypeRegistry::
 get_type(int n) const {
   nassertr(n >= 0 && n < (int)_types.size(), NULL);
   return _types[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_type_from_extension
-//       Access: Published
-//  Description: Determines the type of the file based on the indicated
-//               extension (without a leading dot).  Returns NULL if
-//               the extension matches no known file types.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the type of the file based on the indicated extension (without a
+ * leading dot).  Returns NULL if the extension matches no known file types.
+ */
 LoaderFileType *LoaderFileTypeRegistry::
 get_type_from_extension(const string &extension) {
   string dcextension = downcase(extension);
@@ -162,10 +144,9 @@ get_type_from_extension(const string &extension) {
     DeferredTypes::iterator di;
     di = _deferred_types.find(dcextension);
     if (di != _deferred_types.end()) {
-      // We do!  Try to load the deferred library on-the-fly.  Note
-      // that this is a race condition if we support threaded loading;
-      // this whole function needs to be protected from multiple
-      // entry.
+      // We do!  Try to load the deferred library on-the-fly.  Note that this
+      // is a race condition if we support threaded loading; this whole
+      // function needs to be protected from multiple entry.
       string name = (*di).second;
       Filename dlname = Filename::dso_filename("lib" + name + ".so");
       _deferred_types.erase(di);
@@ -175,7 +156,7 @@ get_type_from_extension(const string &extension) {
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
       if (tmp == (void *)NULL) {
         loader_cat->warning()
-          << "Unable to load " << dlname.to_os_specific() << ": " 
+          << "Unable to load " << dlname.to_os_specific() << ": "
           << load_dso_error() << endl;
         return NULL;
       } else if (loader_cat.is_debug()) {
@@ -189,20 +170,18 @@ get_type_from_extension(const string &extension) {
   }
 
   if (ei == _extensions.end()) {
-    // Nothing matches that extension, even after we've checked for a
-    // deferred type description.
+    // Nothing matches that extension, even after we've checked for a deferred
+    // type description.
     return NULL;
   }
 
   return (*ei).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::write
-//       Access: Published
-//  Description: Writes a list of supported file types to the
-//               indicated output stream, one per line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of supported file types to the indicated output stream, one
+ * per line.
+ */
 void LoaderFileTypeRegistry::
 write(ostream &out, int indent_level) const {
   if (_types.empty()) {
@@ -247,12 +226,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns a pointer to the global LoaderFileTypeRegistry
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global LoaderFileTypeRegistry object.
+ */
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::
 get_global_ptr() {
   if (_global_ptr == (LoaderFileTypeRegistry *)NULL) {
@@ -261,12 +237,9 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::record_extension
-//       Access: Private
-//  Description: Records a filename extension recognized by a loader
-//               file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a filename extension recognized by a loader file type.
+ */
 void LoaderFileTypeRegistry::
 record_extension(const string &extension, LoaderFileType *type) {
   string dcextension = downcase(extension);

@@ -1,16 +1,15 @@
-// Filename: assimpLoader.cxx
-// Created by:  rdb (29Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file assimpLoader.cxx
+ * @author rdb
+ * @date 2011-03-29
+ */
 
 #include "assimpLoader.h"
 
@@ -52,11 +51,9 @@ struct BoneWeight {
 };
 typedef pvector<BoneWeight> BoneWeightList;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AssimpLoader::
 AssimpLoader() :
   _error (false),
@@ -66,22 +63,18 @@ AssimpLoader() :
   _importer.SetIOHandler(new PandaIOSystem);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AssimpLoader::
 ~AssimpLoader() {
   _importer.FreeScene();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::get_extensions
-//       Access: Public
-//  Description: Returns a space-separated list of extensions that
-//               Assimp can load, without the leading dots.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a space-separated list of extensions that Assimp can load, without
+ * the leading dots.
+ */
 void AssimpLoader::
 get_extensions(string &ext) const {
   aiString aexts;
@@ -99,17 +92,15 @@ get_extensions(string &ext) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::read
-//       Access: Public
-//  Description: Reads from the indicated file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads from the indicated file.
+ */
 bool AssimpLoader::
 read(const Filename &filename) {
   _filename = filename;
 
-  // I really don't know why we need to flip the winding order,
-  // but otherwise the models I tested with are showing inside out.
+  // I really don't know why we need to flip the winding order, but otherwise
+  // the models I tested with are showing inside out.
   _scene = _importer.ReadFile(_filename.c_str(), aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_FlipWindingOrder);
   if (_scene == NULL) {
     _error = true;
@@ -120,12 +111,10 @@ read(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::build_graph
-//       Access: Public
-//  Description: Converts scene graph structures into a Panda3D
-//               scene graph, with _root being the root node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts scene graph structures into a Panda3D scene graph, with _root
+ * being the root node.
+ */
 void AssimpLoader::
 build_graph() {
   nassertv(_scene != NULL); // read() must be called first
@@ -171,11 +160,9 @@ build_graph() {
   delete[] _geom_matindices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::find_node
-//       Access: Private
-//  Description: Finds a node by name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds a node by name.
+ */
 const aiNode *AssimpLoader::
 find_node(const aiNode &root, const aiString &name) {
   const aiNode *node;
@@ -194,11 +181,9 @@ find_node(const aiNode &root, const aiString &name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_texture
-//       Access: Private
-//  Description: Converts an aiTexture into a Texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiTexture into a Texture.
+ */
 void AssimpLoader::
 load_texture(size_t index) {
   const aiTexture &tex = *_scene->mTextures[index];
@@ -250,19 +235,16 @@ load_texture(size_t index) {
     }
   }
 
-  //ostringstream path;
-  //path << "/tmp/" << index << ".png";
-  //ptex->write(path.str());
+  // ostringstream path; path << "tmp" << index << ".png";
+  // ptex->write(path.str());
 
   _textures[index] = ptex;
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_texture_stage
-//       Access: Private
-//  Description: Converts an aiMaterial into a RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiMaterial into a RenderState.
+ */
 void AssimpLoader::
 load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(TextureAttrib) &tattr) {
   aiString path;
@@ -276,10 +258,9 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
     mat.GetTexture(ttype, i, &path, &mapping, NULL, &blend, &op, &mapmode);
 
     if (AI_SUCCESS != mat.Get(AI_MATKEY_UVWSRC(ttype, i), uvindex)) {
-      // If there's no texture coordinate set for this texture,
-      // assume that it's the same as the index on the stack.
-      //TODO: if there's only one set on the mesh,
-      //      force everything to use just the first stage.
+      // If there's no texture coordinate set for this texture, assume that
+      // it's the same as the index on the stack.  TODO: if there's only one
+      // set on the mesh, force everything to use just the first stage.
       uvindex = i;
     }
 
@@ -291,8 +272,8 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
     }
     PT(Texture) ptex = NULL;
 
-    // I'm not sure if this is the right way to handle it, as
-    // I couldn't find much information on embedded textures.
+    // I'm not sure if this is the right way to handle it, as I couldn't find
+    // much information on embedded textures.
     if (path.data[0] == '*') {
       long num = strtol(path.data + 1, NULL, 10);
       ptex = _textures[num];
@@ -333,11 +314,9 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_material
-//       Access: Private
-//  Description: Converts an aiMaterial into a RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiMaterial into a RenderState.
+ */
 void AssimpLoader::
 load_material(size_t index) {
   const aiMaterial &mat = *_scene->mMaterials[index];
@@ -375,7 +354,7 @@ load_material(size_t index) {
     have = true;
   }
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_TRANSPARENT, col)) {
-    //FIXME: ???
+    // FIXME: ???
   }
   if (AI_SUCCESS == mat.Get(AI_MATKEY_SHININESS, fval)) {
     pmat->set_shininess(fval);
@@ -394,8 +373,8 @@ load_material(size_t index) {
     }
   }
 
-  // Backface culling.  Not sure if this is also supposed to
-  // set the twoside flag in the material, I'm guessing not.
+  // Backface culling.  Not sure if this is also supposed to set the twoside
+  // flag in the material, I'm guessing not.
   if (AI_SUCCESS == mat.Get(AI_MATKEY_TWOSIDED, ival)) {
     if (ival) {
       state = state->add_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_none));
@@ -415,11 +394,9 @@ load_material(size_t index) {
   _mat_states[index] = state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::create_joint
-//       Access: Private
-//  Description: Creates a CharacterJoint from an aiNode
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a CharacterJoint from an aiNode
+ */
 void AssimpLoader::
 create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node) {
   const aiMatrix4x4 &t = node.mTransformation;
@@ -439,11 +416,9 @@ create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *pare
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::create_anim_channel
-//       Access: Private
-//  Description: Creates a AnimChannelMatrixXfmTable from an aiNodeAnim
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a AnimChannelMatrixXfmTable from an aiNodeAnim
+ */
 void AssimpLoader::
 create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *parent, const aiNode &node) {
   PT(AnimChannelMatrixXfmTable) group = new AnimChannelMatrixXfmTable(parent, node.mName.C_Str());
@@ -459,12 +434,11 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
   if (node_anim) {
     assimp_cat.debug()
       << "Found channel for node: " << node.mName.C_Str() << "\n";
-    //assimp_cat.debug()
-    //  << "Num Position Keys " << node_anim->mNumPositionKeys << "\n";
-    //assimp_cat.debug()
-    //  << "Num Rotation Keys " << node_anim->mNumRotationKeys << "\n";
-    //assimp_cat.debug()
-    //  << "Num Scaling Keys " << node_anim->mNumScalingKeys << "\n";
+    // assimp_cat.debug() << "Num Position Keys " <<
+    // node_anim->mNumPositionKeys << "\n"; assimp_cat.debug() << "Num
+    // Rotation Keys " << node_anim->mNumRotationKeys << "\n";
+    // assimp_cat.debug() << "Num Scaling Keys " << node_anim->mNumScalingKeys
+    // << "\n";
 
     // Convert positions
     PTA_stdfloat tablex = PTA_stdfloat::empty_array(node_anim->mNumPositionKeys);
@@ -520,11 +494,9 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_mesh
-//       Access: Private
-//  Description: Converts an aiMesh into a Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiMesh into a Geom.
+ */
 void AssimpLoader::
 load_mesh(size_t index) {
   const aiMesh &mesh = *_scene->mMeshes[index];
@@ -674,7 +646,8 @@ load_mesh(size_t index) {
     }
   }
 
-  //TODO: if there is only one UV set, hackily iterate over the texture stages and clear the texcoord name things
+  // TODO: if there is only one UV set, hackily iterate over the texture
+  // stages and clear the texcoord name things
 
   PT(GeomVertexFormat) format = new GeomVertexFormat;
   format->add_array(aformat);
@@ -754,9 +727,9 @@ load_mesh(size_t index) {
     tbtable->set_rows(SparseArray::lower_on(vdata->get_num_rows()));
   }
 
-  // Now read out the primitives.
-  // Keep in mind that we called ReadFile with the aiProcess_Triangulate
-  // flag earlier, so we don't have to worry about polygons.
+  // Now read out the primitives.  Keep in mind that we called ReadFile with
+  // the aiProcess_Triangulate flag earlier, so we don't have to worry about
+  // polygons.
   PT(GeomPoints) points = new GeomPoints(Geom::UH_static);
   PT(GeomLines) lines = new GeomLines(Geom::UH_static);
   PT(GeomTriangles) triangles = new GeomTriangles(Geom::UH_static);
@@ -802,11 +775,9 @@ load_mesh(size_t index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_node
-//       Access: Private
-//  Description: Converts an aiNode into a PandaNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiNode into a PandaNode.
+ */
 void AssimpLoader::
 load_node(const aiNode &node, PandaNode *parent) {
   PT(PandaNode) pnode;
@@ -871,11 +842,9 @@ load_node(const aiNode &node, PandaNode *parent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_light
-//       Access: Private
-//  Description: Converts an aiLight into a LightNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiLight into a LightNode.
+ */
 void AssimpLoader::
 load_light(const aiLight &light) {
   string name (light.mName.data, light.mName.length);
@@ -935,7 +904,7 @@ load_light(const aiLight &light) {
                                        light.mAttenuationQuadratic));
 
     plight->get_lens()->set_fov(light.mAngleOuterCone);
-    //TODO: translate mAngleInnerCone to an exponent, somehow
+    // TODO: translate mAngleInnerCone to an exponent, somehow
 
     // This *should* be about right.
     vec = light.mDirection;
@@ -945,8 +914,8 @@ load_light(const aiLight &light) {
     plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
     break; }
 
-  // This is a somewhat recent addition to Assimp, so let's be kind to
-  // those that don't have an up-to-date version of Assimp.
+  // This is a somewhat recent addition to Assimp, so let's be kind to those
+  // that don't have an up-to-date version of Assimp.
   case 0x4: //aiLightSource_AMBIENT:
     // This is handled below.
     break;
