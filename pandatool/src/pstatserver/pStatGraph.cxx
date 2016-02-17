@@ -1,16 +1,15 @@
-// Filename: pStatGraph.cxx
-// Created by:  drose (19Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatGraph.cxx
+ * @author drose
+ * @date 2000-07-19
+ */
 
 #include "pStatGraph.h"
 #include "pStatServer.h"
@@ -21,11 +20,9 @@
 
 #include <stdio.h>  // for sprintf
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::GuideBar::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatGraph::GuideBar::
 GuideBar(double height, const string &label, PStatGraph::GuideBarStyle style) :
   _height(height),
@@ -34,11 +31,9 @@ GuideBar(double height, const string &label, PStatGraph::GuideBarStyle style) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::GuideBar::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatGraph::GuideBar::
 GuideBar(const PStatGraph::GuideBar &copy) :
   _height(copy._height),
@@ -47,11 +42,9 @@ GuideBar(const PStatGraph::GuideBar &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatGraph::
 PStatGraph(PStatMonitor *monitor, int xsize, int ysize) :
   _monitor(monitor),
@@ -64,39 +57,30 @@ PStatGraph(PStatMonitor *monitor, int xsize, int ysize) :
   _guide_bar_units = GBU_ms;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatGraph::
 ~PStatGraph() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::get_num_guide_bars
-//       Access: Public
-//  Description: Returns the number of horizontal guide bars that
-//               should be drawn, based on the indicated target frame
-//               rate.  Not all of these may be visible; some may be
-//               off the top of the chart because of the vertical
-//               scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of horizontal guide bars that should be drawn, based on
+ * the indicated target frame rate.  Not all of these may be visible; some may
+ * be off the top of the chart because of the vertical scale.
+ */
 int PStatGraph::
 get_num_guide_bars() const {
   return _guide_bars.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::get_guide_bar
-//       Access: Public
-//  Description: Returns the nth horizontal guide bar.  This should be
-//               drawn as a horizontal line across the chart at the y
-//               pixel location determined by height_to_pixel(bar._height).
-//
-//               It is possible that this bar will be off the top of
-//               the chart.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth horizontal guide bar.  This should be drawn as a horizontal
+ * line across the chart at the y pixel location determined by
+ * height_to_pixel(bar._height).
+ *
+ * It is possible that this bar will be off the top of the chart.
+ */
 const PStatGraph::GuideBar &PStatGraph::
 get_guide_bar(int n) const {
 #ifndef NDEBUG
@@ -106,80 +90,63 @@ get_guide_bar(int n) const {
   return _guide_bars[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::get_num_user_guide_bars
-//       Access: Public
-//  Description: Returns the current number of user-defined guide
-//               bars.  Not all of these may be visible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current number of user-defined guide bars.  Not all of these
+ * may be visible.
+ */
 int PStatGraph::
 get_num_user_guide_bars() const {
   return _monitor->get_server()->get_num_user_guide_bars();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::get_user_guide_bar
-//       Access: Public
-//  Description: Returns the nth user-defined guide bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth user-defined guide bar.
+ */
 PStatGraph::GuideBar PStatGraph::
 get_user_guide_bar(int n) const {
   double height = _monitor->get_server()->get_user_guide_bar_height(n);
   return make_guide_bar(height, GBS_user);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::move_user_guide_bar
-//       Access: Public
-//  Description: Adjusts the height of the nth user-defined guide bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the height of the nth user-defined guide bar.
+ */
 void PStatGraph::
 move_user_guide_bar(int n, double height) {
   _monitor->get_server()->move_user_guide_bar(n, height);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::add_user_guide_bar
-//       Access: Public
-//  Description: Creates a new user guide bar and returns its index
-//               number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new user guide bar and returns its index number.
+ */
 int PStatGraph::
 add_user_guide_bar(double height) {
   return _monitor->get_server()->add_user_guide_bar(height);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::remove_user_guide_bar
-//       Access: Public
-//  Description: Removes the user guide bar with the indicated index
-//               number.  All subsequent index numbers are adjusted
-//               down one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the user guide bar with the indicated index number.  All subsequent
+ * index numbers are adjusted down one.
+ */
 void PStatGraph::
 remove_user_guide_bar(int n) {
   _monitor->get_server()->remove_user_guide_bar(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::find_user_guide_bar
-//       Access: Public
-//  Description: Returns the index number of the first user guide bar
-//               found whose height is within the indicated range, or
-//               -1 if no user guide bars fall within the range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the first user guide bar found whose height is
+ * within the indicated range, or -1 if no user guide bars fall within the
+ * range.
+ */
 int PStatGraph::
 find_user_guide_bar(double from_height, double to_height) const {
   return _monitor->get_server()->find_user_guide_bar(from_height, to_height);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::format_number
-//       Access: Public, Static
-//  Description: Returns a string representing the value nicely
-//               formatted for its range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string representing the value nicely formatted for its range.
+ */
 string PStatGraph::
 format_number(double value) {
   char buffer[128];
@@ -199,20 +166,16 @@ format_number(double value) {
   return buffer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::format_number
-//       Access: Public, Static
-//  Description: Returns a string representing the value nicely
-//               formatted for its range, including the units
-//               as indicated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string representing the value nicely formatted for its range,
+ * including the units as indicated.
+ */
 string PStatGraph::
 format_number(double value, int guide_bar_units, const string &unit_name) {
   string label;
 
   if ((guide_bar_units & GBU_named) != 0) {
-    // Units are whatever is specified by unit_name, not a time unit
-    // at all.
+    // Units are whatever is specified by unit_name, not a time unit at all.
     label = format_number(value);
     if ((guide_bar_units & GBU_show_units) != 0 && !unit_name.empty()) {
       label += " ";
@@ -248,22 +211,20 @@ format_number(double value, int guide_bar_units, const string &unit_name) {
   return label;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::update_guide_bars
-//       Access: Protected
-//  Description: Resets the list of guide bars.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the list of guide bars.
+ */
 void PStatGraph::
 update_guide_bars(int num_bars, double scale) {
   _guide_bars.clear();
 
-  // We'd like to draw about num_bars bars on the chart.  But we also
-  // want the bars to be harmonics of the target frame rate, so that
-  // the bottom bar is at tfr/n or n * tfr, where n is an integer, and
-  // the upper bars are even multiples of that.
+  // We'd like to draw about num_bars bars on the chart.  But we also want the
+  // bars to be harmonics of the target frame rate, so that the bottom bar is
+  // at tfrn or n * tfr, where n is an integer, and the upper bars are even
+  // multiples of that.
 
-  // Choose a suitable harmonic of the target frame rate near the
-  // bottom part of the chart.
+  // Choose a suitable harmonic of the target frame rate near the bottom part
+  // of the chart.
 
   double bottom = (double)num_bars / scale;
 
@@ -273,11 +234,11 @@ update_guide_bars(int num_bars, double scale) {
     harmonic = floor(bottom / _target_frame_rate + 0.5) * _target_frame_rate;
 
   } else {
-    // tfr / n
+    // tfr  n
     harmonic = _target_frame_rate / floor(_target_frame_rate / bottom + 0.5);
   }
 
-  // Now, make a few bars at k / harmonic.
+  // Now, make a few bars at k  harmonic.
   for (int k = 1; k / harmonic <= scale; k++) {
     _guide_bars.push_back(make_guide_bar(k / harmonic));
   }
@@ -285,20 +246,16 @@ update_guide_bars(int num_bars, double scale) {
   _guide_bars_changed = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatGraph::make_guide_bar
-//       Access: Protected
-//  Description: Makes a guide bar for the indicated elapsed time or
-//               level units.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a guide bar for the indicated elapsed time or level units.
+ */
 PStatGraph::GuideBar PStatGraph::
 make_guide_bar(double value, PStatGraph::GuideBarStyle style) const {
   string label = format_number(value, _guide_bar_units, _unit_name);
 
   if ((style == GBS_normal) &&
       (_guide_bar_units & GBU_named) == 0) {
-    // If it's a time unit, check to see if it matches our target
-    // frame rate.
+    // If it's a time unit, check to see if it matches our target frame rate.
     double hz = 1.0 / value;
     if (IS_THRESHOLD_EQUAL(hz, _target_frame_rate, 0.001)) {
       style = GBS_target;

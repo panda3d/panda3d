@@ -1,16 +1,15 @@
-// Filename: physicsManager.cxx
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicsManager.cxx
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #include "physicsManager.h"
 #include "actorNode.h"
@@ -21,12 +20,9 @@
 ConfigVariableInt PhysicsManager::_random_seed
 ("physics_manager_random_seed", 139);
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsManager
-//       Access: Public
-//  Description: Default Constructor.  NOTE: EulerIntegrator is
-//                the standard default.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor.  NOTE: EulerIntegrator is the standard default.
+ */
 PhysicsManager::
 PhysicsManager() {
   _linear_integrator.clear();
@@ -34,11 +30,9 @@ PhysicsManager() {
   _viscosity=0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~PhysicsManager
-//       Access: Public
-//  Description: Simple Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple Destructor
+ */
 PhysicsManager::
 ~PhysicsManager() {
   PhysicalsVector::iterator pi;
@@ -48,25 +42,20 @@ PhysicsManager::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InitRandomSeed
-//       Access: Public
-//  Description: One-time config function, sets up the random seed
-//                used by the physics and particle systems.
-//                For synchronizing across distributed computers
-////////////////////////////////////////////////////////////////////
+/**
+ * One-time config function, sets up the random seed used by the physics and
+ * particle systems.  For synchronizing across distributed computers
+ */
 void PhysicsManager::
 init_random_seed() {
-  // Use the random seed specified by the physics_manager_random_seed
-  // Config Variable
+  // Use the random seed specified by the physics_manager_random_seed Config
+  // Variable
   srand(_random_seed);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_linear_force
-//       Access: Public
-//  Description: takes a linear force out of the physics list
-////////////////////////////////////////////////////////////////////
+/**
+ * takes a linear force out of the physics list
+ */
 void PhysicsManager::
 remove_linear_force(LinearForce *f) {
   nassertv(f);
@@ -81,11 +70,9 @@ remove_linear_force(LinearForce *f) {
   _linear_forces.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_angular_force
-//       Access: Public
-//  Description: takes an angular force out of the physics list
-////////////////////////////////////////////////////////////////////
+/**
+ * takes an angular force out of the physics list
+ */
 void PhysicsManager::
 remove_angular_force(AngularForce *f) {
   nassertv(f);
@@ -100,11 +87,9 @@ remove_angular_force(AngularForce *f) {
   _angular_forces.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_physical
-//       Access: Public
-//  Description: takes a physical out of the object list
-////////////////////////////////////////////////////////////////////
+/**
+ * takes a physical out of the object list
+ */
 void PhysicsManager::
 remove_physical(Physical *p) {
   nassertv(p);
@@ -119,11 +104,9 @@ remove_physical(Physical *p) {
   _physicals.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_physical_node
-//       Access: Public
-//  Description: Removes a physicalnode from the manager
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a physicalnode from the manager
+ */
 void PhysicsManager::
 remove_physical_node(PhysicalNode *p) {
   nassertv(p);
@@ -132,12 +115,10 @@ remove_physical_node(PhysicalNode *p) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DoPhysics
-//       Access: Public
-//  Description: This is the main high-level API call.  Performs
-//                integration on every attached Physical.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main high-level API call.  Performs integration on every
+ * attached Physical.
+ */
 void PhysicsManager::
 do_physics(PN_stdfloat dt) {
   // now, run through each physics object in the set.
@@ -146,14 +127,12 @@ do_physics(PN_stdfloat dt) {
     Physical *physical = *p_cur;
     nassertv(physical);
 
-    // do linear
-    //if (_linear_integrator.is_null() == false) {
+    // do linear if (_linear_integrator.is_null() == false) {
     if (_linear_integrator) {
       _linear_integrator->integrate(physical, _linear_forces, dt);
     }
 
-    // do angular
-    //if (_angular_integrator.is_null() == false) {
+    // do angular if (_angular_integrator.is_null() == false) {
     if (_angular_integrator) {
       _angular_integrator->integrate(physical, _angular_forces, dt);
     }
@@ -167,25 +146,20 @@ do_physics(PN_stdfloat dt) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DoPhysics
-//       Access: Public
-//  Description: This is the main high-level API call.  Performs
-//                integration on a single physical.  Make sure its
-//                associated forces are active.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main high-level API call.  Performs integration on a single
+ * physical.  Make sure its associated forces are active.
+ */
 void PhysicsManager::
 do_physics(PN_stdfloat dt, Physical *physical) {
   nassertv(physical);
 
-  // do linear
-  //if (_linear_integrator.is_null() == false) {
+  // do linear if (_linear_integrator.is_null() == false) {
   if (_linear_integrator) {
     _linear_integrator->integrate(physical, _linear_forces, dt);
   }
 
-  // do angular
-  //if (_angular_integrator.is_null() == false) {
+  // do angular if (_angular_integrator.is_null() == false) {
   if (_angular_integrator) {
     _angular_integrator->integrate(physical, _angular_forces, dt);
   }
@@ -198,12 +172,9 @@ do_physics(PN_stdfloat dt, Physical *physical) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsManager::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -211,12 +182,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_physicals
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsManager::
 write_physicals(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -225,7 +193,7 @@ write_physicals(ostream &out, unsigned int indent) const {
   }
   out.width(indent);
   out<<""<<"_physicals ("<<_physicals.size()<<" physicals)\n";
-  //out<<ios::width(indent)<<" "<<"[physicals \n";
+  // out<<ios::width(indent)<<" "<<"[physicals \n";
   for (pvector< Physical * >::const_iterator i=_physicals.begin();
        i != _physicals.end();
        ++i) {
@@ -234,12 +202,9 @@ write_physicals(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_forces
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsManager::
 write_linear_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -253,12 +218,9 @@ write_linear_forces(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_angular_forces
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsManager::
 write_angular_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -272,12 +234,9 @@ write_angular_forces(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsManager::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -305,18 +264,15 @@ write(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsManager::
 debug_output(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"PhysicsManager li"<<(_linear_integrator?1:0)<<" ai"<<(_angular_integrator?1:0)<<"\n";
   out<<"  _physicals "<<_physicals.size()<<"\n";
-  //_physicals._phys_body.write(out, indent+2);
+  // _physicals._phys_body.write(out, indent+2);
 
 
   out.width(indent+2);

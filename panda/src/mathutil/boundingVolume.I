@@ -1,102 +1,81 @@
-// Filename: boundingVolume.I
-// Created by:  drose (01Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingVolume.I
+ * @author drose
+ * @date 1999-10-01
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingVolume::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_MATHUTIL BoundingVolume::
 BoundingVolume() {
   _flags = F_empty;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingVolume::is_empty
-//       Access: Published
-//  Description: Any kind of volume might be empty.  This is a
-//               degenerate volume that contains no points; it's not
-//               the same as, for instance, a sphere with radius zero,
-//               since that contains one point (the center).  It
-//               intersects with no other volumes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Any kind of volume might be empty.  This is a degenerate volume that
+ * contains no points; it's not the same as, for instance, a sphere with
+ * radius zero, since that contains one point (the center).  It intersects
+ * with no other volumes.
+ */
 INLINE_MATHUTIL bool BoundingVolume::
 is_empty() const {
   return (_flags & F_empty) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingVolume::is_infinite
-//       Access: Published
-//  Description: The other side of the empty coin is an infinite
-//               volume.  This is a degenerate state of a normally
-//               finite volume that contains all points.  (Note that
-//               some kinds of infinite bounding volumes, like binary
-//               separating planes, do not contain all points and thus
-//               correctly return is_infinite() == false, even though
-//               they are technically infinite.  This is a special
-//               case of the word 'infinite' meaning the volume covers
-//               all points in space.)
-//
-//               It completely intersects with all other volumes
-//               except empty volumes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The other side of the empty coin is an infinite volume.  This is a
+ * degenerate state of a normally finite volume that contains all points.
+ * (Note that some kinds of infinite bounding volumes, like binary separating
+ * planes, do not contain all points and thus correctly return is_infinite()
+ * == false, even though they are technically infinite.  This is a special
+ * case of the word 'infinite' meaning the volume covers all points in space.)
+ *
+ * It completely intersects with all other volumes except empty volumes.
+ */
 INLINE_MATHUTIL bool BoundingVolume::
 is_infinite() const {
   return (_flags & F_infinite) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingVolume::set_infinite
-//       Access: Published
-//  Description: Marks the volume as infinite, even if it is normally
-//               finite.  You can think of this as an infinite
-//               extend_by() operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the volume as infinite, even if it is normally finite.  You can think
+ * of this as an infinite extend_by() operation.
+ */
 INLINE_MATHUTIL void BoundingVolume::
 set_infinite() {
   _flags = F_infinite;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingVolume::extend_by
-//       Access: Published
-//  Description: Increases the size of the volume to include the given
-//               volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increases the size of the volume to include the given volume.
+ */
 INLINE_MATHUTIL bool BoundingVolume::
 extend_by(const BoundingVolume *vol) {
   if (vol->is_infinite()) {
     set_infinite();
 
   } else if (!vol->is_empty()) {
-    // This is a double-dispatch.  We call this virtual function on the
-    // volume we were given, which will in turn call the appropriate
-    // virtual function in our own class to perform the operation.
+    // This is a double-dispatch.  We call this virtual function on the volume
+    // we were given, which will in turn call the appropriate virtual function
+    // in our own class to perform the operation.
     return vol->extend_other(this);
   }
   return true;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingVolume::contains
-//       Access: Published
-//  Description: Returns the appropriate set of IntersectionFlags to
-//               indicate the amount of intersection with the
-//               indicated volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the appropriate set of IntersectionFlags to indicate the amount of
+ * intersection with the indicated volume.
+ */
 INLINE_MATHUTIL int BoundingVolume::
 contains(const BoundingVolume *vol) const {
   if (is_empty() || vol->is_empty()) {
@@ -109,9 +88,9 @@ contains(const BoundingVolume *vol) const {
     return IF_possible | IF_some;
   }
 
-  // This is a double-dispatch.  We call this virtual function on the
-  // volume we were given, which will in turn call the appropriate
-  // virtual function in our own class to perform the operation.
+  // This is a double-dispatch.  We call this virtual function on the volume
+  // we were given, which will in turn call the appropriate virtual function
+  // in our own class to perform the operation.
   return vol->contains_other(this);
 }
 

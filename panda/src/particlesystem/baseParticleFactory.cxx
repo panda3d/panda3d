@@ -1,24 +1,21 @@
-// Filename: baseParticleFactory.cxx
-// Created by:  charles (05Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file baseParticleFactory.cxx
+ * @author charles
+ * @date 2000-07-05
+ */
 
 #include "baseParticleFactory.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticleFactory
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 BaseParticleFactory::
 BaseParticleFactory() :
   _lifespan_base(1.0),
@@ -30,11 +27,9 @@ BaseParticleFactory() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticleFactory
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 BaseParticleFactory::
 BaseParticleFactory(const BaseParticleFactory &copy) :
   _lifespan_base(copy._lifespan_base),
@@ -46,19 +41,16 @@ BaseParticleFactory(const BaseParticleFactory &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~BaseParticleFactory
-//       Access: Public Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 BaseParticleFactory::
 ~BaseParticleFactory() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_particle
-//  Description: public
-////////////////////////////////////////////////////////////////////
+/**
+ * public
+ */
 void BaseParticleFactory::
 populate_particle(BaseParticle *bp) {
   bp->set_lifespan(_lifespan_base + SPREAD(_lifespan_spread));
@@ -73,12 +65,9 @@ populate_particle(BaseParticle *bp) {
   populate_child_particle(bp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticleFactory::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -86,12 +75,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticleFactory::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
@@ -102,6 +88,6 @@ write(ostream &out, int indent) const {
   out.width(indent+2); out<<""; out<<"_mass_spread "<<_mass_spread<<"\n";
   out.width(indent+2); out<<""; out<<"_terminal_velocity_base "<<_terminal_velocity_base<<"\n";
   out.width(indent+2); out<<""; out<<"_terminal_velocity_spread "<<_terminal_velocity_spread<<"\n";
-  //ReferenceCount::write(out, indent+2);
+  // ReferenceCount::write(out, indent+2);
   #endif //] NDEBUG
 }

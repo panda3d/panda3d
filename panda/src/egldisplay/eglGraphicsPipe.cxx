@@ -1,16 +1,15 @@
-// Filename: eglGraphicsPipe.cxx
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsPipe.cxx
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #include "eglGraphicsBuffer.h"
 #include "eglGraphicsPipe.h"
@@ -28,11 +27,9 @@ eglGraphicsPipe::IOErrorHandlerFunc *eglGraphicsPipe::_prev_io_error_handler;
 
 LightReMutex eglGraphicsPipe::_x_mutex;
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 eglGraphicsPipe::
 eglGraphicsPipe(const string &display) {
   string display_spec = display;
@@ -46,13 +43,13 @@ eglGraphicsPipe(const string &display) {
     display_spec = ":0.0";
   }
 
-  // The X docs say we should do this to get international character
-  // support from the keyboard.
+  // The X docs say we should do this to get international character support
+  // from the keyboard.
   setlocale(LC_ALL, "");
 
-  // But it's important that we use the "C" locale for numeric
-  // formatting, since all of the internal Panda code assumes this--we
-  // need a decimal point to mean a decimal point.
+  // But it's important that we use the "C" locale for numeric formatting,
+  // since all of the internal Panda code assumes this--we need a decimal
+  // point to mean a decimal point.
   setlocale(LC_NUMERIC, "C");
 
   _is_valid = false;
@@ -98,8 +95,7 @@ eglGraphicsPipe(const string &display) {
       << get_egl_error_string(eglGetError()) << "\n";
   }
 
-  // Connect to an input method for supporting international text
-  // entry.
+  // Connect to an input method for supporting international text entry.
   _im = XOpenIM(_display, NULL, NULL, NULL);
   if (_im == (XIM)NULL) {
     egldisplay_cat.warning()
@@ -132,11 +128,9 @@ eglGraphicsPipe(const string &display) {
   _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 eglGraphicsPipe::
 ~eglGraphicsPipe() {
   release_hidden_cursor();
@@ -154,62 +148,49 @@ eglGraphicsPipe::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to
+ * choose between several possible GraphicsPipes available on a particular
+ * platform, so the name should be meaningful and unique for a given platform.
+ */
 string eglGraphicsPipe::
 get_interface_name() const {
   return "OpenGL ES";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               eglGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the
+ * user to make a default eglGraphicsPipe.
+ */
 PT(GraphicsPipe) eglGraphicsPipe::
 pipe_constructor() {
   return new eglGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::get_preferred_window_thread
-//       Access: Public, Virtual
-//  Description: Returns an indication of the thread in which this
-//               GraphicsPipe requires its window processing to be
-//               performed: typically either the app thread (e.g. X)
-//               or the draw thread (Windows).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an indication of the thread in which this GraphicsPipe requires its
+ * window processing to be performed: typically either the app thread (e.g.
+ * X) or the draw thread (Windows).
+ */
 GraphicsPipe::PreferredWindowThread
 eglGraphicsPipe::get_preferred_window_thread() const {
-  // Actually, since we're creating the graphics context in
-  // open_window() now, it appears we need to ensure the open_window()
-  // call is performed in the draw thread for now, even though X wants
-  // all of its calls to be single-threaded.
+  // Actually, since we're creating the graphics context in open_window() now,
+  // it appears we need to ensure the open_window() call is performed in the
+  // draw thread for now, even though X wants all of its calls to be single-
+  // threaded.
 
-  // This means that all X windows may have to be handled by the same
-  // draw thread, which we didn't intend (though the global _x_mutex
-  // may allow them to be technically served by different threads,
-  // even though the actual X calls will be serialized).  There might
-  // be a better way.
+  // This means that all X windows may have to be handled by the same draw
+  // thread, which we didn't intend (though the global _x_mutex may allow them
+  // to be technically served by different threads, even though the actual X
+  // calls will be serialized).  There might be a better way.
 
   return PWT_draw;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) eglGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -260,13 +241,13 @@ make_output(const string &name,
   // Second thing to try: a GLES(2)GraphicsBuffer
   if (retry == 1) {
     if ((host==0)||
-  //        (!gl_support_fbo)||
+  // (!gl_support_fbo)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
       return NULL;
     }
-    // Early failure - if we are sure that this buffer WONT
-    // meet specs, we can bail out early.
+    // Early failure - if we are sure that this buffer WONT meet specs, we can
+    // bail out early.
     if ((flags & BF_fb_props_optional)==0) {
       if ((fb_prop.get_indexed_color() > 0)||
           (fb_prop.get_back_buffers() > 0)||
@@ -275,8 +256,8 @@ make_output(const string &name,
         return NULL;
       }
     }
-    // Early success - if we are sure that this buffer WILL
-    // meet specs, we can precertify it.
+    // Early success - if we are sure that this buffer WILL meet specs, we can
+    // precertify it.
     if ((eglgsg != 0) &&
         (eglgsg->is_valid()) &&
         (!eglgsg->needs_reset()) &&
@@ -306,8 +287,8 @@ make_output(const string &name,
     if (!support_rtt) {
       if (((flags&BF_rtt_cumulative)!=0)||
           ((flags&BF_can_bind_every)!=0)) {
-        // If we require Render-to-Texture, but can't be sure we
-        // support it, bail.
+        // If we require Render-to-Texture, but can't be sure we support it,
+        // bail.
         return NULL;
       }
     }
@@ -338,12 +319,10 @@ make_output(const string &name,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::make_hidden_cursor
-//       Access: Private
-//  Description: Called once to make an invisible Cursor for return
-//               from get_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to make an invisible Cursor for return from
+ * get_hidden_cursor().
+ */
 void eglGraphicsPipe::
 make_hidden_cursor() {
   nassertv(_hidden_cursor == None);
@@ -361,12 +340,10 @@ make_hidden_cursor() {
   XFreePixmap(_display, empty);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::release_hidden_cursor
-//       Access: Private
-//  Description: Called once to release the invisible cursor created
-//               by make_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to release the invisible cursor created by
+ * make_hidden_cursor().
+ */
 void eglGraphicsPipe::
 release_hidden_cursor() {
   if (_hidden_cursor != None) {
@@ -375,17 +352,13 @@ release_hidden_cursor() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::install_error_handlers
-//       Access: Private, Static
-//  Description: Installs new Xlib error handler functions if this is
-//               the first time this function has been called.  These
-//               error handler functions will attempt to reduce Xlib's
-//               annoying tendency to shut down the client at the
-//               first error.  Unfortunately, it is difficult to play
-//               nice with the client if it has already installed its
-//               own error handlers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Installs new Xlib error handler functions if this is the first time this
+ * function has been called.  These error handler functions will attempt to
+ * reduce Xlib's annoying tendency to shut down the client at the first error.
+ * Unfortunately, it is difficult to play nice with the client if it has
+ * already installed its own error handlers.
+ */
 void eglGraphicsPipe::
 install_error_handlers() {
   if (_error_handlers_installed) {
@@ -397,12 +370,9 @@ install_error_handlers() {
   _error_handlers_installed = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               non-fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a non-fatal Xlib error.
+ */
 int eglGraphicsPipe::
 error_handler(X11_Display *display, XErrorEvent *error) {
   static const int msg_len = 80;
@@ -415,25 +385,22 @@ error_handler(X11_Display *display, XErrorEvent *error) {
     abort();
   }
 
-  // We return to allow the application to continue running, unlike
-  // the default X error handler which exits.
+  // We return to allow the application to continue running, unlike the
+  // default X error handler which exits.
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsPipe::io_error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a fatal Xlib error.
+ */
 int eglGraphicsPipe::
 io_error_handler(X11_Display *display) {
   egldisplay_cat.fatal()
     << "X fatal error on display " << (void *)display << "\n";
 
-  // Unfortunately, we can't continue from this function, even if we
-  // promise never to use X again.  We're supposed to terminate
-  // without returning, and if we do return, the caller will exit
-  // anyway.  Sigh.  Very poor design on X's part.
+  // Unfortunately, we can't continue from this function, even if we promise
+  // never to use X again.  We're supposed to terminate without returning, and
+  // if we do return, the caller will exit anyway.  Sigh.  Very poor design on
+  // X's part.
   return 0;
 }

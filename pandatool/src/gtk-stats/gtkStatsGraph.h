@@ -1,16 +1,15 @@
-// Filename: gtkStatsGraph.h
-// Created by:  drose (16Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gtkStatsGraph.h
+ * @author drose
+ * @date 2006-01-16
+ */
 
 #ifndef GTKSTATSGRAPH_H
 #define GTKSTATSGRAPH_H
@@ -23,12 +22,10 @@
 
 class GtkStatsMonitor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsGraph
-// Description : This is just an abstract base class to provide a
-//               common pointer type for the various kinds of graphs
-//               that may be created for a GtkStatsMonitor.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is just an abstract base class to provide a common pointer type for
+ * the various kinds of graphs that may be created for a GtkStatsMonitor.
+ */
 class GtkStatsGraph {
 public:
   // What is the user adjusting by dragging the mouse in a window?
@@ -65,7 +62,7 @@ protected:
   virtual void set_drag_mode(DragMode drag_mode);
 
   virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-				       bool double_click);
+               bool double_click);
   virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
   virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
@@ -117,25 +114,24 @@ private:
   void setup_pixmap(int xsize, int ysize);
   void release_pixmap();
 
-  static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event, 
-				      gpointer data);
+  static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
+              gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);
-  static gboolean graph_expose_callback(GtkWidget *widget, 
-					GdkEventExpose *event, gpointer data);
-  static gboolean configure_graph_callback(GtkWidget *widget, 
-					   GdkEventConfigure *event, gpointer data);
+  static gboolean graph_expose_callback(GtkWidget *widget,
+          GdkEventExpose *event, gpointer data);
+  static gboolean configure_graph_callback(GtkWidget *widget,
+             GdkEventConfigure *event, gpointer data);
 
 protected:
-  static gboolean button_press_event_callback(GtkWidget *widget, 
-					      GdkEventButton *event, 
-					      gpointer data);
-  static gboolean button_release_event_callback(GtkWidget *widget, 
-						GdkEventButton *event, 
-						gpointer data);
-  static gboolean motion_notify_event_callback(GtkWidget *widget, 
-					       GdkEventMotion *event, 
-					       gpointer data);
+  static gboolean button_press_event_callback(GtkWidget *widget,
+                GdkEventButton *event,
+                gpointer data);
+  static gboolean button_release_event_callback(GtkWidget *widget,
+            GdkEventButton *event,
+            gpointer data);
+  static gboolean motion_notify_event_callback(GtkWidget *widget,
+                 GdkEventMotion *event,
+                 gpointer data);
 };
 
 #endif
-

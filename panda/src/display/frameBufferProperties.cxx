@@ -1,16 +1,15 @@
-// Filename: frameBufferProperties.cxx
-// Created by:  drose (27Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file frameBufferProperties.cxx
+ * @author drose
+ * @date 2003-01-27
+ */
 
 #include "frameBufferProperties.h"
 #include "string_utils.h"
@@ -18,21 +17,17 @@
 #include "config_display.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FrameBufferProperties::
 FrameBufferProperties() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FrameBufferProperties::
 operator = (const FrameBufferProperties &copy) {
   _flags_specified = copy._flags_specified;
@@ -44,13 +39,10 @@ operator = (const FrameBufferProperties &copy) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::subsumes
-//       Access: Public
-//  Description: Returns true if this set of properties makes
-//               strictly greater or equal demands of the framebuffer
-//               than the other set of framebuffer properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this set of properties makes strictly greater or equal
+ * demands of the framebuffer than the other set of framebuffer properties.
+ */
 bool FrameBufferProperties::
 subsumes(const FrameBufferProperties &other) const {
   if (((other._flags & other._flags_specified) & ~(_flags & _flags_specified)) != 0) {
@@ -67,13 +59,10 @@ subsumes(const FrameBufferProperties &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_default
-//       Access: Published, Static
-//  Description: Returns a FrameBufferProperties structure with all of
-//               the default values filled in according to the user's
-//               config file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FrameBufferProperties structure with all of the default values
+ * filled in according to the user's config file.
+ */
 const FrameBufferProperties &FrameBufferProperties::
 get_default() {
   static bool default_ready = false;
@@ -185,11 +174,9 @@ get_default() {
   return default_props;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FrameBufferProperties::
 operator == (const FrameBufferProperties &other) const {
   if ((_flags & _flags_specified) != (other._flags & other._flags_specified)) {
@@ -209,13 +196,10 @@ operator == (const FrameBufferProperties &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear
-//       Access: Published
-//  Description: Unsets all properties that have been specified so
-//               far, and resets the FrameBufferProperties structure to its
-//               initial empty state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unsets all properties that have been specified so far, and resets the
+ * FrameBufferProperties structure to its initial empty state.
+ */
 void FrameBufferProperties::
 clear() {
   _flags = 0;
@@ -227,13 +211,10 @@ clear() {
   _specified = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::add_properties
-//       Access: Published
-//  Description: Sets any properties that are explicitly specified in
-//               other on this object.  Leaves other properties
-//               unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets any properties that are explicitly specified in other on this object.
+ * Leaves other properties unchanged.
+ */
 void FrameBufferProperties::
 add_properties(const FrameBufferProperties &other) {
   _flags &= ~other._flags_specified;
@@ -247,11 +228,9 @@ add_properties(const FrameBufferProperties &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::output
-//       Access: Published
-//  Description: Generates a string representation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a string representation.
+ */
 void FrameBufferProperties::
 output(ostream &out) const {
   if ((_flags & FBF_float_depth) != 0) {
@@ -319,12 +298,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_aux_mask
-//       Access: Published
-//  Description: Converts the aux bitplanes of the
-//               framebuffer into a RenderBuffer::Type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the aux bitplanes of the framebuffer into a RenderBuffer::Type.
+ */
 int FrameBufferProperties::
 get_aux_mask() const {
   int mask = 0;
@@ -340,12 +316,10 @@ get_aux_mask() const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_buffer_mask
-//       Access: Private
-//  Description: Converts the non-aux bitplanes of the
-//               framebuffer into a RenderBuffer::Type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the non-aux bitplanes of the framebuffer into a
+ * RenderBuffer::Type.
+ */
 int FrameBufferProperties::
 get_buffer_mask() const {
   int mask = 0;
@@ -364,36 +338,28 @@ get_buffer_mask() const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::is_any_specified
-//       Access: Published
-//  Description: Returns true if any properties have been specified,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any properties have been specified, false otherwise.
+ */
 bool FrameBufferProperties::
 is_any_specified() const {
   return (_flags_specified | _specified) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_all_specified
-//       Access: Published
-//  Description: Marks all bits as having been specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks all bits as having been specified.
+ */
 void FrameBufferProperties::
 set_all_specified() {
   _flags_specified = FBF_all;
   _specified = (1 << FBP_COUNT) - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::is_basic
-//       Access: Published
-//  Description: Returns true if the properties are extremely basic.
-//               The following count as basic: rgb or rgba, depth.
-//               If anything else is specified, the properties are
-//               non-basic.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the properties are extremely basic.  The following count as
+ * basic: rgb or rgba, depth.  If anything else is specified, the properties
+ * are non-basic.
+ */
 bool FrameBufferProperties::
 is_basic() const {
   if (_property[FBP_depth_bits] > 1) {
@@ -456,13 +422,10 @@ is_basic() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_one_bit_per_channel
-//       Access: Published
-//  Description: If any of the depth, color, alpha, accum, or
-//               stencil properties is set to more than one,
-//               then they are reduced to one.
-////////////////////////////////////////////////////////////////////
+/**
+ * If any of the depth, color, alpha, accum, or stencil properties is set to
+ * more than one, then they are reduced to one.
+ */
 void FrameBufferProperties::
 set_one_bit_per_channel() {
   for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
@@ -472,31 +435,24 @@ set_one_bit_per_channel() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_quality
-//       Access: Published
-//  Description: Assumes that these properties are a description of
-//               a window.
-//
-//               Measures how well this window satisfies a specified
-//               set of requirements.  A higher quality number means
-//               that more requirements were satisfied.  A quality of
-//               zero means that the window is unsuitable.
-//
-//               The routine deducts a lot if the window fails to
-//               provide a requested feature.  It deducts less
-//               if the window provides a feature, but at a degraded
-//               level of functionality (ie, the user asks for rgba8,
-//               color, but the window only provides rgba4).  The
-//               routine also deducts a small amount for unnecessary
-//               features.  For example, if the window has an
-//               accumulation buffer when one is not requested will
-//               reduce quality slightly.  Maximum quality is obtained
-//               when the window exactly matches the request.
-//
-//               If you want to know whether the window satisfies
-//               all of the requirements, use the "subsumes" function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes that these properties are a description of a window.
+ *
+ * Measures how well this window satisfies a specified set of requirements.  A
+ * higher quality number means that more requirements were satisfied.  A
+ * quality of zero means that the window is unsuitable.
+ *
+ * The routine deducts a lot if the window fails to provide a requested
+ * feature.  It deducts less if the window provides a feature, but at a
+ * degraded level of functionality (ie, the user asks for rgba8, color, but
+ * the window only provides rgba4).  The routine also deducts a small amount
+ * for unnecessary features.  For example, if the window has an accumulation
+ * buffer when one is not requested will reduce quality slightly.  Maximum
+ * quality is obtained when the window exactly matches the request.
+ *
+ * If you want to know whether the window satisfies all of the requirements,
+ * use the "subsumes" function.
+ */
 int FrameBufferProperties::
 get_quality(const FrameBufferProperties &reqs) const {
 
@@ -513,16 +469,16 @@ get_quality(const FrameBufferProperties &reqs) const {
 
   int quality = 100000000;
 
-  // Deduct for using the wrong kind of renderer (hardware or software).
-  // Cost: 10,000,000
+  // Deduct for using the wrong kind of renderer (hardware or software). Cost:
+  // 10,000,000
 
   if ((reqs._flags & FBF_force_hardware) > (_flags & FBF_force_hardware) ||
       (reqs._flags & FBF_force_software) > (_flags & FBF_force_software)) {
     quality -= 10000000;
   }
 
-  // Deduct for missing depth, color, alpha, stencil, or accum.
-  // Cost: 1,000,000
+  // Deduct for missing depth, color, alpha, stencil, or accum.  Cost:
+  // 1,000,000
 
   for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
     if (reqs._property[prop] && _property[prop] == 0) {
@@ -530,8 +486,7 @@ get_quality(const FrameBufferProperties &reqs) const {
     }
   }
 
-  // Deduct for missing aux bitplanes.
-  // Cost: 100,000
+  // Deduct for missing aux bitplanes.  Cost: 100,000
 
   for (int prop = FBP_aux_rgba; prop <= FBP_aux_float; ++prop) {
     if (reqs._property[prop] > _property[prop]) {
@@ -539,22 +494,20 @@ get_quality(const FrameBufferProperties &reqs) const {
     }
   }
 
-  // Deduct for stereo not enabled.
-  // Cost: 100,000
+  // Deduct for stereo not enabled.  Cost: 100,000
 
   if (reqs.get_stereo() && !get_stereo()) {
     quality -= 100000;
   }
 
-  // Deduct for not being sRGB-capable.
-  // Cost: 100,000
+  // Deduct for not being sRGB-capable.  Cost: 100,000
 
   if (reqs.get_srgb_color() && !get_srgb_color()) {
     quality -= 100000;
   }
 
-  // Deduct for not having a floating-point format if we requested it.
-  // Cost: 100,000
+  // Deduct for not having a floating-point format if we requested it.  Cost:
+  // 100,000
 
   if (reqs.get_float_color() && !get_float_color()) {
     quality -= 100000;
@@ -564,15 +517,13 @@ get_quality(const FrameBufferProperties &reqs) const {
     quality -= 100000;
   }
 
-  // Deduct for insufficient back-buffers.
-  // Cost: 100,000
+  // Deduct for insufficient back-buffers.  Cost: 100,000
 
   if (reqs._property[FBP_back_buffers] > _property[FBP_back_buffers]) {
     quality -= 100000;
   }
 
-  // Deduct for lacking multisamples altogether.
-  // Cost: 100,000
+  // Deduct for lacking multisamples altogether.  Cost: 100,000
   if (reqs._property[FBP_multisamples] != 0 && _property[FBP_multisamples] == 0) {
     quality -= 100000;
   }
@@ -586,16 +537,14 @@ get_quality(const FrameBufferProperties &reqs) const {
     }
   }
 
-  // deduct for insufficient multisamples.
-  // Cost: 1,000
+  // deduct for insufficient multisamples.  Cost: 1,000
 
   if (_property[FBP_multisamples] != 0 &&
       reqs._property[FBP_multisamples] > _property[FBP_multisamples]) {
     quality -= 1000;
   }
 
-  // Deduct for unrequested bitplanes.
-  // Cost: 50
+  // Deduct for unrequested bitplanes.  Cost: 50
 
   for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
     if ((_property[prop]) && (reqs._property[prop] == 0)) {
@@ -610,8 +559,8 @@ get_quality(const FrameBufferProperties &reqs) const {
     }
   }
 
-  // Deduct for excessive resolution in any bitplane (unless we asked
-  // for only 1 bit, which is the convention for any amount).
+  // Deduct for excessive resolution in any bitplane (unless we asked for only
+  // 1 bit, which is the convention for any amount).
 
   // Cost: 50
 
@@ -622,26 +571,22 @@ get_quality(const FrameBufferProperties &reqs) const {
     }
   }
 
-  // Bonus for each depth bit.
-  // Extra: 2 per bit.
+  // Bonus for each depth bit.  Extra: 2 per bit.
   if (reqs._property[FBP_depth_bits] != 0) {
     quality += 2 * _property[FBP_depth_bits];
   }
 
-  // Bonus for each multisample.
-  // Extra: 2 per sample.
+  // Bonus for each multisample.  Extra: 2 per sample.
   if (reqs._property[FBP_multisamples] != 0) {
     quality += 2 * _property[FBP_multisamples];
   }
 
-  // Bonus for each coverage sample.
-  // Extra: 2 per sample.
+  // Bonus for each coverage sample.  Extra: 2 per sample.
   if (reqs._property[FBP_coverage_samples] != 0) {
     quality += 2 * _property[FBP_coverage_samples];
   }
 
-  // Bonus for each color, alpha, stencil, and accum.
-  // Extra: 1 per bit.
+  // Bonus for each color, alpha, stencil, and accum.  Extra: 1 per bit.
   for (int prop=FBP_color_bits; prop<=FBP_accum_bits; prop++) {
     if (reqs._property[prop] != 0) {
       quality += _property[prop];
@@ -651,13 +596,11 @@ get_quality(const FrameBufferProperties &reqs) const {
   return quality;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::verify_hardware_software
-//       Access: Public
-//  Description: Validates that the properties represent the desired
-//               kind of renderer (hardware or software).  If not,
-//               prints out an error message and returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Validates that the properties represent the desired kind of renderer
+ * (hardware or software).  If not, prints out an error message and returns
+ * false.
+ */
 bool FrameBufferProperties::
 verify_hardware_software(const FrameBufferProperties &props, const string &renderer) const {
 
@@ -690,25 +633,21 @@ verify_hardware_software(const FrameBufferProperties &props, const string &rende
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::setup_color_texture
-//       Access: Public
-//  Description: Sets the texture up for render-to-texture matching
-//               these framebuffer properties.
-//
-//               Returns true if there was a format that had enough
-//               bits, false otherwise.  Of course, this is no
-//               guarantee that a particular graphics back-end
-//               supports rendering to textures of that format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the texture up for render-to-texture matching these framebuffer
+ * properties.
+ *
+ * Returns true if there was a format that had enough bits, false otherwise.
+ * Of course, this is no guarantee that a particular graphics back-end
+ * supports rendering to textures of that format.
+ */
 bool FrameBufferProperties::
 setup_color_texture(Texture *tex) const {
-  // Note by rdb: I'm not entirely happy about this system.  I'd
-  // eventually like to move to a system in which framebuffer color
-  // formats and texture formats are unified (like in Direct3D and
-  // OpenGL) and where a table such as the below one would be
-  // generated dynamically by the GSG to reflect the formats that
-  // are supported for render-to-texture.
+  // Note by rdb: I'm not entirely happy about this system.  I'd eventually
+  // like to move to a system in which framebuffer color formats and texture
+  // formats are unified (like in Direct3D and OpenGL) and where a table such
+  // as the below one would be generated dynamically by the GSG to reflect the
+  // formats that are supported for render-to-texture.
 
   static const int num_formats = 13;
   static const struct {
@@ -716,7 +655,7 @@ setup_color_texture(Texture *tex) const {
     bool has_float;
     Texture::Format format;
   } formats[num_formats] = {
-  //{  1,  1,  0,  0,  0, false, Texture::F_red},
+  // {  1,  1,  0,  0,  0, false, Texture::F_red},
     {  1,  1,  1,  1,  0, false, Texture::F_rgb },
     {  1,  1,  1,  1,  1, false, Texture::F_rgba },
     { 24,  8,  8,  8,  0, false, Texture::F_rgb8 },
@@ -770,17 +709,14 @@ setup_color_texture(Texture *tex) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::setup_depth_texture
-//       Access: Public
-//  Description: Sets the texture up for render-to-texture matching
-//               these framebuffer properties.
-//
-//               Returns true if there was a format that had enough
-//               bits, false otherwise.  Of course, this is no
-//               guarantee that a particular graphics back-end
-//               supports rendering to textures of that format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the texture up for render-to-texture matching these framebuffer
+ * properties.
+ *
+ * Returns true if there was a format that had enough bits, false otherwise.
+ * Of course, this is no guarantee that a particular graphics back-end
+ * supports rendering to textures of that format.
+ */
 bool FrameBufferProperties::
 setup_depth_texture(Texture *tex) const {
   if (get_float_depth()) {

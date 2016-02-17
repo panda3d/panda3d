@@ -1,16 +1,15 @@
-// Filename: pgItemNotify.h
-// Created by:  drose (18Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgItemNotify.h
+ * @author drose
+ * @date 2005-08-18
+ */
 
 #ifndef PGITEMNOTIFY_H
 #define PGITEMNOTIFY_H
@@ -21,12 +20,10 @@
 class PGItem;
 class MouseWatcherParameter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGItemNotify
-// Description : Objects that inherit from this class can receive
-//               specialized messages when PGItems change in certain
-//               ways.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects that inherit from this class can receive specialized messages when
+ * PGItems change in certain ways.
+ */
 class EXPCL_PANDA_PGUI PGItemNotify {
 public:
   INLINE PGItemNotify();

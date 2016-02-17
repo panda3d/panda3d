@@ -1,16 +1,15 @@
-// Filename: geoMipTerrain.h
-// Created by:  rdb (29Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geoMipTerrain.h
+ * @author rdb
+ * @date 2007-06-29
+ */
 
 #ifndef GEOMIPTERRAIN_H
 #define GEOMIPTERRAIN_H
@@ -26,17 +25,14 @@
 
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeoMipTerrain
-// Description : GeoMipTerrain, meaning Panda3D GeoMipMapping, can convert
-//               a heightfield image into a 3D terrain, consisting
-//               of several GeomNodes. It uses the GeoMipMapping
-//               algorithm, or Geometrical MipMapping, based on
-//               the LOD (Level of Detail) algorithm. For more
-//               information about the GeoMipMapping algoritm, see
-//               this paper, written by Willem H. de Boer:
-//               http://flipcode.com/articles/article_geomipmaps.pdf
-////////////////////////////////////////////////////////////////////
+/**
+ * GeoMipTerrain, meaning Panda3D GeoMipMapping, can convert a heightfield
+ * image into a 3D terrain, consisting of several GeomNodes.  It uses the
+ * GeoMipMapping algorithm, or Geometrical MipMapping, based on the LOD (Level
+ * of Detail) algorithm.  For more information about the GeoMipMapping
+ * algoritm, see this paper, written by Willem H. de Boer:
+ * http://flipcode.com/articles/article_geomipmaps.pdf
+ */
 class EXPCL_PANDA_GRUTIL GeoMipTerrain : public TypedObject {
 PUBLISHED:
   INLINE GeoMipTerrain(const string &name);
@@ -76,10 +72,10 @@ PUBLISHED:
 
   INLINE void set_auto_flatten(int mode);
 
-  // The focal point is the point at which the terrain will have the
-  // highest quality (lowest level of detail). Parts farther away from
-  // the focal point will have a lower quality (higher level of detail).
-  // The focal point is not taken in respect if bruteforce is set true.
+  // The focal point is the point at which the terrain will have the highest
+  // quality (lowest level of detail). Parts farther away from the focal point
+  // will have a lower quality (higher level of detail). The focal point is
+  // not taken in respect if bruteforce is set true.
   INLINE void set_focal_point(const LPoint2d &fp);
   INLINE void set_focal_point(const LPoint2f &fp);
   INLINE void set_focal_point(const LPoint3d &fp);
@@ -176,4 +172,3 @@ private:
 #include "geoMipTerrain.I"
 
 #endif /*GEOMIPTERRAIN_H*/
-

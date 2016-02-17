@@ -1,16 +1,15 @@
-// Filename: freetypeFace.h
-// Created by:  gogg (16Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file freetypeFace.h
+ * @author gogg
+ * @date 2009-11-16
+ */
 
 #ifndef FREETYPEFACE_H
 #define FREETYPEFACE_H
@@ -27,13 +26,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-////////////////////////////////////////////////////////////////////
-//       Class : FreetypeFont
-// Description : This is a reference-counted wrapper for the
-//               freetype font face object (FT_Face).
-//               It's used by the FreetypeFont class to store a face
-//               that can be shared between copied instances.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a reference-counted wrapper for the freetype font face object
+ * (FT_Face). It's used by the FreetypeFont class to store a face that can be
+ * shared between copied instances.
+ */
 class EXPCL_PANDA_PNMTEXT FreetypeFace : public TypedReferenceCount, public Namable {
 public:
   FreetypeFace();
@@ -48,8 +45,7 @@ private:
   static void initialize_ft_library();
 
 private:
-  // This is provided as a permanent storage for the raw font data, if
-  // needed.
+  // This is provided as a permanent storage for the raw font data, if needed.
   string _font_data;
 
   string _name;

@@ -1,16 +1,15 @@
-// Filename: eggBinner.cxx
-// Created by:  drose (17Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggBinner.cxx
+ * @author drose
+ * @date 2000-02-17
+ */
 
 #include "eggBinner.h"
 #include "eggRenderState.h"
@@ -22,24 +21,20 @@
 #include "eggGroup.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBinner::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggBinner::
 EggBinner(EggLoader &loader) :
   _loader(loader)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBinner::prepare_node
-//       Access: Public, Virtual
-//  Description: May be overridden in derived classes to perform some
-//               setup work as each node is encountered.  This will be
-//               called once for each node in the egg hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be overridden in derived classes to perform some setup work as each
+ * node is encountered.  This will be called once for each node in the egg
+ * hierarchy.
+ */
 void EggBinner::
 prepare_node(EggNode *node) {
   if (node->is_of_type(EggPrimitive::get_class_type())) {
@@ -50,11 +45,9 @@ prepare_node(EggNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBinner::get_bin_number
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int EggBinner::
 get_bin_number(const EggNode *node) {
   if (node->is_of_type(EggPrimitive::get_class_type())) {
@@ -79,15 +72,12 @@ get_bin_number(const EggNode *node) {
   return (int)BN_none;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBinner::get_bin_name
-//       Access: Public, Virtual
-//  Description: May be overridden in derived classes to define a name
-//               for each new bin, based on its bin number, and a
-//               sample child.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be overridden in derived classes to define a name for each new bin,
+ * based on its bin number, and a sample child.
+ */
 string EggBinner::
-get_bin_name(int bin_number, const EggNode *child) { 
+get_bin_name(int bin_number, const EggNode *child) {
   if (bin_number == BN_polyset || bin_number == BN_patches) {
     return DCAST(EggPrimitive, child)->get_sort_name();
   }
@@ -95,11 +85,9 @@ get_bin_name(int bin_number, const EggNode *child) {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggBinner::sorts_less
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool EggBinner::
 sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
   switch (bin_number) {
@@ -129,8 +117,8 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
         }
       }
 
-      // Also, if the primitive was given a name (that does not begin
-      // with a digit), it gets binned with similar-named primitives.
+      // Also, if the primitive was given a name (that does not begin with a
+      // digit), it gets binned with similar-named primitives.
       return pa->get_sort_name() < pb->get_sort_name();
     }
 
@@ -138,16 +126,16 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
     {
       const EggGroup *ga = DCAST(EggGroup, a);
       const EggGroup *gb = DCAST(EggGroup, b);
-      
+
       const EggSwitchCondition &swa = ga->get_lod();
       const EggSwitchCondition &swb = gb->get_lod();
-      
+
       // For now, this is the only kind of switch condition there is.
       const EggSwitchConditionDistance &swda =
         *DCAST(EggSwitchConditionDistance, &swa);
       const EggSwitchConditionDistance &swdb =
         *DCAST(EggSwitchConditionDistance, &swb);
-      
+
       // Group LOD nodes in order by switching center.
       return (swda._center.compare_to(swdb._center) < 0);
     }
@@ -156,7 +144,7 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
   case BN_nurbs_curve:
     // Nurbs curves and surfaces are always binned individually.
     return a < b;
-      
+
   case BN_none:
     break;
   }

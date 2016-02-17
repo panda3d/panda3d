@@ -1,16 +1,15 @@
-// Filename: physxMaterialDesc.h
-// Created by:  enn0x (21Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxMaterialDesc.h
+ * @author enn0x
+ * @date 2009-09-21
+ */
 
 #ifndef PHYSXMATERIALDESC_H
 #define PHYSXMATERIALDESC_H
@@ -20,10 +19,9 @@
 #include "physxEnums.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMaterialDesc
-// Description : Descriptor class for materials. See PhysxMaterial.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for materials.  See PhysxMaterial.
+ */
 class EXPCL_PANDAPHYSX PhysxMaterialDesc : public PhysxEnums {
 
 PUBLISHED:

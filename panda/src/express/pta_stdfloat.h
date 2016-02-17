@@ -1,16 +1,15 @@
-// Filename: pta_stdfloat.h
-// Created by:  drose (07Oct11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pta_stdfloat.h
+ * @author drose
+ * @date 2011-10-07
+ */
 
 #ifndef PTA_STDFLOAT_H
 #define PTA_STDFLOAT_H

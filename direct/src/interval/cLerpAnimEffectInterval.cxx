@@ -1,16 +1,15 @@
-// Filename: cLerpAnimEffectInterval.cxx
-// Created by:  drose (27Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cLerpAnimEffectInterval.cxx
+ * @author drose
+ * @date 2002-08-27
+ */
 
 #include "cLerpAnimEffectInterval.h"
 #include "lerp_helpers.h"
@@ -18,13 +17,11 @@
 
 TypeHandle CLerpAnimEffectInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpAnimEffectInterval::step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the
+ * normal case) or decrease (e.g.  if the interval is being played by a
+ * slider).
+ */
 void CLerpAnimEffectInterval::
 priv_step(double t) {
   check_started(get_class_type(), "priv_step");
@@ -42,11 +39,9 @@ priv_step(double t) {
   _curr_t = t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpAnimEffectInterval::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLerpAnimEffectInterval::
 output(ostream &out) const {
   out << get_name() << ": ";

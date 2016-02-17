@@ -1,16 +1,15 @@
-// Filename: mayaNodeDesc.h
-// Created by:  drose (06Jun03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaNodeDesc.h
+ * @author drose
+ * @date 2003-06-06
+ */
 
 #ifndef MAYANODEDESC_H
 #define MAYANODEDESC_H
@@ -33,13 +32,11 @@ class EggGroup;
 class EggTable;
 class EggXfmSAnim;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaNodeDesc
-// Description : Describes a single instance of a node in the Maya
-//               scene graph, relating it to the corresponding egg
-//               structures (e.g. node, group, or table entry) that
-//               will be created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a single instance of a node in the Maya scene graph, relating it
+ * to the corresponding egg structures (e.g.  node, group, or table entry)
+ * that will be created.
+ */
 class MayaNodeDesc : public ReferenceCount, public Namable {
 public:
   MayaNodeDesc(MayaNodeTree *tree,
@@ -64,7 +61,7 @@ public:
   MayaNodeDesc *_parent;
   typedef pvector< PT(MayaNodeDesc) > Children;
   Children _children;
-  
+
 private:
   void tag();
   void untag();
@@ -76,7 +73,7 @@ private:
   void clear_egg();
   void mark_joint_parent();
   void check_pseudo_joints(bool joint_above);
-  void check_blend_shapes(const MFnDagNode &node, 
+  void check_blend_shapes(const MFnDagNode &node,
                           const string &attrib_name);
   void check_lods();
 

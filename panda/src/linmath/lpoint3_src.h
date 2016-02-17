@@ -1,27 +1,23 @@
-// Filename: lpoint3_src.h
-// Created by:  drose (25Sep99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lpoint3_src.h
+ * @author drose
+ * @date 1999-09-25
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LPoint3
-// Description : This is a three-component point in space (as opposed
-//               to a three-component vector, which represents a
-//               direction and a distance).  Some of the methods are
-//               slightly different between LPoint3 and LVector3; in
-//               particular, subtraction of two points yields a
-//               vector, while addition of a vector and a point yields
-//               a point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a three-component point in space (as opposed to a three-component
+ * vector, which represents a direction and a distance).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LPoint3) : public FLOATNAME(LVecBase3) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint3)() DEFAULT_CTOR;

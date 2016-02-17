@@ -1,16 +1,15 @@
-// Filename: startup.cxx
-// Created by:  drose (17Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file startup.cxx
+ * @author drose
+ * @date 2009-06-17
+ */
 
 #include "startup.h"
 #include "p3d_plugin_config.h"
@@ -32,13 +31,13 @@ bool has_plugin_thread_async_call;
 
 NPNetscapeFuncs *browser;
 
-// These function prototypes changed slightly (but insignificantly)
-// between releases of NPAPI.  To avoid compilation errors, we use our
-// own name, and cast it to the correct type.
+// These function prototypes changed slightly (but insignificantly) between
+// releases of NPAPI.  To avoid compilation errors, we use our own name, and
+// cast it to the correct type.
 static int32_t
 NPP_WriteReady_x(NPP instance, NPStream *stream);
 static int32_t
-NPP_Write_x(NPP instance, NPStream *stream, int32_t offset, 
+NPP_Write_x(NPP instance, NPStream *stream, int32_t offset,
             int32_t len, void *buffer);
 
 // open_logfile() also assigns global_root_dir.
@@ -48,8 +47,8 @@ open_logfile() {
   if (!logfile_is_open) {
     global_root_dir = find_root_dir();
 
-    // Note that this logfile name may not be specified at runtime.  It
-    // must be compiled in if it is specified at all.
+    // Note that this logfile name may not be specified at runtime.  It must
+    // be compiled in if it is specified at all.
 
     string log_directory;
   // Allow the developer to compile in the log directory.
@@ -58,8 +57,8 @@ open_logfile() {
       log_directory = P3D_PLUGIN_LOG_DIRECTORY;
     }
 #endif
-    
-    // Failing that, we write logfiles to Panda3D/log.
+
+    // Failing that, we write logfiles to Panda3Dlog.
     if (log_directory.empty()) {
       log_directory = global_root_dir + "/log";
     }
@@ -72,9 +71,9 @@ open_logfile() {
 #endif
         log_directory += "/";
     }
-    
+
     // Construct the logfile pathname.
-    
+
     string log_basename;
 #ifdef P3D_PLUGIN_LOG_BASENAME1
     if (log_basename.empty()) {
@@ -102,20 +101,17 @@ open_logfile() {
       logfile.setf(ios::unitbuf);
     }
 
-    // If we didn't have a logfile name compiled in, we throw away log
-    // output by the simple expedient of never actually opening the
-    // ofstream.
+    // If we didn't have a logfile name compiled in, we throw away log output
+    // by the simple expedient of never actually opening the ofstream.
     logfile_is_open = true;
   }
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NP_GetMIMEDescription
-//  Description: On Unix, this function is called by the browser to
-//               get the mimetypes and extensions this plugin is
-//               supposed to handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * On Unix, this function is called by the browser to get the mimetypes and
+ * extensions this plugin is supposed to handle.
+ */
 #if NP_VERSION_MAJOR == 0 && NP_VERSION_MINOR <= 22
 char *
 #else
@@ -125,17 +121,16 @@ NP_GetMIMEDescription(void) {
   return "application/x-panda3d:p3d:Panda3D applet;";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NP_GetValue
-//  Description: On Unix, this function is called by the browser to
-//               get some information like the name and description.
-////////////////////////////////////////////////////////////////////
+/**
+ * On Unix, this function is called by the browser to get some information
+ * like the name and description.
+ */
 NPError
 NP_GetValue(void*, NPPVariable variable, void* value) {
   if (value == NULL) {
     return NPERR_INVALID_PARAM;
   }
-  
+
   switch (variable) {
     case NPPVpluginNameString:
       *(const char **)value = "Panda3D Game Engine Plug-In";
@@ -147,24 +142,22 @@ NP_GetValue(void*, NPPVariable variable, void* value) {
       nout << "Ignoring GetValue request " << variable << "\n";
       return NPERR_INVALID_PARAM;
   }
-  
+
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NP_Initialize
-//  Description: This function is called (almost) before any other
-//               function, to ask the plugin to initialize itself and
-//               to send the pointers to the browser control
-//               functions.  Also see NP_GetEntryPoints.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called (almost) before any other function, to ask the
+ * plugin to initialize itself and to send the pointers to the browser control
+ * functions.  Also see NP_GetEntryPoints.
+ */
 #ifdef _WIN32
-NPError OSCALL 
+NPError OSCALL
 NP_Initialize(NPNetscapeFuncs *browserFuncs)
 #else
-// On Mac, the API specifies this second parameter is included,
-// but it lies.  We actually don't get a second parameter there,
-// but we have to put it here to make the compiler happy.
+// On Mac, the API specifies this second parameter is included, but it lies.
+// We actually don't get a second parameter there, but we have to put it here
+// to make the compiler happy.
 NPError OSCALL
 NP_Initialize(NPNetscapeFuncs *browserFuncs,
               NPPluginFuncs *pluginFuncs)
@@ -179,8 +172,8 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   nout << "browserFuncs = " << browserFuncs << "\n";
 
-  // On Unix, we have to use the pluginFuncs argument
-  // to pass our entry points.
+  // On Unix, we have to use the pluginFuncs argument to pass our entry
+  // points.
 #if !defined(_WIN32) && !defined(__APPLE__)
   if (pluginFuncs != NULL) {
     NP_GetEntryPoints(pluginFuncs);
@@ -210,21 +203,19 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   }
 #endif
 
-  // Seed the lame random number generator in rand(); we use it to
-  // select a mirror for downloading.
+  // Seed the lame random number generator in rand(); we use it to select a
+  // mirror for downloading.
   srand((unsigned int)time(NULL));
 
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NP_GetEntryPoints
-//  Description: This method is extracted directly from the DLL and
-//               called at initialization time by the browser, either
-//               before or after NP_Initialize, to retrieve the
-//               pointers to the rest of the plugin functions that are
-//               not exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is extracted directly from the DLL and called at initialization
+ * time by the browser, either before or after NP_Initialize, to retrieve the
+ * pointers to the rest of the plugin functions that are not exported from the
+ * DLL.
+ */
 NPError OSCALL
 NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   // open_logfile() also assigns global_root_dir.
@@ -238,11 +229,11 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
     return NPERR_INVALID_FUNCTABLE_ERROR;
   }
 
-  // Not entirely sure what version number we should send back here.
-  // Sending the verion number of the NPAPI library we're compiled
-  // against doesn't seem 100% right, because there's no reason to
-  // think that *this* code knows about all of the functions provided
-  // by the particular library version it's compiled against.
+  // Not entirely sure what version number we should send back here.  Sending
+  // the verion number of the NPAPI library we're compiled against doesn't
+  // seem 100% right, because there's no reason to think that *this* code
+  // knows about all of the functions provided by the particular library
+  // version it's compiled against.
   pluginFuncs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
 
   pluginFuncs->newp = NPP_New;
@@ -252,9 +243,9 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   pluginFuncs->destroystream = NPP_DestroyStream;
   pluginFuncs->asfile = NPP_StreamAsFile;
 
-  // WebKit's NPAPI defines the wrong prototype for these functions,
-  // so we have to cast them.  But the casting typename isn't
-  // consistent between WebKit and Mozilla's NPAPI headers.
+  // WebKit's NPAPI defines the wrong prototype for these functions, so we
+  // have to cast them.  But the casting typename isn't consistent between
+  // WebKit and Mozilla's NPAPI headers.
 #ifdef NewNPP_WriteProc
   pluginFuncs->writeready = NewNPP_WriteReadyProc(NPP_WriteReady_x);
   pluginFuncs->write = NewNPP_WriteProc(NPP_Write_x);
@@ -272,30 +263,26 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NP_Shutdown
-//  Description: This function is called when the browser is done with
-//               the plugin; it asks the plugin to unload itself and
-//               free all used resources.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called when the browser is done with the plugin; it asks
+ * the plugin to unload itself and free all used resources.
+ */
 NPError OSCALL
 NP_Shutdown(void) {
   nout << "shutdown\n";
   unload_plugin(nout);
   PPBrowserObject::clear_class_definition();
 
-  // Not clear whether there's a return value or not.  Some versions
-  // of the API have different opinions on this.
+  // Not clear whether there's a return value or not.  Some versions of the
+  // API have different opinions on this.
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_New
-//  Description: Called by the browser to create a new instance of the
-//               plugin.
-////////////////////////////////////////////////////////////////////
-NPError 
-NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, 
+/**
+ * Called by the browser to create a new instance of the plugin.
+ */
+NPError
+NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode,
         int16_t argc, char *argn[], char *argv[], NPSavedData *saved) {
   nout << "new instance " << instance << "\n";
 
@@ -303,14 +290,14 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode,
   P3D_event_type event_type = P3D_ET_none;
 
 #ifdef __APPLE__
-  // The default drawing model for Apple is via the deprecated
-  // QuickDraw GrafPtr, and the default event model is via the
-  // deprecated Carbon EventRecord.
+  // The default drawing model for Apple is via the deprecated QuickDraw
+  // GrafPtr, and the default event model is via the deprecated Carbon
+  // EventRecord.
   window_handle_type = P3D_WHT_osx_port;
   event_type = P3D_ET_osx_event_record;
 
-  // But we have to request the CoreGraphics drawing model to be
-  // compatible with Snow Leopard.
+  // But we have to request the CoreGraphics drawing model to be compatible
+  // with Snow Leopard.
   NPBool supports_core_graphics = false;
 #ifdef MACOSX_HAS_COREGRAPHICS_DRAWING_MODEL
   NPError err = browser->getvalue(instance,
@@ -361,28 +348,27 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode,
   instance->pdata = inst;
   nout << "new instance->pdata = " << inst << "\n";
 
-  // To experiment with a "windowless" plugin, which really means we
-  // create our own window without an intervening window, try this.
-  //browser->setvalue(instance, NPPVpluginWindowBool, (void *)false);
+  // To experiment with a "windowless" plugin, which really means we create
+  // our own window without an intervening window, try this.
+  // browser->setvalue(instance, NPPVpluginWindowBool, (void *)false);
 
-  // Now that we have stored the pointer, we can call begin(), which
-  // starts to initiate downloads.
+  // Now that we have stored the pointer, we can call begin(), which starts to
+  // initiate downloads.
   inst->begin();
 
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_Destroy
-//  Description: Called by the browser to destroy an instance of the
-//               plugin previously created with NPP_New.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to destroy an instance of the plugin previously
+ * created with NPP_New.
+ */
 NPError
 NPP_Destroy(NPP instance, NPSavedData **save) {
   nout << "destroy instance " << instance << ", "
        << (PPInstance *)instance->pdata << "\n";
   nout << "save = " << (void *)save << "\n";
-  //  (*save) = NULL;
+  // (*save) = NULL;
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
   inst->stop_outstanding_streams();
@@ -393,14 +379,12 @@ NPP_Destroy(NPP instance, NPSavedData **save) {
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_SetWindow
-//  Description: Called by the browser to inform the instance of its
-//               window size and placement.  This is called initially
-//               to create the window, and may be called subsequently
-//               when the window needs to be moved.  It may be called
-//               redundantly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to inform the instance of its window size and
+ * placement.  This is called initially to create the window, and may be
+ * called subsequently when the window needs to be moved.  It may be called
+ * redundantly.
+ */
 NPError
 NPP_SetWindow(NPP instance, NPWindow *window) {
   nout << "SetWindow " << window->x << ", " << window->y
@@ -414,21 +398,19 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
   return NPERR_NO_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_NewStream
-//  Description: Called by the browser when a new data stream is
-//               created, usually in response to a geturl request; but
-//               it is also called initially to supply the data in the
-//               data or src element.  The plugin must specify how it
-//               can receive the stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser when a new data stream is created, usually in
+ * response to a geturl request; but it is also called initially to supply the
+ * data in the data or src element.  The plugin must specify how it can
+ * receive the stream.
+ */
 NPError
-NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
+NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
               NPBool seekable, uint16_t *stype) {
   nout << "NewStream " << type << ": " << (void *)stream
-       << ", " << stream->url << ", size = " << stream->end 
+       << ", " << stream->url << ", size = " << stream->end
        << ", notifyData = " << stream->notifyData
-       << ", for " << instance 
+       << ", for " << instance
        << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -437,17 +419,15 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
   return inst->new_stream(type, stream, seekable != 0, stype);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_DestroyStream
-//  Description: Called by the browser to mark the end of a stream
-//               created with NewStream.
-////////////////////////////////////////////////////////////////////
-NPError 
+/**
+ * Called by the browser to mark the end of a stream created with NewStream.
+ */
+NPError
 NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
-  nout << "DestroyStream: " << (void *)stream << ", " << stream->url 
+  nout << "DestroyStream: " << (void *)stream << ", " << stream->url
        << ", notifyData = " << stream->notifyData
        << ", reason = " << reason
-       << ", for " << instance 
+       << ", for " << instance
        << ", " << (PPInstance *)(instance->pdata) << "\n";
 
   PPInstance::generic_browser_call();
@@ -457,14 +437,13 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
   return inst->destroy_stream(stream, reason);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_WriteReady
-//  Description: Called by the browser to ask how many bytes it can
-//               deliver for a stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to ask how many bytes it can deliver for a stream.
+ */
 int32_t
 NPP_WriteReady_x(NPP instance, NPStream *stream) {
-  //  nout << "WriteReady " << stream->url << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
+  // nout << "WriteReady " << stream->url << " for " << instance << ", " <<
+  // (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -472,16 +451,15 @@ NPP_WriteReady_x(NPP instance, NPStream *stream) {
   return inst->write_ready(stream);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_Write
-//  Description: Called by the browser to deliver bytes for the
-//               stream; the plugin should return the number of bytes
-//               consumed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to deliver bytes for the stream; the plugin should
+ * return the number of bytes consumed.
+ */
 int32_t
-NPP_Write_x(NPP instance, NPStream *stream, int32_t offset, 
+NPP_Write_x(NPP instance, NPStream *stream, int32_t offset,
             int32_t len, void *buffer) {
-  //  nout << "Write " << stream->url << ", " << offset << ", " << len << " for " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
+  // nout << "Write " << stream->url << ", " << offset << ", " << len << " for
+  // " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -489,17 +467,15 @@ NPP_Write_x(NPP instance, NPStream *stream, int32_t offset,
   return inst->write_stream(stream, offset, len, buffer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_StreamAsFile
-//  Description: Called by the browser to report the filename that
-//               contains the fully-downloaded stream, if
-//               NP_ASFILEONLY was specified by the plugin in
-//               NPP_NewStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to report the filename that contains the fully-
+ * downloaded stream, if NP_ASFILEONLY was specified by the plugin in
+ * NPP_NewStream.
+ */
 void
 NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
-  nout << "StreamAsFile " << stream->url 
-       << ", " << stream->end 
+  nout << "StreamAsFile " << stream->url
+       << ", " << stream->end
        << ", notifyData = " << stream->notifyData
        << "\n";
 
@@ -510,24 +486,21 @@ NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
   inst->stream_as_file(stream, fname);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_Print
-//  Description: Called by the browser when the user attempts to print
-//               the page containing the plugin instance.
-////////////////////////////////////////////////////////////////////
-void 
+/**
+ * Called by the browser when the user attempts to print the page containing
+ * the plugin instance.
+ */
+void
 NPP_Print(NPP instance, NPPrint *platformPrint) {
   nout << "Print\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_HandleEvent
-//  Description: Called by the browser to inform the plugin of OS
-//               window events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to inform the plugin of OS window events.
+ */
 int16_t
 NPP_HandleEvent(NPP instance, void *event) {
-  //  nout << "HandleEvent\n";
+  // nout << "HandleEvent\n";
   PPInstance::generic_browser_call();
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -536,15 +509,13 @@ NPP_HandleEvent(NPP instance, void *event) {
   return inst->handle_event(event);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_URLNotify
-//  Description: Called by the browser to inform the plugin of a
-//               completed URL request.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to inform the plugin of a completed URL request.
+ */
 void
 NPP_URLNotify(NPP instance, const char *url,
               NPReason reason, void *notifyData) {
-  nout << "URLNotify: " << url 
+  nout << "URLNotify: " << url
        << ", notifyData = " << notifyData
        << ", reason = " << reason
        << "\n";
@@ -556,11 +527,9 @@ NPP_URLNotify(NPP instance, const char *url,
   inst->url_notify(url, reason, notifyData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_GetValue
-//  Description: Called by the browser to query specific information
-//               from the plugin.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the browser to query specific information from the plugin.
+ */
 NPError
 NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   nout << "GetValue " << variable << "\n";
@@ -579,9 +548,8 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
     // If we have Gtk2 available, we can use it to support the XEmbed
     // protocol, which Chromium (at least) requires.
 
-    // In this case, we'll say we can do it, if the browser supports
-    // it.  (Though probably the browser wouldn't be asking if it
-    // couldn't.)
+    // In this case, we'll say we can do it, if the browser supports it.
+    // (Though probably the browser wouldn't be asking if it couldn't.)
 
     NPBool supports_xembed = false;
     NPError err = browser->getvalue(instance, NPNVSupportsXEmbedBool, &supports_xembed);
@@ -609,14 +577,12 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   return NPERR_GENERIC_ERROR;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NPP_SetValue
-//  Description: Called by the browser to update a scriptable value.
-////////////////////////////////////////////////////////////////////
-NPError 
+/**
+ * Called by the browser to update a scriptable value.
+ */
+NPError
 NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
   nout << "SetValue " << variable << "\n";
   PPInstance::generic_browser_call();
   return NPERR_GENERIC_ERROR;
 }
-

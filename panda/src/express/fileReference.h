@@ -1,16 +1,15 @@
-// Filename: fileReference.h
-// Created by:  drose (23Jun11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fileReference.h
+ * @author drose
+ * @date 2011-06-23
+ */
 
 #ifndef FILEREFERENCE_H
 #define FILEREFERENCE_H
@@ -20,12 +19,10 @@
 #include "typedReferenceCount.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FileReference
-// Description : Keeps a reference-counted pointer to a file on disk.
-//               As long as the FileReference is held, someone
-//               presumably has a use for this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Keeps a reference-counted pointer to a file on disk.  As long as the
+ * FileReference is held, someone presumably has a use for this file.
+ */
 class EXPCL_PANDAEXPRESS FileReference : public TypedReferenceCount {
 PUBLISHED:
   INLINE FileReference(const Filename &filename);

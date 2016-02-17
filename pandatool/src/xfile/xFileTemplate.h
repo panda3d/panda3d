@@ -1,16 +1,15 @@
-// Filename: xFileTemplate.h
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileTemplate.h
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #ifndef XFILETEMPLATE_H
 #define XFILETEMPLATE_H
@@ -21,11 +20,10 @@
 
 class XFileDataDef;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileTemplate
-// Description : A template definition in the X file.  This defines
-//               the data structures that may be subsequently read.
-////////////////////////////////////////////////////////////////////
+/**
+ * A template definition in the X file.  This defines the data structures that
+ * may be subsequently read.
+ */
 class XFileTemplate : public XFileNode {
 public:
   XFileTemplate(XFile *x_file, const string &name, const WindowsGuid &guid);
@@ -49,7 +47,7 @@ public:
   INLINE XFileTemplate *get_option(int n) const;
 
   virtual bool matches(const XFileNode *other) const;
-  
+
 private:
   WindowsGuid _guid;
   bool _is_standard;
@@ -57,7 +55,7 @@ private:
 
   typedef pvector< PT(XFileTemplate) > Options;
   Options _options;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -81,6 +79,3 @@ private:
 #include "xFileTemplate.I"
 
 #endif
-  
-
-

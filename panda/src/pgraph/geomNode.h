@@ -1,16 +1,15 @@
-// Filename: geomNode.h
-// Created by:  drose (22eb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomNode.h
+ * @author drose
+ * @date 2002-02-22
+ */
 
 #ifndef GEOMNODE_H
 #define GEOMNODE_H
@@ -27,13 +26,11 @@
 
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomNode
-// Description : A node that holds Geom objects, renderable pieces of
-//               geometry.  This is the primary kind of leaf node in
-//               the scene graph; almost all visible objects will be
-//               contained in a GeomNode somewhere.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that holds Geom objects, renderable pieces of geometry.  This is the
+ * primary kind of leaf node in the scene graph; almost all visible objects
+ * will be contained in a GeomNode somewhere.
+ */
 class EXPCL_PANDA_PGRAPH GeomNode : public PandaNode {
 PUBLISHED:
   explicit GeomNode(const string &name);
@@ -47,7 +44,7 @@ public:
                                          int attrib_types,
                                          GeomTransformer &transformer);
   virtual void xform(const LMatrix4 &mat);
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
   virtual CPT(TransformState)
     calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                       bool &found_any,
@@ -110,8 +107,8 @@ protected:
                                        Thread *current_thread) const;
 
 public:
-  // This must be declared public so that VC6 will allow the nested
-  // CData class to access it.
+  // This must be declared public so that VC6 will allow the nested CData
+  // class to access it.
   class GeomEntry {
   public:
     INLINE GeomEntry(Geom *geom, const RenderState *state);
@@ -159,9 +156,8 @@ private:
 
 public:
   // This class is returned from get_geoms().  It is similar to
-  // PandaNode::get_children(); use this to walk through the list of
-  // geoms faster than walking through the geoms directly from the
-  // node.
+  // PandaNode::get_children(); use this to walk through the list of geoms
+  // faster than walking through the geoms directly from the node.
   class EXPCL_PANDA_PGRAPH Geoms {
   public:
     INLINE Geoms();
@@ -187,8 +183,8 @@ public:
   // This data is only needed when reading from a bam file.
   class BamAuxData : public BamReader::AuxData {
   public:
-    // We just hold a pointer to the RenderState that may otherwise
-    // lose its pointers before it can finalize.
+    // We just hold a pointer to the RenderState that may otherwise lose its
+    // pointers before it can finalize.
     CPT(RenderState) _hold_state;
   };
 
@@ -201,7 +197,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

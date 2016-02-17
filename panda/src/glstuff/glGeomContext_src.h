@@ -1,16 +1,15 @@
-// Filename: glGeomContext_src.h
-// Created by:  drose (19Mar04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGeomContext_src.h
+ * @author drose
+ * @date 2004-03-19
+ */
 
 #include "pandabase.h"
 #include "geomContext.h"
@@ -22,25 +21,24 @@
 
 class CLP(GeomMunger);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLGeomContext
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_GL CLP(GeomContext) : public GeomContext {
 public:
   INLINE CLP(GeomContext)(Geom *geom);
   virtual ~CLP(GeomContext)();
   ALLOC_DELETED_CHAIN(CLP(GeomContext));
 
-  bool get_display_list(GLuint &index, const CLP(GeomMunger) *munger, 
+  bool get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
                         UpdateSeq modified);
   void release_display_lists();
 
   void remove_munger(CLP(GeomMunger) *munger);
 
-  // The different variants of the display list, for storing the
-  // different states the geom might have been rendered in (each using
-  // a different munger).
+  // The different variants of the display list, for storing the different
+  // states the geom might have been rendered in (each using a different
+  // munger).
   class DisplayList {
   public:
     INLINE DisplayList();
@@ -50,8 +48,7 @@ public:
   typedef pmap<CLP(GeomMunger) *, DisplayList> DisplayLists;
   DisplayLists _display_lists;
 
-  // The number of vertices encoded in the display list, for stats
-  // reporting.
+  // The number of vertices encoded in the display list, for stats reporting.
 #ifdef DO_PSTATS
   int _num_verts;
 #endif
@@ -75,4 +72,3 @@ private:
 };
 
 #include "glGeomContext_src.I"
-

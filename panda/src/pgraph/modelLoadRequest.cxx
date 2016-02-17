@@ -1,16 +1,15 @@
-// Filename: modelLoadRequest.cxx
-// Created by:  drose (29Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file modelLoadRequest.cxx
+ * @author drose
+ * @date 2006-08-29
+ */
 
 #include "modelLoadRequest.h"
 #include "loader.h"
@@ -18,14 +17,12 @@
 
 TypeHandle ModelLoadRequest::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::Constructor
-//       Access: Published
-//  Description: Create a new ModelLoadRequest, and add it to the loader
-//               via load_async(), to begin an asynchronous load.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a new ModelLoadRequest, and add it to the loader via load_async(),
+ * to begin an asynchronous load.
+ */
 ModelLoadRequest::
-ModelLoadRequest(const string &name, 
+ModelLoadRequest(const string &name,
                  const Filename &filename, const LoaderOptions &options,
                  Loader *loader) :
   AsyncTask(name),
@@ -36,11 +33,9 @@ ModelLoadRequest(const string &name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::do_task
-//       Access: Protected, Virtual
-//  Description: Performs the task: that is, loads the one model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the task: that is, loads the one model.
+ */
 AsyncTask::DoneStatus ModelLoadRequest::
 do_task() {
   double delay = async_load_delay;

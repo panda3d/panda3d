@@ -1,16 +1,15 @@
-// Filename: collisionInvSphere.cxx
-// Created by:  drose (05Jan05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionInvSphere.cxx
+ * @author drose
+ * @date 2005-01-05
+ */
 
 #include "collisionInvSphere.h"
 #include "collisionSphere.h"
@@ -34,66 +33,52 @@ PStatCollector CollisionInvSphere::_volume_pcollector("Collision Volumes:Collisi
 PStatCollector CollisionInvSphere::_test_pcollector("Collision Tests:CollisionInvSphere");
 TypeHandle CollisionInvSphere::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CollisionSolid *CollisionInvSphere::
 make_copy() {
   return new CollisionInvSphere(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::test_intersection
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection(const CollisionEntry &) const {
   report_undefined_from_intersection(get_type());
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::get_volume_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of bounding volume tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of bounding
+ * volume tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionInvSphere::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::get_test_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of intersection tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of intersection
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionInvSphere::
 get_test_pcollector() {
   return _test_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CollisionInvSphere::
 output(ostream &out) const {
   out << "invsphere, c (" << get_center() << "), r " << get_radius();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(BoundingVolume) CollisionInvSphere::
 compute_internal_bounds() const {
   // An inverse sphere always has an infinite bounding volume, since
@@ -101,11 +86,9 @@ compute_internal_bounds() const {
   return new OmniBoundingVolume();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
@@ -138,9 +121,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LVector3 surface_normal;
   PN_stdfloat vec_length = vec.length();
   if (IS_NEARLY_ZERO(vec_length)) {
-    // If we don't have a collision normal (e.g. the centers are
-    // exactly coincident), then make up an arbitrary normal--any one
-    // is as good as any other.
+    // If we don't have a collision normal (e.g.  the centers are exactly
+    // coincident), then make up an arbitrary normal--any one is as good as
+    // any other.
     surface_normal.set(1.0, 0.0, 0.0);
   } else {
     surface_normal = vec / -vec_length;
@@ -155,11 +138,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::test_intersection_from_line
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
@@ -172,8 +153,8 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
-    // The line is in the middle of space, and therefore intersects
-    // the sphere.
+    // The line is in the middle of space, and therefore intersects the
+    // sphere.
     t1 = t2 = 0.0;
   }
 
@@ -198,11 +179,9 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
@@ -215,8 +194,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
-    // The ray is in the middle of space, and therefore intersects
-    // the sphere.
+    // The ray is in the middle of space, and therefore intersects the sphere.
     t1 = t2 = 0.0;
   }
 
@@ -244,11 +222,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::test_intersection_from_segment
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
@@ -262,11 +238,11 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
-    // The segment is in the middle of space, and therefore intersects
-    // the sphere.
+    // The segment is in the middle of space, and therefore intersects the
+    // sphere.
     t1 = t2 = 0.0;
   }
-  
+
   double t;
   if (t2 <= 0.0) {
     // The segment is completely below the shell.
@@ -285,9 +261,9 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     t = max(t1, 0.0);
 
   } else {
-    // Neither edge of the segment intersects the shell.  It follows
-    // that both intersection points are within the hollow center of
-    // the sphere; therefore, there is no intersection.
+    // Neither edge of the segment intersects the shell.  It follows that both
+    // intersection points are within the hollow center of the sphere;
+    // therefore, there is no intersection.
     return NULL;
   }
 
@@ -312,12 +288,10 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::fill_viz_geom
-//       Access: Protected, Virtual
-//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
-//               for rendering this solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this
+ * solid.
+ */
 void CollisionInvSphere::
 fill_viz_geom() {
   if (collide_cat.is_debug()) {
@@ -332,7 +306,7 @@ fill_viz_geom() {
     ("collision", GeomVertexFormat::get_v3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   for (int sl = 0; sl < num_slices; ++sl) {
     PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
@@ -344,43 +318,37 @@ fill_viz_geom() {
       vertex.add_data3(compute_point(latitude, longitude0));
     }
     vertex.add_data3(compute_point(1.0, longitude0));
-    
+
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  
+
   _viz_geom->add_geom(geom, get_solid_viz_state());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a CollisionInvSphere object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionInvSphere object
+ */
 void CollisionInvSphere::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionInvSphere);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CollisionInvSphere::
 write_datagram(BamWriter *manager, Datagram &me) {
   CollisionSphere::write_datagram(manager, me);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::make_CollisionInvSphere
-//       Access: Protected
-//  Description: Factory method to generate a CollisionInvSphere object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionInvSphere object
+ */
 TypedWritable *CollisionInvSphere::
 make_CollisionInvSphere(const FactoryParams &params) {
   CollisionInvSphere *me = new CollisionInvSphere;
@@ -392,16 +360,12 @@ make_CollisionInvSphere(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of
+ * the data that is needed to re-create this object and stores it in the
+ * appropiate place
+ */
 void CollisionInvSphere::
 fillin(DatagramIterator& scan, BamReader* manager) {
   CollisionSphere::fillin(scan, manager);
 }
-

@@ -1,7 +1,8 @@
-// Filename: cppBison.yxx
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * @file cppBison.yxx
+ * @author drose
+ * @date 1999-01-16
+ */
 
 %{
 

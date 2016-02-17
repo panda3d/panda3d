@@ -1,16 +1,15 @@
-// Filename: omniBoundingVolume.h
-// Created by:  drose (22Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file omniBoundingVolume.h
+ * @author drose
+ * @date 2000-06-22
+ */
 
 #ifndef OMNIBOUNDINGVOLUME_H
 #define OMNIBOUNDINGVOLUME_H
@@ -19,11 +18,9 @@
 
 #include "geometricBoundingVolume.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OmniBoundingVolume
-// Description : This is a special kind of GeometricBoundingVolume
-//               that fills all of space.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kind of GeometricBoundingVolume that fills all of space.
+ */
 class EXPCL_PANDA_MATHUTIL OmniBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL OmniBoundingVolume();

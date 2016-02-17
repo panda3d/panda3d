@@ -1,16 +1,15 @@
-// Filename: movingPart.h
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movingPart.h
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #ifndef MOVINGPART_H
 #define MOVINGPART_H
@@ -20,12 +19,10 @@
 #include "movingPartBase.h"
 #include "animChannel.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovingPart
-// Description : This is the template instantiation of MovingPartBase,
-//               on the particular type of value provided by the
-//               channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the template instantiation of MovingPartBase, on the particular
+ * type of value provided by the channel.
+ */
 template<class SwitchType>
 class MovingPart : public MovingPartBase {
 public:
@@ -82,6 +79,3 @@ private:
 #include "movingPart.I"
 
 #endif
-
-
-

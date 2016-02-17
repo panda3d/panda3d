@@ -1,16 +1,15 @@
-// Filename: odeSliderJoint.I
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeSliderJoint.I
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 INLINE void OdeSliderJoint::
 set_axis(dReal x, dReal y, dReal z) {
@@ -161,4 +160,3 @@ get_param_stop_CFM() const {
   nassertr( _id != 0, 0 );
   return dJointGetSliderParam(_id, dParamStopCFM);
 }
-

@@ -1,16 +1,15 @@
-// Filename: eggToDXFLayer.cxx
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToDXFLayer.cxx
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #include "eggToDXFLayer.h"
 #include "eggToDXF.h"
@@ -20,37 +19,31 @@
 #include "eggPolygon.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggToDXFLayer::
 EggToDXFLayer(EggToDXF *egg2dxf, EggGroupNode *group) :
-  _egg2dxf(egg2dxf), _group(group) 
+  _egg2dxf(egg2dxf), _group(group)
 {
   _layer_color = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggToDXFLayer::
 EggToDXFLayer(const EggToDXFLayer &copy) :
   _egg2dxf(copy._egg2dxf),
   _group(copy._group),
-  _layer_color(copy._layer_color) 
+  _layer_color(copy._layer_color)
 {
   // The copy constructor doesn't bother with the ColorCounts.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggToDXFLayer::
 operator = (const EggToDXFLayer &copy) {
   _egg2dxf = copy._egg2dxf;
@@ -60,14 +53,11 @@ operator = (const EggToDXFLayer &copy) {
   // The copy constructor doesn't bother with the ColorCounts.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::add_color 
-//       Access: Public
-//  Description: Records that one polygon is defined using the
-//               indicated color.  This will get accumulated; the
-//               color used by the majority of polygons will become
-//               the layer color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that one polygon is defined using the indicated color.  This will
+ * get accumulated; the color used by the majority of polygons will become the
+ * layer color.
+ */
 void EggToDXFLayer::
 add_color(const LColor &color) {
   int autocad_color = get_autocad_color(color);
@@ -84,17 +74,14 @@ add_color(const LColor &color) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::choose_overall_color 
-//       Access: Public
-//  Description: After all polygons have been accounted for, chooses
-//               the polygon color that occurred most often as the
-//               layer color.
-////////////////////////////////////////////////////////////////////
+/**
+ * After all polygons have been accounted for, chooses the polygon color that
+ * occurred most often as the layer color.
+ */
 void EggToDXFLayer::
 choose_overall_color() {
   int max_count = 0;
-  
+
   ColorCounts::iterator cci;
   for (cci = _color_counts.begin(); cci != _color_counts.end(); ++cci) {
     int count = (*cci).second;
@@ -106,14 +93,11 @@ choose_overall_color() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::write_layer
-//       Access: Public
-//  Description: Writes the layer definition into the table at the
-//               beginning of the DXF file.  This does not write the
-//               actual geometry; that gets done later by
-//               write_entities().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the layer definition into the table at the beginning of the DXF
+ * file.  This does not write the actual geometry; that gets done later by
+ * write_entities().
+ */
 void EggToDXFLayer::
 write_layer(ostream &out) {
   out << "0\nLAYER\n"
@@ -123,11 +107,9 @@ write_layer(ostream &out) {
       << "6\nCONTINUOUS\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::write_polyline 
-//       Access: Public
-//  Description: Writes a polygon as a POLYLINE entity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a polygon as a POLYLINE entity.
+ */
 void EggToDXFLayer::
 write_polyline(EggPolygon *poly, ostream &out) {
   out << "0\nPOLYLINE\n"
@@ -135,9 +117,9 @@ write_polyline(EggPolygon *poly, ostream &out) {
       << "66\n1\n"
       << "70\n1\n"
       << "62\n" << get_autocad_color(poly->get_color()) << "\n";
-  
-  // Since DXF uses a clockwise ordering convention, we must
-  // reverse the order in which we write out the vertices.
+
+  // Since DXF uses a clockwise ordering convention, we must reverse the order
+  // in which we write out the vertices.
   EggPolygon::reverse_iterator vi;
   for (vi = poly->rbegin(); vi != poly->rend(); ++vi) {
     EggVertex *vtx = (*vi);
@@ -150,16 +132,14 @@ write_polyline(EggPolygon *poly, ostream &out) {
   out << "0\nSEQEND\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::write_3d_face
-//       Access: Public
-//  Description: Writes a polygon as a 3DFACE entity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a polygon as a 3DFACE entity.
+ */
 void EggToDXFLayer::
 write_3d_face(EggPolygon *poly, ostream &out) {
   if (poly->size() > 4) {
-    // If we have a big polygon, we have to triangulate it, since
-    // 3DFaces can only be tris and quads.
+    // If we have a big polygon, we have to triangulate it, since 3DFaces can
+    // only be tris and quads.
     PT(EggGroup) group = new EggGroup;
     poly->triangulate_into(group, true);
 
@@ -176,8 +156,8 @@ write_3d_face(EggPolygon *poly, ostream &out) {
     out << "0\n3DFACE\n"
         << "8\n" << _group->get_name() << "\n";
 
-    // Since DXF uses a clockwise ordering convention, we must
-    // reverse the order in which we write out the vertices.
+    // Since DXF uses a clockwise ordering convention, we must reverse the
+    // order in which we write out the vertices.
     int i;
     EggPolygon::reverse_iterator vi;
     for (i = 0, vi = poly->rbegin(); vi != poly->rend(); ++i, ++vi) {
@@ -195,14 +175,11 @@ write_3d_face(EggPolygon *poly, ostream &out) {
     }
   }
 }
-  
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::write_entities 
-//       Access: Public
-//  Description: Writes out the "entities", e.g. polygons, defined for
-//               the current layer.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Writes out the "entities", e.g.  polygons, defined for the current layer.
+ */
 void EggToDXFLayer::
 write_entities(ostream &out) {
   EggGroupNode::iterator ci;
@@ -219,12 +196,10 @@ write_entities(ostream &out) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXFLayer::get_autocad_color
-//       Access: Private
-//  Description: Returns the AutoCAD color index that most closely
-//               matches the indicated EggColor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the AutoCAD color index that most closely matches the indicated
+ * EggColor.
+ */
 int EggToDXFLayer::
 get_autocad_color(const LColor &color) {
   typedef pmap<LColor, int> ColorMap;

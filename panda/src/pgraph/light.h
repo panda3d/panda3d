@@ -1,16 +1,15 @@
-// Filename: light.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file light.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef LIGHT_H
 #define LIGHT_H
@@ -31,14 +30,11 @@ class NodePath;
 class PandaNode;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Light
-// Description : The abstract interface to all kinds of lights.  The
-//               actual light objects also inherit from PandaNode, and
-//               can therefore be added to the scene graph at some
-//               arbitrary point to define the coordinate system of
-//               effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract interface to all kinds of lights.  The actual light objects
+ * also inherit from PandaNode, and can therefore be added to the scene graph
+ * at some arbitrary point to define the coordinate system of effect.
+ */
 class EXPCL_PANDA_PGRAPH Light {
 PUBLISHED:
   INLINE Light();
@@ -85,11 +81,10 @@ protected:
   virtual void fill_viz_geom(GeomNode *viz_geom);
   INLINE void mark_viz_stale();
 
-  // This enumerated class defines the relative class priority of
-  // different kinds of lights.  This hierarchy is only used to
-  // resolve multiple lights of the same priority specified by
-  // set_priority().  In general, the first items in this list have a
-  // lesser priority than later items.
+  // This enumerated class defines the relative class priority of different
+  // kinds of lights.  This hierarchy is only used to resolve multiple lights
+  // of the same priority specified by set_priority().  In general, the first
+  // items in this list have a lesser priority than later items.
   enum ClassPriority {
     CP_ambient_priority,
     CP_point_priority,
@@ -98,14 +93,13 @@ protected:
   };
 
 private:
-  // The priority is not cycled, because there's no real reason to do
-  // so, and cycling it makes it difficult to synchronize with the
-  // LightAttribs.
+  // The priority is not cycled, because there's no real reason to do so, and
+  // cycling it makes it difficult to synchronize with the LightAttribs.
   int _priority;
   static UpdateSeq _sort_seq;
 
-  // The color temperature is not cycled either, because we only need
-  // to pass down the computed color anyway.
+  // The color temperature is not cycled either, because we only need to pass
+  // down the computed color anyway.
   bool _has_color_temperature;
   PN_stdfloat _color_temperature;
 

@@ -1,17 +1,16 @@
-// Filename: milesAudioSample.h
-// Created by:  skyler (June 6, 2001)
-// Prior system by: cary
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file milesAudioSample.h
+ * @author skyler
+ * @date 2001-06-06
+ * Prior system by: cary
+ */
 
 #ifndef MILESAUDIOSAMPLE_H
 #define MILESAUDIOSAMPLE_H
@@ -23,29 +22,28 @@
 #include "milesAudioManager.h"
 #include "mss.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MilesAudioSample
-// Description : A sound file, such as a WAV or MP3 file, that is
-//               preloaded into memory and played from memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * A sound file, such as a WAV or MP3 file, that is preloaded into memory and
+ * played from memory.
+ */
 class EXPCL_MILES_AUDIO MilesAudioSample : public MilesAudioSound {
 private:
-  MilesAudioSample(MilesAudioManager *manager, 
+  MilesAudioSample(MilesAudioManager *manager,
                    MilesAudioManager::SoundData *sd,
                    const string &file_name);
 
 public:
   virtual ~MilesAudioSample();
-  
+
   virtual void play();
   virtual void stop();
-  
+
   virtual PN_stdfloat get_time() const;
-  
+
   virtual void set_volume(PN_stdfloat volume=1.0f);
   virtual void set_balance(PN_stdfloat balance_right=0.0f);
   virtual void set_play_rate(PN_stdfloat play_rate=1.0f);
-  
+
   virtual PN_stdfloat length() const;
 
   virtual AudioSound::SoundStatus status() const;
@@ -53,10 +51,9 @@ public:
   virtual void cleanup();
   virtual void output(ostream &out) const;
 
-  // 3D spatialized sound support.
-  // Spatialized sound was originally added for FMOD, so there are parts of the
-  // interface in the Miles implementation that are a little more awkward than
-  // they would be otherwise.
+  // 3D spatialized sound support.  Spatialized sound was originally added for
+  // FMOD, so there are parts of the interface in the Miles implementation
+  // that are a little more awkward than they would be otherwise.
   void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
   void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
   void set_3d_min_distance(PN_stdfloat dist);

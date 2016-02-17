@@ -1,17 +1,15 @@
-// Filename: cppInstanceIdentifier.cxx
-// Created by:  drose (21Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppInstanceIdentifier.cxx
+ * @author drose
+ * @date 1999-10-21
+ */
 
 #include "cppInstanceIdentifier.h"
 #include "cppPointerType.h"
@@ -22,11 +20,9 @@
 #include "cppParameterList.h"
 #include "cppIdentifier.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::Modifier::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPInstanceIdentifier::Modifier::
 Modifier(CPPInstanceIdentifierType type) :
   _type(type)
@@ -37,11 +33,9 @@ Modifier(CPPInstanceIdentifierType type) :
   _expr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::Modifier::named func_type constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
 func_type(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
   Modifier mod(IIT_func);
@@ -51,11 +45,9 @@ func_type(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
   return mod;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::Modifier::named array_type constructor
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
 array_type(CPPExpression *expr) {
   Modifier mod(IIT_array);
@@ -63,11 +55,9 @@ array_type(CPPExpression *expr) {
   return mod;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::Modifier::named scoped_pointer_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
 scoped_pointer_type(CPPIdentifier *scoping) {
   Modifier mod(IIT_scoped_pointer);
@@ -75,12 +65,10 @@ scoped_pointer_type(CPPIdentifier *scoping) {
   return mod;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::Modifier::named initializer_type constructor
-//       Access: Public, Static
-//  Description: This is used only for instance declarations that turn
-//               out to be have a parameter list for an initializer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used only for instance declarations that turn out to be have a
+ * parameter list for an initializer.
+ */
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
 initializer_type(CPPParameterList *params) {
   Modifier mod(IIT_initializer);
@@ -88,26 +76,21 @@ initializer_type(CPPParameterList *params) {
   return mod;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPInstanceIdentifier::
 CPPInstanceIdentifier(CPPIdentifier *ident) :
   _ident(ident),
   _bit_width(-1) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::unroll_type
-//       Access: Public
-//  Description: Unrolls the list of type punctuation on either side
-//               of the identifier to determine the actual type
-//               represented by the identifier, given the indicated
-//               starting type (that is, the type name written to the
-//               left of the identifier).
-////////////////////////////////////////////////////////////////////
+/**
+ * Unrolls the list of type punctuation on either side of the identifier to
+ * determine the actual type represented by the identifier, given the
+ * indicated starting type (that is, the type name written to the left of the
+ * identifier).
+ */
 CPPType *CPPInstanceIdentifier::
 unroll_type(CPPType *start_type) {
   CPPType *result = r_unroll_type(start_type, _modifiers.begin());
@@ -115,27 +98,23 @@ unroll_type(CPPType *start_type) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_modifier
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPInstanceIdentifier::
 add_modifier(CPPInstanceIdentifierType type) {
   _modifiers.push_back(Modifier(type));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_func_modifier
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPInstanceIdentifier::
 add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
-  // As a special hack, if we added a parameter list to an operator
-  // function, check if the parameter list is empty.  If it is, this
-  // is really a unary operator, so set the unary_op flag.  Operators
-  // () and [] are never considered unary operators.
+  // As a special hack, if we added a parameter list to an operator function,
+  // check if the parameter list is empty.  If it is, this is really a unary
+  // operator, so set the unary_op flag.  Operators () and [] are never
+  // considered unary operators.
   if (_ident != NULL &&
       _ident->get_simple_name().substr(0, 9) == "operator ") {
 
@@ -157,26 +136,22 @@ add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_
   _modifiers.push_back(Modifier::func_type(params, flags, trailing_return_type));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_scoped_pointer_modifier
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPInstanceIdentifier::
 add_scoped_pointer_modifier(CPPIdentifier *scoping) {
   _modifiers.push_back(Modifier::scoped_pointer_type(scoping));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_array_modifier
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPInstanceIdentifier::
 add_array_modifier(CPPExpression *expr) {
-  // Special case for operator new[] and delete[].  We're not really
-  // adding an array modifier to them, but appending [] to the
-  // identifier.  This is to work around a parser ambiguity.
+  // Special case for operator new[] and delete[].  We're not really adding an
+  // array modifier to them, but appending [] to the identifier.  This is to
+  // work around a parser ambiguity.
   if (_ident != NULL && (_ident->get_simple_name() == "operator delete" ||
                          _ident->get_simple_name() == "operator new")) {
 
@@ -186,21 +161,17 @@ add_array_modifier(CPPExpression *expr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_initializer_modifier
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPInstanceIdentifier::
 add_initializer_modifier(CPPParameterList *params) {
   _modifiers.push_back(Modifier::initializer_type(params));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::add_trailing_return_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPInstanceIdentifier::
 add_trailing_return_type(CPPType *type) {
   // This is an awkward hack.  Improve in the future.
@@ -215,19 +186,15 @@ add_trailing_return_type(CPPType *type) {
   cerr << "trailing return type can only be added to a function\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::get_initializer
-//       Access: Public
-//  Description: Returns the initializer parameter list that was set
-//               for this particular instance, e.g. if the instance
-//               were:
-//
-//                  int foo(0);
-//
-//               this would return the parameter list (0).  Returns
-//               NULL if the instance did not use a parameter list
-//               initializer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the initializer parameter list that was set for this particular
+ * instance, e.g.  if the instance were:
+ *
+ * int foo(0);
+ *
+ * this would return the parameter list (0).  Returns NULL if the instance did
+ * not use a parameter list initializer.
+ */
 CPPParameterList *CPPInstanceIdentifier::
 get_initializer() const {
   Modifiers::const_iterator mi;
@@ -241,11 +208,9 @@ get_initializer() const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::get_scope
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPScope *CPPInstanceIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
           CPPPreprocessor *error_sink) const {
@@ -256,11 +221,9 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPInstanceIdentifier::r_unroll_type
-//       Access: Private
-//  Description: The recursive implementation of unroll_type().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of unroll_type().
+ */
 CPPType *CPPInstanceIdentifier::
 r_unroll_type(CPPType *start_type,
               CPPInstanceIdentifier::Modifiers::const_iterator mi) {
@@ -341,9 +304,9 @@ r_unroll_type(CPPType *start_type,
     break;
 
   case IIT_initializer:
-    // In this case, we have parsed an instance declaration with a set
-    // of initializers as a parameter list.  We lose the initializers
-    // at this point, but the instance will put it back again.
+    // In this case, we have parsed an instance declaration with a set of
+    // initializers as a parameter list.  We lose the initializers at this
+    // point, but the instance will put it back again.
     result = start_type;
     break;
 

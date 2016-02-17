@@ -1,16 +1,15 @@
-// Filename: movieAudio.h
-// Created by: jyelon (02Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieAudio.h
+ * @author jyelon
+ * @date 2007-07-02
+ */
 
 #ifndef MOVIEAUDIO_H
 #define MOVIEAUDIO_H
@@ -33,18 +32,15 @@ class MovieAudioCursor;
   #define movies_debug(msg) ((void)0);
 #endif //]
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieAudio
-// Description : A MovieAudio is actually any source that provides
-//               a sequence of audio samples.  That could include an
-//               AVI file, a microphone, or an internet TV station.
-//
-//               The difference between a MovieAudio and a
-//               MovieAudioCursor is like the difference between a
-//               filename and a file handle.  The MovieAudio just
-//               indicates a particular movie.  The MovieAudioCursor
-//               is what allows access.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MovieAudio is actually any source that provides a sequence of audio
+ * samples.  That could include an AVI file, a microphone, or an internet TV
+ * station.
+ *
+ * The difference between a MovieAudio and a MovieAudioCursor is like the
+ * difference between a filename and a file handle.  The MovieAudio just
+ * indicates a particular movie.  The MovieAudioCursor is what allows access.
+ */
 class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
  PUBLISHED:
   MovieAudio(const string &name = "Blank Audio");

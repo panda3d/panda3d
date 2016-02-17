@@ -1,16 +1,15 @@
-// Filename: glxGraphicsPixmap.h
-// Created by:  drose (10Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glxGraphicsPixmap.h
+ * @author drose
+ * @date 2009-03-10
+ */
 
 #ifndef GLXGRAPHICSPIXMAP_H
 #define GLXGRAPHICSPIXMAP_H
@@ -20,17 +19,15 @@
 #include "glxGraphicsPipe.h"
 #include "graphicsBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsPixmap
-// Description : Another offscreen buffer in the GLX environment.  This
-//               creates a Pixmap object, which is probably less
-//               efficient than a GLXPBuffer, so this class is a
-//               second choice to glxGraphicsBuffer.  However, this
-//               might be the only option for some graphics drivers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another offscreen buffer in the GLX environment.  This creates a Pixmap
+ * object, which is probably less efficient than a GLXPBuffer, so this class
+ * is a second choice to glxGraphicsBuffer.  However, this might be the only
+ * option for some graphics drivers.
+ */
 class glxGraphicsPixmap : public GraphicsBuffer {
 public:
-  glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

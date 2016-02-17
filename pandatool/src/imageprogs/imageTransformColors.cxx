@@ -1,16 +1,15 @@
-// Filename: imageTransformColors.cxx
-// Created by:  drose (25Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file imageTransformColors.cxx
+ * @author drose
+ * @date 2009-03-25
+ */
 
 #include "imageTransformColors.h"
 #include "string_utils.h"
@@ -18,11 +17,9 @@
 #include "pnmImage.h"
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ImageTransformColors::
 ImageTransformColors() {
   set_program_brief("transform colors in an image file");
@@ -31,7 +28,7 @@ ImageTransformColors() {
      "pixels in an image, or in a series of images.  This can be used, "
      "for instance, to increase or decrease the dynamic range; or to "
      "rotate the hue; or to reduce the saturation of colors in the image.\n\n"
-     
+
      "Each parameter is encoded in a 4x4 matrix, which modifies the R, G, B "
      "colors of the image (the alpha values, if any, are not affected).  "
      "RGB values are clamped at 0 and 1 after the operation.  "
@@ -71,7 +68,7 @@ ImageTransformColors() {
      &ImageTransformColors::dispatch_mat4, NULL, &_mat);
 
   add_option
-    ("mat3", "m00,m01,m02,m10,m11,m12,m20,m21,m22", 0, 
+    ("mat3", "m00,m01,m02,m10,m11,m12,m20,m21,m22", 0,
      "Defines an arbitrary 3x3 RGB matrix.",
      &ImageTransformColors::dispatch_mat3, NULL, &_mat);
 
@@ -98,15 +95,13 @@ ImageTransformColors() {
      "for an output directory; however, it's risky because the original "
      "input image files are lost.",
      &ImageTransformColors::dispatch_none, &_inplace);
-  
+
   _mat = LMatrix4d::ident_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ImageTransformColors::
 run() {
   _mat.write(nout, 0);
@@ -128,14 +123,12 @@ run() {
     if (!image.write(output_filename)) {
       nout << "Couldn't write " << output_filename << "; ignoring.\n";
     }
-  }      
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::dispatch_mat4
-//       Access: Protected, Static
-//  Description: Takes a series of 16 numbers as a 4x4 matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes a series of 16 numbers as a 4x4 matrix.
+ */
 bool ImageTransformColors::
 dispatch_mat4(const string &opt, const string &arg, void *var) {
   LMatrix4d &orig = *(LMatrix4d *)var;
@@ -176,11 +169,9 @@ dispatch_mat4(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::dispatch_mat3
-//       Access: Protected, Static
-//  Description: Takes a series of 9 numbers as a 3x3 matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes a series of 9 numbers as a 3x3 matrix.
+ */
 bool ImageTransformColors::
 dispatch_mat3(const string &opt, const string &arg, void *var) {
   LMatrix4d &orig = *(LMatrix4d *)var;
@@ -214,11 +205,9 @@ dispatch_mat3(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::dispatch_range
-//       Access: Protected, Static
-//  Description: Takes a min,max dynamic range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes a min,max dynamic range.
+ */
 bool ImageTransformColors::
 dispatch_range(const string &opt, const string &arg, void *var) {
   LMatrix4d &orig = *(LMatrix4d *)var;
@@ -245,11 +234,9 @@ dispatch_range(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::dispatch_scale
-//       Access: Protected, Static
-//  Description: Accepts a componentwise scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts a componentwise scale.
+ */
 bool ImageTransformColors::
 dispatch_scale(const string &opt, const string &arg, void *var) {
   LMatrix4d &orig = *(LMatrix4d *)var;
@@ -277,11 +264,9 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::dispatch_add
-//       Access: Protected, Static
-//  Description: Accepts a componentwise add.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts a componentwise add.
+ */
 bool ImageTransformColors::
 dispatch_add(const string &opt, const string &arg, void *var) {
   LMatrix4d &orig = *(LMatrix4d *)var;
@@ -309,14 +294,11 @@ dispatch_add(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool ImageTransformColors::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
@@ -364,13 +346,10 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::get_output_filename
-//       Access: Protected
-//  Description: Returns the output filename of the egg file with the
-//               given input filename.  This is based on the user's
-//               choice of -inplace, -o, or -d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the output filename of the egg file with the given input filename.
+ * This is based on the user's choice of -inplace, -o, or -d.
+ */
 Filename ImageTransformColors::
 get_output_filename(const Filename &source_filename) const {
   if (_got_output_filename) {
@@ -467,11 +446,9 @@ rgb2hls(const LRGBColord &rgb) {
   return LRGBColord(h, l, s);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTransformColors::process_image
-//       Access: Protected
-//  Description: Processes a single image in-place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a single image in-place.
+ */
 void ImageTransformColors::
 process_image(PNMImage &image) {
   if (_hls) {

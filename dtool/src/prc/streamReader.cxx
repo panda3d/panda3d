@@ -1,26 +1,23 @@
-// Filename: streamReader.cxx
-// Created by:  drose (04Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file streamReader.cxx
+ * @author drose
+ * @date 2002-08-04
+ */
 
 #include "streamReader.h"
 #include "memoryHook.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::get_string
-//       Access: Published
-//  Description: Extracts a variable-length string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a variable-length string.
+ */
 string StreamReader::
 get_string() {
   nassertr(!_in->eof() && !_in->fail(), string());
@@ -34,12 +31,9 @@ get_string() {
   return string(buffer, read_bytes);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::get_string32
-//       Access: Published
-//  Description: Extracts a variable-length string with a 32-bit
-//               length field.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a variable-length string with a 32-bit length field.
+ */
 string StreamReader::
 get_string32() {
   nassertr(!_in->eof() && !_in->fail(), string());
@@ -55,12 +49,9 @@ get_string32() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::get_z_string
-//       Access: Published
-//  Description: Extracts a variable-length string, as a
-//               NULL-terminated string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a variable-length string, as a NULL-terminated string.
+ */
 string StreamReader::
 get_z_string() {
   nassertr(!_in->eof() && !_in->fail(), string());
@@ -75,13 +66,10 @@ get_z_string() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::get_fixed_string
-//       Access: Published
-//  Description: Extracts a fixed-length string.  However, if a zero
-//               byte occurs within the string, it marks the end of
-//               the string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a fixed-length string.  However, if a zero byte occurs within the
+ * string, it marks the end of the string.
+ */
 string StreamReader::
 get_fixed_string(size_t size) {
   nassertr(!_in->eof() && !_in->fail(), string());
@@ -95,12 +83,9 @@ get_fixed_string(size_t size) {
   return result.substr(0, zero_byte);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::skip_bytes
-//       Access: Published
-//  Description: Skips over the indicated number of bytes in the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Skips over the indicated number of bytes in the stream.
+ */
 void StreamReader::
 skip_bytes(size_t size) {
   nassertv(!_in->eof() && !_in->fail());
@@ -112,15 +97,12 @@ skip_bytes(size_t size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::extract_bytes
-//       Access: Published
-//  Description: Extracts the indicated number of bytes in the
-//               stream into the given character buffer.  Assumes
-//               that the buffer is big enough to hold the requested
-//               number of bytes.  Returns the number of bytes
-//               that were successfully written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the indicated number of bytes in the stream into the given
+ * character buffer.  Assumes that the buffer is big enough to hold the
+ * requested number of bytes.  Returns the number of bytes that were
+ * successfully written.
+ */
 size_t StreamReader::
 extract_bytes(unsigned char *into, size_t size) {
   if (_in->eof() || _in->fail()) {
@@ -131,13 +113,10 @@ extract_bytes(unsigned char *into, size_t size) {
   return _in->gcount();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::extract_bytes
-//       Access: Public
-//  Description: Extracts the indicated number of bytes in the
-//               stream and returns them as a string.  Returns empty
-//               string at end-of-file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the indicated number of bytes in the stream and returns them as a
+ * string.  Returns empty string at end-of-file.
+ */
 string StreamReader::
 extract_bytes(size_t size) {
   if (_in->eof() || _in->fail()) {
@@ -150,18 +129,14 @@ extract_bytes(size_t size) {
   return string(buffer, read_bytes);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamReader::readline
-//       Access: Public
-//  Description: Assumes the stream represents a text file, and
-//               extracts one line up to and including the trailing
-//               newline character.  Returns empty string when the end
-//               of file is reached.
-//
-//               The interface here is intentionally designed to be
-//               similar to that for Python's File.readline()
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes the stream represents a text file, and extracts one line up to and
+ * including the trailing newline character.  Returns empty string when the
+ * end of file is reached.
+ *
+ * The interface here is intentionally designed to be similar to that for
+ * Python's File.readline() function.
+ */
 string StreamReader::
 readline() {
   string line;

@@ -1,16 +1,15 @@
-// Filename: fogAttrib.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fogAttrib.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef FOGATTRIB_H
 #define FOGATTRIB_H
@@ -20,10 +19,9 @@
 #include "renderAttrib.h"
 #include "fog.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FogAttrib
-// Description : Applies a Fog to the geometry at and below this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a Fog to the geometry at and below this node.
+ */
 class EXPCL_PANDA_PGRAPH FogAttrib : public RenderAttrib {
 private:
   INLINE FogAttrib();
@@ -63,7 +61,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -87,4 +85,3 @@ private:
 #include "fogAttrib.I"
 
 #endif
-

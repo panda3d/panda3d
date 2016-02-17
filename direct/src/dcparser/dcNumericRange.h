@@ -1,16 +1,15 @@
-// Filename: dcNumericRange.h
-// Created by:  drose (21Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcNumericRange.h
+ * @author drose
+ * @date 2004-06-21
+ */
 
 #ifndef DCNUMERICRANGE_H
 #define DCNUMERICRANGE_H
@@ -19,12 +18,10 @@
 #include "hashGenerator.h"
 #include "dcPacker.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCNumericRange
-// Description : Represents a range of legal integer or floating-point
-//               values.  This is used to constrain simple numeric
-//               types, as well as array sizes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a range of legal integer or floating-point values.  This is used
+ * to constrain simple numeric types, as well as array sizes.
+ */
 template <class NUM>
 class DCNumericRange {
 public:

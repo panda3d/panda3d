@@ -1,49 +1,42 @@
-// Filename: angularIntegrator.cxx
-// Created by:  charles (09Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file angularIntegrator.cxx
+ * @author charles
+ * @date 2000-08-09
+ */
 
 #include "angularIntegrator.h"
 
 ConfigVariableDouble AngularIntegrator::_max_angular_dt
 ("default_max_angular_dt", 1.0f / 30.0f);
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularIntegrator
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 AngularIntegrator::
 AngularIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~AngularIntegrator
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 AngularIntegrator::
 ~AngularIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Integrate
-//       Access: Public
-//  Description: high-level integration.  API.
-////////////////////////////////////////////////////////////////////
+/**
+ * high-level integration.  API.
+ */
 void AngularIntegrator::
 integrate(Physical *physical, AngularForceVector& forces,
           PN_stdfloat dt) {
-  // intercept in case we want to censor/adjust values
+  // intercept in case we want to censoradjust values
   if (dt > _max_angular_dt) {
     dt = _max_angular_dt;
   }
@@ -52,12 +45,9 @@ integrate(Physical *physical, AngularForceVector& forces,
   child_integrate(physical, forces, dt);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -65,12 +55,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

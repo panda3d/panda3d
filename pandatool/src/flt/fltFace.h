@@ -1,16 +1,15 @@
-// Filename: fltFace.h
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltFace.h
+ * @author drose
+ * @date 2000-08-25
+ */
 
 #ifndef FLTFACE_H
 #define FLTFACE_H
@@ -19,10 +18,9 @@
 
 #include "fltGeometry.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltFace
-// Description : A single face bead, e.g. a polygon.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single face bead, e.g.  a polygon.
+ */
 class FltFace : public FltGeometry {
 public:
   FltFace(FltHeader *header);
@@ -53,5 +51,3 @@ private:
 #include "fltFace.I"
 
 #endif
-
-

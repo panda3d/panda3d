@@ -1,16 +1,15 @@
-// Filename: physxForceFieldShapeGroup.h
-// Created by:  enn0x (11Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxForceFieldShapeGroup.h
+ * @author enn0x
+ * @date 2009-11-11
+ */
 
 #ifndef PHYSXFORCEFIELDSHAPEGROUP_H
 #define PHYSXFORCEFIELDSHAPEGROUP_H
@@ -28,10 +27,9 @@ class PhysxForceFieldShape;
 class PhysxForceFieldShapeDesc;
 class PhysxForceFieldShapeGroupDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxForceFieldShapeGroup
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAPHYSX PhysxForceFieldShapeGroup : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -52,7 +50,6 @@ PUBLISHED:
   PhysxForceFieldShape *get_shape(unsigned int idx) const;
   MAKE_SEQ(get_shapes, get_num_shapes, get_shape);
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -71,14 +68,13 @@ private:
   NxForceFieldShapeGroup *_ptr;
   string _name;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxForceFieldShapeGroup", 
+    register_type(_type_handle, "PhysxForceFieldShapeGroup",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

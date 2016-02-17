@@ -1,16 +1,15 @@
-// Filename: mayaToEgg_server.h
-// Adapted by: cbrunner (09Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaToEgg_server.h
+ * @author cbrunner
+ * @date 2009-11-09
+ */
 
 #ifndef MAYATOEGGSERVER_H
 #define MAYATOEGGSERVER_H
@@ -23,10 +22,9 @@
 #include "queuedConnectionReader.h"
 #include "connectionWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaToEggServer
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class MayaToEggServer : public SomethingToEgg {
 public:
   MayaToEggServer();
@@ -59,7 +57,7 @@ protected:
   bool _legacy_shader;
 
   MayaToEggConverter::TransformType _transform_type;
-  vector_string _subroots; 
+  vector_string _subroots;
   vector_string _subsets;
   vector_string _excludes;
   vector_string _ignore_sliders;

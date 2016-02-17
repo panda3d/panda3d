@@ -1,16 +1,15 @@
-// Filename: test_map.cxx
-// Created by:  drose (29Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_map.cxx
+ * @author drose
+ * @date 2004-09-29
+ */
 
 #include "pandabase.h"
 #include "pmap.h"
@@ -74,11 +73,10 @@ static const char * const sample_strings[] = {
 };
 static const size_t num_sample_strings = sizeof(sample_strings) / sizeof(const char *);
 
-void 
+void
 insert_fruit() {
-  //  typedef pmap<Alpha, string> MapType;
-  //  typedef pmap<Beta, string> MapType;
-  //  typedef phash_map<Alpha, string> MapType;
+  // typedef pmap<Alpha, string> MapType; typedef pmap<Beta, string> MapType;
+  // typedef phash_map<Alpha, string> MapType;
   typedef phash_map<Beta, string> MapType;
 
   MapType m;
@@ -103,7 +101,7 @@ test_performance() {
   typedef Alpha KeyType;
 
   typedef phash_map<KeyType, int> MapType;
-  //typedef pmap<KeyType, int> MapType;
+  // typedef pmap<KeyType, int> MapType;
 
   MemoryUsage::is_tracking();
   ClockObject *clock = ClockObject::get_global_clock();
@@ -133,7 +131,7 @@ test_performance() {
   for (int p = 0; p < initial_population; p++) {
     m->insert(MapType::value_type(samples[rand() & sample_mask], 0));
   }
-  cerr << "map with " << m->size() 
+  cerr << "map with " << m->size()
        << " elements uses " << MemoryUsage::get_current_cpp_size()
        << " bytes.\n";
 
@@ -154,9 +152,9 @@ test_performance() {
   }
 }
 
-int 
+int
 main(int argc, char *argv[]) {
-  //  insert_fruit();
+  // insert_fruit();
   test_performance();
 
   return 0;

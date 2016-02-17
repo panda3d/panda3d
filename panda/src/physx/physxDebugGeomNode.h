@@ -1,16 +1,15 @@
-// Filename: physxDebugGeomNode.h
-// Created by:  enn0x (15Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxDebugGeomNode.h
+ * @author enn0x
+ * @date 2009-09-15
+ */
 
 #ifndef PHYSXDEBUGGEOMNODE_H
 #define PHYSXDEBUGGEOMNODE_H
@@ -28,12 +27,10 @@
 
 class PhysxScene;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxDebugGeomNode
-// Description : Renderable geometry which represents visualizations
-//               of physics objects. Intended to help with
-//               debugging code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renderable geometry which represents visualizations of physics objects.
+ * Intended to help with debugging code.
+ */
 class EXPCL_PANDAPHYSX PhysxDebugGeomNode : public GeomNode {
 
 PUBLISHED:
@@ -89,14 +86,13 @@ private:
   PT(Geom) _geom_triangles;
   PT(GeomTriangles) _prim_triangles;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     GeomNode::init_type();
-    register_type(_type_handle, "PhysxDebugGeomNode", 
+    register_type(_type_handle, "PhysxDebugGeomNode",
                   GeomNode::get_class_type());
   }
   virtual TypeHandle get_type() const {

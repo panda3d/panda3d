@@ -1,16 +1,15 @@
-// Filename: displayRegionDrawCallbackData.h
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegionDrawCallbackData.h
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #ifndef DISPLAYREGIONDRAWCALLBACKDATA_H
 #define DISPLAYREGIONDRAWCALLBACKDATA_H
@@ -21,12 +20,10 @@
 class CullResult;
 class SceneSetup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionDrawCallbackData
-// Description : This specialization on CallbackData is passed when
-//               the callback is initiated from the draw traversal,
-//               for a DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on CallbackData is passed when the callback is
+ * initiated from the draw traversal, for a DisplayRegion.
+ */
 class EXPCL_PANDA_PGRAPH DisplayRegionDrawCallbackData : public CallbackData {
 public:
   DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup);

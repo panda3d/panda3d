@@ -1,16 +1,15 @@
-// Filename: typeRegistryNode.h
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typeRegistryNode.h
+ * @author drose
+ * @date 2001-08-06
+ */
 
 #ifndef TYPEREGISTRYNODE_H
 #define TYPEREGISTRYNODE_H
@@ -23,13 +22,11 @@
 #include <assert.h>
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeRegistryNode
-// Description : This is a single entry in the TypeRegistry.
-//               Normally, user code will never directly access this
-//               class; this class is hidden within the TypeRegistry
-//               accessors.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single entry in the TypeRegistry.  Normally, user code will never
+ * directly access this class; this class is hidden within the TypeRegistry
+ * accessors.
+ */
 class EXPCL_DTOOL TypeRegistryNode {
 public:
   TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
@@ -59,17 +56,17 @@ public:
 private:
   typedef int SubtreeMaskType;
 
-  // This class defines the inheritance relationship of this node from
-  // some ancestor denoted as a "subtree top" node.  This is usually
-  // the nearest ancestor that has multiple inheritance.
+  // This class defines the inheritance relationship of this node from some
+  // ancestor denoted as a "subtree top" node.  This is usually the nearest
+  // ancestor that has multiple inheritance.
   class Inherit {
   public:
     INLINE Inherit();
-    INLINE Inherit(TypeRegistryNode *top, int bit_count, 
+    INLINE Inherit(TypeRegistryNode *top, int bit_count,
                    SubtreeMaskType bits);
     INLINE Inherit(const Inherit &copy);
     INLINE void operator = (const Inherit &copy);
-    
+
     INLINE bool operator < (const Inherit &other) const;
     INLINE static bool is_derived_from(const Inherit &child, const Inherit &base);
 
@@ -79,7 +76,7 @@ private:
   };
   typedef vector<Inherit> TopInheritance;
 
-  void r_build_subtrees(TypeRegistryNode *top, 
+  void r_build_subtrees(TypeRegistryNode *top,
                         int bit_count, SubtreeMaskType bits);
 
   static bool check_derived_from(const TypeRegistryNode *child,
@@ -87,10 +84,9 @@ private:
 
   Inherit _inherit;
 
-  // The _top_inheritance member is only filled for nodes that are
-  // denoted as "subtree top" nodes.  It represents the complete set
-  // of subtree_top nodes that this node inherits from, directly or
-  // indirectly.
+  // The _top_inheritance member is only filled for nodes that are denoted as
+  // "subtree top" nodes.  It represents the complete set of subtree_top nodes
+  // that this node inherits from, directly or indirectly.
   TopInheritance _top_inheritance;
 
   // _visit_count is only used during r_build_subtree().

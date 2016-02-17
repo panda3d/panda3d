@@ -1,16 +1,15 @@
-// Filename: eggToSomething.h
-// Created by:  drose (15Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToSomething.h
+ * @author drose
+ * @date 2000-02-15
+ */
 
 #ifndef EGGTOSOMETHING_H
 #define EGGTOSOMETHING_H
@@ -20,12 +19,10 @@
 #include "eggConverter.h"
 #include "distanceUnit.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToSomething
-// Description : This is the general base class for a file-converter
-//               program that reads some model file format and
-//               generates an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the general base class for a file-converter program that reads some
+ * model file format and generates an egg file.
+ */
 class EggToSomething : public EggConverter {
 public:
   EggToSomething(const string &format_name,
@@ -45,5 +42,3 @@ protected:
 };
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: winStatsGraph.cxx
-// Created by:  drose (03Dec03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winStatsGraph.cxx
+ * @author drose
+ * @date 2003-12-03
+ */
 
 #include "winStatsGraph.h"
 #include "winStatsMonitor.h"
@@ -19,14 +18,12 @@
 bool WinStatsGraph::_graph_window_class_registered = false;
 const char * const WinStatsGraph::_graph_window_class_name = "graph";
 
-DWORD WinStatsGraph::graph_window_style = 
+DWORD WinStatsGraph::graph_window_style =
 WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WinStatsGraph::
 WinStatsGraph(WinStatsMonitor *monitor) :
   _monitor(monitor)
@@ -57,11 +54,9 @@ WinStatsGraph(WinStatsMonitor *monitor) :
   _pause = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WinStatsGraph::
 ~WinStatsGraph() {
   _monitor = (WinStatsMonitor *)NULL;
@@ -70,7 +65,7 @@ WinStatsGraph::
   DeleteObject(_dark_pen);
   DeleteObject(_light_pen);
   DeleteObject(_user_guide_bar_pen);
-  
+
   Brushes::iterator bi;
   for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
     HBRUSH brush = (*bi).second;
@@ -88,105 +83,80 @@ WinStatsGraph::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::new_collector
-//       Access: Public, Virtual
-//  Description: Called whenever a new Collector definition is
-//               received from the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a new Collector definition is received from the client.
+ */
 void WinStatsGraph::
 new_collector(int new_collector) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::new_data
-//       Access: Public, Virtual
-//  Description: Called whenever new data arrives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever new data arrives.
+ */
 void WinStatsGraph::
 new_data(int thread_index, int frame_number) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::force_redraw
-//       Access: Public, Virtual
-//  Description: Called when it is necessary to redraw the entire graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when it is necessary to redraw the entire graph.
+ */
 void WinStatsGraph::
 force_redraw() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::changed_graph_size
-//       Access: Public, Virtual
-//  Description: Called when the user has resized the window, forcing
-//               a resize of the graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user has resized the window, forcing a resize of the graph.
+ */
 void WinStatsGraph::
 changed_graph_size(int graph_xsize, int graph_ysize) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::set_time_units
-//       Access: Public, Virtual
-//  Description: Called when the user selects a new time units from
-//               the monitor pulldown menu, this should adjust the
-//               units for the graph to the indicated mask if it is a
-//               time-based graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a new time units from the monitor pulldown
+ * menu, this should adjust the units for the graph to the indicated mask if
+ * it is a time-based graph.
+ */
 void WinStatsGraph::
 set_time_units(int unit_mask) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::set_scroll_speed
-//       Access: Public
-//  Description: Called when the user selects a new scroll speed from
-//               the monitor pulldown menu, this should adjust the
-//               speed for the graph to the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a new scroll speed from the monitor pulldown
+ * menu, this should adjust the speed for the graph to the indicated value.
+ */
 void WinStatsGraph::
 set_scroll_speed(double scroll_speed) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::set_pause
-//       Access: Public
-//  Description: Changes the pause flag for the graph.  When this flag
-//               is true, the graph does not update in response to new
-//               data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the pause flag for the graph.  When this flag is true, the graph
+ * does not update in response to new data.
+ */
 void WinStatsGraph::
 set_pause(bool pause) {
   _pause = pause;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::user_guide_bars_changed
-//       Access: Public
-//  Description: Called when the user guide bars have been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user guide bars have been changed.
+ */
 void WinStatsGraph::
 user_guide_bars_changed() {
   InvalidateRect(_window, NULL, TRUE);
   InvalidateRect(_graph_window, NULL, TRUE);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::clicked_label
-//       Access: Public, Virtual
-//  Description: Called when the user single-clicks on a label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user single-clicks on a label.
+ */
 void WinStatsGraph::
 clicked_label(int collector_index) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::close
-//       Access: Protected
-//  Description: Should be called when the user closes the associated
-//               window.  This tells the monitor to remove the graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called when the user closes the associated window.  This tells
+ * the monitor to remove the graph.
+ */
 void WinStatsGraph::
 close() {
   WinStatsMonitor *monitor = _monitor;
@@ -196,45 +166,36 @@ close() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::setup_label_stack
-//       Access: Protected
-//  Description: Sets up the label stack on the left edge of the
-//               frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the label stack on the left edge of the frame.
+ */
 void WinStatsGraph::
 setup_label_stack() {
   _label_stack.setup(_window);
   move_label_stack();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::move_label_stack
-//       Access: Protected
-//  Description: Repositions the label stack if its coordinates or
-//               size have changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Repositions the label stack if its coordinates or size have changed.
+ */
 void WinStatsGraph::
 move_label_stack() {
   if (_label_stack.is_setup()) {
     RECT rect;
     GetClientRect(_window, &rect);
-    
+
     rect.left += 8;
     rect.right = _left_margin - 8;
     rect.bottom -= _bottom_margin;
-    
-    _label_stack.set_pos(rect.left, rect.top, 
+
+    _label_stack.set_pos(rect.left, rect.top,
                          rect.right - rect.left, rect.bottom - rect.top);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::get_collector_brush
-//       Access: Protected
-//  Description: Returns a brush suitable for drawing in the indicated
-//               collector's color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a brush suitable for drawing in the indicated collector's color.
+ */
 HBRUSH WinStatsGraph::
 get_collector_brush(int collector_index) {
   Brushes::iterator bi;
@@ -254,13 +215,10 @@ get_collector_brush(int collector_index) {
   return brush;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::window_proc
-//       Access: Protected
-//  Description: This window_proc should be called up to by the
-//               derived classes for any messages that are not
-//               specifically handled by the derived class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This window_proc should be called up to by the derived classes for any
+ * messages that are not specifically handled by the derived class.
+ */
 LONG WinStatsGraph::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
@@ -283,8 +241,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_SETCURSOR:
     {
-      // Why is it so hard to ask for the cursor position within the
-      // window's client area?
+      // Why is it so hard to ask for the cursor position within the window's
+      // client area?
       POINT point;
       GetCursorPos(&point);
       WINDOWINFO winfo;
@@ -323,7 +281,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     return 0;
 
-  case WM_MOUSEMOVE: 
+  case WM_MOUSEMOVE:
     if (_drag_mode == DM_left_margin) {
       PN_int16 x = LOWORD(lparam);
       _left_margin += (x - _drag_start_x);
@@ -388,11 +346,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::graph_window_proc
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LONG WinStatsGraph::
 graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
@@ -402,8 +358,8 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_LBUTTONDOWN:
-    // Vector any uncaught WM_LBUTTONDOWN into the main window, so we
-    // can drag margins, etc.
+    // Vector any uncaught WM_LBUTTONDOWN into the main window, so we can drag
+    // margins, etc.
     if (_potential_drag_mode != DM_none) {
       PN_int16 x = LOWORD(lparam) + _graph_left;
       PN_int16 y = HIWORD(lparam) + _graph_top;
@@ -422,7 +378,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       PAINTSTRUCT ps;
       HDC hdc = BeginPaint(hwnd, &ps);
 
-      BitBlt(hdc, 0, 0, 
+      BitBlt(hdc, 0, 0,
              _bitmap_xsize, _bitmap_ysize,
              _bitmap_dc, 0, 0,
              SRCCOPY);
@@ -440,37 +396,28 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::additional_window_paint
-//       Access: Protected, Virtual
-//  Description: This is called during the servicing of WM_PAINT; it
-//               gives a derived class opportunity to do some further
-//               painting into the window (the outer window, not the
-//               graph window).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called during the servicing of WM_PAINT; it gives a derived class
+ * opportunity to do some further painting into the window (the outer window,
+ * not the graph window).
+ */
 void WinStatsGraph::
 additional_window_paint(HDC hdc) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::additional_graph_window_paint
-//       Access: Protected, Virtual
-//  Description: This is called during the servicing of WM_PAINT; it
-//               gives a derived class opportunity to do some further
-//               painting into the graph window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called during the servicing of WM_PAINT; it gives a derived class
+ * opportunity to do some further painting into the graph window.
+ */
 void WinStatsGraph::
 additional_graph_window_paint(HDC hdc) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::consider_drag_start
-//       Access: Protected, Virtual
-//  Description: Based on the mouse position within the window's
-//               client area, look for draggable things the mouse
-//               might be hovering over and return the appropriate
-//               DragMode enum or DM_none if nothing is indicated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Based on the mouse position within the window's client area, look for
+ * draggable things the mouse might be hovering over and return the
+ * appropriate DragMode enum or DM_none if nothing is indicated.
+ */
 WinStatsGraph::DragMode WinStatsGraph::
 consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
   if (mouse_x >= _left_margin - 2 && mouse_x <= _left_margin + 2) {
@@ -482,24 +429,19 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
   return DM_none;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::set_drag_mode
-//       Access: Protected, Virtual
-//  Description: This should be called whenever the drag mode needs to
-//               change state.  It provides hooks for a derived class
-//               to do something special.
-////////////////////////////////////////////////////////////////////
+/**
+ * This should be called whenever the drag mode needs to change state.  It
+ * provides hooks for a derived class to do something special.
+ */
 void WinStatsGraph::
 set_drag_mode(WinStatsGraph::DragMode drag_mode) {
   _drag_mode = drag_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::move_graph_window
-//       Access: Protected, Virtual
-//  Description: Repositions the graph child window within the parent
-//               window according to the _margin variables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Repositions the graph child window within the parent window according to
+ * the _margin variables.
+ */
 void WinStatsGraph::
 move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysize) {
   if (_graph_window == 0) {
@@ -509,7 +451,7 @@ move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysiz
   _graph_left = graph_left;
   _graph_top = graph_top;
 
-  SetWindowPos(_graph_window, 0, 
+  SetWindowPos(_graph_window, 0,
                _graph_left, _graph_top,
                graph_xsize, graph_ysize,
                SWP_NOZORDER | SWP_SHOWWINDOW);
@@ -519,11 +461,9 @@ move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysiz
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::setup_bitmap
-//       Access: Private
-//  Description: Sets up a backing-store bitmap of the indicated size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up a backing-store bitmap of the indicated size.
+ */
 void WinStatsGraph::
 setup_bitmap(int xsize, int ysize) {
   release_bitmap();
@@ -541,12 +481,9 @@ setup_bitmap(int xsize, int ysize) {
   ReleaseDC(_window, hdc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::release_bitmap
-//       Access: Private
-//  Description: Frees the backing-store bitmap created by
-//               setup_bitmap().
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the backing-store bitmap created by setup_bitmap().
+ */
 void WinStatsGraph::
 release_bitmap() {
   if (_bitmap) {
@@ -559,11 +496,9 @@ release_bitmap() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::create_graph_window
-//       Access: Private
-//  Description: Creates the child window that actually holds the graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the child window that actually holds the graph.
+ */
 void WinStatsGraph::
 create_graph_window() {
   if (_graph_window) {
@@ -576,7 +511,7 @@ create_graph_window() {
   string window_title = "graph";
   DWORD window_style = WS_CHILD | WS_CLIPSIBLINGS;
 
-  _graph_window = 
+  _graph_window =
     CreateWindow(_graph_window_class_name, window_title.c_str(), window_style,
                  0, 0, 0, 0,
                  _window, NULL, application, 0);
@@ -588,12 +523,10 @@ create_graph_window() {
   SetWindowLongPtr(_graph_window, 0, (LONG_PTR)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::register_graph_window_class
-//       Access: Private, Static
-//  Description: Registers the window class for the stripChart window, if
-//               it has not already been registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the window class for the stripChart window, if it has not already
+ * been registered.
+ */
 void WinStatsGraph::
 register_graph_window_class(HINSTANCE application) {
   if (_graph_window_class_registered) {
@@ -613,7 +546,7 @@ register_graph_window_class(HINSTANCE application) {
 
   // Reserve space to associate the this pointer with the window.
   wc.cbWndExtra = sizeof(WinStatsGraph *);
-  
+
   if (!RegisterClass(&wc)) {
     nout << "Could not register graph window class!\n";
     exit(1);
@@ -622,11 +555,9 @@ register_graph_window_class(HINSTANCE application) {
   _graph_window_class_registered = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::static_graph_window_proc
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LONG WINAPI WinStatsGraph::
 static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsGraph *self = (WinStatsGraph *)GetWindowLongPtr(hwnd, 0);

@@ -1,24 +1,23 @@
-// Filename: sampleClass.h
-// Created by:  drose (10Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sampleClass.h
+ * @author drose
+ * @date 2000-06-10
+ */
 
 #ifndef SAMPLECLASS_H
 #define SAMPLECLASS_H
 
-// This file shows some sample code that illustrates our general
-// naming and style conventions for Panda coding.  Note that there is
-// generally one .h file per class, with the .h file named after the
-// class but the first letter lowercase.
+// This file shows some sample code that illustrates our general naming and
+// style conventions for Panda coding.  Note that there is generally one .h
+// file per class, with the .h file named after the class but the first letter
+// lowercase.
 
 #include "pandabase.h"
 
@@ -30,13 +29,11 @@
 
 #include <systemHeaderFile.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : SampleClass
-// Description : A basic description of the function and purpose of
-//               SampleClass.  Note that class names are generally
-//               mixed case, no underscore, beginning with a capital
-//               letter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A basic description of the function and purpose of SampleClass.  Note that
+ * class names are generally mixed case, no underscore, beginning with a
+ * capital letter.
+ */
 class EXPCL_PANDA SampleClass : public TypedObject {
 public:
   enum NestedEnum {
@@ -53,13 +50,12 @@ public:
   INLINE SampleClass(const SampleClass &copy);
   INLINE ~SampleClass();
 
-  // Note that inline function bodies are generally not given here in
-  // the .h file--they're defined in the associated .I file.
+  // Note that inline function bodies are generally not given here in the .h
+  // file--they're defined in the associated .I file.
 
-  // Method names are generally lower case, with underscores
-  // separating words.  Accessors are generally of the form set_*()
-  // and get_*().  Respect the const convention for methods which
-  // should be const.
+  // Method names are generally lower case, with underscores separating words.
+  // Accessors are generally of the form set_*() and get_*().  Respect the
+  // const convention for methods which should be const.
 
   INLINE void set_flag(int flag);
   INLINE int get_flag() const;
@@ -74,9 +70,8 @@ private:
 
 
 public:
-  // Data members, whether private or public, are generally lower
-  // case, with underscores separating words, and beginning with a
-  // leading underscore.
+  // Data members, whether private or public, are generally lower case, with
+  // underscores separating words, and beginning with a leading underscore.
 
   bool _public_data_member;
 
@@ -86,10 +81,10 @@ private:
   int _flag;
 
 
-  // The TypeHandle stuff, below, need be present only for classes
-  // that inherit from TypedObject.  Classes that do not inherit from
-  // TypedObject may optionally define just the non-virtual methods
-  // below: get_class_type(), init_type().
+  // The TypeHandle stuff, below, need be present only for classes that
+  // inherit from TypedObject.  Classes that do not inherit from TypedObject
+  // may optionally define just the non-virtual methods below:
+  // get_class_type(), init_type().
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

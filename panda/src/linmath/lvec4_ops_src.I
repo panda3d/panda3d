@@ -1,48 +1,43 @@
-// Filename: lvec4_ops_src.I
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvec4_ops_src.I
+ * @author drose
+ * @date 2000-03-08
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: scalar * LVecBase4
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVecBase4)
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase4) &a) {
   return a * scalar;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: scalar * LPoint4
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LPoint4)
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint4) &a) {
   return a * scalar;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: scalar * LVector4
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH FLOATNAME(LVector4)
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector4) &a) {
   return a * scalar;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: dot product of LVecBase4
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 
 INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase4) &a, const FLOATNAME(LVecBase4) &b) {
@@ -50,20 +45,18 @@ dot(const FLOATNAME(LVecBase4) &a, const FLOATNAME(LVecBase4) &b) {
 }
 
 #ifndef FLOATTYPE_IS_INT
-////////////////////////////////////////////////////////////////////
-//     Function: length of a vector
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 
 INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVector4) &a) {
   return a.length();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: normalize
-//  Description: Returns a normalized vector from the given vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a normalized vector from the given vector.
+ */
 
 INLINE_LINMATH FLOATNAME(LVector4)
 normalize(const FLOATNAME(LVector4) &v) {
@@ -73,19 +66,17 @@ normalize(const FLOATNAME(LVector4) &v) {
 }
 #endif  // FLOATTYPE_IS_INT
 
-////////////////////////////////////////////////////////////////////
-//     Function: generic_write_datagram
-//  Description: Writes the value to the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the value to the datagram.
+ */
 INLINE_LINMATH void
 generic_write_datagram(Datagram &dest, const FLOATNAME(LVecBase4) &value) {
   value.write_datagram(dest);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: generic_read_datagram
-//  Description: Reads the value from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the value from the datagram.
+ */
 INLINE_LINMATH void
 generic_read_datagram(FLOATNAME(LVecBase4) &result, DatagramIterator &source) {
   result.read_datagram(source);

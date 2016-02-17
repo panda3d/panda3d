@@ -1,16 +1,15 @@
-// Filename: cppInstanceIdentifier.h
-// Created by:  drose (21Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppInstanceIdentifier.h
+ * @author drose
+ * @date 1999-10-21
+ */
 
 #ifndef CPPINSTANCEIDENTIFIER_H
 #define CPPINSTANCEIDENTIFIER_H
@@ -42,14 +41,12 @@ enum CPPInstanceIdentifierType {
   IIT_initializer,
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPInstanceIdentifier
-// Description : This class is used in parser.y to build up a variable
-//               instance definition.  An instance is something like
-//               'int *&a'; the InstanceIdentifier stores everything
-//               to the right of the typename.  Later this can be
-//               passed to make_instance() to construct a CPPInstance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used in parser.y to build up a variable instance definition.
+ * An instance is something like 'int *&a'; the InstanceIdentifier stores
+ * everything to the right of the typename.  Later this can be passed to
+ * make_instance() to construct a CPPInstance.
+ */
 class CPPInstanceIdentifier {
 public:
   CPPInstanceIdentifier(CPPIdentifier *ident);

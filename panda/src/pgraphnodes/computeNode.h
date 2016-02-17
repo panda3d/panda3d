@@ -1,16 +1,15 @@
-// Filename: computeNode.h
-// Created by:  rdb (19Jun14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file computeNode.h
+ * @author rdb
+ * @date 2014-06-19
+ */
 
 #ifndef COMPUTENODE_H
 #define COMPUTENODE_H
@@ -21,12 +20,10 @@
 #include "callbackNode.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ComputeNode
-// Description : A special node, the sole purpose of which is to
-//               invoke a dispatch operation on the assigned
-//               compute shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special node, the sole purpose of which is to invoke a dispatch operation
+ * on the assigned compute shader.
+ */
 class EXPCL_PANDA_PGRAPHNODES ComputeNode : public PandaNode {
 PUBLISHED:
   ComputeNode(const string &name);

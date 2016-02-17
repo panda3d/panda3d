@@ -1,16 +1,15 @@
-// Filename: animGroup.h
-// Created by:  drose (21Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animGroup.h
+ * @author drose
+ * @date 1999-02-21
+ */
 
 #ifndef ANIMGROUP_H
 #define ANIMGROUP_H
@@ -26,13 +25,11 @@ class AnimBundle;
 class BamReader;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimGroup
-// Description : This is the base class for AnimChannel and
-//               AnimBundle.  It implements a hierarchy of
-//               AnimChannels.  The root of the hierarchy must be an
-//               AnimBundle.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for AnimChannel and AnimBundle.  It implements a
+ * hierarchy of AnimChannels.  The root of the hierarchy must be an
+ * AnimBundle.
+ */
 class EXPCL_PANDA_CHAN AnimGroup : public TypedWritableReferenceCount, public Namable {
 protected:
   AnimGroup(const string &name = "");
@@ -63,7 +60,7 @@ protected:
 
   virtual AnimGroup *make_copy(AnimGroup *parent) const;
   PT(AnimGroup) copy_subtree(AnimGroup *parent) const;
-  
+
 protected:
   typedef pvector< PT(AnimGroup) > Children;
   Children _children;
@@ -111,5 +108,3 @@ inline ostream &operator << (ostream &out, const AnimGroup &anim) {
 #include "animGroup.I"
 
 #endif
-
-

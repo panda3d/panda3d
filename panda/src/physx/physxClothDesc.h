@@ -1,16 +1,15 @@
-// Filename: physxClothDesc.h
-// Created by:  enn0x (30Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxClothDesc.h
+ * @author enn0x
+ * @date 2010-03-30
+ */
 
 #ifndef PHYSXCLOTHDESC_H
 #define PHYSXCLOTHDESC_H
@@ -23,10 +22,9 @@
 
 class PhysxClothMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxClothDesc
-// Description : Descriptor for PhysxCloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for PhysxCloth.
+ */
 class EXPCL_PANDAPHYSX PhysxClothDesc : public PhysxEnums {
 
 PUBLISHED:
@@ -71,7 +69,7 @@ public:
   NxClothDesc _desc;
 
 private:
-  string _name;  
+  string _name;
 };
 
 #include "physxClothDesc.I"

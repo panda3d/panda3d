@@ -1,16 +1,15 @@
-// Filename: cppExpressionParser.h
-// Created by:  drose (25Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppExpressionParser.h
+ * @author drose
+ * @date 1999-10-25
+ */
 
 #ifndef CPPEXPRESSIONPARSER_H
 #define CPPEXPRESSIONPARSER_H
@@ -22,10 +21,9 @@
 class CPPExpression;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPExpressionParser
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPExpressionParser : public CPPPreprocessor {
 public:
   CPPExpressionParser(CPPScope *current_scope, CPPScope *global_scope);
@@ -48,5 +46,3 @@ operator << (ostream &out, const CPPExpressionParser &ep) {
 }
 
 #endif
-
-

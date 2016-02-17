@@ -1,17 +1,17 @@
-// Filename: texturePool.cxx
-// Created by:  drose (26Apr00)
-// Updated by: fperazzi, PandaSE(29Apr10) (added ns_load_2d_texture_array)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texturePool.cxx
+ * @author drose
+ * @date 2000-04-26
+ * @author fperazzi, PandaSE
+ * @date 2010-04-29
+ */
 
 #include "texturePool.h"
 #include "config_gobj.h"
@@ -30,27 +30,21 @@
 
 TexturePool *TexturePool::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::write
-//       Access: Published, Static
-//  Description: Lists the contents of the texture pool to the
-//               indicated output stream.
-//               For debugging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists the contents of the texture pool to the indicated output stream.  For
+ * debugging.
+ */
 void TexturePool::
 write(ostream &out) {
   get_global_ptr()->ns_list_contents(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::register_texture_type
-//       Access: Public
-//  Description: Records a factory function that makes a Texture
-//               object of the appropriate type for one or more
-//               particular filename extensions.  The string
-//               extensions may be a string that contains
-//               space-separated list of extensions, case-insensitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a factory function that makes a Texture object of the appropriate
+ * type for one or more particular filename extensions.  The string extensions
+ * may be a string that contains space-separated list of extensions, case-
+ * insensitive.
+ */
 void TexturePool::
 register_texture_type(MakeTextureFunc *func, const string &extensions) {
   MutexHolder holder(_lock);
@@ -64,12 +58,10 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::register_filter
-//       Access: Public
-//  Description: Records a TexturePoolFilter object that may operate
-//               on texture images as they are loaded from disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a TexturePoolFilter object that may operate on texture images as
+ * they are loaded from disk.
+ */
 void TexturePool::
 register_filter(TexturePoolFilter *filter) {
   MutexHolder holder(_lock);
@@ -79,14 +71,11 @@ register_filter(TexturePoolFilter *filter) {
   _filter_registry.push_back(filter);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::get_texture_type
-//       Access: Public
-//  Description: Returns the factory function to construct a new
-//               texture of the type appropriate for the indicated
-//               filename extension, if any, or NULL if the extension
-//               is not one of the extensions for a texture file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the factory function to construct a new texture of the type
+ * appropriate for the indicated filename extension, if any, or NULL if the
+ * extension is not one of the extensions for a texture file.
+ */
 TexturePool::MakeTextureFunc *TexturePool::
 get_texture_type(const string &extension) const {
   MutexHolder holder(_lock);
@@ -111,14 +100,11 @@ get_texture_type(const string &extension) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::write_texture_types
-//       Access: Public
-//  Description: Outputs a list of the available texture types to the
-//               indicated output stream.  This is mostly the list of
-//               available image types, with maybe a few additional
-//               ones for video textures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a list of the available texture types to the indicated output
+ * stream.  This is mostly the list of available image types, with maybe a few
+ * additional ones for video textures.
+ */
 void TexturePool::
 write_texture_types(ostream &out, int indent_level) const {
   MutexHolder holder(_lock);
@@ -126,8 +112,8 @@ write_texture_types(ostream &out, int indent_level) const {
   PNMFileTypeRegistry *pnm_reg = PNMFileTypeRegistry::get_global_ptr();
   pnm_reg->write(out, indent_level);
 
-  // Also output any of the additional texture types, that aren't
-  // strictly images (these are typically video textures).
+  // Also output any of the additional texture types, that aren't strictly
+  // images (these are typically video textures).
   TypeRegistry::const_iterator ti;
   for (ti = _type_registry.begin(); ti != _type_registry.end(); ++ti) {
     string extension = (*ti).first;
@@ -143,32 +129,26 @@ write_texture_types(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::get_global_ptr
-//       Access: Public, Static
-//  Description: Initializes and/or returns the global pointer to the
-//               one TexturePool object in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes and/or returns the global pointer to the one TexturePool object
+ * in the system.
+ */
 TexturePool *TexturePool::
 get_global_ptr() {
   if (_global_ptr == (TexturePool *)NULL) {
     _global_ptr = new TexturePool;
 
     // We have to call this here, not in the constructor, so that the
-    // _global_ptr is safely assigned by the time the filters begin to
-    // load.
+    // _global_ptr is safely assigned by the time the filters begin to load.
     _global_ptr->load_filters();
   }
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::Constructor
-//       Access: Private
-//  Description: The constructor is not intended to be called
-//               directly; there's only supposed to be one TexturePool
-//               in the universe and it constructs itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor is not intended to be called directly; there's only
+ * supposed to be one TexturePool in the universe and it constructs itself.
+ */
 TexturePool::
 TexturePool() {
   ConfigVariableFilename fake_texture_image
@@ -181,11 +161,9 @@ TexturePool() {
   _fake_texture_image = fake_texture_image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_has_texture
-//       Access: Private
-//  Description: The nonstatic implementation of has_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of has_texture().
+ */
 bool TexturePool::
 ns_has_texture(const Filename &orig_filename) {
   MutexHolder holder(_lock);
@@ -203,11 +181,9 @@ ns_has_texture(const Filename &orig_filename) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_load_texture
-//       Access: Private
-//  Description: The nonstatic implementation of load_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_texture().
+ */
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
                 bool read_mipmaps, const LoaderOptions &options) {
@@ -241,16 +217,16 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
                  options);
 
   if (tex == (Texture *)NULL) {
-    // The texture was neither in the pool, nor found in the on-disk
-    // cache; it needs to be loaded from its source image(s).
+    // The texture was neither in the pool, nor found in the on-disk cache; it
+    // needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading texture " << filename << "\n";
 
     string ext = downcase(filename.get_extension());
     if (ext == "txo" || ext == "bam") {
-      // Assume this is a txo file, which might conceivably contain a
-      // movie file or some other subclass of Texture.  In that case,
-      // use make_from_txo() to load it instead of read().
+      // Assume this is a txo file, which might conceivably contain a movie
+      // file or some other subclass of Texture.  In that case, use
+      // make_from_txo() to load it instead of read().
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
       filename.set_binary();
@@ -277,7 +253,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       tex->set_fullpath(filename);
       tex->clear_alpha_fullpath();
       tex->set_keep_ram_image(false);
-        
+
     } else {
       // Read it the conventional way.
       tex = ns_make_texture(ext);
@@ -325,8 +301,8 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   {
     MutexHolder holder(_lock);
 
-    // Now look again--someone may have just loaded this texture in
-    // another thread.
+    // Now look again--someone may have just loaded this texture in another
+    // thread.
     Textures::const_iterator ti;
     ti = _textures.find(filename);
     if (ti != _textures.end()) {
@@ -358,13 +334,11 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_load_texture
-//       Access: Private
-//  Description: The nonstatic implementation of load_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_texture().
+ */
 Texture *TexturePool::
-ns_load_texture(const Filename &orig_filename, 
+ns_load_texture(const Filename &orig_filename,
                 const Filename &orig_alpha_filename,
                 int primary_file_num_channels,
                 int alpha_file_channel,
@@ -397,7 +371,7 @@ ns_load_texture(const Filename &orig_filename,
   bool store_record = false;
 
   // Can one of our texture filters supply the texture?
-  tex = pre_load(orig_filename, alpha_filename, primary_file_num_channels, 
+  tex = pre_load(orig_filename, alpha_filename, primary_file_num_channels,
                  alpha_file_channel, read_mipmaps, options);
 
   BamCache *cache = BamCache::get_global_ptr();
@@ -406,8 +380,8 @@ ns_load_texture(const Filename &orig_filename,
                  options);
 
   if (tex == (Texture *)NULL) {
-    // The texture was neither in the pool, nor found in the on-disk
-    // cache; it needs to be loaded from its source image(s).
+    // The texture was neither in the pool, nor found in the on-disk cache; it
+    // needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading texture " << filename << " and alpha component "
       << alpha_filename << endl;
@@ -467,7 +441,7 @@ ns_load_texture(const Filename &orig_filename,
       nassertr(!tex->get_fullpath().empty(), tex);
       return tex;
     }
-    
+
     _textures[filename] = tex;
   }
 
@@ -490,11 +464,9 @@ ns_load_texture(const Filename &orig_filename,
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_load_3d_texture
-//       Access: Private
-//  Description: The nonstatic implementation of load_3d_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_3d_texture().
+ */
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern,
                    bool read_mipmaps, const LoaderOptions &options) {
@@ -525,10 +497,10 @@ ns_load_3d_texture(const Filename &filename_pattern,
   try_load_cache(tex, cache, filename, record, compressed_cache_record,
                  options);
 
-  if (tex == (Texture *)NULL || 
+  if (tex == (Texture *)NULL ||
       tex->get_texture_type() != Texture::TT_3d_texture) {
-    // The texture was neither in the pool, nor found in the on-disk
-    // cache; it needs to be loaded from its source image(s).
+    // The texture was neither in the pool, nor found in the on-disk cache; it
+    // needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading 3-d texture " << filename << "\n";
     tex = ns_make_texture(filename.get_extension());
@@ -593,11 +565,9 @@ ns_load_3d_texture(const Filename &filename_pattern,
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_load_2d_texture_array
-//       Access: Private
-//  Description: The nonstatic implementation of load_2d_texture_array().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_2d_texture_array().
+ */
 Texture *TexturePool::
 ns_load_2d_texture_array(const Filename &filename_pattern,
                          bool read_mipmaps, const LoaderOptions &options) {
@@ -631,10 +601,10 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   try_load_cache(tex, cache, filename, record, compressed_cache_record,
                  options);
 
-  if (tex == (Texture *)NULL || 
+  if (tex == (Texture *)NULL ||
       tex->get_texture_type() != Texture::TT_2d_texture_array) {
-    // The texture was neither in the pool, nor found in the on-disk
-    // cache; it needs to be loaded from its source image(s).
+    // The texture was neither in the pool, nor found in the on-disk cache; it
+    // needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading 2-d texture array " << filename << "\n";
     tex = ns_make_texture(filename.get_extension());
@@ -699,13 +669,11 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_load_cube_map
-//       Access: Private
-//  Description: The nonstatic implementation of load_cube_map().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_cube_map().
+ */
 Texture *TexturePool::
-ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps, 
+ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
                  const LoaderOptions &options) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
@@ -732,10 +700,10 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   try_load_cache(tex, cache, filename, record, compressed_cache_record,
                  options);
 
-  if (tex == (Texture *)NULL || 
+  if (tex == (Texture *)NULL ||
       tex->get_texture_type() != Texture::TT_cube_map) {
-    // The texture was neither in the pool, nor found in the on-disk
-    // cache; it needs to be loaded from its source image(s).
+    // The texture was neither in the pool, nor found in the on-disk cache; it
+    // needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading cube map texture " << filename << "\n";
     tex = ns_make_texture(filename.get_extension());
@@ -767,7 +735,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
     // We don't want to save this texture.
     store_record = false;
   }
-    
+
   // Set the original filename, before we searched along the path.
   nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(filename_pattern);
@@ -798,11 +766,9 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_get_normalization_cube_map
-//       Access: Private
-//  Description: The nonstatic implementation of get_normalization_cube_map().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of get_normalization_cube_map().
+ */
 Texture *TexturePool::
 ns_get_normalization_cube_map(int size) {
   MutexHolder holder(_lock);
@@ -818,11 +784,9 @@ ns_get_normalization_cube_map(int size) {
   return _normalization_cube_map;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_get_alpha_scale_map
-//       Access: Private
-//  Description: The nonstatic implementation of get_alpha_scale_map().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of get_alpha_scale_map().
+ */
 Texture *TexturePool::
 ns_get_alpha_scale_map() {
   MutexHolder holder(_lock);
@@ -835,11 +799,9 @@ ns_get_alpha_scale_map() {
   return _alpha_scale_map;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_add_texture
-//       Access: Private
-//  Description: The nonstatic implementation of add_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of add_texture().
+ */
 void TexturePool::
 ns_add_texture(Texture *tex) {
   PT(Texture) keep = tex;
@@ -859,11 +821,9 @@ ns_add_texture(Texture *tex) {
   nassertv(!tex->get_fullpath().empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_release_texture
-//       Access: Private
-//  Description: The nonstatic implementation of release_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_texture().
+ */
 void TexturePool::
 ns_release_texture(Texture *tex) {
   MutexHolder holder(_lock);
@@ -881,11 +841,9 @@ ns_release_texture(Texture *tex) {
   _relpath_lookup.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_release_all_textures
-//       Access: Private
-//  Description: The nonstatic implementation of release_all_textures().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_all_textures().
+ */
 void TexturePool::
 ns_release_all_textures() {
   MutexHolder holder(_lock);
@@ -903,11 +861,9 @@ ns_release_all_textures() {
   _relpath_lookup.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_garbage_collect
-//       Access: Private
-//  Description: The nonstatic implementation of garbage_collect().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of garbage_collect().
+ */
 int TexturePool::
 ns_garbage_collect() {
   MutexHolder holder(_lock);
@@ -945,11 +901,9 @@ ns_garbage_collect() {
   return num_released;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_list_contents
-//       Access: Private
-//  Description: The nonstatic implementation of list_contents().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of list_contents().
+ */
 void TexturePool::
 ns_list_contents(ostream &out) const {
   MutexHolder holder(_lock);
@@ -959,34 +913,32 @@ ns_list_contents(ostream &out) const {
   Textures::const_iterator ti;
 
   out << "texture pool contents:\n";
-  
+
   total_size = 0;
   total_ram_size = 0;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     Texture *tex = (*ti).second;
     out << (*ti).first << "\n";
-    out << "  (count = " << tex->get_ref_count() 
-        << ", ram  = " << tex->get_ram_image_size() 
+    out << "  (count = " << tex->get_ref_count()
+        << ", ram  = " << tex->get_ram_image_size()
         << ", size = " << tex->get_ram_page_size()
-        << ", w = " << tex->get_x_size() 
-        << ", h = " << tex->get_y_size() 
+        << ", w = " << tex->get_x_size()
+        << ", h = " << tex->get_y_size()
         << ")\n";
     nassertv(tex->_texture_pool_key == (*ti).first);
     total_ram_size += tex->get_ram_image_size();
     total_size += tex->get_ram_page_size();
   }
-  
+
   out << "total number of textures: " << _textures.size() << "\n";
   out << "texture pool ram : " << total_ram_size << "\n";
   out << "texture pool size: " << total_size << "\n";
   out << "texture pool size - texture pool ram: " << total_size - total_ram_size << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_find_texture
-//       Access: Private
-//  Description: The nonstatic implementation of find_texture().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of find_texture().
+ */
 Texture *TexturePool::
 ns_find_texture(const string &name) const {
   MutexHolder holder(_lock);
@@ -1003,11 +955,9 @@ ns_find_texture(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_find_all_textures
-//       Access: Private
-//  Description: The nonstatic implementation of find_all_textures().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of find_all_textures().
+ */
 TextureCollection TexturePool::
 ns_find_all_textures(const string &name) const {
   MutexHolder holder(_lock);
@@ -1025,14 +975,11 @@ ns_find_all_textures(const string &name) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::ns_make_texture
-//       Access: Public
-//  Description: Creates a new Texture object of the appropriate type
-//               for the indicated filename extension, according to
-//               the types that have been registered via
-//               register_texture_type().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new Texture object of the appropriate type for the indicated
+ * filename extension, according to the types that have been registered via
+ * register_texture_type().
+ */
 PT(Texture) TexturePool::
 ns_make_texture(const string &extension) const {
   MakeTextureFunc *func = get_texture_type(extension);
@@ -1040,19 +987,16 @@ ns_make_texture(const string &extension) const {
     return func();
   }
 
-  // We don't know what kind of file type this is; return an ordinary
-  // Texture in case it's an image file with no extension.
+  // We don't know what kind of file type this is; return an ordinary Texture
+  // in case it's an image file with no extension.
   return new Texture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::resolve_filename
-//       Access: Private
-//  Description: Searches for the indicated filename along the
-//               model path.  If the filename was previously
-//               searched for, doesn't search again, as an
-//               optimization.  Assumes _lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the indicated filename along the model path.  If the filename
+ * was previously searched for, doesn't search again, as an optimization.
+ * Assumes _lock is held.
+ */
 void TexturePool::
 resolve_filename(Filename &new_filename, const Filename &orig_filename,
                  bool read_mipmaps, const LoaderOptions &options) {
@@ -1078,25 +1022,22 @@ resolve_filename(Filename &new_filename, const Filename &orig_filename,
   _relpath_lookup[orig_filename] = new_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::try_load_cache
-//       Access: Private
-//  Description: Attempts to load the texture from the cache record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to load the texture from the cache record.
+ */
 void TexturePool::
 try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
                PT(BamCacheRecord) &record, bool &compressed_cache_record,
                const LoaderOptions &options) {
   if (tex == (Texture *)NULL) {
-    // The texture was not supplied by a texture filter.  See if it
-    // can be found in the on-disk cache, if it is active.
+    // The texture was not supplied by a texture filter.  See if it can be
+    // found in the on-disk cache, if it is active.
     if ((cache->get_cache_textures() || cache->get_cache_compressed_textures()) && !textures_header_only) {
 
-      // Call ns_make_texture() on the file extension and create a
-      // dummy texture object we can call ensure_loaded_type() on.  We
-      // don't need to keep this object around after this call, since
-      // we'll be creating a new one below.  I know this is a bit
-      // hacky.
+      // Call ns_make_texture() on the file extension and create a dummy
+      // texture object we can call ensure_loaded_type() on.  We don't need to
+      // keep this object around after this call, since we'll be creating a
+      // new one below.  I know this is a bit hacky.
       string ext = downcase(filename.get_extension());
       PT(Texture) dummy = ns_make_texture(ext);
       dummy->ensure_loader_type(filename);
@@ -1122,10 +1063,10 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
 
           } else if (x_size != tex->get_x_size() ||
                      y_size != tex->get_y_size()) {
-            // The cached texture no longer matches our expected size
-            // (the resizing config variables must have changed).
-            // We'll have to reload the texture from its original file
-            // so we can rebuild the cache.
+            // The cached texture no longer matches our expected size (the
+            // resizing config variables must have changed). We'll have to
+            // reload the texture from its original file so we can rebuild the
+            // cache.
             if (gobj_cat.is_debug()) {
               gobj_cat.debug()
                 << "Cached texture " << *tex << " has size "
@@ -1136,8 +1077,7 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
             tex = NULL;
 
           } else if (!tex->has_compression() && tex->get_ram_image_compression() != Texture::CM_off) {
-            // This texture shouldn't be compressed, but it is.  Go
-            // reload it.
+            // This texture shouldn't be compressed, but it is.  Go reload it.
             if (gobj_cat.is_debug()) {
               gobj_cat.debug()
                 << "Cached texture " << *tex
@@ -1162,10 +1102,9 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
                 bool is_compressed = (tex->get_ram_image_compression() != Texture::CM_off);
                 if (!was_compressed && is_compressed &&
                     cache->get_cache_compressed_textures()) {
-                  // We've re-compressed the image after loading it
-                  // from the cache.  To keep the cache current,
-                  // rewrite it to the cache now, in its newly
-                  // compressed form.
+                  // We've re-compressed the image after loading it from the
+                  // cache.  To keep the cache current, rewrite it to the
+                  // cache now, in its newly compressed form.
                   record->set_data(tex);
                   cache->store(record);
                   compressed_cache_record = true;
@@ -1176,9 +1115,9 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
           }
         } else {
           if (!cache->get_cache_textures()) {
-            // This texture has no actual record, and therefore no
-            // compressed record (yet).  And we're not supposed to be
-            // caching uncompressed textures.
+            // This texture has no actual record, and therefore no compressed
+            // record (yet).  And we're not supposed to be caching
+            // uncompressed textures.
             if (gobj_cat.is_debug()) {
               gobj_cat.debug()
                 << "Not caching uncompressed texture\n";
@@ -1191,27 +1130,23 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::report_texture_unreadable
-//       Access: Private
-//  Description: Prints a suitable error message when a texture could
-//               not be loaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Prints a suitable error message when a texture could not be loaded.
+ */
 void TexturePool::
 report_texture_unreadable(const Filename &filename) const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   bool has_hash = (filename.get_fullpath().find('#') != string::npos);
   if (!has_hash && !vfs->exists(filename)) {
     if (filename.is_local()) {
-      // The file doesn't exist, and it wasn't
-      // fully-qualified--therefore, it wasn't found along either
-      // search path.
+      // The file doesn't exist, and it wasn't fully-qualified--therefore, it
+      // wasn't found along either search path.
       gobj_cat.error()
         << "Unable to find texture \"" << filename << "\""
         << " on model-path " << get_model_path() <<"\n";
     } else {
-      // A fully-specified filename is not searched along the path, so
-      // don't mislead the user with the error message.
+      // A fully-specified filename is not searched along the path, so don't
+      // mislead the user with the error message.
       gobj_cat.error()
         << "Texture \"" << filename << "\" does not exist.\n";
     }
@@ -1222,8 +1157,8 @@ report_texture_unreadable(const Filename &filename) const {
       gobj_cat.error()
         << "Texture \"" << filename << "\" exists but cannot be read.\n";
     } else {
-      // If the filename contains a hash, we'll be noncommittal about
-      // whether it exists or not.
+      // If the filename contains a hash, we'll be noncommittal about whether
+      // it exists or not.
       gobj_cat.error()
         << "Texture \"" << filename << "\" cannot be read.\n";
     }
@@ -1232,21 +1167,18 @@ report_texture_unreadable(const Filename &filename) const {
     MakeTextureFunc *func = get_texture_type(filename.get_extension());
     if (func == (MakeTextureFunc *)NULL) {
       gobj_cat.error()
-        << "Texture extension \"" << filename.get_extension() 
+        << "Texture extension \"" << filename.get_extension()
         << "\" is unknown.  Supported texture types:\n";
       write_texture_types(gobj_cat.error(false), 2);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::pre_load
-//       Access: Private
-//  Description: Invokes pre_load() on all registered filters until
-//               one returns non-NULL; returns NULL if there are no
-//               registered filters or if all registered filters
-//               returned NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes pre_load() on all registered filters until one returns non-NULL;
+ * returns NULL if there are no registered filters or if all registered
+ * filters returned NULL.
+ */
 PT(Texture) TexturePool::
 pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
          int primary_file_num_channels, int alpha_file_channel,
@@ -1270,11 +1202,9 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
   return tex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::post_load
-//       Access: Public, Virtual
-//  Description: Invokes post_load() on all registered filters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes post_load() on all registered filters.
+ */
 PT(Texture) TexturePool::
 post_load(Texture *tex) {
   PT(Texture) result = tex;
@@ -1292,12 +1222,9 @@ post_load(Texture *tex) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::load_filters
-//       Access: Private
-//  Description: Loads up all of the dll's named by the texture-filter
-//               Config.prc variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads up all of the dll's named by the texture-filter Config.prc variable.
+ */
 void TexturePool::
 load_filters() {
   ConfigVariableList texture_filter
@@ -1306,11 +1233,11 @@ load_filters() {
               "purposes of performing texture filtering.  This variable may be repeated several "
               "times.  As in load-display, the actual library filename is derived by "
               "prefixing 'lib' to the specified name."));
-  
+
   int num_aux = texture_filter.get_num_unique_values();
   for (int i = 0; i < num_aux; i++) {
     string name = texture_filter.get_unique_value(i);
-    
+
     Filename dlname = Filename::dso_filename("lib" + name + ".so");
     gobj_cat->info()
       << "loading texture filter: " << dlname.to_os_specific() << endl;

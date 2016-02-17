@@ -1,16 +1,15 @@
-// Filename: cppExpression.h
-// Created by:  drose (25Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppExpression.h
+ * @author drose
+ * @date 1999-10-25
+ */
 
 #ifndef CPPEXPRESSION_H
 #define CPPEXPRESSION_H
@@ -24,10 +23,9 @@ class CPPType;
 class CPPPreprocessor;
 class CPPFunctionGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPExpression
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class CPPExpression : public CPPDeclaration {
 public:
   enum Type {
@@ -162,8 +160,7 @@ public:
       CPPExpression *_op1;
     } _typecast;
     struct {
-      // One of the yytoken values: a character, or something
-      // like EQCOMPARE.
+      // One of the yytoken values: a character, or something like EQCOMPARE.
       int _operator;
       CPPExpression *_op1;
       CPPExpression *_op2;

@@ -1,16 +1,15 @@
-// Filename: physicalNode.h
-// Created by:  charles (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physicalNode.h
+ * @author charles
+ * @date 2000-08-01
+ */
 
 #ifndef PHYSICALNODE_H
 #define PHYSICALNODE_H
@@ -23,11 +22,9 @@
 #include "physical.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysicalNode
-// Description : Graph node that encapsulated a series of physical
-//                objects
-////////////////////////////////////////////////////////////////////
+/**
+ * Graph node that encapsulated a series of physical objects
+ */
 class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
 PUBLISHED:
   PhysicalNode(const string &name);

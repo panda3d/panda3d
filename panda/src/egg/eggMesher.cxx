@@ -1,16 +1,15 @@
-// Filename: eggMesher.cxx
-// Created by:  drose (13Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMesher.cxx
+ * @author drose
+ * @date 2005-03-13
+ */
 
 #include "eggMesher.h"
 #include "eggMesherFanMaker.h"
@@ -26,49 +25,40 @@
 
 #include <stdlib.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMesher::
 EggMesher() {
   _vertex_pool = NULL;
   _strip_index = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::mesh
-//       Access: Public
-//  Description: Accepts an EggGroupNode, which contains a set of
-//               EggPrimitives--typically, triangles and quads--as
-//               children.  Removes these primitives and replaces them
-//               with (mostly) equivalent EggTriangleStrips and
-//               EggTriangleFans where possible.
-//
-//               If flat_shaded is true, then odd-length triangle
-//               strips, and triangle fans of any length, are not
-//               permitted (because these can't be rotated when
-//               required to move the colored vertex of each triangle
-//               to the first or last position).
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts an EggGroupNode, which contains a set of EggPrimitives--typically,
+ * triangles and quads--as children.  Removes these primitives and replaces
+ * them with (mostly) equivalent EggTriangleStrips and EggTriangleFans where
+ * possible.
+ *
+ * If flat_shaded is true, then odd-length triangle strips, and triangle fans
+ * of any length, are not permitted (because these can't be rotated when
+ * required to move the colored vertex of each triangle to the first or last
+ * position).
+ */
 void EggMesher::
 mesh(EggGroupNode *group, bool flat_shaded) {
   _flat_shaded = flat_shaded;
 
   // Create a temporary node to hold the children of group that aren't
-  // involved in the meshing, as well as the newly-generate triangle
-  // strips.
+  // involved in the meshing, as well as the newly-generate triangle strips.
   PT(EggGroupNode) output_children = new EggGroupNode;
 
-  // And another to hold the children that will be processed next
-  // time.
+  // And another to hold the children that will be processed next time.
   PT(EggGroupNode) next_children = new EggGroupNode;
   PT(EggGroupNode) this_children = group;
 
-  // Only primitives that share a common vertex pool can be meshed
-  // together.  Thus, pull out the primitives with the same vertex
-  // pool in groups.
+  // Only primitives that share a common vertex pool can be meshed together.
+  // Thus, pull out the primitives with the same vertex pool in groups.
   while (this_children->size() != 0) {
     clear();
 
@@ -76,7 +66,7 @@ mesh(EggGroupNode *group, bool flat_shaded) {
     while (!this_children->empty()) {
       PT(EggNode) child = this_children->get_first_child();
       this_children->remove_child(child);
-      
+
       if (child->is_of_type(EggPolygon::get_class_type())) {
         EggPolygon *poly = DCAST(EggPolygon, child);
 
@@ -93,14 +83,13 @@ mesh(EggGroupNode *group, bool flat_shaded) {
         }
 
       } else {
-        // If it's not a polygon of any kind, just output it
-        // unchanged.
+        // If it's not a polygon of any kind, just output it unchanged.
         output_children->add_child(child);
       }
     }
-    
+
     do_mesh();
-    
+
     Strips::iterator si;
     for (si = _done.begin(); si != _done.end(); ++si) {
       PT(EggPrimitive) egg_prim = get_prim(*si);
@@ -120,11 +109,9 @@ mesh(EggGroupNode *group, bool flat_shaded) {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggMesher::
 write(ostream &out) const {
   /*
@@ -164,12 +151,9 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::clear
-//       Access: Private
-//  Description: Empties the pool of meshable primitives and resets to
-//               an initial state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the pool of meshable primitives and resets to an initial state.
+ */
 void EggMesher::
 clear() {
   _tris.clear();
@@ -184,12 +168,9 @@ clear() {
   _color_sheets.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::add_polygon
-//       Access: Private
-//  Description: Adds a single polygon into the pool of available
-//               primitives for meshing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single polygon into the pool of available primitives for meshing.
+ */
 bool EggMesher::
 add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
   CPT(EggPolygon) this_poly = egg_poly;
@@ -210,8 +191,8 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
       return result;
     }
 
-    // Convert just the one polygon we got out of the group.  Don't
-    // recurse, since it might be the same polygon we sent in.
+    // Convert just the one polygon we got out of the group.  Don't recurse,
+    // since it might be the same polygon we sent in.
     ci = temp_group->begin();
     this_poly = DCAST(EggPolygon, *ci);
   }
@@ -223,7 +204,7 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
   }
 
   // Define an initial strip (probably of length 1) for the prim.
-  EggMesherStrip temp_strip(this_poly, _strip_index++, _vertex_pool, 
+  EggMesherStrip temp_strip(this_poly, _strip_index++, _vertex_pool,
                             _flat_shaded);
   Strips &list = choose_strip_list(temp_strip);
   list.push_back(temp_strip);
@@ -250,41 +231,38 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
   // Now identify the common edges.
   for (i = 0; i < num_verts; i++) {
     // Define an inner and outer edge.  A polygon shares an edge with a
-    // neighbor only when one of its inner edges matches a neighbor's
-    // outer edge (and vice-versa).
+    // neighbor only when one of its inner edges matches a neighbor's outer
+    // edge (and vice-versa).
     EggMesherEdge inner(vptrs[i], vptrs[(i+1) % num_verts]);
     EggMesherEdge outer(vptrs[(i+1) % num_verts], vptrs[i]);
-    
+
     // Add it to the list and get its common pointer.
     EggMesherEdge &inner_ref = (EggMesherEdge &)*_edges.insert(inner).first;
     EggMesherEdge &outer_ref = (EggMesherEdge &)*_edges.insert(outer).first;
-    
+
     // Tell the edges about each other.
     inner_ref._opposite = &outer_ref;
     outer_ref._opposite = &inner_ref;
-    
+
     // Associate the common edge to the strip.
     strip._edges.push_back(&inner_ref);
-    
+
     // Associate the strip, as well as the original prim, to the edge.
     outer_ref._strips.push_back(&strip);
-    
+
     // Associate the common edge with the vertices that share it.
-    //      EggMesherEdge *edge_ptr = inner_ref.common_ptr();
+    // EggMesherEdge *edge_ptr = inner_ref.common_ptr();
     eptrs[i]->insert(&outer_ref);
     eptrs[(i+1) % num_verts]->insert(&outer_ref);
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::do_mesh
-//       Access: Private
-//  Description: Performs the meshing process on the set of primitives
-//               that have been added via add_prim(), leaving the
-//               result in _done.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the meshing process on the set of primitives that have been added
+ * via add_prim(), leaving the result in _done.
+ */
 void EggMesher::
 do_mesh() {
   if (egg_consider_fans && !_flat_shaded) {
@@ -326,12 +304,10 @@ do_mesh() {
   Thread::consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::get_prim
-//       Access: Private
-//  Description: Creates an EggPrimitive that represents the result of
-//               the meshed EggMesherStrip object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an EggPrimitive that represents the result of the meshed
+ * EggMesherStrip object.
+ */
 PT(EggPrimitive) EggMesher::
 get_prim(EggMesherStrip &strip) {
   EggMesherStrip::PrimType orig_type = strip._type;
@@ -354,8 +330,8 @@ get_prim(EggMesherStrip &strip) {
       color2.set(0.85, 0.85, 0.85, 1.0);
     }
 
-    // Now color1 and color2 indicate the color for the first triangle
-    // and the rest of the primitive, respectively.
+    // Now color1 and color2 indicate the color for the first triangle and the
+    // rest of the primitive, respectively.
     if (egg_prim->is_of_type(EggCompositePrimitive::get_class_type())) {
       EggCompositePrimitive *egg_comp = DCAST(EggCompositePrimitive, egg_prim);
       int num_components = egg_comp->get_num_components();
@@ -375,9 +351,9 @@ get_prim(EggMesherStrip &strip) {
     }
 
   } else if (egg_show_qsheets) {
-    // egg_show_qsheets means to color every primitive according to
-    // which, if any, quadsheet it is in.  This is a bit easier,
-    // because the entire primitive gets the same color.
+    // egg_show_qsheets means to color every primitive according to which, if
+    // any, quadsheet it is in.  This is a bit easier, because the entire
+    // primitive gets the same color.
 
     // Is this a quadsheet?
     LColor color1;
@@ -393,8 +369,7 @@ get_prim(EggMesherStrip &strip) {
       }
     }
 
-    // Now color1 is the color we want to assign to the whole
-    // primitive.
+    // Now color1 is the color we want to assign to the whole primitive.
     egg_prim->set_color(color1);
     if (egg_prim->is_of_type(EggCompositePrimitive::get_class_type())) {
       EggCompositePrimitive *egg_comp = DCAST(EggCompositePrimitive, egg_prim);
@@ -409,17 +384,16 @@ get_prim(EggMesherStrip &strip) {
     }
 
   } else if (egg_show_quads) {
-    // egg_show_quads means to show the assembling of tris into quads
-    // and fans.
+    // egg_show_quads means to show the assembling of tris into quads and
+    // fans.
 
     // We use the following color convention:
 
-    // white: unchanged; as supplied by user.
-    // dark blue: quads made in the initial pass.  These are more certain.
-    // light blue: quads made in the second pass.  These are less certain.
-    // very light blue: quadstrips.  These are unlikely to appear.
-    // random shades of red: triangles and tristrips.
-    // green: fans and retesselated fan polygons.
+    // white: unchanged; as supplied by user.  dark blue: quads made in the
+    // initial pass.  These are more certain.  light blue: quads made in the
+    // second pass.  These are less certain.  very light blue: quadstrips.
+    // These are unlikely to appear.  random shades of red: triangles and
+    // tristrips.  green: fans and retesselated fan polygons.
 
     // We need a handful of entries.
     LColor white(0.85, 0.85, 0.85, 1.0);
@@ -472,8 +446,7 @@ get_prim(EggMesherStrip &strip) {
       }
     }
 
-    // Now color1 is the color we want to assign to the whole
-    // primitive.
+    // Now color1 is the color we want to assign to the whole primitive.
     egg_prim->set_color(color1);
     if (egg_prim->is_of_type(EggCompositePrimitive::get_class_type())) {
       EggCompositePrimitive *egg_comp = DCAST(EggCompositePrimitive, egg_prim);
@@ -491,12 +464,10 @@ get_prim(EggMesherStrip &strip) {
   return egg_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::count_vert_edges
-//       Access: Private
-//  Description: Returns the number of edges in the list that are used
-//               by at least one EggMesherStrip object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of edges in the list that are used by at least one
+ * EggMesherStrip object.
+ */
 int EggMesher::
 count_vert_edges(const EdgePtrs &edges) const {
   int count = 0;
@@ -507,13 +478,10 @@ count_vert_edges(const EdgePtrs &edges) const {
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::choose_strip_list
-//       Access: Private
-//  Description: Selects which of several strip lists on the EggMesher
-//               class the indicated EggMesherStrip should be added
-//               to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects which of several strip lists on the EggMesher class the indicated
+ * EggMesherStrip should be added to.
+ */
 plist<EggMesherStrip> &EggMesher::
 choose_strip_list(const EggMesherStrip &strip) {
   switch (strip._status) {
@@ -543,18 +511,14 @@ choose_strip_list(const EggMesherStrip &strip) {
   return _strips; // Unreachable; this is just to make the compiler happy.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::build_sheets
-//       Access: Private
-//  Description: Attempts to locate large quadsheets in the polygon
-//               soup.  A quadsheet is defined as a uniform
-//               rectangular mesh of quads joined at the corners.
-//
-//               Sheets like this are commonly output by modeling
-//               packages, especially uniform tesselators, and they
-//               are trivially converted into a row of triangle
-//               strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to locate large quadsheets in the polygon soup.  A quadsheet is
+ * defined as a uniform rectangular mesh of quads joined at the corners.
+ *
+ * Sheets like this are commonly output by modeling packages, especially
+ * uniform tesselators, and they are trivially converted into a row of
+ * triangle strips.
+ */
 void EggMesher::
 build_sheets() {
   int first_row_id = 1;
@@ -568,15 +532,15 @@ build_sheets() {
 
     Strips::iterator best = pre_sheeted.begin();
 
-    // If the row_id is negative, we've already built a sheet out of
-    // this quad.  Leave it alone.  We also need to leave it be if it
-    // has no available edges.
+    // If the row_id is negative, we've already built a sheet out of this
+    // quad.  Leave it alone.  We also need to leave it be if it has no
+    // available edges.
     if ((*best)._row_id >= 0 &&
         (*best)._status == EggMesherStrip::MS_alive &&
         !(*best)._edges.empty()) {
-      // There are two possible sheets we could make from this quad,
-      // in two different orientations.  Measure them both and figure
-      // out which one is best.
+      // There are two possible sheets we could make from this quad, in two
+      // different orientations.  Measure them both and figure out which one
+      // is best.
 
       const EggMesherEdge *edge_a = (*best)._edges.front();
       const EggMesherEdge *edge_b = (*best).find_adjacent_edge(edge_a);
@@ -606,10 +570,9 @@ build_sheets() {
         (*best).cut_sheet(first_row_id_b, true, _vertex_pool);
 
       } else {
-        // Nope, sheet a is better.  This is a bit of a nuisance
-        // because we've unfortunately wiped out the information we
-        // stored when we measured sheet a.  We'll have to do it
-        // again.
+        // Nope, sheet a is better.  This is a bit of a nuisance because we've
+        // unfortunately wiped out the information we stored when we measured
+        // sheet a.  We'll have to do it again.
 
         num_prims_a = 0;
         num_rows_a = 0;
@@ -630,36 +593,33 @@ build_sheets() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::find_fans
-//       Access: Private
-//  Description: Looks for cases of multiple polygons all sharing a
-//               common vertex, and replaces these with a single fan.
-//
-//               This step is performed before detecting triangle
-//               strips.  We have to be careful: if we are too
-//               aggressive in detecting fans, we may ruin the ability
-//               to build good triangle strips, and we may thereby end
-//               up with a less-than-optimal solution.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for cases of multiple polygons all sharing a common vertex, and
+ * replaces these with a single fan.
+ *
+ * This step is performed before detecting triangle strips.  We have to be
+ * careful: if we are too aggressive in detecting fans, we may ruin the
+ * ability to build good triangle strips, and we may thereby end up with a
+ * less-than-optimal solution.
+ */
 void EggMesher::
 find_fans() {
   PT(EggGroupNode) unrolled_tris = new EggGroup;
 
-  // Consider all vertices.  Any vertex with over a certain number of
-  // edges connected to it is eligible to become a fan.
+  // Consider all vertices.  Any vertex with over a certain number of edges
+  // connected to it is eligible to become a fan.
 
   Verts::iterator vi;
 
   for (vi = _verts.begin(); vi != _verts.end(); ++vi) {
     EdgePtrs &edges = (*vi).second;
 
-    // 14 is the magic number of edges.  12 edges or fewer are likely
-    // to be found on nearly every vertex in a quadsheet (six edges
-    // times two, one each way).  We don't want to waste time fanning
-    // out each vertex of a quadsheet, and we don't want to break up
-    // the quadsheets anyway.  We bump this up to 14 because some
-    // quadsheets are defined with triangles flipped here and there.
+    // 14 is the magic number of edges.  12 edges or fewer are likely to be
+    // found on nearly every vertex in a quadsheet (six edges times two, one
+    // each way).  We don't want to waste time fanning out each vertex of a
+    // quadsheet, and we don't want to break up the quadsheets anyway.  We
+    // bump this up to 14 because some quadsheets are defined with triangles
+    // flipped here and there.
     if (edges.size() > 6) {
       int v = (*vi).first;
 
@@ -714,42 +674,35 @@ find_fans() {
     }
   }
 
-  // Finally, add back in the triangles we might have produced by
-  // unrolling some of the fans.  We can't add these back in safely
-  // until we're done traversing all the vertices and primitives we
-  // had in the first place (since adding them will affect the edge
-  // lists).
+  // Finally, add back in the triangles we might have produced by unrolling
+  // some of the fans.  We can't add these back in safely until we're done
+  // traversing all the vertices and primitives we had in the first place
+  // (since adding them will affect the edge lists).
   EggGroupNode::iterator ti;
   for (ti = unrolled_tris->begin(); ti != unrolled_tris->end(); ++ti) {
     add_polygon(DCAST(EggPolygon, (*ti)), EggMesherStrip::MO_fanpoly);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::make_quads
-//       Access: Private
-//  Description: Attempts to join up each single tri to its neighbor,
-//               to reconstruct a pattern of quads, suitable for
-//               making into quadsheets or at least quadstrips.
-//
-//               Quads have some nice properties that make them easy
-//               to manipulate when meshing.  We will ultimately
-//               convert the quadsheets and quadstrips into tristrips,
-//               but it's easier to work with them first while they're
-//               quads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to join up each single tri to its neighbor, to reconstruct a
+ * pattern of quads, suitable for making into quadsheets or at least
+ * quadstrips.
+ *
+ * Quads have some nice properties that make them easy to manipulate when
+ * meshing.  We will ultimately convert the quadsheets and quadstrips into
+ * tristrips, but it's easier to work with them first while they're quads.
+ */
 void EggMesher::
 make_quads() {
-  // Ideally, we want to match tris across their hypotenuse to make a
-  // pattern of quads.  (This assumes that we are working with a
-  // triangulated mesh pattern, of course.  If we have some other
-  // pattern of tris, all bets are off and it doesn't really matter
-  // anyway.)
+  // Ideally, we want to match tris across their hypotenuse to make a pattern
+  // of quads.  (This assumes that we are working with a triangulated mesh
+  // pattern, of course.  If we have some other pattern of tris, all bets are
+  // off and it doesn't really matter anyway.)
 
-  // First, we'll find all the tris that have no doubt about their
-  // ideal mate, and pair them up right away.  The others we'll get to
-  // later.  This way, the uncertain matches won't pollute the quad
-  // alignment for everyone else.
+  // First, we'll find all the tris that have no doubt about their ideal mate,
+  // and pair them up right away.  The others we'll get to later.  This way,
+  // the uncertain matches won't pollute the quad alignment for everyone else.
 
   typedef pair<EggMesherStrip *, EggMesherStrip *> Pair;
   typedef pair<Pair, EggMesherEdge *> Matched;
@@ -767,7 +720,7 @@ make_quads() {
     if (tri->_status == EggMesherStrip::MS_alive) {
       if (tri->find_ideal_mate(mate, common_edge, _vertex_pool)) {
         // Does our chosen mate want us too?
-        if (mate->_type == EggMesherStrip::PT_tri && 
+        if (mate->_type == EggMesherStrip::PT_tri &&
             mate->_status == EggMesherStrip::MS_alive &&
             mate->find_ideal_mate(mate2, common_edge2, _vertex_pool) &&
             mate2 == tri) {
@@ -781,8 +734,8 @@ make_quads() {
     }
   }
 
-  // Now that we've found all the tris that are sure about each other,
-  // mate them.
+  // Now that we've found all the tris that are sure about each other, mate
+  // them.
   SoulMates::iterator mi;
   for (mi = soulmates.begin(); mi != soulmates.end(); ++mi) {
     tri = (*mi).first.first;
@@ -814,11 +767,9 @@ make_quads() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::mesh_list
-//       Access: Private
-//  Description: Processes all of the strips on the indicated list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes all of the strips on the indicated list.
+ */
 void EggMesher::
 mesh_list(Strips &strips) {
   while (!strips.empty()) {
@@ -830,19 +781,17 @@ mesh_list(Strips &strips) {
       (*best).mate(_vertex_pool);
     }
 
-    // Put the strip back on the end of whichever list it wants.  This
-    // might be the same list, if the strip is still alive, or it
-    // might be _done or _dead.
+    // Put the strip back on the end of whichever list it wants.  This might
+    // be the same list, if the strip is still alive, or it might be _done or
+    // _dead.
     Strips &list = choose_strip_list(*best);
     list.splice(list.end(), strips, best);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesher::make_random_color
-//       Access: Private, Static
-//  Description: Chooses a reasonable random color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses a reasonable random color.
+ */
 void EggMesher::
 make_random_color(LColor &color) {
   LVector3 rgb;
@@ -859,4 +808,3 @@ make_random_color(LColor &color) {
   color.set(rgb[0], rgb[1], rgb[2],
             0.25 + 0.75 * (double)rand() / (double)RAND_MAX);
 }
-

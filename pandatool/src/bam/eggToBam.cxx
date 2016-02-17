@@ -1,16 +1,15 @@
-// Filename: eggToBam.cxx
-// Created by:  drose (28Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToBam.cxx
+ * @author drose
+ * @date 2000-06-28
+ */
 
 #include "eggToBam.h"
 
@@ -34,11 +33,9 @@
 #include "frameBufferProperties.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToBam::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggToBam::
 EggToBam() :
   EggToSomething("Bam", ".bam", true, false)
@@ -51,8 +48,8 @@ EggToBam() :
      "considered replacements for egg files, but they tend to be smaller and "
      "load much faster than the equivalent egg files.");
 
-  // -f is always in effect for egg2bam.  It doesn't make sense to
-  // provide it as an option to the user.
+  // -f is always in effect for egg2bam.  It doesn't make sense to provide it
+  // as an option to the user.
   remove_option("f");
 
   add_path_replace_options();
@@ -218,16 +215,14 @@ EggToBam() :
   _ctex_quality = "best";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToBam::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggToBam::
 run() {
   if (_has_egg_flatten) {
-    // If the user specified some -flatten, we need to set the
-    // corresponding Config.prc variable.
+    // If the user specified some -flatten, we need to set the corresponding
+    // Config.prc variable.
     egg_flatten = (_egg_flatten != 0);
   }
   if (_has_egg_combine_geoms) {
@@ -243,22 +238,22 @@ run() {
     compress_channels = false;
 
   } else if (_has_compression_quality) {
-    // Otherwise, if the user specified a compression quality with -C,
-    // use that quality level.
+    // Otherwise, if the user specified a compression quality with -C, use
+    // that quality level.
     compress_channels = true;
     compress_chan_quality = _compression_quality;
   }
 
   if (_ctex_quality != "default") {
-    // Override the user's config file with the command-line parameter
-    // for texture compression.
+    // Override the user's config file with the command-line parameter for
+    // texture compression.
     string prc = "texture-quality-level " + _ctex_quality;
     load_prc_file_data("prc", prc);
   }
 
   if (!_got_coordinate_system) {
-    // If the user didn't specify otherwise, ensure the coordinate
-    // system is Z-up.
+    // If the user didn't specify otherwise, ensure the coordinate system is
+    // Z-up.
     _data->set_coordinate_system(CS_zup_right);
   }
 
@@ -285,8 +280,8 @@ run() {
       tex->get_ram_image();
       bool want_mipmaps = (_tex_mipmap || tex->uses_mipmaps());
       if (want_mipmaps) {
-	// Generate mipmap levels.
-	tex->generate_ram_mipmap_images();
+  // Generate mipmap levels.
+  tex->generate_ram_mipmap_images();
       }
 
       if (_tex_ctex) {
@@ -297,15 +292,15 @@ run() {
         tex->set_compression(Texture::CM_on);
 #else  // HAVE_SQUISH
         tex->set_keep_ram_image(true);
-	bool has_mipmap_levels = (tex->get_num_ram_mipmap_images() > 1);
+  bool has_mipmap_levels = (tex->get_num_ram_mipmap_images() > 1);
         if (!_engine->extract_texture_data(tex, _gsg)) {
           nout << "  couldn't compress " << tex->get_name() << "\n";
         }
-	if (!has_mipmap_levels && !want_mipmaps) {
-	  // Make sure we didn't accidentally introduce mipmap levels
-	  // by rendezvousing through the graphics card.
-	  tex->clear_ram_mipmap_images();
-	}
+  if (!has_mipmap_levels && !want_mipmaps) {
+    // Make sure we didn't accidentally introduce mipmap levels by
+    // rendezvousing through the graphics card.
+    tex->clear_ram_mipmap_images();
+  }
         tex->set_keep_ram_image(false);
 #endif  // HAVE_SQUISH
       }
@@ -315,13 +310,13 @@ run() {
       }
     }
   }
-  
+
   if (_ls) {
     root->ls(nout, 0);
   }
-  
-  // This should be guaranteed because we pass false to the
-  // constructor, above.
+
+  // This should be guaranteed because we pass false to the constructor,
+  // above.
   nassertv(has_output_filename());
 
   Filename filename = get_output_filename();
@@ -332,26 +327,23 @@ run() {
     nout << "Error in writing.\n";
     exit(1);
   }
-  
+
   if (!bam_file.write_object(root)) {
     nout << "Error in writing.\n";
     exit(1);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToBam::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggToBam::
 handle_args(ProgramBase::Args &args) {
-  // If the user specified a path store option, we need to set the
-  // bam-texture-mode Config.prc variable directly to support this
-  // (otherwise the bam code will do what it wants to do anyway).
+  // If the user specified a path store option, we need to set the bam-
+  // texture-mode Config.prc variable directly to support this (otherwise the
+  // bam code will do what it wants to do anyway).
   if (_tex_rawdata) {
     bam_texture_mode = BamFile::BTM_rawdata;
 
@@ -359,20 +351,17 @@ handle_args(ProgramBase::Args &args) {
     bam_texture_mode = BamFile::BTM_unchanged;
 
   } else {
-    // Otherwise, the default path store is absolute; then the
-    // bam-texture-mode can do the appropriate thing to it.
+    // Otherwise, the default path store is absolute; then the bam-texture-
+    // mode can do the appropriate thing to it.
     _path_replace->_path_store = PS_absolute;
   }
 
   return EggToSomething::handle_args(args);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToBam::collect_textures
-//       Access: Private
-//  Description: Recursively walks the scene graph, looking for
-//               Texture references.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the scene graph, looking for Texture references.
+ */
 void EggToBam::
 collect_textures(PandaNode *node) {
   collect_textures(node->get_state());
@@ -391,12 +380,9 @@ collect_textures(PandaNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToBam::collect_textures
-//       Access: Private
-//  Description: Recursively walks the scene graph, looking for
-//               Texture references.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the scene graph, looking for Texture references.
+ */
 void EggToBam::
 collect_textures(const RenderState *state) {
   const TextureAttrib *tex_attrib = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_type()));
@@ -408,21 +394,18 @@ collect_textures(const RenderState *state) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToBam::convert_txo
-//       Access: Private
-//  Description: If the indicated Texture was not already loaded from
-//               a txo file, writes it to a txo file and updates the
-//               Texture object to reference the new file.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the indicated Texture was not already loaded from a txo file, writes it
+ * to a txo file and updates the Texture object to reference the new file.
+ */
 void EggToBam::
 convert_txo(Texture *tex) {
   if (!tex->get_loaded_from_txo()) {
     Filename fullpath = tex->get_fullpath().get_filename_index(0);
     if (_tex_txopz) {
       fullpath.set_extension("txo.pz");
-      // We use this clumsy syntax so that the new extension appears to be
-      // two separate extensions, .txo followed by .pz, which is what
+      // We use this clumsy syntax so that the new extension appears to be two
+      // separate extensions, .txo followed by .pz, which is what
       // Texture::write() expects to find.
       fullpath = Filename(fullpath.get_fullpath());
     } else {
@@ -453,12 +436,9 @@ convert_txo(Texture *tex) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToBam::make_buffer
-//       Access: Private
-//  Description: Creates a GraphicsBuffer for communicating with the
-//               graphics card.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a GraphicsBuffer for communicating with the graphics card.
+ */
 bool EggToBam::
 make_buffer() {
   if (!_load_display.empty()) {
@@ -478,8 +458,8 @@ make_buffer() {
 
   FrameBufferProperties fbprops = FrameBufferProperties::get_default();
 
-  // Some graphics drivers can only create single-buffered offscreen
-  // buffers.  So request that.
+  // Some graphics drivers can only create single-buffered offscreen buffers.
+  // So request that.
   fbprops.set_back_buffers(0);
 
   WindowProperties winprops;
@@ -489,9 +469,8 @@ make_buffer() {
   winprops.set_open(true);
   winprops.set_z_order(WindowProperties::Z_bottom);
 
-  // We don't care how big the buffer is; we just need it to manifest
-  // the GSG.
-  _buffer = _engine->make_output(_pipe, "buffer", 0, 
+  // We don't care how big the buffer is; we just need it to manifest the GSG.
+  _buffer = _engine->make_output(_pipe, "buffer", 0,
                                  fbprops, winprops,
                                  GraphicsPipe::BF_fb_props_optional);
   _engine->open_windows();

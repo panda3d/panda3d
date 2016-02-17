@@ -1,16 +1,15 @@
-// Filename: pandaFramework.h
-// Created by:  drose (02Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pandaFramework.h
+ * @author drose
+ * @date 2002-04-02
+ */
 
 #ifndef PANDAFRAMEWORK_H
 #define PANDAFRAMEWORK_H
@@ -32,12 +31,10 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaFramework
-// Description : This class serves to provide a high-level framework
-//               for basic applications that use Panda in simple ways
-//               (like opening a window to view models, etc.).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class serves to provide a high-level framework for basic applications
+ * that use Panda in simple ways (like opening a window to view models, etc.).
+ */
 class EXPCL_FRAMEWORK PandaFramework {
 public:
   PandaFramework();
@@ -54,7 +51,7 @@ public:
   NodePath get_mouse(GraphicsOutput *window);
   void remove_mouse(const GraphicsOutput *window);
 
-  void define_key(const string &event_name, 
+  void define_key(const string &event_name,
                   const string &description,
                   EventHandler::EventCallbackFunction *function,
                   void *data);
@@ -200,7 +197,7 @@ private:
   bool _default_keys_enabled;
 
   bool _exit_flag;
-  
+
   class KeyDefinition {
   public:
     string _event_name;

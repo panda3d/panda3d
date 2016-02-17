@@ -1,16 +1,15 @@
-// Filename: eggComponentData.h
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggComponentData.h
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #ifndef EGGCOMPONENTDATA_H
 #define EGGCOMPONENTDATA_H
@@ -26,14 +25,12 @@ class EggCharacterData;
 class EggBackPointer;
 class NameUniquifier;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggComponentData
-// Description : This is the base class of both EggJointData and
-//               EggSliderData.  It represents a single component of a
-//               character, either a joint or a slider, along with
-//               back pointers to the references to this component in
-//               all model and animation egg files read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class of both EggJointData and EggSliderData.  It
+ * represents a single component of a character, either a joint or a slider,
+ * along with back pointers to the references to this component in all model
+ * and animation egg files read.
+ */
 class EggComponentData : public EggObject, public Namable {
 public:
   EggComponentData(EggCharacterCollection *collection,
@@ -57,8 +54,8 @@ public:
 
 protected:
 
-  // This points back to all the egg structures that reference this
-  // particular table or slider.
+  // This points back to all the egg structures that reference this particular
+  // table or slider.
   typedef pvector<EggBackPointer *> BackPointers;
   BackPointers _back_pointers;
 
@@ -90,5 +87,3 @@ private:
 #include "eggComponentData.I"
 
 #endif
-
-

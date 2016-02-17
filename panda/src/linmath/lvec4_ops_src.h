@@ -1,21 +1,20 @@
-// Filename: lvec4_ops_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvec4_ops_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
-// When possible, operators have been defined within the classes.
-// This file defines operator functions outside of classes where
-// necessary.  It also defines some convenient out-of-class wrappers
-// around in-class functions (like dot, length, normalize).
+// When possible, operators have been defined within the classes.  This file
+// defines operator functions outside of classes where necessary.  It also
+// defines some convenient out-of-class wrappers around in-class functions
+// (like dot, length, normalize).
 
 
 // scalar * vec (vec * scalar is defined in class)

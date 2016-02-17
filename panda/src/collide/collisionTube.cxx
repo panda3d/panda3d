@@ -1,16 +1,15 @@
-// Filename: collisionTube.cxx
-// Created by:  drose (25Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionTube.cxx
+ * @author drose
+ * @date 2003-09-25
+ */
 
 #include "collisionTube.h"
 #include "collisionSphere.h"
@@ -40,28 +39,24 @@ PStatCollector CollisionTube::_volume_pcollector("Collision Volumes:CollisionTub
 PStatCollector CollisionTube::_test_pcollector("Collision Tests:CollisionTube");
 TypeHandle CollisionTube::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CollisionSolid *CollisionTube::
 make_copy() {
   return new CollisionTube(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::xform
-//       Access: Public, Virtual
-//  Description: Transforms the solid by the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the solid by the indicated matrix.
+ */
 void CollisionTube::
 xform(const LMatrix4 &mat) {
   _a = _a * mat;
   _b = _b * mat;
 
-  // This is a little cheesy and fails miserably in the presence of a
-  // non-uniform scale.
+  // This is a little cheesy and fails miserably in the presence of a non-
+  // uniform scale.
   LVector3 radius_v = LVector3(_radius, 0.0f, 0.0f) * mat;
   _radius = length(radius_v);
 
@@ -69,58 +64,45 @@ xform(const LMatrix4 &mat) {
   CollisionSolid::xform(mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::get_collision_origin
-//       Access: Public, Virtual
-//  Description: Returns the point in space deemed to be the "origin"
-//               of the solid for collision purposes.  The closest
-//               intersection point to this origin point is considered
-//               to be the most significant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point in space deemed to be the "origin" of the solid for
+ * collision purposes.  The closest intersection point to this origin point is
+ * considered to be the most significant.
+ */
 LPoint3 CollisionTube::
 get_collision_origin() const {
   return get_point_a();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::get_volume_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of bounding volume tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of bounding
+ * volume tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionTube::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::get_test_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of intersection tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of intersection
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionTube::
 get_test_pcollector() {
   return _test_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CollisionTube::
 output(ostream &out) const {
   out << "tube, a (" << _a << "), b (" << _b << "), r " << _radius;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(BoundingVolume) CollisionTube::
 compute_internal_bounds() const {
   PT(BoundingVolume) bound = CollisionSolid::compute_internal_bounds();
@@ -131,8 +113,8 @@ compute_internal_bounds() const {
 
     LVector3 vec = (_b - _a);
     if (vec.normalize()) {
-      // The bounding volume includes both endpoints, plus a little
-      // bit more to include the radius in both directions.
+      // The bounding volume includes both endpoints, plus a little bit more
+      // to include the radius in both directions.
       LPoint3 points[2];
       points[0] = _a - vec * _radius;
       points[1] = _b + vec * _radius;
@@ -140,8 +122,8 @@ compute_internal_bounds() const {
       gbound->around(points, points + 2);
 
     } else {
-      // Both endpoints are coincident; therefore, the bounding volume
-      // is a sphere.
+      // Both endpoints are coincident; therefore, the bounding volume is a
+      // sphere.
       BoundingSphere sphere(_a, _radius);
       gbound->extend_by(&sphere);
     }
@@ -150,11 +132,9 @@ compute_internal_bounds() const {
   return bound;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
@@ -172,8 +152,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat actual_t = 0.0f;
 
   if (wrt_prev_space != wrt_space) {
-    // If the sphere is moving relative to the tube, it becomes a tube
-    // itself.
+    // If the sphere is moving relative to the tube, it becomes a tube itself.
     from_a = sphere->get_center() * wrt_prev_space->get_mat();
   }
 
@@ -190,8 +169,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
-    // Both intersection points are before the start of the segment or
-    // after the end of the segment.
+    // Both intersection points are before the start of the segment or after
+    // the end of the segment.
     return NULL;
   }
 
@@ -208,12 +187,12 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LPoint3 into_intersection_point;
   if (t2 > 1.0) {
-    // Point b is within the tube.  The first intersection point is
-    // point b itself.
+    // Point b is within the tube.  The first intersection point is point b
+    // itself.
     into_intersection_point = from_b;
   } else {
-    // Point b is outside the tube, and point a is either inside the
-    // tube or beyond it.  The first intersection point is at t2.
+    // Point b is outside the tube, and point a is either inside the tube or
+    // beyond it.  The first intersection point is at t2.
     into_intersection_point = from_a + t2 * from_direction;
   }
   set_intersection_point(new_entry, into_intersection_point, from_radius);
@@ -231,11 +210,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::test_intersection_from_line
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
@@ -281,11 +258,9 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
@@ -316,12 +291,11 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   LPoint3 into_intersection_point;
   if (t1 < 0.0) {
-    // Point a is within the tube.  The first intersection point is
-    // point a itself.
+    // Point a is within the tube.  The first intersection point is point a
+    // itself.
     into_intersection_point = from_origin;
   } else {
-    // Point a is outside the tube.  The first intersection point is
-    // at t1.
+    // Point a is outside the tube.  The first intersection point is at t1.
     into_intersection_point = from_origin + t1 * from_direction;
   }
   set_intersection_point(new_entry, into_intersection_point, 0.0);
@@ -345,11 +319,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::test_intersection_from_segment
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
@@ -368,8 +340,8 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
-    // Both intersection points are before the start of the segment or
-    // after the end of the segment.
+    // Both intersection points are before the start of the segment or after
+    // the end of the segment.
     return NULL;
   }
 
@@ -382,12 +354,12 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   LPoint3 into_intersection_point;
   if (t1 < 0.0) {
-    // Point a is within the tube.  The first intersection point is
-    // point a itself.
+    // Point a is within the tube.  The first intersection point is point a
+    // itself.
     into_intersection_point = from_a;
   } else {
-    // Point a is outside the tube, and point b is either inside the
-    // tube or beyond it.  The first intersection point is at t1.
+    // Point a is outside the tube, and point b is either inside the tube or
+    // beyond it.  The first intersection point is at t1.
     into_intersection_point = from_a + t1 * from_direction;
   }
   set_intersection_point(new_entry, into_intersection_point, 0.0);
@@ -411,11 +383,9 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::test_intersection_from_parabola
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
@@ -464,12 +434,10 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::fill_viz_geom
-//       Access: Protected, Virtual
-//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
-//               for rendering this solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this
+ * solid.
+ */
 void CollisionTube::
 fill_viz_geom() {
   if (collide_cat.is_debug()) {
@@ -477,9 +445,9 @@ fill_viz_geom() {
       << "Recomputing viz for " << *this << "\n";
   }
 
-  // Generate the vertices such that we draw a tube with one endpoint
-  // at (0, 0, 0), and another at (0, length, 0).  Then we'll rotate
-  // and translate it into place with the appropriate look_at matrix.
+  // Generate the vertices such that we draw a tube with one endpoint at (0,
+  // 0, 0), and another at (0, length, 0).  Then we'll rotate and translate it
+  // into place with the appropriate look_at matrix.
   LVector3 direction = (_b - _a);
   PN_stdfloat length = direction.length();
 
@@ -487,7 +455,7 @@ fill_viz_geom() {
     ("collision", GeomVertexFormat::get_v3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Generate the first endcap.
   static const int num_slices = 8;
@@ -501,7 +469,7 @@ fill_viz_geom() {
     strip->add_next_vertices((num_slices + 1) * 2);
     strip->close_primitive();
   }
-  
+
   // Now the cylinder sides.
   for (si = 0; si <= num_slices; si++) {
     vertex.add_data3(calc_sphere1_vertex(num_rings, si, num_rings, num_slices));
@@ -510,7 +478,7 @@ fill_viz_geom() {
   }
   strip->add_next_vertices((num_slices + 1) * 2);
   strip->close_primitive();
-  
+
   // And the second endcap.
   for (ri = num_rings - 1; ri >= 0; ri--) {
     for (si = 0; si <= num_slices; si++) {
@@ -520,27 +488,24 @@ fill_viz_geom() {
     strip->add_next_vertices((num_slices + 1) * 2);
     strip->close_primitive();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  
+
   // Now transform the vertices to their actual location.
   LMatrix4 mat;
   look_at(mat, direction, LVector3(0.0f, 0.0f, 1.0f), CS_zup_right);
   mat.set_row(3, _a);
   geom->transform_vertices(mat);
-  
+
   _viz_geom->add_geom(geom, get_solid_viz_state());
   _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::recalc_internals
-//       Access: Private
-//  Description: Should be called internally to recompute the matrix
-//               and length when the properties of the tube have
-//               changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called internally to recompute the matrix and length when the
+ * properties of the tube have changed.
+ */
 void CollisionTube::
 recalc_internals() {
   LVector3 direction = (_b - _a);
@@ -554,13 +519,10 @@ recalc_internals() {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::calc_sphere1_vertex
-//       Access: Private
-//  Description: Calculates a particular vertex on the surface of the
-//               first endcap hemisphere, for use in generating the
-//               viz geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates a particular vertex on the surface of the first endcap
+ * hemisphere, for use in generating the viz geometry.
+ */
 LVertex CollisionTube::
 calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices) {
   PN_stdfloat r = (PN_stdfloat)ri / (PN_stdfloat)num_rings;
@@ -582,13 +544,10 @@ calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices) {
   return LVertex(x, y, z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::calc_sphere2_vertex
-//       Access: Private
-//  Description: Calculates a particular vertex on the surface of the
-//               second endcap hemisphere, for use in generating the
-//               viz geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates a particular vertex on the surface of the second endcap
+ * hemisphere, for use in generating the viz geometry.
+ */
 LVertex CollisionTube::
 calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
                     PN_stdfloat length) {
@@ -611,56 +570,49 @@ calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
   return LVertex(x, y, z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::intersects_line
-//       Access: Private
-//  Description: Determine the point(s) of intersection of a parametric
-//               line with the tube.  The line is infinite in both
-//               directions, and passes through "from" and from+delta.
-//               If the line does not intersect the tube, the
-//               function returns false, and t1 and t2 are undefined.
-//               If it does intersect the tube, it returns true, and
-//               t1 and t2 are set to the points along the equation
-//               from+t*delta that correspond to the two points of
-//               intersection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determine the point(s) of intersection of a parametric line with the tube.
+ * The line is infinite in both directions, and passes through "from" and
+ * from+delta.  If the line does not intersect the tube, the function returns
+ * false, and t1 and t2 are undefined.  If it does intersect the tube, it
+ * returns true, and t1 and t2 are set to the points along the equation
+ * from+t*delta that correspond to the two points of intersection.
+ */
 bool CollisionTube::
 intersects_line(double &t1, double &t2,
-                const LPoint3 &from0, const LVector3 &delta0, 
+                const LPoint3 &from0, const LVector3 &delta0,
                 PN_stdfloat inflate_radius) const {
-  // Convert the line into our canonical coordinate space: the tube is
-  // aligned with the y axis.
+  // Convert the line into our canonical coordinate space: the tube is aligned
+  // with the y axis.
   LPoint3 from = from0 * _inv_mat;
   LVector3 delta = delta0 * _inv_mat;
 
   PN_stdfloat radius = _radius + inflate_radius;
 
-  // Now project the line into the X-Z plane to test for intersection
-  // with a 2-d circle around the origin.  The equation for this is
-  // very similar to the formula for the intersection of a line with a
-  // sphere; see CollisionSphere::intersects_line() for the complete
-  // derivation.  It's a little bit simpler because the circle is
-  // centered on the origin.
+  // Now project the line into the X-Z plane to test for intersection with a
+  // 2-d circle around the origin.  The equation for this is very similar to
+  // the formula for the intersection of a line with a sphere; see
+  // CollisionSphere::intersects_line() for the complete derivation.  It's a
+  // little bit simpler because the circle is centered on the origin.
   LVector2 from2(from[0], from[2]);
   LVector2 delta2(delta[0], delta[2]);
 
   double A = dot(delta2, delta2);
 
   if (IS_NEARLY_ZERO(A)) {
-    // If the delta2 is 0, the line is perpendicular to the X-Z plane.
-    // The whole line intersects with the infinite cylinder if the
-    // point is within the circle.
+    // If the delta2 is 0, the line is perpendicular to the X-Z plane.  The
+    // whole line intersects with the infinite cylinder if the point is within
+    // the circle.
     if (from2.dot(from2) > radius * radius) {
-      // Nope, the 2-d point is outside the circle, so no
-      // intersection.
+      // Nope, the 2-d point is outside the circle, so no intersection.
       return false;
     }
 
     if (IS_NEARLY_ZERO(delta[1])) {
-      // Actually, the whole delta vector is 0, so the line is just a
-      // point.  In this case, (since we have already shown the point
-      // is within the infinite cylinder), we intersect if and only if
-      // the three-dimensional point is between the endcaps.
+      // Actually, the whole delta vector is 0, so the line is just a point.
+      // In this case, (since we have already shown the point is within the
+      // infinite cylinder), we intersect if and only if the three-dimensional
+      // point is between the endcaps.
       if (from[1] < -radius || from[1] > _length + radius) {
         // Way out.
         return false;
@@ -683,30 +635,30 @@ intersects_line(double &t1, double &t2,
       return true;
     }
 
-    // The 2-d point is within the circle, so compute our intersection
-    // points to include the entire vertical slice of the cylinder.
+    // The 2-d point is within the circle, so compute our intersection points
+    // to include the entire vertical slice of the cylinder.
     t1 = (-radius - from[1]) / delta[1];
     t2 = (_length + radius - from[1]) / delta[1];
 
   } else {
-    // The line is not perpendicular to the X-Z plane, so its
-    // projection into the plane is 2-d line.  Test that 2-d line for
-    // intersection with the circular projection of the cylinder.
+    // The line is not perpendicular to the X-Z plane, so its projection into
+    // the plane is 2-d line.  Test that 2-d line for intersection with the
+    // circular projection of the cylinder.
 
     double B = 2.0f * dot(delta2, from2);
     double fc_d2 = dot(from2, from2);
     double C = fc_d2 - radius * radius;
-    
+
     double radical = B*B - 4.0*A*C;
-    
+
     if (IS_NEARLY_ZERO(radical)) {
       // Tangent.
       t1 = t2 = -B / (2.0*A);
-      
+
     } else if (radical < 0.0) {
       // No real roots: no intersection with the line.
       return false;
-      
+
     } else {
       double reciprocal_2A = 1.0 / (2.0 * A);
       double sqrt_radical = sqrtf(radical);
@@ -715,14 +667,13 @@ intersects_line(double &t1, double &t2,
     }
   }
 
-  // Now we need to verify that the intersection points fall within
-  // the length of the cylinder.
+  // Now we need to verify that the intersection points fall within the length
+  // of the cylinder.
   PN_stdfloat t1_y = from[1] + t1 * delta[1];
   PN_stdfloat t2_y = from[1] + t2 * delta[1];
 
   if (t1_y < -radius && t2_y < -radius) {
-    // Both points are way off the bottom of the tube; no
-    // intersection.
+    // Both points are way off the bottom of the tube; no intersection.
     return false;
   } else if (t1_y > _length + radius && t2_y > _length + radius) {
     // Both points are way off the top of the tube; no intersection.
@@ -730,8 +681,8 @@ intersects_line(double &t1, double &t2,
   }
 
   if (t1_y < 0.0f) {
-    // The starting point is off the bottom of the tube.  Test the
-    // line against the first endcap.
+    // The starting point is off the bottom of the tube.  Test the line
+    // against the first endcap.
     double t1a, t2a;
     if (!sphere_intersects_line(t1a, t2a, 0.0f, from, delta, inflate_radius)) {
       // If there's no intersection with the endcap, there can't be an
@@ -741,8 +692,8 @@ intersects_line(double &t1, double &t2,
     t1 = t1a;
 
   } else if (t1_y > _length) {
-    // The starting point is off the top of the tube.  Test the
-    // line against the second endcap.
+    // The starting point is off the top of the tube.  Test the line against
+    // the second endcap.
     double t1b, t2b;
     if (!sphere_intersects_line(t1b, t2b, _length, from, delta, inflate_radius)) {
       // If there's no intersection with the endcap, there can't be an
@@ -753,8 +704,8 @@ intersects_line(double &t1, double &t2,
   }
 
   if (t2_y < 0.0f) {
-    // The ending point is off the bottom of the tube.  Test the
-    // line against the first endcap.
+    // The ending point is off the bottom of the tube.  Test the line against
+    // the first endcap.
     double t1a, t2a;
     if (!sphere_intersects_line(t1a, t2a, 0.0f, from, delta, inflate_radius)) {
       // If there's no intersection with the endcap, there can't be an
@@ -764,8 +715,8 @@ intersects_line(double &t1, double &t2,
     t2 = t2a;
 
   } else if (t2_y > _length) {
-    // The ending point is off the top of the tube.  Test the
-    // line against the second endcap.
+    // The ending point is off the top of the tube.  Test the line against the
+    // second endcap.
     double t1b, t2b;
     if (!sphere_intersects_line(t1b, t2b, _length, from, delta, inflate_radius)) {
       // If there's no intersection with the endcap, there can't be an
@@ -778,20 +729,17 @@ intersects_line(double &t1, double &t2,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::sphere_intersects_line
-//       Access: Private
-//  Description: After confirming that the line intersects an infinite
-//               cylinder, test whether it intersects one or the other
-//               endcaps.  The y parameter specifies the center of the
-//               sphere (and hence the particular endcap.
-////////////////////////////////////////////////////////////////////
+/**
+ * After confirming that the line intersects an infinite cylinder, test
+ * whether it intersects one or the other endcaps.  The y parameter specifies
+ * the center of the sphere (and hence the particular endcap.
+ */
 bool CollisionTube::
 sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
                        const LPoint3 &from, const LVector3 &delta,
                        PN_stdfloat inflate_radius) const {
-  // See CollisionSphere::intersects_line() for a derivation of the
-  // formula here.
+  // See CollisionSphere::intersects_line() for a derivation of the formula
+  // here.
   PN_stdfloat radius = _radius + inflate_radius;
 
   double A = dot(delta, delta);
@@ -824,32 +772,25 @@ sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::intersects_parabola
-//       Access: Protected
-//  Description: Determine a point of intersection of a parametric
-//               parabola with the tube.
-//
-//               We only consider the segment of the parabola between
-//               t1 and t2, which has already been computed as
-//               corresponding to points p1 and p2.  If there is an
-//               intersection, t is set to the parametric point of
-//               intersection, and true is returned; otherwise, false
-//               is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determine a point of intersection of a parametric parabola with the tube.
+ *
+ * We only consider the segment of the parabola between t1 and t2, which has
+ * already been computed as corresponding to points p1 and p2.  If there is an
+ * intersection, t is set to the parametric point of intersection, and true is
+ * returned; otherwise, false is returned.
+ */
 bool CollisionTube::
 intersects_parabola(double &t, const LParabola &parabola,
                     double t1, double t2,
                     const LPoint3 &p1, const LPoint3 &p2) const {
-  // I don't even want to think about the math to do this calculation
-  // directly--it's even worse than sphere-parabola.  So I'll use the
-  // recursive subdivision solution again, just like I did for
-  // sphere-parabola.
+  // I don't even want to think about the math to do this calculation directly
+  // --it's even worse than sphere-parabola.  So I'll use the recursive
+  // subdivision solution again, just like I did for sphere-parabola.
 
-  // First, see if the line segment (p1 - p2) comes sufficiently close
-  // to the parabola.  Do this by computing the parametric intervening
-  // point and comparing its distance from the linear intervening
-  // point.
+  // First, see if the line segment (p1 - p2) comes sufficiently close to the
+  // parabola.  Do this by computing the parametric intervening point and
+  // comparing its distance from the linear intervening point.
   double tmid = (t1 + t2) * 0.5;
 
   if (tmid != t1 && tmid != t2) {
@@ -879,14 +820,11 @@ intersects_parabola(double &t, const LParabola &parabola,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::calculate_surface_point_and_normal
-//       Access: Private
-//  Description: Calculates a point that is exactly on the surface
-//               of the tube and its corresponding normal, given
-//               a point that is supposedly on the surface of the
-//               tube.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates a point that is exactly on the surface of the tube and its
+ * corresponding normal, given a point that is supposedly on the surface of
+ * the tube.
+ */
 void CollisionTube::
 calculate_surface_point_and_normal(const LPoint3 &surface_point,
                                    double extra_radius,
@@ -928,17 +866,14 @@ calculate_surface_point_and_normal(const LPoint3 &surface_point,
   result_normal = normal * _mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::set_intersection_point
-//       Access: Private
-//  Description: After an intersection has been detected, record the
-//               computed intersection point in the CollisionEntry,
-//               and also compute the relevant normal based on that
-//               point.
-////////////////////////////////////////////////////////////////////
+/**
+ * After an intersection has been detected, record the computed intersection
+ * point in the CollisionEntry, and also compute the relevant normal based on
+ * that point.
+ */
 void CollisionTube::
-set_intersection_point(CollisionEntry *new_entry, 
-                       const LPoint3 &into_intersection_point, 
+set_intersection_point(CollisionEntry *new_entry,
+                       const LPoint3 &into_intersection_point,
                        double extra_radius) const {
   LPoint3 point;
   LVector3 normal;
@@ -955,28 +890,23 @@ set_intersection_point(CollisionEntry *new_entry,
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(point);
   // Also adjust the original point into the tube by the amount of
-  // extra_radius, which should put it on the surface of the tube if
-  // our collision was tangential.
+  // extra_radius, which should put it on the surface of the tube if our
+  // collision was tangential.
   new_entry->set_interior_point(into_intersection_point - normal * extra_radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               CollisionTube.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type CollisionTube.
+ */
 void CollisionTube::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void CollisionTube::
 write_datagram(BamWriter *manager, Datagram &dg) {
   CollisionSolid::write_datagram(manager, dg);
@@ -985,14 +915,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(_radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type CollisionTube is encountered
-//               in the Bam file.  It should create the CollisionTube
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type CollisionTube is encountered in the Bam file.  It should create the
+ * CollisionTube and extract its information from the file.
+ */
 TypedWritable *CollisionTube::
 make_from_bam(const FactoryParams &params) {
   CollisionTube *node = new CollisionTube();
@@ -1005,13 +932,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new CollisionTube.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new CollisionTube.
+ */
 void CollisionTube::
 fillin(DatagramIterator &scan, BamReader *manager) {
   CollisionSolid::fillin(scan, manager);

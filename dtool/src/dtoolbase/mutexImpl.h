@@ -1,16 +1,15 @@
-// Filename: mutexImpl.h
-// Created by:  drose (08Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mutexImpl.h
+ * @author drose
+ * @date 2002-08-08
+ */
 
 #ifndef MUTEXIMPL_H
 #define MUTEXIMPL_H
@@ -47,10 +46,9 @@ typedef ReMutexPosixImpl ReMutexImpl;
 
 #endif
 
-// Also define what a true OS-provided lock will be, even if we don't
-// have threading enabled in the build.  Sometimes we need to
-// interface with an external program or something that wants real
-// locks.
+// Also define what a true OS-provided lock will be, even if we don't have
+// threading enabled in the build.  Sometimes we need to interface with an
+// external program or something that wants real locks.
 #if defined(WIN32_VC)
 #include "mutexWin32Impl.h"
 typedef MutexWin32Impl TrueMutexImpl;
@@ -65,6 +63,3 @@ typedef MutexPosixImpl TrueMutexImpl;
 #endif
 
 #endif
-
-
-

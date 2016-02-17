@@ -1,16 +1,15 @@
-// Filename: graphicsOutput.h
-// Created by:  drose (06Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsOutput.h
+ * @author drose
+ * @date 2004-02-06
+ */
 
 #ifndef GRAPHICSOUTPUT_H
 #define GRAPHICSOUTPUT_H
@@ -45,26 +44,21 @@
 class PNMImage;
 class GraphicsEngine;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsOutput
-// Description : This is a base class for the various different
-//               classes that represent the result of a frame of
-//               rendering.  The most common kind of GraphicsOutput is
-//               a GraphicsWindow, which is a real-time window on the
-//               desktop, but another example is GraphicsBuffer, which
-//               is an offscreen buffer.
-//
-//               The actual rendering, and anything associated with
-//               the graphics context itself, is managed by the
-//               associated GraphicsStateGuardian (which might output
-//               to multiple GraphicsOutput objects).
-//
-//               GraphicsOutputs are not actually writable to bam
-//               files, of course, but they may be passed as event
-//               parameters, so they inherit from
-//               TypedWritableReferenceCount instead of
-//               TypedReferenceCount for that convenience.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for the various different classes that represent the
+ * result of a frame of rendering.  The most common kind of GraphicsOutput is
+ * a GraphicsWindow, which is a real-time window on the desktop, but another
+ * example is GraphicsBuffer, which is an offscreen buffer.
+ *
+ * The actual rendering, and anything associated with the graphics context
+ * itself, is managed by the associated GraphicsStateGuardian (which might
+ * output to multiple GraphicsOutput objects).
+ *
+ * GraphicsOutputs are not actually writable to bam files, of course, but they
+ * may be passed as event parameters, so they inherit from
+ * TypedWritableReferenceCount instead of TypedReferenceCount for that
+ * convenience.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public DrawableRegion {
 protected:
   GraphicsOutput(GraphicsEngine *engine,
@@ -84,8 +78,8 @@ PUBLISHED:
   enum RenderTextureMode {
     RTM_none,
 
-    // Try to render to the texture directly, but if that is
-    // not possible, fall back to RTM_copy_texture.
+    // Try to render to the texture directly, but if that is not possible,
+    // fall back to RTM_copy_texture.
     RTM_bind_or_copy,
 
     // Copy the image from the buffer to the texture every frame.
@@ -94,21 +88,21 @@ PUBLISHED:
     // Copy the image from the buffer to system RAM every frame.
     RTM_copy_ram,
 
-    // Copy the image from the buffer to the texture after a
-    // call to trigger_copy().
+    // Copy the image from the buffer to the texture after a call to
+    // trigger_copy().
     RTM_triggered_copy_texture,
 
-    // Copy the image from the buffer to system RAM after a
-    // call to trigger_copy().
+    // Copy the image from the buffer to system RAM after a call to
+    // trigger_copy().
     RTM_triggered_copy_ram,
 
-    // Render directly to a layered texture, such as a cube map,
-    // 3D texture or 2D texture array.  The layer that is being
-    // rendered to is selected by a geometry shader.
+    // Render directly to a layered texture, such as a cube map, 3D texture or
+    // 2D texture array.  The layer that is being rendered to is selected by a
+    // geometry shader.
     RTM_bind_layered,
   };
 
-  // There are many reasons to call begin_frame/end_frame.
+  // There are many reasons to call begin_frameend_frame.
   enum FrameMode {
     FM_render,   // We are rendering a frame.
     FM_parasite, // We are rendering a frame of a parasite.
@@ -253,9 +247,9 @@ PUBLISHED:
   MAKE_PROPERTY(supports_render_texture, get_supports_render_texture);
 
 PUBLISHED:
-  // These are not intended to be called directly by the user, but
-  // they're published anyway since they might occasionally be useful
-  // for low-level debugging.
+  // These are not intended to be called directly by the user, but they're
+  // published anyway since they might occasionally be useful for low-level
+  // debugging.
   virtual bool flip_ready() const;
   virtual GraphicsOutput *get_host();
 
@@ -271,9 +265,9 @@ public:
 
   void set_size_and_recalc(int x, int y);
 
-  // It is an error to call any of the following methods from any
-  // thread other than the draw thread.  These methods are normally
-  // called by the GraphicsEngine.
+  // It is an error to call any of the following methods from any thread other
+  // than the draw thread.  These methods are normally called by the
+  // GraphicsEngine.
   virtual void clear(Thread *current_thread);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
@@ -286,9 +280,9 @@ public:
   virtual void ready_flip();
   virtual void end_flip();
 
-  // It is an error to call any of the following methods from any
-  // thread other than the window thread.  These methods are normally
-  // called by the GraphicsEngine.
+  // It is an error to call any of the following methods from any thread other
+  // than the window thread.  These methods are normally called by the
+  // GraphicsEngine.
   virtual void process_events();
 
   INLINE PStatCollector &get_cull_window_pcollector();
@@ -360,10 +354,10 @@ protected:
   LVecBase4 _sbs_right_dimensions;
   bool _delete_flag;
 
-  // These weak pointers are used to keep track of whether the
-  // buffer's bound Textures have been deleted or not.  Until they
-  // have, we don't auto-close the buffer (since that would deallocate
-  // the memory associated with the texture).
+  // These weak pointers are used to keep track of whether the buffer's bound
+  // Textures have been deleted or not.  Until they have, we don't auto-close
+  // the buffer (since that would deallocate the memory associated with the
+  // texture).
   pvector<WPT(Texture)> _hold_textures;
 
 protected:
@@ -374,9 +368,9 @@ protected:
   TotalDisplayRegions _total_display_regions;
   typedef pvector<DisplayRegion *> ActiveDisplayRegions;
 
-  // This is the data that is associated with the GraphicsOutput that
-  // needs to be cycled every frame.  Mostly we don't cycle this data,
-  // but we do cycle the textures list, and the active flag.
+  // This is the data that is associated with the GraphicsOutput that needs to
+  // be cycled every frame.  Mostly we don't cycle this data, but we do cycle
+  // the textures list, and the active flag.
   class EXPCL_PANDA_DISPLAY CData : public CycleData {
   public:
     CData();

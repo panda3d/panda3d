@@ -1,16 +1,15 @@
-// Filename: boundingLine.h
-// Created by:  drose (04Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingLine.h
+ * @author drose
+ * @date 2000-07-04
+ */
 
 #ifndef BOUNDINGLINE_H
 #define BOUNDINGLINE_H
@@ -19,17 +18,14 @@
 
 #include "geometricBoundingVolume.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingLine
-// Description : This funny bounding volume is an infinite line with
-//               no thickness and extending to infinity in both
-//               directions.
-//
-//               Note that it *always* extends in both directions,
-//               despite the fact that you specify two points to the
-//               constructor.  These are not endpoints, they are two
-//               arbitrary points on the line.
-////////////////////////////////////////////////////////////////////
+/**
+ * This funny bounding volume is an infinite line with no thickness and
+ * extending to infinity in both directions.
+ *
+ * Note that it *always* extends in both directions, despite the fact that you
+ * specify two points to the constructor.  These are not endpoints, they are
+ * two arbitrary points on the line.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingLine : public GeometricBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingLine();

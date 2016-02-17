@@ -1,16 +1,15 @@
-// Filename: virtualFileList.h
-// Created by:  drose (03Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file virtualFileList.h
+ * @author drose
+ * @date 2002-08-03
+ */
 
 #ifndef VIRTUALFILELIST_H
 #define VIRTUALFILELIST_H
@@ -20,11 +19,9 @@
 #include "virtualFile.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileList
-// Description : A list of VirtualFiles, as returned by 
-//               VirtualFile::scan_directory().
-////////////////////////////////////////////////////////////////////
+/**
+ * A list of VirtualFiles, as returned by VirtualFile::scan_directory().
+ */
 class EXPCL_PANDAEXPRESS VirtualFileList : public ReferenceCount {
 public:
   INLINE VirtualFileList();

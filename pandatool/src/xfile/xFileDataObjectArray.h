@@ -1,16 +1,15 @@
-// Filename: xFileDataObjectArray.h
-// Created by:  drose (07Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataObjectArray.h
+ * @author drose
+ * @date 2004-10-07
+ */
 
 #ifndef XFILEDATAOBJECTARRAY_H
 #define XFILEDATAOBJECTARRAY_H
@@ -18,10 +17,9 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectArray
-// Description : An array of nested data elements.
-////////////////////////////////////////////////////////////////////
+/**
+ * An array of nested data elements.
+ */
 class XFileDataObjectArray : public XFileDataObject {
 public:
   INLINE XFileDataObjectArray(const XFileDataDef *data_def);
@@ -40,7 +38,7 @@ protected:
 private:
   typedef pvector< PT(XFileDataObject) > NestedElements;
   NestedElements _nested_elements;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

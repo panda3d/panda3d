@@ -1,16 +1,15 @@
-// Filename: rocketRegion.cxx
-// Created by:  rdb (30Nov11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rocketRegion.cxx
+ * @author rdb
+ * @date 2011-11-30
+ */
 
 #include "rocketRegion.h"
 #include "graphicsOutput.h"
@@ -27,18 +26,16 @@
 
 TypeHandle RocketRegion::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::Constructor
-//       Access: Protected
-//  Description: Make sure that context_name is unique.
-////////////////////////////////////////////////////////////////////
+/**
+ * Make sure that context_name is unique.
+ */
 RocketRegion::
 RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
              const string &context_name) :
   DisplayRegion(window, dr_dimensions) {
 
-  // A hack I don't like.  libRocket's decorator system has
-  // a bug somewhere, and this seems to be a workaround.
+  // A hack I don't like.  libRocket's decorator system has a bug somewhere,
+  // and this seems to be a workaround.
   if (Rocket::Core::GetRenderInterface() == NULL) {
     Rocket::Core::SetRenderInterface(&_interface);
   }
@@ -64,11 +61,9 @@ RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
   set_camera(NodePath(cam));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 RocketRegion::
 ~RocketRegion() {
   if (Rocket::Core::GetRenderInterface() == &_interface) {
@@ -81,8 +76,8 @@ RocketRegion::
       return;
     }
 
-    // We need to do this because libRocket may call into Python
-    // code to throw destruction events.
+    // We need to do this because libRocket may call into Python code to throw
+    // destruction events.
 #ifdef HAVE_ROCKET_PYTHON
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
@@ -96,19 +91,17 @@ RocketRegion::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::do_cull
-//       Access: Protected, Virtual
-//  Description: Performs a cull traversal for this region.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a cull traversal for this region.
+ */
 void RocketRegion::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         GraphicsStateGuardian *gsg, Thread *current_thread) {
 
   PStatTimer timer(get_cull_region_pcollector(), current_thread);
 
-  // We (unfortunately) need to do this because libRocket
-  // may call into Python code to throw events.
+  // We (unfortunately) need to do this because libRocket may call into Python
+  // code to throw events.
 #ifdef HAVE_ROCKET_PYTHON
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();
@@ -148,14 +141,11 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   trav->end_traverse();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::init_debugger
-//       Access: Published
-//  Description: Initializes the libRocket debugger.  This will
-//               return false if the debugger failed to initialize,
-//               or if support for the debugger has not been built
-//               in (for example in an optimize=4 build).
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the libRocket debugger.  This will return false if the debugger
+ * failed to initialize, or if support for the debugger has not been built in
+ * (for example in an optimize=4 build).
+ */
 bool RocketRegion::
 init_debugger() {
 #ifdef HAVE_ROCKET_DEBUGGER
@@ -165,11 +155,9 @@ init_debugger() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::set_debugger_visible
-//       Access: Published
-//  Description: Sets whether the debugger should be visible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the debugger should be visible.
+ */
 void RocketRegion::
 set_debugger_visible(bool visible) {
 #ifdef HAVE_ROCKET_DEBUGGER
@@ -177,11 +165,9 @@ set_debugger_visible(bool visible) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::is_debugger_visible
-//       Access: Published
-//  Description: Returns true if the debugger is visible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the debugger is visible.
+ */
 bool RocketRegion::
 is_debugger_visible() const {
 #ifdef HAVE_ROCKET_DEBUGGER

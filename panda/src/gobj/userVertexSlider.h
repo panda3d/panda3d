@@ -1,16 +1,15 @@
-// Filename: userVertexSlider.h
-// Created by:  drose (28Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file userVertexSlider.h
+ * @author drose
+ * @date 2005-03-28
+ */
 
 #ifndef USERVERTEXSLIDER_H
 #define USERVERTEXSLIDER_H
@@ -24,13 +23,11 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : UserVertexSlider
-// Description : This is a specialization on VertexSlider that
-//               allows the user to specify any arbitrary slider
-//               valie he likes.  This is rarely used except for
-//               testing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on VertexSlider that allows the user to specify
+ * any arbitrary slider valie he likes.  This is rarely used except for
+ * testing.
+ */
 class EXPCL_PANDA_GOBJ UserVertexSlider : public VertexSlider {
 PUBLISHED:
   UserVertexSlider(const string &name);

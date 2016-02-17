@@ -1,16 +1,15 @@
-// Filename: config_gobj.cxx
-// Created by:  drose (01Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_gobj.cxx
+ * @author drose
+ * @date 1999-10-01
+ */
 
 #include "animateVerticesRequest.h"
 #include "bufferContext.h"
@@ -604,8 +603,8 @@ ConfigureFn(config_gobj) {
   VertexTransform::init_type();
   VideoTexture::init_type();
 
-  //Registration of writeable object's creation
-  //functions with BamReader's factory
+  // Registration of writeable object's creation functions with BamReader's
+  // factory
   Geom::register_with_read_factory();
   GeomLines::register_with_read_factory();
   GeomLinestrips::register_with_read_factory();

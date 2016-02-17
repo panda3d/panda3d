@@ -1,46 +1,37 @@
-// Filename: bulletBoxShape.I
-// Created by:  enn0x (24Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletBoxShape.I
+ * @author enn0x
+ * @date 2010-01-24
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE BulletBoxShape::
 ~BulletBoxShape() {
 
   delete _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE BulletBoxShape::
 BulletBoxShape(const BulletBoxShape &copy) :
   _shape(copy._shape) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void BulletBoxShape::
 operator = (const BulletBoxShape &copy) {
   _shape = copy._shape;
 }
-

@@ -1,16 +1,15 @@
-// Filename: android_main.cxx
-// Created by:  rdb (12Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file android_main.cxx
+ * @author rdb
+ * @date 2013-01-12
+ */
 
 #include "config_android.h"
 #include "config_util.h"
@@ -19,21 +18,18 @@
 #include "filename.h"
 
 #include "config_display.h"
-//#define OPENGLES_1
-//#include "config_androiddisplay.h"
+// #define OPENGLES_1 #include "config_androiddisplay.h"
 
 #include <android_native_app_glue.h>
 
-//struct android_app* panda_android_app = NULL;
+// struct android_app* panda_android_app = NULL;
 
 extern int main(int argc, char **argv);
 
-////////////////////////////////////////////////////////////////////
-//     Function: android_main
-//  Description: This function is called by native_app_glue to
-//               initialize the program.  It simply stores the
-//               android_app object and calls main() normally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by native_app_glue to initialize the program.  It
+ * simply stores the android_app object and calls main() normally.
+ */
 void android_main(struct android_app* app) {
   panda_android_app = app;
 

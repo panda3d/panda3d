@@ -1,16 +1,15 @@
-// Filename: stTransform.h
-// Created by:  drose (06Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stTransform.h
+ * @author drose
+ * @date 2010-10-06
+ */
 
 #ifndef STTRANSFORM_H
 #define STTRANSFORM_H
@@ -20,12 +19,10 @@
 #include "speedtree_api.h"
 #include "deg_2_rad.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : STTransform
-// Description : Represents a transform that may be applied to a
-//               particular instance of a tree when added to the
-//               SpeedTreeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a transform that may be applied to a particular instance of a
+ * tree when added to the SpeedTreeNode.
+ */
 class EXPCL_PANDASPEEDTREE STTransform {
 PUBLISHED:
   INLINE STTransform();

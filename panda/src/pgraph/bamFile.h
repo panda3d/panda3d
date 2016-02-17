@@ -1,16 +1,15 @@
-// Filename: bamFile.h
-// Created by:  drose (02Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamFile.h
+ * @author drose
+ * @date 2000-07-02
+ */
 
 #ifndef BAMFILE_H
 #define BAMFILE_H
@@ -27,21 +26,18 @@ class BamWriter;
 class TypedWritable;
 class Filename;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamFile
-// Description : The principle public interface to reading and writing
-//               Bam disk files.  See also BamReader and BamWriter,
-//               the more general implementation of this class.
-//
-//               Bam files are most often used to store scene graphs
-//               or subgraphs, and by convention they are given
-//               filenames ending in the extension ".bam" when they
-//               are used for this purpose.  However, a Bam file may
-//               store any arbitrary list of TypedWritable objects;
-//               in this more general usage, they are given filenames
-//               ending in ".boo" to differentiate them from the more
-//               common scene graph files.
-////////////////////////////////////////////////////////////////////
+/**
+ * The principle public interface to reading and writing Bam disk files.  See
+ * also BamReader and BamWriter, the more general implementation of this
+ * class.
+ *
+ * Bam files are most often used to store scene graphs or subgraphs, and by
+ * convention they are given filenames ending in the extension ".bam" when
+ * they are used for this purpose.  However, a Bam file may store any
+ * arbitrary list of TypedWritable objects; in this more general usage, they
+ * are given filenames ending in ".boo" to differentiate them from the more
+ * common scene graph files.
+ */
 class EXPCL_PANDA_PGRAPH BamFile : public BamEnums {
 PUBLISHED:
   BamFile();

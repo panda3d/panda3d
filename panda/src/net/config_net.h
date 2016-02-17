@@ -1,16 +1,15 @@
-// Filename: config_net.h
-// Created by:  drose (25Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_net.h
+ * @author drose
+ * @date 2000-02-25
+ */
 
 #ifndef CONFIG_NET_H
 #define CONFIG_NET_H
@@ -42,4 +41,3 @@ extern ConfigVariableEnum<ThreadPriority> net_thread_priority;
 extern EXPCL_PANDA_NET void init_libnet();
 
 #endif
-

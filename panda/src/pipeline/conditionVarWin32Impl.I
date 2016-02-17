@@ -1,23 +1,19 @@
-// Filename: conditionVarWin32Impl.I
-// Created by:  drose (07Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file conditionVarWin32Impl.I
+ * @author drose
+ * @date 2006-02-07
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ConditionVarWin32Impl::
 ConditionVarWin32Impl(MutexWin32Impl &mutex) {
   _external_mutex = &mutex._lock;
@@ -26,21 +22,17 @@ ConditionVarWin32Impl(MutexWin32Impl &mutex) {
   _event_signal = CreateEvent(NULL, false, false, NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ConditionVarWin32Impl::
 ~ConditionVarWin32Impl() {
   CloseHandle(_event_signal);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ConditionVarWin32Impl::
 wait() {
   LeaveCriticalSection(_external_mutex);
@@ -51,11 +43,9 @@ wait() {
   EnterCriticalSection(_external_mutex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ConditionVarWin32Impl::
 wait(double timeout) {
   LeaveCriticalSection(_external_mutex);
@@ -66,11 +56,9 @@ wait(double timeout) {
   EnterCriticalSection(_external_mutex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::notify
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ConditionVarWin32Impl::
 notify() {
   SetEvent(_event_signal);

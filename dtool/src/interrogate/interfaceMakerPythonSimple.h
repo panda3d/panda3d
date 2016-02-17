@@ -1,16 +1,15 @@
-// Filename: interfaceMakerPythonSimple.h
-// Created by:  drose (01Oct01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMakerPythonSimple.h
+ * @author drose
+ * @date 2001-10-01
+ */
 
 #ifndef INTERFACEMAKERPYTHONSIMPLE_H
 #define INTERFACEMAKERPYTHONSIMPLE_H
@@ -22,18 +21,15 @@
 
 class FunctionRemap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerPythonSimple
-// Description : An InterfaceMaker for generating simple Python
-//               function wrappers around C++ code.  This allows the
-//               C++ code to be called by Python, but not necessarily
-//               in a user-friendly or object-oriented way.
-//
-//               You probably want to use InterfaceMakerPythonObj for
-//               a full object-oriented solution.  This InterfaceMaker
-//               is primarily useful as a stopgap for our old
-//               Python-based FFI system.
-////////////////////////////////////////////////////////////////////
+/**
+ * An InterfaceMaker for generating simple Python function wrappers around C++
+ * code.  This allows the C++ code to be called by Python, but not necessarily
+ * in a user-friendly or object-oriented way.
+ *
+ * You probably want to use InterfaceMakerPythonObj for a full object-oriented
+ * solution.  This InterfaceMaker is primarily useful as a stopgap for our old
+ * Python-based FFI system.
+ */
 class InterfaceMakerPythonSimple : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonSimple(InterrogateModuleDef *def);
@@ -51,7 +47,7 @@ protected:
   virtual string get_unique_prefix();
 
   virtual void
-  record_function_wrapper(InterrogateFunction &ifunc, 
+  record_function_wrapper(InterrogateFunction &ifunc,
                           FunctionWrapperIndex wrapper_index);
 
 private:

@@ -1,16 +1,15 @@
-// Filename: parametricCurve.cxx
-// Created by:  drose (04Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file parametricCurve.cxx
+ * @author drose
+ * @date 2001-03-04
+ */
 
 #include "parametricCurve.h"
 #include "config_parametrics.h"
@@ -28,102 +27,80 @@ static const PN_stdfloat tolerance_divisor = 100000.0f;
 TypeHandle ParametricCurve::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::Constructor
-//       Access: Public
-//  Description: This is a virtual base class.  Don't try to construct
-//               one from Scheme.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a virtual base class.  Don't try to construct one from Scheme.
+ */
 ParametricCurve::
 ParametricCurve() : PandaNode("curve") {
   _curve_type = PCT_NONE;
   _num_dimensions = 3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::Destructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ParametricCurve::
 ~ParametricCurve() {
-  // Our drawer list must be empty by the time we destruct, since our
-  // drawers all maintain reference-counting pointers to us!  If this
-  // is not so, we have lost a reference count somewhere, or we have
-  // gotten confused about which drawers we're registered to.
+  // Our drawer list must be empty by the time we destruct, since our drawers
+  // all maintain reference-counting pointers to us!  If this is not so, we
+  // have lost a reference count somewhere, or we have gotten confused about
+  // which drawers we're registered to.
   nassertv(_drawers.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::safe_to_flatten
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to flatten out
-//               this particular kind of PandaNode by duplicating
-//               instances, false otherwise (for instance, a Camera
-//               cannot be safely flattened, because the Camera
-//               pointer itself is meaningful).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to flatten out this particular kind of
+ * PandaNode by duplicating instances, false otherwise (for instance, a Camera
+ * cannot be safely flattened, because the Camera pointer itself is
+ * meaningful).
+ */
 bool ParametricCurve::
 safe_to_flatten() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::safe_to_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of PandaNode by calling the
-//               xform() method, false otherwise.  For instance, it's
-//               usually a bad idea to attempt to xform a Character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to transform this particular kind of
+ * PandaNode by calling the xform() method, false otherwise.  For instance,
+ * it's usually a bad idea to attempt to xform a Character.
+ */
 bool ParametricCurve::
 safe_to_transform() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::is_valid
-//       Access: Published, Virtual
-//  Description: Returns true if the curve is defined.  This base
-//               class function always returns true; derived classes
-//               might override this to sometimes return false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the curve is defined.  This base class function always
+ * returns true; derived classes might override this to sometimes return
+ * false.
+ */
 bool ParametricCurve::
 is_valid() const {
   return true;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::get_max_t
-//       Access: Published, Virtual
-//  Description: Returns the upper bound of t for the entire curve.
-//               The curve is defined in the range 0.0f <= t <=
-//               get_max_t().  This base class function always returns
-//               1.0f; derived classes might override this to return
-//               something else.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the upper bound of t for the entire curve.  The curve is defined in
+ * the range 0.0f <= t <= get_max_t().  This base class function always
+ * returns 1.0f; derived classes might override this to return something else.
+ */
 PN_stdfloat ParametricCurve::
 get_max_t() const {
   return 1.0f;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::set_curve_type
-//       Access: Published
-//  Description: Sets the flag indicating the use to which the curve
-//               is intended to be put.  This flag is optional and
-//               only serves to provide a hint to the egg reader and
-//               writer code; it has no effect on the curve's
-//               behavior.
-//
-//               Setting the curve type also sets the num_dimensions
-//               to 3 or 1 according to the type.
-//
-//               THis flag may have one of the values PCT_XYZ,
-//               PCT_HPR, or PCT_T.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the flag indicating the use to which the curve is intended to be put.
+ * This flag is optional and only serves to provide a hint to the egg reader
+ * and writer code; it has no effect on the curve's behavior.
+ *
+ * Setting the curve type also sets the num_dimensions to 3 or 1 according to
+ * the type.
+ *
+ * THis flag may have one of the values PCT_XYZ, PCT_HPR, or PCT_T.
+ */
 void ParametricCurve::
 set_curve_type(int type) {
   _curve_type = type;
@@ -143,71 +120,57 @@ set_curve_type(int type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::get_curve_type
-//       Access: Published
-//  Description: Returns the flag indicating the use to which the curve
-//               is intended to be put.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the flag indicating the use to which the curve is intended to be
+ * put.
+ */
 int ParametricCurve::
 get_curve_type() const {
   return _curve_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::set_num_dimensions
-//       Access: Published
-//  Description: Specifies the number of significant dimensions in the
-//               curve's vertices.  This should be one of 1, 2, or 3.
-//               Normally, XYZ and HPR curves have three dimensions;
-//               time curves should always have one dimension.  This
-//               only serves as a hint to the mopath editor, and also
-//               controls how the curve is written out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the number of significant dimensions in the curve's vertices.
+ * This should be one of 1, 2, or 3. Normally, XYZ and HPR curves have three
+ * dimensions; time curves should always have one dimension.  This only serves
+ * as a hint to the mopath editor, and also controls how the curve is written
+ * out.
+ */
 void ParametricCurve::
 set_num_dimensions(int num) {
   _num_dimensions = num;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::get_num_dimensions
-//       Access: Published
-//  Description: Returns the number of significant dimensions in the
-//               curve's vertices, as set by a previous call to
-//               set_num_dimensions().  This is only a hint as to how
-//               the curve is intended to be used; the actual number
-//               of dimensions of any curve is always three.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of significant dimensions in the curve's vertices, as
+ * set by a previous call to set_num_dimensions().  This is only a hint as to
+ * how the curve is intended to be used; the actual number of dimensions of
+ * any curve is always three.
+ */
 int ParametricCurve::
 get_num_dimensions() const {
   return _num_dimensions;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::calc_length
-//       Access: Published
-//  Description: Approximates the length of the entire curve to within
-//               a few decimal places.
-////////////////////////////////////////////////////////////////////
+/**
+ * Approximates the length of the entire curve to within a few decimal places.
+ */
 PN_stdfloat ParametricCurve::
 calc_length() const {
   return calc_length(0.0f, get_max_t());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::calc_length
-//       Access: Published
-//  Description: Approximates the length of the curve segment from
-//               parametric time 'from' to time 'to'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Approximates the length of the curve segment from parametric time 'from' to
+ * time 'to'.
+ */
 PN_stdfloat ParametricCurve::
 calc_length(PN_stdfloat from, PN_stdfloat to) const {
   PN_stdfloat t1, t2;
   LPoint3 p1, p2;
 
-  // Normally we expect from < to.  If they came in backwards, reverse
-  // them.
+  // Normally we expect from < to.  If they came in backwards, reverse them.
   PN_stdfloat to_minus_from = to - from;
 
   if (to_minus_from < 0.0f) {
@@ -235,20 +198,16 @@ calc_length(PN_stdfloat from, PN_stdfloat to) const {
   return net;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::find_length
-//       Access: Published
-//  Description: Returns the parametric value corresponding to the
-//               indicated distance along the curve from the starting
-//               parametric value.
-//
-//               This is the inverse of calc_length(): rather than
-//               determining the length along the curve between two
-//               parametric points, it determines the position in
-//               parametric time of a point n units along the curve.
-//
-//               The search distance must not be negative.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the parametric value corresponding to the indicated distance along
+ * the curve from the starting parametric value.
+ *
+ * This is the inverse of calc_length(): rather than determining the length
+ * along the curve between two parametric points, it determines the position
+ * in parametric time of a point n units along the curve.
+ *
+ * The search distance must not be negative.
+ */
 PN_stdfloat ParametricCurve::
 find_length(PN_stdfloat start_t, PN_stdfloat length_offset) const {
   nassertr(length_offset >= 0.0f, start_t);
@@ -289,63 +248,49 @@ find_length(PN_stdfloat start_t, PN_stdfloat length_offset) const {
   return max_t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::adjust_point
-//       Access: Published, Virtual
-//  Description: Recomputes the curve such that it passes through the
-//               point (px, py, pz) at time t, but keeps the same
-//               tangent value at that point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the curve such that it passes through the point (px, py, pz) at
+ * time t, but keeps the same tangent value at that point.
+ */
 bool ParametricCurve::
 adjust_point(PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::adjust_tangent
-//       Access: Published, Virtual
-//  Description: Recomputes the curve such that it has the tangent
-//               (tx, ty, tz) at time t, but keeps the same position
-//               at the point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the curve such that it has the tangent (tx, ty, tz) at time t,
+ * but keeps the same position at the point.
+ */
 bool ParametricCurve::
 adjust_tangent(PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::adjust_pt
-//       Access: Published, Virtual
-//  Description: Recomputes the curve such that it passes through the
-//               point (px, py, pz) with the tangent (tx, ty, tz).
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the curve such that it passes through the point (px, py, pz)
+ * with the tangent (tx, ty, tz).
+ */
 bool ParametricCurve::
 adjust_pt(PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::recompute
-//       Access: Published, Virtual
-//  Description: Recalculates the curve, if necessary.  Returns
-//               true if the resulting curve is valid, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recalculates the curve, if necessary.  Returns true if the resulting curve
+ * is valid, false otherwise.
+ */
 bool ParametricCurve::
 recompute() {
   return is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::stitch
-//       Access: Published, Virtual
-//  Description: Regenerates this curve as one long curve: the first
-//               curve connected end-to-end with the second one.
-//               Either a or b may be the same as 'this'.
-//
-//               Returns true if successful, false on failure or if
-//               the curve type does not support stitching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Regenerates this curve as one long curve: the first curve connected end-to-
+ * end with the second one.  Either a or b may be the same as 'this'.
+ *
+ * Returns true if successful, false on failure or if the curve type does not
+ * support stitching.
+ */
 bool ParametricCurve::
 stitch(const ParametricCurve *, const ParametricCurve *) {
   parametrics_cat.error()
@@ -354,13 +299,10 @@ stitch(const ParametricCurve *, const ParametricCurve *) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::write_egg
-//       Access: Published
-//  Description: Writes an egg description of the nurbs curve to the
-//               specified output file.  Returns true if the file is
-//               successfully written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes an egg description of the nurbs curve to the specified output file.
+ * Returns true if the file is successfully written.
+ */
 bool ParametricCurve::
 write_egg(Filename filename, CoordinateSystem cs) {
   pofstream out;
@@ -374,13 +316,10 @@ write_egg(Filename filename, CoordinateSystem cs) {
   return write_egg(out, filename, cs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::write_egg
-//       Access: Published
-//  Description: Writes an egg description of the nurbs curve to the
-//               specified output stream.  Returns true if the file is
-//               successfully written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes an egg description of the nurbs curve to the specified output
+ * stream.  Returns true if the file is successfully written.
+ */
 bool ParametricCurve::
 write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
   string curve_type;
@@ -453,52 +392,39 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::get_bezier_segs
-//       Access: Public, Virtual
-//  Description: Fills up the indicated vector with a list of
-//               BezierSeg structs that describe the curve.  This
-//               assumes the curve is a PiecewiseCurve of
-//               CubicCurvesegs.  Returns true if successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the indicated vector with a list of BezierSeg structs that
+ * describe the curve.  This assumes the curve is a PiecewiseCurve of
+ * CubicCurvesegs.  Returns true if successful, false otherwise.
+ */
 bool ParametricCurve::
 get_bezier_segs(ParametricCurve::BezierSegs &) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::get_bezier_seg
-//       Access: Public, Virtual
-//  Description: Fills the BezierSeg structure with a description of
-//               the curve segment as a Bezier, if possible, but does
-//               not change the _t member of the structure.  Returns
-//               true if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the BezierSeg structure with a description of the curve segment as a
+ * Bezier, if possible, but does not change the _t member of the structure.
+ * Returns true if successful, false otherwise.
+ */
 bool ParametricCurve::
 get_bezier_seg(ParametricCurve::BezierSeg &) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::get_nurbs_interface
-//       Access: Public, Virtual
-//  Description: Returns a pointer to the object as a
-//               NurbsCurveInterface object if it happens to be a
-//               NURBS-style curve; otherwise, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the object as a NurbsCurveInterface object if it
+ * happens to be a NURBS-style curve; otherwise, returns NULL.
+ */
 NurbsCurveInterface *ParametricCurve::
 get_nurbs_interface() {
   return (NurbsCurveInterface *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::convert_to_hermite
-//       Access: Public, Virtual
-//  Description: Stores an equivalent curve representation in the
-//               indicated Hermite curve, if possible.  Returns true
-//               if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores an equivalent curve representation in the indicated Hermite curve,
+ * if possible.  Returns true if successful, false otherwise.
+ */
 bool ParametricCurve::
 convert_to_hermite(HermiteCurve *hc) const {
   BezierSegs bz_segs;
@@ -508,9 +434,8 @@ convert_to_hermite(HermiteCurve *hc) const {
 
   hc->set_curve_type(_curve_type);
 
-  // Now convert the Bezier segments to a Hermite.  Normally, the
-  // Beziers will match up head-to-tail, but if they don't, that's a
-  // cut.
+  // Now convert the Bezier segments to a Hermite.  Normally, the Beziers will
+  // match up head-to-tail, but if they don't, that's a cut.
   hc->remove_all_cvs();
 
   int i, n;
@@ -565,13 +490,10 @@ convert_to_hermite(HermiteCurve *hc) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::convert_to_nurbs
-//       Access: Public, Virtual
-//  Description: Stores in the indicated NurbsCurve a NURBS
-//               representation of an equivalent curve.  Returns true
-//               if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores in the indicated NurbsCurve a NURBS representation of an equivalent
+ * curve.  Returns true if successful, false otherwise.
+ */
 bool ParametricCurve::
 convert_to_nurbs(ParametricCurve *nc) const {
   NurbsCurveInterface *nurbs = nc->get_nurbs_interface();
@@ -624,30 +546,24 @@ convert_to_nurbs(ParametricCurve *nc) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::register_drawer
-//       Access: Public
-//  Description: Registers a Drawer with this curve that will
-//               automatically be updated whenever the curve is
-//               modified, so that the visible representation of the
-//               curve is kept up to date.  This is called
-//               automatically by the ParametricCurveDrawer.
-//
-//               Any number of Drawers may be registered with a
-//               particular curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers a Drawer with this curve that will automatically be updated
+ * whenever the curve is modified, so that the visible representation of the
+ * curve is kept up to date.  This is called automatically by the
+ * ParametricCurveDrawer.
+ *
+ * Any number of Drawers may be registered with a particular curve.
+ */
 void ParametricCurve::
 register_drawer(ParametricCurveDrawer *drawer) {
   _drawers.push_back(drawer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::unregister_drawer
-//       Access: Public
-//  Description: Removes a previously registered drawer from the list
-//               of automatically-refreshed drawers.  This is called
-//               automatically by the ParametricCurveDrawer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a previously registered drawer from the list of automatically-
+ * refreshed drawers.  This is called automatically by the
+ * ParametricCurveDrawer.
+ */
 void ParametricCurve::
 unregister_drawer(ParametricCurveDrawer *drawer) {
   _drawers.remove(drawer);
@@ -656,25 +572,19 @@ unregister_drawer(ParametricCurveDrawer *drawer) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::invalidate
-//       Access: Protected
-//  Description: Called from a base class to mark a section of the
-//               curve that has been modified and must be redrawn or
-//               recomputed in some way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from a base class to mark a section of the curve that has been
+ * modified and must be redrawn or recomputed in some way.
+ */
 void ParametricCurve::
 invalidate(PN_stdfloat, PN_stdfloat) {
   invalidate_all();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::invalidate_all
-//       Access: Protected
-//  Description: Called from a base class to indicate that the curve
-//               has changed in some substantial way and must be
-//               entirely redrawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from a base class to indicate that the curve has changed in some
+ * substantial way and must be entirely redrawn.
+ */
 void ParametricCurve::
 invalidate_all() {
   /*
@@ -687,28 +597,22 @@ invalidate_all() {
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::format_egg
-//       Access: Protected, Virtual
-//  Description: Formats the curve as an egg structure to write to the
-//               indicated stream.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the curve as an egg structure to write to the indicated stream.
+ * Returns true on success, false on failure.
+ */
 bool ParametricCurve::
 format_egg(ostream &, const string &, const string &, int) const {
   return false;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::r_calc_length
-//       Access: Private
-//  Description: The recursive implementation of calc_length.  This
-//               function calculates the length of a segment of the
-//               curve between points t1 and t2, which presumably
-//               evaluate to the endpoints p1 and p2, and the segment
-//               has the length seglength.
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of calc_length.  This function calculates the
+ * length of a segment of the curve between points t1 and t2, which presumably
+ * evaluate to the endpoints p1 and p2, and the segment has the length
+ * seglength.
+ */
 PN_stdfloat ParametricCurve::
 r_calc_length(PN_stdfloat t1, PN_stdfloat t2, const LPoint3 &p1, const LPoint3 &p2,
               PN_stdfloat seglength) const {
@@ -716,8 +620,8 @@ r_calc_length(PN_stdfloat t1, PN_stdfloat t2, const LPoint3 &p1, const LPoint3 &
   static const PN_stdfloat t_tolerance = 0.000001f;
 
   if (t2 - t1 < t_tolerance) {
-    // Stop recursing--we've just walked off the limit for
-    // representing smaller values of t.
+    // Stop recursing--we've just walked off the limit for representing
+    // smaller values of t.
     return 0.0f;
   }
 
@@ -725,8 +629,7 @@ r_calc_length(PN_stdfloat t1, PN_stdfloat t2, const LPoint3 &p1, const LPoint3 &
   LPoint3 pmid;
   PN_stdfloat left, right;
 
-  // Calculate the point on the curve midway between the two
-  // endpoints.
+  // Calculate the point on the curve midway between the two endpoints.
   tmid = (t1+t2)*0.5f;
   get_point(tmid, pmid);
 
@@ -744,18 +647,14 @@ r_calc_length(PN_stdfloat t1, PN_stdfloat t2, const LPoint3 &p1, const LPoint3 &
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::r_find_length
-//       Access: Private
-//  Description: The recursive implementation of find_length.  This is
-//               similar to r_calc_length, above.  target_length is
-//               the length along the curve past t1 that we hope to
-//               find.  If the indicated target_length falls within
-//               this segment, returns true and sets found_t to the
-//               point along the segment.  Otherwise, updates
-//               seglength with the accurate calculated length of the
-//               segment and returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of find_length.  This is similar to
+ * r_calc_length, above.  target_length is the length along the curve past t1
+ * that we hope to find.  If the indicated target_length falls within this
+ * segment, returns true and sets found_t to the point along the segment.
+ * Otherwise, updates seglength with the accurate calculated length of the
+ * segment and returns false.
+ */
 bool ParametricCurve::
 r_find_length(PN_stdfloat target_length, PN_stdfloat &found_t,
               PN_stdfloat t1, PN_stdfloat t2,
@@ -765,8 +664,8 @@ r_find_length(PN_stdfloat target_length, PN_stdfloat &found_t,
   static const PN_stdfloat t_tolerance = 0.000001f;
 
   if (target_length < t_tolerance) {
-    // Stop recursing--we've just walked off the limit for
-    // representing smaller values of t.
+    // Stop recursing--we've just walked off the limit for representing
+    // smaller values of t.
     found_t = t1;
     return true;
 
@@ -776,8 +675,7 @@ r_find_length(PN_stdfloat target_length, PN_stdfloat &found_t,
   LPoint3 pmid;
   PN_stdfloat left, right;
 
-  // Calculate the point on the curve midway between the two
-  // endpoints.
+  // Calculate the point on the curve midway between the two endpoints.
   tmid = (t1+t2)*0.5f;
   get_point(tmid, pmid);
 
@@ -790,8 +688,8 @@ r_find_length(PN_stdfloat target_length, PN_stdfloat &found_t,
     return find_t_linear(target_length, found_t, t1, t2, p1, p2);
     /*
     if (target_length <= seglength) {
-      // Compute t value that corresponds to target_length
-      // Maybe the point is in the left half of the segment?
+      // Compute t value that corresponds to target_length Maybe the point is
+      // in the left half of the segment?
       if (r_find_t(target_length, found_t, t1, tmid, p1, pmid)) {
         return true;
       }
@@ -823,17 +721,13 @@ r_find_length(PN_stdfloat target_length, PN_stdfloat &found_t,
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::r_find_t
-//       Access: Private
-//  Description: computes the t value in the parametric domain of a 
-//               target point along a straight section of a curve.
-//               This is similar to r_calc_length, above.  
-//               target_length is the length along the curve past t1 
-//               that we hope to find.  If the indicated target_length 
-//               falls within this segment, returns true and sets 
-//               found_t to the point along the segment.  
-////////////////////////////////////////////////////////////////////
+/**
+ * computes the t value in the parametric domain of a target point along a
+ * straight section of a curve.  This is similar to r_calc_length, above.
+ * target_length is the length along the curve past t1 that we hope to find.
+ * If the indicated target_length falls within this segment, returns true and
+ * sets found_t to the point along the segment.
+ */
 bool ParametricCurve::
 r_find_t(PN_stdfloat target_length, PN_stdfloat &found_t,
          PN_stdfloat t1, PN_stdfloat t2,
@@ -850,7 +744,7 @@ r_find_t(PN_stdfloat target_length, PN_stdfloat &found_t,
   if (target_length < length_tolerance) {
     found_t = t1;
     return true;
-  } 
+  }
 
   // No, compute distance between two endpoints
   PN_stdfloat point_dist;
@@ -860,13 +754,13 @@ r_find_t(PN_stdfloat target_length, PN_stdfloat &found_t,
   if (point_dist < target_length) {
     return false;
   }
-   
+
   // Is the target point close to far endpoint?
   if ( (point_dist - target_length ) < length_tolerance ) {
     found_t = t2;
     return true;
   }
-  
+
   // are we running out of parametric precision?
   if ((t2 - t1) < t_tolerance) {
     found_t = t1;
@@ -877,12 +771,11 @@ r_find_t(PN_stdfloat target_length, PN_stdfloat &found_t,
   PN_stdfloat tmid;
   LPoint3 pmid;
   PN_stdfloat left;
-  
-  // Calculate the point on the curve midway between the two
-  // endpoints.
+
+  // Calculate the point on the curve midway between the two endpoints.
   tmid = (t1+t2)*0.5f;
   get_point(tmid, pmid);
-  
+
   // Maybe the point is in the left half of the segment?
   if (r_find_t(target_length, found_t, t1, tmid, p1, pmid)) {
     return true;
@@ -898,11 +791,9 @@ r_find_t(PN_stdfloat target_length, PN_stdfloat &found_t,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::find_t_linear
-//       Access: Private
-//  Description: non-recursive version of r_find_t (see above)
-////////////////////////////////////////////////////////////////////
+/**
+ * non-recursive version of r_find_t (see above)
+ */
 bool ParametricCurve::
 find_t_linear(PN_stdfloat target_length, PN_stdfloat &found_t,
               PN_stdfloat t1, PN_stdfloat t2,
@@ -915,8 +806,8 @@ find_t_linear(PN_stdfloat target_length, PN_stdfloat &found_t,
       << "target_length " << target_length << " t1 " << t1 << " t2 " << t2 << "\n";
   }
 
-  // first, check to make sure this segment contains the point
-  // we're looking for
+  // first, check to make sure this segment contains the point we're looking
+  // for
   if (target_length > (p1 - p2).length()) {
     // segment is too short
     return false;
@@ -973,12 +864,10 @@ find_t_linear(PN_stdfloat target_length, PN_stdfloat &found_t,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::write_datagram
-//       Access: Protected, Virtual
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void ParametricCurve::
 write_datagram(BamWriter *manager, Datagram &me) {
   PandaNode::write_datagram(manager, me);
@@ -987,14 +876,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_int8(_num_dimensions);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurve::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of
+ * the data that is needed to re-create this object and stores it in the
+ * appropiate place
+ */
 void ParametricCurve::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);

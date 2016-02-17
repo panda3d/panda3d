@@ -1,16 +1,15 @@
-// Filename: ffmpegVirtualFile.cxx
-// Created by: jyelon (02Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ffmpegVirtualFile.cxx
+ * @author jyelon
+ * @date 2007-07-02
+ */
 
 #include "pandabase.h"
 
@@ -27,11 +26,9 @@ extern "C" {
   #define AVSEEK_SIZE 0x10000
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FfmpegVirtualFile::
 FfmpegVirtualFile() :
   _io_context(NULL),
@@ -42,43 +39,35 @@ FfmpegVirtualFile() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FfmpegVirtualFile::
 ~FfmpegVirtualFile() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Copy Constructor
-//       Access: Private
-//  Description: These objects are not meant to be copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * These objects are not meant to be copied.
+ */
 FfmpegVirtualFile::
 FfmpegVirtualFile(const FfmpegVirtualFile &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Copy Assignment Operator
-//       Access: Private
-//  Description: These objects are not meant to be copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * These objects are not meant to be copied.
+ */
 void FfmpegVirtualFile::
 operator = (const FfmpegVirtualFile &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::open_vfs
-//       Access: Public
-//  Description: Opens the movie file via Panda's VFS.  Returns true
-//               on success, false on failure.  If successful, use
-//               get_format_context() to get the open file handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the movie file via Panda's VFS.  Returns true on success, false on
+ * failure.  If successful, use get_format_context() to get the open file
+ * handle.
+ */
 bool FfmpegVirtualFile::
 open_vfs(const Filename &filename) {
   close();
@@ -106,8 +95,9 @@ open_vfs(const Filename &filename) {
   _size = vfile->get_file_size(_in);
 
   // NOTE: The AVIO system owns the buffer after allocation and may realloc it
-  // internally. Therefore, when we're done with the buffer, we use
-  // _io_context->buffer to deallocate it rather than holding on to this pointer.
+  // internally.  Therefore, when we're done with the buffer, we use
+  // _io_context->buffer to deallocate it rather than holding on to this
+  // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
                                    &read_packet, 0, &seek);
@@ -130,14 +120,11 @@ open_vfs(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::open_subfile
-//       Access: Public
-//  Description: Opens the movie file directly from a file on disk
-//               (does not go through the VFS).  Returns true on
-//               success, false on failure.  If successful, use
-//               get_format_context() to get the open file handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the movie file directly from a file on disk (does not go through the
+ * VFS).  Returns true on success, false on failure.  If successful, use
+ * get_format_context() to get the open file handle.
+ */
 bool FfmpegVirtualFile::
 open_subfile(const SubfileInfo &info) {
   close();
@@ -160,8 +147,9 @@ open_subfile(const SubfileInfo &info) {
   _in->seekg(_start);
 
   // NOTE: The AVIO system owns the buffer after allocation and may realloc it
-  // internally. Therefore, when we're done with the buffer, we use
-  // _io_context->buffer to deallocate it rather than holding on to this pointer.
+  // internally.  Therefore, when we're done with the buffer, we use
+  // _io_context->buffer to deallocate it rather than holding on to this
+  // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
                                    &read_packet, 0, &seek);
@@ -184,12 +172,10 @@ open_subfile(const SubfileInfo &info) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::close
-//       Access: Public
-//  Description: Explicitly closes the opened file.  This is also
-//               called implicitly by the destructor if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly closes the opened file.  This is also called implicitly by the
+ * destructor if necessary.
+ */
 void FfmpegVirtualFile::
 close() {
   if (_format_context != NULL) {
@@ -217,12 +203,10 @@ close() {
   _in = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::register_protocol
-//       Access: Public, Static
-//  Description: Should be called at startup to attach the appropriate
-//               hooks between Panda and FFMpeg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called at startup to attach the appropriate hooks between Panda
+ * and FFMpeg.
+ */
 void FfmpegVirtualFile::
 register_protocol() {
   static bool initialized = false;
@@ -230,8 +214,7 @@ register_protocol() {
     return;
   }
 
-  // Here's a good place to call this global ffmpeg initialization
-  // function.
+  // Here's a good place to call this global ffmpeg initialization function.
   av_register_all();
 
   // And this one.
@@ -243,19 +226,17 @@ register_protocol() {
   av_log_set_callback(&log_callback);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::read_packet
-//       Access: Private, Static
-//  Description: A callback to read a virtual file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback to read a virtual file.
+ */
 int FfmpegVirtualFile::
 read_packet(void *opaque, uint8_t *buf, int size) {
   streampos ssize = (streampos)size;
   FfmpegVirtualFile *self = (FfmpegVirtualFile *) opaque;
   istream *in = self->_in;
 
-  // Since we may be simulating a subset of the opened stream, don't
-  // allow it to read past the "end".
+  // Since we may be simulating a subset of the opened stream, don't allow it
+  // to read past the "end".
   streampos remaining = self->_start + (streampos)self->_size - in->tellg();
   if (remaining < ssize) {
     if (remaining <= 0) {
@@ -272,11 +253,9 @@ read_packet(void *opaque, uint8_t *buf, int size) {
   return (int)gc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::seek
-//       Access: Private, Static
-//  Description: A callback to change the read position on an istream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback to change the read position on an istream.
+ */
 int64_t FfmpegVirtualFile::
 seek(void *opaque, int64_t pos, int whence) {
   FfmpegVirtualFile *self = (FfmpegVirtualFile *) opaque;
@@ -292,8 +271,8 @@ seek(void *opaque, int64_t pos, int whence) {
     break;
 
   case SEEK_END:
-    // For seeks relative to the end, we actually compute the end
-    // based on _start + _size, and then use ios::beg.
+    // For seeks relative to the end, we actually compute the end based on
+    // _start + _size, and then use ios::beg.
     in->seekg(self->_start + (streampos)self->_size + (streampos)pos, ios::beg);
     break;
 
@@ -311,12 +290,10 @@ seek(void *opaque, int64_t pos, int whence) {
   return in->tellg() - self->_start;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::log_callback
-//       Access: Private, Static
-//  Description: These callbacks are made when ffmpeg wants to write a
-//               log entry; it redirects into Panda's notify.
-////////////////////////////////////////////////////////////////////
+/**
+ * These callbacks are made when ffmpeg wants to write a log entry; it
+ * redirects into Panda's notify.
+ */
 void FfmpegVirtualFile::
 log_callback(void *ptr, int level, const char *fmt, va_list v1) {
   NotifySeverity severity;

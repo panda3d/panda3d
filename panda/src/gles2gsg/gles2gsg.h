@@ -1,22 +1,21 @@
-// Filename: gles2gsg.h
-// Created by:  pro-rsoft (14Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gles2gsg.h
+ * @author rdb
+ * @date 2009-06-14
+ */
 
 #ifndef GLES2GSG_H
 #define GLES2GSG_H
 
-// This header file compiles a GSG for the limited subset of OpenGL
-// that is OpenGL ES 2.
+// This header file compiles a GSG for the limited subset of OpenGL that is
+// OpenGL ES 2.
 
 #include "pandabase.h"
 #include "config_gles2gsg.h"
@@ -54,15 +53,15 @@
 
 #ifdef IS_OSX
   #include <OpenGLES/ES2/gl.h>
-//  #include <OpenGLES/ES2/glext.h>
+// #include <OpenGLESES2glext.h>
 #else
   #include <GLES2/gl2.h>
-//  #include <GLES2/gl2ext.h>
+// #include <GLES2gl2ext.h>
 #endif
 
 #include "panda_esgl2ext.h"
 
-// This helps to keep the source clean of hundreds of #ifdefs.
+// This helps to keep the source clean of hundreds of ifdefs.
 typedef char GLchar;
 #define GL_RENDERBUFFER_EXT GL_RENDERBUFFER
 #define GL_RENDERBUFFER_RED_SIZE_EXT GL_RENDERBUFFER_RED_SIZE

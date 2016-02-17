@@ -1,16 +1,15 @@
-// Filename: pathReplace.cxx
-// Created by:  drose (07Feb03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pathReplace.cxx
+ * @author drose
+ * @date 2003-02-07
+ */
 
 #include "pathReplace.h"
 #include "config_util.h"
@@ -18,11 +17,9 @@
 #include "indent.h"
 #include "virtualFileSystem.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PathReplace::
 PathReplace() {
   _path_store = PS_keep;
@@ -32,26 +29,21 @@ PathReplace() {
   _error_flag = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PathReplace::
 ~PathReplace() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::match_path
-//       Access: Public
-//  Description: Looks for a match for the given filename among all
-//               the replacement patterns, and returns the first match
-//               found.  If additional_path is nonempty, it is an
-//               additional search path on which to look for the file.
-//               The model_path is always implicitly searched.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for a match for the given filename among all the replacement
+ * patterns, and returns the first match found.  If additional_path is
+ * nonempty, it is an additional search path on which to look for the file.
+ * The model_path is always implicitly searched.
+ */
 Filename PathReplace::
-match_path(const Filename &orig_filename, 
+match_path(const Filename &orig_filename,
            const DSearchPath &additional_path) {
   Filename match;
   bool got_match = false;
@@ -63,28 +55,27 @@ match_path(const Filename &orig_filename,
     const Entry &entry = (*ei);
     Filename new_filename;
     if (entry.try_match(orig_filename, new_filename)) {
-      // The prefix matches.  Save the resulting filename for
-      // posterity.
+      // The prefix matches.  Save the resulting filename for posterity.
       got_match = true;
       match = new_filename;
-      
+
       if (new_filename.is_fully_qualified()) {
-        // If the resulting filename is fully qualified, it's a match
-        // if and only if it exists.
+        // If the resulting filename is fully qualified, it's a match if and
+        // only if it exists.
         if (vfs->exists(new_filename)) {
           return new_filename;
         }
-        
+
       } else {
-        // Otherwise, if it's a relative filename, attempt to look it
-        // up on the search path.
+        // Otherwise, if it's a relative filename, attempt to look it up on
+        // the search path.
         if (vfs->resolve_filename(new_filename, _path) ||
             vfs->resolve_filename(new_filename, additional_path) ||
             vfs->resolve_filename(new_filename, get_model_path())) {
           // Found it!
           if (_path_store == PS_keep) {
-            // If we asked to "keep" the pathname, we return the
-            // matched path, but not the found path.
+            // If we asked to "keep" the pathname, we return the matched path,
+            // but not the found path.
             return match;
           } else {
             // Otherwise, we return the actual, found path.
@@ -92,13 +83,13 @@ match_path(const Filename &orig_filename,
           }
         }
       }
-      
+
       // The prefix matched, but it didn't exist.  Keep looking.
     }
   }
 
-  // The file couldn't be found anywhere.  Did we at least get any
-  // prefix match?
+  // The file couldn't be found anywhere.  Did we at least get any prefix
+  // match?
   if (got_match) {
     if (_exists) {
       _error_flag = true;
@@ -113,8 +104,8 @@ match_path(const Filename &orig_filename,
   }
 
   if (!orig_filename.is_local()) {
-    // Ok, we didn't match any specified prefixes.  If the file is an
-    // absolute pathname and we have _noabs set, that's an error.
+    // Ok, we didn't match any specified prefixes.  If the file is an absolute
+    // pathname and we have _noabs set, that's an error.
     if (_noabs) {
       _error_flag = true;
       pandatoolbase_cat.error()
@@ -125,8 +116,7 @@ match_path(const Filename &orig_filename,
     }
   }
 
-  // Well, we still haven't found it; look it up on the search path as
-  // is.
+  // Well, we still haven't found it; look it up on the search path as is.
   if (_path_store != PS_keep) {
     Filename new_filename = orig_filename;
     if (vfs->resolve_filename(new_filename, _path) ||
@@ -137,8 +127,8 @@ match_path(const Filename &orig_filename,
     }
   }
 
-  // Nope, couldn't find anything.  This is an error, but just return
-  // the original filename.
+  // Nope, couldn't find anything.  This is an error, but just return the
+  // original filename.
   if (_exists) {
     _error_flag = true;
     pandatoolbase_cat.error()
@@ -150,14 +140,11 @@ match_path(const Filename &orig_filename,
   return orig_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::store_path
-//       Access: Public
-//  Description: Given a path to an existing filename, converts it as
-//               specified in the _path_store and or _path_directory
-//               properties to a form suitable for storing in an
-//               output file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a path to an existing filename, converts it as specified in the
+ * _path_store and or _path_directory properties to a form suitable for
+ * storing in an output file.
+ */
 Filename PathReplace::
 store_path(const Filename &orig_filename) {
   if (orig_filename.empty()) {
@@ -202,17 +189,13 @@ store_path(const Filename &orig_filename) {
   return filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::full_convert_path
-//       Access: Public
-//  Description: Converts the input path into two different forms:
-//               A resolved path, and an output path.  The resolved
-//               path is an absolute path if at all possible.  The
-//               output path is in the form specified by the -ps
-//               path store option.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the input path into two different forms: A resolved path, and an
+ * output path.  The resolved path is an absolute path if at all possible.
+ * The output path is in the form specified by the -ps path store option.
+ */
 void PathReplace::
-full_convert_path(const Filename &orig_filename, 
+full_convert_path(const Filename &orig_filename,
                   const DSearchPath &additional_path,
                   Filename &resolved_path,
                   Filename &output_path) {
@@ -230,22 +213,21 @@ full_convert_path(const Filename &orig_filename,
     const Entry &entry = (*ei);
     Filename new_filename;
     if (entry.try_match(orig_filename, new_filename)) {
-      // The prefix matches.  Save the resulting filename for
-      // posterity.
+      // The prefix matches.  Save the resulting filename for posterity.
       got_match = true;
       match = new_filename;
-      
+
       if (new_filename.is_fully_qualified()) {
-        // If the resulting filename is fully qualified, it's a match
-        // if and only if it exists.
+        // If the resulting filename is fully qualified, it's a match if and
+        // only if it exists.
         if (vfs->exists(new_filename)) {
           resolved_path = new_filename;
           goto calculate_output_path;
         }
-        
+
       } else {
-        // Otherwise, if it's a relative filename, attempt to look it
-        // up on the search path.
+        // Otherwise, if it's a relative filename, attempt to look it up on
+        // the search path.
         if (vfs->resolve_filename(new_filename, _path) ||
             vfs->resolve_filename(new_filename, additional_path) ||
             vfs->resolve_filename(new_filename, get_model_path())) {
@@ -254,13 +236,13 @@ full_convert_path(const Filename &orig_filename,
           goto calculate_output_path;
         }
       }
-      
+
       // The prefix matched, but it didn't exist.  Keep looking.
     }
   }
 
-  // The file couldn't be found anywhere.  Did we at least get any
-  // prefix match?
+  // The file couldn't be found anywhere.  Did we at least get any prefix
+  // match?
   if (got_match) {
     if (_exists) {
       _error_flag = true;
@@ -276,8 +258,8 @@ full_convert_path(const Filename &orig_filename,
   }
 
   if (!orig_filename.is_local()) {
-    // Ok, we didn't match any specified prefixes.  If the file is an
-    // absolute pathname and we have _noabs set, that's an error.
+    // Ok, we didn't match any specified prefixes.  If the file is an absolute
+    // pathname and we have _noabs set, that's an error.
     if (_noabs) {
       _error_flag = true;
       pandatoolbase_cat.error()
@@ -288,8 +270,7 @@ full_convert_path(const Filename &orig_filename,
     }
   }
 
-  // Well, we still haven't found it; look it up on the search path as
-  // is.
+  // Well, we still haven't found it; look it up on the search path as is.
   {
     Filename new_filename = orig_filename;
     if (vfs->resolve_filename(new_filename, _path) ||
@@ -302,8 +283,8 @@ full_convert_path(const Filename &orig_filename,
     }
   }
 
-  // Nope, couldn't find anything.  This is an error, but just return
-  // the original filename.
+  // Nope, couldn't find anything.  This is an error, but just return the
+  // original filename.
   if (_exists) {
     _error_flag = true;
     pandatoolbase_cat.error()
@@ -315,9 +296,8 @@ full_convert_path(const Filename &orig_filename,
   match = orig_filename;
   resolved_path = orig_filename;
 
-  // To calculate the output path, we need two inputs:
-  // the match, and the resolved path.  Which one is used
-  // depends upon the path-store mode.
+  // To calculate the output path, we need two inputs: the match, and the
+  // resolved path.  Which one is used depends upon the path-store mode.
  calculate_output_path:
 
   if (_copy_files) {
@@ -336,7 +316,7 @@ full_convert_path(const Filename &orig_filename,
       output_path.make_relative_to(_path_directory);
     }
     break;
-    
+
   case PS_absolute:
     if (resolved_path.empty())
       output_path = resolved_path;
@@ -370,17 +350,15 @@ full_convert_path(const Filename &orig_filename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PathReplace::
 write(ostream &out, int indent_level) const {
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     indent(out, indent_level)
-      << "-pr " << (*ei)._orig_prefix << "=" 
+      << "-pr " << (*ei)._orig_prefix << "="
       << (*ei)._replacement_prefix << "\n";
   }
   int num_directories = _path.get_num_directories();
@@ -413,14 +391,11 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::copy_this_file
-//       Access: Private
-//  Description: Copies the indicated file into the
-//               copy_into_directory, and adjusts filename to
-//               reference the new location.  Returns true if the copy
-//               is made and the filename is changed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the indicated file into the copy_into_directory, and adjusts
+ * filename to reference the new location.  Returns true if the copy is made
+ * and the filename is changed, false otherwise.
+ */
 bool PathReplace::
 copy_this_file(Filename &filename) {
   if (_copy_into_directory.is_local()) {
@@ -429,8 +404,8 @@ copy_this_file(Filename &filename) {
 
   Copied::iterator ci = _orig_to_target.find(filename);
   if (ci != _orig_to_target.end()) {
-    // This file has already been successfully copied, so we can
-    // quietly return its new target filename.
+    // This file has already been successfully copied, so we can quietly
+    // return its new target filename.
     if (filename != (*ci).second) {
       filename = (*ci).second;
       return true;
@@ -444,7 +419,7 @@ copy_this_file(Filename &filename) {
     if ((*ci).second != filename) {
       _error_flag = true;
       pandatoolbase_cat.error()
-        << "Filename conflict!  Both " << (*ci).second << " and " 
+        << "Filename conflict!  Both " << (*ci).second << " and "
         << filename << " map to " << target_filename << "\n";
     }
 
@@ -472,11 +447,9 @@ copy_this_file(Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::Entry::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PathReplace::Entry::
 Entry(const string &orig_prefix, const string &replacement_prefix) :
   _orig_prefix(orig_prefix),
@@ -503,14 +476,11 @@ Entry(const string &orig_prefix, const string &replacement_prefix) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::Entry::try_match
-//       Access: Public
-//  Description: Considers whether the indicated filename matches
-//               this entry's prefix.  If so, switches the prefix and
-//               stores the result in new_filename, and returns true;
-//               otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Considers whether the indicated filename matches this entry's prefix.  If
+ * so, switches the prefix and stores the result in new_filename, and returns
+ * true; otherwise, returns false.
+ */
 bool PathReplace::Entry::
 try_match(const Filename &filename, Filename &new_filename) const {
   if (_is_local != filename.is_local()) {
@@ -537,18 +507,14 @@ try_match(const Filename &filename, Filename &new_filename) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathReplace::Entry::r_try_match
-//       Access: Public
-//  Description: The recursive implementation of try_match().
-//               Actually, this is doubly-recursive, to implement the
-//               "**" feature.
-//
-//               The return value is the number of the "components"
-//               vector that successfully matched against all of the
-//               orig_components.  (It's a variable number because
-//               there might be one or more "**" entries.)
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of try_match(). Actually, this is doubly-
+ * recursive, to implement the "**" feature.
+ *
+ * The return value is the number of the "components" vector that successfully
+ * matched against all of the orig_components.  (It's a variable number
+ * because there might be one or more "**" entries.)
+ */
 size_t PathReplace::Entry::
 r_try_match(const vector_string &components, size_t oi, size_t ci) const {
   if (oi >= _orig_components.size()) {
@@ -556,18 +522,17 @@ r_try_match(const vector_string &components, size_t oi, size_t ci) const {
     return ci;
   }
   if (ci >= components.size()) {
-    // If we reached the end of the string, but we still have
-    // user-supplied components, we failed.  (Arguably there should be
-    // a special case here for a user-supplied string that ends in
-    // "**", but I don't think the user ever wants to match the
-    // complete string.)
+    // If we reached the end of the string, but we still have user-supplied
+    // components, we failed.  (Arguably there should be a special case here
+    // for a user-supplied string that ends in "**", but I don't think the
+    // user ever wants to match the complete string.)
     return 0;
   }
 
   const Component &orig_component = _orig_components[oi];
   if (orig_component._double_star) {
-    // If we have a double star, first consider the match if it were
-    // expanded as far as possible.
+    // If we have a double star, first consider the match if it were expanded
+    // as far as possible.
     size_t mi = r_try_match(components, oi, ci + 1);
     if (mi != 0) {
       return mi;
@@ -577,8 +542,8 @@ r_try_match(const vector_string &components, size_t oi, size_t ci) const {
     return r_try_match(components, oi + 1, ci);
   }
 
-  // We don't have a double star, it's just a one-for-one component
-  // entry.  Does it match?
+  // We don't have a double star, it's just a one-for-one component entry.
+  // Does it match?
   if (orig_component._orig_prefix.matches(components[ci])) {
     // It does!  Keep going.
     return r_try_match(components, oi + 1, ci + 1);

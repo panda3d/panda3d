@@ -1,16 +1,15 @@
-// Filename: dynamicTextGlyph.h
-// Created by:  drose (09Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dynamicTextGlyph.h
+ * @author drose
+ * @date 2002-02-09
+ */
 
 #ifndef DYNAMICTEXTGLYPH_H
 #define DYNAMICTEXTGLYPH_H
@@ -24,17 +23,15 @@
 class DynamicTextPage;
 class DynamicTextFont;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DynamicTextGlyph
-// Description : A specialization on TextGlyph that is generated and
-//               stored by a DynamicTextFont.  This keeps some
-//               additional information, such as where the glyph
-//               appears on a texture map.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization on TextGlyph that is generated and stored by a
+ * DynamicTextFont.  This keeps some additional information, such as where the
+ * glyph appears on a texture map.
+ */
 class EXPCL_PANDA_TEXT DynamicTextGlyph : public TextGlyph {
 public:
   INLINE DynamicTextGlyph(int character, DynamicTextPage *page,
-                          int x, int y, int x_size, int y_size, 
+                          int x, int y, int x_size, int y_size,
                           int margin, PN_stdfloat advance);
   INLINE DynamicTextGlyph(int character, PN_stdfloat advance);
 private:

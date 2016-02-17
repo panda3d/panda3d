@@ -1,16 +1,15 @@
-// Filename: collisionEntry.cxx
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionEntry.cxx
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #include "collisionEntry.h"
 #include "dcast.h"
@@ -18,11 +17,9 @@
 
 TypeHandle CollisionEntry::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CollisionEntry::
 CollisionEntry(const CollisionEntry &copy) :
   _from(copy._from),
@@ -42,11 +39,9 @@ CollisionEntry(const CollisionEntry &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CollisionEntry::
 operator = (const CollisionEntry &copy) {
   _from = copy._from;
@@ -65,18 +60,15 @@ operator = (const CollisionEntry &copy) {
   _contact_normal = copy._contact_normal;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_surface_point
-//       Access: Published
-//  Description: Returns the point, on the surface of the "into"
-//               object, at which a collision is detected.  This can
-//               be thought of as the first point of intersection.
-//               However the contact point is the actual first point of
-//               intersection.
-//
-//               The point will be converted into whichever coordinate
-//               space the caller specifies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point, on the surface of the "into" object, at which a
+ * collision is detected.  This can be thought of as the first point of
+ * intersection.  However the contact point is the actual first point of
+ * intersection.
+ *
+ * The point will be converted into whichever coordinate space the caller
+ * specifies.
+ */
 LPoint3 CollisionEntry::
 get_surface_point(const NodePath &space) const {
   nassertr(has_surface_point(), LPoint3::zero());
@@ -84,15 +76,13 @@ get_surface_point(const NodePath &space) const {
   return _surface_point * transform->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_surface_normal
-//       Access: Published
-//  Description: Returns the surface normal of the "into" object at
-//               the point at which a collision is detected.
-//
-//               The normal will be converted into whichever coordinate
-//               space the caller specifies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the surface normal of the "into" object at the point at which a
+ * collision is detected.
+ *
+ * The normal will be converted into whichever coordinate space the caller
+ * specifies.
+ */
 LVector3 CollisionEntry::
 get_surface_normal(const NodePath &space) const {
   nassertr(has_surface_normal(), LVector3::zero());
@@ -100,20 +90,16 @@ get_surface_normal(const NodePath &space) const {
   return _surface_normal * transform->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_interior_point
-//       Access: Published
-//  Description: Returns the point, within the interior of the "into"
-//               object, which represents the depth to which the
-//               "from" object has penetrated.  This can also be
-//               described as the intersection point on the surface of
-//               the "from" object (which is inside the "into"
-//               object).  It can be thought of as the deepest point
-//               of intersection.
-//
-//               The point will be converted into whichever coordinate
-//               space the caller specifies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point, within the interior of the "into" object, which
+ * represents the depth to which the "from" object has penetrated.  This can
+ * also be described as the intersection point on the surface of the "from"
+ * object (which is inside the "into" object).  It can be thought of as the
+ * deepest point of intersection.
+ *
+ * The point will be converted into whichever coordinate space the caller
+ * specifies.
+ */
 LPoint3 CollisionEntry::
 get_interior_point(const NodePath &space) const {
   if (!has_interior_point()) {
@@ -123,16 +109,13 @@ get_interior_point(const NodePath &space) const {
   return _interior_point * transform->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_all
-//       Access: Published
-//  Description: Simultaneously transforms the surface point, surface
-//               normal, and interior point of the collision into the
-//               indicated coordinate space.
-//
-//               Returns true if all three properties are available,
-//               or false if any one of them is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously transforms the surface point, surface normal, and interior
+ * point of the collision into the indicated coordinate space.
+ *
+ * Returns true if all three properties are available, or false if any one of
+ * them is not.
+ */
 bool CollisionEntry::
 get_all(const NodePath &space, LPoint3 &surface_point,
         LVector3 &surface_normal, LPoint3 &interior_point) const {
@@ -164,15 +147,13 @@ get_all(const NodePath &space, LPoint3 &surface_point,
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_contact_pos
-//       Access: Published
-//  Description: Returns the position of the "from" object at the instant
-//               that a collision is first detected.
-//
-//               The position will be converted into whichever coordinate
-//               space the caller specifies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the position of the "from" object at the instant that a collision
+ * is first detected.
+ *
+ * The position will be converted into whichever coordinate space the caller
+ * specifies.
+ */
 LPoint3 CollisionEntry::
 get_contact_pos(const NodePath &space) const {
   nassertr(has_contact_pos(), LPoint3::zero());
@@ -180,15 +161,12 @@ get_contact_pos(const NodePath &space) const {
   return _contact_pos * transform->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_contact_normal
-//       Access: Published
-//  Description: Returns the surface normal of the "into" object at
-//               the contact position.
-//
-//               The normal will be converted into whichever coordinate
-//               space the caller specifies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the surface normal of the "into" object at the contact position.
+ *
+ * The normal will be converted into whichever coordinate space the caller
+ * specifies.
+ */
 LVector3 CollisionEntry::
 get_contact_normal(const NodePath &space) const {
   nassertr(has_contact_normal(), LVector3::zero());
@@ -196,16 +174,13 @@ get_contact_normal(const NodePath &space) const {
   return _contact_normal * transform->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_all_contact_info
-//       Access: Published
-//  Description: Simultaneously transforms the contact position and
-//               contact normal of the collision into the
-//               indicated coordinate space.
-//
-//               Returns true if all three properties are available,
-//               or false if any one of them is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously transforms the contact position and contact normal of the
+ * collision into the indicated coordinate space.
+ *
+ * Returns true if all three properties are available, or false if any one of
+ * them is not.
+ */
 bool CollisionEntry::
 get_all_contact_info(const NodePath &space, LPoint3 &contact_pos,
                      LVector3 &contact_normal) const {
@@ -230,11 +205,9 @@ get_all_contact_info(const NodePath &space, LPoint3 &contact_pos,
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CollisionEntry::
 output(ostream &out) const {
   out << _from_node_path;
@@ -246,11 +219,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CollisionEntry::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -283,21 +254,18 @@ write(ostream &out, int indent_level) const {
   }
   if (has_interior_point()) {
     indent(out, indent_level + 2)
-      << "interior " << get_interior_point(NodePath()) 
-      << " (depth " 
-      << (get_interior_point(NodePath()) - get_surface_point(NodePath())).length() 
+      << "interior " << get_interior_point(NodePath())
+      << " (depth "
+      << (get_interior_point(NodePath()) - get_surface_point(NodePath())).length()
       << ")\n";
   }
   indent(out, indent_level + 2)
     << "respect_prev_transform = " << get_respect_prev_transform() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::check_clip_planes
-//       Access: Private
-//  Description: Checks whether the into_node_path has a
-//               ClipPlaneAttrib defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the into_node_path has a ClipPlaneAttrib defined.
+ */
 void CollisionEntry::
 check_clip_planes() {
   _into_clip_planes = DCAST(ClipPlaneAttrib, _into_node_path.get_net_state()->get_attrib(ClipPlaneAttrib::get_class_slot()));

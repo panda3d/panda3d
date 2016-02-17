@@ -1,16 +1,15 @@
-// Filename: cachedTypedWritableReferenceCount.h
-// Created by:  drose (25Jan05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cachedTypedWritableReferenceCount.h
+ * @author drose
+ * @date 2005-01-25
+ */
 
 #ifndef CACHEDTYPEDWRITABLEREFERENCECOUNT_H
 #define CACHEDTYPEDWRITABLEREFERENCECOUNT_H
@@ -19,24 +18,19 @@
 
 #include "typedWritableReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CachedTypedWritableReferenceCount
-// Description : This is a special extension to ReferenceCount that
-//               includes dual reference counts: the standard
-//               reference count number, which includes all references
-//               to the object, and a separate number (the cache
-//               reference count) that counts the number of references
-//               to the object just within its cache alone.  When
-//               get_ref_count() == get_cache_ref_count(), the object
-//               is not referenced outside the cache.
-//
-//               The cache refs must be explicitly maintained; there
-//               is no PointerTo<> class to maintain the cache
-//               reference counts automatically.  The cache reference
-//               count is automatically included in the overall
-//               reference count: calling cache_ref() and
-//               cache_unref() automatically calls ref() and unref().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special extension to ReferenceCount that includes dual reference
+ * counts: the standard reference count number, which includes all references
+ * to the object, and a separate number (the cache reference count) that
+ * counts the number of references to the object just within its cache alone.
+ * When get_ref_count() == get_cache_ref_count(), the object is not referenced
+ * outside the cache.
+ *
+ * The cache refs must be explicitly maintained; there is no PointerTo<> class
+ * to maintain the cache reference counts automatically.  The cache reference
+ * count is automatically included in the overall reference count: calling
+ * cache_ref() and cache_unref() automatically calls ref() and unref().
+ */
 class EXPCL_PANDA_PUTIL CachedTypedWritableReferenceCount : public TypedWritableReferenceCount {
 protected:
   INLINE CachedTypedWritableReferenceCount();

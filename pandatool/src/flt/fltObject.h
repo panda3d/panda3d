@@ -1,16 +1,15 @@
-// Filename: fltObject.h
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltObject.h
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #ifndef FLTOBJECT_H
 #define FLTOBJECT_H
@@ -19,10 +18,9 @@
 
 #include "fltBeadID.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltObject
-// Description : The main objecting bead of the flt file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main objecting bead of the flt file.
+ */
 class FltObject : public FltBeadID {
 public:
   FltObject(FltHeader *header);
@@ -65,5 +63,3 @@ private:
 };
 
 #endif
-
-

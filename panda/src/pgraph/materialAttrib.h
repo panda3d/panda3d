@@ -1,16 +1,15 @@
-// Filename: materialAttrib.h
-// Created by:  drose (04Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file materialAttrib.h
+ * @author drose
+ * @date 2002-03-04
+ */
 
 #ifndef MATERIALATTRIB_H
 #define MATERIALATTRIB_H
@@ -20,13 +19,11 @@
 #include "renderAttrib.h"
 #include "material.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MaterialAttrib
-// Description : Indicates which, if any, material should be applied
-//               to geometry.  The material is used primarily to
-//               control lighting effects, and isn't necessary (or
-//               useful) in the absence of lighting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates which, if any, material should be applied to geometry.  The
+ * material is used primarily to control lighting effects, and isn't necessary
+ * (or useful) in the absence of lighting.
+ */
 class EXPCL_PANDA_PGRAPH MaterialAttrib : public RenderAttrib {
 private:
   INLINE MaterialAttrib();
@@ -66,7 +63,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -90,4 +87,3 @@ private:
 #include "materialAttrib.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: fltInstanceRef.h
-// Created by:  drose (30Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltInstanceRef.h
+ * @author drose
+ * @date 2000-08-30
+ */
 
 #ifndef FLTINSTANCEREF_H
 #define FLTINSTANCEREF_H
@@ -21,14 +20,11 @@
 
 class FltInstanceDefinition;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltInstanceRef
-// Description : This bead appears in the hierarchy to refer to a
-//               FltInstanceDefinition node defined elsewhere.  It
-//               indicates that the subtree beginning at the
-//               FltInstanceDefinition should be considered to be
-//               instanced here.
-////////////////////////////////////////////////////////////////////
+/**
+ * This bead appears in the hierarchy to refer to a FltInstanceDefinition node
+ * defined elsewhere.  It indicates that the subtree beginning at the
+ * FltInstanceDefinition should be considered to be instanced here.
+ */
 class FltInstanceRef : public FltBead {
 public:
   FltInstanceRef(FltHeader *header);
@@ -63,5 +59,3 @@ private:
 };
 
 #endif
-
-

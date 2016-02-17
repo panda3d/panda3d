@@ -1,16 +1,15 @@
-// Filename: cLwoSurfaceBlock.h
-// Created by:  drose (26Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cLwoSurfaceBlock.h
+ * @author drose
+ * @date 2001-04-26
+ */
 
 #ifndef CLWOSURFACEBLOCK_H
 #define CLWOSURFACEBLOCK_H
@@ -28,12 +27,10 @@
 class LwoToEggConverter;
 class CLwoSurfaceBlockTMap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLwoSurfaceBlock
-// Description : This class is a wrapper around LwoSurfaceBlock and stores
-//               additional information useful during the
-//               conversion-to-egg process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around LwoSurfaceBlock and stores additional
+ * information useful during the conversion-to-egg process.
+ */
 class CLwoSurfaceBlock {
 public:
   CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block);
@@ -67,5 +64,3 @@ public:
 #include "cLwoSurfaceBlock.I"
 
 #endif
-
-

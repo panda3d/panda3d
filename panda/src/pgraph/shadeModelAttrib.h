@@ -1,16 +1,15 @@
-// Filename: shadeModelAttrib.h
-// Created by:  drose (14Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shadeModelAttrib.h
+ * @author drose
+ * @date 2005-03-14
+ */
 
 #ifndef SHADEMODELATTRIB_H
 #define SHADEMODELATTRIB_H
@@ -21,11 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShadeModelAttrib
-// Description : Specifies whether flat shading (per-polygon) or
-//               smooth shading (per-vertex) is in effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether flat shading (per-polygon) or smooth shading (per-vertex)
+ * is in effect.
+ */
 class EXPCL_PANDA_PGRAPH ShadeModelAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -68,7 +66,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -92,4 +90,3 @@ private:
 #include "shadeModelAttrib.I"
 
 #endif
-

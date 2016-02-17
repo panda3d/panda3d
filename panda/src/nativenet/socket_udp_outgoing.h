@@ -4,12 +4,12 @@
 #include "config_nativenet.h"
 #include "socket_ip.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_UDP_Outgoing
-// Description : Base functionality for a UDP Sending Socket
-//
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Base functionality for a UDP Sending Socket
+ *
+
+ *
+ */
 class EXPCL_PANDA_NATIVENET Socket_UDP_Outgoing : public Socket_IP
 {
 public:
@@ -47,10 +47,9 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Outgoing:SetToBroadCast
-//  Description: Ask the OS to let us receive BROADCASt packets on  this port..
-////////////////////////////////////////////////////////////////////
+/**
+ * Ask the OS to let us receive BROADCASt packets on  this port..
+ */
 inline bool Socket_UDP_Outgoing::SetToBroadCast()
 {
     int optval = 1;
@@ -59,10 +58,9 @@ inline bool Socket_UDP_Outgoing::SetToBroadCast()
         return false;
     return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Outgoing::InitToAddress
-//  Description: Connects the Socket to a Specified address
-////////////////////////////////////////////////////////////////////
+/**
+ * Connects the Socket to a Specified address
+ */
 inline bool Socket_UDP_Outgoing::InitToAddress(const Socket_Address & address)
 {
     if (InitNoAddress() != true)
@@ -73,10 +71,9 @@ inline bool Socket_UDP_Outgoing::InitToAddress(const Socket_Address & address)
 
     return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Outgoing::InitNoAddress
-//  Description: This will set a udp up for targeted sends..
-////////////////////////////////////////////////////////////////////
+/**
+ * This will set a udp up for targeted sends..
+ */
 inline bool Socket_UDP_Outgoing::InitNoAddress()
 {
     Close();
@@ -87,37 +84,33 @@ inline bool Socket_UDP_Outgoing::InitNoAddress()
     return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Outgoing::Send
-//  Description: Send data to connected address
-////////////////////////////////////////////////////////////////////
+/**
+ * Send data to connected address
+ */
 inline bool Socket_UDP_Outgoing::Send(const char * data, int len)
 {
   return (DO_SOCKET_WRITE(_socket, data, len) == len);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Outgoing::Send
-//  Description: Send data to connected address
-////////////////////////////////////////////////////////////////////
+/**
+ * Send data to connected address
+ */
 inline bool Socket_UDP_Outgoing::Send(const string &data)
 {
   return Send(data.data(), data.size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Outgoing::SendTo
-//  Description: Send data to specified address
-////////////////////////////////////////////////////////////////////
+/**
+ * Send data to specified address
+ */
 inline bool Socket_UDP_Outgoing::SendTo(const char * data, int len, const Socket_Address & address)
 {
     return (DO_SOCKET_WRITE_TO(_socket, data, len, &address.GetAddressInfo()) == len);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Outgoing::SendTo
-//  Description: Send data to specified address
-////////////////////////////////////////////////////////////////////
+/**
+ * Send data to specified address
+ */
 inline bool Socket_UDP_Outgoing::SendTo(const string &data, const Socket_Address & address)
 {
   return SendTo(data.data(), data.size(), address);

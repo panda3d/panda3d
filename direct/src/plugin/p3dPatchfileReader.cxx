@@ -1,25 +1,22 @@
-// Filename: p3dPatchfileReader.cxx
-// Created by:  drose (28Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPatchfileReader.cxx
+ * @author drose
+ * @date 2009-09-28
+ */
 
 #include "p3dPatchfileReader.h"
 #include "wstring_encode.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchfileReader::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DPatchfileReader::
 P3DPatchfileReader(const string &package_dir, const FileSpec &patchfile,
                    const FileSpec &source, const FileSpec &target) :
@@ -33,31 +30,25 @@ P3DPatchfileReader(const string &package_dir, const FileSpec &patchfile,
   _success = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchfileReader::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DPatchfileReader::
 ~P3DPatchfileReader() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchfileReader::open_read
-//       Access: Public
-//  Description: Opens the named patchfile for reading, reads the
-//               header, and validates the inputs.  Returns true on
-//               success, false otherwise.  If this returns false, you
-//               should immediately call close(), or let this object
-//               destruct.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the named patchfile for reading, reads the header, and validates the
+ * inputs.  Returns true on success, false otherwise.  If this returns false,
+ * you should immediately call close(), or let this object destruct.
+ */
 bool P3DPatchfileReader::
 open_read() {
   close();
 
-  // Synthesize an output filename, in case the source and the target
-  // refer to the same filename.
+  // Synthesize an output filename, in case the source and the target refer to
+  // the same filename.
   _output_pathname = _target.get_pathname(_package_dir);
   _output_pathname += ".tmp";
 
@@ -102,8 +93,8 @@ open_read() {
     return false;
   }
 
-  // Read the patchfile header and validate it against the hashes we
-  // were given.
+  // Read the patchfile header and validate it against the hashes we were
+  // given.
   unsigned int magic_number = read_uint32();
   if (magic_number != 0xfeebfaac) {
     nout << "Not a valid patchfile: " << patch_pathname << "\n";
@@ -112,9 +103,8 @@ open_read() {
 
   unsigned int version = read_uint16();
   if (version != 2) {
-    // This code only knows about patchfile version 2.  If the
-    // patchfile code is updated, we have to update this code
-    // accordingly.
+    // This code only knows about patchfile version 2.  If the patchfile code
+    // is updated, we have to update this code accordingly.
     nout << "Unsupported patchfile version: " << version << "\n";
     return false;
   }
@@ -149,15 +139,11 @@ open_read() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchfileReader::step
-//       Access: Public
-//  Description: Performs one incremental step of the patching
-//               operation.  Returns true if the operation should
-//               continue and step() should be called again, false if
-//               the patching is done (either successfully, or due to
-//               failure).
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs one incremental step of the patching operation.  Returns true if
+ * the operation should continue and step() should be called again, false if
+ * the patching is done (either successfully, or due to failure).
+ */
 bool P3DPatchfileReader::
 step() {
   assert(_is_open);
@@ -195,8 +181,8 @@ step() {
     return false;
   }
 
-  // Set the _success flag true, so close() will move the finished
-  // file into place.
+  // Set the _success flag true, so close() will move the finished file into
+  // place.
   _success = true;
   close();
 
@@ -212,14 +198,11 @@ step() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchfileReader::close
-//       Access: Public
-//  Description: Closes the previously-opened files, and moves the
-//               output file into place.  This also deletes the
-//               patchfile, assuming it will not be needed after it
-//               has been used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the previously-opened files, and moves the output file into place.
+ * This also deletes the patchfile, assuming it will not be needed after it
+ * has been used.
+ */
 void P3DPatchfileReader::
 close() {
   if (!_is_open) {
@@ -231,7 +214,7 @@ close() {
   _patch_in.close();
   _source_in.close();
   _target_out.close();
-  
+
   // Delete the patchfile.
   string patch_pathname = _patchfile.get_pathname(_package_dir);
 #ifdef _WIN32
@@ -258,14 +241,11 @@ close() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchfileReader::copy_bytes
-//       Access: Private
-//  Description: Copies the indicated number of bytes from the
-//               indicated stream onto the output stream.  Returns
-//               true on success, false if the input stream didn't
-//               have enough bytes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the indicated number of bytes from the indicated stream onto the
+ * output stream.  Returns true on success, false if the input stream didn't
+ * have enough bytes.
+ */
 bool P3DPatchfileReader::
 copy_bytes(istream &in, size_t copy_byte_count) {
   static const size_t buffer_size = 8192;

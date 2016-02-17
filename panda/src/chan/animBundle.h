@@ -1,16 +1,15 @@
-// Filename: animBundle.h
-// Created by:  drose (21Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animBundle.h
+ * @author drose
+ * @date 1999-02-21
+ */
 
 #ifndef ANIMBUNDLE_H
 #define ANIMBUNDLE_H
@@ -22,12 +21,11 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimBundle
-// Description : This is the root of an AnimChannel hierarchy.  It
-//               knows the frame rate and number of frames of all the
-//               channels in the hierarchy (which must all match).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the root of an AnimChannel hierarchy.  It knows the frame rate and
+ * number of frames of all the channels in the hierarchy (which must all
+ * match).
+ */
 class EXPCL_PANDA_CHAN AnimBundle : public AnimGroup {
 protected:
   AnimBundle(AnimGroup *parent, const AnimBundle &copy);

@@ -19,10 +19,8 @@ class Buffered_DatagramReader : protected RingBuffer
 public:
     inline Buffered_DatagramReader(int in_size = 8192) ;
     inline void ReSet(void);
-    //
-    // SOCK_TYPE is used to allow for
-    // abstract socket type to be used ..
-    // see socket_tcp and socket_ssl
+    // SOCK_TYPE is used to allow for abstract socket type to be used .. see
+    // socket_tcp and socket_ssl
 
     template < class SOCK_TYPE>
     inline int PumpMessageReader(Datagram &inmsg, SOCK_TYPE &sck)
@@ -59,7 +57,7 @@ public:
             int gotbytes = sck.RecvData(ff,(int)readsize);
             if(gotbytes < 0)  // some error
             {
-                //int er = GETERROR();
+                // int er = GETERROR();
                 if(!sck.ErrorIs_WouldBlocking(gotbytes) )
                 {
                     answer = -3;  // hard error ?
@@ -94,4 +92,3 @@ public:
 #include "buffered_datagramreader.I"
 
 #endif //__BUFFEREDREADER_GM_H__
-

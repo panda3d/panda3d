@@ -1,29 +1,26 @@
-// Filename: eggMesherFanMaker.cxx
-// Created by:  drose (22Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMesherFanMaker.cxx
+ * @author drose
+ * @date 2005-03-22
+ */
 
 #include "eggMesherFanMaker.h"
 #include "eggMesher.h"
 #include "eggPolygon.h"
 #include "eggGroupNode.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMesherFanMaker::
-EggMesherFanMaker(int vertex, EggMesherStrip *tri, 
+EggMesherFanMaker(int vertex, EggMesherStrip *tri,
                   EggMesher *mesher) {
   _vertex = vertex;
   const EggMesherEdge *edge = tri->find_opposite_edge(vertex);
@@ -35,11 +32,9 @@ EggMesherFanMaker(int vertex, EggMesherStrip *tri,
   _mesher = mesher;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMesherFanMaker::
 EggMesherFanMaker(const EggMesherFanMaker &copy) :
   _vertex(copy._vertex),
@@ -50,11 +45,9 @@ EggMesherFanMaker(const EggMesherFanMaker &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggMesherFanMaker::
 operator = (const EggMesherFanMaker &copy) {
   _vertex = copy._vertex;
@@ -64,15 +57,13 @@ operator = (const EggMesherFanMaker &copy) {
   _mesher = copy._mesher;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::join
-//       Access: Public
-//  Description: Attempts to connect two fans end-to-end.  They must
-//               both share the same common vertex and a common edge.
-//
-//               The return value is true if the fans were
-//               successfully joined, or false if they could not be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to connect two fans end-to-end.  They must both share the same
+ * common vertex and a common edge.
+ *
+ * The return value is true if the fans were successfully joined, or false if
+ * they could not be.
+ */
 bool EggMesherFanMaker::
 join(EggMesherFanMaker &other) {
   nassertr(_vertex == other._vertex, false);
@@ -82,7 +73,7 @@ join(EggMesherFanMaker &other) {
 
   const EggMesherEdge *my_back = _edges.back();
   const EggMesherEdge *other_front = other._edges.front();
-  nassertr(my_back != (EggMesherEdge *)NULL && 
+  nassertr(my_back != (EggMesherEdge *)NULL &&
            other_front != (EggMesherEdge *)NULL, false);
 
   int my_back_b = my_back->_vi_b;
@@ -97,7 +88,7 @@ join(EggMesherFanMaker &other) {
 
   const EggMesherEdge *my_front = _edges.front();
   const EggMesherEdge *other_back = other._edges.back();
-  nassertr(my_front != (EggMesherEdge *)NULL && 
+  nassertr(my_front != (EggMesherEdge *)NULL &&
            other_back != (EggMesherEdge *)NULL, false);
 
   int my_front_a = my_front->_vi_a;
@@ -113,21 +104,19 @@ join(EggMesherFanMaker &other) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::compute_angle
-//       Access: Public
-//  Description: Returns the overall angle subtended by the fan, from
-//               the leading edge to the trailing edge, in degrees.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the overall angle subtended by the fan, from the leading edge to
+ * the trailing edge, in degrees.
+ */
 double EggMesherFanMaker::
 compute_angle() const {
-  // We sum up the angles of each triangle.  This is more correct than
-  // taking the net angle from the first edge to the last (since we
-  // may not be in a plane).
+  // We sum up the angles of each triangle.  This is more correct than taking
+  // the net angle from the first edge to the last (since we may not be in a
+  // plane).
   nassertr(is_valid(), 0.0);
 
   EggVertexPool *vertex_pool = _mesher->_vertex_pool;
-  
+
   double angle = 0.0;
   LPoint3d v0 = vertex_pool->get_vertex(_vertex)->get_pos3();
 
@@ -144,21 +133,17 @@ compute_angle() const {
   return rad_2_deg(angle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::build
-//       Access: Public
-//  Description: Begins the fanning process.  Searches for triangles
-//               and connects them into a fan.
-//
-//               In certain cases, if egg_unroll_fans is enabled, the
-//               resulting fan may be retesselated into a series of
-//               zig-zag triangles, which are stored in unrolled_tris.
-//               Otherwise, an EggMesherStrip (representing the fan)
-//               is created and added to the mesher.
-//
-//               The return value is (loosely) the number of
-//               primitives created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins the fanning process.  Searches for triangles and connects them into
+ * a fan.
+ *
+ * In certain cases, if egg_unroll_fans is enabled, the resulting fan may be
+ * retesselated into a series of zig-zag triangles, which are stored in
+ * unrolled_tris.  Otherwise, an EggMesherStrip (representing the fan) is
+ * created and added to the mesher.
+ *
+ * The return value is (loosely) the number of primitives created.
+ */
 int EggMesherFanMaker::
 build(EggGroupNode *unrolled_tris) {
   nassertr(_edges.size() == _strips.size(), 0);
@@ -168,8 +153,8 @@ build(EggGroupNode *unrolled_tris) {
   double avg_angle = net_angle / (double)num_tris;
 
   if (avg_angle > egg_max_tfan_angle) {
-    // The triangles are too loose to justify making a fan; it'll
-    // probably make a better quadsheet.
+    // The triangles are too loose to justify making a fan; it'll probably
+    // make a better quadsheet.
     return 0;
   }
 
@@ -182,20 +167,20 @@ build(EggGroupNode *unrolled_tris) {
     // However, we could (maybe) make it a few tristrips!
 
     // Each section of the fan which is made up of coplanar tris, with
-    // identical properties, may be retesselated into a tristrip.
-    // What a sneaky trick!  To do this, we must first identify each
-    // such qualifying section.
+    // identical properties, may be retesselated into a tristrip.  What a
+    // sneaky trick!  To do this, we must first identify each such qualifying
+    // section.
 
-    // We define a seam as the edge between any two tris which are
-    // noncoplanar or have different properties.  Then we can send
-    // each piece between the seams to unroll().
+    // We define a seam as the edge between any two tris which are noncoplanar
+    // or have different properties.  Then we can send each piece between the
+    // seams to unroll().
 
     Strips::iterator si, last_si;
     Edges::iterator ei, last_ei;
 
-    // First, rotate the fan so it begins at a seam.  We do this so we
-    // won't be left out with part of one piece at the beginning and
-    // also at the end.
+    // First, rotate the fan so it begins at a seam.  We do this so we won't
+    // be left out with part of one piece at the beginning and also at the
+    // end.
     si = _strips.begin();
     last_si = si;
     ei = _edges.begin();
@@ -213,8 +198,7 @@ build(EggGroupNode *unrolled_tris) {
       }
     }
 
-    // Now break the fan up along its seams and unroll each piece
-    // separately.
+    // Now break the fan up along its seams and unroll each piece separately.
     si = _strips.begin();
     last_si = si;
     ei = _edges.begin();
@@ -253,29 +237,24 @@ build(EggGroupNode *unrolled_tris) {
       (*si)->_status = EggMesherStrip::MS_dead;
     }
 
-    // If we'd built our list of edges and strips right, this sum should
-    // come out so that there are two more vertices than triangles in
-    // the new fan.
+    // If we'd built our list of edges and strips right, this sum should come
+    // out so that there are two more vertices than triangles in the new fan.
     nassertr(new_fan._verts.size() == new_fan._prims.size() + 2, 0);
 
-    // Now we've built a fan, and it won't be able to mate with
-    // anything else, so add it to the done list.
+    // Now we've built a fan, and it won't be able to mate with anything else,
+    // so add it to the done list.
     _mesher->_done.push_back(new_fan);
   }
 
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::unroll
-//       Access: Public
-//  Description: Unrolls a planar subset of the current working fan,
-//               defined by the given iterators, into a series of
-//               triangles that zig-zag back and forth for better
-//               tristripping properties.  The new triangles are added
-//               to unrolled_tris; the return value is 1 if
-//               successful, or 0 otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unrolls a planar subset of the current working fan, defined by the given
+ * iterators, into a series of triangles that zig-zag back and forth for
+ * better tristripping properties.  The new triangles are added to
+ * unrolled_tris; the return value is 1 if successful, or 0 otherwise.
+ */
 int EggMesherFanMaker::
 unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
        Edges::iterator edge_begin, Edges::iterator edge_end,
@@ -303,9 +282,8 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
   ei = edge_end;
   --ei;
   if ((*ei)->_vi_b != (*edge_begin)->_vi_a) {
-    // If the fan is less than a full circle, we need to keep the
-    // hub vertex and initial vertex in the poly.  Otherwise, we'll
-    // discard them.
+    // If the fan is less than a full circle, we need to keep the hub vertex
+    // and initial vertex in the poly.  Otherwise, we'll discard them.
     poly->add_vertex(vertex_pool->get_vertex(_vertex));
     poly->add_vertex(vertex_pool->get_vertex((*edge_begin)->_vi_a));
   }
@@ -319,11 +297,10 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
   if (egg_show_quads) {
     // If we're showing quads, also show retesselated triangles.
 
-    // We can't add it directly to the mesher, that's unsafe; instead,
-    // we'll just add it to the end of the unrolled_tris list.  This
-    // does mean we won't be able to color it a fancy color, but too
-    // bad.
-    //_mesher->add_polygon(poly, EggMesherStrip::MO_fanpoly);
+    // We can't add it directly to the mesher, that's unsafe; instead, we'll
+    // just add it to the end of the unrolled_tris list.  This does mean we
+    // won't be able to color it a fancy color, but too bad.
+    // _mesher->add_polygon(poly, EggMesherStrip::MO_fanpoly);
     unrolled_tris->add_child(poly);
 
   } else {
@@ -345,11 +322,9 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggMesherFanMaker::
 output(ostream &out) const {
   out << _vertex << ":[";

@@ -1,20 +1,18 @@
-// Filename: osxGraphicsWindow.mm
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University. All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license. You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsWindow.mm
+ */
 
-// We include these system header files first, because there is a
-// namescope conflict between them and some other header file that
-// gets included later (in particular, TCP_NODELAY must not be a
-// #define symbol for these headers to be included properly).
+// We include these system header files first, because there is a namescope
+// conflict between them and some other header file that gets included later
+// (in particular, TCP_NODELAY must not be a #define symbol for these headers
+// to be included properly).
 
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
@@ -22,9 +20,9 @@
 #include <OpenGL/gl.h>
 #include <AGL/agl.h>
 
-// We have to include this before we include the system OpenGL/gl.h
-// file, but after we include all of the above header files.  Deal
-// with this contradiction later.
+// We have to include this before we include the system OpenGLgl.h file, but
+// after we include all of the above header files.  Deal with this
+// contradiction later.
 #include "glgsg.h"
 
 #include "osxGraphicsWindow.h"
@@ -83,12 +81,9 @@ check_my_window(WindowRef window) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::get_current_osx_window
-//       Access: Public, Static
-//  Description: Returns the active window for the purpose of
-//               recording events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the active window for the purpose of recording events.
+ */
 osxGraphicsWindow *osxGraphicsWindow::
 get_current_osx_window(WindowRef window) {
   if (full_screen_window != NULL) {
@@ -98,9 +93,8 @@ get_current_osx_window(WindowRef window) {
   if (window == NULL) {
     // HID use this path
 
-    // Assume first we are a child window. If we cant find a window
-    // of that class, then we are standalone and can jsut grab the
-    // front window.
+    // Assume first we are a child window.  If we cant find a window of that
+    // class, then we are standalone and can jsut grab the front window.
     window = GetFrontWindowOfClass(kSimpleWindowClass, TRUE);
     if (window == NULL) {
       window = FrontNonFloatingWindow();
@@ -114,11 +108,10 @@ get_current_osx_window(WindowRef window) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: report_agl_error
-//  Description: Convenience function to report the current AGL error
-//               code as a formatted error message.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience function to report the current AGL error code as a formatted
+ * error message.
+ */
 OSStatus
 report_agl_error(const string &comment) {
   GLenum err = aglGetError();
@@ -134,10 +127,9 @@ report_agl_error(const string &comment) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: invert_gl_image
-//  Description: Vertically inverts a rendered image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Vertically inverts a rendered image.
+ */
 static void
 invert_gl_image(char *imageData, size_t imageSize, size_t rowBytes) {
   char *buffer = (char*)alloca(rowBytes);
@@ -153,18 +145,17 @@ invert_gl_image(char *imageData, size_t imageSize, size_t rowBytes) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: composite_gl_buffer_into_window
-//  Description: Drop a GL overlay onto a carbon window..
-////////////////////////////////////////////////////////////////////
+/**
+ * Drop a GL overlay onto a carbon window..
+ */
 static void
 composite_gl_buffer_into_window(AGLContext ctx, Rect *bufferRect,
                                 GrafPtr out_port) {
   GWorldPtr world;
   QDErr err;
 
-  // blit OpenGL content into window backing store
-  // allocate buffer to hold pane image
+  // blit OpenGL content into window backing store allocate buffer to hold
+  // pane image
   long width = (bufferRect->right - bufferRect->left);
   long height = (bufferRect->bottom - bufferRect->top);
 
@@ -213,12 +204,9 @@ composite_gl_buffer_into_window(AGLContext ctx, Rect *bufferRect,
   DisposePtr(image);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::event_handler
-//       Access: Public
-//  Description: The standard window event handler for non-fullscreen
-//               windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * The standard window event handler for non-fullscreen windows.
+ */
 OSStatus osxGraphicsWindow::
 event_handler(EventHandlerCallRef myHandler, EventRef event) {
   OSStatus result = eventNotHandledErr;
@@ -267,8 +255,8 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
       break;
 
     case kEventWindowClose: // called when window is being closed (close box)
-      // This is a message from the window manager indicating that
-      // the user has requested to close the window.
+      // This is a message from the window manager indicating that the user
+      // has requested to close the window.
       user_close_request();
       result = noErr;
       break;
@@ -324,31 +312,27 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::user_close_request
-//       Access: Private
-//  Description: The user has requested to close the window, for
-//               instance with Cmd-W, or by clicking on the close
-//               button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user has requested to close the window, for instance with Cmd-W, or by
+ * clicking on the close button.
+ */
 void osxGraphicsWindow::
 user_close_request() {
   string close_request_event = get_close_request_event();
   if (!close_request_event.empty()) {
-    // In this case, the app has indicated a desire to intercept the request and process it directly.
+    // In this case, the app has indicated a desire to intercept the request
+    // and process it directly.
     throw_event(close_request_event);
   } else {
-    // In this case, the default case, the app does not intend to service the request, so we do by closing the window.
+    // In this case, the default case, the app does not intend to service the
+    // request, so we do by closing the window.
     close_window();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::system_close_window
-//       Access: Private
-//  Description: The window has been closed by an OS resource, not by
-//               an internal request
-////////////////////////////////////////////////////////////////////
+/**
+ * The window has been closed by an OS resource, not by an internal request
+ */
 void osxGraphicsWindow::
 system_close_window() {
   if (osxdisplay_cat.is_debug()) {
@@ -358,13 +342,12 @@ system_close_window() {
   release_system_resources(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: window_event_handler
-//  Description: The C callback for Window Events
-//
-//               We only hook this up for non-fullscreen windows, so
-//               we only handle system window events.
-////////////////////////////////////////////////////////////////////
+/**
+ * The C callback for Window Events
+ *
+ * We only hook this up for non-fullscreen windows, so we only handle system
+ * window events.
+ */
 static pascal OSStatus
 window_event_handler(EventHandlerCallRef my_handler, EventRef event, void *) {
   // volatile().lock();
@@ -376,20 +359,18 @@ window_event_handler(EventHandlerCallRef my_handler, EventRef event, void *) {
   if (window != NULL) {
     osxGraphicsWindow *osx_win = osxGraphicsWindow::get_current_osx_window(window);
     if (osx_win != (osxGraphicsWindow *)NULL) {
-      //osx_global_mutex().release();
+      // osx_global_mutex().release();
       return osx_win->event_handler(my_handler, event);
     }
   }
 
-  //osx_global_mutex().release();
+  // osx_global_mutex().release();
   return eventNotHandledErr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::do_resize
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void osxGraphicsWindow::
 do_resize() {
   if (osxdisplay_cat.is_debug()) {
@@ -439,18 +420,17 @@ do_resize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: app_event_handler
-//  Description: The C callback for Application events.
-//
-//               Hooked once per application.
-////////////////////////////////////////////////////////////////////
+/**
+ * The C callback for Application events.
+ *
+ * Hooked once per application.
+ */
 static pascal OSStatus
 app_event_handler(EventHandlerCallRef my_handler, EventRef event,
                   void *user_data) {
   OSStatus result = eventNotHandledErr;
   {
-    //osx_global_mutex().lock();
+    // osx_global_mutex().lock();
 
     osxGraphicsWindow *osx_win = NULL;
     WindowRef window = NULL;
@@ -461,7 +441,7 @@ app_event_handler(EventHandlerCallRef my_handler, EventRef event,
                       sizeof(WindowRef), NULL, (void*) &window);
     osx_win = osxGraphicsWindow::get_current_osx_window(window);
     if (osx_win == NULL) {
-      //osx_global_mutex().release();
+      // osx_global_mutex().release();
       return eventNotHandledErr;
     }
 
@@ -470,11 +450,9 @@ app_event_handler(EventHandlerCallRef my_handler, EventRef event,
       if (kind == kEventTextInputUnicodeForKeyEvent) {
         osx_win->handle_text_input(my_handler, event);
       }
-      //result = noErr;
-      //
-      // can not report handled .. the os will not sent the raw key strokes then
-      // if(osx_win->handle_text_input(my_handler, event) == noErr)
-      // result = noErr;
+      // result = noErr; can not report handled .. the os will not sent the
+      // raw key strokes then if(osx_win->handle_text_input(my_handler, event)
+      // == noErr) result = noErr;
       break;
 
     case kEventClassKeyboard:
@@ -502,24 +480,22 @@ app_event_handler(EventHandlerCallRef my_handler, EventRef event,
       break;
 
     case kEventClassMouse:
-      // osxdisplay_cat.info() << "Mouse movement handled by Application handler\n";
-      //if(osxGraphicsWindow::full_screen_window != NULL)
+      // osxdisplay_cat.info() << "Mouse movement handled by Application
+      // handler\n"; if(osxGraphicsWindow::full_screen_window != NULL)
       result = osx_win->handle_window_mouse_events(my_handler, event);
-      //result = noErr;
+      // result = noErr;
       break;
     }
 
-    //osx_global_mutex().release();
+    // osx_global_mutex().release();
   }
 
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_text_input
-//       Access: Public
-//  Description: Trap Unicode Input.
-////////////////////////////////////////////////////////////////////
+/**
+ * Trap Unicode Input.
+ */
 OSStatus osxGraphicsWindow::
 handle_text_input(EventHandlerCallRef my_handler, EventRef text_event) {
   UniChar *text = NULL;
@@ -547,11 +523,9 @@ handle_text_input(EventHandlerCallRef my_handler, EventRef text_event) {
   return ret;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::release_system_resources
-//       Access: Private
-//  Description: Clean up the OS level messes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clean up the OS level messes.
+ */
 void osxGraphicsWindow::
 release_system_resources(bool destructing) {
   if (_is_fullscreen) {
@@ -568,8 +542,7 @@ release_system_resources(bool destructing) {
     _originalMode = NULL;
   }
 
-  // if the gsg context is assigned to this window
-  // clear it..
+  // if the gsg context is assigned to this window clear it..
   if (_osx_window != NULL && GetWindowPort (_osx_window) == (GrafPtr)aglGetDrawable(get_gsg_context())) {
     aglSetDrawable(get_gsg_context(),NULL);
   }
@@ -616,11 +589,9 @@ release_system_resources(bool destructing) {
 
 static int id_seed = 100;
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 osxGraphicsWindow::
 osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -658,11 +629,9 @@ osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 osxGraphicsWindow::
 ~osxGraphicsWindow() {
   if (osxdisplay_cat.is_debug()) {
@@ -670,8 +639,8 @@ osxGraphicsWindow::
       << "osxGraphicsWindow::~osxGraphicsWindow() -" <<_ID << "\n";
   }
 
-  // Make sure the window callback won't come back to this
-  // (destructed) object any more.
+  // Make sure the window callback won't come back to this (destructed) object
+  // any more.
   if (_osx_window) {
     SetWRefCon(_osx_window, (long) NULL);
   }
@@ -679,11 +648,9 @@ osxGraphicsWindow::
   release_system_resources(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::get_context
-//       Access: Private
-//  Description: Helper to decide whitch context to use if any
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper to decide whitch context to use if any
+ */
 AGLContext osxGraphicsWindow::
 get_context() {
   if (_holder_aglcontext != NULL) {
@@ -693,11 +660,9 @@ get_context() {
   return get_gsg_context();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::get_gsg_context
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AGLContext osxGraphicsWindow::
 get_gsg_context() {
   if (_gsg != NULL) {
@@ -708,12 +673,9 @@ get_gsg_context() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::build_gl
-//       Access: Private
-//  Description: Code of the class.. used to control the GL context
-//               Allocation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Code of the class.. used to control the GL context Allocation.
+ */
 OSStatus osxGraphicsWindow::
 build_gl(bool full_screen) {
   // make sure the gsg is up and runnig..
@@ -751,13 +713,10 @@ build_gl(bool full_screen) {
   return err;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_icon_filename
-//       Access: Private
-//  Description: Called internally to load up an icon file that should
-//               be applied to the window. Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to load up an icon file that should be applied to the
+ * window.  Returns true on success, false on failure.
+ */
 bool osxGraphicsWindow::
 set_icon_filename(const Filename &icon_filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -796,12 +755,9 @@ set_icon_filename(const Filename &icon_filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_pointer_in_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is seen within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is seen within the window.
+ */
 void osxGraphicsWindow::
 set_pointer_in_window(int x, int y) {
   _input_devices[0].set_pointer_in_window(x, y);
@@ -817,12 +773,9 @@ set_pointer_in_window(int x, int y) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_pointer_out_of_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is no longer within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is no longer within the window.
+ */
 void osxGraphicsWindow::
 set_pointer_out_of_window() {
   _input_devices[0].set_pointer_out_of_window();
@@ -834,15 +787,12 @@ set_pointer_out_of_window() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame. It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool osxGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector);
@@ -854,9 +804,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
-  // Now is a good time to apply the icon change that may have
-  // recently been requested. By this point, we should be able to get
-  // a handle to the dock context.
+  // Now is a good time to apply the icon change that may have recently been
+  // requested.  By this point, we should be able to get a handle to the dock
+  // context.
   if (_pending_icon != NULL) {
     CGContextRef context = BeginCGContextForApplicationDockTile();
     if (context != NULL) {
@@ -896,13 +846,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame. It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void osxGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -916,9 +864,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
         !_properties.get_undecorated() &&
         !_properties.get_fullscreen() &&
         show_resize_box) {
-      // Draw a kludgey little resize box in the corner of the window,
-      // so the user knows he's supposed to be able to drag the window
-      // if he wants.
+      // Draw a kludgey little resize box in the corner of the window, so the
+      // user knows he's supposed to be able to drag the window if he wants.
       DisplayRegionPipelineReader dr_reader(_overlay_display_region, current_thread);
       _gsg->prepare_display_region(&dr_reader);
       DCAST(osxGraphicsStateGuardian, _gsg)->draw_resize_box();
@@ -929,20 +876,17 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.
+ *
+ * This should instruct the window to prepare for the flip at the next video
+ * sync, but it should not wait.
+ *
+ * We have the two separate functions, begin_flip() and end_flip(), to make it
+ * easier to flip all of the windows at the same time.
+ */
 void osxGraphicsWindow::
 end_flip() {
   // cerr << " end_flip [" << _ID << "]\n";
@@ -950,8 +894,8 @@ end_flip() {
 
 void osxGraphicsWindow::
 begin_flip() {
-  // this forces a rip to proper context
-  // cerr << " begin_flip [" << _ID << "]\n";
+  // this forces a rip to proper context cerr << " begin_flip [" << _ID <<
+  // "]\n";
   return;
 
   if (_is_fullscreen) {
@@ -977,12 +921,9 @@ begin_flip() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now. Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void osxGraphicsWindow::
 close_window() {
   system_close_window();
@@ -996,29 +937,21 @@ close_window() {
  GraphicsWindow::close_window();
 }
 
-// HACK ALLERT ************ Undocumented OSX calls...
-// I can not find any other way to get the mouse focus to a window in OSX..
-//
-//extern "C" {
-// struct CPSProcessSerNum
-// {
-// UInt32 lo;
-// UInt32 hi;
-// };
+/*
+ * HACK ALLERT ************ Undocumented OSX calls... I can not find any other
+ * way to get the mouse focus to a window in OSX.. extern "C" { struct
+ * CPSProcessSerNum { UInt32 lo; UInt32 hi; };
+ */
 
-//extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn);
-//extern OSErr CPSEnableForegroundOperation(struct CPSProcessSerNum *psn);
-//extern OSErr CPSSetProcessName (struct CPSProcessSerNum *psn, char *processname);
-//extern OSErr CPSSetFrontProcess(struct CPSProcessSerNum *psn);
-//};
+// extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn); extern OSErr
+// CPSEnableForegroundOperation(struct CPSProcessSerNum *psn); extern OSErr
+// CPSSetProcessName (struct CPSProcessSerNum *psn, char *processname); extern
+// OSErr CPSSetFrontProcess(struct CPSProcessSerNum *psn); };
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now. Called from the window
-//               thread. Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool osxGraphicsWindow::
 open_window() {
   WindowProperties req_properties = _properties;
@@ -1027,37 +960,35 @@ open_window() {
     _gsg = new osxGraphicsStateGuardian(_engine, _pipe, NULL);
   }
 
-  //osx_global_mutex().lock();
+  // osx_global_mutex().lock();
   bool answer = os_open_window(req_properties);
-  //osx_global_mutex().release();
+  // osx_global_mutex().release();
   return answer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::os_open_window
-//       Access: Private
-//  Description: Actually makes the OS calls to open a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually makes the OS calls to open a window.
+ */
 bool osxGraphicsWindow::
 os_open_window(WindowProperties &req_properties) {
   OSErr err = noErr;
 
   if (_current_icon != NULL && _pending_icon == NULL) {
-    // If we already have an icon specified, we'll need to reapply it
-    // when the window is successfully created.
+    // If we already have an icon specified, we'll need to reapply it when the
+    // window is successfully created.
     _pending_icon = _current_icon;
     _current_icon = NULL;
   }
 
   static bool GlobalInits = false;
   if (!GlobalInits) {
-    //
-    // one time aplication inits.. to get a window open from a standalone aplication..
+    // one time aplication inits.. to get a window open from a standalone
+    // aplication..
 
     EventHandlerRef application_event_ref_ref1;
     EventTypeSpec list1[] = {
-      //{ kEventClassCommand, kEventProcessCommand },
-      //{ kEventClassCommand, kEventCommandUpdateStatus },
+      // { kEventClassCommand, kEventProcessCommand }, { kEventClassCommand,
+      // kEventCommandUpdateStatus },
       { kEventClassMouse, kEventMouseDown },// handle trackball functionality globaly because there is only a single user
       { kEventClassMouse, kEventMouseUp },
       { kEventClassMouse, kEventMouseMoved },
@@ -1079,22 +1010,19 @@ os_open_window(WindowProperties &req_properties) {
     // Determine if we're running from a bundle.
     CFDictionaryRef dref =
       ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
-    // If the dictionary doesn't have "BundlePath" (or the BundlePath
-    // is the same as the executable path), then we're not running
-    // from a bundle, and we need to call TransformProcessType to make
-    // the process a "foreground" application, with its own icon in
-    // the dock and such.
+    // If the dictionary doesn't have "BundlePath" (or the BundlePath is the
+    // same as the executable path), then we're not running from a bundle, and
+    // we need to call TransformProcessType to make the process a "foreground"
+    // application, with its own icon in the dock and such.
 
     bool has_bundle = false;
 
     CFStringRef bundle_path = (CFStringRef)CFDictionaryGetValue(dref, CFSTR("BundlePath"));
     if (bundle_path != NULL) {
-      // OK, we have a bundle path.  We're probably running in a
-      // bundle . . .
+      // OK, we have a bundle path.  We're probably running in a bundle . . .
       has_bundle = true;
 
-      // . . . unless it turns out it's the same as the executable
-      // path.
+      // . . . unless it turns out it's the same as the executable path.
       CFStringRef exe_path = (CFStringRef)CFDictionaryGetValue(dref, kCFBundleExecutableKey);
       if (exe_path != NULL) {
         if (CFStringCompare(bundle_path, exe_path, kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
@@ -1243,9 +1171,8 @@ os_open_window(WindowProperties &req_properties) {
         attributes |= kWindowNoTitleBarAttribute;
         CreateNewWindow(kDocumentWindowClass, attributes, &r, &_osx_window);
       } else {
-        // create a window with crome and sizing and sucj
-        // In this case, we want to constrain the window to the
-        // available size.
+        // create a window with crome and sizing and sucj In this case, we
+        // want to constrain the window to the available size.
 
         Rect bounds;
         GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
@@ -1308,9 +1235,7 @@ os_open_window(WindowProperties &req_properties) {
           << "build_gl complete, set properties\n";
       }
 
-      //
       // attach the holder context to the window..
-      //
 
       if (!aglSetDrawable(_holder_aglcontext, GetWindowPort(_osx_window))) {
         err = report_agl_error("aglSetDrawable");
@@ -1337,8 +1262,8 @@ os_open_window(WindowProperties &req_properties) {
       }
     }
 
-    // Now measure the size and placement of the window we
-    // actually ended up with.
+    // Now measure the size and placement of the window we actually ended up
+    // with.
     Rect rectPort = {0,0,0,0};
     GetWindowPortBounds (_osx_window, &rectPort);
     _properties.set_size((int)(rectPort.right - rectPort.left),(int) (rectPort.bottom - rectPort.top));
@@ -1376,12 +1301,10 @@ os_open_window(WindowProperties &req_properties) {
   return (err == noErr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::process_events
-//       Access: Protected, Virtual
-//  Description: Required event upcall, used to dispatch window and
-//               application events back into panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required event upcall, used to dispatch window and application events back
+ * into panda.
+ */
 void osxGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
@@ -1399,12 +1322,10 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_key_input
-//       Access: Protected, Virtual
-//  Description: Required event upcall, used to dispatch window and
-//               application events back into panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required event upcall, used to dispatch window and application events back
+ * into panda.
+ */
 OSStatus osxGraphicsWindow::
 handle_key_input(EventHandlerCallRef my_handler, EventRef event,
                  Boolean key_down) {
@@ -1419,14 +1340,13 @@ handle_key_input(EventHandlerCallRef my_handler, EventRef event,
       << ", " << (int)key_down << "\n";
   }
 
-  //CallNextEventHandler(my_handler, event);
+  // CallNextEventHandler(my_handler, event);
 
-  // We don't check the result of the above function. In principle,
-  // this should return eventNotHandledErr if the key event is not
-  // handled by the OS, but in practice, testing this just seems to
-  // eat the Escape keypress meaninglessly. Keypresses like F11 that
-  // are already mapped in the desktop seem to not even come into this
-  // function in the first place.
+  // We don't check the result of the above function.  In principle, this
+  // should return eventNotHandledErr if the key event is not handled by the
+  // OS, but in practice, testing this just seems to eat the Escape keypress
+  // meaninglessly.  Keypresses like F11 that are already mapped in the
+  // desktop seem to not even come into this function in the first place.
   UInt32 new_modifiers = 0;
   OSStatus error = GetEventParameter(event, kEventParamKeyModifiers,
                                      typeUInt32, NULL, sizeof(UInt32),
@@ -1444,9 +1364,9 @@ handle_key_input(EventHandlerCallRef my_handler, EventRef event,
     if ((new_modifiers & cmdKey) != 0) {
       if (button == KeyboardButton::ascii_key("q") ||
           button == KeyboardButton::ascii_key("w")) {
-        // Command-Q or Command-W: quit the application or close the
-        // window, respectively. For now, we treat them both the
-        // same: close the window.
+        // Command-Q or Command-W: quit the application or close the window,
+        // respectively.  For now, we treat them both the same: close the
+        // window.
         user_close_request();
       }
     }
@@ -1459,11 +1379,9 @@ handle_key_input(EventHandlerCallRef my_handler, EventRef event,
   // return noErr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::system_set_window_foreground
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void osxGraphicsWindow::
 system_set_window_foreground(bool foreground) {
   WindowProperties properties;
@@ -1471,11 +1389,9 @@ system_set_window_foreground(bool foreground) {
   system_changed_properties(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::system_point_to_local_point
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void osxGraphicsWindow::
 system_point_to_local_point(Point &global_point) {
   if (_osx_window != NULL) {
@@ -1490,11 +1406,9 @@ system_point_to_local_point(Point &global_point) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_mouse_window_events
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 OSStatus osxGraphicsWindow::
 handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
   WindowRef window = NULL;
@@ -1509,8 +1423,7 @@ handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
 
   // cerr <<" Start Mouse Event " << _ID << "\n";
 
-  // Mac OS X v10.1 and later
-  // should this be front window???
+  // Mac OS X v10.1 and later should this be front window???
   GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL,
                     sizeof(WindowRef), NULL, &window);
 
@@ -1523,13 +1436,12 @@ handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
 
   GetWindowPortBounds(window, &rect_port);
 
-  // result = CallNextEventHandler(my_handler, event);
-  // if (eventNotHandledErr == result)
+  // result = CallNextEventHandler(my_handler, event); if (eventNotHandledErr
+  // == result)
   { // only handle events not already handled (prevents weird resize interaction)
     switch (kind) {
-      // Whenever mouse button state changes, generate the
-      // appropriate Panda down/up events to represent the
-      // change.
+      // Whenever mouse button state changes, generate the appropriate Panda
+      // downup events to represent the change.
 
     case kEventMouseDown:
     case kEventMouseUp:
@@ -1626,11 +1538,9 @@ handle_window_mouse_events(EventHandlerCallRef my_handler, EventRef event) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::osx_translate_key
-//       Access: Private
-//  Description: MAC Key Codes to Panda Key Codes
-////////////////////////////////////////////////////////////////////
+/**
+ * MAC Key Codes to Panda Key Codes
+ */
 ButtonHandle osxGraphicsWindow::
 osx_translate_key(UInt32 key, EventRef event) {
   ButtonHandle nk = ButtonHandle::none();
@@ -1686,7 +1596,7 @@ osx_translate_key(UInt32 key, EventRef event) {
   case  91: nk = KeyboardButton::ascii_key('8'); break;
   case  92: nk = KeyboardButton::ascii_key('9'); break;
 
-    // case  36: nk = KeyboardButton::ret(); break; // no return in panda ???
+    // case  36: nk = KeyboardButton::ret(); break;  no return in panda ???
   case  49: nk = KeyboardButton::space(); break;
   case  51: nk = KeyboardButton::backspace(); break;
   case  48: nk = KeyboardButton::tab(); break;
@@ -1745,8 +1655,8 @@ osx_translate_key(UInt32 key, EventRef event) {
         << " (0x" << hex << key << dec << ")\n";
     }
 
-    // not sure this is right .. but no mapping for keypad and such
-    // this at least does a best gess..
+    // not sure this is right .. but no mapping for keypad and such this at
+    // least does a best gess..
 
     char charCode = 0;
     if (GetEventParameter(event, kEventParamKeyMacCharCodes, typeChar, nil, sizeof(charCode), nil, &charCode) == noErr) {
@@ -1756,11 +1666,9 @@ osx_translate_key(UInt32 key, EventRef event) {
   return nk;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_modifier_delta
-//       Access: Private
-//  Description: Used to emulate key events for the MAC key modifiers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to emulate key events for the MAC key modifiers.
+ */
 void osxGraphicsWindow::
 handle_modifier_delta(UInt32 new_modifiers) {
   UInt32 changed = _last_key_modifiers ^ new_modifiers;
@@ -1789,11 +1697,9 @@ handle_modifier_delta(UInt32 new_modifiers) {
   _last_key_modifiers = new_modifiers;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::handle_button_delta
-//       Access: Private
-//  Description: Used to emulate button events
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to emulate button events
+ */
 void osxGraphicsWindow::
 handle_button_delta(UInt32 new_buttons) {
   UInt32 changed = _last_buttons ^ new_buttons;
@@ -1825,16 +1731,14 @@ handle_button_delta(UInt32 new_buttons) {
   _last_buttons = new_buttons;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure. This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if
+ * possible.
+ *
+ * Returns true if successful, false on failure.  This may fail if the mouse
+ * is not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool osxGraphicsWindow::
 move_pointer(int device, int x, int y) {
   if (_osx_window == NULL) {
@@ -1864,11 +1768,9 @@ move_pointer(int device, int x, int y) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::do_reshape_request
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool osxGraphicsWindow::
 do_reshape_request(int x_origin, int y_origin, bool has_origin,
                    int x_size, int y_size) {
@@ -1909,8 +1811,8 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
     }
     } else */
   {
-    // We sometimes get a bogus origin of (0, 0). As a special hack,
-    // treat this as a special case, and ignore it.
+    // We sometimes get a bogus origin of (0, 0). As a special hack, treat
+    // this as a special case, and ignore it.
     if (has_origin) {
       if (x_origin != 0 || y_origin != 0) {
         MoveWindow(_osx_window, x_origin, y_origin, false);
@@ -1933,25 +1835,20 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame. This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The properties that have been applied are cleared
-//               from the structure by this function; so on return,
-//               whatever remains in the properties structure are
-//               those that were unchanged for some reason (probably
-//               because the underlying interface does not support
-//               changing that property on an open window).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The properties that have been applied are cleared from the structure by
+ * this function; so on return, whatever remains in the properties structure
+ * are those that were unchanged for some reason (probably because the
+ * underlying interface does not support changing that property on an open
+ * window).
+ */
 void osxGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (osxdisplay_cat.is_debug()) {
@@ -1994,9 +1891,8 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (need_full_rebuild) {
-    // Logic here is .. take a union of the properties .. with the
-    // new allowed to overwrite the old states. and start a bootstrap
-    // of a new window ..
+    // Logic here is .. take a union of the properties .. with the new allowed
+    // to overwrite the old states.  and start a bootstrap of a new window ..
 
     // get a copy of my properties..
     WindowProperties req_properties(_properties);
@@ -2020,9 +1916,9 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_title();
   }
 
-  // An icon filename means to load up the icon and save it. We can't
-  // necessarily apply it immediately; it will get applied later, in
-  // the window event handler.
+  // An icon filename means to load up the icon and save it.  We can't
+  // necessarily apply it immediately; it will get applied later, in the
+  // window event handler.
   if (properties.has_icon_filename()) {
     if (set_icon_filename(properties.get_icon_filename())) {
       properties.clear_icon_filename();
@@ -2088,11 +1984,9 @@ set_properties_now(WindowProperties &properties) {
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::local_point_to_system_point
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void osxGraphicsWindow::
 local_point_to_system_point(Point &local_point) {
   if (_osx_window != NULL) {
@@ -2107,22 +2001,18 @@ local_point_to_system_point(Point &local_point) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::mouse_mode_relative
-//       Access: Protected, Virtual
-//  Description: detaches mouse. Only mouse delta from now on.
-////////////////////////////////////////////////////////////////////
+/**
+ * detaches mouse.  Only mouse delta from now on.
+ */
 void osxGraphicsWindow::
 mouse_mode_relative() {
   CGAssociateMouseAndMouseCursorPosition(false);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::mouse_mode_absolute
-//       Access: Protected, Virtual
-//  Description: reattaches mouse to location
-////////////////////////////////////////////////////////////////////
+/**
+ * reattaches mouse to location
+ */
 void osxGraphicsWindow::
 mouse_mode_absolute() {
   CGAssociateMouseAndMouseCursorPosition(true);

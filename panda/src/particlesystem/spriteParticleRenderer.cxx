@@ -1,16 +1,15 @@
-// Filename: spriteParticleRenderer.cxx
-// Created by:  charles (13Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file spriteParticleRenderer.cxx
+ * @author charles
+ * @date 2000-07-13
+ */
 
 #include "spriteParticleRenderer.h"
 #include "boundingSphere.h"
@@ -33,11 +32,9 @@
 
 PStatCollector SpriteParticleRenderer::_render_collector("App:Particles:Sprite:Render");
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::SpriteParticleRenderer
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 SpriteParticleRenderer::
 SpriteParticleRenderer(Texture *tex) :
   BaseParticleRenderer(PR_ALPHA_NONE),
@@ -66,11 +63,9 @@ SpriteParticleRenderer(Texture *tex) :
   init_geoms();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::SpriteParticleRenderer
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 SpriteParticleRenderer::
 SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
   BaseParticleRenderer(copy),
@@ -100,42 +95,37 @@ SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
   init_geoms();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::~SpriteParticleRenderer
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 SpriteParticleRenderer::
 ~SpriteParticleRenderer() {
   get_render_node()->remove_all_geoms();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::make_copy
-//       Access: Public
-//  Description: child dynamic copy
-////////////////////////////////////////////////////////////////////
+/**
+ * child dynamic copy
+ */
 BaseParticleRenderer *SpriteParticleRenderer::
 make_copy() {
   return new SpriteParticleRenderer(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::extract_textures_from_node
-//       Access: Public
-//  Description: Pull either a set of textures from a SequenceNode or
-//               a single texture from a GeomNode.  This function is called
-//               in both set_from_node() and add_from_node().  Notice the
-//               second parameter.  This nodepath will reference the GeomNode
-//               holding the first texture in the returned TextureCollection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pull either a set of textures from a SequenceNode or a single texture from
+ * a GeomNode.  This function is called in both set_from_node() and
+ * add_from_node().  Notice the second parameter.  This nodepath will
+ * reference the GeomNode holding the first texture in the returned
+ * TextureCollection.
+ */
 int SpriteParticleRenderer::
 extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col, TextureCollection &tex_col) {
   NodePath tex_node_path = node_path;
   NodePath geom_node_path;
 
-  // Look for a sequence node first, in case they want animated texture sprites
+  // Look for a sequence node first, in case they want animated texture
+  // sprites
   if (!tex_node_path.is_empty() && tex_node_path.node()->get_type() != SequenceNode::get_class_type()) {
     tex_node_path = node_path.find("**/+SequenceNode");
   }
@@ -143,12 +133,13 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
   // Nodepath contains a sequence node, attempt to read its textures.
   if (!tex_node_path.is_empty()) {
     int frame_count = tex_node_path.get_num_children();
-    // We do it this way in order to preserve the order of the textures in the sequence.
-    // If we use a find_all_textures() that order is lost.
+    // We do it this way in order to preserve the order of the textures in the
+    // sequence.  If we use a find_all_textures() that order is lost.
     for (int i = 0; i < frame_count; ++i) {
       geom_node_path = tex_node_path.get_child(i);
       if (!geom_node_path.is_empty()) {
-        // Since this is a SequenceNode, there will be only one texture on this geom_node_path.
+        // Since this is a SequenceNode, there will be only one texture on
+        // this geom_node_path.
         tex_col.add_textures_from(geom_node_path.find_all_textures());
         np_col.add_path(geom_node_path);
       }
@@ -161,7 +152,8 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
     }
   }
 
-  // If a sequence node is not found, we just want to look for a regular geom node.
+  // If a sequence node is not found, we just want to look for a regular geom
+  // node.
   if (geom_node_path.is_empty()) {
     // Find the first GeomNode.
     if (!node_path.is_empty() && node_path.node()->get_type() != GeomNode::get_class_type()) {
@@ -187,17 +179,15 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::set_from_node
-//       Access: Public
-//  Description: If the source type is important, use this one.
-//
-//               model and node should lead to node_path like this:
-//               node_path = loader.loadModel(model).find(node)
-//
-//               This will remove all previously add textures and
-//               resize the renderer to match the new geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the source type is important, use this one.
+ *
+ * model and node should lead to node_path like this: node_path =
+ * loader.loadModel(model).find(node)
+ *
+ * This will remove all previously add textures and resize the renderer to
+ * match the new geometry.
+ */
 void SpriteParticleRenderer::
 set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels) {
   // Clear all texture information
@@ -205,38 +195,30 @@ set_from_node(const NodePath &node_path, const string &model, const string &node
   add_from_node(node_path,model,node,size_from_texels,true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::set_from_node
-//       Access: Public
-//  Description: Sets the properties on this renderer from the geometry
-//               referenced by the indicated NodePath.  This should be
-//               a reference to a GeomNode or a SequenceNode; it
-//               extracts out the texture and UV range from the node.
-//
-//               This will remove all previously added textures and
-//               animations.  It will also resize the renderer to match
-//               this new geometry.
-//
-//               If node_path refers to a GeomNode(or has one beneath it)
-//               the texture, its size, and UV data will be extracted
-//               from that.
-//
-//               If node_path references a SequenceNode(or has one
-//               beneath it) with multiple GeomNodes beneath it,
-//               the size data will correspond only to the first
-//               GeomNode found with a valid texture, while the texture
-//               and UV information will be stored for each individual
-//               node.
-//
-//               If size_from_texels is true, the particle size is
-//               based on the number of texels in the source image;
-//               otherwise, it is based on the size of the first
-//               polygon found in the node.
-//
-//               model and node are the two items used to construct
-//               node_path.  If the source type is important, use
-//               set_from_node(NodePath,string,string,bool) instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the properties on this renderer from the geometry referenced by the
+ * indicated NodePath.  This should be a reference to a GeomNode or a
+ * SequenceNode; it extracts out the texture and UV range from the node.
+ *
+ * This will remove all previously added textures and animations.  It will
+ * also resize the renderer to match this new geometry.
+ *
+ * If node_path refers to a GeomNode(or has one beneath it) the texture, its
+ * size, and UV data will be extracted from that.
+ *
+ * If node_path references a SequenceNode(or has one beneath it) with multiple
+ * GeomNodes beneath it, the size data will correspond only to the first
+ * GeomNode found with a valid texture, while the texture and UV information
+ * will be stored for each individual node.
+ *
+ * If size_from_texels is true, the particle size is based on the number of
+ * texels in the source image; otherwise, it is based on the size of the first
+ * polygon found in the node.
+ *
+ * model and node are the two items used to construct node_path.  If the
+ * source type is important, use set_from_node(NodePath,string,string,bool)
+ * instead.
+ */
 void SpriteParticleRenderer::
 set_from_node(const NodePath &node_path, bool size_from_texels) {
   nassertv(!node_path.is_empty());
@@ -245,23 +227,19 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
   add_from_node(node_path,size_from_texels,true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::add_from_node
-//       Access: Public
-//  Description: This will allow the renderer to randomly choose
-//               from more than one texture or sequence at particle
-//               birth.
-//
-//               If the source type is important, use this one.
-//
-//               model and node should lead to node_path like this:
-//               node_path = loader.loadModel(model).find(node)
-//
-//               If resize is true, or if there are no textures
-//               currently on the renderer, it will force the
-//               renderer to use the size information from this
-//               node from now on. (Default is false)
-////////////////////////////////////////////////////////////////////
+/**
+ * This will allow the renderer to randomly choose from more than one texture
+ * or sequence at particle birth.
+ *
+ * If the source type is important, use this one.
+ *
+ * model and node should lead to node_path like this: node_path =
+ * loader.loadModel(model).find(node)
+ *
+ * If resize is true, or if there are no textures currently on the renderer,
+ * it will force the renderer to use the size information from this node from
+ * now on.  (Default is false)
+ */
 void SpriteParticleRenderer::
 add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels, bool resize) {
   int anim_count = _anims.size();
@@ -273,18 +251,14 @@ add_from_node(const NodePath &node_path, const string &model, const string &node
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::add_from_node
-//       Access: Public
-//  Description: This will allow the renderer to randomly choose
-//               from more than one texture or sequence at particle
-//               birth.
-//
-//               If resize is true, or if there are no textures
-//               currently on the renderer, it will force the
-//               renderer to use the size information from this
-//               node from now on. (Default is false)
-////////////////////////////////////////////////////////////////////
+/**
+ * This will allow the renderer to randomly choose from more than one texture
+ * or sequence at particle birth.
+ *
+ * If resize is true, or if there are no textures currently on the renderer,
+ * it will force the renderer to use the size information from this node from
+ * now on.  (Default is false)
+ */
 void SpriteParticleRenderer::
 add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
   nassertv(!node_path.is_empty());
@@ -340,9 +314,9 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       }
 
       if (got_texcoord) {
-        // We don't really pay attention to orientation of UV's here; a
-        // minor flaw.  We assume the minimum is in the lower-left, and
-        // the maximum is in the upper-right.
+        // We don't really pay attention to orientation of UV's here; a minor
+        // flaw.  We assume the minimum is in the lower-left, and the maximum
+        // is in the upper-right.
         ll.push_back(min_uv);
         ur.push_back(max_uv);
       }
@@ -396,8 +370,8 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
           PN_stdfloat y_texels = _anims[0]->get_frame(0)->get_y_size() * fabs(_anims[0]->get_ur(0)[1] - _anims[0]->get_ll(0)[1]);
           set_size(y_texels * width / height, y_texels);
         } else {
-          // If size_from_texels is false, we get the particle size from
-          // the size of the polygon.
+          // If size_from_texels is false, we get the particle size from the
+          // size of the polygon.
           set_size(width, height);
         }
 
@@ -410,11 +384,9 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::resize_pool
-//       Access: Private
-//  Description: reallocate the vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * reallocate the vertex pool.
+ */
 void SpriteParticleRenderer::
 resize_pool(int new_size) {
   if (new_size != _pool_size) {
@@ -423,13 +395,10 @@ resize_pool(int new_size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::init_geoms
-//       Access: Public
-//  Description: initializes everything, called on traumatic events
-//               such as construction and serious particlesystem
-//               modifications
-////////////////////////////////////////////////////////////////////
+/**
+ * initializes everything, called on traumatic events such as construction and
+ * serious particlesystem modifications
+ */
 void SpriteParticleRenderer::
 init_geoms() {
   CPT(RenderState) state = _render_state;
@@ -505,7 +474,8 @@ init_geoms() {
       _sprites[i].push_back(new GeomPoints(Geom::UH_stream));
       geom->add_primitive(_sprites[i][j]);
 
-      // This will be overwritten in render(), but we had to have some initial value
+      // This will be overwritten in render(), but we had to have some initial
+      // value
       _sprite_writer[i].push_back(SpriteWriter());
 
       state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_y_scale * _height, true));
@@ -513,8 +483,8 @@ init_geoms() {
         state = state->add_attrib(TextureAttrib::make(anim->get_frame(j)));
         state = state->add_attrib(TexGenAttrib::make(TextureStage::get_default(), TexGenAttrib::M_point_sprite));
 
-        // Build a transform to convert the texture coordinates to the
-        // ll, ur space.
+        // Build a transform to convert the texture coordinates to the ll, ur
+        // space.
         LPoint2 ul(anim->get_ll(j)[0], anim->get_ur(j)[1]);
         LPoint2 lr(anim->get_ur(j)[0], anim->get_ll(j)[1]);
         LVector2 sc = lr - ul;
@@ -530,32 +500,25 @@ init_geoms() {
   nassertv(render_node->check_valid());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::birth_particle
-//       Access: Private
-//  Description: child birth, one of those 'there-if-we-want-it'
-//               things.  not really too useful here, so it turns
-//               out we don't really want it.
-////////////////////////////////////////////////////////////////////
+/**
+ * child birth, one of those 'there-if-we-want-it' things.  not really too
+ * useful here, so it turns out we don't really want it.
+ */
 void SpriteParticleRenderer::
 birth_particle(int index) {
   _birth_list.push_back(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::kill_particle
-//       Access: Private
-//  Description: child death
-////////////////////////////////////////////////////////////////////
+/**
+ * child death
+ */
 void SpriteParticleRenderer::
 kill_particle(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SpriteParticleRenderer::render
-//       Access: Private
-//  Description: big child render.  populates the geom node.
-////////////////////////////////////////////////////////////////////
+/**
+ * big child render.  populates the geom node.
+ */
 void SpriteParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   PStatTimer t1(_render_collector);
@@ -569,21 +532,26 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   int i,j;                                  // loop counters
   int anim_count = _anims.size();           // number of animations
   int frame;                                // frame index, used in indicating which frame to use when not animated
-  // First, since this is the only time we have access to the actual particles, do some delayed initialization.
+  // First, since this is the only time we have access to the actual
+  // particles, do some delayed initialization.
   if (_animate_frames || anim_count) {
     if (!_birth_list.empty()) {
       for (vector_int::iterator vIter = _birth_list.begin(); vIter != _birth_list.end(); ++vIter) {
         cur_particle = (BaseParticle*)po_vector[*vIter].p();
         i = int(NORMALIZED_RAND()*anim_count);
 
-        // If there are multiple animations to choose from, choose one at random for this new particle
+        // If there are multiple animations to choose from, choose one at
+        // random for this new particle
         cur_particle->set_index(i < anim_count?i:i-1);
 
-        // This is an experimental age offset so that the animations don't appear synchronized.
-        // If we are using animations, try to vary the frame flipping a bit for particles in the same litter.
-        // A similar effect might be a achieved by using a small lifespan spread value on the factory.
+        // This is an experimental age offset so that the animations don't
+        // appear synchronized.  If we are using animations, try to vary the
+        // frame flipping a bit for particles in the same litter.  A similar
+        // effect might be a achieved by using a small lifespan spread value
+        // on the factory.
 
-        // Perhaps we should look into other methods. The age offset doesn't seem to be cutting it.
+        // Perhaps we should look into other methods.  The age offset doesn't
+        // seem to be cutting it.
         if (_animate_frames) {
           cur_particle->set_age(cur_particle->get_age()+i/10.0*cur_particle->get_lifespan());
         }
@@ -592,9 +560,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   }
   _birth_list.clear();
 
-  // Create vertex writers for each of the possible geoms.
-  // Could possibly be changed to only create writers for geoms that would be used
-  //    according to the animation configuration.
+  // Create vertex writers for each of the possible geoms.  Could possibly be
+  // changed to only create writers for geoms that would be used according to
+  // the animation configuration.
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {
       // Set the particle per frame counts to 0.
@@ -643,8 +611,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     PN_stdfloat t = cur_particle->get_parameterized_age();
     int anim_index = cur_particle->get_index();
 
-    // If an animation has been removed, we need to reassign
-    // those particles assigned to the removed animation.
+    // If an animation has been removed, we need to reassign those particles
+    // assigned to the removed animation.
     if(_animation_removed && (anim_index >= anim_count)) {
       anim_index = int(NORMALIZED_RAND()*anim_count);
       anim_index = anim_index<anim_count?anim_index:anim_index-1;
@@ -666,8 +634,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     frame = (frame < _anim_size[anim_index]) ? frame : (_anim_size[anim_index]-1);
     ++_ttl_count[anim_index][frame];
 
-    // Calculate the color
-    // This is where we'll want to give the renderer the new color
+    // Calculate the color This is where we'll want to give the renderer the
+    // new color
     LColor c = _color_interpolation_manager->generateColor(t);
 
     int alphamode=get_alpha_mode();
@@ -733,9 +701,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       _sprites[i][j]->clear_vertices();
       _sprite_writer[i][j].clear();
 
-      // We have to reassign the GeomVertexData and GeomPrimitive to
-      // the Geom, and the Geom to the GeomNode, in case it got
-      // flattened away.
+      // We have to reassign the GeomVertexData and GeomPrimitive to the Geom,
+      // and the Geom to the GeomNode, in case it got flattened away.
       _sprite_primitive[i][j]->set_primitive(0, _sprites[i][j]);
       _sprite_primitive[i][j]->set_vertex_data(_vdata[i][j]);
 
@@ -773,12 +740,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   _animation_removed = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SpriteParticleRenderer::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -786,16 +750,14 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SpriteParticleRenderer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "SpriteParticleRenderer:\n";
-  //  indent(out, indent_level + 2) << "_sprite_primitive "<<_sprite_primitive<<"\n";
+  // indent(out, indent_level + 2) << "_sprite_primitive
+  // "<<_sprite_primitive<<"\n";
   indent(out, indent_level + 2) << "_color "<<_color<<"\n";
   indent(out, indent_level + 2) << "_initial_x_scale "<<_initial_x_scale<<"\n";
   indent(out, indent_level + 2) << "_final_x_scale "<<_final_x_scale<<"\n";

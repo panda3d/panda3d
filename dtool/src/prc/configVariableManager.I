@@ -1,34 +1,27 @@
-// Filename: configVariableManager.I
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableManager.I
+ * @author drose
+ * @date 2004-10-15
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableManager::get_num_variables
-//       Access: Published
-//  Description: Returns the current number of active ConfigVariableCores in
-//               the world.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current number of active ConfigVariableCores in the world.
+ */
 INLINE size_t ConfigVariableManager::
 get_num_variables() const {
   return _variables.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableManager::get_variable
-//       Access: Published
-//  Description: Returns the nth active ConfigVariableCore in the world.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth active ConfigVariableCore in the world.
+ */
 INLINE ConfigVariableCore *ConfigVariableManager::
 get_variable(size_t n) const {
   nassertr(n < _variables.size(), (ConfigVariableCore *)NULL);

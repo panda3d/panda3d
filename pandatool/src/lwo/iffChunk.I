@@ -1,42 +1,34 @@
-// Filename: iffChunk.I
-// Created by:  drose (23Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iffChunk.I
+ * @author drose
+ * @date 2001-04-23
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: IffChunk::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE IffChunk::
 IffChunk() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffChunk::get_id
-//       Access: Public
-//  Description: Returns the ID associated with this chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ID associated with this chunk.
+ */
 INLINE IffId IffChunk::
 get_id() const {
   return _id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffChunk::set_id
-//       Access: Public
-//  Description: Changes the ID associated with this chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the ID associated with this chunk.
+ */
 INLINE void IffChunk::
 set_id(IffId id) {
   _id = id;

@@ -1,16 +1,15 @@
-// Filename: pStatFrameData.cxx
-// Created by:  drose (10Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatFrameData.cxx
+ * @author drose
+ * @date 2000-07-10
+ */
 
 #include "pStatFrameData.h"
 #include "pStatClientVersion.h"
@@ -21,23 +20,18 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatFrameData::sort_time
-//       Access: Public
-//  Description: Ensures the frame data is in monotonically increasing
-//               order by time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures the frame data is in monotonically increasing order by time.
+ */
 void PStatFrameData::
 sort_time() {
   stable_sort(_time_data.begin(), _time_data.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatFrameData::write_datagram
-//       Access: Public
-//  Description: Writes the definition of the FrameData to the
-//               datagram.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the definition of the FrameData to the datagram.  Returns true on
+ * success, false on failure.
+ */
 bool PStatFrameData::
 write_datagram(Datagram &destination, PStatClient *client) const {
   Data::const_iterator di;
@@ -59,15 +53,13 @@ write_datagram(Datagram &destination, PStatClient *client) const {
     destination.add_uint16((*di)._index);
     destination.add_float32((*di)._value);
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatFrameData::read_datagram
-//       Access: Public
-//  Description: Extracts the FrameData definition from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the FrameData definition from the datagram.
+ */
 void PStatFrameData::
 read_datagram(DatagramIterator &source, PStatClientVersion *) {
   clear();
@@ -91,4 +83,3 @@ read_datagram(DatagramIterator &source, PStatClientVersion *) {
   }
   nassertv(source.get_remaining_size() == 0);
 }
-

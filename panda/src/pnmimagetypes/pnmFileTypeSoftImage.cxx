@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeSoftImage.cxx
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeSoftImage.cxx
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #include "pnmFileTypeSoftImage.h"
 
@@ -26,7 +25,7 @@ static const int imageCommentLength = 80;
 static const char imageComment[imageCommentLength+1] =
   "Written by pnmimage.";
 
-// Values to indicate compressed/uncompressed types
+// Values to indicate compresseduncompressed types
 #define UNCOMPRESSED 0x00
 #define MIXED_RUN_LENGTH 0x02
 
@@ -201,79 +200,63 @@ read_scanline(xel *row_data, xelval *alpha_data, int cols, istream *file,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeSoftImage::
 PNMFileTypeSoftImage() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::get_name
-//       Access: Public, Virtual
-//  Description: Returns a few words describing the file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a few words describing the file type.
+ */
 string PNMFileTypeSoftImage::
 get_name() const {
   return "SoftImage";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::get_num_extensions
-//       Access: Public, Virtual
-//  Description: Returns the number of different possible filename
-//               extensions_softimage associated with this particular file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of different possible filename extensions_softimage
+ * associated with this particular file type.
+ */
 int PNMFileTypeSoftImage::
 get_num_extensions() const {
   return num_extensions_softimage;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the nth possible filename extension
-//               associated with this particular file type, without a
-//               leading dot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth possible filename extension associated with this particular
+ * file type, without a leading dot.
+ */
 string PNMFileTypeSoftImage::
 get_extension(int n) const {
   nassertr(n >= 0 && n < num_extensions_softimage, string());
   return extensions_softimage[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::get_suggested_extension
-//       Access: Public, Virtual
-//  Description: Returns a suitable filename extension (without a
-//               leading dot) to suggest for files of this type, or
-//               empty string if no suggestions are available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable filename extension (without a leading dot) to suggest
+ * for files of this type, or empty string if no suggestions are available.
+ */
 string PNMFileTypeSoftImage::
 get_suggested_extension() const {
   return "pic";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::has_magic_number
-//       Access: Public, Virtual
-//  Description: Returns true if this particular file type uses a
-//               magic number to identify it, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular file type uses a magic number to identify
+ * it, false otherwise.
+ */
 bool PNMFileTypeSoftImage::
 has_magic_number() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::matches_magic_number
-//       Access: Public, Virtual
-//  Description: Returns true if the indicated "magic number" byte
-//               stream (the initial few bytes read from the file)
-//               matches this particular file type, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated "magic number" byte stream (the initial few
+ * bytes read from the file) matches this particular file type, false
+ * otherwise.
+ */
 bool PNMFileTypeSoftImage::
 matches_magic_number(const string &magic_number) const {
   nassertr(magic_number.size() >= 2, false);
@@ -283,26 +266,22 @@ matches_magic_number(const string &magic_number) const {
   return (mn == SOFTIMAGE_MAGIC1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::make_reader
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMReader suitable for
-//               reading from this file type, if possible.  If reading
-//               from this file type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMReader suitable for reading from this file
+ * type, if possible.  If reading from this file type is not supported,
+ * returns NULL.
+ */
 PNMReader *PNMFileTypeSoftImage::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::make_writer
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMWriter suitable for
-//               reading from this file type, if possible.  If writing
-//               files of this type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMWriter suitable for reading from this file
+ * type, if possible.  If writing files of this type is not supported, returns
+ * NULL.
+ */
 PNMWriter *PNMFileTypeSoftImage::
 make_writer(ostream *file, bool owns_file) {
   init_pnm();
@@ -310,11 +289,9 @@ make_writer(ostream *file, bool owns_file) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeSoftImage::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -428,30 +405,23 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Reader::supports_read_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMReader supports a
-//               streaming interface to reading the data: that is, it
-//               is capable of returning the data one row at a time,
-//               via repeated calls to read_row().  Returns false if
-//               the only way to read from this file is all at once,
-//               via read_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMReader supports a streaming interface to
+ * reading the data: that is, it is capable of returning the data one row at a
+ * time, via repeated calls to read_row().  Returns false if the only way to
+ * read from this file is all at once, via read_data().
+ */
 bool PNMFileTypeSoftImage::Reader::
 supports_read_row() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Reader::read_row
-//       Access: Public, Virtual
-//  Description: If supports_read_row(), above, returns true, this
-//               function may be called repeatedly to read the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully read, false
-//               if there is an error or end of file.
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_read_row(), above, returns true, this function may be called
+ * repeatedly to read the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully read, false if there is
+ * an error or end of file.
+ */
 bool PNMFileTypeSoftImage::Reader::
 read_row(xel *row_data, xelval *alpha_data, int x_size, int) {
   if (!is_valid()) {
@@ -581,8 +551,8 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, ostream *file,
   int x = 0;
   int same = true;
 
-  // Go through each value in the scanline, from beginning to end, looking
-  // for runs of identical values.
+  // Go through each value in the scanline, from beginning to end, looking for
+  // runs of identical values.
   while (x < cols) {
 
     if (same) {
@@ -647,8 +617,7 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, ostream *file,
       write_same(row_data, alpha_data, file, write_data, cols-1, run_length);
     } else {
 
-      // Mighty unlikely, but we might have just run over the
-      // 128-pixel limit.
+      // Mighty unlikely, but we might have just run over the 128-pixel limit.
       if (run_length>128) {
         int excess = run_length - 128;
         write_diff(row_data, alpha_data, file, write_data, cols-excess-1, 128);
@@ -660,46 +629,36 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, ostream *file,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Writer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeSoftImage::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Writer::supports_write_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMWriter supports a
-//               streaming interface to writing the data: that is, it
-//               is capable of writing the image one row at a time,
-//               via repeated calls to write_row().  Returns false if
-//               the only way to write from this file is all at once,
-//               via write_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMWriter supports a streaming interface to
+ * writing the data: that is, it is capable of writing the image one row at a
+ * time, via repeated calls to write_row().  Returns false if the only way to
+ * write from this file is all at once, via write_data().
+ */
 bool PNMFileTypeSoftImage::Writer::
 supports_write_row() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Writer::write_header
-//       Access: Public, Virtual
-//  Description: If supports_write_row(), above, returns true, this
-//               function may be called to write out the image header
-//               in preparation to writing out the image data one row
-//               at a time.  Returns true if the header is
-//               successfully written, false if there is an error.
-//
-//               It is the user's responsibility to fill in the header
-//               data via calls to set_x_size(), set_num_channels(),
-//               etc., or copy_header_from(), before calling
-//               write_header().
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_write_row(), above, returns true, this function may be called
+ * to write out the image header in preparation to writing out the image data
+ * one row at a time.  Returns true if the header is successfully written,
+ * false if there is an error.
+ *
+ * It is the user's responsibility to fill in the header data via calls to
+ * set_x_size(), set_num_channels(), etc., or copy_header_from(), before
+ * calling write_header().
+ */
 bool PNMFileTypeSoftImage::Writer::
 write_header() {
   write_ushort_SI(_file, SOFTIMAGE_MAGIC1);
@@ -729,21 +688,17 @@ write_header() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::Writer::write_row
-//       Access: Public, Virtual
-//  Description: If supports_write_row(), above, returns true, this
-//               function may be called repeatedly to write the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully written,
-//               false if there is an error.
-//
-//               You must first call write_header() before writing the
-//               individual rows.  It is also important to delete the
-//               PNMWriter class after successfully writing the last
-//               row.  Failing to do this may result in some data not
-//               getting flushed!
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_write_row(), above, returns true, this function may be called
+ * repeatedly to write the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully written, false if there
+ * is an error.
+ *
+ * You must first call write_header() before writing the individual rows.  It
+ * is also important to delete the PNMWriter class after successfully writing
+ * the last row.  Failing to do this may result in some data not getting
+ * flushed!
+ */
 bool PNMFileTypeSoftImage::Writer::
 write_row(xel *row_data, xelval *alpha_data) {
   if (is_grayscale()) {
@@ -762,30 +717,23 @@ write_row(xel *row_data, xelval *alpha_data) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void PNMFileTypeSoftImage::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_PNMFileTypeSoftImage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSoftImage::make_PNMFileTypeSoftImage
-//       Access: Protected, Static
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-//
-//               In the case of the PNMFileType objects, since these
-//               objects are all shared, we just pull the object from
-//               the registry.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ *
+ * In the case of the PNMFileType objects, since these objects are all shared,
+ * we just pull the object from the registry.
+ */
 TypedWritable *PNMFileTypeSoftImage::
 make_PNMFileTypeSoftImage(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());

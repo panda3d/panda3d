@@ -1,23 +1,19 @@
-// Filename: lvecBase3_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvecBase3_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//       Class : LVecBase3
-// Description : This is the base class for all three-component
-//               vectors and points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all three-component vectors and points.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVecBase3) {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;
@@ -77,10 +73,9 @@ PUBLISHED:
   MAKE_PROPERTY(xz, get_xz);
   MAKE_PROPERTY(yz, get_yz);
 
-  // These next functions add to an existing value.
-  // i.e. foo.set_x(foo.get_x() + value)
-  // These are useful to reduce overhead in scripting
-  // languages:
+  // These next functions add to an existing value.  i.e.
+  // foo.set_x(foo.get_x() + value) These are useful to reduce overhead in
+  // scripting languages:
   INLINE_LINMATH void add_to_cell(int i, FLOATTYPE value);
   INLINE_LINMATH void add_x(FLOATTYPE value);
   INLINE_LINMATH void add_y(FLOATTYPE value);
@@ -175,8 +170,8 @@ PUBLISHED:
 public:
   // The underlying implementation is via the Eigen library, if available.
 
-  // We don't bother to align LVecBase3, since it won't benefit from
-  // SSE2 optimizations anyway (it's an add number of floats).
+  // We don't bother to align LVecBase3, since it won't benefit from SSE2
+  // optimizations anyway (it's an add number of floats).
   typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 1, 3) EVector3;
   EVector3 _v;
 
@@ -193,7 +188,7 @@ public:
     return _type_handle;
   }
   static void init_type();
- 
+
 private:
   static TypeHandle _type_handle;
 };

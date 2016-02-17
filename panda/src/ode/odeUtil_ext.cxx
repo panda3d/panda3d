@@ -1,16 +1,15 @@
-// Filename: odeUtil_ext.cxx
-// Created by:  rdb (10Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeUtil_ext.cxx
+ * @author rdb
+ * @date 2013-12-10
+ */
 
 #include "odeUtil_ext.h"
 #include "config_ode.h"
@@ -21,13 +20,10 @@
 
 PyObject *Extension<OdeUtil>::_python_callback = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeUtil::collide2
-//       Access: Public, Static
-//  Description: Calls the callback for all potentially intersecting
-//               pairs that contain one geom from geom1 and one geom
-//               from geom2.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the callback for all potentially intersecting pairs that contain one
+ * geom from geom1 and one geom from geom2.
+ */
 int Extension<OdeUtil>::
 collide2(const OdeGeom &geom1, const OdeGeom &geom2, PyObject* arg, PyObject* callback) {
   nassertr(callback != NULL, -1);

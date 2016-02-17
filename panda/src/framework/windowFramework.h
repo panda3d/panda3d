@@ -1,16 +1,15 @@
-// Filename: windowFramework.h
-// Created by:  drose (02Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file windowFramework.h
+ * @author drose
+ * @date 2002-04-02
+ */
 
 #ifndef WINDOWFRAMEWORK_H
 #define WINDOWFRAMEWORK_H
@@ -42,16 +41,13 @@ class GraphicsEngine;
 class GraphicsPipe;
 class DisplayRegion;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WindowFramework
-// Description : This encapsulates the data that is normally
-//               associated with a single window, or with a single
-//               display region within a window.  (In the case where a
-//               window has been subdivided with split_window(), there
-//               may be multiple WindowFrameworks objects that share
-//               the same GraphicsOutput pointer, but reference
-//               different display regions within that window).
-////////////////////////////////////////////////////////////////////
+/**
+ * This encapsulates the data that is normally associated with a single
+ * window, or with a single display region within a window.  (In the case
+ * where a window has been subdivided with split_window(), there may be
+ * multiple WindowFrameworks objects that share the same GraphicsOutput
+ * pointer, but reference different display regions within that window).
+ */
 class EXPCL_FRAMEWORK WindowFramework : public TypedWritableReferenceCount {
 protected:
   WindowFramework(PandaFramework *panda_framework);

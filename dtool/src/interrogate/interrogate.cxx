@@ -1,16 +1,15 @@
-// Filename: interrogate.cxx
-// Created by:  drose (31Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogate.cxx
+ * @author drose
+ * @date 2000-07-31
+ */
 
 #include "interrogate.h"
 #include "interrogateBuilder.h"
@@ -479,15 +478,13 @@ main(int argc, char **argv) {
     }
   }
 
-//  if(!output_code_filename.empty())
-//  {
-//    output_include_filename = output_code_filename.get_fullpath_wo_extension() +".h";
-//    printf(" Include File Will be Set to %s \n",output_include_filename.c_str());
-//  }
+// if(!output_code_filename.empty()) { output_include_filename =
+// output_code_filename.get_fullpath_wo_extension() +".h"; printf(" Include
+// File Will be Set to %s \n",output_include_filename.c_str()); }
 
   output_code_filename.set_text();
   output_data_filename.set_text();
-//  output_include_filename.set_text();
+// output_include_filename.set_text();
   output_data_basename = output_data_filename.get_basename();
 
   if (output_function_names && true_wrapper_names) {
@@ -498,7 +495,7 @@ main(int argc, char **argv) {
     exit(1);
   }
 
-  if (!build_c_wrappers && !build_python_wrappers && 
+  if (!build_c_wrappers && !build_python_wrappers &&
       !build_python_obj_wrappers &&!build_python_native) {
     build_c_wrappers = true;
   }
@@ -520,14 +517,13 @@ main(int argc, char **argv) {
     builder.add_source_file(filename);
   }
 
-  // Now that we've parsed all the source code, change the way things
-  // are output from now on so we can compile our generated code using
-  // VC++.  Sheesh.
+  // Now that we've parsed all the source code, change the way things are
+  // output from now on so we can compile our generated code using VC++.
+  // Sheesh.
 
-  // Actually, don't do this any more, since it bitches some of the
-  // logic (particularly with locating alt names), and it shouldn't be
-  // necessary with modern VC++.
-  //  cppparser_output_class_keyword = false;
+  // Actually, don't do this any more, since it bitches some of the logic
+  // (particularly with locating alt names), and it shouldn't be necessary
+  // with modern VC++. cppparser_output_class_keyword = false;
 
   // Now look for the .N files.
   for (i = 1; i < argc; ++i) {
@@ -543,17 +539,17 @@ main(int argc, char **argv) {
 
   builder.build();
 
-  // Make up a file identifier.  This is just some bogus number that
-  // should be the same in both the compiled-in code and in the
-  // database, so we can check synchronicity at load time.
+  // Make up a file identifier.  This is just some bogus number that should be
+  // the same in both the compiled-in code and in the database, so we can
+  // check synchronicity at load time.
   int file_identifier = time((time_t *)NULL);
   InterrogateModuleDef *def = builder.make_module_def(file_identifier);
-    
+
   pofstream * the_output_include = NULL;
   pofstream output_include;
-  
 
-  if (1==2 && !output_include_filename.empty()) 
+
+  if (1==2 && !output_include_filename.empty())
   {
     output_include_filename.open_write(output_include);
 
@@ -568,11 +564,11 @@ main(int argc, char **argv) {
       << " */\n\n";
 
 
-    if (output_include.fail()) 
+    if (output_include.fail())
     {
       nout << "Unable to write to " << output_include_filename << "\n";
       exit(-1);
-    } 
+    }
     the_output_include = &output_include;
   }
 
@@ -611,7 +607,7 @@ main(int argc, char **argv) {
     pofstream output_data;
     output_data_filename.open_write(output_data);
 
-    if (output_data.fail()) 
+    if (output_data.fail())
     {
       nout << "Unable to write to " << output_data_filename << "\n";
     } else {

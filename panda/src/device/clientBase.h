@@ -1,16 +1,15 @@
-// Filename: clientBase.h
-// Created by:  jason (04Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clientBase.h
+ * @author jason
+ * @date 2000-08-04
+ */
 
 #ifndef CLIENTBASE_H
 #define CLIENTBASE_H
@@ -33,17 +32,14 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientBase
-// Description : An abstract base class for a family of client
-//               device interfaces--including trackers, buttons,
-//               dials, and other analog inputs.
-//
-//               This provides a common interface to connect to such
-//               devices and extract their data; it is used by
-//               TrackerNode etc. to put these devices in the data
-//               graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for a family of client device interfaces--including
+ * trackers, buttons, dials, and other analog inputs.
+ *
+ * This provides a common interface to connect to such devices and extract
+ * their data; it is used by TrackerNode etc.  to put these devices in the
+ * data graph.
+ */
 class EXPCL_PANDA_DEVICE ClientBase : public TypedReferenceCount {
 protected:
   ClientBase();

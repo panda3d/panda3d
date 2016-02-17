@@ -1,16 +1,13 @@
-// Filename: pzip.cxx
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pzip.cxx
+ */
 
 #include "pystub.h"
 #include "filename.h"
@@ -34,7 +31,7 @@ usage() {
     << "filename, and the original file is removed (unless the version with\n"
     << "-o is used, in which case you can compress only one file, you specify\n"
     << "the destination file name, and the original file is not removed).\n\n"
-    
+
     << "In many cases, Panda can read the resulting .pz file directly,\n"
     << "exactly as if it were still in its uncompressed original form.\n"
     << "In fact, unless vfs-implicit-pz is set to false in your Config.prc\n"
@@ -53,7 +50,7 @@ usage() {
     << "  -1  compress faster\n"
     << "  -6  compress default\n"
     << "  -9  compress better (intermediate compression levels supported also)\n\n";
-    
+
 }
 
 int
@@ -185,15 +182,15 @@ main(int argc, char **argv) {
         } else {
           cerr << dest_file << "\n";
           bool success = compress_stream(read_stream, write_stream, compression_level);
-          
+
           read_stream.close();
           write_stream.close();
-          
+
           if (!success) {
             cerr << "Failure writing " << dest_file << "\n";
             all_ok = false;
             dest_file.unlink();
-            
+
           } else {
             if (!got_dest_filename) {
               source_file.unlink();

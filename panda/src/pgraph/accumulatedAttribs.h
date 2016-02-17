@@ -1,16 +1,15 @@
-// Filename: accumulatedAttribs.h
-// Created by:  drose (30Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file accumulatedAttribs.h
+ * @author drose
+ * @date 2003-01-30
+ */
 
 #ifndef ACCUMULATEDATTRIBS_H
 #define ACCUMULATEDATTRIBS_H
@@ -23,21 +22,19 @@
 
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AccumulatedAttribs
-// Description : This class is used by the SceneGraphReducer to
-//               maintain and accumulate the set of attributes we have
-//               encountered on each node that might eventually be
-//               applied to the vertices at the leaves.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used by the SceneGraphReducer to maintain and accumulate the
+ * set of attributes we have encountered on each node that might eventually be
+ * applied to the vertices at the leaves.
+ */
 class EXPCL_PANDA_PGRAPH AccumulatedAttribs {
 public:
   AccumulatedAttribs();
   AccumulatedAttribs(const AccumulatedAttribs &copy);
   void operator = (const AccumulatedAttribs &copy);
-  
+
   void write(ostream &out, int attrib_types, int indent_level) const;
-  
+
   void collect(PandaNode *node, int attrib_types);
   CPT(RenderState) collect(const RenderState *state, int attrib_types);
   void apply_to_node(PandaNode *node, int attrib_types);
@@ -61,5 +58,3 @@ public:
 #include "accumulatedAttribs.I"
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: tinyGraphicsStateGuardian.cxx
-// Created by:  drose (24Apr08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyGraphicsStateGuardian.cxx
+ * @author drose
+ * @date 2008-04-24
+ */
 
 #include "tinyGraphicsStateGuardian.h"
 #include "tinyGeomMunger.h"
@@ -57,11 +56,9 @@ PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_perspective_pcolle
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_multitex2_pcollector("Pixels:Smooth multitex 2");
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_multitex3_pcollector("Pixels:Smooth multitex 3");
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyGraphicsStateGuardian::
 TinyGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                           TinyGraphicsStateGuardian *share_with) :
@@ -74,28 +71,23 @@ TinyGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _vertices_size = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyGraphicsStateGuardian::
 ~TinyGraphicsStateGuardian() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
 void TinyGraphicsStateGuardian::
 reset() {
   free_pointers();
   GraphicsStateGuardian::reset();
 
-  // Build _inv_state_mask as a mask of 1's where we don't care, and
-  // 0's where we do care, about the state.
+  // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
+  // we do care, about the state.
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
   _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
@@ -144,12 +136,9 @@ reset() {
   add_gsg(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::free_pointers
-//       Access: Protected, Virtual
-//  Description: Frees some memory that was explicitly allocated
-//               within the glgsg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees some memory that was explicitly allocated within the glgsg.
+ */
 void TinyGraphicsStateGuardian::
 free_pointers() {
   if (_aux_frame_buffer != (ZBuffer *)NULL) {
@@ -164,14 +153,11 @@ free_pointers() {
   _vertices_size = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::close_gsg
-//       Access: Protected, Virtual
-//  Description: This is called by the associated GraphicsWindow when
-//               close_window() is called.  It should null out the
-//               _win pointer and possibly free any open resources
-//               associated with the GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the associated GraphicsWindow when close_window() is
+ * called.  It should null out the _win pointer and possibly free any open
+ * resources associated with the GSG.
+ */
 void TinyGraphicsStateGuardian::
 close_gsg() {
   GraphicsStateGuardian::close_gsg();
@@ -182,42 +168,34 @@ close_gsg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::depth_offset_decals
-//       Access: Public, Virtual
-//  Description: Returns true if this GSG can implement decals using a
-//               DepthOffsetAttrib, or false if that is unreliable
-//               and the three-step rendering process should be used
-//               instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this GSG can implement decals using a DepthOffsetAttrib, or
+ * false if that is unreliable and the three-step rendering process should be
+ * used instead.
+ */
 bool TinyGraphicsStateGuardian::
 depth_offset_decals() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::make_geom_munger
-//       Access: Public, Virtual
-//  Description: Creates a new GeomMunger object to munge vertices
-//               appropriate to this GSG for the indicated state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new GeomMunger object to munge vertices appropriate to this GSG
+ * for the indicated state.
+ */
 PT(GeomMunger) TinyGraphicsStateGuardian::
 make_geom_munger(const RenderState *state, Thread *current_thread) {
   PT(TinyGeomMunger) munger = new TinyGeomMunger(this, state);
   return GeomMunger::register_munger(munger, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::clear
-//       Access: Public
-//  Description: Clears the framebuffer within the current
-//               DisplayRegion, according to the flags indicated by
-//               the given DrawableRegion object.
-//
-//               This does not set the DisplayRegion first.  You
-//               should call prepare_display_region() to specify the
-//               region you wish the clear operation to apply to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the framebuffer within the current DisplayRegion, according to the
+ * flags indicated by the given DrawableRegion object.
+ *
+ * This does not set the DisplayRegion first.  You should call
+ * prepare_display_region() to specify the region you wish the clear operation
+ * to apply to.
+ */
 void TinyGraphicsStateGuardian::
 clear(DrawableRegion *clearable) {
   PStatTimer timer(_clear_pcollector);
@@ -251,8 +229,8 @@ clear(DrawableRegion *clearable) {
   bool clear_z = false;
   int z = 0;
   if (clearable->get_clear_depth_active()) {
-    // We ignore the specified depth clear value, since we don't
-    // support alternate depth compare functions anyway.
+    // We ignore the specified depth clear value, since we don't support
+    // alternate depth compare functions anyway.
     clear_z = true;
   }
 
@@ -261,12 +239,9 @@ clear(DrawableRegion *clearable) {
                     _c->viewport.xsize, _c->viewport.ysize);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::prepare_display_region
-//       Access: Public, Virtual
-//  Description: Prepare a display region for rendering (set up
-//               scissor region and viewport)
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepare a display region for rendering (set up scissor region and viewport)
+ */
 void TinyGraphicsStateGuardian::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
@@ -277,8 +252,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 
   PN_stdfloat pixel_factor = _current_display_region->get_pixel_factor();
   if (pixel_factor != 1.0) {
-    // Render into an aux buffer, and zoom it up into the main
-    // frame buffer later.
+    // Render into an aux buffer, and zoom it up into the main frame buffer
+    // later.
     xmin = 0;
     ymin = 0;
     xsize = int(xsize * pixel_factor);
@@ -309,17 +284,14 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
            ymin + ysize >= 0 && ymin + ysize <= _c->zb->ysize);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::calc_projection_mat
-//       Access: Public, Virtual
-//  Description: Given a lens, calculates the appropriate projection
-//               matrix for use with this gsg.  Note that the
-//               projection matrix depends a lot upon the coordinate
-//               system of the rendering API.
-//
-//               The return value is a TransformState if the lens is
-//               acceptable, NULL if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a lens, calculates the appropriate projection matrix for use with
+ * this gsg.  Note that the projection matrix depends a lot upon the
+ * coordinate system of the rendering API.
+ *
+ * The return value is a TransformState if the lens is acceptable, NULL if it
+ * is not.
+ */
 CPT(TransformState) TinyGraphicsStateGuardian::
 calc_projection_mat(const Lens *lens) {
   if (lens == (Lens *)NULL) {
@@ -330,58 +302,48 @@ calc_projection_mat(const Lens *lens) {
     return NULL;
   }
 
-  // The projection matrix must always be right-handed Y-up, even if
-  // our coordinate system of choice is otherwise, because certain GL
-  // calls (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of
-  // a coordinate system.  Sigh.  In order to implement a Z-up (or
-  // other arbitrary) coordinate system, we'll use a Y-up projection
-  // matrix, and store the conversion to our coordinate system of
-  // choice in the modelview matrix.
+  // The projection matrix must always be right-handed Y-up, even if our
+  // coordinate system of choice is otherwise, because certain GL calls
+  // (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of a coordinate
+  // system.  Sigh.  In order to implement a Z-up (or other arbitrary)
+  // coordinate system, we'll use a Y-up projection matrix, and store the
+  // conversion to our coordinate system of choice in the modelview matrix.
 
   LMatrix4 result =
     LMatrix4::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
 
   if (_scene_setup->get_inverted()) {
-    // If the scene is supposed to be inverted, then invert the
-    // projection matrix.
+    // If the scene is supposed to be inverted, then invert the projection
+    // matrix.
     result *= LMatrix4::scale_mat(1.0f, -1.0f, 1.0f);
   }
 
   return TransformState::make_mat(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::prepare_lens
-//       Access: Public, Virtual
-//  Description: Makes the current lens (whichever lens was most
-//               recently specified with set_scene()) active, so
-//               that it will transform future rendered geometry.
-//               Normally this is only called from the draw process,
-//               and usually it is called by set_scene().
-//
-//               The return value is true if the lens is acceptable,
-//               false if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the current lens (whichever lens was most recently specified with
+ * set_scene()) active, so that it will transform future rendered geometry.
+ * Normally this is only called from the draw process, and usually it is
+ * called by set_scene().
+ *
+ * The return value is true if the lens is acceptable, false if it is not.
+ */
 bool TinyGraphicsStateGuardian::
 prepare_lens() {
   _transform_stale = true;
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_frame
-//       Access: Public, Virtual
-//  Description: Called before each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup before
-//               beginning the frame.
-//
-//               The return value is true if successful (in which case
-//               the frame will be drawn and end_frame() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_frame() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup before beginning the frame.
+ *
+ * The return value is true if successful (in which case the frame will be
+ * drawn and end_frame() will be called later), or false if unsuccessful (in
+ * which case nothing will be drawn and end_frame() will not be called).
+ */
 bool TinyGraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
   if (!GraphicsStateGuardian::begin_frame(current_thread)) {
@@ -409,40 +371,32 @@ begin_frame(Thread *current_thread) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::begin_scene
-//       Access: Public, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the beginning of drawing commands for a "scene"
-//               (usually a particular DisplayRegion) within a frame.
-//               All 3-D drawing commands, except the clear operation,
-//               must be enclosed within begin_scene() .. end_scene().
-//
-//               The return value is true if successful (in which case
-//               the scene will be drawn and end_scene() will be
-//               called later), or false if unsuccessful (in which
-//               case nothing will be drawn and end_scene() will not
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the beginning of
+ * drawing commands for a "scene" (usually a particular DisplayRegion) within
+ * a frame.  All 3-D drawing commands, except the clear operation, must be
+ * enclosed within begin_scene() .. end_scene().
+ *
+ * The return value is true if successful (in which case the scene will be
+ * drawn and end_scene() will be called later), or false if unsuccessful (in
+ * which case nothing will be drawn and end_scene() will not be called).
+ */
 bool TinyGraphicsStateGuardian::
 begin_scene() {
   return GraphicsStateGuardian::begin_scene();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::end_scene
-//       Access: Protected, Virtual
-//  Description: Called between begin_frame() and end_frame() to mark
-//               the end of drawing commands for a "scene" (usually a
-//               particular DisplayRegion) within a frame.  All 3-D
-//               drawing commands, except the clear operation, must be
-//               enclosed within begin_scene() .. end_scene().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between begin_frame() and end_frame() to mark the end of drawing
+ * commands for a "scene" (usually a particular DisplayRegion) within a frame.
+ * All 3-D drawing commands, except the clear operation, must be enclosed
+ * within begin_scene() .. end_scene().
+ */
 void TinyGraphicsStateGuardian::
 end_scene() {
   if (_c->zb == _aux_frame_buffer) {
-    // Copy the aux frame buffer into the main scene now, zooming it
-    // up to the appropriate size.
+    // Copy the aux frame buffer into the main scene now, zooming it up to the
+    // appropriate size.
     int xmin, ymin, xsize, ysize;
     _current_display_region->get_region_pixels_i(xmin, ymin, xsize, ysize);
     PN_stdfloat pixel_factor = _current_display_region->get_pixel_factor();
@@ -464,13 +418,10 @@ end_scene() {
   GraphicsStateGuardian::end_scene();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::end_frame
-//       Access: Public, Virtual
-//  Description: Called after each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup after
-//               rendering the frame, and before the window flips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after each frame is rendered, to allow the GSG a chance to do any
+ * internal cleanup after rendering the frame, and before the window flips.
+ */
 void TinyGraphicsStateGuardian::
 end_frame(Thread *current_thread) {
   GraphicsStateGuardian::end_frame(current_thread);
@@ -511,14 +462,11 @@ end_frame(Thread *current_thread) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::begin_draw_primitives
-//       Access: Public, Virtual
-//  Description: Called before a sequence of draw_primitive()
-//               functions are called, this should prepare the vertex
-//               data for rendering.  It returns true if the vertices
-//               are ok, false to abort this group of primitives.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called before a sequence of draw_primitive() functions are called, this
+ * should prepare the vertex data for rendering.  It returns true if the
+ * vertices are ok, false to abort this group of primitives.
+ */
 bool TinyGraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
@@ -540,8 +488,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // Set up the proper transform.
   if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
-    // coordinates, wipe out the current projection and modelview
-    // matrix (so we don't attempt to transform it again).
+    // coordinates, wipe out the current projection and modelview matrix (so
+    // we don't attempt to transform it again).
     const TransformState *ident = TransformState::make_identity();
     load_matrix(&_c->matrix_model_view, ident);
     load_matrix(&_c->matrix_projection, _scissor_mat);
@@ -582,8 +530,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     _transform_stale = false;
   }
 
-  // Figure out the subset of vertices we will be using in this
-  // operation.
+  // Figure out the subset of vertices we will be using in this operation.
   int num_vertices = data_reader->get_num_rows();
   _min_vertex = num_vertices;
   _max_vertex = 0;
@@ -600,8 +547,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     return false;
   }
 
-  // Now copy all of those vertices into our working table,
-  // transforming into screen space them as we go.
+  // Now copy all of those vertices into our working table, transforming into
+  // screen space them as we go.
   int num_used_vertices = _max_vertex - _min_vertex + 1;
   if (_vertices_size < num_used_vertices) {
     if (_vertices_size == 0) {
@@ -731,8 +678,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   if (_texturing_state != 0 && _texture_replace) {
-    // We don't need the vertex color or lighting calculation after
-    // all, since the current texture will just hide all of that.
+    // We don't need the vertex color or lighting calculation after all, since
+    // the current texture will just hide all of that.
     needs_color = false;
     needs_normal = false;
   }
@@ -797,8 +744,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     v->edge_flag = 1;
   }
 
-  // Set up the appropriate function callback for filling triangles,
-  // according to the current state.
+  // Set up the appropriate function callback for filling triangles, according
+  // to the current state.
 
   bool srgb_blend = _current_properties->get_srgb_color();
 
@@ -863,8 +810,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
   if (target_color_blend->get_mode() == ColorBlendAttrib::M_add) {
-    // If we have a color blend set that we can support, it overrides
-    // the transparency set.
+    // If we have a color blend set that we can support, it overrides the
+    // transparency set.
     LColor c = target_color_blend->get_color();
     _c->zb->blend_r = (int)(c[0] * ZB_POINT_RED_MAX);
     _c->zb->blend_g = (int)(c[1] * ZB_POINT_GREEN_MAX);
@@ -921,8 +868,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
   ShadeModelAttrib::Mode shade_model = target_shade_model->get_mode();
   if (!needs_normal && !needs_color) {
-    // With no per-vertex lighting, and no per-vertex colors, we might
-    // as well use the flat shading model.
+    // With no per-vertex lighting, and no per-vertex colors, we might as well
+    // use the flat shading model.
     shade_model = ShadeModelAttrib::M_flat;
   }
   int shade_model_state = 2;  // smooth
@@ -946,15 +893,15 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     if (texturing_state < 3 &&
         (_c->matrix_model_projection_no_w_transform || _filled_flat)) {
-      // Don't bother with the perspective-correct algorithm if we're
-      // under an orthonormal lens, e.g. render2d; or if
-      // RenderMode::M_filled_flat is in effect.
+      // Don't bother with the perspective-correct algorithm if we're under an
+      // orthonormal lens, e.g.  render2d; or if RenderMode::M_filled_flat is
+      // in effect.
       texturing_state = 1;    // textured (not perspective correct)
     }
 
     if (_texture_replace) {
-      // If we're completely replacing the underlying color, then it
-      // doesn't matter what the color is.
+      // If we're completely replacing the underlying color, then it doesn't
+      // matter what the color is.
       shade_model_state = 0;
     }
   }
@@ -978,11 +925,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::draw_triangles
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected triangles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected triangles.
+ */
 bool TinyGraphicsStateGuardian::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
@@ -1062,11 +1007,9 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::draw_tristrips
-//       Access: Public, Virtual
-//  Description: Draws a series of triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of triangle strips.
+ */
 bool TinyGraphicsStateGuardian::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
@@ -1077,8 +1020,8 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   }
 #endif  // NDEBUG
 
-  // Send the individual triangle strips, stepping over the
-  // degenerate vertices.
+  // Send the individual triangle strips, stepping over the degenerate
+  // vertices.
   CPTA_int ends = reader->get_ends();
 
   _primitive_batches_tristrip_pcollector.add_level(ends.size());
@@ -1205,11 +1148,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::draw_lines
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected line segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected line segments.
+ */
 bool TinyGraphicsStateGuardian::
 draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
@@ -1284,11 +1225,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::draw_points
-//       Access: Public, Virtual
-//  Description: Draws a series of disconnected points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a series of disconnected points.
+ */
 bool TinyGraphicsStateGuardian::
 draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
@@ -1359,13 +1298,10 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::end_draw_primitives()
-//       Access: Public, Virtual
-//  Description: Called after a sequence of draw_primitive()
-//               functions are called, this should do whatever cleanup
-//               is appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after a sequence of draw_primitive() functions are called, this
+ * should do whatever cleanup is appropriate.
+ */
 void TinyGraphicsStateGuardian::
 end_draw_primitives() {
 
@@ -1386,15 +1322,12 @@ end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::framebuffer_copy_to_texture
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display
-//               region from the framebuffer into texture memory.
-//
-//               If z > -1, it is the cube map index into which to
-//               copy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer
+ * into texture memory.
+ *
+ * If z > -1, it is the cube map index into which to copy.
+ */
 bool TinyGraphicsStateGuardian::
 framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr,
@@ -1436,16 +1369,13 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::framebuffer_copy_to_ram
-//       Access: Public, Virtual
-//  Description: Copy the pixels within the indicated display region
-//               from the framebuffer into system memory, not texture
-//               memory.  Returns true on success, false on failure.
-//
-//               This completely redefines the ram image of the
-//               indicated texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy the pixels within the indicated display region from the framebuffer
+ * into system memory, not texture memory.  Returns true on success, false on
+ * failure.
+ *
+ * This completely redefines the ram image of the indicated texture.
+ */
 bool TinyGraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
                         const DisplayRegion *dr,
@@ -1523,23 +1453,18 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::set_state_and_transform
-//       Access: Public, Virtual
-//  Description: Simultaneously resets the render state and the
-//               transform state.
-//
-//               This transform specified is the "internal" net
-//               transform, already converted into the GSG's internal
-//               coordinate space by composing it to
-//               get_cs_transform().  (Previously, this used to be the
-//               "external" net transform, with the assumption that
-//               that GSG would convert it internally, but that is no
-//               longer the case.)
-//
-//               Special case: if (state==NULL), then the target
-//               state is already stored in _target.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously resets the render state and the transform state.
+ *
+ * This transform specified is the "internal" net transform, already converted
+ * into the GSG's internal coordinate space by composing it to
+ * get_cs_transform().  (Previously, this used to be the "external" net
+ * transform, with the assumption that that GSG would convert it internally,
+ * but that is no longer the case.)
+ *
+ * Special case: if (state==NULL), then the target state is already stored in
+ * _target.
+ */
 void TinyGraphicsStateGuardian::
 set_state_and_transform(const RenderState *target,
                         const TransformState *transform) {
@@ -1591,7 +1516,7 @@ set_state_and_transform(const RenderState *target,
   int depth_offset_slot = DepthOffsetAttrib::get_class_slot();
   if (_target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
       !_state_mask.get_bit(depth_offset_slot)) {
-    //PStatTimer timer(_draw_set_state_depth_offset_pcollector);
+    // PStatTimer timer(_draw_set_state_depth_offset_pcollector);
     do_issue_depth_offset();
     _state_mask.set_bit(depth_offset_slot);
   }
@@ -1648,19 +1573,16 @@ set_state_and_transform(const RenderState *target,
   _state_rs = _target_rs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::prepare_texture
-//       Access: Public, Virtual
-//  Description: Creates whatever structures the GSG requires to
-//               represent the texture internally, and returns a
-//               newly-allocated TextureContext object with this data.
-//               It is the responsibility of the calling function to
-//               later call release_texture() with this same pointer
-//               (which will also delete the pointer).
-//
-//               This function should not be called directly to
-//               prepare a texture.  Instead, call Texture::prepare().
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates whatever structures the GSG requires to represent the texture
+ * internally, and returns a newly-allocated TextureContext object with this
+ * data.  It is the responsibility of the calling function to later call
+ * release_texture() with this same pointer (which will also delete the
+ * pointer).
+ *
+ * This function should not be called directly to prepare a texture.  Instead,
+ * call Texture::prepare().
+ */
 TextureContext *TinyGraphicsStateGuardian::
 prepare_texture(Texture *tex, int view) {
   switch (tex->get_texture_type()) {
@@ -1678,8 +1600,8 @@ prepare_texture(Texture *tex, int view) {
   }
 
   // Even though the texture might be compressed now, it might have an
-  // available uncompressed version that we can load.  So don't reject
-  // it out-of-hand just because it's compressed.
+  // available uncompressed version that we can load.  So don't reject it out-
+  // of-hand just because it's compressed.
   /*
   if (tex->get_ram_image_compression() != Texture::CM_off) {
     tinydisplay_cat.info()
@@ -1694,22 +1616,16 @@ prepare_texture(Texture *tex, int view) {
   return gtc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::update_texture
-//       Access: Public, Virtual
-//  Description: Ensures that the current Texture data is refreshed
-//               onto the GSG.  This means updating the texture
-//               properties and/or re-uploading the texture image, if
-//               necessary.  This should only be called within the
-//               draw thread.
-//
-//               If force is true, this function will not return until
-//               the texture has been fully uploaded.  If force is
-//               false, the function may choose to upload a simple
-//               version of the texture instead, if the texture is not
-//               fully resident (and if get_incomplete_render() is
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the current Texture data is refreshed onto the GSG.  This
+ * means updating the texture properties and/or re-uploading the texture
+ * image, if necessary.  This should only be called within the draw thread.
+ *
+ * If force is true, this function will not return until the texture has been
+ * fully uploaded.  If force is false, the function may choose to upload a
+ * simple version of the texture instead, if the texture is not fully resident
+ * (and if get_incomplete_render() is true).
+ */
 bool TinyGraphicsStateGuardian::
 update_texture(TextureContext *tc, bool force) {
   apply_texture(tc);
@@ -1733,22 +1649,16 @@ update_texture(TextureContext *tc, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::update_texture
-//       Access: Public
-//  Description: Ensures that the current Texture data is refreshed
-//               onto the GSG.  This means updating the texture
-//               properties and/or re-uploading the texture image, if
-//               necessary.  This should only be called within the
-//               draw thread.
-//
-//               If force is true, this function will not return until
-//               the texture has been fully uploaded.  If force is
-//               false, the function may choose to upload a simple
-//               version of the texture instead, if the texture is not
-//               fully resident (and if get_incomplete_render() is
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the current Texture data is refreshed onto the GSG.  This
+ * means updating the texture properties and/or re-uploading the texture
+ * image, if necessary.  This should only be called within the draw thread.
+ *
+ * If force is true, this function will not return until the texture has been
+ * fully uploaded.  If force is false, the function may choose to upload a
+ * simple version of the texture instead, if the texture is not fully resident
+ * (and if get_incomplete_render() is true).
+ */
 bool TinyGraphicsStateGuardian::
 update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmaps) {
   if (!update_texture(tc, force)) {
@@ -1790,14 +1700,11 @@ update_texture(TextureContext *tc, bool force, int stage_index, bool uses_mipmap
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::release_texture
-//       Access: Public, Virtual
-//  Description: Frees the GL resources previously allocated for the
-//               texture.  This function should never be called
-//               directly; instead, call Texture::release() (or simply
-//               let the Texture destruct).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the GL resources previously allocated for the texture.  This function
+ * should never be called directly; instead, call Texture::release() (or
+ * simply let the Texture destruct).
+ */
 void TinyGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
@@ -1821,15 +1728,12 @@ release_texture(TextureContext *tc) {
   delete gtc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_light
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_light() {
-  // Initialize the current ambient light total and newly enabled
-  // light list
+  // Initialize the current ambient light total and newly enabled light list
   LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
 
   int num_enabled = 0;
@@ -1870,8 +1774,7 @@ do_issue_light() {
         light_obj->bind(this, light, num_enabled);
         num_enabled++;
 
-        // Handle the diffuse color here, since all lights have this
-        // property.
+        // Handle the diffuse color here, since all lights have this property.
         GLLight *gl_light = _c->first_light;
         nassertv(gl_light != NULL);
         const LColor &diffuse = light_obj->get_color();
@@ -1888,19 +1791,16 @@ do_issue_light() {
   _c->ambient_light_model.v[2] = cur_ambient_light[2];
   _c->ambient_light_model.v[3] = cur_ambient_light[3];
 
-  // Changing the lighting state means we need to reapply the
-  // transform in begin_draw_primitives().
+  // Changing the lighting state means we need to reapply the transform in
+  // begin_draw_primitives().
   _transform_stale = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id
+ * within a frame, this should set up the associated hardware light with the
+ * light's properties.
+ */
 void TinyGraphicsStateGuardian::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
@@ -1915,8 +1815,8 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
     gl_light->specular.v[2] = specular[2];
     gl_light->specular.v[3] = specular[3];
 
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
+    // Position needs to specify x, y, z, and w w == 1 implies non-infinite
+    // position
     CPT(TransformState) render_transform =
       _cs_transform->compose(_scene_setup->get_world_transform());
 
@@ -1948,14 +1848,11 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   _c->first_light = gl_light;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id
+ * within a frame, this should set up the associated hardware light with the
+ * light's properties.
+ */
 void TinyGraphicsStateGuardian::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   pair<Lights::iterator, bool> lookup = _dlights.insert(Lights::value_type(light, GLLight()));
@@ -1970,8 +1867,8 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     gl_light->specular.v[2] = specular[2];
     gl_light->specular.v[3] = specular[3];
 
-    // Position needs to specify x, y, z, and w
-    // w == 0 implies light is at infinity
+    // Position needs to specify x, y, z, and w w == 0 implies light is at
+    // infinity
     CPT(TransformState) render_transform =
       _cs_transform->compose(_scene_setup->get_world_transform());
 
@@ -1996,8 +1893,8 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     // Cutoff == 180 means uniform point light source
     gl_light->spot_cutoff = 180.0f;
 
-    // Default attenuation values (only spotlight and point light can
-    // modify these)
+    // Default attenuation values (only spotlight and point light can modify
+    // these)
     gl_light->attenuation[0] = 1.0f;
     gl_light->attenuation[1] = 0.0f;
     gl_light->attenuation[2] = 0.0f;
@@ -2010,14 +1907,11 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   _c->first_light = gl_light;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::bind_light
-//       Access: Public, Virtual
-//  Description: Called the first time a particular light has been
-//               bound to a given id within a frame, this should set
-//               up the associated hardware light with the light's
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called the first time a particular light has been bound to a given id
+ * within a frame, this should set up the associated hardware light with the
+ * light's properties.
+ */
 void TinyGraphicsStateGuardian::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
@@ -2035,8 +1929,8 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
     Lens *lens = light_obj->get_lens();
     nassertv(lens != (Lens *)NULL);
 
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
+    // Position needs to specify x, y, z, and w w == 1 implies non-infinite
+    // position
     CPT(TransformState) render_transform =
       _cs_transform->compose(_scene_setup->get_world_transform());
 
@@ -2078,15 +1972,13 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   _c->first_light = gl_light;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_transform
-//       Access: Protected
-//  Description: Sends the indicated transform matrix to the graphics
-//               API to be applied to future vertices.
-//
-//               This transform is the internal_transform, already
-//               converted into the GSG's internal coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the indicated transform matrix to the graphics API to be applied to
+ * future vertices.
+ *
+ * This transform is the internal_transform, already converted into the GSG's
+ * internal coordinate system.
+ */
 void TinyGraphicsStateGuardian::
 do_issue_transform() {
   _transform_state_pcollector.add_level(1);
@@ -2097,11 +1989,9 @@ do_issue_transform() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_render_mode
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_render_mode() {
   const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
@@ -2137,11 +2027,9 @@ do_issue_render_mode() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_rescale_normal
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_rescale_normal() {
   const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
@@ -2172,11 +2060,9 @@ do_issue_rescale_normal() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_depth_offset
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_depth_offset() {
   const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
@@ -2194,11 +2080,9 @@ do_issue_depth_offset() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_cull_face
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_cull_face() {
   const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
@@ -2223,11 +2107,9 @@ do_issue_cull_face() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_material
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_material() {
   static Material empty;
@@ -2254,11 +2136,9 @@ do_issue_material() {
   _c->light_model_two_side = material->get_twoside();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_texture
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_texture() {
   _texturing_state = 0;   // untextured
@@ -2316,8 +2196,8 @@ do_issue_texture() {
 
     ZTextureDef *texture_def = &_c->zb->current_textures[si];
 
-    // Fill in the filter func pointers.  These may not actually get
-    // called, if we decide below we can inline the filters.
+    // Fill in the filter func pointers.  These may not actually get called,
+    // if we decide below we can inline the filters.
     SamplerState::FilterType minfilter = sampler.get_minfilter();
     SamplerState::FilterType magfilter = sampler.get_magfilter();
 
@@ -2330,8 +2210,8 @@ do_issue_texture() {
       }
     }
 
-    // Depending on this particular texture's quality level, we may
-    // downgrade the requested filters.
+    // Depending on this particular texture's quality level, we may downgrade
+    // the requested filters.
     if (quality_level == Texture::QL_fastest) {
       minfilter = SamplerState::FT_nearest;
       magfilter = SamplerState::FT_nearest;
@@ -2360,28 +2240,27 @@ do_issue_texture() {
     }
 
     if (wrap_u != SamplerState::WM_repeat || wrap_v != SamplerState::WM_repeat) {
-      // We have some nonstandard wrap mode.  This will force the use
-      // of the general texfilter mode.
+      // We have some nonstandard wrap mode.  This will force the use of the
+      // general texfilter mode.
       needs_general = true;
 
-      // We need another level of indirection to implement the
-      // different texcoord wrap modes.  This means we will be using
-      // the _impl function pointers, which are called by the toplevel
-      // function.
+      // We need another level of indirection to implement the different
+      // texcoord wrap modes.  This means we will be using the _impl function
+      // pointers, which are called by the toplevel function.
 
       texture_def->tex_minfilter_func_impl = texture_def->tex_minfilter_func;
       texture_def->tex_magfilter_func_impl = texture_def->tex_magfilter_func;
 
-      // Now assign the toplevel function pointer to do the
-      // appropriate texture coordinate wrapping/clamping.
+      // Now assign the toplevel function pointer to do the appropriate
+      // texture coordinate wrappingclamping.
       texture_def->tex_minfilter_func = apply_wrap_general_minfilter;
       texture_def->tex_magfilter_func = apply_wrap_general_magfilter;
 
       texture_def->tex_wrap_u_func = get_tex_wrap_func(wrap_u);
       texture_def->tex_wrap_v_func = get_tex_wrap_func(wrap_v);
 
-      // The following special cases are handled inline, rather than
-      // relying on the above wrap function pointers.
+      // The following special cases are handled inline, rather than relying
+      // on the above wrap function pointers.
       if (wrap_u && SamplerState::WM_border_color && wrap_v == SamplerState::WM_border_color) {
         texture_def->tex_minfilter_func = apply_wrap_border_color_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_border_color_magfilter;
@@ -2439,27 +2318,25 @@ do_issue_texture() {
     _texturing_state = 1;    // textured (not perspective correct, no multitexture)
 
   } else {
-    // This is the default texture filter.  We use nearest sampling if
-    // there are no mipmaps, and mipmap_nearest if there are any
-    // mipmaps--these are the two inlined filters.
+    // This is the default texture filter.  We use nearest sampling if there
+    // are no mipmaps, and mipmap_nearest if there are any mipmaps--these are
+    // the two inlined filters.
     _texfilter_state = 0;    // tnearest
     if (any_mipmap) {
       _texfilter_state = 1;  // tmipmap
     }
 
     if (needs_general) {
-      // To support nonstandard texcoord wrapping etc, we need to
-      // force the general texfilter mode.
+      // To support nonstandard texcoord wrapping etc, we need to force the
+      // general texfilter mode.
       _texfilter_state = 2;  // tgeneral
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_scissor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void TinyGraphicsStateGuardian::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
@@ -2467,12 +2344,10 @@ do_issue_scissor() {
   set_scissor(frame[0], frame[1], frame[2], frame[3]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::set_scissor
-//       Access: Private
-//  Description: Sets up the scissor region, as a set of coordinates
-//               relative to the current viewport.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the scissor region, as a set of coordinates relative to the current
+ * viewport.
+ */
 void TinyGraphicsStateGuardian::
 set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
   _c->scissor.left = left;
@@ -2486,21 +2361,18 @@ set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat
   PN_stdfloat xcenter = (left + right) - 1.0f;
   PN_stdfloat ycenter = (bottom + top) - 1.0f;
   if (xsize == 0.0f || ysize == 0.0f) {
-    // If the scissor region is zero, nothing will be drawn anyway, so
-    // don't worry about it.
+    // If the scissor region is zero, nothing will be drawn anyway, so don't
+    // worry about it.
     _scissor_mat = TransformState::make_identity();
   } else {
     _scissor_mat = TransformState::make_scale(LVecBase3(1.0f / xsize, 1.0f / ysize, 1.0f))->compose(TransformState::make_pos(LPoint3(-xcenter, -ycenter, 0.0f)));
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::apply_texture
-//       Access: Protected
-//  Description: Updates the graphics state with the current
-//               information for this texture, and makes it the
-//               current texture available for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the graphics state with the current information for this texture,
+ * and makes it the current texture available for rendering.
+ */
 bool TinyGraphicsStateGuardian::
 apply_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
@@ -2509,14 +2381,12 @@ apply_texture(TextureContext *tc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::upload_texture
-//       Access: Protected
-//  Description: Uploads the texture image to the graphics state.
-//
-//               The return value is true if successful, or false if
-//               the texture has no image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uploads the texture image to the graphics state.
+ *
+ * The return value is true if successful, or false if the texture has no
+ * image.
+ */
 bool TinyGraphicsStateGuardian::
 upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
   Texture *tex = gtc->get_texture();
@@ -2525,8 +2395,8 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
     if (!tex->has_ram_image() && tex->might_have_ram_image() &&
         tex->has_simple_ram_image() &&
         !_loader.is_null()) {
-      // If we don't have the texture data right now, go get it, but in
-      // the meantime load a temporary simple image in its place.
+      // If we don't have the texture data right now, go get it, but in the
+      // meantime load a temporary simple image in its place.
       async_reload_texture(gtc);
       if (!tex->has_ram_image()) {
         if (gtc->was_simple_image_modified()) {
@@ -2645,16 +2515,12 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::upload_simple_texture
-//       Access: Protected
-//  Description: This is used as a standin for upload_texture
-//               when the texture in question is unavailable (e.g. it
-//               hasn't yet been loaded from disk).  Until the texture
-//               image itself becomes available, we will render the
-//               texture's "simple" image--a sharply reduced version
-//               of the same texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used as a standin for upload_texture when the texture in question
+ * is unavailable (e.g.  it hasn't yet been loaded from disk).  Until the
+ * texture image itself becomes available, we will render the texture's
+ * "simple" image--a sharply reduced version of the same texture.
+ */
 bool TinyGraphicsStateGuardian::
 upload_simple_texture(TinyTextureContext *gtc) {
   PStatTimer timer(_load_texture_pcollector);
@@ -2698,14 +2564,11 @@ upload_simple_texture(TinyTextureContext *gtc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::setup_gltex
-//       Access: Private
-//  Description: Sets the GLTexture size, bits, and masks
-//               appropriately, and allocates space for a pixmap.
-//               Does not fill the pixmap contents.  Returns true if
-//               the texture is a valid size, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the GLTexture size, bits, and masks appropriately, and allocates space
+ * for a pixmap.  Does not fill the pixmap contents.  Returns true if the
+ * texture is a valid size, false otherwise.
+ */
 bool TinyGraphicsStateGuardian::
 setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   int s_bits = get_tex_shift(x_size);
@@ -2729,10 +2592,9 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
 
   gltex->num_levels = num_levels;
 
-  // We allocate one big buffer, large enough to include all the
-  // mipmap levels, and index into that buffer for each level.  This
-  // cuts down on the number of individual alloc calls we have to make
-  // for each texture.
+  // We allocate one big buffer, large enough to include all the mipmap
+  // levels, and index into that buffer for each level.  This cuts down on the
+  // number of individual alloc calls we have to make for each texture.
   int total_bytecount = 0;
 
   // Count up the total bytes required for all mipmap levels.
@@ -2782,9 +2644,9 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
     ++level;
   }
 
-  // Fill out the remaining mipmap arrays with copies of the last
-  // level, so we don't have to be concerned with running off the end
-  // of this array while scanning out triangles.
+  // Fill out the remaining mipmap arrays with copies of the last level, so we
+  // don't have to be concerned with running off the end of this array while
+  // scanning out triangles.
   while (level < MAX_MIPMAP_LEVELS) {
     gltex->levels[level] = *dest;
     ++level;
@@ -2793,13 +2655,11 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::get_tex_shift
-//       Access: Private
-//  Description: Calculates the bit shift count, such that (1 << shift)
-//               == size.  Returns -1 if the size is not a power of 2
-//               or is larger than our largest allowable size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the bit shift count, such that (1 << shift) == size.  Returns -1
+ * if the size is not a power of 2 or is larger than our largest allowable
+ * size.
+ */
 int TinyGraphicsStateGuardian::
 get_tex_shift(int orig_size) {
   if ((orig_size & (orig_size - 1)) != 0) {
@@ -2813,12 +2673,10 @@ get_tex_shift(int orig_size) {
   return count_bits_in_word((unsigned int)orig_size - 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::copy_lum_image
-//       Access: Private, Static
-//  Description: Copies and scales the one-channel luminance image
-//               from the texture into the indicated ZTexture pixmap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies and scales the one-channel luminance image from the texture into the
+ * indicated ZTexture pixmap.
+ */
 void TinyGraphicsStateGuardian::
 copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
   Texture *tex = gtc->get_texture();
@@ -2853,12 +2711,10 @@ copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::copy_alpha_image
-//       Access: Private, Static
-//  Description: Copies and scales the one-channel alpha image
-//               from the texture into the indicated ZTexture pixmap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies and scales the one-channel alpha image from the texture into the
+ * indicated ZTexture pixmap.
+ */
 void TinyGraphicsStateGuardian::
 copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
   Texture *tex = gtc->get_texture();
@@ -2891,13 +2747,10 @@ copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::copy_one_channel_image
-//       Access: Private, Static
-//  Description: Copies and scales the one-channel image (with a
-//               single channel, e.g. red, green, or blue) from
-//               the texture into the indicated ZTexture pixmap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies and scales the one-channel image (with a single channel, e.g.  red,
+ * green, or blue) from the texture into the indicated ZTexture pixmap.
+ */
 void TinyGraphicsStateGuardian::
 copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level, int channel) {
   Texture *tex = gtc->get_texture();
@@ -2959,13 +2812,10 @@ copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureCon
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::copy_la_image
-//       Access: Private, Static
-//  Description: Copies and scales the two-channel luminance-alpha
-//               image from the texture into the indicated ZTexture
-//               pixmap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies and scales the two-channel luminance-alpha image from the texture
+ * into the indicated ZTexture pixmap.
+ */
 void TinyGraphicsStateGuardian::
 copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
   Texture *tex = gtc->get_texture();
@@ -2999,12 +2849,10 @@ copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::copy_rgb_image
-//       Access: Private, Static
-//  Description: Copies and scales the three-channel RGB image from
-//               the texture into the indicated ZTexture pixmap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies and scales the three-channel RGB image from the texture into the
+ * indicated ZTexture pixmap.
+ */
 void TinyGraphicsStateGuardian::
 copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
   Texture *tex = gtc->get_texture();
@@ -3038,12 +2886,10 @@ copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::copy_rgba_image
-//       Access: Private, Static
-//  Description: Copies and scales the four-channel RGBA image from
-//               the texture into the indicated ZTexture pixmap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies and scales the four-channel RGBA image from the texture into the
+ * indicated ZTexture pixmap.
+ */
 void TinyGraphicsStateGuardian::
 copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc, int level) {
   Texture *tex = gtc->get_texture();
@@ -3077,12 +2923,9 @@ copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *g
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::setup_material
-//       Access: Private
-//  Description: Applies the desired parametesr to the indicated
-//               GLMaterial object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the desired parametesr to the indicated GLMaterial object.
+ */
 void TinyGraphicsStateGuardian::
 setup_material(GLMaterial *gl_material, const Material *material) {
   const LColor &specular = material->get_specular();
@@ -3123,12 +2966,10 @@ setup_material(GLMaterial *gl_material, const Material *material) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_auto_rescale_normal
-//       Access: Protected
-//  Description: Sets the state to either rescale or normalize the
-//               normals according to the current transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the state to either rescale or normalize the normals according to the
+ * current transform.
+ */
 void TinyGraphicsStateGuardian::
 do_auto_rescale_normal() {
   if (_internal_transform->has_uniform_scale()) {
@@ -3143,13 +2984,10 @@ do_auto_rescale_normal() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::load_matrix
-//       Access: Private, Static
-//  Description: Copies the Panda matrix stored in the indicated
-//               TransformState object into the indicated TinyGL
-//               matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the Panda matrix stored in the indicated TransformState object into
+ * the indicated TinyGL matrix.
+ */
 void TinyGraphicsStateGuardian::
 load_matrix(M4 *matrix, const TransformState *transform) {
   const LMatrix4 &pm = transform->get_mat();
@@ -3161,13 +2999,11 @@ load_matrix(M4 *matrix, const TransformState *transform) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::get_color_blend_op
-//       Access: Private, Static
-//  Description: Returns the integer element of store_pixel_funcs (as
-//               defined by store_pixel.py) that corresponds to the
-//               indicated ColorBlendAttrib operand code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the integer element of store_pixel_funcs (as defined by
+ * store_pixel.py) that corresponds to the indicated ColorBlendAttrib operand
+ * code.
+ */
 int TinyGraphicsStateGuardian::
 get_color_blend_op(ColorBlendAttrib::Operand operand) {
   switch (operand) {
@@ -3215,12 +3051,10 @@ get_color_blend_op(ColorBlendAttrib::Operand operand) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::get_tex_filter_func
-//       Access: Private, Static
-//  Description: Returns the pointer to the appropriate filter
-//               function according to the texture's filter type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the appropriate filter function according to the
+ * texture's filter type.
+ */
 ZB_lookupTextureFunc TinyGraphicsStateGuardian::
 get_tex_filter_func(SamplerState::FilterType filter) {
   switch (filter) {
@@ -3247,12 +3081,10 @@ get_tex_filter_func(SamplerState::FilterType filter) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::get_tex_wrap_func
-//       Access: Private, Static
-//  Description: Returns the pointer to the appropriate wrap
-//               function according to the texture's wrap mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the appropriate wrap function according to the
+ * texture's wrap mode.
+ */
 ZB_texWrapFunc TinyGraphicsStateGuardian::
 get_tex_wrap_func(SamplerState::WrapMode wrap_mode) {
   switch (wrap_mode) {
@@ -3274,24 +3106,20 @@ get_tex_wrap_func(SamplerState::WrapMode wrap_mode) {
   return &texcoord_repeat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::texgen_null
-//       Access: Private, Static
-//  Description: Generates invalid texture coordinates.  Used when
-//               texture coordinate params are invalid or unsupported.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates invalid texture coordinates.  Used when texture coordinate params
+ * are invalid or unsupported.
+ */
 void TinyGraphicsStateGuardian::
 texgen_null(V2 &result, TinyGraphicsStateGuardian::TexCoordData &) {
   result.v[0] = 0.0;
   result.v[1] = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::texgen_simple
-//       Access: Private, Static
-//  Description: Extracts a simple 2-d texture coordinate pair from
-//               the vertex data, without applying any texture matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a simple 2-d texture coordinate pair from the vertex data, without
+ * applying any texture matrix.
+ */
 void TinyGraphicsStateGuardian::
 texgen_simple(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
   // No need to transform, so just extract as two-component.
@@ -3300,12 +3128,10 @@ texgen_simple(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
   result.v[1] = d[1];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::texgen_simple
-//       Access: Private, Static
-//  Description: Extracts a simple 2-d texture coordinate pair from
-//               the vertex data, and then applies a texture matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a simple 2-d texture coordinate pair from the vertex data, and
+ * then applies a texture matrix.
+ */
 void TinyGraphicsStateGuardian::
 texgen_texmat(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
   // Transform texcoords as a four-component vector for most generality.
@@ -3314,12 +3140,10 @@ texgen_texmat(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
   result.v[1] = d[1] / d[3];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::texgen_sphere_map
-//       Access: Private, Static
-//  Description: Computes appropriate sphere map texture coordinates
-//               based on the eye normal coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes appropriate sphere map texture coordinates based on the eye normal
+ * coordinates.
+ */
 void TinyGraphicsStateGuardian::
 texgen_sphere_map(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
   // Get the normal and point in eye coordinates.

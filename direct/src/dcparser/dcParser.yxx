@@ -1,7 +1,8 @@
-// Filename: dcParser.yxx
-// Created by:  drose (05Oct00)
-// 
-////////////////////////////////////////////////////////////////////
+/**
+ * @file dcParser.yxx
+ * @author drose
+ * @date 2000-10-05
+ */
 
 %{
 #include "dcLexerDefs.h"

@@ -1,16 +1,15 @@
-// Filename: eggToObj.cxx
-// Created by:  drose (28Feb12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToObj.cxx
+ * @author drose
+ * @date 2012-02-28
+ */
 
 #include "eggToObj.h"
 #include "pystub.h"
@@ -19,11 +18,9 @@
 #include "dcast.h"
 #include "string_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObj::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggToObj::
 EggToObj() :
   EggToSomething("Obj", ".obj", true, false)
@@ -48,11 +45,9 @@ EggToObj() :
   _got_coordinate_system = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObj::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggToObj::
 run() {
   if (_triangulate_polygons) {
@@ -70,14 +65,11 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObj::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggToObj::
 handle_args(ProgramBase::Args &args) {
   return EggToSomething::handle_args(args);

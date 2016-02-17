@@ -1,17 +1,17 @@
-// Filename: texture.h
-// Created by:  mike (09Jan97)
-// Updated by: fperazzi, PandaSE(29Apr10) (added TT_2d_texture_array)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texture.h
+ * @author mike
+ * @date 1997-01-09
+ * @author fperazzi, PandaSE
+ * @date 2010-04-29
+ */
 
 #ifndef TEXTURE_H
 #define TEXTURE_H
@@ -55,24 +55,19 @@ class CullTraverserData;
 class TexturePeeker;
 struct DDSHeader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Texture
-// Description : Represents a texture object, which is typically a
-//               single 2-d image but may also represent a 1-d or 3-d
-//               texture image, or the six 2-d faces of a cube map
-//               texture.
-//
-//               A texture's image data might be stored in system RAM
-//               (see get_ram_image()) or its image may be represented
-//               in texture memory on one or more
-//               GraphicsStateGuardians (see prepare()), or both.  The
-//               typical usage pattern is that a texture is loaded
-//               from an image file on disk, which copies its image
-//               data into system RAM; then the first time the texture
-//               is rendered its image data is copied to texture
-//               memory (actually, to the graphics API), and the
-//               system RAM image is automatically freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a texture object, which is typically a single 2-d image but may
+ * also represent a 1-d or 3-d texture image, or the six 2-d faces of a cube
+ * map texture.
+ *
+ * A texture's image data might be stored in system RAM (see get_ram_image())
+ * or its image may be represented in texture memory on one or more
+ * GraphicsStateGuardians (see prepare()), or both.  The typical usage pattern
+ * is that a texture is loaded from an image file on disk, which copies its
+ * image data into system RAM; then the first time the texture is rendered its
+ * image data is copied to texture memory (actually, to the graphics API), and
+ * the system RAM image is automatically freed.
+ */
 class EXPCL_PANDA_GOBJ Texture : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   typedef PT(Texture) MakeTextureFunc();
@@ -108,10 +103,9 @@ PUBLISHED:
     F_rgb,     // any suitable RGB mode, whatever the hardware prefers
 
     // The following request a particular number of bits for the GSG's
-    // internal_format (as stored in the framebuffer), but this
-    // request is not related to the pixel storage within the Texture
-    // object itself, which is always get_num_components() *
-    // get_component_width().
+    // internal_format (as stored in the framebuffer), but this request is not
+    // related to the pixel storage within the Texture object itself, which is
+    // always get_num_components() * get_component_width().
     F_rgb5,    // 5 bits per R,G,B channel
     F_rgb8,    // 8 bits per R,G,B channel
     F_rgb12,   // 12 bits per R,G,B channel
@@ -119,8 +113,8 @@ PUBLISHED:
 
     F_rgba,    // any suitable RGBA mode, whatever the hardware prefers
 
-    // Again, the following bitdepth requests are only for the GSG;
-    // within the Texture object itself, these are all equivalent.
+    // Again, the following bitdepth requests are only for the GSG; within the
+    // Texture object itself, these are all equivalent.
     F_rgbm,    // as above, but only requires 1 bit for alpha (i.e. mask)
     F_rgba4,   // 4 bits per R,G,B,A channel
     F_rgba5,   // 5 bits per R,G,B channel, 1 bit alpha
@@ -143,8 +137,8 @@ PUBLISHED:
     F_rg16,
     F_rgb16,
 
-    // These formats are in the sRGB color space.
-    // RGB is 2.2 gamma corrected, alpha is always linear.
+    // These formats are in the sRGB color space.  RGB is 2.2 gamma corrected,
+    // alpha is always linear.
     F_srgb,
     F_srgb_alpha,
     F_sluminance,
@@ -193,17 +187,16 @@ PUBLISHED:
   typedef SamplerState::WrapMode WrapMode;
 
   enum CompressionMode {
-    // Generic compression modes.  Usually, you should choose one of
-    // these.
+    // Generic compression modes.  Usually, you should choose one of these.
     CM_default,  // on or off, according to compressed-textures
     CM_off,      // uncompressed image
     CM_on,       // whatever compression the driver supports
 
-    // Specific compression modes.  Use only when you really want to
-    // use a particular compression algorithm.  Use with caution; not
-    // all drivers support all compression modes.  You can use
-    // GSG::get_supports_compressed_texture_format() to query the
-    // available compression modes for a particular GSG.
+    // Specific compression modes.  Use only when you really want to use a
+    // particular compression algorithm.  Use with caution; not all drivers
+    // support all compression modes.  You can use
+    // GSG::get_supports_compressed_texture_format() to query the available
+    // compression modes for a particular GSG.
     CM_fxt1,
     CM_dxt1, // BC1: RGB with optional binary alpha.
     CM_dxt2, // Like DXT3, but assumes premultiplied alpha
@@ -477,9 +470,8 @@ PUBLISHED:
   INLINE static bool has_textures_power_2();
 
 PUBLISHED:
-  // These are published, but in general, you shouldn't be mucking
-  // with these values; they are set automatically when a texture is
-  // loaded.
+  // These are published, but in general, you shouldn't be mucking with these
+  // values; they are set automatically when a texture is loaded.
   INLINE void set_filename(const Filename &filename);
   INLINE void clear_filename();
   INLINE void set_alpha_filename(const Filename &alpha_filename);
@@ -578,13 +570,12 @@ protected:
   virtual void reconsider_dirty();
 
   // All of the functions in this class that begin "do_" are protected
-  // methods.  Many of them are implementations of public-facing
-  // versions of the same methods.
+  // methods.  Many of them are implementations of public-facing versions of
+  // the same methods.
 
-  // All of these assume the CData lock is already held (and receive a
-  // CData pointer representing that lock); generally, they also avoid
-  // adjusting the _properties_modified and _image_modified
-  // semaphores.
+  // All of these assume the CData lock is already held (and receive a CData
+  // pointer representing that lock); generally, they also avoid adjusting the
+  // _properties_modified and _image_modified semaphores.
   virtual bool do_adjust_this_size(const CData *cdata,
                                    int &x_size, int &y_size, const string &name,
                                    bool for_padding) const;
@@ -724,8 +715,8 @@ protected:
     PTA_uchar _image;
     size_t _page_size;
 
-    // If _pointer_image is non-NULL, it represents an external block
-    // of memory that is used instead of the above PTA_uchar.
+    // If _pointer_image is non-NULL, it represents an external block of
+    // memory that is used instead of the above PTA_uchar.
     void *_pointer_image;
   };
 
@@ -879,10 +870,9 @@ protected:
     // The number of channels of the primary file we use.  1, 2, 3, or 4.
     int _primary_file_num_channels;
 
-    // If we have a separate alpha file, this designates which channel
-    // in the alpha file provides the alpha channel.  0 indicates the
-    // combined grayscale value of rgb; otherwise, 1, 2, 3, or 4 are
-    // valid.
+    // If we have a separate alpha file, this designates which channel in the
+    // alpha file provides the alpha channel.  0 indicates the combined
+    // grayscale value of rgb; otherwise, 1, 2, 3, or 4 are valid.
     int _alpha_file_channel;
 
     int _x_size;
@@ -921,13 +911,13 @@ protected:
     AutoTextureScale _auto_texture_scale;
     CompressionMode _ram_image_compression;
 
-    // There is usually one RamImage for the mipmap level 0 (the base
-    // image).  There may or may not also be additional images for the
-    // additional mipmap levels.
+    // There is usually one RamImage for the mipmap level 0 (the base image).
+    // There may or may not also be additional images for the additional
+    // mipmap levels.
     RamImages _ram_images;
 
-    // This is the simple image, which may be loaded before the texture
-    // is loaded from disk.  It exists only for 2-d textures.
+    // This is the simple image, which may be loaded before the texture is
+    // loaded from disk.  It exists only for 2-d textures.
     RamImage _simple_ram_image;
     int _simple_x_size;
     int _simple_y_size;
@@ -968,19 +958,19 @@ protected:
   bool _reloading;
 
   // A Texture keeps a list (actually, a map) of all the
-  // PreparedGraphicsObjects tables that it has been prepared into.
-  // Each PGO conversely keeps a list (a set) of all the Textures that
-  // have been prepared there.  When either destructs, it removes
-  // itself from the other's list.
+  // PreparedGraphicsObjects tables that it has been prepared into.  Each PGO
+  // conversely keeps a list (a set) of all the Textures that have been
+  // prepared there.  When either destructs, it removes itself from the
+  // other's list.
   typedef pmap<int, TextureContext *> Contexts;
   typedef pmap<PreparedGraphicsObjects *, Contexts> PreparedViews;
   PreparedViews _prepared_views;
 
-  // It is common, when using normal maps, specular maps, gloss maps,
-  // and such, to use a file naming convention where the filenames
-  // of the special maps are derived by concatenating a suffix to
-  // the name of the diffuse map.  The following table enables
-  // lookup of the special maps given the diffuse map and the suffix.
+  // It is common, when using normal maps, specular maps, gloss maps, and
+  // such, to use a file naming convention where the filenames of the special
+  // maps are derived by concatenating a suffix to the name of the diffuse
+  // map.  The following table enables lookup of the special maps given the
+  // diffuse map and the suffix.
   typedef pmap<CPT(InternalName), PT(Texture)> RelatedTextures;
   RelatedTextures _related_textures;
 

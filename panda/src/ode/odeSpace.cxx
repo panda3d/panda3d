@@ -1,16 +1,15 @@
-// Filename: odeSpace.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeSpace.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #include "config_ode.h"
 #include "odeSpace.h"
@@ -24,13 +23,13 @@
 
 TypeHandle OdeSpace::_type_handle;
 // this data is used in auto_collide
-const int OdeSpace::MAX_CONTACTS = 16; 
-OdeWorld* OdeSpace::_static_auto_collide_world; 
-OdeSpace* OdeSpace::_static_auto_collide_space; 
-dJointGroupID OdeSpace::_static_auto_collide_joint_group; 
+const int OdeSpace::MAX_CONTACTS = 16;
+OdeWorld* OdeSpace::_static_auto_collide_world;
+OdeSpace* OdeSpace::_static_auto_collide_space;
+dJointGroupID OdeSpace::_static_auto_collide_joint_group;
 
 OdeSpace::
-OdeSpace(dSpaceID id) : 
+OdeSpace(dSpaceID id) :
   _id(id) {
   _auto_collide_world = NULL;
   _auto_collide_joint_group = NULL;
@@ -130,7 +129,8 @@ auto_collide() {
 
 void OdeSpace::
 auto_callback(void *data, dGeomID o1, dGeomID o2) {
-// uses data stored on the world to resolve collisions so you don't have to use near_callbacks in python
+// uses data stored on the world to resolve collisions so you don't have to
+// use near_callbacks in python
   int i;
   dBodyID b1 = dGeomGetBody(o1);
   dBodyID b2 = dGeomGetBody(o2);

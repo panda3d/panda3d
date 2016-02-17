@@ -1,16 +1,15 @@
-// Filename: collisionHandler.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHandler.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef COLLISIONHANDLER_H
 #define COLLISIONHANDLER_H
@@ -22,14 +21,12 @@
 
 class CollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandler
-// Description : The abstract interface to a number of classes that
-//               decide what to do when a collision is detected.  One
-//               of these must be assigned to the CollisionTraverser
-//               that is processing collisions in order to specify how
-//               to dispatch detected collisions.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract interface to a number of classes that decide what to do when a
+ * collision is detected.  One of these must be assigned to the
+ * CollisionTraverser that is processing collisions in order to specify how to
+ * dispatch detected collisions.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandler : public TypedReferenceCount {
 public:
   CollisionHandler();
@@ -70,6 +67,3 @@ private:
 #include "collisionHandler.I"
 
 #endif
-
-
-

@@ -1,16 +1,15 @@
-// Filename: config_x11display.cxx
-// Created by:  rdb (07Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_x11display.cxx
+ * @author rdb
+ * @date 2009-07-07
+ */
 
 #include "config_x11display.h"
 #include "x11GraphicsPipe.h"
@@ -36,7 +35,7 @@ ConfigVariableBool x_error_abort
  PRC_DESC("Set this true to trigger and abort (and a stack trace) on receipt "
           "of an error from the X window system.  This can make it easier "
           "to discover where these errors are generated."));
-          
+
 ConfigVariableInt x_wheel_up_button
 ("x-wheel-up-button", 4,
  PRC_DESC("This is the mouse button index of the wheel_up event: which "
@@ -71,14 +70,12 @@ ConfigVariableString x_wm_class
  PRC_DESC("Specify the value to use for the res_class field of the window's "
           "WM_CLASS property."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libx11display
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libx11display() {
   static bool initialized = false;

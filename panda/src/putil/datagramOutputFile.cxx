@@ -1,28 +1,25 @@
-// Filename: datagramOutputFile.cxx
-// Created by:  drose (30Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagramOutputFile.cxx
+ * @author drose
+ * @date 2000-10-30
+ */
 
 #include "datagramOutputFile.h"
 #include "streamWriter.h"
 #include "zStream.h"
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::open
-//       Access: Public
-//  Description: Opens the indicated filename for writing.  Returns
-//               true if successful, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename for writing.  Returns true if successful,
+ * false on failure.
+ */
 bool DatagramOutputFile::
 open(const FileReference *file) {
   close();
@@ -44,15 +41,11 @@ open(const FileReference *file) {
   return _owns_out && !_out->fail();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::open
-//       Access: Public
-//  Description: Starts writing to the indicated stream.  Returns
-//               true on success, false on failure.  The
-//               DatagramOutputFile does not take ownership of the
-//               stream; you are responsible for closing or deleting
-//               it when you are done.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts writing to the indicated stream.  Returns true on success, false on
+ * failure.  The DatagramOutputFile does not take ownership of the stream; you
+ * are responsible for closing or deleting it when you are done.
+ */
 bool DatagramOutputFile::
 open(ostream &out, const Filename &filename) {
   close();
@@ -68,12 +61,10 @@ open(ostream &out, const Filename &filename) {
   return !_out->fail();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::close
-//       Access: Public
-//  Description: Closes the file.  This is also implicitly done when
-//               the DatagramOutputFile destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the file.  This is also implicitly done when the DatagramOutputFile
+ * destructs.
+ */
 void DatagramOutputFile::
 close() {
   _vfile.clear();
@@ -91,15 +82,12 @@ close() {
   _error = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::write_header
-//       Access: Public
-//  Description: Writes a sequence of bytes to the beginning of the
-//               datagram file.  This may be called any number of
-//               times after the file has been opened and before the
-//               first datagram is written.  It may not be called once
-//               the first datagram is written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a sequence of bytes to the beginning of the datagram file.  This may
+ * be called any number of times after the file has been opened and before the
+ * first datagram is written.  It may not be called once the first datagram is
+ * written.
+ */
 bool DatagramOutputFile::
 write_header(const string &header) {
   nassertr(_out != (ostream *)NULL, false);
@@ -110,12 +98,10 @@ write_header(const string &header) {
   return !_out->fail();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::put_datagram
-//       Access: Public, Virtual
-//  Description: Writes the given datagram to the file.  Returns true
-//               on success, false if there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the given datagram to the file.  Returns true on success, false if
+ * there is an error.
+ */
 bool DatagramOutputFile::
 put_datagram(const Datagram &data) {
   nassertr(_out != (ostream *)NULL, false);
@@ -140,18 +126,15 @@ put_datagram(const Datagram &data) {
   return !_out->fail();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::copy_datagram
-//       Access: Published, Virtual
-//  Description: Copies the file data from the entire indicated
-//               file (via the vfs) as the next datagram.  This is
-//               intended to support potentially very large datagrams.
-//
-//               Returns true on success, false on failure or if this
-//               method is unimplemented.  On true, fills "result"
-//               with the information that references the copied file,
-//               if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the file data from the entire indicated file (via the vfs) as the
+ * next datagram.  This is intended to support potentially very large
+ * datagrams.
+ *
+ * Returns true on success, false on failure or if this method is
+ * unimplemented.  On true, fills "result" with the information that
+ * references the copied file, if possible.
+ */
 bool DatagramOutputFile::
 copy_datagram(SubfileInfo &result, const Filename &filename) {
   nassertr(_out != (ostream *)NULL, false);
@@ -207,24 +190,20 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
       << "Truncated input stream.\n";
     return false;
   }
-  
+
   result = SubfileInfo(_file, start, size);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::copy_datagram
-//       Access: Published, Virtual
-//  Description: Copies the file data from the range of the indicated
-//               file (outside of the vfs) as the next datagram.  This
-//               is intended to support potentially very large
-//               datagrams.
-//
-//               Returns true on success, false on failure or if this
-//               method is unimplemented.  On true, fills "result"
-//               with the information that references the copied file,
-//               if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the file data from the range of the indicated file (outside of the
+ * vfs) as the next datagram.  This is intended to support potentially very
+ * large datagrams.
+ *
+ * Returns true on success, false on failure or if this method is
+ * unimplemented.  On true, fills "result" with the information that
+ * references the copied file, if possible.
+ */
 bool DatagramOutputFile::
 copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
   nassertr(_out != (ostream *)NULL, false);
@@ -249,7 +228,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
-  
+
   streampos start = _out->tellp();
   in.seekg(source.get_start());
   in.read(buffer, min((streamsize)buffer_size, num_remaining));
@@ -277,12 +256,9 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::is_error
-//       Access: Public, Virtual
-//  Description: Returns true if the file has reached an error
-//               condition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file has reached an error condition.
+ */
 bool DatagramOutputFile::
 is_error() {
   if (_out == (ostream *)NULL) {
@@ -295,12 +271,10 @@ is_error() {
   return _error;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::flush
-//       Access: Public, Virtual
-//  Description: Ensures that all datagrams previously written will be
-//               visible in the output file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that all datagrams previously written will be visible in the output
+ * file.
+ */
 void DatagramOutputFile::
 flush() {
   if (_out != (ostream *)NULL) {
@@ -309,42 +283,32 @@ flush() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::get_filename
-//       Access: Published, Virtual
-//  Description: Returns the filename that provides the target for
-//               these datagrams, if any, or empty string if the
-//               datagrams do not get written to a file on disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the filename that provides the target for these datagrams, if any,
+ * or empty string if the datagrams do not get written to a file on disk.
+ */
 const Filename &DatagramOutputFile::
 get_filename() {
   return _filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::get_file
-//       Access: Published, Virtual
-//  Description: Returns the FileReference that provides the target for
-//               these datagrams, if any, or NULL if the datagrams do
-//               not written to a file on disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the FileReference that provides the target for these datagrams, if
+ * any, or NULL if the datagrams do not written to a file on disk.
+ */
 const FileReference *DatagramOutputFile::
 get_file() {
   return _file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::get_file_pos
-//       Access: Published, Virtual
-//  Description: Returns the current file position within the data
-//               stream, if any, or 0 if the file position is not
-//               meaningful or cannot be determined.
-//
-//               For DatagramOutputFiles that return a meaningful file
-//               position, this will be pointing to the first byte
-//               following the datagram returned after a call to
-//               put_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current file position within the data stream, if any, or 0 if
+ * the file position is not meaningful or cannot be determined.
+ *
+ * For DatagramOutputFiles that return a meaningful file position, this will
+ * be pointing to the first byte following the datagram returned after a call
+ * to put_datagram().
+ */
 streampos DatagramOutputFile::
 get_file_pos() {
   if (_out == (ostream *)NULL) {

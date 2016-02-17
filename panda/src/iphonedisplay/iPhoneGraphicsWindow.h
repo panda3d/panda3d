@@ -1,16 +1,15 @@
-// Filename: iPhoneGraphicsWindow.h
-// Created by:  drose (08Apr09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iPhoneGraphicsWindow.h
+ * @author drose
+ * @date 2009-04-08
+ */
 
 #ifndef IPHONEGRAPHICSWINDOW_H
 #define IPHONEGRAPHICSWINDOW_H
@@ -23,14 +22,12 @@
 
 #import <UIKit/UIKit.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : IPhoneGraphicsWindow
-// Description : An interface to the osx/ system for managing GL
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the osx/ system for managing GL windows under X.
+ */
 class IPhoneGraphicsWindow : public GraphicsWindow {
 public:
-  IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                        const string &name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,
@@ -67,7 +64,7 @@ private:
   void handle_button_delta(int num_touches);
 
 private:
-  EAGLView *_gl_view; 
+  EAGLView *_gl_view;
   int _last_buttons;
 
 public:

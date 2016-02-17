@@ -1,16 +1,15 @@
-// Filename: lpoint4_ext_src.I
-// Created by:  rdb (02Jan11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lpoint4_ext_src.I
+ * @author rdb
+ * @date 2011-01-02
+ */
 
 #ifdef FLOATTYPE_IS_INT
 #if PY_MAJOR_VERSION >= 3
@@ -22,11 +21,9 @@
 #define PY_FROM_FLOATTYPE PyFloat_FromDouble
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint4::__repr__
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_LINMATH string Extension<FLOATNAME(LPoint4)>::
 __repr__() const {
   ostringstream out;
@@ -38,11 +35,9 @@ __repr__() const {
   return out.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint4::__getattr__
-//       Access: Published
-//  Description: This is used to implement swizzle masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement swizzle masks.
+ */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LPoint4)>::
 __getattr__(PyObject *self, const string &attr_name) const {
 #ifndef CPPPARSER
@@ -92,11 +87,9 @@ __getattr__(PyObject *self, const string &attr_name) const {
   return Dtool_Raise_AttributeError(self, attr_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint4::__setattr__
-//       Access: Published
-//  Description: This is used to implement write masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement write masks.
+ */
 INLINE_LINMATH int Extension<FLOATNAME(LPoint4)>::
 __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   // Upcall to LVecBase4.
