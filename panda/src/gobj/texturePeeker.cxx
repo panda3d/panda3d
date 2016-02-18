@@ -91,8 +91,11 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   switch (_format) {
   case Texture::F_depth_stencil:
   case Texture::F_depth_component:
-
+  case Texture::F_depth_component16:
+  case Texture::F_depth_component24:
+  case Texture::F_depth_component32:
   case Texture::F_red:
+  case Texture::F_r16:
     _get_texel = get_texel_r;
     break;
 
@@ -109,23 +112,30 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     break;
 
   case Texture::F_luminance:
+  case Texture::F_sluminance:
     _get_texel = get_texel_l;
     break;
 
   case Texture::F_luminance_alpha:
+  case Texture::F_sluminance_alpha:
   case Texture::F_luminance_alphamask:
     _get_texel = get_texel_la;
     break;
 
   case Texture::F_rgb:
+  case Texture::F_srgb:
   case Texture::F_rgb5:
   case Texture::F_rgb8:
   case Texture::F_rgb12:
+  case Texture::F_rgb16:
   case Texture::F_rgb332:
+  case Texture::F_r11_g11_b10:
+  case Texture::F_rgb9_e5:
     _get_texel = get_texel_rgb;
     break;
 
   case Texture::F_rgba:
+  case Texture::F_srgb_alpha:
   case Texture::F_rgbm:
   case Texture::F_rgba4:
   case Texture::F_rgba5:
@@ -133,10 +143,13 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   case Texture::F_rgba12:
   case Texture::F_rgba16:
   case Texture::F_rgba32:
+  case Texture::F_rgb10_a2:
     _get_texel = get_texel_rgba;
     break;
   default:
     // Not supported.
+    gobj_cat.error() << "Unsupported texture peeker format: "
+      << Texture::format_format(_format) << endl;
     _image.clear();
     return;
   }
