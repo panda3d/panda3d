@@ -629,8 +629,9 @@ bool ShaderTerrainMesh::do_check_lod_matches(Chunk* chunk, TraversalData* data) 
         chunk->edges.get_cell(x + 2 * y)
       );
       LVector4 projected = data->mvp_mat.xform(LVector4(edge_pos, 1.0));
-      if (projected.get_w() == 0.0)
+      if (projected.get_w() == 0.0) {
         projected.set(0.0, 0.0, -1.0, 1.0f);
+      }
       projected *= 1.0 / projected.get_w();
       projected_points[x + 2 * y].set(
         projected.get_x() * data->screen_size.get_x(),
