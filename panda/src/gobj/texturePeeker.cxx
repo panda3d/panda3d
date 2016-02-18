@@ -168,11 +168,68 @@ void TexturePeeker::
 lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
   int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
   int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
+  fetch_pixel(color, x, y);
+}
 
+/**
+ *  Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ *  coordinates are used.
+ */
+void TexturePeeker::
+fetch_pixel(LColor& color, size_t x, size_t y) const {
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   const unsigned char *p = _image.p() + (y * _x_size + x) * _pixel_width;
-
   (*_get_texel)(color, p, _get_component);
+}
+
+
+/**
+ * Performs a bilinear lookup to retrieve the color value stored at the uv
+ * coordinate (u, v).
+ *
+ * In case the point is outside of the uv range, color is set to zero,
+ * and false is returned.  Otherwise true is returned.
+ */
+bool TexturePeeker::
+lookup_bilinear(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
+  color = LColor::zero();
+
+  u = u * _x_size - 0.5;
+  v = v * _y_size - 0.5;
+
+  int min_u = int(floor(u));
+  int min_v = int(floor(v));
+
+  PN_stdfloat frac_u = u - min_u;
+  PN_stdfloat frac_v = v - min_v;
+
+  LColor p00(LColor::zero()), p01(LColor::zero()), p10(LColor::zero()), p11(LColor::zero());
+  PN_stdfloat w00 = 0.0, w01 = 0.0, w10 = 0.0, w11 = 0.0;
+
+  if (has_pixel(min_u, min_v)) {
+    w00 = (1.0 - frac_v) * (1.0 - frac_u);
+    fetch_pixel(p00, min_u, min_v);
+  }
+  if (has_pixel(min_u + 1, min_v)) {
+    w10 = (1.0 - frac_v) * frac_u;
+    fetch_pixel(p10, min_u + 1, min_v);
+  }
+  if (has_pixel(min_u, min_v + 1)) {
+    w01 = frac_v * (1.0 - frac_u);
+    fetch_pixel(p01, min_u, min_v + 1);
+  }
+  if (has_pixel(min_u + 1, min_v + 1)) {
+    w11 = frac_v * frac_u;
+    fetch_pixel(p11, min_u + 1, min_v + 1);
+  }
+
+  PN_stdfloat net_w = w00 + w01 + w10 + w11;
+  if (net_w == 0.0) {
+    return false;
+  }
+
+  color = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11) / net_w;
+  return true;
 }
 
 /**
