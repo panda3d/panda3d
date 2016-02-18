@@ -277,6 +277,14 @@
   #define EXPTP_VRPN IMPORT_TEMPL
 #endif
 
+#ifdef BUILDING_VULKANDISPLAY
+  #define EXPCL_VULKANDISPLAY EXPORT_CLASS
+  #define EXPTP_VULKANDISPLAY EXPORT_TEMPL
+#else
+  #define EXPCL_VULKANDISPLAY IMPORT_CLASS
+  #define EXPTP_VULKANDISPLAY IMPORT_TEMPL
+#endif
+
 #if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(CPPPARSER)
 #define INLINE_LINMATH __forceinline
 #define INLINE_MATHUTIL __forceinline

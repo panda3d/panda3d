@@ -71,8 +71,9 @@ if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
 PkgListSet(["PYTHON", "DIRECT",                        # Python support
-  "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
-  "EGL",                                               # OpenGL (ES) integration
+  "GL", "VULKAN"] + DXVERSIONS + ["TINYDISPLAY",       # 3D graphics
+  "EGL", "GLES", "GLES2",                              # OpenGL (ES) integration
+  "NVIDIACG",                                          # Shaders
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
   "VORBIS", "FFMPEG", "SWSCALE", "SWRESAMPLE",         # Audio decoding
@@ -461,6 +462,7 @@ SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
 SdkLocateAndroid()
+SdkLocateVulkan()
 
 SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
@@ -541,6 +543,9 @@ if (COMPILER == "MSVC"):
                     DefSymbol(pkg, "_UNICODE", "")
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
+            elif pkg == "VULKAN":
+                IncDirectory(pkg, SDK[pkg] + "/Include")
+                LibName(pkg, SDK[pkg] + "/Source/lib/vulkan-1.lib")
             elif GetThirdpartyDir() is not None:
                 IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
     for pkg in DXVERSIONS:
@@ -2992,6 +2997,7 @@ else:
     CopyAllHeaders('panda/src/x11display')
     CopyAllHeaders('panda/src/glxdisplay')
 CopyAllHeaders('panda/src/egldisplay')
+CopyAllHeaders('panda/src/vulkandisplay')
 CopyAllHeaders('panda/metalibs/pandagl')
 CopyAllHeaders('panda/metalibs/pandagles')
 CopyAllHeaders('panda/metalibs/pandagles2')
@@ -4566,6 +4572,18 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
   TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
+
+#
+# DIRECTORY: panda/src/vulkandisplay/
+#
+
+if (GetTarget() == 'windows' and PkgSkip("GL")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/vulkandisplay', 'DIR:panda/src/vulkandisplay', 'BUILDING:VULKANDISPLAY', 'VULKAN']
+  TargetAdd('p3vulkandisplay_composite1.obj', opts=OPTS, input='p3vulkandisplay_composite1.cxx')
+  TargetAdd('libp3vulkandisplay.dll', input='p3vulkandisplay_composite1.obj')
+  TargetAdd('libp3vulkandisplay.dll', input='libp3windisplay.dll')
+  TargetAdd('libp3vulkandisplay.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN'])
 
 #
 # DIRECTORY: panda/src/ode/

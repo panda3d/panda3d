@@ -2179,6 +2179,17 @@ def SdkLocateAndroid():
     LibName("ALWAYS", stl_lib)
     CopyFile(os.path.join(GetOutputDir(), 'libs', abi, 'libgnustl_shared.so'), stl_lib)
 
+def SdkLocateVulkan():
+    if GetHost() != 'windows' or GetTarget() != 'windows':
+        return
+
+    path = 'C:/VulkanSDK'
+    if os.path.isdir(path):
+        # Use the latest version.
+        versions = os.listdir(path)
+        versions.sort()
+        SDK["VULKAN"] = path + '/' + versions[-1]
+
 ########################################################################
 ##
 ## SDK Auto-Disables

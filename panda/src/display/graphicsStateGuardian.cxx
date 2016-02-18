@@ -519,7 +519,7 @@ get_scene() const {
  * call Texture::prepare().
  */
 TextureContext *GraphicsStateGuardian::
-prepare_texture(Texture *) {
+prepare_texture(Texture *, int) {
   return (TextureContext *)NULL;
 }
 
