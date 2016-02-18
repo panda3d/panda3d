@@ -15,9 +15,6 @@
 #define VULKANGRAPHICSWINDOW_H
 
 #include "config_vulkandisplay.h"
-#include "winGraphicsWindow.h"
-
-#include <vulkan/vulkan.h>
 
 #ifdef _WIN32
 #include "winGraphicsWindow.h"

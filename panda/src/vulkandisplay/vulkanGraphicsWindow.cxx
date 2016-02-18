@@ -79,8 +79,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Instruct the GSG that we are commencing a new frame.  This will cause it
   // to create a command buffer.
-  _gsg->set_current_properties(&get_fb_properties());
-  if (!_gsg->begin_frame(current_thread)) {
+  vkgsg->set_current_properties(&get_fb_properties());
+  if (!vkgsg->begin_frame(current_thread)) {
     return false;
   }
 
@@ -126,6 +126,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_info.pClearValues = clears;
 
   vkCmdBeginRenderPass(cmd, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+  vkgsg->_render_pass = _render_pass;
 
   return true;
 }
@@ -146,6 +147,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
     nassertv(cmd != VK_NULL_HANDLE);
 
     vkCmdEndRenderPass(cmd);
+    vkgsg->_render_pass = VK_NULL_HANDLE;
 
     if (mode == FM_render) {
       copy_to_textures();
@@ -294,12 +296,45 @@ open_window() {
   // Make sure we have a GSG, which manages a VkDevice.
   VulkanGraphicsStateGuardian *vkgsg;
   if (_gsg == NULL) {
+    // Find a queue suitable both for graphics and for presenting to our
+    // surface.  TODO: fall back to separate graphics/present queues?
+    uint32_t queue_family_index;
+    if (!vkpipe->find_queue_family_for_surface(queue_family_index, _surface, VK_QUEUE_GRAPHICS_BIT)) {
+      vulkan_error(err, "Failed to find graphics queue that can present to surface");
+      return false;
+    }
+
     // There is no old gsg.  Create a new one.
-    vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, NULL);
+    vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, NULL, queue_family_index);
     _gsg = vkgsg;
+  } else {
+    //TODO: check that the GSG's queue can present to our surface.
   }
 
   VkDevice device = vkgsg->_device;
+
+  // Query the preferred image formats for this surface.
+  uint32_t num_formats;
+  err = vkGetPhysicalDeviceSurfaceFormatsKHR(vkpipe->_gpu, _surface,
+                                             &num_formats, NULL);
+  nassertr(!err, false);
+  VkSurfaceFormatKHR *formats =
+      (VkSurfaceFormatKHR *)alloca(sizeof(VkSurfaceFormatKHR) * num_formats);
+  err = vkGetPhysicalDeviceSurfaceFormatsKHR(vkpipe->_gpu, _surface,
+                                             &num_formats, formats);
+  nassertr(!err, false);
+
+  // Get the surface capabilities to make sure we make a compatible swapchain.
+  VkSurfaceCapabilitiesKHR surf_caps;
+  err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkpipe->_gpu, _surface, &surf_caps);
+  if (err) {
+    vulkan_error(err, "Failed to get surface capabilities");
+    return false;
+  }
+
+  uint32_t num_images = (uint32_t)(1 + _fb_properties.get_back_buffers());
+  num_images = min(surf_caps.maxImageCount, num_images);
+  num_images = max(surf_caps.minImageCount, num_images);
 
   // Get the supported presentation modes for this surface.
   uint32_t num_present_modes = 0;
@@ -312,9 +347,7 @@ open_window() {
   swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swapchain_info.pNext = NULL;
   swapchain_info.surface = _surface;
-  swapchain_info.minImageCount = 1 + _fb_properties.get_back_buffers();
-  swapchain_info.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
-  swapchain_info.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+  swapchain_info.minImageCount = num_images;
   swapchain_info.imageExtent.width = _size[0];
   swapchain_info.imageExtent.height = _size[1];
   swapchain_info.imageArrayLayers = 1;
@@ -324,12 +357,23 @@ open_window() {
   swapchain_info.pQueueFamilyIndices = NULL;
   swapchain_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
   swapchain_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  swapchain_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
   swapchain_info.clipped = true;
   swapchain_info.oldSwapchain = NULL;
 
+  // If the format list includes just one entry of VK_FORMAT_UNDEFINED, the
+  // surface has no preferred format.  Otherwise, at least one supported
+  // format will be returned.
+  if (num_formats == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
+    swapchain_info.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
+  } else {
+    nassertr(num_formats > 1, false);
+    swapchain_info.imageFormat = formats[0].format;
+  }
+  swapchain_info.imageColorSpace = formats[0].colorSpace;
+
   // Choose a present mode.  Use FIFO mode as fallback, which is always
   // available.
+  swapchain_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
   for (size_t i = 0; i < num_present_modes; ++i) {
     if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
       // This is the lowest-latency non-tearing mode, so we'll take this.
@@ -350,7 +394,6 @@ open_window() {
   }
 
   // Get the images in the swap chain, which may be more than requested.
-  uint32_t num_images;
   vkGetSwapchainImagesKHR(device, _swapchain, &num_images, NULL);
   _image_views.resize(num_images);
   _framebuffers.resize(num_images);

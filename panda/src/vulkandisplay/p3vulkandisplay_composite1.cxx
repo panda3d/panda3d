@@ -2,3 +2,5 @@
 #include "vulkanGraphicsPipe.cxx"
 #include "vulkanGraphicsStateGuardian.cxx"
 #include "vulkanGraphicsWindow.cxx"
+#include "vulkanShaderContext.cxx"
+#include "vulkanVertexBufferContext.cxx"

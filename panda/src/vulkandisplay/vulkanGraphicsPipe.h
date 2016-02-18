@@ -17,8 +17,6 @@
 #include "config_vulkandisplay.h"
 #include "graphicsOutput.h"
 
-#include <vulkan/vulkan.h>
-
 #ifdef _WIN32
 #include "winGraphicsPipe.h"
 typedef WinGraphicsPipe BaseGraphicsPipe;
@@ -36,7 +34,11 @@ public:
   VulkanGraphicsPipe();
   virtual ~VulkanGraphicsPipe();
 
-  bool find_memory_type(uint32_t &type_index, uint32_t type_bits, VkFlags required_flags) const;
+  bool find_memory_type(uint32_t &type_index, uint32_t type_bits,
+                        VkFlags required_flags) const;
+  bool find_queue_family_for_surface(uint32_t &queue_family_index,
+                                     VkSurfaceKHR surface,
+                                     VkFlags required_flags) const;
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();

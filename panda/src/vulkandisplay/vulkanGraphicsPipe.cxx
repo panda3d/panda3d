@@ -152,7 +152,7 @@ VulkanGraphicsPipe() {
   // Query memory properties.
   vkGetPhysicalDeviceMemoryProperties(_gpu, &_memory_properties);
 
-  // Query queue information.  Currently unused, but keeps validator happy.
+  // Query queue information, used by find_queue_family_for_surface.
   uint32_t num_families;
   vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &num_families, NULL);
   _queue_families.resize(num_families);
@@ -170,6 +170,7 @@ VulkanGraphicsPipe::
 
 /**
  * Finds the index of the memory type that fits the given requirements.
+ * @return true if a matching memory type was found
  */
 bool VulkanGraphicsPipe::
 find_memory_type(uint32_t &type_index, uint32_t type_bits, VkFlags required_flags) const {
@@ -185,6 +186,27 @@ find_memory_type(uint32_t &type_index, uint32_t type_bits, VkFlags required_flag
   }
 
   // Not found.
+  return false;
+}
+
+/**
+ * Finds the index of the queue family capable of presenting to the given
+ * surface that fits the given requirements.
+ * @return true if a matching queue family was found
+ */
+bool VulkanGraphicsPipe::
+find_queue_family_for_surface(uint32_t &queue_family_index, VkSurfaceKHR surface, VkFlags required_flags) const {
+  // Iterate over each queue to learn whether it supports presenting.
+  for (uint32_t i = 0; i < _queue_families.size(); ++i) {
+    VkBool32 supports_present;
+    vkGetPhysicalDeviceSurfaceSupportKHR(_gpu, i, surface, &supports_present);
+
+    if ((_queue_families[i].queueFlags & required_flags) == required_flags) {
+      queue_family_index = i;
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -262,5 +284,15 @@ make_output(const string &name,
  */
 PT(GraphicsStateGuardian) VulkanGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
-  return new VulkanGraphicsStateGuardian(engine, this, NULL);
+  // For now, grab the first queue family that can supports graphics commands.
+  uint32_t i;
+  for (i = 0; i < _queue_families.size(); ++i) {
+    if (_queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      break;
+    }
+  }
+  if (i == _queue_families.size()) {
+    return NULL;
+  }
+  return new VulkanGraphicsStateGuardian(engine, this, NULL, i);
 }
