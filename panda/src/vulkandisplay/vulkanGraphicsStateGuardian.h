@@ -29,6 +29,8 @@ public:
                               uint32_t queue_family_index);
   virtual ~VulkanGraphicsStateGuardian();
 
+  virtual string get_driver_renderer();
+
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
@@ -48,6 +50,8 @@ public:
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
+
+  virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);

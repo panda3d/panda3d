@@ -58,6 +58,8 @@ protected:
 public:
   VkInstance _instance;
   VkPhysicalDevice _gpu;
+  VkPhysicalDeviceFeatures _gpu_features;
+  VkPhysicalDeviceProperties _gpu_properties;
   VkPhysicalDeviceMemoryProperties _memory_properties;
   pvector<VkQueueFamilyProperties> _queue_families;
 

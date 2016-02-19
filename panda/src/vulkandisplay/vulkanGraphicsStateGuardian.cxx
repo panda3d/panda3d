@@ -143,6 +143,82 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     return;
   }
 
+  // Fill in the features supported by this physical device.
+  const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
+  const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
+  _is_hardware = (pipe->_gpu_properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU);
+
+  _max_vertices_per_array = max((uint32_t)0x7fffffff, limits.maxDrawIndexedIndexValue);
+  _max_vertices_per_primitive = INT_MAX;
+
+  _max_texture_dimension = limits.maxImageDimension2D;
+  _max_3d_texture_dimension = limits.maxImageDimension3D;
+  _max_2d_texture_array_layers = limits.maxImageArrayLayers;
+  _max_cube_map_dimension = limits.maxImageDimensionCube;
+  _max_buffer_texture_size = limits.maxTexelBufferElements;
+
+  _supports_3d_texture = true;
+  _supports_2d_texture_array = true;
+  _supports_cube_map = true;
+  _supports_buffer_texture = true;
+  _supports_cube_map_array = (features.imageCubeArray != VK_FALSE);
+  _supports_tex_non_pow2 = true;
+  _supports_texture_srgb = true;
+  _supports_compressed_texture = (features.textureCompressionBC != VK_FALSE);
+
+  if (features.textureCompressionBC) {
+    _compressed_texture_formats.set_bit(Texture::CM_dxt1);
+    _compressed_texture_formats.set_bit(Texture::CM_dxt3);
+    _compressed_texture_formats.set_bit(Texture::CM_dxt5);
+    _compressed_texture_formats.set_bit(Texture::CM_rgtc);
+  }
+
+  // Assume no limits on number of lights or clip planes.
+  _max_lights = -1;
+  _max_clip_planes = -1;
+
+  _supports_occlusion_query = false;
+  _supports_timer_query = false;
+
+  // Initially, we set this to false; a GSG that knows it has this property
+  // should set it to true.
+  _copy_texture_inverted = false;
+
+  // Similarly with these capabilities flags.
+  _supports_multisample = true;
+  _supports_generate_mipmap = false;
+  _supports_depth_texture = true;
+  _supports_depth_stencil = true;
+  _supports_shadow_filter = true;
+  _supports_sampler_objects = true;
+  _supports_basic_shaders = false;
+  _supports_geometry_shaders = (features.geometryShader != VK_FALSE);
+  _supports_tessellation_shaders = (features.tessellationShader != VK_FALSE);
+  _supports_glsl = false;
+  _supports_hlsl = false;
+  _supports_framebuffer_multisample = true;
+  _supports_framebuffer_blit = true;
+
+  _supports_stencil = true;
+  _supports_stencil_wrap = true;
+  _supports_two_sided_stencil = true;
+  _supports_geometry_instancing = true;
+  _supports_indirect_draw = true;
+
+  _max_color_targets = limits.maxColorAttachments;
+
+  _supported_geom_rendering =
+    Geom::GR_indexed_point |
+    Geom::GR_point |
+    Geom::GR_indexed_other |
+    Geom::GR_triangle_strip | Geom::GR_triangle_fan |
+    Geom::GR_line_strip;
+  //TODO: designate provoking vertex used for flat shading
+
+  if (features.largePoints) {
+    _supported_geom_rendering |= Geom::GR_point_uniform_size;
+  }
+
   _is_valid = true;
   _needs_reset = false;
 }
@@ -152,6 +228,16 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
  */
 VulkanGraphicsStateGuardian::
 ~VulkanGraphicsStateGuardian() {
+}
+
+/**
+ * Returns GL_Renderer
+ */
+string VulkanGraphicsStateGuardian::
+get_driver_renderer() {
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+  return string(vkpipe->_gpu_properties.deviceName);
 }
 
 /**
@@ -397,6 +483,17 @@ prepare_index_buffer(GeomPrimitive *) {
  */
 void VulkanGraphicsStateGuardian::
 release_index_buffer(IndexBufferContext *) {
+}
+
+/**
+ * Dispatches a currently bound compute shader using the given work group
+ * counts.
+ */
+void VulkanGraphicsStateGuardian::
+dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+  //TODO: must actually be outside render pass, and on a queue that supports
+  // compute.  Should we have separate pool/queue/buffer for compute?
+  vkCmdDispatch(_cmd, num_groups_x, num_groups_y, num_groups_z);
 }
 
 /**
@@ -854,8 +951,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
  * Draws a series of disconnected triangles.
  */
 bool VulkanGraphicsStateGuardian::
-draw_triangles(const GeomPrimitivePipelineReader *, bool) {
-  return false;
+draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
+  int num_vertices = reader->get_num_vertices();
+  _vertices_tri_pcollector.add_level(num_vertices);
+  _primitive_batches_tri_pcollector.add_level(1);
+
+  if (reader->is_indexed()) {
+    // Not yet supported.
+    vkCmdDrawIndexed(_cmd, num_vertices, 1, 0, 0, 0);
+  } else {
+    vkCmdDraw(_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
+  }
+  return true;
 }
 
 /**

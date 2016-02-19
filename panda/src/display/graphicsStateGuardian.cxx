@@ -237,6 +237,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_tessellation_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
+  _supports_framebuffer_multisample = false;
+  _supports_framebuffer_blit = false;
 
   _supports_stencil = false;
   _supports_stencil_wrap = false;

@@ -149,7 +149,9 @@ VulkanGraphicsPipe() {
   // Just pick the first GPU for now.
   _gpu = physical_devices[0];
 
-  // Query memory properties.
+  // Query device limits and memory properties.
+  vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
+  vkGetPhysicalDeviceProperties(_gpu, &_gpu_properties);
   vkGetPhysicalDeviceMemoryProperties(_gpu, &_memory_properties);
 
   // Query queue information, used by find_queue_family_for_surface.

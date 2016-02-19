@@ -11,6 +11,8 @@
  * @date 2016-02-18
  */
 
+#include "vulkanVertexBufferContext.h"
+
 TypeHandle VulkanVertexBufferContext::_type_handle;
 
 /**
