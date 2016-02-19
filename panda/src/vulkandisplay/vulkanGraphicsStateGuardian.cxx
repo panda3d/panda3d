@@ -507,6 +507,23 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 }
 
 /**
+ * Simultaneously resets the render state and the transform state.
+ *
+ * This transform specified is the "internal" net transform, already converted
+ * into the GSG's internal coordinate space by composing it to
+ * get_cs_transform().  (Previously, this used to be the "external" net
+ * transform, with the assumption that that GSG would convert it internally,
+ * but that is no longer the case.)
+ *
+ * Special case: if (state==NULL), then the target state is already stored in
+ * _target.
+ */
+void VulkanGraphicsStateGuardian::
+set_state_and_transform(const RenderState *state,
+                        const TransformState *trans) {
+}
+
+/**
  * Clears the framebuffer within the current DisplayRegion, according to the
  * flags indicated by the given DrawableRegion object.
  *
@@ -702,10 +719,25 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     return false;
   }
 
+  // Prepare and bind the vertex buffers.
+  int num_arrays = data_reader->get_num_arrays();
+  VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * num_arrays);
+  VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * num_arrays);
+
+  for (int i = 0; i < num_arrays; ++i) {
+    CPT(GeomVertexArrayDataHandle) handle = data_reader->get_array_reader(i);
+    VulkanVertexBufferContext *vbc;
+    DCAST_INTO_R(vbc, handle->prepare_now(get_prepared_objects(), this), false);
+    buffers[i] = vbc->_buffer;
+    offsets[i] = 0;
+  }
+
+  vkCmdBindVertexBuffers(_cmd, 0, num_arrays, buffers, offsets);
+
   // Load the default shader.  Temporary hack.
   static PT(Shader) default_shader;
   if (default_shader.is_null()) {
-    default_shader = Shader::load(Shader::SL_SPIR_V, "tri-vert.spv", "tri-frag.spv");
+    default_shader = Shader::load(Shader::SL_SPIR_V, "vert.spv", "frag.spv");
     nassertr(default_shader, NULL);
 
     ShaderContext *sc = default_shader->prepare_now(get_prepared_objects(), this);
@@ -726,7 +758,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   stages[1].pNext = NULL;
   stages[1].flags = 0;
-  stages[1].stage = VK_SHADER_STAGE_VERTEX_BIT;
+  stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
   stages[1].module = _default_sc->_modules[1];
   stages[1].pName = "main";
   stages[1].pSpecializationInfo = NULL;
@@ -808,7 +840,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   vertex_info.flags = 0;
   vertex_info.vertexBindingDescriptionCount = format->get_num_arrays();
   vertex_info.pVertexBindingDescriptions = binding_desc;
-  vertex_info.vertexAttributeDescriptionCount = 2;//format->get_num_columns();
+  vertex_info.vertexAttributeDescriptionCount = format->get_num_columns();
   vertex_info.pVertexAttributeDescriptions = attrib_desc;
 
   VkPipelineInputAssemblyStateCreateInfo assembly_info;
@@ -837,13 +869,13 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   raster_info.depthClampEnable = VK_TRUE;
   raster_info.rasterizerDiscardEnable = VK_FALSE;
   raster_info.polygonMode = VK_POLYGON_MODE_FILL;
-  raster_info.cullMode = VK_CULL_MODE_BACK_BIT;
+  raster_info.cullMode = VK_CULL_MODE_NONE;
   raster_info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   raster_info.depthBiasEnable = VK_FALSE;
   raster_info.depthBiasConstantFactor = 0;
   raster_info.depthBiasClamp = 0;
   raster_info.depthBiasSlopeFactor = 0;
-  raster_info.lineWidth = 0;
+  raster_info.lineWidth = 1;
 
   VkPipelineMultisampleStateCreateInfo ms_info;
   memset(&ms_info, 0, sizeof(ms_info));
@@ -936,7 +968,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   pipeline_info.basePipelineIndex = 0;
 
   VkResult err;
-  err = vkCreateGraphicsPipelines(_device, 0, 1, &pipeline_info, NULL, &_pipeline);
+  err = vkCreateGraphicsPipelines(_device, _pipeline_cache, 1, &pipeline_info, NULL, &_pipeline);
   if (err) {
     vulkan_error(err, "Failed to create graphics pipeline");
     return false;

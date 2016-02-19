@@ -56,6 +56,9 @@ public:
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
 
+  virtual void set_state_and_transform(const RenderState *state,
+                                       const TransformState *transform);
+
   virtual void clear(DrawableRegion *clearable);
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual bool prepare_lens();
