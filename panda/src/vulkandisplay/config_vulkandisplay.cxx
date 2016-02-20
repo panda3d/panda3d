@@ -15,7 +15,9 @@
 #include "vulkanGraphicsPipe.h"
 #include "vulkanGraphicsStateGuardian.h"
 #include "vulkanGraphicsWindow.h"
+#include "vulkanSamplerContext.h"
 #include "vulkanShaderContext.h"
+#include "vulkanTextureContext.h"
 #include "vulkanVertexBufferContext.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
@@ -47,7 +49,9 @@ init_libvulkandisplay() {
   VulkanGraphicsPipe::init_type();
   VulkanGraphicsStateGuardian::init_type();
   VulkanGraphicsWindow::init_type();
+  VulkanSamplerContext::init_type();
   VulkanShaderContext::init_type();
+  VulkanTextureContext::init_type();
   VulkanVertexBufferContext::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();

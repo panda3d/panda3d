@@ -160,7 +160,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_3d_texture = true;
   _supports_2d_texture_array = true;
   _supports_cube_map = true;
-  _supports_buffer_texture = true;
+  _supports_buffer_texture = false; //TODO: add support.
   _supports_cube_map_array = (features.imageCubeArray != VK_FALSE);
   _supports_tex_non_pow2 = true;
   _supports_texture_srgb = true;
@@ -251,8 +251,342 @@ get_driver_renderer() {
  * call Texture::prepare().
  */
 TextureContext *VulkanGraphicsStateGuardian::
-prepare_texture(Texture *, int view) {
-  return (TextureContext *)NULL;
+prepare_texture(Texture *texture, int view) {
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+
+  VkResult err;
+  VkImageCreateInfo image_info;
+  image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  image_info.pNext = NULL;
+  image_info.flags = 0;
+
+  int depth = 1;
+  int num_layers = 1;
+
+  switch (texture->get_texture_type()) {
+  case Texture::TT_1d_texture:
+    image_info.imageType = VK_IMAGE_TYPE_1D;
+    break;
+
+  case Texture::TT_cube_map:
+  case Texture::TT_cube_map_array:
+    image_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    // Fall through
+  case Texture::TT_2d_texture:
+  case Texture::TT_2d_texture_array:
+    image_info.imageType = VK_IMAGE_TYPE_2D;
+    num_layers = texture->get_z_size();
+    break;
+
+  case Texture::TT_3d_texture:
+    image_info.imageType = VK_IMAGE_TYPE_3D;
+    depth = texture->get_z_size();
+    break;
+
+  case Texture::TT_buffer_texture:
+    // Not yet supported.
+    return (TextureContext *)NULL;
+  }
+
+  //TODO: compressed formats.
+  //TODO: check format support and adjust as appropriate.  In particular,
+  // rgb8 does not seem to be supported on most drivers.
+  Texture::Format format = texture->get_format();
+  bool is_signed = !Texture::is_unsigned(texture->get_component_type());
+  switch (format) {
+  case Texture::F_depth_stencil:
+    image_info.format = VK_FORMAT_D24_UNORM_S8_UINT;
+    break;
+  case Texture::F_color_index:
+    image_info.format = VK_FORMAT_R8_UINT;
+    break;
+  case Texture::F_red:
+  case Texture::F_green:
+  case Texture::F_blue:
+    image_info.format = (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
+    break;
+  case Texture::F_rgb:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8_UNORM + is_signed);
+    break;
+  case Texture::F_rgb5:
+    image_info.format = VK_FORMAT_R5G6B5_UNORM_PACK16;
+    break;
+  case Texture::F_rgb8:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8_UNORM + is_signed);
+    break;
+  case Texture::F_rgb12:
+    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16_UNORM + is_signed);
+    break;
+  case Texture::F_rgb332:
+    image_info.format = VK_FORMAT_R5G6B5_UNORM_PACK16;
+    break;
+  case Texture::F_rgba:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UNORM + is_signed);
+    break;
+  case Texture::F_rgbm:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UNORM + is_signed);
+    break;
+  case Texture::F_rgba4:
+    image_info.format = VK_FORMAT_R4G4B4A4_UNORM_PACK16;
+    break;
+  case Texture::F_rgba5:
+    image_info.format = VK_FORMAT_R5G5B5A1_UNORM_PACK16;
+    break;
+  case Texture::F_rgba8:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UNORM + is_signed);
+    break;
+  case Texture::F_rgba12:
+    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16A16_UNORM + is_signed);
+    break;
+  case Texture::F_luminance:
+    image_info.format = (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
+    break;
+  case Texture::F_luminance_alpha:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
+    break;
+  case Texture::F_luminance_alphamask:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
+    break;
+  case Texture::F_rgba16:
+    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16A16_UNORM + is_signed);
+    break;
+  case Texture::F_rgba32:
+    image_info.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    break;
+  case Texture::F_depth_component:
+    image_info.format = (VkFormat)(VK_FORMAT_D16_UNORM + is_signed);
+    break;
+  case Texture::F_depth_component16:
+    image_info.format = (VkFormat)(VK_FORMAT_D16_UNORM + is_signed);
+    break;
+  case Texture::F_depth_component24:
+    image_info.format = (VkFormat)(VK_FORMAT_X8_D24_UNORM_PACK32 + is_signed);
+    break;
+  case Texture::F_depth_component32:
+    image_info.format = VK_FORMAT_D32_SFLOAT;
+    break;
+  case Texture::F_r16:
+    image_info.format = (VkFormat)(VK_FORMAT_R16_UNORM + is_signed);
+    break;
+  case Texture::F_rg16:
+    image_info.format = (VkFormat)(VK_FORMAT_R16G16_UNORM + is_signed);
+    break;
+  case Texture::F_rgb16:
+    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16_UNORM + is_signed);
+    break;
+  case Texture::F_srgb:
+    image_info.format = VK_FORMAT_R8G8B8_SRGB;
+    break;
+  case Texture::F_srgb_alpha:
+    image_info.format = VK_FORMAT_R8G8B8A8_SRGB;
+    break;
+  case Texture::F_sluminance:
+    image_info.format = VK_FORMAT_R8_SRGB;
+    break;
+  case Texture::F_sluminance_alpha:
+    image_info.format = VK_FORMAT_R8G8B8A8_SRGB;
+    break;
+  case Texture::F_r32i:
+    image_info.format = (VkFormat)(VK_FORMAT_R32_UINT + is_signed);
+    break;
+  case Texture::F_r32:
+    image_info.format = VK_FORMAT_R32_SFLOAT;
+    break;
+  case Texture::F_rg32:
+    image_info.format = VK_FORMAT_R32G32_SFLOAT;
+    break;
+  case Texture::F_rgb32:
+    image_info.format = VK_FORMAT_R32G32B32_SFLOAT;
+    break;
+  case Texture::F_r8i:
+    image_info.format = (VkFormat)(VK_FORMAT_R8_UINT + is_signed);
+    break;
+  case Texture::F_rg8i:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UINT + is_signed);
+    break;
+  case Texture::F_rgb8i:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8_UINT + is_signed);
+    break;
+  case Texture::F_rgba8i:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UINT + is_signed);
+    break;
+  case Texture::F_r11_g11_b10:
+    image_info.format = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
+    break;
+  case Texture::F_rgb9_e5:
+    image_info.format = VK_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+    break;
+  case Texture::F_rgb10_a2:
+    image_info.format = (VkFormat)(VK_FORMAT_A2R10G10B10_UNORM_PACK32 + is_signed);
+    break;
+  case Texture::F_rg:
+    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
+    break;
+  }
+
+  int num_levels = 1;
+  if (texture->uses_mipmaps()) {
+    num_levels = texture->get_expected_num_mipmap_levels();
+  }
+
+  //TODO: check that size is acceptable.
+  image_info.extent.width = texture->get_x_size();
+  image_info.extent.height = texture->get_y_size();
+  image_info.extent.depth = depth;
+  image_info.mipLevels = num_levels;
+  image_info.arrayLayers = num_layers;
+  image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+  image_info.tiling = VK_IMAGE_TILING_LINEAR;
+  image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+  image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  image_info.queueFamilyIndexCount = 0;
+  image_info.pQueueFamilyIndices = NULL;
+  image_info.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+  VkImage image;
+  err = vkCreateImage(_device, &image_info, NULL, &image);
+  if (err) {
+    vulkan_error(err, "Failed to create texture image");
+    return (TextureContext *)NULL;
+  }
+
+  // Get the memory requirements, and find an appropriate heap to alloc in.
+  VkMemoryRequirements mem_reqs;
+  vkGetImageMemoryRequirements(_device, image, &mem_reqs);
+
+  VkMemoryAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  alloc_info.pNext = NULL;
+  alloc_info.allocationSize = mem_reqs.size;
+
+  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, 0)) {
+    vulkan_error(err, "Failed to find memory heap to allocate texture memory");
+    return (TextureContext *)NULL;
+  }
+
+  VkDeviceMemory memory;
+  err = vkAllocateMemory(_device, &alloc_info, NULL, &memory);
+  if (err) {
+    vulkan_error(err, "Failed to allocate memory for texture image");
+    return (TextureContext *)NULL;
+  }
+
+  // Bind memory to image.
+  err = vkBindImageMemory(_device, image, memory, 0);
+  if (err) {
+    vulkan_error(err, "Failed to bind memory to texture image");
+    return (TextureContext *)NULL;
+  }
+
+  // Now we'll create an image view that describes how we interpret the image.
+  VkImageViewCreateInfo view_info;
+  view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  view_info.pNext = NULL;
+  view_info.flags = 0;
+  view_info.image = image;
+
+  switch (texture->get_texture_type()) {
+  case Texture::TT_1d_texture:
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_1D;
+    break;
+  case Texture::TT_2d_texture:
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    break;
+  case Texture::TT_3d_texture:
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_3D;
+    break;
+  case Texture::TT_2d_texture_array:
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    break;
+  case Texture::TT_cube_map:
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+    break;
+  case Texture::TT_buffer_texture: //TODO: figure out buffer textures in Vulkan.
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_1D;
+    break;
+  case Texture::TT_cube_map_array:
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+    break;
+  }
+
+  view_info.format = image_info.format;
+
+  // We use the swizzle mask to emulate deprecated formats.
+  switch (format) {
+  case Texture::F_green:
+    view_info.components.r = VK_COMPONENT_SWIZZLE_ZERO;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_ZERO;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_ONE;
+    break;
+
+  case Texture::F_blue:
+    view_info.components.r = VK_COMPONENT_SWIZZLE_ZERO;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_ZERO;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_ZERO;
+    break;
+
+  case Texture::F_alpha:
+    view_info.components.r = VK_COMPONENT_SWIZZLE_ZERO;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_ZERO;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_ZERO;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_R;
+    break;
+
+  case Texture::F_luminance:
+  case Texture::F_sluminance:
+    view_info.components.r = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_ONE;
+    break;
+
+  case Texture::F_luminance_alpha:
+    // F_sluminance_alpha can't be emulated using R8G8 and a swizzle mask
+    // because we need the second channel to be linear.  Beh.
+    view_info.components.r = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_R;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_G;
+    break;
+
+  default:
+    view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    break;
+  }
+
+  if (format == Texture::F_depth_stencil ||
+      format == Texture::F_depth_component ||
+      format == Texture::F_depth_component16 ||
+      format == Texture::F_depth_component24 ||
+      format == Texture::F_depth_component32) {
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+  } else {
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  }
+  view_info.subresourceRange.baseMipLevel = 0;
+  view_info.subresourceRange.levelCount = num_levels;
+  view_info.subresourceRange.baseArrayLayer = 0;
+  view_info.subresourceRange.layerCount = num_layers;
+
+  VkImageView image_view;
+  err = vkCreateImageView(_device, &view_info, NULL, &image_view);
+  if (err) {
+    vulkan_error(err, "Failed to create image view for texture");
+    return (TextureContext *)NULL;
+  }
+
+  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
+  tc->_image = image;
+  tc->_memory = memory;
+  tc->_image_view = image_view;
+  tc->update_data_size_bytes(alloc_info.allocationSize);
+  return tc;
 }
 
 /**
@@ -303,7 +637,41 @@ extract_texture_data(Texture *) {
  */
 SamplerContext *VulkanGraphicsStateGuardian::
 prepare_sampler(const SamplerState &sampler) {
-  return (SamplerContext *)NULL;
+  VkSamplerAddressMode wrap_map[] = {VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+                                     VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                                     VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
+                                     VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
+                                     VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+                                     VK_SAMPLER_ADDRESS_MODE_REPEAT};
+
+  //TODO: support shadow filter and border color.
+  VkSamplerCreateInfo sampler_info;
+  sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+  sampler_info.pNext = NULL;
+  sampler_info.flags = 0;
+  sampler_info.magFilter = (VkFilter)(sampler.get_effective_magfilter() & 1);
+  sampler_info.minFilter = (VkFilter)(sampler.get_effective_minfilter() & 1);
+  sampler_info.mipmapMode = (VkSamplerMipmapMode)(sampler.get_effective_minfilter() >> 1);
+  sampler_info.addressModeU = wrap_map[sampler.get_wrap_u()];
+  sampler_info.addressModeV = wrap_map[sampler.get_wrap_v()];
+  sampler_info.addressModeW = wrap_map[sampler.get_wrap_w()];
+  sampler_info.mipLodBias = sampler.get_lod_bias();
+  sampler_info.maxAnisotropy = sampler.get_anisotropic_degree();
+  sampler_info.compareEnable = VK_FALSE;
+  sampler_info.compareOp = VK_COMPARE_OP_NEVER;
+  sampler_info.minLod = sampler.get_min_lod();
+  sampler_info.maxLod = sampler.get_max_lod();
+  sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+  sampler_info.unnormalizedCoordinates = VK_FALSE;
+
+  VkResult err;
+  VkSampler vk_sampler;
+  err = vkCreateSampler(_device, &sampler_info, NULL, &vk_sampler);
+  if (err) {
+    return (SamplerContext *)NULL;
+  }
+
+  return new VulkanSamplerContext(sampler, vk_sampler);
 }
 
 /**
