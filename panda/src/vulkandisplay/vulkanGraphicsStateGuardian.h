@@ -91,6 +91,36 @@ public:
   virtual void reset();
 
 private:
+  /**
+   * Stores whatever is used to key a cached pipeline into the pipeline map.
+   * This allows us to map Panda states to Vulkan pipelines effectively.
+   */
+  struct PipelineKey {
+    INLINE PipelineKey() DEFAULT_CTOR;
+    INLINE PipelineKey(const PipelineKey &copy);
+    INLINE void operator = (const PipelineKey &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+    INLINE PipelineKey(PipelineKey &&from) NOEXCEPT;
+    INLINE void operator = (PipelineKey &&from) NOEXCEPT;
+#endif
+
+    INLINE bool operator ==(const PipelineKey &other) const;
+    INLINE bool operator < (const PipelineKey &other) const;
+
+    CPT(RenderState) _state;
+    CPT(GeomVertexFormat) _format;
+    VkPrimitiveTopology _topology;
+  };
+
+  VkPipeline get_pipeline(const RenderState *state,
+                          const GeomVertexFormat *format,
+                          VkPrimitiveTopology topology);
+  VkPipeline make_pipeline(const RenderState *state,
+                           const GeomVertexFormat *format,
+                           VkPrimitiveTopology topology);
+
+private:
   VkDevice _device;
   VkQueue _queue;
   VkCommandPool _cmd_pool;
@@ -99,8 +129,11 @@ private:
   VkRenderPass _render_pass;
   VkPipelineCache _pipeline_cache;
   VkPipelineLayout _pipeline_layout;
-  VkPipeline _pipeline;
   VulkanShaderContext *_default_sc;
+  CPT(GeomVertexFormat) _format;
+
+  typedef pmap<PipelineKey, VkPipeline> PipelineMap;
+  PipelineMap _pipeline_map;
 
   friend class VulkanGraphicsWindow;
 

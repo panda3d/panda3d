@@ -15,6 +15,13 @@
 #include "vulkanVertexBufferContext.h"
 #include "standardMunger.h"
 
+#include "colorBlendAttrib.h"
+#include "colorWriteAttrib.h"
+#include "cullFaceAttrib.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
+#include "renderModeAttrib.h"
+
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 
 /**
@@ -113,7 +120,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
   set_info.pNext = NULL;
   set_info.flags = 0;
-  set_info.bindingCount = 1;
+  set_info.bindingCount = 0;
   set_info.pBindings = &layout_binding;
 
   VkDescriptorSetLayout desc_set_layout;
@@ -123,10 +130,13 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   // Create a pipeline layout.  We'll do that here for now.
-  VkPushConstantRange range;
-  range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  range.offset = 0;
-  range.size = 64;
+  VkPushConstantRange ranges[2];
+  ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  ranges[0].offset = 0;
+  ranges[0].size = 64;
+  ranges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  ranges[1].offset = 64;
+  ranges[1].size = 16;
 
   VkPipelineLayoutCreateInfo layout_info;
   layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -134,8 +144,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   layout_info.flags = 0;
   layout_info.setLayoutCount = 1;
   layout_info.pSetLayouts = &desc_set_layout;
-  layout_info.pushConstantRangeCount = 1;
-  layout_info.pPushConstantRanges = &range;
+  layout_info.pushConstantRangeCount = 2;
+  layout_info.pPushConstantRanges = ranges;
 
   err = vkCreatePipelineLayout(_device, &layout_info, NULL, &_pipeline_layout);
   if (err) {
@@ -214,6 +224,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_line_strip;
   //TODO: designate provoking vertex used for flat shading
+  //TODO: add flags indicating support for render modes
 
   if (features.largePoints) {
     _supported_geom_rendering |= Geom::GR_point_uniform_size;
@@ -889,6 +900,19 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 void VulkanGraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *trans) {
+  // This does nothing, because we can't make a pipeline state without knowing
+  // the vertex format.
+  _state_rs = state;
+
+  // Put the modelview projection matrix in the push constants.
+  CPT(TransformState) combined = _projection_mat->compose(trans);
+  LMatrix4f matrix = LCAST(float, combined->get_mat());
+  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, matrix.get_data());
+
+  const ColorAttrib *color_attrib;
+  state->get_attrib_def(color_attrib);
+  LColorf color = LCAST(float, color_attrib->get_color());
+  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 64, 16, color.get_data());
 }
 
 /**
@@ -985,6 +1009,14 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
  */
 bool VulkanGraphicsStateGuardian::
 prepare_lens() {
+  if (_scene_setup->get_inverted()) {
+    // Vulkan uses an upside down coordinate system.
+    _projection_mat = TransformState::make_mat(_current_lens->get_projection_mat());
+  } else {
+    _projection_mat = TransformState::make_mat(
+      _current_lens->get_projection_mat() * LMatrix4::scale_mat(1.0f, -1.0f, 1.0f));
+  }
+
   return true;
 }
 
@@ -1102,6 +1134,131 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   vkCmdBindVertexBuffers(_cmd, 0, num_arrays, buffers, offsets);
 
+  _format = data_reader->get_format();
+  return true;
+}
+
+/**
+ * Draws a series of disconnected triangles.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
+  VkPipeline pipeline = get_pipeline(_state_rs, _format,
+                                     VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+  nassertr(pipeline != VK_NULL_HANDLE, false);
+  vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+  int num_vertices = reader->get_num_vertices();
+  _vertices_tri_pcollector.add_level(num_vertices);
+  _primitive_batches_tri_pcollector.add_level(1);
+
+  if (reader->is_indexed()) {
+    // Not yet supported.
+    vkCmdDrawIndexed(_cmd, num_vertices, 1, 0, 0, 0);
+  } else {
+    vkCmdDraw(_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
+  }
+  return true;
+}
+
+/**
+ * Draws a series of triangle strips.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of triangle fans.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_trifans(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of "patches", which can only be processed by a tessellation
+ * shader.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_patches(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of disconnected line segments.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_lines(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of line strips.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_linestrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Draws a series of disconnected points.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_points(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+/**
+ * Called after a sequence of draw_primitive() functions are called, this
+ * should do whatever cleanup is appropriate.
+ */
+void VulkanGraphicsStateGuardian::
+end_draw_primitives() {
+  GraphicsStateGuardian::end_draw_primitives();
+}
+
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
+void VulkanGraphicsStateGuardian::
+reset() {
+}
+
+/**
+ * Returns a VkPipeline for the given RenderState+GeomVertexFormat combination.
+ */
+VkPipeline VulkanGraphicsStateGuardian::
+get_pipeline(const RenderState *state, const GeomVertexFormat *format,
+             VkPrimitiveTopology topology) {
+  PipelineKey key;
+  key._state = state;
+  key._format = format;
+  key._topology = topology;
+
+  PipelineMap::const_iterator it;
+  it = _pipeline_map.find(key);
+  if (it == _pipeline_map.end()) {
+    VkPipeline pipeline = make_pipeline(state, format, topology);
+    _pipeline_map[MOVE(key)] = pipeline;
+    return pipeline;
+  } else {
+    return it->second;
+  }
+}
+
+/**
+ * Creates a VkPipeline for the given RenderState+GeomVertexFormat combination.
+ */
+VkPipeline VulkanGraphicsStateGuardian::
+make_pipeline(const RenderState *state, const GeomVertexFormat *format,
+              VkPrimitiveTopology topology) {
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Making pipeline for state " << *state << " and format " << *format << "\n";
+  }
+
   // Load the default shader.  Temporary hack.
   static PT(Shader) default_shader;
   if (default_shader.is_null()) {
@@ -1114,7 +1271,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   VkPipelineShaderStageCreateInfo stages[2];
-  memset(stages, 0, sizeof(stages));
   stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   stages[0].pNext = NULL;
   stages[0].flags = 0;
@@ -1132,7 +1288,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   stages[1].pSpecializationInfo = NULL;
 
   // Describe each vertex input binding (ie. GeomVertexArray).
-  const GeomVertexFormat *format = data_reader->get_format();
   VkVertexInputBindingDescription *binding_desc = (VkVertexInputBindingDescription *)
     alloca(sizeof(VkVertexInputBindingDescription) * format->get_num_arrays());
 
@@ -1202,7 +1357,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   VkPipelineVertexInputStateCreateInfo vertex_info;
-  memset(&vertex_info, 0, sizeof(vertex_info));
   vertex_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   vertex_info.pNext = NULL;
   vertex_info.flags = 0;
@@ -1212,15 +1366,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   vertex_info.pVertexAttributeDescriptions = attrib_desc;
 
   VkPipelineInputAssemblyStateCreateInfo assembly_info;
-  memset(&assembly_info, 0, sizeof(assembly_info));
   assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   assembly_info.pNext = NULL;
   assembly_info.flags = 0;
-  assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-  assembly_info.primitiveRestartEnable = VK_FALSE;
+  assembly_info.topology = topology;
+  assembly_info.primitiveRestartEnable = (
+    topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
+    topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
+    topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN ||
+    topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
+    topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
 
   VkPipelineViewportStateCreateInfo viewport_info;
-  memset(&viewport_info, 0, sizeof(viewport_info));
   viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
   viewport_info.pNext = NULL;
   viewport_info.flags = 0;
@@ -1229,24 +1386,40 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   viewport_info.scissorCount = 1;
   viewport_info.pScissors = NULL;
 
+  const RenderModeAttrib *render_mode;
+  state->get_attrib_def(render_mode);
+  const CullFaceAttrib *cull_face;
+  state->get_attrib_def(cull_face);
+
   VkPipelineRasterizationStateCreateInfo raster_info;
-  memset(&raster_info, 0, sizeof(raster_info));
   raster_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
   raster_info.pNext = NULL;
   raster_info.flags = 0;
   raster_info.depthClampEnable = VK_TRUE;
   raster_info.rasterizerDiscardEnable = VK_FALSE;
-  raster_info.polygonMode = VK_POLYGON_MODE_FILL;
-  raster_info.cullMode = VK_CULL_MODE_NONE;
-  raster_info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+
+  switch (render_mode->get_mode()) {
+  case RenderModeAttrib::M_filled:
+  default:
+    raster_info.polygonMode = VK_POLYGON_MODE_FILL;
+    break;
+  case RenderModeAttrib::M_wireframe:
+    raster_info.polygonMode = VK_POLYGON_MODE_LINE;
+    break;
+  case RenderModeAttrib::M_point:
+    raster_info.polygonMode = VK_POLYGON_MODE_POINT;
+    break;
+  }
+
+  raster_info.cullMode = (VkCullModeFlagBits)cull_face->get_effective_mode();
+  raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE; // Flipped
   raster_info.depthBiasEnable = VK_FALSE;
   raster_info.depthBiasConstantFactor = 0;
   raster_info.depthBiasClamp = 0;
   raster_info.depthBiasSlopeFactor = 0;
-  raster_info.lineWidth = 1;
+  raster_info.lineWidth = render_mode->get_thickness();
 
   VkPipelineMultisampleStateCreateInfo ms_info;
-  memset(&ms_info, 0, sizeof(ms_info));
   ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   ms_info.pNext = NULL;
   ms_info.flags = 0;
@@ -1257,14 +1430,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   ms_info.alphaToCoverageEnable = VK_FALSE;
   ms_info.alphaToOneEnable = VK_FALSE;
 
+  const DepthWriteAttrib *depth_write;
+  state->get_attrib_def(depth_write);
+  const DepthTestAttrib *depth_test;
+  state->get_attrib_def(depth_test);
+
   VkPipelineDepthStencilStateCreateInfo ds_info;
-  memset(&ds_info, 0, sizeof(ds_info));
   ds_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
   ds_info.pNext = NULL;
   ds_info.flags = 0;
-  ds_info.depthTestEnable = VK_TRUE;
-  ds_info.depthWriteEnable = VK_TRUE;
-  ds_info.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+  ds_info.depthTestEnable = (depth_test->get_mode() != RenderAttrib::M_none);
+  ds_info.depthWriteEnable = depth_write->get_mode();
+  ds_info.depthCompareOp = (VkCompareOp)(depth_test->get_mode() - 1);
   ds_info.depthBoundsTestEnable = VK_FALSE;
   ds_info.stencilTestEnable = VK_FALSE;
   ds_info.front.failOp = VK_STENCIL_OP_KEEP;
@@ -1278,18 +1455,22 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   ds_info.minDepthBounds = 0;
   ds_info.maxDepthBounds = 0;
 
+  const ColorBlendAttrib *color_blend;
+  state->get_attrib_def(color_blend);
+  const ColorWriteAttrib *color_write;
+  state->get_attrib_def(color_write);
+
   VkPipelineColorBlendAttachmentState att_state[1];
-  att_state[0].blendEnable = VK_FALSE;
+  att_state[0].blendEnable = (color_blend->get_mode() != ColorBlendAttrib::M_none);
   att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
   att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-  att_state[0].colorBlendOp = VK_BLEND_OP_ADD;
+  att_state[0].colorBlendOp = (VkBlendOp)(color_blend->get_mode() - 1);
   att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
   att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-  att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
-  att_state[0].colorWriteMask = 0xf;
+  att_state[0].alphaBlendOp = (VkBlendOp)(color_blend->get_mode() - 1);
+  att_state[0].colorWriteMask = color_write->get_channels();
 
   VkPipelineColorBlendStateCreateInfo blend_info;
-  memset(&blend_info, 0, sizeof(blend_info));
   blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   blend_info.pNext = NULL;
   blend_info.flags = 0;
@@ -1306,7 +1487,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   const VkDynamicState dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
   VkPipelineDynamicStateCreateInfo dynamic_info;
-  memset(&dynamic_info, 0, sizeof(dynamic_info));
   dynamic_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   dynamic_info.pNext = NULL;
   dynamic_info.flags = 0;
@@ -1314,7 +1494,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   dynamic_info.pDynamicStates = dynamic_states;
 
   VkGraphicsPipelineCreateInfo pipeline_info;
-  memset(&pipeline_info, 0, sizeof(pipeline_info));
   pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipeline_info.pNext = NULL;
   pipeline_info.flags = 0;
@@ -1336,101 +1515,12 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   pipeline_info.basePipelineIndex = 0;
 
   VkResult err;
-  err = vkCreateGraphicsPipelines(_device, _pipeline_cache, 1, &pipeline_info, NULL, &_pipeline);
+  VkPipeline pipeline;
+  err = vkCreateGraphicsPipelines(_device, _pipeline_cache, 1, &pipeline_info, NULL, &pipeline);
   if (err) {
     vulkan_error(err, "Failed to create graphics pipeline");
-    return false;
+    return VK_NULL_HANDLE;
   }
 
-  vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
-
-  return true;
-}
-
-/**
- * Draws a series of disconnected triangles.
- */
-bool VulkanGraphicsStateGuardian::
-draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
-  int num_vertices = reader->get_num_vertices();
-  _vertices_tri_pcollector.add_level(num_vertices);
-  _primitive_batches_tri_pcollector.add_level(1);
-
-  if (reader->is_indexed()) {
-    // Not yet supported.
-    vkCmdDrawIndexed(_cmd, num_vertices, 1, 0, 0, 0);
-  } else {
-    vkCmdDraw(_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
-  }
-  return true;
-}
-
-/**
- * Draws a series of triangle strips.
- */
-bool VulkanGraphicsStateGuardian::
-draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
-  return false;
-}
-
-/**
- * Draws a series of triangle fans.
- */
-bool VulkanGraphicsStateGuardian::
-draw_trifans(const GeomPrimitivePipelineReader *, bool) {
-  return false;
-}
-
-/**
- * Draws a series of "patches", which can only be processed by a tessellation
- * shader.
- */
-bool VulkanGraphicsStateGuardian::
-draw_patches(const GeomPrimitivePipelineReader *, bool) {
-  return false;
-}
-
-/**
- * Draws a series of disconnected line segments.
- */
-bool VulkanGraphicsStateGuardian::
-draw_lines(const GeomPrimitivePipelineReader *, bool) {
-  return false;
-}
-
-/**
- * Draws a series of line strips.
- */
-bool VulkanGraphicsStateGuardian::
-draw_linestrips(const GeomPrimitivePipelineReader *, bool) {
-  return false;
-}
-
-/**
- * Draws a series of disconnected points.
- */
-bool VulkanGraphicsStateGuardian::
-draw_points(const GeomPrimitivePipelineReader *, bool) {
-  return false;
-}
-
-/**
- * Called after a sequence of draw_primitive() functions are called, this
- * should do whatever cleanup is appropriate.
- */
-void VulkanGraphicsStateGuardian::
-end_draw_primitives() {
-  if (_pipeline != VK_NULL_HANDLE) {
-    vkDestroyPipeline(_device, _pipeline, NULL);
-    _pipeline = VK_NULL_HANDLE;
-  }
-
-  GraphicsStateGuardian::end_draw_primitives();
-}
-
-/**
- * Resets all internal state as if the gsg were newly created.
- */
-void VulkanGraphicsStateGuardian::
-reset() {
+  return pipeline;
 }

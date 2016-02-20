@@ -25,10 +25,13 @@ static VkBool32 debug_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectT
     severity = NS_error;
   } else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
     severity = NS_warning;
-  } else if (flags & (VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)) {
-    severity = NS_info;
-  } else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+  } else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
     severity = NS_debug;
+  } else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+    // I'd label this as 'info', but the output is just way too spammy.
+    severity = NS_spam;
+  } else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+    severity = NS_spam;
   } else {
     severity = NS_spam;
   }
