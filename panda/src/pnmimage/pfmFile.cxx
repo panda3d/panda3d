@@ -2159,6 +2159,64 @@ operator *= (float multiplier) {
 }
 
 /**
+ * index_image is a WxH 1-channel image, while pixel_values is an Nx1
+ * image with any number of channels.  Typically pixel_values will be
+ * a 256x1 image.
+ *
+ * Fills the PfmFile with a new image the same width and height as
+ * index_image, with the same number of channels as pixel_values.
+ *
+ * Each pixel of the new image is computed with the formula:
+ *
+ * new_image(x, y) = pixel_values(index_image(x, y)[channel], 0)
+ *
+ * At present, no interpolation is performed; the nearest value in
+ * pixel_values is discovered.  This may change in the future.
+ */
+void PfmFile::
+indirect_1d_lookup(const PfmFile &index_image, int channel,
+                   const PfmFile &pixel_values) {
+  clear(index_image.get_x_size(), index_image.get_y_size(),
+        pixel_values.get_num_channels());
+
+  for (int yi = 0; yi < get_y_size(); ++yi) {
+    switch (get_num_channels()) {
+    case 1:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point1(xi, yi, pixel_values.get_point1(v, 0));
+      }
+      break;
+
+    case 2:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point2(xi, yi, pixel_values.get_point2(v, 0));
+      }
+      break;
+
+    case 3:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point3(xi, yi, pixel_values.get_point3(v, 0));
+      }
+      break;
+
+    case 4:
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+        nassertv(v >= 0 && v < pixel_values.get_x_size());
+        set_point4(xi, yi, pixel_values.get_point4(v, 0));
+      }
+      break;
+    }
+  }
+}
+
+/**
  * Adjusts each channel of the image by raising the corresponding component
  * value to the indicated exponent, such that L' = L ^ exponent.
  */

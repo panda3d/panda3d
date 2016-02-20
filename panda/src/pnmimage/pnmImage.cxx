@@ -1667,8 +1667,8 @@ fill_distance_outside(const PNMImage &mask, float threshold, int radius) {
  *
  * new_image(x, y) = pixel_values(index_image(x, y)[channel], 0)
  *
- * No interpolation is performed; the nearest value in pixel_values is
- * discovered.
+ * At present, no interpolation is performed; the nearest value in
+ * pixel_values is discovered.  This may change in the future.
  */
 void PNMImage::
 indirect_1d_lookup(const PNMImage &index_image, int channel,
