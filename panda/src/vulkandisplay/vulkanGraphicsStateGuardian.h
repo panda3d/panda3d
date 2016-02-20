@@ -29,7 +29,9 @@ public:
                               uint32_t queue_family_index);
   virtual ~VulkanGraphicsStateGuardian();
 
+  virtual string get_driver_vendor();
   virtual string get_driver_renderer();
+  virtual string get_driver_version();
 
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);

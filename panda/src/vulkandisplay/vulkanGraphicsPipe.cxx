@@ -14,6 +14,7 @@
 #include "vulkanGraphicsPipe.h"
 #include "vulkanGraphicsWindow.h"
 #include "pandaVersion.h"
+#include "displayInformation.h"
 
 /**
  * Callback called by the VK_EXT_debug_report extension whenever one of the
@@ -163,8 +164,79 @@ VulkanGraphicsPipe() {
   _queue_families.resize(num_families);
   vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &num_families, &_queue_families[0]);
 
-  // Get a list of supported texture formats.
+  // Fill in DisplayInformation.
+  _display_information->_vendor_id = _gpu_properties.vendorID;
+  _display_information->_device_id = _gpu_properties.deviceID;
+
   if (vulkandisplay_cat.is_debug()) {
+    // Output some properties about this device.
+    vulkandisplay_cat.debug() << "apiVersion: "
+      << ((_gpu_properties.apiVersion >> 22) & 0x3ff) << '.'
+      << ((_gpu_properties.apiVersion >> 12) & 0x3ff) << '.'
+      << (_gpu_properties.apiVersion & 0xfff) << '\n';
+
+    if (_gpu_properties.vendorID == 0x10DE) {
+      // This is how NVIDIA encodes their driver version.
+      vulkandisplay_cat.debug()
+        << "driverVersion: " << _gpu_properties.driverVersion << " ("
+        << ((_gpu_properties.driverVersion >> 22) & 0x3ff) << '.'
+        << ((_gpu_properties.driverVersion >> 14) & 0x0ff);
+
+      if (_gpu_properties.driverVersion & 0x3fc0) {
+        vulkandisplay_cat.debug(false) << '.'
+          << ((_gpu_properties.driverVersion >>  6) & 0x0ff) << ")\n";
+      } else {
+        vulkandisplay_cat.debug(false) << ")\n";
+      }
+    } else {
+      vulkandisplay_cat.debug()
+        << "driverVersion: " << _gpu_properties.driverVersion << "\n";
+    }
+
+    char vendor_id[5], device_id[5];
+    sprintf(vendor_id, "%04X", _gpu_properties.vendorID);
+    sprintf(device_id, "%04X", _gpu_properties.deviceID);
+
+    // Display the vendor name, if the vendor ID is recognized.
+    const char *vendor_name = get_vendor_name();
+    if (vendor_name != NULL) {
+      vulkandisplay_cat.debug() << "vendorID: 0x" << vendor_id
+                                << " (" << vendor_name << ")\n";
+    } else {
+      vulkandisplay_cat.debug() << "vendorID: 0x" << vendor_id << "\n";
+    }
+    vulkandisplay_cat.debug() << "deviceID: 0x" << device_id << "\n";
+
+    static const char *const device_types[] = {
+      "OTHER", "INTEGRATED_GPU", "DISCRETE_GPU", "VIRTUAL_GPU", "CPU", ""
+    };
+    vulkandisplay_cat.debug()
+      << "deviceType: VK_PHYSICAL_DEVICE_TYPE_"
+      << device_types[_gpu_properties.deviceType] << "\n";
+
+    vulkandisplay_cat.debug() << "deviceName: " << _gpu_properties.deviceName << "\n";
+
+    // Enumerate supported extensions.
+    uint32_t num_inst_extensions = 0, num_dev_extensions = 0;
+    vkEnumerateInstanceExtensionProperties(NULL, &num_inst_extensions, NULL);
+    vkEnumerateDeviceExtensionProperties(_gpu, NULL, &num_dev_extensions, NULL);
+
+    VkExtensionProperties *extensions = (VkExtensionProperties *)
+      alloca(sizeof(VkExtensionProperties) * max(num_inst_extensions, num_dev_extensions));
+
+    vulkandisplay_cat.debug() << "Supported instance extensions:\n";
+    vkEnumerateInstanceExtensionProperties(NULL, &num_inst_extensions, extensions);
+    for (uint32_t i = 0; i < num_inst_extensions; ++i) {
+      vulkandisplay_cat.debug() << "  " << extensions[i].extensionName << "\n";
+    }
+
+    vulkandisplay_cat.debug() << "Supported device extensions:\n";
+    vkEnumerateDeviceExtensionProperties(_gpu, NULL, &num_dev_extensions, extensions);
+    for (uint32_t i = 0; i < num_dev_extensions; ++i) {
+      vulkandisplay_cat.debug() << "  " << extensions[i].extensionName << "\n";
+    }
+
+    // Get a list of supported texture formats.
     vulkandisplay_cat.debug() << "Supported texture formats:\n";
 
     static const char *const format_strings[] = {
@@ -364,6 +436,30 @@ VulkanGraphicsPipe() {
           << "  VK_FORMAT_" << format_strings[i] << "\n";
       }
     }
+
+    // Print some more limits.
+    vulkandisplay_cat.debug() << "maxImageDimension1D = "
+      << _gpu_properties.limits.maxImageDimension1D << "\n";
+    vulkandisplay_cat.debug() << "maxImageDimension2D = "
+      << _gpu_properties.limits.maxImageDimension2D << "\n";
+    vulkandisplay_cat.debug() << "maxImageDimension3D = "
+      << _gpu_properties.limits.maxImageDimension3D << "\n";
+    vulkandisplay_cat.debug() << "maxImageDimensionCube = "
+      << _gpu_properties.limits.maxImageDimensionCube << "\n";
+    vulkandisplay_cat.debug() << "maxImageArrayLayers = "
+      << _gpu_properties.limits.maxImageArrayLayers << "\n";
+    vulkandisplay_cat.debug() << "maxTexelBufferElements = "
+      << _gpu_properties.limits.maxTexelBufferElements << "\n";
+    vulkandisplay_cat.debug() << "maxPushConstantsSize = "
+      << _gpu_properties.limits.maxPushConstantsSize << "\n";
+    vulkandisplay_cat.debug() << "maxMemoryAllocationCount = "
+      << _gpu_properties.limits.maxMemoryAllocationCount << "\n";
+    vulkandisplay_cat.debug() << "maxSamplerAllocationCount = "
+      << _gpu_properties.limits.maxSamplerAllocationCount << "\n";
+    vulkandisplay_cat.debug() << "maxColorAttachments = "
+      << _gpu_properties.limits.maxColorAttachments << "\n";
+    vulkandisplay_cat.debug() << "maxDrawIndexedIndexValue = "
+      << _gpu_properties.limits.maxDrawIndexedIndexValue << "\n";
   }
 
   _is_valid = true;
@@ -416,6 +512,22 @@ find_queue_family_for_surface(uint32_t &queue_family_index, VkSurfaceKHR surface
   }
 
   return false;
+}
+
+/**
+ * Returns the name of the vendor of the physical device.
+ */
+const char *VulkanGraphicsPipe::
+get_vendor_name() const {
+  // Match OpenGL vendor for consistency.
+  switch (_gpu_properties.vendorID) {
+  case 0x1002: return "ATI Technologies Inc.";
+  case 0x10DE: return "NVIDIA Corporation";
+  case 0x5143: return "Qualcomm";
+  case 0x8086: return "Intel";
+  default:
+    return NULL;
+  }
 }
 
 /**

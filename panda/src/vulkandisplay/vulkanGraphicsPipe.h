@@ -40,6 +40,8 @@ public:
                                      VkSurfaceKHR surface,
                                      VkFlags required_flags) const;
 
+  const char *get_vendor_name() const;
+
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 

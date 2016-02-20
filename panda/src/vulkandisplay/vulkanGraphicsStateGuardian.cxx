@@ -242,6 +242,24 @@ VulkanGraphicsStateGuardian::
 }
 
 /**
+ * Returns the vendor of the video card driver
+ */
+string VulkanGraphicsStateGuardian::
+get_driver_vendor() {
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+
+  const char *vendor = vkpipe->get_vendor_name();
+  if (vendor != NULL) {
+    return string(vendor);
+  } else {
+    char vendor[24];
+    sprintf(vendor, "Unknown vendor 0x%04X", vkpipe->_gpu_properties.vendorID);
+    return string(vendor);
+  }
+}
+
+/**
  * Returns GL_Renderer
  */
 string VulkanGraphicsStateGuardian::
@@ -249,6 +267,16 @@ get_driver_renderer() {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
   return string(vkpipe->_gpu_properties.deviceName);
+}
+
+/**
+ * Returns driver version This has an implementation-defined meaning, and may
+ * be "" if the particular graphics implementation does not provide a way to
+ * query this information.
+ */
+string VulkanGraphicsStateGuardian::
+get_driver_version() {
+  return string();
 }
 
 /**
