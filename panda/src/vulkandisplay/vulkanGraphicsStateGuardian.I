@@ -39,7 +39,8 @@ operator = (const PipelineKey &copy) {
 INLINE VulkanGraphicsStateGuardian::PipelineKey::
 PipelineKey(PipelineKey &&from) NOEXCEPT :
   _state(move(from._state)),
-  _format(move(from._format)) {
+  _format(move(from._format)),
+  _topology(from._topology) {
 }
 
 /**
