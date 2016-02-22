@@ -2,6 +2,7 @@
 #include "vulkanGraphicsPipe.cxx"
 #include "vulkanGraphicsStateGuardian.cxx"
 #include "vulkanGraphicsWindow.cxx"
+#include "vulkanIndexBufferContext.cxx"
 #include "vulkanSamplerContext.cxx"
 #include "vulkanShaderContext.cxx"
 #include "vulkanTextureContext.cxx"

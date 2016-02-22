@@ -880,8 +880,82 @@ release_vertex_buffer(VertexBufferContext *) {
  * Prepares the indicated buffer for retained-mode rendering.
  */
 IndexBufferContext *VulkanGraphicsStateGuardian::
-prepare_index_buffer(GeomPrimitive *) {
-  return (IndexBufferContext *)NULL;
+prepare_index_buffer(GeomPrimitive *primitive) {
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+
+  CPT(GeomVertexArrayDataHandle) handle = primitive->get_vertices()->get_handle();
+  size_t data_size = handle->get_data_size_bytes();
+
+  VkBufferCreateInfo buf_info;
+  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buf_info.pNext = NULL;
+  buf_info.flags = 0;
+  buf_info.size = data_size;
+  buf_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  buf_info.queueFamilyIndexCount = 0;
+  buf_info.pQueueFamilyIndices = NULL;
+
+  VkResult err;
+  VkBuffer buffer;
+  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
+  if (err)  {
+    vulkan_error(err, "Failed to create index buffer");
+    return NULL;
+  }
+
+  VkMemoryRequirements mem_reqs;
+  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
+
+  VkMemoryAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  alloc_info.pNext = NULL;
+  alloc_info.allocationSize = mem_reqs.size;
+
+  // Find a host visible memory heap, since we're about to map it.
+  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+    vulkan_error(err, "Failed to find memory heap to allocate index buffer");
+    vkDestroyBuffer(_device, buffer, NULL);
+    return NULL;
+  }
+
+  VkDeviceMemory memory;
+  err = vkAllocateMemory(_device, &alloc_info, NULL, &memory);
+  if (err) {
+    vulkan_error(err, "Failed to allocate memory for index buffer");
+    vkDestroyBuffer(_device, buffer, NULL);
+    return NULL;
+  }
+
+  err = vkBindBufferMemory(_device, buffer, memory, 0);
+  if (err) {
+    vulkan_error(err, "Failed to bind memory to index buffer");
+    vkDestroyBuffer(_device, buffer, NULL);
+    vkFreeMemory(_device, memory, NULL);
+    return NULL;
+  }
+
+  VulkanIndexBufferContext *ibc = new VulkanIndexBufferContext(_prepared_objects, primitive);
+  ibc->_buffer = buffer;
+  ibc->_memory = memory;
+  ibc->update_data_size_bytes(alloc_info.allocationSize);
+
+  void *data;
+  err = vkMapMemory(_device, memory, 0, alloc_info.allocationSize, 0, &data);
+  if (err || !data) {
+    vulkan_error(err, "Failed to map index buffer memory");
+    vkDestroyBuffer(_device, buffer, NULL);
+    vkFreeMemory(_device, memory, NULL);
+    return NULL;
+  }
+
+  const unsigned char *source_data = handle->get_read_pointer(true);
+  memcpy(data, source_data, data_size);
+
+  vkUnmapMemory(_device, memory);
+  return ibc;
 }
 
 /**
@@ -1058,10 +1132,6 @@ prepare_lens() {
  */
 bool VulkanGraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
-  if (!GraphicsStateGuardian::begin_frame(current_thread)) {
-    return false;
-  }
-
   // Create a command buffer.
   VkCommandBufferAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1086,6 +1156,10 @@ begin_frame(Thread *current_thread) {
   err = vkBeginCommandBuffer(_cmd, &begin_info);
   if (err) {
     vulkan_error(err, "Can't begin command buffer");
+    return false;
+  }
+
+  if (!GraphicsStateGuardian::begin_frame(current_thread)) {
     return false;
   }
 
@@ -1171,38 +1245,23 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
  */
 bool VulkanGraphicsStateGuardian::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
-  VkPipeline pipeline = get_pipeline(_state_rs, _format,
-                                     VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-  nassertr(pipeline != VK_NULL_HANDLE, false);
-  vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-  int num_vertices = reader->get_num_vertices();
-  _vertices_tri_pcollector.add_level(num_vertices);
-  _primitive_batches_tri_pcollector.add_level(1);
-
-  if (reader->is_indexed()) {
-    // Not yet supported.
-    vkCmdDrawIndexed(_cmd, num_vertices, 1, 0, 0, 0);
-  } else {
-    vkCmdDraw(_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
-  }
-  return true;
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 }
 
 /**
  * Draws a series of triangle strips.
  */
 bool VulkanGraphicsStateGuardian::
-draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
-  return false;
+draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
 }
 
 /**
  * Draws a series of triangle fans.
  */
 bool VulkanGraphicsStateGuardian::
-draw_trifans(const GeomPrimitivePipelineReader *, bool) {
-  return false;
+draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN);
 }
 
 /**
@@ -1210,32 +1269,32 @@ draw_trifans(const GeomPrimitivePipelineReader *, bool) {
  * shader.
  */
 bool VulkanGraphicsStateGuardian::
-draw_patches(const GeomPrimitivePipelineReader *, bool) {
-  return false;
+draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 }
 
 /**
  * Draws a series of disconnected line segments.
  */
 bool VulkanGraphicsStateGuardian::
-draw_lines(const GeomPrimitivePipelineReader *, bool) {
-  return false;
+draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
 }
 
 /**
  * Draws a series of line strips.
  */
 bool VulkanGraphicsStateGuardian::
-draw_linestrips(const GeomPrimitivePipelineReader *, bool) {
-  return false;
+draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP);
 }
 
 /**
  * Draws a series of disconnected points.
  */
 bool VulkanGraphicsStateGuardian::
-draw_points(const GeomPrimitivePipelineReader *, bool) {
-  return false;
+draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 }
 
 /**
@@ -1252,6 +1311,47 @@ end_draw_primitives() {
  */
 void VulkanGraphicsStateGuardian::
 reset() {
+}
+
+/**
+ * Invoked by all the draw_xyz methods.
+ */
+bool VulkanGraphicsStateGuardian::
+do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
+                  VkPrimitiveTopology topology) {
+
+  VkPipeline pipeline = get_pipeline(_state_rs, _format, topology);
+  nassertr(pipeline != VK_NULL_HANDLE, false);
+  vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+  int num_vertices = reader->get_num_vertices();
+
+  if (reader->is_indexed()) {
+    // This is an indexed primitive.  Set up and bind the index buffer.
+    VulkanIndexBufferContext *ibc;
+    DCAST_INTO_R(ibc, reader->prepare_now(get_prepared_objects(), this), false);
+
+    VkIndexType index_type;
+    switch (reader->get_index_type()) {
+    case GeomEnums::NT_uint16:
+      index_type = VK_INDEX_TYPE_UINT16;
+      break;
+    case GeomEnums::NT_uint32:
+      index_type = VK_INDEX_TYPE_UINT32;
+      break;
+    default:
+      vulkandisplay_cat.error()
+        << "Unsupported index type: " << reader->get_index_type() << "\n";
+      return false;
+    }
+
+    vkCmdBindIndexBuffer(_cmd, ibc->_buffer, 0, index_type);
+    vkCmdDrawIndexed(_cmd, num_vertices, 1, 0, 0, 0);
+  } else {
+    // A non-indexed primitive.
+    vkCmdDraw(_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
+  }
+  return true;
 }
 
 /**

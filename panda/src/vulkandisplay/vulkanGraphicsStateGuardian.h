@@ -93,6 +93,9 @@ public:
   virtual void reset();
 
 private:
+  bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
+                         VkPrimitiveTopology topology);
+
   /**
    * Stores whatever is used to key a cached pipeline into the pipeline map.
    * This allows us to map Panda states to Vulkan pipelines effectively.

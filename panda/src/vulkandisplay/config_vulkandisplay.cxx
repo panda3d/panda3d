@@ -15,6 +15,7 @@
 #include "vulkanGraphicsPipe.h"
 #include "vulkanGraphicsStateGuardian.h"
 #include "vulkanGraphicsWindow.h"
+#include "vulkanIndexBufferContext.h"
 #include "vulkanSamplerContext.h"
 #include "vulkanShaderContext.h"
 #include "vulkanTextureContext.h"
@@ -49,6 +50,7 @@ init_libvulkandisplay() {
   VulkanGraphicsPipe::init_type();
   VulkanGraphicsStateGuardian::init_type();
   VulkanGraphicsWindow::init_type();
+  VulkanIndexBufferContext::init_type();
   VulkanSamplerContext::init_type();
   VulkanShaderContext::init_type();
   VulkanTextureContext::init_type();
