@@ -125,6 +125,8 @@ private:
                            const GeomVertexFormat *format,
                            VkPrimitiveTopology topology);
 
+  VkFormat get_image_format(const Texture *texture) const;
+
 private:
   VkDevice _device;
   VkQueue _queue;
@@ -134,6 +136,9 @@ private:
   VkRenderPass _render_pass;
   VkPipelineCache _pipeline_cache;
   VkPipelineLayout _pipeline_layout;
+  VkDescriptorSetLayout _descriptor_set_layout;
+  VkDescriptorPool _descriptor_pool;
+  VkDescriptorSet _descriptor_set;
   VulkanShaderContext *_default_sc;
   CPT(GeomVertexFormat) _format;
 

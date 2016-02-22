@@ -81,14 +81,14 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   vkGetDeviceQueue(_device, queue_family_index, 0, &_queue);
 
   // Create a command pool to allocate command buffers from.
-  VkCommandPoolCreateInfo pool_info;
-  pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  pool_info.pNext = NULL;
-  pool_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
+  VkCommandPoolCreateInfo cmd_pool_info;
+  cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  cmd_pool_info.pNext = NULL;
+  cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
                     VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  pool_info.queueFamilyIndex = queue_family_index;
+  cmd_pool_info.queueFamilyIndex = queue_family_index;
 
-  err = vkCreateCommandPool(_device, &pool_info, NULL, &_cmd_pool);
+  err = vkCreateCommandPool(_device, &cmd_pool_info, NULL, &_cmd_pool);
   if (err) {
     vulkan_error(err, "Failed to create command pool");
     return;
@@ -120,11 +120,10 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
   set_info.pNext = NULL;
   set_info.flags = 0;
-  set_info.bindingCount = 0;
+  set_info.bindingCount = 1;
   set_info.pBindings = &layout_binding;
 
-  VkDescriptorSetLayout desc_set_layout;
-  err = vkCreateDescriptorSetLayout(_device, &set_info, NULL, &desc_set_layout);
+  err = vkCreateDescriptorSetLayout(_device, &set_info, NULL, &_descriptor_set_layout);
   if (err) {
     vulkan_error(err, "Failed to create descriptor set layout");
   }
@@ -143,13 +142,44 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   layout_info.pNext = NULL;
   layout_info.flags = 0;
   layout_info.setLayoutCount = 1;
-  layout_info.pSetLayouts = &desc_set_layout;
+  layout_info.pSetLayouts = &_descriptor_set_layout;
   layout_info.pushConstantRangeCount = 2;
   layout_info.pPushConstantRanges = ranges;
 
   err = vkCreatePipelineLayout(_device, &layout_info, NULL, &_pipeline_layout);
   if (err) {
     vulkan_error(err, "Failed to create pipeline layout");
+    return;
+  }
+
+  VkDescriptorPoolSize pool_size;
+  pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  pool_size.descriptorCount = 1;
+
+  VkDescriptorPoolCreateInfo pool_info;
+  pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  pool_info.pNext = NULL;
+  pool_info.flags = 0;
+  pool_info.maxSets = 1;
+  pool_info.poolSizeCount = 1;
+  pool_info.pPoolSizes = &pool_size;
+
+  err = vkCreateDescriptorPool(_device, &pool_info, NULL, &_descriptor_pool);
+  if (err) {
+    vulkan_error(err, "Failed to create descriptor pool");
+    return;
+  }
+
+  // Create a descriptor set.  This will be moved elsewhere later.
+  VkDescriptorSetAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  alloc_info.pNext = NULL;
+  alloc_info.descriptorPool = _descriptor_pool;
+  alloc_info.descriptorSetCount = 1;
+  alloc_info.pSetLayouts = &_descriptor_set_layout;
+  err = vkAllocateDescriptorSets(_device, &alloc_info, &_descriptor_set);
+  if (err) {
+    vulkan_error(err, "Failed to allocate descriptor set");
     return;
   }
 
@@ -291,6 +321,8 @@ get_driver_version() {
  */
 TextureContext *VulkanGraphicsStateGuardian::
 prepare_texture(Texture *texture, int view) {
+  nassertr(_cmd != VK_NULL_HANDLE, (TextureContext *)NULL);
+
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
 
@@ -328,160 +360,30 @@ prepare_texture(Texture *texture, int view) {
     return (TextureContext *)NULL;
   }
 
-  //TODO: compressed formats.
-  //TODO: check format support and adjust as appropriate.  In particular,
-  // rgb8 does not seem to be supported on most drivers.
-  Texture::Format format = texture->get_format();
-  bool is_signed = !Texture::is_unsigned(texture->get_component_type());
-  switch (format) {
-  case Texture::F_depth_stencil:
-    image_info.format = VK_FORMAT_D24_UNORM_S8_UINT;
-    break;
-  case Texture::F_color_index:
-    image_info.format = VK_FORMAT_R8_UINT;
-    break;
-  case Texture::F_red:
-  case Texture::F_green:
-  case Texture::F_blue:
-    image_info.format = (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
-    break;
-  case Texture::F_rgb:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8_UNORM + is_signed);
-    break;
-  case Texture::F_rgb5:
-    image_info.format = VK_FORMAT_R5G6B5_UNORM_PACK16;
-    break;
-  case Texture::F_rgb8:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8_UNORM + is_signed);
-    break;
-  case Texture::F_rgb12:
-    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16_UNORM + is_signed);
-    break;
-  case Texture::F_rgb332:
-    image_info.format = VK_FORMAT_R5G6B5_UNORM_PACK16;
-    break;
-  case Texture::F_rgba:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UNORM + is_signed);
-    break;
-  case Texture::F_rgbm:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UNORM + is_signed);
-    break;
-  case Texture::F_rgba4:
-    image_info.format = VK_FORMAT_R4G4B4A4_UNORM_PACK16;
-    break;
-  case Texture::F_rgba5:
-    image_info.format = VK_FORMAT_R5G5B5A1_UNORM_PACK16;
-    break;
-  case Texture::F_rgba8:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UNORM + is_signed);
-    break;
-  case Texture::F_rgba12:
-    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16A16_UNORM + is_signed);
-    break;
-  case Texture::F_luminance:
-    image_info.format = (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
-    break;
-  case Texture::F_luminance_alpha:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
-    break;
-  case Texture::F_luminance_alphamask:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
-    break;
-  case Texture::F_rgba16:
-    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16A16_UNORM + is_signed);
-    break;
-  case Texture::F_rgba32:
-    image_info.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    break;
-  case Texture::F_depth_component:
-    image_info.format = (VkFormat)(VK_FORMAT_D16_UNORM + is_signed);
-    break;
-  case Texture::F_depth_component16:
-    image_info.format = (VkFormat)(VK_FORMAT_D16_UNORM + is_signed);
-    break;
-  case Texture::F_depth_component24:
-    image_info.format = (VkFormat)(VK_FORMAT_X8_D24_UNORM_PACK32 + is_signed);
-    break;
-  case Texture::F_depth_component32:
-    image_info.format = VK_FORMAT_D32_SFLOAT;
-    break;
-  case Texture::F_r16:
-    image_info.format = (VkFormat)(VK_FORMAT_R16_UNORM + is_signed);
-    break;
-  case Texture::F_rg16:
-    image_info.format = (VkFormat)(VK_FORMAT_R16G16_UNORM + is_signed);
-    break;
-  case Texture::F_rgb16:
-    image_info.format = (VkFormat)(VK_FORMAT_R16G16B16_UNORM + is_signed);
-    break;
-  case Texture::F_srgb:
-    image_info.format = VK_FORMAT_R8G8B8_SRGB;
-    break;
-  case Texture::F_srgb_alpha:
-    image_info.format = VK_FORMAT_R8G8B8A8_SRGB;
-    break;
-  case Texture::F_sluminance:
-    image_info.format = VK_FORMAT_R8_SRGB;
-    break;
-  case Texture::F_sluminance_alpha:
-    image_info.format = VK_FORMAT_R8G8B8A8_SRGB;
-    break;
-  case Texture::F_r32i:
-    image_info.format = (VkFormat)(VK_FORMAT_R32_UINT + is_signed);
-    break;
-  case Texture::F_r32:
-    image_info.format = VK_FORMAT_R32_SFLOAT;
-    break;
-  case Texture::F_rg32:
-    image_info.format = VK_FORMAT_R32G32_SFLOAT;
-    break;
-  case Texture::F_rgb32:
-    image_info.format = VK_FORMAT_R32G32B32_SFLOAT;
-    break;
-  case Texture::F_r8i:
-    image_info.format = (VkFormat)(VK_FORMAT_R8_UINT + is_signed);
-    break;
-  case Texture::F_rg8i:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UINT + is_signed);
-    break;
-  case Texture::F_rgb8i:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8_UINT + is_signed);
-    break;
-  case Texture::F_rgba8i:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8B8A8_UINT + is_signed);
-    break;
-  case Texture::F_r11_g11_b10:
-    image_info.format = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
-    break;
-  case Texture::F_rgb9_e5:
-    image_info.format = VK_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-    break;
-  case Texture::F_rgb10_a2:
-    image_info.format = (VkFormat)(VK_FORMAT_A2R10G10B10_UNORM_PACK32 + is_signed);
-    break;
-  case Texture::F_rg:
-    image_info.format = (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
-    break;
-  }
-
   int num_levels = 1;
   if (texture->uses_mipmaps()) {
     num_levels = texture->get_expected_num_mipmap_levels();
   }
 
   //TODO: check that size is acceptable.
+  image_info.format = get_image_format(texture);
   image_info.extent.width = texture->get_x_size();
   image_info.extent.height = texture->get_y_size();
   image_info.extent.depth = depth;
   image_info.mipLevels = num_levels;
   image_info.arrayLayers = num_layers;
   image_info.samples = VK_SAMPLE_COUNT_1_BIT;
-  image_info.tiling = VK_IMAGE_TILING_LINEAR;
-  image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+  image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+  image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
   image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   image_info.queueFamilyIndexCount = 0;
   image_info.pQueueFamilyIndices = NULL;
   image_info.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+  if (num_levels > 1) {
+    // We need to generate mipmaps, so use this as a transfer src as well.
+    image_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+  }
 
   VkImage image;
   err = vkCreateImage(_device, &image_info, NULL, &image);
@@ -491,6 +393,8 @@ prepare_texture(Texture *texture, int view) {
   }
 
   // Get the memory requirements, and find an appropriate heap to alloc in.
+  // The texture will be stored in device-local memory, since we can't write
+  // to OPTIMAL-tiled images anyway.
   VkMemoryRequirements mem_reqs;
   vkGetImageMemoryRequirements(_device, image, &mem_reqs);
 
@@ -499,22 +403,23 @@ prepare_texture(Texture *texture, int view) {
   alloc_info.pNext = NULL;
   alloc_info.allocationSize = mem_reqs.size;
 
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, 0)) {
+  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
+                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
     vulkan_error(err, "Failed to find memory heap to allocate texture memory");
     return (TextureContext *)NULL;
   }
 
-  VkDeviceMemory memory;
-  err = vkAllocateMemory(_device, &alloc_info, NULL, &memory);
+  VkDeviceMemory device_mem;
+  err = vkAllocateMemory(_device, &alloc_info, NULL, &device_mem);
   if (err) {
-    vulkan_error(err, "Failed to allocate memory for texture image");
+    vulkan_error(err, "Failed to allocate device memory for texture image");
     return (TextureContext *)NULL;
   }
 
   // Bind memory to image.
-  err = vkBindImageMemory(_device, image, memory, 0);
+  err = vkBindImageMemory(_device, image, device_mem, 0);
   if (err) {
-    vulkan_error(err, "Failed to bind memory to texture image");
+    vulkan_error(err, "Failed to bind device memory to texture image");
     return (TextureContext *)NULL;
   }
 
@@ -552,6 +457,7 @@ prepare_texture(Texture *texture, int view) {
   view_info.format = image_info.format;
 
   // We use the swizzle mask to emulate deprecated formats.
+  Texture::Format format = texture->get_format();
   switch (format) {
   case Texture::F_green:
     view_info.components.r = VK_COMPONENT_SWIZZLE_ZERO;
@@ -620,9 +526,117 @@ prepare_texture(Texture *texture, int view) {
     return (TextureContext *)NULL;
   }
 
+  // Create the staging buffer, where we will write the image to on the CPU.
+  // This will then be copied to the device-local memory.
+  CPTA_uchar image_data = texture->get_ram_image();
+  size_t data_size = image_data.size();
+  if (image_info.format == VK_FORMAT_A8B8G8R8_UNORM_PACK32) {
+    data_size = (data_size * 4) / 3;
+  }
+  VkBufferCreateInfo buf_info;
+  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buf_info.pNext = NULL;
+  buf_info.flags = 0;
+  buf_info.size = data_size;
+  buf_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  buf_info.queueFamilyIndexCount = 0;
+  buf_info.pQueueFamilyIndices = NULL;
+
+  VkBuffer buffer;
+  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
+  if (err)  {
+    vulkan_error(err, "Failed to create texture staging buffer");
+    return NULL;
+  }
+
+  // Get the memory requirements for our staging buffer, and find a heap to
+  // allocate it in where we can write to.
+  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
+  nassertr(mem_reqs.size >= data_size, (TextureContext *)NULL);
+  alloc_info.allocationSize = mem_reqs.size;
+
+  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+    vulkan_error(err, "Failed to find memory heap to allocate texture memory");
+    return (TextureContext *)NULL;
+  }
+
+  VkDeviceMemory staging_mem;
+  err = vkAllocateMemory(_device, &alloc_info, NULL, &staging_mem);
+  if (err) {
+    vulkan_error(err, "Failed to allocate staging memory for texture");
+    return (TextureContext *)NULL;
+  }
+
+  // Bind memory to staging buffer.
+  err = vkBindBufferMemory(_device, buffer, staging_mem, 0);
+  if (err) {
+    vulkan_error(err, "Failed to bind staging memory to texture staging buffer");
+    return (TextureContext *)NULL;
+  }
+
+  // Now fill in the data into the staging buffer.
+  void *data;
+  err = vkMapMemory(_device, staging_mem, 0, alloc_info.allocationSize, 0, &data);
+  if (err || !data) {
+    vulkan_error(err, "Failed to map texture staging memory");
+    vkDestroyImageView(_device, image_view, NULL);
+    vkDestroyImage(_device, image, NULL);
+    vkFreeMemory(_device, device_mem, NULL);
+    vkFreeMemory(_device, staging_mem, NULL);
+    return (TextureContext *)NULL;
+  }
+
+  if (image_info.format == VK_FORMAT_A8B8G8R8_UNORM_PACK32) {
+    // Pack RGB data.
+    const uint8_t *src = (const uint8_t *)image_data.p();
+    const uint8_t *src_end = src + image_data.size();
+    uint32_t *dest = (uint32_t *)data;
+    for (; src < src_end; src += 3) {
+      *dest++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
+    }
+  } else {
+    memcpy(data, image_data.p(), data_size);
+  }
+
+  vkUnmapMemory(_device, staging_mem);
+
+  // Schedule a copy from device
+  VkBufferImageCopy region;
+  memset(&region, 0, sizeof(VkBufferImageCopy));
+  region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  region.imageSubresource.mipLevel = 0;
+  region.imageSubresource.layerCount = 1;
+  region.imageExtent = image_info.extent;
+  vkCmdCopyBufferToImage(_cmd, buffer, image, image_info.initialLayout, 1, &region);
+
+  // Schedule mipmap generation for missing levels.
+  //TODO allow upload of pregenerated mipmap levels.
+  VkImageBlit blit;
+  memset(&blit, 0, sizeof(VkImageBlit));
+  blit.srcSubresource = region.imageSubresource;
+  blit.srcOffsets[1].x = region.imageExtent.width;
+  blit.srcOffsets[1].y = region.imageExtent.height;
+  blit.srcOffsets[1].z = region.imageExtent.depth;
+  blit.dstSubresource = region.imageSubresource;
+  blit.dstOffsets[1] = blit.srcOffsets[1];
+
+  for (int i = 1; i < num_levels; ++i) {
+    blit.dstSubresource.mipLevel++;
+    blit.dstOffsets[1].x = max(1, blit.dstOffsets[1].x >> 1);
+    blit.dstOffsets[1].y = max(1, blit.dstOffsets[1].y >> 1);
+    blit.dstOffsets[1].z = max(1, blit.dstOffsets[1].z >> 1);
+    vkCmdBlitImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL, image, VK_IMAGE_LAYOUT_GENERAL, 1, &blit, VK_FILTER_LINEAR);
+    blit.srcOffsets[1] = blit.dstOffsets[1];
+    blit.srcSubresource.mipLevel = blit.dstSubresource.mipLevel;
+
+    //TODO: memory barrier between blits.
+  }
+
   VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
   tc->_image = image;
-  tc->_memory = memory;
+  tc->_memory = device_mem;
   tc->_image_view = image_view;
   tc->update_data_size_bytes(alloc_info.allocationSize);
   return tc;
@@ -690,11 +704,14 @@ prepare_sampler(const SamplerState &sampler) {
   sampler_info.flags = 0;
   sampler_info.magFilter = (VkFilter)(sampler.get_effective_magfilter() & 1);
   sampler_info.minFilter = (VkFilter)(sampler.get_effective_minfilter() & 1);
-  sampler_info.mipmapMode = (VkSamplerMipmapMode)(sampler.get_effective_minfilter() >> 1);
+  sampler_info.mipmapMode = (VkSamplerMipmapMode)
+    (sampler.get_effective_minfilter() == SamplerState::FT_nearest_mipmap_linear ||
+     sampler.get_effective_minfilter() == SamplerState::FT_linear_mipmap_linear);
   sampler_info.addressModeU = wrap_map[sampler.get_wrap_u()];
   sampler_info.addressModeV = wrap_map[sampler.get_wrap_v()];
   sampler_info.addressModeW = wrap_map[sampler.get_wrap_w()];
   sampler_info.mipLodBias = sampler.get_lod_bias();
+  sampler_info.anisotropyEnable = VK_FALSE;
   sampler_info.maxAnisotropy = sampler.get_anisotropic_degree();
   sampler_info.compareEnable = VK_FALSE;
   sampler_info.compareOp = VK_COMPARE_OP_NEVER;
@@ -1015,6 +1032,46 @@ set_state_and_transform(const RenderState *state,
   state->get_attrib_def(color_attrib);
   LColorf color = LCAST(float, color_attrib->get_color());
   vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 64, 16, color.get_data());
+
+  // Now grab the texture.
+  const TextureAttrib *tex_attrib;
+  state->get_attrib_def(tex_attrib);
+
+  if (tex_attrib->has_on_stage(TextureStage::get_default())) {
+    Texture *texture = tex_attrib->get_on_texture(TextureStage::get_default());
+    SamplerState sampler = tex_attrib->get_on_sampler(TextureStage::get_default());
+    nassertv(texture != NULL);
+
+    VulkanTextureContext *tc;
+    DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
+
+    VulkanSamplerContext *sc;
+    DCAST_INTO_V(sc, sampler.prepare_now(get_prepared_objects(), this));
+
+    VkDescriptorImageInfo image_info;
+    image_info.sampler = sc->_sampler;
+    image_info.imageView = tc->_image_view;
+    image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkWriteDescriptorSet write;
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = NULL;
+    write.dstSet = _descriptor_set;
+    write.dstBinding = 0;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write.pImageInfo = &image_info;
+    write.pBufferInfo = NULL;
+    write.pTexelBufferView = NULL;
+
+    //TODO: this is not part of command buffer, so we should move this
+    // elsewhere.
+    vkUpdateDescriptorSets(_device, 1, &write, 0, NULL);
+  }
+
+  vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          _pipeline_layout, 0, 1, &_descriptor_set, 0, NULL);
 }
 
 /**
@@ -1651,4 +1708,158 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   }
 
   return pipeline;
+}
+
+/**
+ * Returns a VkFormat suitable for the given texture.
+ */
+VkFormat VulkanGraphicsStateGuardian::
+get_image_format(const Texture *texture) const {
+  Texture::Format format = texture->get_format();
+  Texture::ComponentType component_type = texture->get_component_type();
+  Texture::CompressionMode compression = texture->get_compression();
+  if (compression == Texture::CM_default) {
+    compression = compressed_textures ? Texture::CM_on : Texture::CM_off;
+  }
+
+  if (!_supports_compressed_texture) {
+    //TODO: support non-BC compression.
+    compression = Texture::CM_off;
+  }
+
+  bool is_signed = !Texture::is_unsigned(component_type);
+  bool is_srgb = Texture::is_srgb(format);
+
+  switch (compression) {
+  case Texture::CM_on:
+    // Select an appropriate compression mode automatically.
+    if (!is_srgb && texture->get_num_components() == 1) {
+      return (VkFormat)(VK_FORMAT_BC4_UNORM_BLOCK + is_signed);
+
+    } else if (!is_srgb && texture->get_num_components() == 2) {
+      return (VkFormat)(VK_FORMAT_BC5_UNORM_BLOCK + is_signed);
+
+    } else if (Texture::has_binary_alpha(format)) {
+      return (VkFormat)(VK_FORMAT_BC1_RGBA_UNORM_BLOCK + is_srgb);
+
+    } else if (format == Texture::F_rgba4 || format == Texture::F_rgb10_a2) {
+      return (VkFormat)(VK_FORMAT_BC2_UNORM_BLOCK + is_srgb);
+
+    } else if (Texture::has_alpha(format)) {
+      return (VkFormat)(VK_FORMAT_BC3_UNORM_BLOCK + is_srgb);
+
+    } else {
+      return (VkFormat)(VK_FORMAT_BC1_RGB_UNORM_BLOCK + is_srgb);
+    }
+
+  case Texture::CM_dxt1:
+    if (Texture::has_alpha(format)) {
+      return (VkFormat)(VK_FORMAT_BC1_RGBA_UNORM_BLOCK + is_srgb);
+    } else {
+      return (VkFormat)(VK_FORMAT_BC1_RGB_UNORM_BLOCK + is_srgb);
+    }
+  case Texture::CM_dxt3:
+    return (VkFormat)(VK_FORMAT_BC2_UNORM_BLOCK + is_srgb);
+
+  case Texture::CM_dxt5:
+    return (VkFormat)(VK_FORMAT_BC3_UNORM_BLOCK + is_srgb);
+
+  case Texture::CM_rgtc:
+    if (texture->get_num_components() == 1) {
+      return (VkFormat)(VK_FORMAT_BC4_UNORM_BLOCK + is_signed);
+    } else {
+      return (VkFormat)(VK_FORMAT_BC5_UNORM_BLOCK + is_signed);
+    }
+  }
+
+  switch (format) {
+  case Texture::F_depth_stencil:
+    return VK_FORMAT_D24_UNORM_S8_UINT;
+  case Texture::F_color_index:
+    return VK_FORMAT_R8_UINT;
+  case Texture::F_red:
+  case Texture::F_green:
+  case Texture::F_blue:
+    return (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
+  case Texture::F_rgb:
+    return (VkFormat)(VK_FORMAT_A8B8G8R8_UNORM_PACK32 + is_signed);
+  case Texture::F_rgb5:
+    return VK_FORMAT_B5G6R5_UNORM_PACK16;
+  case Texture::F_rgb8:
+    return (VkFormat)(VK_FORMAT_A8B8G8R8_UNORM_PACK32 + is_signed);
+  case Texture::F_rgb12:
+    return (VkFormat)(VK_FORMAT_R16G16B16_UNORM + is_signed);
+  case Texture::F_rgb332:
+    return VK_FORMAT_B5G6R5_UNORM_PACK16;
+  case Texture::F_rgba:
+    return (VkFormat)(VK_FORMAT_B8G8R8A8_UNORM + is_signed);
+  case Texture::F_rgbm:
+    return (VkFormat)(VK_FORMAT_B8G8R8A8_UNORM + is_signed);
+  case Texture::F_rgba4:
+    return VK_FORMAT_R4G4B4A4_UNORM_PACK16;
+  case Texture::F_rgba5:
+    return VK_FORMAT_R5G5B5A1_UNORM_PACK16;
+  case Texture::F_rgba8:
+    return (VkFormat)(VK_FORMAT_B8G8R8A8_UNORM + is_signed);
+  case Texture::F_rgba12:
+    return (VkFormat)(VK_FORMAT_R16G16B16A16_UNORM + is_signed);
+  case Texture::F_luminance:
+    return (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
+  case Texture::F_luminance_alpha:
+    return (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
+  case Texture::F_luminance_alphamask:
+    return (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
+  case Texture::F_rgba16:
+    return (VkFormat)(VK_FORMAT_R16G16B16A16_UNORM + is_signed);
+  case Texture::F_rgba32:
+    return VK_FORMAT_R32G32B32A32_SFLOAT;
+  case Texture::F_depth_component:
+    return (VkFormat)(VK_FORMAT_D16_UNORM + is_signed);
+  case Texture::F_depth_component16:
+    return (VkFormat)(VK_FORMAT_D16_UNORM + is_signed);
+  case Texture::F_depth_component24:
+    return (VkFormat)(VK_FORMAT_X8_D24_UNORM_PACK32 + is_signed);
+  case Texture::F_depth_component32:
+    return VK_FORMAT_D32_SFLOAT;
+  case Texture::F_r16:
+    return (VkFormat)(VK_FORMAT_R16_UNORM + is_signed);
+  case Texture::F_rg16:
+    return (VkFormat)(VK_FORMAT_R16G16_UNORM + is_signed);
+  case Texture::F_rgb16:
+    return (VkFormat)(VK_FORMAT_R16G16B16_UNORM + is_signed);
+  case Texture::F_srgb:
+    return VK_FORMAT_B8G8R8A8_SRGB;
+  case Texture::F_srgb_alpha:
+    return VK_FORMAT_B8G8R8A8_SRGB;
+  case Texture::F_sluminance:
+    return VK_FORMAT_R8_SRGB;
+  case Texture::F_sluminance_alpha:
+    return VK_FORMAT_B8G8R8A8_SRGB;
+  case Texture::F_r32i:
+    return (VkFormat)(VK_FORMAT_R32_UINT + is_signed);
+  case Texture::F_r32:
+    return VK_FORMAT_R32_SFLOAT;
+  case Texture::F_rg32:
+    return VK_FORMAT_R32G32_SFLOAT;
+  case Texture::F_rgb32:
+    return VK_FORMAT_R32G32B32_SFLOAT;
+  case Texture::F_r8i:
+    return (VkFormat)(VK_FORMAT_R8_UINT + is_signed);
+  case Texture::F_rg8i:
+    return (VkFormat)(VK_FORMAT_R8G8_UINT + is_signed);
+  case Texture::F_rgb8i:
+    return (VkFormat)(VK_FORMAT_A8B8G8R8_UNORM_PACK32 + is_signed);
+  case Texture::F_rgba8i:
+    return (VkFormat)(VK_FORMAT_B8G8R8A8_UINT + is_signed);
+  case Texture::F_r11_g11_b10:
+    return VK_FORMAT_B10G11R11_UFLOAT_PACK32;
+  case Texture::F_rgb9_e5:
+    return VK_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+  case Texture::F_rgb10_a2:
+    return (VkFormat)(VK_FORMAT_A2R10G10B10_UNORM_PACK32 + is_signed);
+  case Texture::F_rg:
+    return (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
+  }
+
+  return VK_FORMAT_UNDEFINED;
 }
