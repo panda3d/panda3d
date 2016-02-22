@@ -372,7 +372,7 @@ open_window() {
   swapchain_info.imageColorSpace = formats[0].colorSpace;
 
   // Choose a present mode.  Use FIFO mode as fallback, which is always
-  // available.
+  // available.  TODO: respect sync_video when choosing a mode.
   swapchain_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
   for (size_t i = 0; i < num_present_modes; ++i) {
     if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {

@@ -182,12 +182,17 @@ VulkanGraphicsPipe() {
         << ((_gpu_properties.driverVersion >> 22) & 0x3ff) << '.'
         << ((_gpu_properties.driverVersion >> 14) & 0x0ff);
 
-      if (_gpu_properties.driverVersion & 0x3fc0) {
+      if (_gpu_properties.driverVersion & 0x3fff) {
         vulkandisplay_cat.debug(false) << '.'
-          << ((_gpu_properties.driverVersion >>  6) & 0x0ff) << ")\n";
-      } else {
-        vulkandisplay_cat.debug(false) << ")\n";
+          << ((_gpu_properties.driverVersion >> 6) & 0xff);
+
+        if (_gpu_properties.driverVersion & 0x3f) {
+          vulkandisplay_cat.debug(false) << '.'
+            << (_gpu_properties.driverVersion & 0x3f);
+        }
       }
+      vulkandisplay_cat.debug(false) << ")\n";
+
     } else {
       vulkandisplay_cat.debug()
         << "driverVersion: " << _gpu_properties.driverVersion << "\n";

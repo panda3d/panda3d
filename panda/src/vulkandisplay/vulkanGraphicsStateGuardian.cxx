@@ -13,6 +13,7 @@
 
 #include "vulkanGraphicsStateGuardian.h"
 #include "vulkanVertexBufferContext.h"
+#include "graphicsEngine.h"
 #include "standardMunger.h"
 
 #include "colorBlendAttrib.h"
@@ -360,17 +361,11 @@ prepare_texture(Texture *texture, int view) {
     return (TextureContext *)NULL;
   }
 
-  int num_levels = 1;
-  if (texture->uses_mipmaps()) {
-    num_levels = texture->get_expected_num_mipmap_levels();
-  }
-
-  //TODO: check that size is acceptable.
   image_info.format = get_image_format(texture);
   image_info.extent.width = texture->get_x_size();
   image_info.extent.height = texture->get_y_size();
   image_info.extent.depth = depth;
-  image_info.mipLevels = num_levels;
+  image_info.mipLevels = 1;
   image_info.arrayLayers = num_layers;
   image_info.samples = VK_SAMPLE_COUNT_1_BIT;
   image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -380,9 +375,107 @@ prepare_texture(Texture *texture, int view) {
   image_info.pQueueFamilyIndices = NULL;
   image_info.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-  if (num_levels > 1) {
-    // We need to generate mipmaps, so use this as a transfer src as well.
-    image_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+  // Check if the format is actually supported.
+  VkFormatProperties fmt_props;
+  vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, image_info.format, &fmt_props);
+
+  bool pack_bgr8 = false;
+  if ((fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) == 0) {
+    // Not supported.  Can we convert it to a format that is supported?
+    switch (image_info.format) {
+    case VK_FORMAT_B8G8R8_UNORM:
+      image_info.format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+      pack_bgr8 = true;
+      break;
+
+    case VK_FORMAT_B8G8R8_UINT:
+      image_info.format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
+      pack_bgr8 = true;
+      break;
+
+    default:
+      vulkandisplay_cat.error()
+        << "Texture format not supported.\n";
+      return (TextureContext *)NULL;
+    }
+
+    // Update the properties for the new format.
+    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, image_info.format, &fmt_props);
+  }
+
+  // Check that the size is actually supported.
+  int mipmap_begin = 0;
+  VkImageFormatProperties img_props;
+  vkGetPhysicalDeviceImageFormatProperties(vkpipe->_gpu, image_info.format,
+                                           image_info.imageType, image_info.tiling,
+                                           image_info.usage, image_info.flags,
+                                           &img_props);
+  if (image_info.arrayLayers > img_props.maxArrayLayers) {
+    //TODO: more elegant solution to reduce layer count.
+    vulkandisplay_cat.error()
+      << "Texture has too many layers, this format has a maximum of "
+      << img_props.maxArrayLayers << "\n";
+    return (TextureContext *)NULL;
+  }
+  while (image_info.extent.width > img_props.maxExtent.width ||
+         image_info.extent.height > img_props.maxExtent.height ||
+         image_info.extent.depth > img_props.maxExtent.depth) {
+    // Reduce the size by bumping the first mipmap level uploaded.
+    image_info.extent.width = max(1, image_info.extent.width >> 1);
+    image_info.extent.height = max(1, image_info.extent.height >> 1);
+    image_info.extent.depth = max(1, image_info.extent.depth >> 1);
+    ++mipmap_begin;
+  }
+
+  if (mipmap_begin != 0) {
+    vulkandisplay_cat.info()
+      << "Reducing image " << texture->get_name() << " from "
+      << texture->get_x_size() << " x " << texture->get_y_size() << " x "
+      << texture->get_z_size() << " to " << image_info.extent.width << " x "
+      << image_info.extent.height << " x " << image_info.extent.depth << "\n";
+
+    if (!texture->has_ram_mipmap_image(mipmap_begin)) {
+      // Ugh, and to do this, we have to generate mipmaps on the CPU.
+      texture->generate_ram_mipmap_images();
+    }
+  }
+
+  int mipmap_end = mipmap_begin + 1;
+  if (texture->uses_mipmaps()) {
+    mipmap_end = texture->get_expected_num_mipmap_levels();
+    nassertr(mipmap_end > mipmap_begin, (TextureContext *)NULL);
+  }
+
+  // Do we need to generate any mipmaps?
+  bool generate_mipmaps = false;
+  for (int i = mipmap_begin; i < mipmap_end; ++i) {
+    if (!texture->has_ram_mipmap_image(i)) {
+      generate_mipmaps = true;
+      break;
+    }
+  }
+
+  if (generate_mipmaps) {
+    if ((fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT) == 0 ||
+        (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT) == 0 ||
+        !driver_generate_mipmaps) {
+      // Hang on, we don't support blitting using this format.  We'll have to
+      // generate the mipmaps on the CPU instead.
+      texture->generate_ram_mipmap_images();
+
+      // We now have as many levels as we're going to get.
+      mipmap_end = texture->get_num_ram_mipmap_images();
+      generate_mipmaps = false;
+    } else {
+      // We'll be generating mipmaps from it, so mark it as transfer source.
+      image_info.usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    }
+  }
+
+  image_info.mipLevels = mipmap_end - mipmap_begin;
+  if (image_info.mipLevels > img_props.maxMipLevels) {
+    mipmap_end -= image_info.mipLevels - img_props.maxMipLevels;
+    image_info.mipLevels = img_props.maxMipLevels;
   }
 
   VkImage image;
@@ -406,6 +499,7 @@ prepare_texture(Texture *texture, int view) {
   if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
     vulkan_error(err, "Failed to find memory heap to allocate texture memory");
+    vkDestroyImage(_device, image, NULL);
     return (TextureContext *)NULL;
   }
 
@@ -413,6 +507,7 @@ prepare_texture(Texture *texture, int view) {
   err = vkAllocateMemory(_device, &alloc_info, NULL, &device_mem);
   if (err) {
     vulkan_error(err, "Failed to allocate device memory for texture image");
+    vkDestroyImage(_device, image, NULL);
     return (TextureContext *)NULL;
   }
 
@@ -420,6 +515,8 @@ prepare_texture(Texture *texture, int view) {
   err = vkBindImageMemory(_device, image, device_mem, 0);
   if (err) {
     vulkan_error(err, "Failed to bind device memory to texture image");
+    vkDestroyImage(_device, image, NULL);
+    vkFreeMemory(_device, device_mem, NULL);
     return (TextureContext *)NULL;
   }
 
@@ -515,7 +612,7 @@ prepare_texture(Texture *texture, int view) {
     view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   }
   view_info.subresourceRange.baseMipLevel = 0;
-  view_info.subresourceRange.levelCount = num_levels;
+  view_info.subresourceRange.levelCount = image_info.mipLevels;
   view_info.subresourceRange.baseArrayLayer = 0;
   view_info.subresourceRange.layerCount = num_layers;
 
@@ -523,115 +620,9 @@ prepare_texture(Texture *texture, int view) {
   err = vkCreateImageView(_device, &view_info, NULL, &image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for texture");
-    return (TextureContext *)NULL;
-  }
-
-  // Create the staging buffer, where we will write the image to on the CPU.
-  // This will then be copied to the device-local memory.
-  CPTA_uchar image_data = texture->get_ram_image();
-  size_t data_size = image_data.size();
-  if (image_info.format == VK_FORMAT_A8B8G8R8_UNORM_PACK32) {
-    data_size = (data_size * 4) / 3;
-  }
-  VkBufferCreateInfo buf_info;
-  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buf_info.pNext = NULL;
-  buf_info.flags = 0;
-  buf_info.size = data_size;
-  buf_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  buf_info.queueFamilyIndexCount = 0;
-  buf_info.pQueueFamilyIndices = NULL;
-
-  VkBuffer buffer;
-  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
-  if (err)  {
-    vulkan_error(err, "Failed to create texture staging buffer");
-    return NULL;
-  }
-
-  // Get the memory requirements for our staging buffer, and find a heap to
-  // allocate it in where we can write to.
-  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
-  nassertr(mem_reqs.size >= data_size, (TextureContext *)NULL);
-  alloc_info.allocationSize = mem_reqs.size;
-
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-    vulkan_error(err, "Failed to find memory heap to allocate texture memory");
-    return (TextureContext *)NULL;
-  }
-
-  VkDeviceMemory staging_mem;
-  err = vkAllocateMemory(_device, &alloc_info, NULL, &staging_mem);
-  if (err) {
-    vulkan_error(err, "Failed to allocate staging memory for texture");
-    return (TextureContext *)NULL;
-  }
-
-  // Bind memory to staging buffer.
-  err = vkBindBufferMemory(_device, buffer, staging_mem, 0);
-  if (err) {
-    vulkan_error(err, "Failed to bind staging memory to texture staging buffer");
-    return (TextureContext *)NULL;
-  }
-
-  // Now fill in the data into the staging buffer.
-  void *data;
-  err = vkMapMemory(_device, staging_mem, 0, alloc_info.allocationSize, 0, &data);
-  if (err || !data) {
-    vulkan_error(err, "Failed to map texture staging memory");
-    vkDestroyImageView(_device, image_view, NULL);
     vkDestroyImage(_device, image, NULL);
     vkFreeMemory(_device, device_mem, NULL);
-    vkFreeMemory(_device, staging_mem, NULL);
     return (TextureContext *)NULL;
-  }
-
-  if (image_info.format == VK_FORMAT_A8B8G8R8_UNORM_PACK32) {
-    // Pack RGB data.
-    const uint8_t *src = (const uint8_t *)image_data.p();
-    const uint8_t *src_end = src + image_data.size();
-    uint32_t *dest = (uint32_t *)data;
-    for (; src < src_end; src += 3) {
-      *dest++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
-    }
-  } else {
-    memcpy(data, image_data.p(), data_size);
-  }
-
-  vkUnmapMemory(_device, staging_mem);
-
-  // Schedule a copy from device
-  VkBufferImageCopy region;
-  memset(&region, 0, sizeof(VkBufferImageCopy));
-  region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  region.imageSubresource.mipLevel = 0;
-  region.imageSubresource.layerCount = 1;
-  region.imageExtent = image_info.extent;
-  vkCmdCopyBufferToImage(_cmd, buffer, image, image_info.initialLayout, 1, &region);
-
-  // Schedule mipmap generation for missing levels.
-  //TODO allow upload of pregenerated mipmap levels.
-  VkImageBlit blit;
-  memset(&blit, 0, sizeof(VkImageBlit));
-  blit.srcSubresource = region.imageSubresource;
-  blit.srcOffsets[1].x = region.imageExtent.width;
-  blit.srcOffsets[1].y = region.imageExtent.height;
-  blit.srcOffsets[1].z = region.imageExtent.depth;
-  blit.dstSubresource = region.imageSubresource;
-  blit.dstOffsets[1] = blit.srcOffsets[1];
-
-  for (int i = 1; i < num_levels; ++i) {
-    blit.dstSubresource.mipLevel++;
-    blit.dstOffsets[1].x = max(1, blit.dstOffsets[1].x >> 1);
-    blit.dstOffsets[1].y = max(1, blit.dstOffsets[1].y >> 1);
-    blit.dstOffsets[1].z = max(1, blit.dstOffsets[1].z >> 1);
-    vkCmdBlitImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL, image, VK_IMAGE_LAYOUT_GENERAL, 1, &blit, VK_FILTER_LINEAR);
-    blit.srcOffsets[1] = blit.dstOffsets[1];
-    blit.srcSubresource.mipLevel = blit.dstSubresource.mipLevel;
-
-    //TODO: memory barrier between blits.
   }
 
   VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
@@ -639,6 +630,214 @@ prepare_texture(Texture *texture, int view) {
   tc->_memory = device_mem;
   tc->_image_view = image_view;
   tc->update_data_size_bytes(alloc_info.allocationSize);
+  tc->mark_loaded();
+
+  // Do we even have an image to upload?
+  if (texture->get_ram_image().is_null()) {
+    if (texture->has_clear_color()) {
+      // No, but we have to clear it to a solid color.
+      LColor col = texture->get_clear_color();
+      if (view_info.subresourceRange.aspectMask == VK_IMAGE_ASPECT_COLOR_BIT) {
+        VkClearColorValue value; //TODO: handle integer clears?
+        value.float32[0] = col[0];
+        value.float32[1] = col[1];
+        value.float32[2] = col[2];
+        value.float32[3] = col[3];
+        vkCmdClearColorImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
+                             &value, 1, &view_info.subresourceRange);
+      } else {
+        VkClearDepthStencilValue value;
+        value.depth = col[0];
+        value.stencil = 0;
+        vkCmdClearDepthStencilImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
+                                    &value, 1, &view_info.subresourceRange);
+      }
+    }
+
+    return tc;
+  }
+
+  // Create the staging buffer, where we will write the image to on the CPU.
+  // This will then be copied to the device-local memory.
+  VkBufferCreateInfo buf_info;
+  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buf_info.pNext = NULL;
+  buf_info.flags = 0;
+  buf_info.size = 0;
+  buf_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  buf_info.queueFamilyIndexCount = 0;
+  buf_info.pQueueFamilyIndices = NULL;
+
+  VkDeviceSize optimal_align = vkpipe->_gpu_properties.limits.optimalBufferCopyOffsetAlignment;
+  nassertd(optimal_align > 0) {
+    optimal_align = 1;
+  }
+
+  // Add up the total size of the staging buffer to create.
+  for (int n = mipmap_begin; n < mipmap_end; ++n) {
+    if (texture->has_ram_mipmap_image(n)) {
+      // Add for optimal alignment.
+      VkDeviceSize remain = buf_info.size % optimal_align;
+      if (remain > 0) {
+        buf_info.size += optimal_align - remain;
+      }
+
+      if (pack_bgr8) {
+        buf_info.size += texture->get_ram_mipmap_image_size(n) / 3 * 4;
+      } else {
+        buf_info.size += texture->get_ram_mipmap_image_size(n);
+      }
+    }
+  }
+
+  nassertr(buf_info.size > 0, (TextureContext *)NULL);
+
+  VkBuffer buffer;
+  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
+  if (err)  {
+    vulkan_error(err, "Failed to create texture staging buffer");
+    delete tc;
+    return (TextureContext *)NULL;
+  }
+
+  // Get the memory requirements for our staging buffer, and find a heap to
+  // allocate it in where we can write to.
+  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
+  nassertr(mem_reqs.size >= buf_info.size, (TextureContext *)NULL);
+  alloc_info.allocationSize = mem_reqs.size;
+
+  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+    vulkan_error(err, "Failed to find memory heap to allocate texture staging memory");
+    delete tc;
+    return (TextureContext *)NULL;
+  }
+
+  VkDeviceMemory staging_mem;
+  err = vkAllocateMemory(_device, &alloc_info, NULL, &staging_mem);
+  if (err) {
+    vulkan_error(err, "Failed to allocate staging memory for texture");
+    delete tc;
+    return (TextureContext *)NULL;
+  }
+
+  // Bind memory to staging buffer.
+  err = vkBindBufferMemory(_device, buffer, staging_mem, 0);
+  if (err) {
+    vulkan_error(err, "Failed to bind staging memory to texture staging buffer");
+    delete tc;
+    return (TextureContext *)NULL;
+  }
+
+  // Now fill in the data into the staging buffer.
+  void *data;
+  err = vkMapMemory(_device, staging_mem, 0, buf_info.size, 0, &data);
+  if (err || !data) {
+    vulkan_error(err, "Failed to map texture staging memory");
+    delete tc;
+    return (TextureContext *)NULL;
+  }
+
+  // Schedule a copy from our staging buffer to the image.
+  VkBufferImageCopy region;
+  memset(&region, 0, sizeof(VkBufferImageCopy));
+  region.imageSubresource.aspectMask = view_info.subresourceRange.aspectMask;
+  region.imageSubresource.mipLevel = 0;
+  region.imageSubresource.layerCount = image_info.arrayLayers;
+  region.imageExtent = image_info.extent;
+
+  VkImageBlit blit;
+  memset(&blit, 0, sizeof(VkImageBlit));
+  blit.srcSubresource = region.imageSubresource;
+  blit.srcOffsets[1].x = region.imageExtent.width;
+  blit.srcOffsets[1].y = region.imageExtent.height;
+  blit.srcOffsets[1].z = region.imageExtent.depth;
+  blit.dstSubresource = blit.srcSubresource;
+
+  for (int n = mipmap_begin; n < mipmap_end; ++n) {
+    // Get a pointer to the RAM image data.
+    const uint8_t *src = (const uint8_t *)texture->get_ram_mipmap_pointer((int)n);
+    size_t src_size;
+    CPTA_uchar ptimage;
+    if (src == (const uint8_t *)NULL) {
+      ptimage = texture->get_ram_mipmap_image(n);
+      src = (const uint8_t *)ptimage.p();
+      src_size = ptimage.size();
+    } else {
+      // It's a "pointer texture"; we trust it to be the expected size.
+      src_size = texture->get_expected_ram_mipmap_image_size((int)n);
+    }
+
+    if (src == (const uint8_t *)NULL) {
+      // There's no image for this level.  Are we supposed to generate it?
+      if (n > 0 && generate_mipmaps) {
+        blit.dstSubresource.mipLevel = region.imageSubresource.mipLevel;
+        blit.dstOffsets[1].x = region.imageExtent.width;
+        blit.dstOffsets[1].y = region.imageExtent.height;
+        blit.dstOffsets[1].z = region.imageExtent.depth;
+        vkCmdBlitImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL, image,
+                       VK_IMAGE_LAYOUT_GENERAL, 1, &blit, VK_FILTER_LINEAR);
+
+        blit.srcSubresource.mipLevel = blit.dstSubresource.mipLevel;
+        blit.srcOffsets[1] = blit.dstOffsets[1];
+
+      } else {
+        // No, shoot.  Um, panic?
+        vulkandisplay_cat.warning() << "No RAM mipmap level " << n
+          << " found for texture " << texture->get_name() << "\n";
+      }
+
+    } else {
+      // We do have an image.  This means we can write it to the appropriate
+      // location in the staging buffer, and schedule a copy to the image.
+      nassertr(buffer != VK_NULL_HANDLE, (TextureContext *)NULL);
+
+      // Pad for optimal alignment.
+      VkDeviceSize remain = region.bufferOffset % optimal_align;
+      if (remain > 0) {
+        region.bufferOffset += optimal_align - remain;
+      }
+
+      uint8_t *dest = (uint8_t *)data + region.bufferOffset;
+
+      if (pack_bgr8) {
+        // Pack RGB data into RGBA, since most cards don't support RGB8.
+        const uint8_t *src_end = src + src_size;
+        uint32_t *dest32 = (uint32_t *)dest;
+        for (; src < src_end; src += 3) {
+          *dest32++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
+        }
+        src_size = src_size / 3 * 4;
+      } else {
+        memcpy(dest, src, src_size);
+      }
+
+      // Schedule a copy from the staging buffer.
+      vkCmdCopyBufferToImage(_cmd, buffer, image, image_info.initialLayout, 1, &region);
+      region.bufferOffset += src_size;
+
+      blit.srcSubresource.mipLevel = region.imageSubresource.mipLevel;
+      blit.srcOffsets[1].x = region.imageExtent.width;
+      blit.srcOffsets[1].y = region.imageExtent.height;
+      blit.srcOffsets[1].z = region.imageExtent.depth;
+    }
+
+    region.imageExtent.width = max(1, region.imageExtent.width >> 1);
+    region.imageExtent.height = max(1, region.imageExtent.height >> 1);
+    region.imageExtent.depth = max(1, region.imageExtent.depth >> 1);
+    ++region.imageSubresource.mipLevel;
+  }
+
+  vkUnmapMemory(_device, staging_mem);
+
+  // Tell the GraphicsEngine that we uploaded the texture.  This may cause
+  // it to unload the data from RAM at the end of this frame.
+  GraphicsEngine *engine = get_engine();
+  if (engine != (GraphicsEngine *)NULL) {
+    engine->texture_uploaded(texture);
+  }
+
   return tc;
 }
 
@@ -1782,11 +1981,11 @@ get_image_format(const Texture *texture) const {
   case Texture::F_blue:
     return (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
   case Texture::F_rgb:
-    return (VkFormat)(VK_FORMAT_A8B8G8R8_UNORM_PACK32 + is_signed);
+    return (VkFormat)(VK_FORMAT_B8G8R8_UNORM + is_signed);
   case Texture::F_rgb5:
     return VK_FORMAT_B5G6R5_UNORM_PACK16;
   case Texture::F_rgb8:
-    return (VkFormat)(VK_FORMAT_A8B8G8R8_UNORM_PACK32 + is_signed);
+    return (VkFormat)(VK_FORMAT_B8G8R8_UNORM + is_signed);
   case Texture::F_rgb12:
     return (VkFormat)(VK_FORMAT_R16G16B16_UNORM + is_signed);
   case Texture::F_rgb332:
@@ -1848,7 +2047,7 @@ get_image_format(const Texture *texture) const {
   case Texture::F_rg8i:
     return (VkFormat)(VK_FORMAT_R8G8_UINT + is_signed);
   case Texture::F_rgb8i:
-    return (VkFormat)(VK_FORMAT_A8B8G8R8_UNORM_PACK32 + is_signed);
+    return (VkFormat)(VK_FORMAT_B8G8R8_UINT + is_signed);
   case Texture::F_rgba8i:
     return (VkFormat)(VK_FORMAT_B8G8R8A8_UINT + is_signed);
   case Texture::F_r11_g11_b10:
