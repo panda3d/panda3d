@@ -1682,13 +1682,26 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   }
 
   // Now describe each vertex attribute (ie. GeomVertexColumn).
-  VkVertexInputAttributeDescription *attrib_desc = (VkVertexInputAttributeDescription *)
-    alloca(sizeof(VkVertexInputAttributeDescription) * format->get_num_columns());
+  const Shader *shader = _default_sc->get_shader();
+  pvector<Shader::ShaderVarSpec>::const_iterator it;
 
-  for (size_t i = 0; i < format->get_num_columns(); ++i) {
-    const GeomVertexColumn *column = format->get_column(i);
-    attrib_desc[i].location = i;
-    attrib_desc[i].binding = format->get_array_with(i);
+  VkVertexInputAttributeDescription *attrib_desc = (VkVertexInputAttributeDescription *)
+    alloca(sizeof(VkVertexInputAttributeDescription) * shader->_var_spec.size());
+  size_t i = 0;
+
+  for (it = shader->_var_spec.begin(); it != shader->_var_spec.end(); ++it) {
+    const Shader::ShaderVarSpec &spec = *it;
+    int array_index;
+    const GeomVertexColumn *column;
+
+    if (!format->get_array_info(spec._name, array_index, column)) {
+      vulkandisplay_cat.error()
+        << "Shader references non-existent vertex column " << *spec._name << "\n";
+      continue;
+    }
+
+    attrib_desc[i].location = spec._id._seqno;
+    attrib_desc[i].binding = array_index;
     attrib_desc[i].offset = column->get_start();
 
     // Determine which Vulkan format to map this column to.  The formats are
@@ -1738,6 +1751,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
       attrib_desc[i].format = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
       break;
     }
+    ++i;
   }
 
   VkPipelineVertexInputStateCreateInfo vertex_info;
@@ -1746,7 +1760,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   vertex_info.flags = 0;
   vertex_info.vertexBindingDescriptionCount = format->get_num_arrays();
   vertex_info.pVertexBindingDescriptions = binding_desc;
-  vertex_info.vertexAttributeDescriptionCount = format->get_num_columns();
+  vertex_info.vertexAttributeDescriptionCount = i;
   vertex_info.pVertexAttributeDescriptions = attrib_desc;
 
   VkPipelineInputAssemblyStateCreateInfo assembly_info;
