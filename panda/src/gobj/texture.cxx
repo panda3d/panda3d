@@ -6232,7 +6232,10 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
  */
 int Texture::
 do_get_expected_num_mipmap_levels(const CData *cdata) const {
-  int size = max(cdata->_x_size, max(cdata->_y_size, cdata->_z_size));
+  int size = max(cdata->_x_size, cdata->_y_size);
+  if (cdata->_texture_type == Texture::TT_3d_texture) {
+    size = max(size, cdata->_z_size);
+  }
   int count = 1;
   while (size > 1) {
     size >>= 1;

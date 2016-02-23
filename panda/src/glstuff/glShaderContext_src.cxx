@@ -1462,24 +1462,27 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         return;
       }
 #ifndef OPENGLES
-      case GL_IMAGE_1D_EXT:
-      case GL_IMAGE_2D_EXT:
-      case GL_IMAGE_3D_EXT:
-      case GL_IMAGE_CUBE_EXT:
-      case GL_IMAGE_2D_ARRAY_EXT:
-      case GL_IMAGE_BUFFER_EXT:
-      case GL_INT_IMAGE_1D_EXT:
-      case GL_INT_IMAGE_2D_EXT:
-      case GL_INT_IMAGE_3D_EXT:
-      case GL_INT_IMAGE_CUBE_EXT:
-      case GL_INT_IMAGE_2D_ARRAY_EXT:
-      case GL_INT_IMAGE_BUFFER_EXT:
-      case GL_UNSIGNED_INT_IMAGE_1D_EXT:
-      case GL_UNSIGNED_INT_IMAGE_2D_EXT:
-      case GL_UNSIGNED_INT_IMAGE_3D_EXT:
-      case GL_UNSIGNED_INT_IMAGE_CUBE_EXT:
-      case GL_UNSIGNED_INT_IMAGE_2D_ARRAY_EXT:
-      case GL_UNSIGNED_INT_IMAGE_BUFFER_EXT:
+      case GL_IMAGE_1D:
+      case GL_IMAGE_2D:
+      case GL_IMAGE_3D:
+      case GL_IMAGE_CUBE:
+      case GL_IMAGE_2D_ARRAY:
+      case GL_IMAGE_CUBE_MAP_ARRAY:
+      case GL_IMAGE_BUFFER:
+      case GL_INT_IMAGE_1D:
+      case GL_INT_IMAGE_2D:
+      case GL_INT_IMAGE_3D:
+      case GL_INT_IMAGE_CUBE:
+      case GL_INT_IMAGE_2D_ARRAY:
+      case GL_INT_IMAGE_CUBE_MAP_ARRAY:
+      case GL_INT_IMAGE_BUFFER:
+      case GL_UNSIGNED_INT_IMAGE_1D:
+      case GL_UNSIGNED_INT_IMAGE_2D:
+      case GL_UNSIGNED_INT_IMAGE_3D:
+      case GL_UNSIGNED_INT_IMAGE_CUBE:
+      case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
+      case GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY:
+      case GL_UNSIGNED_INT_IMAGE_BUFFER:
         // This won't really change at runtime, so we might as well bind once
         // and then forget about it.
         _glgsg->_glUniform1i(p, _glsl_img_inputs.size());
