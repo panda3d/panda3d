@@ -1211,14 +1211,65 @@ void PfmFile::
 xform(const LMatrix4f &transform) {
   nassertv(is_valid());
 
-  for (int yi = 0; yi < _y_size; ++yi) {
-    for (int xi = 0; xi < _x_size; ++xi) {
-      if (!has_point(xi, yi)) {
-        continue;
+  int num_channels = get_num_channels();
+  switch (num_channels) {
+  case 1:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          PN_float32 pi = get_point1(xi, yi);
+          LPoint3f po = transform.xform_point(LPoint3f(pi, 0.0, 0.0));
+          set_point1(xi, yi, po[0]);
+        }
       }
-      LPoint3f &p = modify_point(xi, yi);
-      transform.xform_point_general_in_place(p);
     }
+    break;
+
+  case 2:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          LPoint2f pi = get_point2(xi, yi);
+          LPoint3f po = transform.xform_point(LPoint3f(pi[0], pi[1], 0.0));
+          set_point2(xi, yi, LPoint2f(po[0], po[1]));
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          LPoint3f &p = modify_point3(xi, yi);
+          transform.xform_point_general_in_place(p);
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          if (!has_point(xi, yi)) {
+            continue;
+          }
+          LPoint4f &p = modify_point4(xi, yi);
+          transform.xform_in_place(p);
+        }
+      }
+    }
+    break;
   }
 }
 
