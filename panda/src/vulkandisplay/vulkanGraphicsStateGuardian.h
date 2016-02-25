@@ -17,6 +17,7 @@
 #include "config_vulkandisplay.h"
 
 class VulkanShaderContext;
+class VulkanVertexBufferContext;
 
 /**
  * Manages a Vulkan device, and manages sending render commands to this
@@ -48,6 +49,9 @@ public:
   virtual void release_shader(ShaderContext *sc);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
+  bool update_vertex_buffer(VulkanVertexBufferContext *vbc,
+                            const GeomVertexArrayDataHandle *reader,
+                            bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
@@ -130,6 +134,7 @@ private:
 private:
   VkDevice _device;
   VkQueue _queue;
+  VkFence _fence;
   VkCommandPool _cmd_pool;
   VkCommandBuffer _cmd;
   pvector<VkRect2D> _viewports;

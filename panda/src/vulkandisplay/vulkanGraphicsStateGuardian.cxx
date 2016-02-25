@@ -14,6 +14,7 @@
 #include "vulkanGraphicsStateGuardian.h"
 #include "vulkanVertexBufferContext.h"
 #include "graphicsEngine.h"
+#include "pStatTimer.h"
 #include "standardMunger.h"
 
 #include "colorBlendAttrib.h"
@@ -80,6 +81,17 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   vkGetDeviceQueue(_device, queue_family_index, 0, &_queue);
+
+  // Create a fence to signal when the command buffers have finished.
+  VkFenceCreateInfo fence_info;
+  fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+  fence_info.pNext = NULL;
+  fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+  err = vkCreateFence(_device, &fence_info, NULL, &_fence);
+  if (err) {
+    vulkan_error(err, "Failed to create fence");
+    return;
+  }
 
   // Create a command pool to allocate command buffers from.
   VkCommandPoolCreateInfo cmd_pool_info;
@@ -816,6 +828,7 @@ prepare_texture(Texture *texture, int view) {
       // Schedule a copy from the staging buffer.
       vkCmdCopyBufferToImage(_cmd, buffer, image, image_info.initialLayout, 1, &region);
       region.bufferOffset += src_size;
+      _data_transferred_pcollector.add_level(src_size);
 
       blit.srcSubresource.mipLevel = region.imageSubresource.mipLevel;
       blit.srcOffsets[1].x = region.imageExtent.width;
@@ -999,7 +1012,19 @@ prepare_shader(Shader *shader) {
  * Releases the resources allocated by prepare_shader
  */
 void VulkanGraphicsStateGuardian::
-release_shader(ShaderContext *sc) {
+release_shader(ShaderContext *context) {
+  VulkanShaderContext *sc;
+  DCAST_INTO_V(sc, context);
+
+  if (sc->_modules[0] != VK_NULL_HANDLE) {
+    vkDestroyShaderModule(_device, sc->_modules[0], NULL);
+    sc->_modules[0] = VK_NULL_HANDLE;
+  }
+  if (sc->_modules[1] != VK_NULL_HANDLE) {
+    vkDestroyShaderModule(_device, sc->_modules[1], NULL);
+    sc->_modules[1] = VK_NULL_HANDLE;
+  }
+  delete sc;
 }
 
 /**
@@ -1067,21 +1092,46 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
   vbc->_buffer = buffer;
   vbc->_memory = memory;
   vbc->update_data_size_bytes(alloc_info.allocationSize);
-
-  void *data;
-  err = vkMapMemory(_device, memory, 0, alloc_info.allocationSize, 0, &data);
-  if (err || !data) {
-    vulkan_error(err, "Failed to map vertex buffer memory");
-    vkDestroyBuffer(_device, buffer, NULL);
-    vkFreeMemory(_device, memory, NULL);
-    return NULL;
-  }
-
-  const unsigned char *source_data = handle->get_read_pointer(true);
-  memcpy(data, source_data, data_size);
-
-  vkUnmapMemory(_device, memory);
   return vbc;
+}
+
+/**
+ * Makes sure that the data in the vertex buffer is up-to-date.
+ */
+bool VulkanGraphicsStateGuardian::
+update_vertex_buffer(VulkanVertexBufferContext *vbc,
+                     const GeomVertexArrayDataHandle *reader,
+                     bool force) {
+  vbc->set_active(true);
+
+  if (vbc->was_modified(reader)) {
+    VkDeviceSize num_bytes = reader->get_data_size_bytes();
+    if (num_bytes != 0) {
+      const unsigned char *client_pointer = reader->get_read_pointer(force);
+      if (client_pointer == NULL) {
+        return false;
+      }
+
+      void *data;
+      VkResult
+      err = vkMapMemory(_device, vbc->_memory, 0, num_bytes, 0, &data);
+      if (err || !data) {
+        vulkan_error(err, "Failed to map vertex buffer memory");
+        return false;
+      }
+
+      memcpy(data, client_pointer, num_bytes);
+
+      vkUnmapMemory(_device, vbc->_memory);
+
+      _data_transferred_pcollector.add_level(num_bytes);
+    }
+
+    vbc->mark_loaded(reader);
+  }
+  vbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+
+  return true;
 }
 
 /**
@@ -1089,7 +1139,21 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
  * including deleting the VertexBufferContext itself, if necessary.
  */
 void VulkanGraphicsStateGuardian::
-release_vertex_buffer(VertexBufferContext *) {
+release_vertex_buffer(VertexBufferContext *context) {
+  VulkanVertexBufferContext *vbc;
+  DCAST_INTO_V(vbc, context);
+
+  if (vbc->_buffer) {
+    vkDestroyBuffer(_device, vbc->_buffer, NULL);
+    vbc->_buffer = NULL;
+  }
+
+  if (vbc->_memory) {
+    vkFreeMemory(_device, vbc->_memory, NULL);
+    vbc->_memory = NULL;
+  }
+
+  delete vbc;
 }
 
 /**
@@ -1179,7 +1243,21 @@ prepare_index_buffer(GeomPrimitive *primitive) {
  * including deleting the IndexBufferContext itself, if necessary.
  */
 void VulkanGraphicsStateGuardian::
-release_index_buffer(IndexBufferContext *) {
+release_index_buffer(IndexBufferContext *context) {
+  VulkanIndexBufferContext *ibc;
+  DCAST_INTO_V(ibc, context);
+
+  if (ibc->_buffer) {
+    vkDestroyBuffer(_device, ibc->_buffer, NULL);
+    ibc->_buffer = NULL;
+  }
+
+  if (ibc->_memory) {
+    vkFreeMemory(_device, ibc->_memory, NULL);
+    ibc->_memory = NULL;
+  }
+
+  delete ibc;
 }
 
 /**
@@ -1345,6 +1423,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     viewports[i].y = y;
     viewports[i].width = w;
     viewports[i].height = h;
+    viewports[i].minDepth = 0.0;
+    viewports[i].maxDepth = 1.0;
 
     // Also save this in the _viewports array for later use.
     _viewports[i].offset.x = x;
@@ -1388,16 +1468,37 @@ prepare_lens() {
  */
 bool VulkanGraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
-  // Create a command buffer.
-  VkCommandBufferAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
-  alloc_info.commandPool = _cmd_pool;
-  alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  alloc_info.commandBufferCount = 1;
-
   VkResult err;
+
+  {
+    PStatTimer timer(_flush_pcollector);
+
+    // Make sure that the previous command buffer is done executing, so that
+    // we don't update or delete resources while they're still being used.
+    err = vkWaitForFences(_device, 1, &_fence, VK_TRUE, 1000000000ULL);
+    if (err == VK_TIMEOUT) {
+      vulkandisplay_cat.error()
+        << "Timed out waiting for previous frame to complete rendering.\n";
+      return false;
+    } else if (err) {
+      vulkan_error(err, "Failure waiting for command buffer fence");
+      return false;
+    }
+  }
+
+  // Reset the fence to unsignaled status.
+  err = vkResetFences(_device, 1, &_fence);
+  nassertr(!err, false);
+
   if (_cmd == VK_NULL_HANDLE) {
+    // Create a command buffer.
+    VkCommandBufferAllocateInfo alloc_info;
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.pNext = NULL;
+    alloc_info.commandPool = _cmd_pool;
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = 1;
+
     err = vkAllocateCommandBuffers(_device, &alloc_info, &_cmd);
     nassertr(!err, false);
     nassertr(_cmd != VK_NULL_HANDLE, false);
@@ -1415,6 +1516,9 @@ begin_frame(Thread *current_thread) {
     return false;
   }
 
+  // Call the GSG's begin_frame, which will cause any queued-up release() and
+  // prepare() methods to be called.  Note that some of them may add to the
+  // command buffer, which is why we've begun it already.
   if (!GraphicsStateGuardian::begin_frame(current_thread)) {
     return false;
   }
@@ -1486,6 +1590,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     CPT(GeomVertexArrayDataHandle) handle = data_reader->get_array_reader(i);
     VulkanVertexBufferContext *vbc;
     DCAST_INTO_R(vbc, handle->prepare_now(get_prepared_objects(), this), false);
+
+    if (!update_vertex_buffer(vbc, handle, force)) {
+      return false;
+    }
+
     buffers[i] = vbc->_buffer;
     offsets[i] = 0;
   }
@@ -1526,7 +1635,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
-  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST);
 }
 
 /**

@@ -21,18 +21,20 @@
  * validation layers has something to report.
  */
 static VkBool32 debug_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT, uint64_t, size_t, int32_t, const char *prefix, const char *message, void *) {
+  // When updating this, be sure to also update the code in the GraphicsPipe
+  // constructor that assigns the correct mask bits.
   NotifySeverity severity;
   if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
     severity = NS_error;
   } else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
     severity = NS_warning;
   } else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
-    severity = NS_debug;
-  } else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
-    // I'd label this as 'info', but the output is just way too spammy.
-    severity = NS_spam;
-  } else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
-    severity = NS_spam;
+    severity = NS_info;
+  //} else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+  //  // I'd label this as 'info', but the output is just way too spammy.
+  //  severity = NS_spam;
+  //} else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+  //  severity = NS_spam;
   } else {
     severity = NS_spam;
   }
@@ -111,12 +113,12 @@ VulkanGraphicsPipe() {
 
     // Tell the extension which severities to report, based on the enabled
     // notify categories.
-    if (vulkandisplay_cat.is_debug()) {
-      cb_info.flags |= VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+    if (vulkandisplay_cat.is_spam()) {
+      cb_info.flags |= VK_DEBUG_REPORT_DEBUG_BIT_EXT |
+                       VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
     }
     if (vulkandisplay_cat.is_info()) {
-      cb_info.flags |= VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-                       VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+      cb_info.flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
     }
     if (vulkandisplay_cat.is_warning()) {
       cb_info.flags |= VK_DEBUG_REPORT_WARNING_BIT_EXT;
@@ -150,8 +152,43 @@ VulkanGraphicsPipe() {
     return;
   }
 
-  // Just pick the first GPU for now.
+#ifndef NDEBUG
+  static const char *const device_types[] = {
+    "OTHER", "INTEGRATED_GPU", "DISCRETE_GPU", "VIRTUAL_GPU", "CPU", ""
+  };
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << gpu_count << " physical adapter" << (gpu_count != 1 ? "s" : "") << " found:\n";
+
+    for (uint32_t i = 0; i < gpu_count; ++i) {
+      VkPhysicalDeviceProperties gpu_props;
+      vkGetPhysicalDeviceProperties(physical_devices[i], &gpu_props);
+
+      vulkandisplay_cat.debug()
+        << "  " << gpu_props.deviceName << " (" << device_types[gpu_props.deviceType] << ")\n";
+    }
+  }
+#endif  // !NDEBUG
+
+  // Time to pick a GPU.  For now, we simply check for a discrete GPU, but
+  // this should probably be more complex in the future.
   _gpu = physical_devices[0];
+
+  for (uint32_t i = 0; i < gpu_count; ++i) {
+    VkPhysicalDeviceProperties gpu_props;
+    vkGetPhysicalDeviceProperties(physical_devices[i], &gpu_props);
+
+    if (gpu_props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+      // Great, we found a discrete GPU, use that.
+      _gpu = physical_devices[i];
+      break;
+    }
+
+    if (gpu_props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+      // Great, we'll use this as fallback, but keep looking.
+      _gpu = physical_devices[i];
+    }
+  }
 
   // Query device limits and memory properties.
   vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
@@ -168,6 +205,7 @@ VulkanGraphicsPipe() {
   _display_information->_vendor_id = _gpu_properties.vendorID;
   _display_information->_device_id = _gpu_properties.deviceID;
 
+#ifndef NDEBUG
   if (vulkandisplay_cat.is_debug()) {
     // Output some properties about this device.
     vulkandisplay_cat.debug() << "apiVersion: "
@@ -212,9 +250,6 @@ VulkanGraphicsPipe() {
     }
     vulkandisplay_cat.debug() << "deviceID: 0x" << device_id << "\n";
 
-    static const char *const device_types[] = {
-      "OTHER", "INTEGRATED_GPU", "DISCRETE_GPU", "VIRTUAL_GPU", "CPU", ""
-    };
     vulkandisplay_cat.debug()
       << "deviceType: VK_PHYSICAL_DEVICE_TYPE_"
       << device_types[_gpu_properties.deviceType] << "\n";
@@ -482,6 +517,7 @@ VulkanGraphicsPipe() {
     vulkandisplay_cat.debug() << "maxDrawIndexedIndexValue = "
       << _gpu_properties.limits.maxDrawIndexedIndexValue << "\n";
   }
+#endif  // !NDEBUG
 
   _is_valid = true;
 }

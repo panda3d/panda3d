@@ -204,6 +204,7 @@ end_flip() {
   DCAST_INTO_V(vkgsg, _gsg);
   VkDevice device = vkgsg->_device;
   VkQueue queue = vkgsg->_queue;
+  VkFence fence = vkgsg->_fence;
 
   nassertv(_present_complete != VK_NULL_HANDLE);
 
@@ -221,7 +222,7 @@ end_flip() {
   submit_info.pSignalSemaphores = NULL;
 
   VkResult err;
-  err = vkQueueSubmit(queue, 1, &submit_info, 0);
+  err = vkQueueSubmit(queue, 1, &submit_info, fence);
   if (err) {
     vulkan_error(err, "Error submitting queue");
     return;
@@ -310,6 +311,9 @@ open_window() {
   } else {
     //TODO: check that the GSG's queue can present to our surface.
   }
+
+  _fb_properties.set_force_hardware(vkgsg->is_hardware());
+  _fb_properties.set_force_software(!vkgsg->is_hardware());
 
   VkDevice device = vkgsg->_device;
 
@@ -434,7 +438,6 @@ open_window() {
   depth_img_info.pNext = NULL;
   depth_img_info.flags = 0;
   depth_img_info.imageType = VK_IMAGE_TYPE_2D;
-  depth_img_info.format = VK_FORMAT_D16_UNORM;
   depth_img_info.extent.width = _size[0];
   depth_img_info.extent.height = _size[1];
   depth_img_info.extent.depth = 1;
@@ -447,6 +450,22 @@ open_window() {
   depth_img_info.queueFamilyIndexCount = 0;
   depth_img_info.pQueueFamilyIndices = NULL;
   depth_img_info.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  // Choose a suitable format that satisfies the requirements.
+  if (_fb_properties.get_depth_bits() > 24 ||
+      _fb_properties.get_float_depth()) {
+    _fb_properties.set_depth_bits(32);
+    if (_fb_properties.get_stencil_bits() > 0) {
+      depth_img_info.format = VK_FORMAT_D32_SFLOAT_S8_UINT;
+      _fb_properties.set_stencil_bits(8);
+    } else {
+      depth_img_info.format = VK_FORMAT_D32_SFLOAT;
+    }
+  } else {
+    depth_img_info.format = VK_FORMAT_D24_UNORM_S8_UINT;
+    _fb_properties.set_depth_bits(24);
+    _fb_properties.set_stencil_bits(8);
+  }
 
   VkImage depth_image;
   err = vkCreateImage(device, &depth_img_info, NULL, &depth_image);
@@ -499,6 +518,10 @@ open_window() {
   view_info.subresourceRange.levelCount = 1;
   view_info.subresourceRange.baseArrayLayer = 0;
   view_info.subresourceRange.layerCount = 1;
+
+  if (_fb_properties.get_stencil_bits()) {
+    view_info.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+  }
 
   err = vkCreateImageView(device, &view_info, NULL, &_depth_stencil_view);
   if (err) {
