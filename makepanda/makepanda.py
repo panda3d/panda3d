@@ -22,6 +22,7 @@ except:
 
 from makepandacore import *
 from installpanda import *
+from makewheel import makewheel
 import time
 import os
 import sys
@@ -39,6 +40,7 @@ import sys
 
 COMPILER=0
 INSTALLER=0
+WHEEL=0
 GENMAN=0
 COMPRESSOR="zlib"
 THREADCOUNT=0
@@ -125,6 +127,7 @@ def usage(problem):
     print("  --verbose         (print out more information)")
     print("  --runtime         (build a runtime build instead of an SDK build)")
     print("  --installer       (build an installer)")
+    print("  --wheel           (build a pip-installable .whl)")
     print("  --optimize X      (optimization level can be 1,2,3,4)")
     print("  --version X       (set the panda version number)")
     print("  --lzma            (use lzma compression when building Windows installer)")
@@ -160,13 +163,13 @@ def usage(problem):
     os._exit(1)
 
 def parseopts(args):
-    global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
+    global INSTALLER,WHEEL,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
-        "optimize=","everything","nothing","installer","rtdist","nocolor",
+        "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
@@ -188,6 +191,7 @@ def parseopts(args):
             if (option=="--help"): raise Exception
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--wheel"): WHEEL=1
             elif (option=="--verbose"): SetVerbose(True)
             elif (option=="--distributor"): DISTRIBUTOR=value
             elif (option=="--rtdist"): RTDIST=1
@@ -423,6 +427,9 @@ if (RUNTIME):
 
 if (INSTALLER and RTDIST):
     exit("Cannot build an installer for the rtdist build!")
+
+if (WHEEL) and (PkgSkip("PYTHON")):
+    exit("Cannot build wheel without python")
 
 if (INSTALLER) and (PkgSkip("PYTHON")) and (not RUNTIME) and GetTarget() == 'windows':
     exit("Cannot build installer on Windows without python")
@@ -7123,6 +7130,13 @@ try:
             MakeInstallerFreeBSD()
         else:
             exit("Do not know how to make an installer for this platform")
+finally:
+    SaveDependencyCache()
+
+try:
+    if WHEEL:
+        ProgressOutput(100.0, "Building wheel")
+        makewheel(VERSION)
 finally:
     SaveDependencyCache()
 
