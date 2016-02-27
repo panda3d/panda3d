@@ -414,7 +414,12 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
     break;
 
   case GL_DEBUG_SEVERITY_MEDIUM:
-    level = NS_warning;
+    if (type == GL_DEBUG_TYPE_PERFORMANCE) {
+      // Performance warnings should really be "info".
+      level = NS_info;
+    } else {
+      level = NS_warning;
+    }
     break;
 
   case GL_DEBUG_SEVERITY_LOW:
