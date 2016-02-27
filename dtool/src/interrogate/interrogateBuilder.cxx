@@ -1870,9 +1870,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   iproperty._scoped_name = descope(make_property->get_local_name(&parser));
 
   if (return_type != NULL) {
-    iproperty._type = get_type(return_type, false);
-    // if (iproperty._type == 0) { parser.warning("cannot determine property
-    // type", make_property->_ident->_loc); }
+    iproperty._type = get_type(TypeManager::unwrap_reference(return_type), false);
   } else {
     iproperty._type = 0;
   }

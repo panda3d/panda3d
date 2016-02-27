@@ -54,5 +54,5 @@ get_z_size() const {
  */
 INLINE bool TexturePeeker::
 has_pixel(size_t x, size_t y) const {
-  return x >= 0 && y >= 0 && x < _x_size && y < _y_size;
+  return x < _x_size && y < _y_size;
 }
