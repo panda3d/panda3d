@@ -36,6 +36,8 @@ public:
 
   bool find_memory_type(uint32_t &type_index, uint32_t type_bits,
                         VkFlags required_flags) const;
+  bool find_queue_family(uint32_t &queue_family_index,
+                         VkFlags required_flags) const;
   bool find_queue_family_for_surface(uint32_t &queue_family_index,
                                      VkSurfaceKHR surface,
                                      VkFlags required_flags) const;

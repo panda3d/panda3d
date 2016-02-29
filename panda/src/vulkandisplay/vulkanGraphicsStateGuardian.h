@@ -100,6 +100,9 @@ private:
   bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
                          VkPrimitiveTopology topology);
 
+  bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
+                     int usage_flags, VkMemoryPropertyFlagBits flags);
+
   /**
    * Stores whatever is used to key a cached pipeline into the pipeline map.
    * This allows us to map Panda states to Vulkan pipelines effectively.
@@ -134,9 +137,12 @@ private:
 private:
   VkDevice _device;
   VkQueue _queue;
+  VkQueue _dma_queue;
   VkFence _fence;
+  VkBuffer _null_vertex_buffer;
   VkCommandPool _cmd_pool;
   VkCommandBuffer _cmd;
+  VkCommandBuffer _transfer_cmd;
   pvector<VkRect2D> _viewports;
   VkRenderPass _render_pass;
   VkPipelineCache _pipeline_cache;

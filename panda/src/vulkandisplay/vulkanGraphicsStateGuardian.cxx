@@ -36,8 +36,10 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   GraphicsStateGuardian(CS_default, engine, pipe),
   _device(VK_NULL_HANDLE),
   _queue(VK_NULL_HANDLE),
+  _dma_queue(VK_NULL_HANDLE),
   _cmd_pool(VK_NULL_HANDLE),
   _cmd(VK_NULL_HANDLE),
+  _transfer_cmd(VK_NULL_HANDLE),
   _render_pass(VK_NULL_HANDLE),
   _pipeline_cache(VK_NULL_HANDLE),
   _pipeline_layout(VK_NULL_HANDLE),
@@ -51,14 +53,16 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     "VK_KHR_swapchain",
   };
 
-  // Create a queue in the given queue family.
+  // Create a queue in the given queue family.  For now, we assume NVIDIA,
+  // which has only one queue family, but we want to separate this out for
+  // the sake of AMD cards.
   const float queue_priorities[1] = {0.0f};
   VkDeviceQueueCreateInfo queue_info;
   queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queue_info.pNext = NULL;
   queue_info.flags = 0;
   queue_info.queueFamilyIndex = queue_family_index;
-  queue_info.queueCount = 1;
+  queue_info.queueCount = 2;
   queue_info.pQueuePriorities = queue_priorities;
 
   VkDeviceCreateInfo device_info;
@@ -81,6 +85,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   vkGetDeviceQueue(_device, queue_family_index, 0, &_queue);
+  vkGetDeviceQueue(_device, queue_family_index, 1, &_dma_queue);
 
   // Create a fence to signal when the command buffers have finished.
   VkFenceCreateInfo fence_info;
@@ -98,7 +103,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   cmd_pool_info.pNext = NULL;
   cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
-                    VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+                        VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   cmd_pool_info.queueFamilyIndex = queue_family_index;
 
   err = vkCreateCommandPool(_device, &cmd_pool_info, NULL, &_cmd_pool);
@@ -193,6 +198,20 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   err = vkAllocateDescriptorSets(_device, &alloc_info, &_descriptor_set);
   if (err) {
     vulkan_error(err, "Failed to allocate descriptor set");
+    return;
+  }
+
+  // Create a dummy vertex buffer.  This will be used to store default values
+  // for attributes when they are not bound to a vertex buffer, as well as any
+  // flat color assigned via ColorAttrib.
+  VkBuffer buffer;
+  VkDeviceMemory memory;
+  if (!create_buffer(32, _null_vertex_buffer, memory,
+                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+                     VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+    vulkandisplay_cat.error()
+      << "Failed to create null vertex buffer.\n";
     return;
   }
 
@@ -334,7 +353,7 @@ get_driver_version() {
  */
 TextureContext *VulkanGraphicsStateGuardian::
 prepare_texture(Texture *texture, int view) {
-  nassertr(_cmd != VK_NULL_HANDLE, (TextureContext *)NULL);
+  nassertr(_transfer_cmd != VK_NULL_HANDLE, (TextureContext *)NULL);
 
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
@@ -407,7 +426,7 @@ prepare_texture(Texture *texture, int view) {
 
     default:
       vulkandisplay_cat.error()
-        << "Texture format not supported.\n";
+        << "Texture format " << image_info.format << " not supported.\n";
       return (TextureContext *)NULL;
     }
 
@@ -655,13 +674,13 @@ prepare_texture(Texture *texture, int view) {
         value.float32[1] = col[1];
         value.float32[2] = col[2];
         value.float32[3] = col[3];
-        vkCmdClearColorImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
+        vkCmdClearColorImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
                              &value, 1, &view_info.subresourceRange);
       } else {
         VkClearDepthStencilValue value;
         value.depth = col[0];
         value.stencil = 0;
-        vkCmdClearDepthStencilImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
+        vkCmdClearDepthStencilImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
                                     &value, 1, &view_info.subresourceRange);
       }
     }
@@ -671,16 +690,7 @@ prepare_texture(Texture *texture, int view) {
 
   // Create the staging buffer, where we will write the image to on the CPU.
   // This will then be copied to the device-local memory.
-  VkBufferCreateInfo buf_info;
-  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buf_info.pNext = NULL;
-  buf_info.flags = 0;
-  buf_info.size = 0;
-  buf_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  buf_info.queueFamilyIndexCount = 0;
-  buf_info.pQueueFamilyIndices = NULL;
-
+  VkDeviceSize buffer_size = 0;
   VkDeviceSize optimal_align = vkpipe->_gpu_properties.limits.optimalBufferCopyOffsetAlignment;
   nassertd(optimal_align > 0) {
     optimal_align = 1;
@@ -690,61 +700,35 @@ prepare_texture(Texture *texture, int view) {
   for (int n = mipmap_begin; n < mipmap_end; ++n) {
     if (texture->has_ram_mipmap_image(n)) {
       // Add for optimal alignment.
-      VkDeviceSize remain = buf_info.size % optimal_align;
+      VkDeviceSize remain = buffer_size % optimal_align;
       if (remain > 0) {
-        buf_info.size += optimal_align - remain;
+        buffer_size += optimal_align - remain;
       }
 
       if (pack_bgr8) {
-        buf_info.size += texture->get_ram_mipmap_image_size(n) / 3 * 4;
+        buffer_size += texture->get_ram_mipmap_image_size(n) / 3 * 4;
       } else {
-        buf_info.size += texture->get_ram_mipmap_image_size(n);
+        buffer_size += texture->get_ram_mipmap_image_size(n);
       }
     }
   }
-
-  nassertr(buf_info.size > 0, (TextureContext *)NULL);
+  nassertr(buffer_size > 0, (TextureContext *)NULL);
 
   VkBuffer buffer;
-  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
-  if (err)  {
-    vulkan_error(err, "Failed to create texture staging buffer");
-    delete tc;
-    return (TextureContext *)NULL;
-  }
-
-  // Get the memory requirements for our staging buffer, and find a heap to
-  // allocate it in where we can write to.
-  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
-  nassertr(mem_reqs.size >= buf_info.size, (TextureContext *)NULL);
-  alloc_info.allocationSize = mem_reqs.size;
-
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-    vulkan_error(err, "Failed to find memory heap to allocate texture staging memory");
-    delete tc;
-    return (TextureContext *)NULL;
-  }
-
   VkDeviceMemory staging_mem;
-  err = vkAllocateMemory(_device, &alloc_info, NULL, &staging_mem);
-  if (err) {
-    vulkan_error(err, "Failed to allocate staging memory for texture");
-    delete tc;
-    return (TextureContext *)NULL;
-  }
-
-  // Bind memory to staging buffer.
-  err = vkBindBufferMemory(_device, buffer, staging_mem, 0);
-  if (err) {
-    vulkan_error(err, "Failed to bind staging memory to texture staging buffer");
+  if (!create_buffer(buffer_size, buffer, staging_mem,
+                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+    vulkandisplay_cat.error()
+      << "Failed to create staging buffer for texture "
+      << texture->get_name() << endl;
     delete tc;
     return (TextureContext *)NULL;
   }
 
   // Now fill in the data into the staging buffer.
   void *data;
-  err = vkMapMemory(_device, staging_mem, 0, buf_info.size, 0, &data);
+  err = vkMapMemory(_device, staging_mem, 0, buffer_size, 0, &data);
   if (err || !data) {
     vulkan_error(err, "Failed to map texture staging memory");
     delete tc;
@@ -788,7 +772,7 @@ prepare_texture(Texture *texture, int view) {
         blit.dstOffsets[1].x = region.imageExtent.width;
         blit.dstOffsets[1].y = region.imageExtent.height;
         blit.dstOffsets[1].z = region.imageExtent.depth;
-        vkCmdBlitImage(_cmd, image, VK_IMAGE_LAYOUT_GENERAL, image,
+        vkCmdBlitImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL, image,
                        VK_IMAGE_LAYOUT_GENERAL, 1, &blit, VK_FILTER_LINEAR);
 
         blit.srcSubresource.mipLevel = blit.dstSubresource.mipLevel;
@@ -826,7 +810,7 @@ prepare_texture(Texture *texture, int view) {
       }
 
       // Schedule a copy from the staging buffer.
-      vkCmdCopyBufferToImage(_cmd, buffer, image, image_info.initialLayout, 1, &region);
+      vkCmdCopyBufferToImage(_transfer_cmd, buffer, image, image_info.initialLayout, 1, &region);
       region.bufferOffset += src_size;
       _data_transferred_pcollector.add_level(src_size);
 
@@ -1036,62 +1020,23 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
 
   CPT(GeomVertexArrayDataHandle) handle = array_data->get_handle();
-  size_t data_size = handle->get_data_size_bytes();
+  VkDeviceSize data_size = handle->get_data_size_bytes();
 
-  VkBufferCreateInfo buf_info;
-  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buf_info.pNext = NULL;
-  buf_info.flags = 0;
-  buf_info.size = data_size;
-  buf_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  buf_info.queueFamilyIndexCount = 0;
-  buf_info.pQueueFamilyIndices = NULL;
-
-  VkResult err;
+  //TODO: don't use host-visible memory, but copy from a staging buffer.
   VkBuffer buffer;
-  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
-  if (err)  {
-    vulkan_error(err, "Failed to create vertex buffer");
-    return NULL;
-  }
-
-  VkMemoryRequirements mem_reqs;
-  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
-
-  VkMemoryAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
-  alloc_info.allocationSize = mem_reqs.size;
-
-  // Find a host visible memory heap, since we're about to map it.
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-    vulkan_error(err, "Failed to find memory heap to allocate vertex buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
-    return NULL;
-  }
-
   VkDeviceMemory memory;
-  err = vkAllocateMemory(_device, &alloc_info, NULL, &memory);
-  if (err) {
-    vulkan_error(err, "Failed to allocate memory for vertex buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
-    return NULL;
-  }
-
-  err = vkBindBufferMemory(_device, buffer, memory, 0);
-  if (err) {
-    vulkan_error(err, "Failed to bind memory to vertex buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
-    vkFreeMemory(_device, memory, NULL);
+  if (!create_buffer(data_size, buffer, memory,
+                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+    vulkandisplay_cat.error()
+      << "Failed to create vertex buffer.\n";
     return NULL;
   }
 
   VulkanVertexBufferContext *vbc = new VulkanVertexBufferContext(_prepared_objects, array_data);
   vbc->_buffer = buffer;
   vbc->_memory = memory;
-  vbc->update_data_size_bytes(alloc_info.allocationSize);
+  vbc->update_data_size_bytes(data_size);
   return vbc;
 }
 
@@ -1165,65 +1110,27 @@ prepare_index_buffer(GeomPrimitive *primitive) {
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
 
   CPT(GeomVertexArrayDataHandle) handle = primitive->get_vertices()->get_handle();
-  size_t data_size = handle->get_data_size_bytes();
+  VkDeviceSize data_size = handle->get_data_size_bytes();
 
-  VkBufferCreateInfo buf_info;
-  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buf_info.pNext = NULL;
-  buf_info.flags = 0;
-  buf_info.size = data_size;
-  buf_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  buf_info.queueFamilyIndexCount = 0;
-  buf_info.pQueueFamilyIndices = NULL;
-
-  VkResult err;
+  //TODO: don't use host-visible memory, but copy from a staging buffer.
   VkBuffer buffer;
-  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
-  if (err)  {
-    vulkan_error(err, "Failed to create index buffer");
-    return NULL;
-  }
-
-  VkMemoryRequirements mem_reqs;
-  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
-
-  VkMemoryAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
-  alloc_info.allocationSize = mem_reqs.size;
-
-  // Find a host visible memory heap, since we're about to map it.
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-    vulkan_error(err, "Failed to find memory heap to allocate index buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
-    return NULL;
-  }
-
   VkDeviceMemory memory;
-  err = vkAllocateMemory(_device, &alloc_info, NULL, &memory);
-  if (err) {
-    vulkan_error(err, "Failed to allocate memory for index buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
-    return NULL;
-  }
-
-  err = vkBindBufferMemory(_device, buffer, memory, 0);
-  if (err) {
-    vulkan_error(err, "Failed to bind memory to index buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
-    vkFreeMemory(_device, memory, NULL);
+  if (!create_buffer(data_size, buffer, memory,
+                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+    vulkandisplay_cat.error()
+      << "Failed to create index buffer.\n";
     return NULL;
   }
 
   VulkanIndexBufferContext *ibc = new VulkanIndexBufferContext(_prepared_objects, primitive);
   ibc->_buffer = buffer;
   ibc->_memory = memory;
-  ibc->update_data_size_bytes(alloc_info.allocationSize);
+  ibc->update_data_size_bytes(data_size);
 
   void *data;
-  err = vkMapMemory(_device, memory, 0, alloc_info.allocationSize, 0, &data);
+  VkResult
+  err = vkMapMemory(_device, memory, 0, data_size, 0, &data);
   if (err || !data) {
     vulkan_error(err, "Failed to map index buffer memory");
     vkDestroyBuffer(_device, buffer, NULL);
@@ -1497,29 +1404,63 @@ begin_frame(Thread *current_thread) {
     alloc_info.pNext = NULL;
     alloc_info.commandPool = _cmd_pool;
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = 1;
+    alloc_info.commandBufferCount = 2;
 
-    err = vkAllocateCommandBuffers(_device, &alloc_info, &_cmd);
+    VkCommandBuffer buffers[2];
+    err = vkAllocateCommandBuffers(_device, &alloc_info, buffers);
     nassertr(!err, false);
+    _cmd = buffers[0];
+    _transfer_cmd = buffers[1];
     nassertr(_cmd != VK_NULL_HANDLE, false);
   }
 
+  // Begin the transfer command buffer, for preparing resources.
   VkCommandBufferBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   begin_info.pNext = NULL;
   begin_info.flags = 0;
   begin_info.pInheritanceInfo = NULL;
 
-  err = vkBeginCommandBuffer(_cmd, &begin_info);
+  err = vkBeginCommandBuffer(_transfer_cmd, &begin_info);
   if (err) {
     vulkan_error(err, "Can't begin command buffer");
     return false;
   }
 
+  // Update the "null" vertex buffer.
+  LVecBase4f data[2] = {LVecBase4(0, 0, 0, 1), LVecBase4(1, 1, 1, 1)};
+  vkCmdUpdateBuffer(_transfer_cmd, _null_vertex_buffer, 0, 32, (const uint32_t *)data[0].get_data());
+
   // Call the GSG's begin_frame, which will cause any queued-up release() and
   // prepare() methods to be called.  Note that some of them may add to the
   // command buffer, which is why we've begun it already.
   if (!GraphicsStateGuardian::begin_frame(current_thread)) {
+    return false;
+  }
+
+  // Let's submit our preparation calls, so the GPU has something to munch on.
+  vkEndCommandBuffer(_transfer_cmd);
+
+  VkSubmitInfo submit_info;
+  submit_info.pNext = NULL;
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.waitSemaphoreCount = 0;
+  submit_info.pWaitSemaphores = NULL;
+  submit_info.pWaitDstStageMask = NULL;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &_transfer_cmd;
+  submit_info.signalSemaphoreCount = 0;
+  submit_info.pSignalSemaphores = NULL;
+  err = vkQueueSubmit(_queue, 1, &submit_info, VK_NULL_HANDLE);
+  if (err) {
+    vulkan_error(err, "Failed to submit preparation command buffer");
+    return false;
+  }
+
+  // Now begin the main (ie. graphics) command buffer.
+  err = vkBeginCommandBuffer(_cmd, &begin_info);
+  if (err) {
+    vulkan_error(err, "Can't begin command buffer");
     return false;
   }
 
@@ -1583,10 +1524,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   // Prepare and bind the vertex buffers.
   int num_arrays = data_reader->get_num_arrays();
-  VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * num_arrays);
-  VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * num_arrays);
+  VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * (num_arrays + 1));
+  VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * (num_arrays + 1));
 
-  for (int i = 0; i < num_arrays; ++i) {
+  int i;
+  for (i = 0; i < num_arrays; ++i) {
     CPT(GeomVertexArrayDataHandle) handle = data_reader->get_array_reader(i);
     VulkanVertexBufferContext *vbc;
     DCAST_INTO_R(vbc, handle->prepare_now(get_prepared_objects(), this), false);
@@ -1598,8 +1540,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     buffers[i] = vbc->_buffer;
     offsets[i] = 0;
   }
+  buffers[i] = _null_vertex_buffer;
+  offsets[i] = 0;
 
-  vkCmdBindVertexBuffers(_cmd, 0, num_arrays, buffers, offsets);
+  vkCmdBindVertexBuffers(_cmd, 0, num_arrays + 1, buffers, offsets);
 
   _format = data_reader->get_format();
   return true;
@@ -1720,6 +1664,67 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
 }
 
 /**
+ * Shared code for creating a buffer and allocating memory for it.
+ * @return true on success.
+ */
+bool VulkanGraphicsStateGuardian::
+create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
+              int usage_flags, VkMemoryPropertyFlagBits flags) {
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), false);
+
+  VkBufferCreateInfo buf_info;
+  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buf_info.pNext = NULL;
+  buf_info.flags = 0;
+  buf_info.size = size;
+  buf_info.usage = usage_flags;
+  buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  buf_info.queueFamilyIndexCount = 0;
+  buf_info.pQueueFamilyIndices = NULL;
+
+  VkResult
+  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
+  if (err)  {
+    vulkan_error(err, "Failed to create buffer");
+    return false;
+  }
+
+  VkMemoryRequirements mem_reqs;
+  vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
+
+  VkMemoryAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  alloc_info.pNext = NULL;
+  alloc_info.allocationSize = mem_reqs.size;
+
+  // Find a host visible memory heap, since we're about to map it.
+  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
+                                flags)) {
+    vulkan_error(err, "Failed to find memory heap to allocate buffer");
+    vkDestroyBuffer(_device, buffer, NULL);
+    return false;
+  }
+
+  err = vkAllocateMemory(_device, &alloc_info, NULL, &memory);
+  if (err) {
+    vulkan_error(err, "Failed to allocate memory for buffer");
+    vkDestroyBuffer(_device, buffer, NULL);
+    return false;
+  }
+
+  err = vkBindBufferMemory(_device, buffer, memory, 0);
+  if (err) {
+    vulkan_error(err, "Failed to bind memory to buffer");
+    vkDestroyBuffer(_device, buffer, NULL);
+    vkFreeMemory(_device, memory, NULL);
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Returns a VkPipeline for the given RenderState+GeomVertexFormat combination.
  */
 VkPipeline VulkanGraphicsStateGuardian::
@@ -1780,15 +1785,25 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   stages[1].pName = "main";
   stages[1].pSpecializationInfo = NULL;
 
-  // Describe each vertex input binding (ie. GeomVertexArray).
+  // Describe each vertex input binding (ie. GeomVertexArray).  Leave one
+  // extra slot for the "dummy" binding, see below.
+  int num_bindings = format->get_num_arrays();
   VkVertexInputBindingDescription *binding_desc = (VkVertexInputBindingDescription *)
-    alloca(sizeof(VkVertexInputBindingDescription) * format->get_num_arrays());
+    alloca(sizeof(VkVertexInputBindingDescription) * (num_bindings + 1));
 
-  for (size_t i = 0; i < format->get_num_arrays(); ++i) {
+  int i = 0;
+  for (i = 0; i < num_bindings; ++i) {
     binding_desc[i].binding = i;
     binding_desc[i].stride = format->get_array(i)->get_stride();
     binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
   }
+
+  // Prepare a "dummy" binding, in case we need it, which is bound to missing
+  // vertex attributes.  It contains only a single value, set to stride=0.
+  int dummy_binding = -1;
+  binding_desc[i].binding = i;
+  binding_desc[i].stride = 0;
+  binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
   // Now describe each vertex attribute (ie. GeomVertexColumn).
   const Shader *shader = _default_sc->get_shader();
@@ -1796,20 +1811,37 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkVertexInputAttributeDescription *attrib_desc = (VkVertexInputAttributeDescription *)
     alloca(sizeof(VkVertexInputAttributeDescription) * shader->_var_spec.size());
-  size_t i = 0;
 
+  i = 0;
   for (it = shader->_var_spec.begin(); it != shader->_var_spec.end(); ++it) {
     const Shader::ShaderVarSpec &spec = *it;
     int array_index;
     const GeomVertexColumn *column;
 
+    attrib_desc[i].location = spec._id._seqno;
+
     if (!format->get_array_info(spec._name, array_index, column)) {
-      vulkandisplay_cat.error()
+      vulkandisplay_cat.warning()
         << "Shader references non-existent vertex column " << *spec._name << "\n";
+
+      // The sader references a non-existent vertex column.  To make this a
+      // well-defined operation (as in OpenGL), we bind a "dummy" vertex buffer
+      // containing a fixed value with a stride of 0.
+      if (dummy_binding == -1) {
+        dummy_binding = num_bindings++;
+      }
+
+      attrib_desc[i].binding = dummy_binding;
+      if (spec._name == InternalName::get_color()) {
+        attrib_desc[i].offset = 16;
+      } else {
+        attrib_desc[i].offset = 0;
+      }
+      attrib_desc[i].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+      ++i;
       continue;
     }
 
-    attrib_desc[i].location = spec._id._seqno;
     attrib_desc[i].binding = array_index;
     attrib_desc[i].offset = column->get_start();
 
@@ -1867,7 +1899,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   vertex_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   vertex_info.pNext = NULL;
   vertex_info.flags = 0;
-  vertex_info.vertexBindingDescriptionCount = format->get_num_arrays();
+  vertex_info.vertexBindingDescriptionCount = num_bindings;
   vertex_info.pVertexBindingDescriptions = binding_desc;
   vertex_info.vertexAttributeDescriptionCount = i;
   vertex_info.pVertexAttributeDescriptions = attrib_desc;
@@ -1948,7 +1980,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   ds_info.flags = 0;
   ds_info.depthTestEnable = (depth_test->get_mode() != RenderAttrib::M_none);
   ds_info.depthWriteEnable = depth_write->get_mode();
-  ds_info.depthCompareOp = (VkCompareOp)(depth_test->get_mode() - 1);
+  ds_info.depthCompareOp = (VkCompareOp)max(0, depth_test->get_mode() - 1);
   ds_info.depthBoundsTestEnable = VK_FALSE;
   ds_info.stencilTestEnable = VK_FALSE;
   ds_info.front.failOp = VK_STENCIL_OP_KEEP;
@@ -2102,6 +2134,7 @@ get_image_format(const Texture *texture) const {
   case Texture::F_red:
   case Texture::F_green:
   case Texture::F_blue:
+  case Texture::F_alpha:
     return (VkFormat)(VK_FORMAT_R8_UNORM + is_signed);
   case Texture::F_rgb:
     return (VkFormat)(VK_FORMAT_B8G8R8_UNORM + is_signed);

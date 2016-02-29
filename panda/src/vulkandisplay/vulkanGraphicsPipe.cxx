@@ -551,6 +551,22 @@ find_memory_type(uint32_t &type_index, uint32_t type_bits, VkFlags required_flag
 }
 
 /**
+ * Finds the index of the queue family matching the given requirements.
+ * @return true if a matching queue family was found
+ */
+bool VulkanGraphicsPipe::
+find_queue_family(uint32_t &queue_family_index, VkFlags required_flags) const {
+  for (uint32_t i = 0; i < _queue_families.size(); ++i) {
+    if ((_queue_families[i].queueFlags & required_flags) == required_flags) {
+      queue_family_index = i;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Finds the index of the queue family capable of presenting to the given
  * surface that fits the given requirements.
  * @return true if a matching queue family was found
@@ -578,10 +594,14 @@ const char *VulkanGraphicsPipe::
 get_vendor_name() const {
   // Match OpenGL vendor for consistency.
   switch (_gpu_properties.vendorID) {
+  // These are PCI vendor IDs.
   case 0x1002: return "ATI Technologies Inc.";
   case 0x10DE: return "NVIDIA Corporation";
   case 0x5143: return "Qualcomm";
   case 0x8086: return "Intel";
+
+  // Khronos vendor IDs for vendors without PCI.  See vk.xml.
+  case 0x10001: return "Vivante Corporation";
   default:
     return NULL;
   }
