@@ -25,23 +25,6 @@ def get_platform():
         return "any"
     return p
 
-
-# Global filepaths
-LIB_SRC = join("built", "lib")  # TODO: A special wheel lib dir
-PANDA3D_SRC = join("built", "panda3d")  # TODO: Empty?
-PANDAC_SRC = join("built", "pandac")
-DIRECT_SRC = join("built", "direct")
-MODELS_SRC = join("built", "models")
-PLUGINS_SRC = join("built", "plugins")
-ETC_SRC = join("built", "etc")
-BIN_SRC = join("built", "bin")
-LICENSE_SRC = "LICENSE"
-README_SRC = "README.md"
-WHEEL_TARGET = join("built", "wheel")
-PANDA3D_TARGET = join(WHEEL_TARGET, "panda3d")
-PANDAC_TARGET = join(WHEEL_TARGET, "pandac")
-DIRECT_TARGET = join(WHEEL_TARGET, "direct")
-
 # Other global parameters
 PY_VERSION = "py3" if sys.version_info >= (3, 0) else "py2"
 PLATFORM_VERSION = get_platform()
@@ -64,7 +47,7 @@ METADATA = {
     "extensions": {
         "python.details": {
             "project_urls": {
-                "Home": "http://www.panda3d.org/"
+                "Home": "https://www.panda3d.org/"
             },
             "document_names": {
                 "license": "LICENSE.txt"
@@ -129,10 +112,24 @@ def copy_files(src, target):
         shutil.copy2(join(src, f), join(target, f))
 
 
-def makewheel(version):
-    # Global parameters that depend on version
-    data_target = join(WHEEL_TARGET, "panda3d-{}.data".format(version))
-    info_target = join(WHEEL_TARGET, "panda3d-{}.dist-info".format(version))
+def makewheel(version, output_dir):
+    # Global filepaths
+    lib_src = join(output_dir, "lib")  # TODO: A special wheel lib dir
+    panda3d_src = join(output_dir, "panda3d")  # TODO: Empty?
+    pandac_src = join(output_dir, "pandac")
+    direct_src = join(output_dir, "direct")
+    models_src = join(output_dir, "models")
+    plugins_src = join(output_dir, "plugins")
+    etc_src = join(output_dir, "etc")
+    bin_src = join(output_dir, "bin")
+    license_src = "LICENSE"
+    readme_src = "README.md"
+    wheel_target = join(output_dir, "wheel")
+    panda3d_target = join(wheel_target, "panda3d")
+    pandac_target = join(wheel_target, "pandac")
+    direct_target = join(wheel_target, "direct")
+    data_target = join(wheel_target, "panda3d-{}.data".format(version))
+    info_target = join(wheel_target, "panda3d-{}.dist-info".format(version))
     wheel_name = "panda3d-{}-{}-none-{}.whl".format(
         version, PY_VERSION, PLATFORM_VERSION)
 
@@ -147,38 +144,38 @@ def makewheel(version):
     # Clean
     print("Clearing wheel cache...")
     try:
-        shutil.rmtree(WHEEL_TARGET)
+        shutil.rmtree(wheel_target)
     except Exception:
         pass
 
     # Create the wheel directory structure
     print("Copying files...")
-    os.makedirs(WHEEL_TARGET)
+    os.makedirs(wheel_target)
     os.makedirs(data_target)
     os.makedirs(info_target)
 
     # Copy the built libraries
-    shutil.copytree(PANDA3D_SRC, PANDA3D_TARGET)
-    copy_files(LIB_SRC, PANDA3D_TARGET)
-    shutil.copytree(DIRECT_SRC, DIRECT_TARGET)
-    shutil.copytree(PANDAC_SRC, PANDAC_TARGET)
+    shutil.copytree(panda3d_src, panda3d_target)
+    copy_files(lib_src, panda3d_target)
+    shutil.copytree(direct_src, direct_target)
+    shutil.copytree(pandac_src, pandac_target)
 
     # For linux only, we need to set the rpath on each .so file
     if get_platform() == "any":
-        for filename in os.listdir(PANDA3D_TARGET):
+        for filename in os.listdir(panda3d_target):
             if ".so" in filename:
-                path = os.path.join(PANDA3D_TARGET, filename)
+                path = os.path.join(panda3d_target, filename)
                 os.system("patchelf --set-rpath '$ORIGIN' {}".format(path))
 
     # Copy the data files
-    shutil.copytree(MODELS_SRC, join(data_target, "data", "models"))
-    shutil.copytree(PLUGINS_SRC, join(data_target, "data", "plugins"))
-    shutil.copytree(ETC_SRC, join(data_target, "data", "etc"))
-    shutil.copytree(BIN_SRC, join(data_target, "scripts"))
+    shutil.copytree(models_src, join(data_target, "data", "models"))
+    shutil.copytree(plugins_src, join(data_target, "data", "plugins"))
+    shutil.copytree(etc_src, join(data_target, "data", "etc"))
+    shutil.copytree(bin_src, join(data_target, "scripts"))
 
     # Build out the metadata
-    shutil.copy2(LICENSE_SRC, join(info_target, "LICENSE.txt"))
-    shutil.copy2(README_SRC, info_target)
+    shutil.copy2(license_src, join(info_target, "LICENSE.txt"))
+    shutil.copy2(readme_src, info_target)
     with open(join(info_target, 'metadata.json'), 'w') as outfile:
         json.dump(METADATA, outfile)
     with open(join(info_target, 'RECORD'), 'w') as outfile:
@@ -191,5 +188,5 @@ def makewheel(version):
     # Zip it up and name it the right thing
     print("Zipping files into a wheel...")
     zip_file = zipfile.ZipFile(wheel_name, 'w')
-    zip_directory(WHEEL_TARGET, zip_file)
+    zip_directory(wheel_target, zip_file)
     zip_file.close()

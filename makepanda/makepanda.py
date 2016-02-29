@@ -7136,7 +7136,7 @@ finally:
 try:
     if WHEEL:
         ProgressOutput(100.0, "Building wheel")
-        makewheel(VERSION)
+        makewheel(VERSION, GetOutputDir())
 finally:
     SaveDependencyCache()
 
