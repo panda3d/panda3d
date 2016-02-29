@@ -697,7 +697,7 @@ protected:
   INLINE void do_clear_ram_image(CData *cdata);
   void do_clear_simple_ram_image(CData *cdata);
   void do_clear_ram_mipmap_images(CData *cdata);
-  void do_generate_ram_mipmap_images(CData *cdata);
+  void do_generate_ram_mipmap_images(CData *cdata, bool allow_recompress);
   void do_set_pad_size(CData *cdata, int x, int y, int z);
   virtual bool do_can_reload(const CData *cdata) const;
   bool do_reload(CData *cdata);

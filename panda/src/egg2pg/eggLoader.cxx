@@ -950,6 +950,11 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     }
   }
 
+  // Allow the texture loader to pre-compress the texture.
+  if (egg_tex->get_compression_mode() == EggTexture::CM_on) {
+    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_compression);
+  }
+
   PT(Texture) tex;
   switch (egg_tex->get_texture_type()) {
   case EggTexture::TT_unspecified:

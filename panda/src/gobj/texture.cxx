@@ -2708,7 +2708,8 @@ do_read(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
       // If we intend to keep the ram image around, consider compressing it
       // etc.
       bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
-      do_consider_auto_process_ram_image(cdata, generate_mipmaps || uses_mipmaps(), true);
+      bool allow_compression = ((options.get_texture_flags() & LoaderOptions::TF_allow_compression) != 0);
+      do_consider_auto_process_ram_image(cdata, generate_mipmaps || uses_mipmaps(), allow_compression);
     }
   }
 
@@ -4277,7 +4278,12 @@ do_reload_ram_image(CData *cdata, bool allow_compression) {
   int orig_num_components = cdata->_num_components;
 
   LoaderOptions options;
-  options.set_texture_flags(LoaderOptions::TF_preload);
+  if (allow_compression) {
+    options.set_texture_flags(LoaderOptions::TF_preload |
+                              LoaderOptions::TF_allow_compression);
+  } else {
+    options.set_texture_flags(LoaderOptions::TF_preload);
+  }
   do_read(cdata, cdata->_fullpath, cdata->_alpha_fullpath,
           cdata->_primary_file_num_channels, cdata->_alpha_file_channel,
           z, n, cdata->_has_read_pages, cdata->_has_read_mipmaps, options, NULL);
@@ -4618,7 +4624,7 @@ do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,
 
   if (generate_mipmaps && !driver_generate_mipmaps &&
       cdata->_ram_images.size() == 1) {
-    do_generate_ram_mipmap_images(cdata);
+    do_generate_ram_mipmap_images(cdata, false);
     modified = true;
   }
 
@@ -4725,7 +4731,7 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     if (!do_has_all_ram_mipmap_images(cdata)) {
       // If we're about to compress the RAM image, we should ensure that we
       // have all of the mipmap levels first.
-      do_generate_ram_mipmap_images(cdata);
+      do_generate_ram_mipmap_images(cdata, false);
     }
 
     RamImages compressed_ram_images;
@@ -6334,10 +6340,12 @@ do_clear_ram_mipmap_images(CData *cdata) {
 }
 
 /**
- *
+ * Generates the RAM mipmap images for this texture, first uncompressing it as
+ * required.  Will recompress the image if it was originally compressed,
+ * unless allow_recompress is true.
  */
 void Texture::
-do_generate_ram_mipmap_images(CData *cdata) {
+do_generate_ram_mipmap_images(CData *cdata, bool allow_recompress) {
   nassertv(do_has_ram_image(cdata));
 
   if (do_get_expected_num_mipmap_levels(cdata) == 1) {
@@ -6399,7 +6407,7 @@ do_generate_ram_mipmap_images(CData *cdata) {
     }
   }
 
-  if (orig_compression_mode != CM_off) {
+  if (orig_compression_mode != CM_off && allow_recompress) {
     // Now attempt to recompress the mipmap images according to the original
     // compression mode.  We don't need to bother compressing the first image
     // (it was already compressed, after all), so temporarily remove it from
@@ -6418,6 +6426,11 @@ do_generate_ram_mipmap_images(CData *cdata) {
     bool success = do_compress_ram_image(cdata, orig_compression_mode, QL_default, NULL);
     // Now restore the toplevel image.
     if (success) {
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Compressed " << get_name() << " generated mipmaps with "
+          << cdata->_ram_image_compression << "\n";
+      }
       cdata->_ram_images.insert(cdata->_ram_images.begin(), orig_compressed_image);
     } else {
       cdata->_ram_images.insert(cdata->_ram_images.begin(), uncompressed_image);
@@ -8255,7 +8268,7 @@ do_squish(CData *cdata, Texture::CompressionMode compression, int squish_flags) 
   if (!do_has_all_ram_mipmap_images(cdata)) {
     // If we're about to compress the RAM image, we should ensure that we have
     // all of the mipmap levels first.
-    do_generate_ram_mipmap_images(cdata);
+    do_generate_ram_mipmap_images(cdata, false);
   }
 
   RamImages compressed_ram_images;

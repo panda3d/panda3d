@@ -143,6 +143,13 @@ ConfigVariableBool preload_simple_textures
           "in a sub-thread.  It's not generally necessary if you are "
           "loading bam files that were generated via egg2bam."));
 
+ConfigVariableBool compressed_textures
+("compressed-textures", false,
+ PRC_DESC("Set this to true to compress textures as they are loaded into "
+          "texture memory, if the driver supports this.  Specifically, this "
+          "changes the meaning of set_compression(Texture::CM_default) to "
+          "Texture::CM_on."));
+
 ConfigVariableBool cache_check_timestamps
 ("cache-check-timestamps", true,
  PRC_DESC("Set this true to check the timestamps on disk (when possible) "

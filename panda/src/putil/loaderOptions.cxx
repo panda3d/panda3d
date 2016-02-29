@@ -28,11 +28,15 @@ LoaderOptions(int flags) :
   // Shadowing the variables in config_util for static init ordering issues.
   static ConfigVariableBool *preload_textures;
   static ConfigVariableBool *preload_simple_textures;
+  static ConfigVariableBool *compressed_textures;
   if (preload_textures == NULL) {
     preload_textures = new ConfigVariableBool("preload-textures", true);
   }
   if (preload_simple_textures == NULL) {
     preload_simple_textures = new ConfigVariableBool("preload-simple-textures", false);
+  }
+  if (compressed_textures == NULL) {
+    compressed_textures = new ConfigVariableBool("compressed-textures", false);
   }
 
   if (*preload_textures) {
@@ -40,6 +44,9 @@ LoaderOptions(int flags) :
   }
   if (*preload_simple_textures) {
     _texture_flags |= TF_preload_simple;
+  }
+  if (*compressed_textures) {
+    _texture_flags |= TF_allow_compression;
   }
 }
 
@@ -77,6 +84,7 @@ output(ostream &out) const {
   write_texture_flag(out, sep, "TF_preload_simple", TF_preload_simple);
   write_texture_flag(out, sep, "TF_allow_1d", TF_allow_1d);
   write_texture_flag(out, sep, "TF_generate_mipmaps", TF_generate_mipmaps);
+  write_texture_flag(out, sep, "TF_allow_compression", TF_allow_compression);
   if (sep.empty()) {
     out << "0";
   }
