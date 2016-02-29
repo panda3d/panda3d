@@ -26,14 +26,14 @@ def get_platform():
     return p
 
 # Other global parameters
-PY_VERSION = "py3" if sys.version_info >= (3, 0) else "py2"
+PY_VERSION = "cp{}{}".format(sys.version_info.major, sys.version_info.minor)
+ABI_TAG = "none"
 PLATFORM_VERSION = get_platform()
 
 WHEEL_DATA = """Wheel-Version: 1.0
 Generator: bdist_wheel 1.0
 Root-Is-Purelib: false
-Tag: py2-none-any
-Tag: py3-none-any
+Tag: {}-{}-{}
 Build: 1
 """
 
@@ -130,8 +130,8 @@ def makewheel(version, output_dir):
     direct_target = join(wheel_target, "direct")
     data_target = join(wheel_target, "panda3d-{}.data".format(version))
     info_target = join(wheel_target, "panda3d-{}.dist-info".format(version))
-    wheel_name = "panda3d-{}-{}-none-{}.whl".format(
-        version, PY_VERSION, PLATFORM_VERSION)
+    wheel_name = "panda3d-{}-{}-{}-{}.whl".format(
+        version, PY_VERSION, ABI_TAG, PLATFORM_VERSION)
 
     # Update relevant METADATA entries
     METADATA['version'] = version
@@ -182,7 +182,7 @@ def makewheel(version, output_dir):
         # TODO: Populate the RECORD file with all the proper hashes
         pass
     with open(join(info_target, 'WHEEL'), 'w') as outfile:
-        outfile.write(WHEEL_DATA)
+        outfile.write(WHEEL_DATA.format(PY_VERSION, ABI_TAG, PLATFORM_VERSION))
     write_metadata(info_target)
 
     # Zip it up and name it the right thing
