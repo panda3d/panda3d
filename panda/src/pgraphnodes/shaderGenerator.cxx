@@ -209,6 +209,7 @@ analyze_renderstate(const RenderState *rs) {
   const TransparencyAttrib *transparency;
   rs->get_attrib_def(transparency);
   if ((transparency->get_mode() == TransparencyAttrib::M_alpha)||
+      (transparency->get_mode() == TransparencyAttrib::M_premultiplied_alpha)||
       (transparency->get_mode() == TransparencyAttrib::M_dual)) {
     _have_alpha_blend = true;
   }

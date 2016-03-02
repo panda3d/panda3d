@@ -45,7 +45,8 @@ PUBLISHED:
     AM_ms,      // TransparencyAttrib::M_multisample
     AM_ms_mask, // TransparencyAttrib::M_multisample_mask
     AM_binary,  // TransparencyAttrib::M_binary
-    AM_dual     // TransparencyAttrib::M_dual
+    AM_dual,    // TransparencyAttrib::M_dual
+    AM_premultiplied // TransparencyAttrib::M_premultiplied_alpha
   };
 
   enum DepthWriteMode {

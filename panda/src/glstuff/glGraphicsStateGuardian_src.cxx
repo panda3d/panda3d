@@ -6722,6 +6722,19 @@ do_issue_blending() {
     }
     return;
 
+  case TransparencyAttrib::M_premultiplied_alpha:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)\n";
+    }
+    return;
+
   case TransparencyAttrib::M_multisample:
     // We need to enable *both* of these in M_multisample case.
     enable_multisample_alpha_one(true);
