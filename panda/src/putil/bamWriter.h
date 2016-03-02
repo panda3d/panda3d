@@ -74,6 +74,9 @@ PUBLISHED:
   bool has_object(const TypedWritable *obj) const;
   void flush();
 
+  INLINE int get_file_major_ver() const;
+  INLINE int get_file_minor_ver() const;
+
   INLINE BamEndian get_file_endian() const;
   INLINE bool get_file_stdfloat_double() const;
 
@@ -115,6 +118,7 @@ private:
   int enqueue_object(const TypedWritable *object);
   bool flush_queue();
 
+  int _file_major, _file_minor;
   BamEndian _file_endian;
   bool _file_stdfloat_double;
   BamTextureMode _file_texture_mode;

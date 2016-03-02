@@ -59,6 +59,10 @@ PUBLISHED:
   INLINE void set_attenuation(const LVecBase3 &attenuation);
   MAKE_PROPERTY(attenuation, get_attenuation, set_attenuation);
 
+  INLINE PN_stdfloat get_max_distance() const;
+  INLINE void set_max_distance(PN_stdfloat max_distance);
+  MAKE_PROPERTY(max_distance, get_max_distance, set_max_distance);
+
   virtual int get_class_priority() const;
 
   static PT(Texture) make_spot(int pixel_width, PN_stdfloat full_radius,
@@ -92,6 +96,7 @@ private:
     PN_stdfloat _exponent;
     LColor _specular_color;
     LVecBase3 _attenuation;
+    PN_stdfloat _max_distance;
   };
 
   PipelineCycler<CData> _cycler;
