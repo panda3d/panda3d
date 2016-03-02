@@ -7,7 +7,7 @@
  * with this source code in a file named "LICENSE."
  *
  * @file bulletHeightfieldShape.cxx
- * @author enn0x, wolfgangp
+ * @author enn0x
  * @date 2010-02-05
  */
 
