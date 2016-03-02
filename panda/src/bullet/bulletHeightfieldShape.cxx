@@ -8,7 +8,7 @@
  *
  * @file bulletHeightfieldShape.cxx
  * @author enn0x, wolfgangp
- * @date 2016-03-02
+ * @date 2010-02-05
  */
 
 #include "bulletHeightfieldShape.h"
