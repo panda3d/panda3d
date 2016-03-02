@@ -79,7 +79,6 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
 
   PN_stdfloat step_x = 1.0 / (PN_stdfloat)tex->get_x_size();
   PN_stdfloat step_y = 1.0 / (PN_stdfloat)tex->get_y_size();
-  //bullet_cat.warning() << "Steps: " << step_x << "\n" << step_y << endl;
 
   PT(TexturePeeker) peeker = tex->peek();
   LColor sample;
