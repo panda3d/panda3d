@@ -73,12 +73,12 @@ set_use_diamond_subdivision(bool flag) {
 BulletHeightfieldShape::
 BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
 
-  _num_rows = tex->get_x_size()+1;
-  _num_cols = tex->get_y_size()+1;
+  _num_rows = tex->get_x_size() + 1;
+  _num_cols = tex->get_y_size() + 1;
   _data = new float[_num_rows * _num_cols];
 
-  PN_stdfloat step_x = 1.0/(PN_stdfloat)tex->get_x_size();
-  PN_stdfloat step_y = 1.0/(PN_stdfloat)tex->get_y_size();
+  PN_stdfloat step_x = 1.0 / (PN_stdfloat)tex->get_x_size();
+  PN_stdfloat step_y = 1.0 / (PN_stdfloat)tex->get_y_size();
   //bullet_cat.warning() << "Steps: " << step_x << "\n" << step_y << endl;
 
   PT(TexturePeeker) peeker = tex->peek();
@@ -86,8 +86,8 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) {
 
   for (int row=0; row < _num_rows; row++) {
     for (int column=0; column < _num_cols; column++) {
-      if (!peeker->lookup_bilinear(sample, row*step_x, column*step_y)){
-      bullet_cat.error() << "Could not sample texture." << endl;
+      if (!peeker->lookup_bilinear(sample, row * step_x, column * step_y)) {
+        bullet_cat.error() << "Could not sample texture." << endl;
       }
       // Transpose
       _data[_num_rows * column + row] = max_height * sample.get_x();
