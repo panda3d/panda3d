@@ -594,7 +594,7 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
       break;
 
     default:
-      GLCAT.warning() << "Ignoring uniform '" << name_buffer
+      GLCAT.info() << "Ignoring uniform '" << name_buffer
         << "' with unsupported type 0x" << hex << param_type << dec << "\n";
       continue;
     }
