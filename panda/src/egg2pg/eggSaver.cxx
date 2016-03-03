@@ -686,11 +686,14 @@ convert_primitive(const GeomVertexData *vertex_data,
         break;
       case TransparencyAttrib::M_alpha:
         if (has_depthwrite && (depthwrite == DepthWriteAttrib::M_off)) {
-            tex_trans = EggRenderMode::AM_blend_no_occlude;
-                has_depthwrite = false;
+          tex_trans = EggRenderMode::AM_blend_no_occlude;
+          has_depthwrite = false;
         } else {
           tex_trans = EggRenderMode::AM_blend;
         }
+        break;
+      case TransparencyAttrib::M_premultiplied_alpha:
+        tex_trans = EggRenderMode::AM_premultiplied;
         break;
       case TransparencyAttrib::M_multisample:
         tex_trans = EggRenderMode::AM_ms;
@@ -705,7 +708,6 @@ convert_primitive(const GeomVertexData *vertex_data,
         tex_trans = EggRenderMode::AM_dual;
         break;
       default:  // intentional fall-through
-      case TransparencyAttrib::M_notused:
         break;
     }
     if (tex_trans != EggRenderMode::AM_unspecified) {

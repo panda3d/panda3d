@@ -112,13 +112,6 @@ ConfigVariableBool keep_texture_ram
           "texture image from disk; but it will consume memory somewhat "
           "wastefully."));
 
-ConfigVariableBool compressed_textures
-("compressed-textures", false,
- PRC_DESC("Set this to true to compress textures as they are loaded into "
-          "texture memory, if the driver supports this.  Specifically, this "
-          "changes the meaning of set_compression(Texture::CM_default) to "
-          "Texture::CM_on."));
-
 ConfigVariableBool driver_compress_textures
 ("driver-compress-textures", false,
  PRC_DESC("Set this true to ask the graphics driver to compress textures, "

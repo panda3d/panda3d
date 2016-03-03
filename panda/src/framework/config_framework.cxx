@@ -31,6 +31,8 @@ ConfigVariableBool show_frame_rate_meter
 ("show-frame-rate-meter", false);
 ConfigVariableBool show_scene_graph_analyzer_meter
 ("show-scene-graph-analyzer-meter", false);
+ConfigVariableBool print_pipe_types
+("print-pipe-types", true);
 ConfigVariableString window_type
 ("window-type", "onscreen");
 

@@ -37,10 +37,13 @@ make_copy() const {
  * Bam file.
  */
 void Spotlight::CData::
-write_datagram(BamWriter *, Datagram &dg) const {
+write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_stdfloat(_exponent);
   _specular_color.write_datagram(dg);
   _attenuation.write_datagram(dg);
+  if (manager->get_file_minor_ver() >= 41) {
+    dg.add_stdfloat(_max_distance);
+  }
 }
 
 /**
@@ -48,10 +51,13 @@ write_datagram(BamWriter *, Datagram &dg) const {
  * relevant data from the BamFile for the new Light.
  */
 void Spotlight::CData::
-fillin(DatagramIterator &scan, BamReader *) {
+fillin(DatagramIterator &scan, BamReader *manager) {
   _exponent = scan.get_stdfloat();
   _specular_color.read_datagram(scan);
   _attenuation.read_datagram(scan);
+  if (manager->get_file_minor_ver() >= 41) {
+    _max_distance = scan.get_stdfloat();
+  }
 }
 
 /**
@@ -112,6 +118,11 @@ write(ostream &out, int indent_level) const {
     << "attenuation " << get_attenuation() << "\n";
   indent(out, indent_level + 2)
     << "exponent " << get_exponent() << "\n";
+
+  if (!cinf(get_max_distance())) {
+    indent(out, indent_level + 2)
+      << "max distance " << get_max_distance() << "\n";
+  }
 
   Lens *lens = get_lens();
   if (lens != (Lens *)NULL) {

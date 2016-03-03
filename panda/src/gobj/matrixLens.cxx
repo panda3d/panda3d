@@ -78,6 +78,23 @@ register_with_read_factory() {
 }
 
 /**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void MatrixLens::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  dg.add_uint8(_ml_flags);
+  _user_mat.write_datagram(dg);
+
+  if (_ml_flags & MF_has_left_eye) {
+    _left_eye_mat.write_datagram(dg);
+  }
+  if (_ml_flags & MF_has_right_eye) {
+    _left_eye_mat.write_datagram(dg);
+  }
+}
+
+/**
  * This function is called by the BamReader's factory when a new object of
  * type Lens is encountered in the Bam file.  It should create the Lens and
  * extract its information from the file.
@@ -92,4 +109,25 @@ make_from_bam(const FactoryParams &params) {
   lens->fillin(scan, manager);
 
   return lens;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new MatrixLens.
+ */
+void MatrixLens::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  Lens::fillin(scan, manager);
+
+  if (manager->get_file_minor_ver() >= 41) {
+    _ml_flags = scan.get_uint8();
+
+    _user_mat.read_datagram(scan);
+    if (_ml_flags & MF_has_left_eye) {
+      _left_eye_mat.read_datagram(scan);
+    }
+    if (_ml_flags & MF_has_right_eye) {
+      _right_eye_mat.read_datagram(scan);
+    }
+  }
 }

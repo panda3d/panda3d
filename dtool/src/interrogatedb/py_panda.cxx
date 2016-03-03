@@ -183,7 +183,7 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
  * In the NDEBUG case, this is simply a #define to _PyErr_OCCURRED() (which is
  * an undocumented inline version of PyErr_Occurred()).
  */
-bool Dtool_CheckErrorOccurred() {
+bool _Dtool_CheckErrorOccurred() {
   if (_PyErr_OCCURRED()) {
     return true;
   }

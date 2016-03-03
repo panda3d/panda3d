@@ -169,7 +169,7 @@ static const string default_fshader =
   "#version 130\n"
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
-  "out vec4 p3d_FragColor;"
+  "out vec4 p3d_FragColor;\n"
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
 #else
@@ -414,7 +414,12 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
     break;
 
   case GL_DEBUG_SEVERITY_MEDIUM:
-    level = NS_warning;
+    if (type == GL_DEBUG_TYPE_PERFORMANCE) {
+      // Performance warnings should really be "info".
+      level = NS_info;
+    } else {
+      level = NS_warning;
+    }
     break;
 
   case GL_DEBUG_SEVERITY_LOW:
@@ -2513,7 +2518,7 @@ reset() {
 
   if (core_profile) {
     // TODO: better detection mechanism?
-    _supports_stencil = true;
+    _supports_stencil = support_stencil;
   }
 #ifdef SUPPORT_FIXED_FUNCTION
   else if (support_stencil) {
@@ -2984,7 +2989,7 @@ clear(DrawableRegion *clearable) {
     mask |= GL_DEPTH_BUFFER_BIT;
   }
 
-  if (clearable->get_clear_stencil_active()) {
+  if (_supports_stencil && clearable->get_clear_stencil_active()) {
     glStencilMask(~0);
     glClearStencil(clearable->get_clear_stencil());
     mask |= GL_STENCIL_BUFFER_BIT;
@@ -4812,6 +4817,7 @@ update_texture(TextureContext *tc, bool force) {
     if (gtc->was_properties_modified()) {
       specify_texture(gtc, tex->get_default_sampler());
     }
+
     bool okflag = upload_texture(gtc, force, tex->uses_mipmaps());
     if (!okflag) {
       GLCAT.error()
@@ -6233,7 +6239,9 @@ do_issue_render_mode() {
   }
   report_my_gl_errors();
 
+#ifdef SUPPORT_FIXED_FUNCTION
   do_point_size();
+#endif
 }
 
 /**
@@ -6711,6 +6719,19 @@ do_issue_blending() {
     if (GLCAT.is_spam()) {
       GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
       GLCAT.spam() << "glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)\n";
+    }
+    return;
+
+  case TransparencyAttrib::M_premultiplied_alpha:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBlendEquation(GL_FUNC_ADD)\n";
+      GLCAT.spam() << "glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)\n";
     }
     return;
 
@@ -12698,9 +12719,9 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
  * Internally sets the point size parameters after any of the properties have
  * changed that might affect this.
  */
+#ifdef SUPPORT_FIXED_FUNCTION
 void CLP(GraphicsStateGuardian)::
 do_point_size() {
-#ifndef OPENGLES_2
   if (!_point_perspective) {
     // Normal, constant-sized points.  Here _point_size is a width in pixels.
     static LVecBase3f constant(1.0f, 0.0f, 0.0f);
@@ -12730,8 +12751,8 @@ do_point_size() {
   }
 
   report_my_gl_errors();
-#endif
 }
+#endif
 
 /**
  * Returns true if this particular GSG supports the specified Cg Shader

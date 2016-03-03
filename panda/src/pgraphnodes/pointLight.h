@@ -48,6 +48,10 @@ PUBLISHED:
   INLINE void set_attenuation(const LVecBase3 &attenuation);
   MAKE_PROPERTY(attenuation, get_attenuation, set_attenuation);
 
+  INLINE PN_stdfloat get_max_distance() const;
+  INLINE void set_max_distance(PN_stdfloat max_distance);
+  MAKE_PROPERTY(max_distance, get_max_distance, set_max_distance);
+
   INLINE const LPoint3 &get_point() const;
   INLINE void set_point(const LPoint3 &point);
   MAKE_PROPERTY(point, get_point, set_point);
@@ -75,6 +79,7 @@ private:
 
     LColor _specular_color;
     LVecBase3 _attenuation;
+    PN_stdfloat _max_distance;
     LPoint3 _point;
   };
 

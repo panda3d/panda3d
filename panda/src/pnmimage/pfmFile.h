@@ -158,6 +158,9 @@ PUBLISHED:
 
   void operator *= (float multiplier);
 
+  void indirect_1d_lookup(const PfmFile &index_image, int channel,
+                          const PfmFile &pixel_values);
+
   INLINE void gamma_correct(float from_gamma, float to_gamma);
   INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);
   INLINE void apply_exponent(float gray_exponent);

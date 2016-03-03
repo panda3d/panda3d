@@ -48,3 +48,11 @@ INLINE int TexturePeeker::
 get_z_size() const {
   return _z_size;
 }
+
+/**
+ * Returns whether a given coordinate is inside of the texture dimensions.
+ */
+INLINE bool TexturePeeker::
+has_pixel(size_t x, size_t y) const {
+  return x < _x_size && y < _y_size;
+}

@@ -47,7 +47,7 @@ apply_transform_and_state(CullTraverser *trav) {
   _node_reader.compose_draw_mask(_draw_mask);
 
   apply_transform_and_state(trav, _node_reader.get_transform(),
-                            node_state, _node_reader.get_effects(),
+                            MOVE(node_state), _node_reader.get_effects(),
                             _node_reader.get_off_clip_planes());
 }
 

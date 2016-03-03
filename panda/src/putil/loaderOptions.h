@@ -45,6 +45,7 @@ PUBLISHED:
     TF_multiview         = 0x0040,  // Load a multiview texture in pages
     TF_integer           = 0x0080,  // Load as an integer (RGB) texture
     TF_float             = 0x0100,  // Load as a floating-point (depth) texture
+    TF_allow_compression = 0x0200,  // Consider compressing RAM image
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);

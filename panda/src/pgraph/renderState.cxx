@@ -1853,8 +1853,8 @@ determine_bin_index() {
   string bin_name;
   _draw_order = 0;
 
-  const CullBinAttrib *bin = DCAST(CullBinAttrib, get_attrib(CullBinAttrib::get_class_slot()));
-  if (bin != (const CullBinAttrib *)NULL) {
+  const CullBinAttrib *bin;
+  if (get_attrib(bin)) {
     bin_name = bin->get_bin_name();
     _draw_order = bin->get_draw_order();
   }
@@ -1864,10 +1864,11 @@ determine_bin_index() {
     // opaque or transparent, based on the transparency setting.
     bin_name = "opaque";
 
-    const TransparencyAttrib *transparency = DCAST(TransparencyAttrib, get_attrib(TransparencyAttrib::get_class_slot()));
-    if (transparency != (const TransparencyAttrib *)NULL) {
+    const TransparencyAttrib *transparency;
+    if (get_attrib(transparency)) {
       switch (transparency->get_mode()) {
       case TransparencyAttrib::M_alpha:
+      case TransparencyAttrib::M_premultiplied_alpha:
       case TransparencyAttrib::M_dual:
         // These transparency modes require special back-to-front sorting.
         bin_name = "transparent";

@@ -3822,6 +3822,13 @@ do_issue_blending() {
     set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
     return;
 
+  case TransparencyAttrib::M_premultiplied_alpha:
+    set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+    set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+    set_render_state(D3DRS_SRCBLEND, D3DBLEND_ONE);
+    set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+    return;
+
   default:
     dxgsg9_cat.error()
       << "invalid transparency mode " << (int)transparency_mode << endl;

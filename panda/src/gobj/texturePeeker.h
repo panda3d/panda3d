@@ -36,8 +36,11 @@ PUBLISHED:
   INLINE int get_y_size() const;
   INLINE int get_z_size() const;
 
+  INLINE bool has_pixel(size_t x, size_t y) const;
   void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const;
   void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const;
+  void fetch_pixel(LColor &color, size_t x, size_t y) const;
+  bool lookup_bilinear(LColor &color, PN_stdfloat u, PN_stdfloat v) const;
   void filter_rect(LColor &color,
                    PN_stdfloat min_u, PN_stdfloat min_v,
                    PN_stdfloat max_u, PN_stdfloat max_v) const;
