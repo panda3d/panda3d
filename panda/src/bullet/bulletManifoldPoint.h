@@ -34,7 +34,7 @@ PUBLISHED:
   PN_stdfloat get_applied_impulse() const;
   LPoint3 get_position_world_on_a() const;
   LPoint3 get_position_world_on_b() const;
-  LPoint3 get_normal_world_on_b() const;
+  LVector3 get_normal_world_on_b() const;
   LPoint3 get_local_point_a() const;
   LPoint3 get_local_point_b() const;
 

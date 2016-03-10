@@ -92,7 +92,7 @@ get_position_world_on_b() const {
 LPoint3 BulletManifoldPoint::
 get_normal_world_on_b() const {
 
-  return btVector3_to_LPoint3(_pt.m_normalWorldOnB);
+  return btVector3_to_LVector3(_pt.m_normalWorldOnB);
 }
 
 /**
