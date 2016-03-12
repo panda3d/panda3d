@@ -830,6 +830,11 @@ public:
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
 #endif
 
+#ifndef OPENGLES
+  bool _supports_empty_framebuffer;
+  PFNGLFRAMEBUFFERPARAMETERIPROC _glFramebufferParameteri;
+#endif
+
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_multisample_coverage_nv;
   INLINE bool get_supports_framebuffer_multisample();

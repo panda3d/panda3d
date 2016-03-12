@@ -1945,6 +1945,16 @@ reset() {
   }
 #endif
 
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_framebuffer_no_attachments")) {
+    _glFramebufferParameteri = (PFNGLFRAMEBUFFERPARAMETERIPROC)
+      get_extension_func("glFramebufferParameteri");
+    _supports_empty_framebuffer = true;
+  } else {
+    _supports_empty_framebuffer = false;
+  }
+#endif
+
   _supports_framebuffer_multisample = false;
   if (has_extension("GL_EXT_framebuffer_multisample")) {
     _supports_framebuffer_multisample = true;
