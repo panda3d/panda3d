@@ -138,6 +138,9 @@ get_default() {
     break;
   case 1:
     default_props.set_color_bits(color_bits[0]);
+    default_props.set_red_bits(1);
+    default_props.set_green_bits(1);
+    default_props.set_blue_bits(1);
     break;
   case 3:
     default_props.set_color_bits(color_bits[0] + color_bits[1] + color_bits[2]);
@@ -649,13 +652,14 @@ setup_color_texture(Texture *tex) const {
   // as the below one would be generated dynamically by the GSG to reflect the
   // formats that are supported for render-to-texture.
 
-  static const int num_formats = 13;
+  static const int num_formats = 15;
   static const struct {
     unsigned char color_bits, red_bits, green_bits, blue_bits, alpha_bits;
     bool has_float;
     Texture::Format format;
   } formats[num_formats] = {
-  // {  1,  1,  0,  0,  0, false, Texture::F_red},
+    {  1,  1,  0,  0,  0, false, Texture::F_red },
+    {  1,  1,  1,  0,  0, false, Texture::F_rg },
     {  1,  1,  1,  1,  0, false, Texture::F_rgb },
     {  1,  1,  1,  1,  1, false, Texture::F_rgba },
     { 24,  8,  8,  8,  0, false, Texture::F_rgb8 },

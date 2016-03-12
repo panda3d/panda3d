@@ -41,7 +41,7 @@ framebuffer-software #f
 # consistent with the other framebuffer requirements.
 
 depth-bits 1
-color-bits 1
+color-bits 1 1 1
 alpha-bits 0
 stencil-bits 0
 multisamples 0
