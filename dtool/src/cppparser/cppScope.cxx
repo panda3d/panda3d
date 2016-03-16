@@ -26,6 +26,7 @@
 #include "cppPreprocessor.h"
 #include "cppTemplateScope.h"
 #include "cppClassTemplateParameter.h"
+#include "cppConstType.h"
 #include "cppFunctionType.h"
 #include "cppUsing.h"
 #include "cppBisonDefs.h"
