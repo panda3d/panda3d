@@ -9,7 +9,7 @@ struct sSurfaceParams
 
 struct sBodyParams
     {
-//        int surfaceType;
+// int surfaceType;
         dReal dampen;
     };
 

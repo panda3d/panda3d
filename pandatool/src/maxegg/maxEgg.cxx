@@ -1,12 +1,13 @@
-/*
-  MaxEgg.cpp
-  Created by Steven "Sauce" Osman, 01/??/03
-  Modified by Ken Strickland, 02/25/03
-  Carnegie Mellon University, Entertainment Technology Center
-
-  This file implements the classes that are used in the Panda 3D file
-  exporter for 3D Studio Max.
-*/
+/**
+ * @file maxEgg.cxx
+ * @author Steven "Sauce" Osman
+ * @date 2003-01
+ * @author Ken Strickland
+ * @date 2003-02-25
+ *
+ * This file implements the classes that are used in the Panda 3D file
+ * exporter for 3D Studio Max.
+ */
 
 #include "maxEgg.h"
 
@@ -267,7 +268,7 @@ const double meshVerts[252][3] = {
 };
 
 
-//Disable the forcing int to true or false performance warning
+// Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)
 
 /* MaxEggPluginClassDesc - A class that describes 3DS Plugin support.
@@ -309,7 +310,8 @@ INT_PTR CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message,
   MaxOptionsDialog *tempEgg;
   int sel, res;
 
-  //We pass in our plugin through the lParam variable. Let's convert it back.
+  // We pass in our plugin through the lParam variable.  Let's convert it
+  // back.
   MaxEggPlugin *imp = (MaxEggPlugin*)GetWindowLongPtr(hWnd,GWLP_USERDATA);
   if ( !imp && message != WM_INITDIALOG ) return FALSE;
 
@@ -335,7 +337,7 @@ INT_PTR CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message,
 
     // A control was modified
     case WM_COMMAND:
-      //The modified control is found in the lower word of the wParam long.
+      // The modified control is found in the lower word of the wParam long.
       switch( LOWORD(wParam) ) {
         case IDC_OVERWRITE_CHECK:
           imp->autoOverwrite =
@@ -526,8 +528,8 @@ void MaxEggPlugin::DoExport() {
 
     for (int i = 0; i < numEggs; i++) {
         if (eggList[i]->_checked) {
-            // If "auto overwrite" was not checked and the file exists,
-            // ask if the user wishes to overwrite the file
+            // If "auto overwrite" was not checked and the file exists, ask if
+            // the user wishes to overwrite the file
             bool do_write = true;
 
             if (!autoOverwrite && GetFileAttributes(eggList[i]->_file_name) != INVALID_FILE_ATTRIBUTES) {
@@ -574,7 +576,8 @@ void MaxEggPlugin::DoExport() {
                     si.cb = sizeof(si);
 
                     TCHAR cmdLine[2048];
-                    // If we have just one model and animation file, pview them both
+                    // If we have just one model and animation file, pview
+                    // them both
                     if (numEggs == 2 && eggList[i]->_anim_type == MaxEggOptions::AT_model &&
                         eggList[1-i]->_checked && eggList[1-i]->_successful &&
                         eggList[1-i]->_anim_type == MaxEggOptions::AT_chan) {
@@ -617,9 +620,8 @@ void MaxEggPlugin::BuildMesh()
     meshBuilt = TRUE;
 }
 
-////////////////////////////////////////////////////////////////////
-// The creation callback - sets the initial position of the helper in the scene.
-////////////////////////////////////////////////////////////////////
+// The creation callback - sets the initial position of the helper in the
+// scene.
 
 class MaxEggPluginCreateMouseCallBack: public CreateMouseCallBack
 {
@@ -650,9 +652,7 @@ static MaxEggPluginCreateMouseCallBack MaxEggCreateMouseCB;
 CreateMouseCallBack* MaxEggPlugin::GetCreateMouseCallBack()
 { return &MaxEggCreateMouseCB; }
 
-////////////////////////////////////////////////////////////////////
-//Boilerplate functions for dealing with the display of the plugin
-////////////////////////////////////////////////////////////////////
+// Boilerplate functions for dealing with the display of the plugin
 
 void MaxEggPlugin::GetMat(TimeValue t, INode* inode, ViewExp* vpt, Matrix3& tm)
 {
@@ -746,9 +746,7 @@ RefTargetHandle MaxEggPlugin::Clone(RemapDir& remap)
     return(newob);
 }
 
-////////////////////////////////////////////////////////////////////
 // Loading and saving the plugin
-////////////////////////////////////////////////////////////////////
 
 IOResult MaxEggPlugin::Save(ISave *isave) {
     SaveCheckState();
@@ -795,11 +793,11 @@ extern ClassDesc* GetMaxEggPluginDesc();
 HINSTANCE hInstance;
 int controlsInit = FALSE;
 
-// This function is called by Windows when the DLL is loaded.  This
-// function may also be called many times during time critical operations
-// like rendering.  Therefore developers need to be careful what they
-// do inside this function.  In the code below, note how after the DLL is
-// loaded the first time only a few statements are executed.
+// This function is called by Windows when the DLL is loaded.  This function
+// may also be called many times during time critical operations like
+// rendering.  Therefore developers need to be careful what they do inside
+// this function.  In the code below, note how after the DLL is loaded the
+// first time only a few statements are executed.
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 {
@@ -810,8 +808,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 
 #if MAX_VERSION_MAJOR < 14
                 // It appears that InitCustomControls is deprecated in 2012.
-                // I'm not sure if we can just remove it like this, but
-                // I've heard that it seems to work, so let's do it like this.
+                // I'm not sure if we can just remove it like this, but I've
+                // heard that it seems to work, so let's do it like this.
                 InitCustomControls(hInstance);  // Initialize MAX's custom controls
 #endif
                 InitCommonControls();                   // Initialize Win95 controls
@@ -828,13 +826,14 @@ __declspec( dllexport ) const TCHAR* LibDescription()
 }
 
 // This function returns the number of plug-in classes this DLL operates on.
-//TODO: Must change this number when adding a new class
+// TODO: Must change this number when adding a new class
 __declspec( dllexport ) int LibNumberClasses()
 {
         return 1;
 }
 
-// This function returns the descriptions of the plug-in classes this DLL operates on.
+// This function returns the descriptions of the plug-in classes this DLL
+// operates on.
 __declspec( dllexport ) ClassDesc* LibClassDesc(int i)
 {
         switch(i) {
@@ -843,9 +842,9 @@ __declspec( dllexport ) ClassDesc* LibClassDesc(int i)
         }
 }
 
-// This function returns a pre-defined constant indicating the version of
-// the system under which it was compiled.  It is used to allow the system
-// to catch obsolete DLLs.
+// This function returns a pre-defined constant indicating the version of the
+// system under which it was compiled.  It is used to allow the system to
+// catch obsolete DLLs.
 __declspec( dllexport ) ULONG LibVersion()
 {
         return VERSION_3DSMAX;
@@ -859,4 +858,3 @@ TCHAR *GetString(int id)
                 return LoadString(hInstance, id, buf, sizeof(buf)) ? buf : NULL;
         return NULL;
 }
-

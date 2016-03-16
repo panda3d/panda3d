@@ -1,20 +1,19 @@
-// Filename: pnm-image-filter-sparse-core.cxx
-// Created by:  drose (25Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnm-image-filter-sparse-core.cxx
+ * @author drose
+ * @date 2013-01-25
+ */
 
-// We map X and Y to A and B, because we might change our minds about which
-// is dominant, and we map get/set functions for the channel in question to
-// GETVAL/SETVAL.
+// We map X and Y to A and B, because we might change our minds about which is
+// dominant, and we map getset functions for the channel in question to
+// GETVALSETVAL.
 
 
 static void
@@ -67,14 +66,14 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
                       temp_source, temp_source_weight, source.ASIZE(),
                       scale,
                       filter, filter_width);
-    
+
     for (a = 0; a < dest.ASIZE(); a++) {
       matrix[a][b] = temp_dest[a];
       matrix_weight[a][b] = temp_dest_weight[a];
     }
   }
 
-  PANDA_FREE_ARRAY(temp_source); 
+  PANDA_FREE_ARRAY(temp_source);
   PANDA_FREE_ARRAY(temp_source_weight);
   PANDA_FREE_ARRAY(temp_dest);
   PANDA_FREE_ARRAY(temp_dest_weight);
@@ -113,4 +112,3 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   PANDA_FREE_ARRAY(matrix);
   PANDA_FREE_ARRAY(matrix_weight);
 }
-

@@ -1,27 +1,24 @@
-// Filename: physxSphereForceFieldShape.cxx
-// Created by:  enn0x (15Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxSphereForceFieldShape.cxx
+ * @author enn0x
+ * @date 2009-11-15
+ */
 
 #include "physxSphereForceFieldShape.h"
 #include "physxSphereForceFieldShapeDesc.h"
 
 TypeHandle PhysxSphereForceFieldShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereForceFieldShape::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSphereForceFieldShape::
 link(NxForceFieldShape *shapePtr) {
 
@@ -35,11 +32,9 @@ link(NxForceFieldShape *shapePtr) {
   group->_shapes.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereForceFieldShape::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSphereForceFieldShape::
 unlink() {
 
@@ -50,12 +45,9 @@ unlink() {
   group->_shapes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereForceFieldShape::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the shape object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the shape object to a descriptor.
+ */
 void PhysxSphereForceFieldShape::
 save_to_desc(PhysxSphereForceFieldShapeDesc &shapeDesc) const {
 
@@ -63,11 +55,9 @@ save_to_desc(PhysxSphereForceFieldShapeDesc &shapeDesc) const {
   _ptr->saveToDesc(shapeDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereForceFieldShape::set_radius
-//       Access: Published
-//  Description: Sets the sphere radius.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the sphere radius.
+ */
 void PhysxSphereForceFieldShape::
 set_radius(float radius) {
 
@@ -75,15 +65,12 @@ set_radius(float radius) {
   _ptr->setRadius(radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereForceFieldShape::get_radius
-//       Access: Published
-//  Description: Returns the radius of the sphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the radius of the sphere.
+ */
 float PhysxSphereForceFieldShape::
 get_radius() const {
 
   nassertr(_error_type == ET_ok, 0.0f);
   return _ptr->getRadius();
 }
-

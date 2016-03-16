@@ -1,16 +1,15 @@
-// Filename: cppEnumType.cxx
-// Created by:  drose (25Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppEnumType.cxx
+ * @author drose
+ * @date 1999-10-25
+ */
 
 #include "cppEnumType.h"
 #include "cppTypedefType.h"
@@ -22,11 +21,9 @@
 #include "cppIdentifier.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::Constructor
-//       Access: Public
-//  Description: Creates an untyped, unscoped enum.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an untyped, unscoped enum.
+ */
 CPPEnumType::
 CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
             const CPPFile &file) :
@@ -40,11 +37,9 @@ CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::Constructor
-//       Access: Public
-//  Description: Creates a typed but unscoped enum.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a typed but unscoped enum.
+ */
 CPPEnumType::
 CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
             CPPScope *current_scope, const CPPFile &file) :
@@ -58,31 +53,36 @@ CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::add_element
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-CPPInstance *CPPEnumType::
-add_element(const string &name, CPPExpression *value) {
-  CPPIdentifier *ident = new CPPIdentifier(name);
-  ident->_native_scope = _parent_scope;
-  CPPInstance *inst;
-
-  static CPPType *default_element_type = NULL;
+/**
+ * Returns the integral type used to store enum values.
+ */
+CPPType *CPPEnumType::
+get_element_type() {
   if (_element_type == NULL) {
-    // This enum is untyped.  Use a suitable default, ie. 'int'.
+    // This enum is untyped.  Use a suitable default, ie.  'int'. In the
+    // future, we might want to check whether it fits in an int.
+    static CPPType *default_element_type = NULL;
     if (default_element_type == NULL) {
       default_element_type =
         CPPType::new_type(new CPPConstType(new CPPSimpleType(CPPSimpleType::T_int, 0)));
     }
 
-    inst = new CPPInstance(default_element_type, ident);
+    return default_element_type;
   } else {
     // This enum has an explicit type, so use that.
-    inst = new CPPInstance(CPPType::new_type(new CPPConstType(_element_type)), ident);
+    return CPPType::new_type(new CPPConstType(_element_type));
   }
+}
 
+/**
+ *
+ */
+CPPInstance *CPPEnumType::
+add_element(const string &name, CPPExpression *value) {
+  CPPIdentifier *ident = new CPPIdentifier(name);
+  ident->_native_scope = _parent_scope;
+
+  CPPInstance *inst = new CPPInstance(get_element_type(), ident);
   inst->_storage_class |= CPPInstance::SC_constexpr;
   _elements.push_back(inst);
 
@@ -96,8 +96,8 @@ add_element(const string &name, CPPExpression *value) {
       value = new CPPExpression(_last_value->_u._integer + 1);
 
     } else {
-      // We may not be able to determine the value just yet.  No
-      // problem; we'll just define it as another expression.
+      // We may not be able to determine the value just yet.  No problem;
+      // we'll just define it as another expression.
       static CPPExpression *const one = new CPPExpression(1);
       value = new CPPExpression('+', _last_value, one);
     }
@@ -107,25 +107,19 @@ add_element(const string &name, CPPExpression *value) {
   return inst;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::is_incomplete
-//       Access: Public, Virtual
-//  Description: Returns true if the type has not yet been fully
-//               specified, false if it has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type has not yet been fully specified, false if it has.
+ */
 bool CPPEnumType::
 is_incomplete() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::is_fully_specified
-//       Access: Public, Virtual
-//  Description: Returns true if this declaration is an actual,
-//               factual declaration, or false if some part of the
-//               declaration depends on a template parameter which has
-//               not yet been instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this declaration is an actual, factual declaration, or
+ * false if some part of the declaration depends on a template parameter which
+ * has not yet been instantiated.
+ */
 bool CPPEnumType::
 is_fully_specified() const {
   if (!CPPDeclaration::is_fully_specified()) {
@@ -150,11 +144,9 @@ is_fully_specified() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::substitute_decl
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPDeclaration *CPPEnumType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -201,11 +193,9 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return rep;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CPPEnumType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (!complete && _ident != NULL) {
@@ -237,21 +227,17 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPDeclaration::SubType CPPEnumType::
 get_subtype() const {
   return ST_enum;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPEnumType::as_enum_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CPPEnumType *CPPEnumType::
 as_enum_type() {
   return this;

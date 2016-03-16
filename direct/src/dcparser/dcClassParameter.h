@@ -1,16 +1,15 @@
-// Filename: dcClassParameter.h
-// Created by:  drose (18Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcClassParameter.h
+ * @author drose
+ * @date 2004-06-18
+ */
 
 #ifndef DCCLASSPARAMETER_H
 #define DCCLASSPARAMETER_H
@@ -20,12 +19,10 @@
 
 class DCClass;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCClassParameter
-// Description : This represents a class (or struct) object used as a
-//               parameter itself.  This means that all the fields of
-//               the class get packed into the message.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a class (or struct) object used as a parameter itself.
+ * This means that all the fields of the class get packed into the message.
+ */
 class EXPCL_DIRECT DCClassParameter : public DCParameter {
 public:
   DCClassParameter(const DCClass *dclass);
@@ -42,7 +39,7 @@ PUBLISHED:
 public:
   virtual DCPackerInterface *get_nested_field(int n) const;
 
-  virtual void output_instance(ostream &out, bool brief, const string &prename, 
+  virtual void output_instance(ostream &out, bool brief, const string &prename,
                                const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

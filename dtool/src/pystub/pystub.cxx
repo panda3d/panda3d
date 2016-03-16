@@ -1,16 +1,15 @@
-// Filename: pystub.cxx
-// Created by:  drose (09Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pystub.cxx
+ * @author drose
+ * @date 2000-08-09
+ */
 
 #include "pystub.h"
 
@@ -61,6 +60,7 @@ extern "C" {
   EXPCL_PYSTUB int PyGILState_Ensure(...);
   EXPCL_PYSTUB int PyGILState_Release(...);
   EXPCL_PYSTUB int PyImport_GetModuleDict(...);
+  EXPCL_PYSTUB int PyImport_ImportModule(...);
   EXPCL_PYSTUB int PyInt_AsLong(...);
   EXPCL_PYSTUB int PyInt_AsSsize_t(...);
   EXPCL_PYSTUB int PyInt_FromLong(...);
@@ -169,6 +169,7 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicode_InternInPlace(...);
   EXPCL_PYSTUB int PyUnicode_Type(...);
   EXPCL_PYSTUB int Py_BuildValue(...);
+  EXPCL_PYSTUB int Py_GetVersion(...);
   EXPCL_PYSTUB int Py_InitModule4(...);
   EXPCL_PYSTUB int Py_InitModule4_64(...);
   EXPCL_PYSTUB int Py_InitModule4TraceRefs(...);
@@ -195,6 +196,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_ConnectionError;
   EXPCL_PYSTUB extern void *PyExc_Exception;
   EXPCL_PYSTUB extern void *PyExc_FutureWarning;
+  EXPCL_PYSTUB extern void *PyExc_ImportError;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
   EXPCL_PYSTUB extern void *PyExc_OSError;
   EXPCL_PYSTUB extern void *PyExc_RuntimeError;
@@ -258,6 +260,7 @@ int PyGen_Type(...) { return 0; }
 int PyGILState_Ensure(...) { return 0; }
 int PyGILState_Release(...) { return 0; }
 int PyImport_GetModuleDict(...) { return 0; }
+int PyImport_ImportModule(...) { return 0; }
 int PyInt_AsLong(...) { return 0; }
 int PyInt_AsSsize_t(...) { return 0; }
 int PyInt_FromLong(...) { return 0; }
@@ -365,6 +368,7 @@ int PyUnicode_GetSize(...) { return 0; }
 int PyUnicode_InternFromString(...) { return 0; }
 int PyUnicode_InternInPlace(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
+int Py_GetVersion(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
 int Py_InitModule4_64(...) { return 0; }
@@ -397,6 +401,7 @@ void *PyExc_BufferError = (void *)NULL;
 void *PyExc_ConnectionError = (void *)NULL;
 void *PyExc_Exception = (void *)NULL;
 void *PyExc_FutureWarning = (void *)NULL;
+void *PyExc_ImportError = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
 void *PyExc_OSError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;

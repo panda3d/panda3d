@@ -1,16 +1,15 @@
-// Filename: stTree.h
-// Created by:  drose (06Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stTree.h
+ * @author drose
+ * @date 2010-10-06
+ */
 
 #ifndef STTREE_H
 #define STTREE_H
@@ -22,11 +21,10 @@
 
 class SpeedTreeNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : STTree
-// Description : Encapsulates a single tree model in the SpeedTree
-//               library, as loaded from an SRT file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates a single tree model in the SpeedTree library, as loaded from
+ * an SRT file.
+ */
 class EXPCL_PANDASPEEDTREE STTree : public TypedReferenceCount, public Namable {
 PUBLISHED:
   STTree(const Filename &fullpath);

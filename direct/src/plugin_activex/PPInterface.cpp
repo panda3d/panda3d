@@ -1,16 +1,15 @@
-// Filename: PPInterface.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PPInterface.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #include "stdafx.h"
 
@@ -23,7 +22,7 @@
 #include <strstream>
 #include "Mshtml.h"
 
-PPInterface::PPInterface( ) 
+PPInterface::PPInterface( )
 {
 }
 
@@ -77,14 +76,15 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     // Allocate memory for arguments...
     VARIANT *pArgs = new VARIANT[ cArgs + 1 ];
 
-    // Reversing the arguments!!!
-    // NOTE: http://msdn.microsoft.com/en-us/library/cc237569(PROT.10).aspx
-    // pDispParams: MUST point to a DISPPARAMS structure that defines the arguments passed to the method. 
-    // Arguments MUST be stored in pDispParams->rgvarg in reverse order, so that the first argument is 
-    // the one with the highest index in the array. Byref arguments MUST be marked in this array 
-    // as VT_EMPTY entries, and stored in rgVarRef instead. 
+    // Reversing the arguments!!! NOTE: http:msdn.microsoft.comen-
+    // uslibrarycc237569(PROT.10).aspx pDispParams: MUST point to a DISPPARAMS
+    // structure that defines the arguments passed to the method.  Arguments
+    // MUST be stored in pDispParams->rgvarg in reverse order, so that the
+    // first argument is the one with the highest index in the array.  Byref
+    // arguments MUST be marked in this array as VT_EMPTY entries, and stored
+    // in rgVarRef instead.
 
-    for( int i = 0; i < cArgs; i++ ) 
+    for( int i = 0; i < cArgs; i++ )
     {
         pArgs[i] = params[ cArgs - 1 - i ];
     }
@@ -94,7 +94,7 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     dp.rgvarg = pArgs;
 
     // Handle special-case for property-puts!
-    if( nType & DISPATCH_PROPERTYPUT  || nType & DISPATCH_PROPERTYPUTREF ) 
+    if( nType & DISPATCH_PROPERTYPUT  || nType & DISPATCH_PROPERTYPUTREF )
     {
         dp.cNamedArgs = 1;
         dp.rgdispidNamedArgs = &dispidNamed;
@@ -103,7 +103,7 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     // Make the call!
     if ( pDispEx )
     {
-        hr = pDispEx->InvokeEx(dispID, LOCALE_USER_DEFAULT, 
+        hr = pDispEx->InvokeEx(dispID, LOCALE_USER_DEFAULT,
                         nType, &dp, pvResult, NULL, NULL);
         if ( FAILED( hr ) )
         {
@@ -112,7 +112,7 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
     }
     else
     {
-        hr = pDisp->Invoke( dispID, IID_NULL, LOCALE_USER_DEFAULT, 
+        hr = pDisp->Invoke( dispID, IID_NULL, LOCALE_USER_DEFAULT,
                         nType, &dp, pvResult, NULL, NULL );
     }
     delete [] pArgs;
@@ -122,23 +122,23 @@ HRESULT PPInterface::Invoke(int nType, IDispatch* pDisp, CString& ptName, VARIAN
 
 HRESULT PPInterface::GetHtmlDocDispatch( CComPtr<IDispatch>& pDispScript )
 {
-    HRESULT hr = S_OK; 
+    HRESULT hr = S_OK;
 
-    CComPtr<IOleClientSite> pOleClientSite = GetClientSte( ); 
+    CComPtr<IOleClientSite> pOleClientSite = GetClientSte( );
     if (pOleClientSite == NULL) {
       return E_FAIL;
     }
 
-    CComPtr<IOleContainer> pOleContainer; 
-    hr = pOleClientSite->GetContainer(& pOleContainer ); 
-    ASSERT( SUCCEEDED( hr ) && pOleContainer ); 
+    CComPtr<IOleContainer> pOleContainer;
+    hr = pOleClientSite->GetContainer(& pOleContainer );
+    ASSERT( SUCCEEDED( hr ) && pOleContainer );
 
-    CComPtr<IHTMLDocument> pHtmlDoc; 
-    hr = pOleContainer->QueryInterface( IID_IHTMLDocument, ( void** )&pHtmlDoc ); 
-    ASSERT( SUCCEEDED( hr ) && pHtmlDoc ); 
+    CComPtr<IHTMLDocument> pHtmlDoc;
+    hr = pOleContainer->QueryInterface( IID_IHTMLDocument, ( void** )&pHtmlDoc );
+    ASSERT( SUCCEEDED( hr ) && pHtmlDoc );
 
-    // Get the script object (this returns the script object, NOT the script 
-    // element(s) that the get_scripts method does). 
+    // Get the script object (this returns the script object, NOT the script
+    // element(s) that the get_scripts method does).
     hr = pHtmlDoc->get_Script( &pDispScript );
     ASSERT( SUCCEEDED( hr ) && pDispScript );
 
@@ -151,7 +151,7 @@ HRESULT PPInterface::GetHtmlDocDispatch( CComPtr<IDispatch>& pDispScript )
     CComPtr<ITypeInfo> pTypeInfo;
     hr = pDispScript->GetTypeInfo( 0, 0, &pTypeInfo );
 
-    return hr; 
+    return hr;
 }
 
 HRESULT PPInterface::HasProperty( CComPtr<IDispatch>& pDispatch, CString& name )
@@ -179,7 +179,7 @@ HRESULT PPInterface::CallMethod( CComPtr<IDispatch>& pDispatch, CString& name, C
     }
     if ( SUCCEEDED( hr ) )
     {
-        hr = Invoke( DISPATCH_METHOD, pDispatch, name, &varResult, numParams, params ); 
+        hr = Invoke( DISPATCH_METHOD, pDispatch, name, &varResult, numParams, params );
     }
     return hr;
 }
@@ -193,7 +193,7 @@ HRESULT PPInterface::GetProperty( CComPtr<IDispatch>& pDispatch, CString& name, 
     }
     if ( SUCCEEDED( hr ) )
     {
-        hr = Invoke( DISPATCH_PROPERTYGET, pDispatch, name, &varResult, 0, NULL ); 
+        hr = Invoke( DISPATCH_PROPERTYGET, pDispatch, name, &varResult, 0, NULL );
     }
     return hr;
 }
@@ -229,7 +229,7 @@ HRESULT PPInterface::EvalExpression( CComPtr<IDispatch>& pDispatch, CString& exp
     if ( SUCCEEDED( hr ) )
     {
         COleVariant param( expression );
-        hr = Invoke( DISPATCH_METHOD, pDispatch, CString("eval"), &varResult, 1, &param ); 
+        hr = Invoke( DISPATCH_METHOD, pDispatch, CString("eval"), &varResult, 1, &param );
     }
     return hr;
 }
@@ -261,12 +261,13 @@ HRESULT PPInterface::P3DCallMethod( P3D_object* p3dObject, CString& name, DISPPA
     P3D_object** params = new P3D_object*[pdispparams->cArgs];
     for ( UINT i = 0; i < pdispparams->cArgs; i++ )
     {
-        // Reversing the arguments!!!
-        // http://msdn.microsoft.com/en-us/library/cc237569(PROT.10).aspx
-        // pDispParams: MUST point to a DISPPARAMS structure that defines the arguments passed to the method. 
-        // Arguments MUST be stored in pDispParams->rgvarg in reverse order, so that the first argument is 
-        // the one with the highest index in the array. Byref arguments MUST be marked in this array 
-        // as VT_EMPTY entries, and stored in rgVarRef instead. 
+        // Reversing the arguments!!! http:msdn.microsoft.comen-
+        // uslibrarycc237569(PROT.10).aspx pDispParams: MUST point to a
+        // DISPPARAMS structure that defines the arguments passed to the
+        // method.  Arguments MUST be stored in pDispParams->rgvarg in reverse
+        // order, so that the first argument is the one with the highest index
+        // in the array.  Byref arguments MUST be marked in this array as
+        // VT_EMPTY entries, and stored in rgVarRef instead.
 
         COleVariant vaArg( pdispparams->rgvarg[pdispparams->cArgs - 1 - i] );
         params[i] = variant_to_p3dobj( &vaArg );
@@ -332,13 +333,13 @@ HRESULT PPInterface::P3DSetProperty( P3D_object* p3dObject, CString& name, DISPP
     return S_OK;
 }
 
-void PPInterface::p3dobj_to_variant(VARIANT* result, P3D_object* object) 
+void PPInterface::p3dobj_to_variant(VARIANT* result, P3D_object* object)
 {
     if ( !result )
     {
         return;
     }
-    switch ( P3D_OBJECT_GET_TYPE( object ) ) 
+    switch ( P3D_OBJECT_GET_TYPE( object ) )
     {
     case P3D_OT_undefined:
         {
@@ -402,7 +403,7 @@ void PPInterface::p3dobj_to_variant(VARIANT* result, P3D_object* object)
     }
 }
 
-P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant) 
+P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
 {
     if ( !variant )
     {
@@ -410,24 +411,24 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
     }
     switch( variant->vt )
     {
-    case VT_VOID: 
+    case VT_VOID:
         {
             return P3D_new_undefined_object_ptr();
             break;
-        } 
+        }
     case VT_EMPTY:
         {
-            // return P3D_new_none_object_ptr();
-            // A.T. Panda really expect undefined object here
+            // return P3D_new_none_object_ptr(); A.T. Panda really expect
+            // undefined object here
             return P3D_new_undefined_object_ptr();
             break;
-        } 
-    case VT_BOOL: 
+        }
+    case VT_BOOL:
         {
             return P3D_new_bool_object_ptr( variant->bVal );
             break;
-        } 
-    case VT_I2: 
+        }
+    case VT_I2:
         {
             return P3D_new_int_object_ptr( variant->iVal );
             break;
@@ -494,28 +495,28 @@ P3D_object* PPInterface::variant_to_p3dobj(COleVariant* variant)
     }
 }
 
-CString PPInterface::get_repr(COleVariant& variant) 
+CString PPInterface::get_repr(COleVariant& variant)
 {
     std::strstream repr;
     repr << "IDispatch";
     switch( variant.vt )
     {
-    case VT_VOID: 
+    case VT_VOID:
         {
             repr << ":VT_VOID";
             break;
-        } 
+        }
     case VT_EMPTY:
         {
             repr << ":VT_EMPTY";
             break;
-        } 
-    case VT_BOOL: 
+        }
+    case VT_BOOL:
         {
             repr << ":VT_BOOL:" << variant.bVal;
             break;
-        } 
-    case VT_I2: 
+        }
+    case VT_I2:
         {
             repr << ":VT_I2:" << variant.iVal;
             break;
@@ -530,12 +531,12 @@ CString PPInterface::get_repr(COleVariant& variant)
             repr << ":VT_I8:" << variant.llVal;
             break;
         }
-    case VT_R4: 
+    case VT_R4:
         {
             repr << ":VT_R4:" << variant.fltVal;
             break;
         }
-    case VT_R8: 
+    case VT_R8:
         {
             repr << ":VT_R8:" << variant.dblVal;
             break;
@@ -589,7 +590,6 @@ CString PPInterface::get_repr(COleVariant& variant)
             break;
         }
     }
-    
+
     return CString ( repr.str(), repr.pcount() );
 }
-

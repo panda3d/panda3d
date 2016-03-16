@@ -1,16 +1,15 @@
-// Filename: loaderFileTypeStf.h
-// Created by:  drose (07Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file loaderFileTypeStf.h
+ * @author drose
+ * @date 2010-10-07
+ */
 
 #ifndef LOADERFILETYPESTF_H
 #define LOADERFILETYPESTF_H
@@ -19,12 +18,10 @@
 
 #include "loaderFileType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypeStf
-// Description : This defines the Loader interface to read SpeedTree
-//               STF files--a simple text file that describes a forest
-//               of trees (references to SRT files).
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface to read SpeedTree STF files--a simple
+ * text file that describes a forest of trees (references to SRT files).
+ */
 class EXPCL_PANDASPEEDTREE LoaderFileTypeStf : public LoaderFileType {
 public:
   LoaderFileTypeStf();
@@ -55,4 +52,3 @@ private:
 };
 
 #endif
-

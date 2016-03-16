@@ -1,25 +1,22 @@
-// Filename: zSpinParticleFactory.cxx
-// Created by:  charles (16Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file zSpinParticleFactory.cxx
+ * @author charles
+ * @date 2000-08-16
+ */
 
 #include "zSpinParticleFactory.h"
 #include "zSpinParticle.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZSpinParticleFactory
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 ZSpinParticleFactory::
 ZSpinParticleFactory() :
   BaseParticleFactory() {
@@ -32,11 +29,9 @@ ZSpinParticleFactory() :
   _bUseAngularVelocity = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZSpinParticleFactory
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 ZSpinParticleFactory::
 ZSpinParticleFactory(const ZSpinParticleFactory &copy) :
   BaseParticleFactory(copy) {
@@ -49,30 +44,24 @@ ZSpinParticleFactory(const ZSpinParticleFactory &copy) :
   _bUseAngularVelocity = copy._bUseAngularVelocity;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~ZSpinParticleFactory
-//       Access: Virtual, Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 ZSpinParticleFactory::
 ~ZSpinParticleFactory() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: alloc_particle
-//       Access: Private, Virtual
-//  Description: factory method
-////////////////////////////////////////////////////////////////////
+/**
+ * factory method
+ */
 BaseParticle *ZSpinParticleFactory::
 alloc_particle() const {
   return new ZSpinParticle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: populate_child_particle
-//       Access: Private, Virtual
-//  Description: factory populator
-////////////////////////////////////////////////////////////////////
+/**
+ * factory populator
+ */
 void ZSpinParticleFactory::
 populate_child_particle(BaseParticle *bp) const {
   ZSpinParticle *zsp = (ZSpinParticle *) bp;
@@ -83,12 +72,9 @@ populate_child_particle(BaseParticle *bp) const {
   zsp->enable_angular_velocity(_bUseAngularVelocity);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ZSpinParticleFactory::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -96,12 +82,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ZSpinParticleFactory::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

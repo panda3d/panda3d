@@ -1,26 +1,23 @@
-// Filename: linearDistanceForce.cxx
-// Created by:  charles (21Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearDistanceForce.cxx
+ * @author charles
+ * @date 2000-06-21
+ */
 
 #include "linearDistanceForce.h"
 
 TypeHandle LinearDistanceForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearDistanceForce
-//       Access: Protected
-//  Description: Simple constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple constructor
+ */
 LinearDistanceForce::
 LinearDistanceForce(const LPoint3& p, FalloffType ft, PN_stdfloat r, PN_stdfloat a, bool m) :
   LinearForce(a, m),
@@ -28,11 +25,9 @@ LinearDistanceForce(const LPoint3& p, FalloffType ft, PN_stdfloat r, PN_stdfloat
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearDistanceForce
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 LinearDistanceForce::
 LinearDistanceForce(const LinearDistanceForce &copy) :
   LinearForce(copy) {
@@ -41,21 +36,16 @@ LinearDistanceForce(const LinearDistanceForce &copy) :
   _force_center = copy._force_center;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LinearDistanceForce
-//       Access: Protected
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearDistanceForce::
 ~LinearDistanceForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearDistanceForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -63,12 +53,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearDistanceForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

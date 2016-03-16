@@ -1,16 +1,15 @@
-// Filename: vertexBufferContext.h
-// Created by:  drose (17Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vertexBufferContext.h
+ * @author drose
+ * @date 2005-03-17
+ */
 
 #ifndef VERTEXBUFFERCONTEXT_H
 #define VERTEXBUFFERCONTEXT_H
@@ -22,17 +21,15 @@
 #include "preparedGraphicsObjects.h"
 #include "adaptiveLru.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexBufferContext
-// Description : This is a special class object that holds all the
-//               information returned by a particular GSG to indicate
-//               the vertex data array's internal context identifier.
-//
-//               This allows the GSG to cache the vertex data array in
-//               whatever way makes sense.  For instance, DirectX can
-//               allocate a vertex buffer for the array.  OpenGL can
-//               create a buffer object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special class object that holds all the information returned by a
+ * particular GSG to indicate the vertex data array's internal context
+ * identifier.
+ *
+ * This allows the GSG to cache the vertex data array in whatever way makes
+ * sense.  For instance, DirectX can allocate a vertex buffer for the array.
+ * OpenGL can create a buffer object.
+ */
 class EXPCL_PANDA_GOBJ VertexBufferContext : public BufferContext, public AdaptiveLruPage {
 public:
   INLINE VertexBufferContext(PreparedGraphicsObjects *pgo,
@@ -54,9 +51,9 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
 private:
-  // This cannot be a PT(GeomVertexArrayData), because the data and
-  // the GSG both own their VertexBufferContexts!  That would create a
-  // circular reference count.
+  // This cannot be a PT(GeomVertexArrayData), because the data and the GSG
+  // both own their VertexBufferContexts!  That would create a circular
+  // reference count.
   GeomVertexArrayData *_data;
   GeomEnums::UsageHint _usage_hint;
 
@@ -88,4 +85,3 @@ inline ostream &operator << (ostream &out, const VertexBufferContext &context) {
 #include "vertexBufferContext.I"
 
 #endif
-

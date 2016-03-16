@@ -1,16 +1,15 @@
-// Filename: cullPlanes.cxx
-// Created by:  drose (23Aug05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullPlanes.cxx
+ * @author drose
+ * @date 2005-08-23
+ */
 
 #include "cullPlanes.h"
 #include "cullTraverser.h"
@@ -19,31 +18,26 @@
 #include "occluderEffect.h"
 #include "boundingBox.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::make_empty
-//       Access: Public, Static
-//  Description: Returns a pointer to an empty CullPlanes object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to an empty CullPlanes object.
+ */
 CPT(CullPlanes) CullPlanes::
 make_empty() {
   static CPT(CullPlanes) empty;
   if (empty == NULL) {
     empty = new CullPlanes;
     // Artificially tick the reference count, just to ensure we won't
-    // accidentally modify this object in any of the copy-on-write
-    // operations below.
+    // accidentally modify this object in any of the copy-on-write operations
+    // below.
     empty->ref();
   }
   return empty;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::xform
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the clip planes
-//               modified by the indicated transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the clip planes modified by the indicated transform.
+ */
 CPT(CullPlanes) CullPlanes::
 xform(const LMatrix4 &mat) const {
   PT(CullPlanes) new_planes;
@@ -74,18 +68,14 @@ xform(const LMatrix4 &mat) const {
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::apply_state
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the indicated
-//               attributes applied to the state.
-//
-//               In particular, any new ClipPlanes given in
-//               net_attrib, if it is not NULL, will be added to the
-//               state, unless those ClipPlanes are also listed in
-//               off_attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the indicated attributes applied to the state.
+ *
+ * In particular, any new ClipPlanes given in net_attrib, if it is not NULL,
+ * will be added to the state, unless those ClipPlanes are also listed in
+ * off_attrib.
+ */
 CPT(CullPlanes) CullPlanes::
 apply_state(const CullTraverser *trav, const CullTraverserData *data,
             const ClipPlaneAttrib *net_attrib,
@@ -111,8 +101,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
       Planes::const_iterator pi = new_planes->_planes.find(clip_plane);
       if (pi == new_planes->_planes.end()) {
         if (!off_attrib->has_off_plane(clip_plane)) {
-          // Here's a new clip plane; add it to the list.  For this we
-          // need the net transform to this node.
+          // Here's a new clip plane; add it to the list.  For this we need
+          // the net transform to this node.
           if (net_transform == (TransformState *)NULL) {
             net_transform = data->get_net_transform(trav);
           }
@@ -130,8 +120,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
   if (node_effect != (OccluderEffect *)NULL) {
     CPT(TransformState) center_transform = NULL;
-    // We'll need to know the occluder's frustum in cull-center
-    // space.
+    // We'll need to know the occluder's frustum in cull-center space.
     SceneSetup *scene = trav->get_scene();
     const Lens *lens = scene->get_lens();
 
@@ -146,8 +135,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         CPT(TransformState) occluder_transform = occluder.get_transform(scene->get_cull_center());
 
-        // And the transform from cull-center space into the current
-        // node's coordinate space.
+        // And the transform from cull-center space into the current node's
+        // coordinate space.
         if (center_transform == (TransformState *)NULL) {
           if (net_transform == (TransformState *)NULL) {
             net_transform = data->get_net_transform(trav);
@@ -156,16 +145,15 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           center_transform = net_transform->invert_compose(scene->get_cull_center().get_net_transform());
         }
 
-        // Compare the occluder node's bounding volume to the view
-        // frustum.  We construct a new bounding volume because (a)
-        // the node's existing bounding volume is in the coordinate
-        // space of its parent, which isn't what we have here, and (b)
-        // we might as well make a BoundingBox, which is as tight as
-        // possible, and creating one isn't any less efficient than
-        // transforming the existing bounding volume.
+        // Compare the occluder node's bounding volume to the view frustum.
+        // We construct a new bounding volume because (a) the node's existing
+        // bounding volume is in the coordinate space of its parent, which
+        // isn't what we have here, and (b) we might as well make a
+        // BoundingBox, which is as tight as possible, and creating one isn't
+        // any less efficient than transforming the existing bounding volume.
         PT(BoundingBox) occluder_gbv;
-        // Get a transform from the occluder directly to this node's
-        // space for comparing with the current view frustum.
+        // Get a transform from the occluder directly to this node's space for
+        // comparing with the current view frustum.
         CPT(TransformState) composed_transform = center_transform->compose(occluder_transform);
         const LMatrix4 &composed_mat = composed_transform->get_mat();
         LPoint3 ccp[4];
@@ -252,8 +240,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           }
         }
 
-        // Also check if the new occluder is completely within any of
-        // our existing occluder volumes.
+        // Also check if the new occluder is completely within any of our
+        // existing occluder volumes.
         bool is_enclosed = false;
         Occluders::const_iterator oi;
         for (oi = _occluders.begin(); oi != _occluders.end(); ++oi) {
@@ -264,16 +252,15 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           }
         }
         if (is_enclosed) {
-          // No reason to add this occluder; it's behind an existing
-          // occluder.
+          // No reason to add this occluder; it's behind an existing occluder.
           if (pgraph_cat.is_spam()) {
             pgraph_cat.spam()
               << "Ignoring occluder " << occluder << ": behind another.\n";
           }
           continue;
         }
-        // TODO: perhaps we should also check whether any existing
-        // occluders are fully contained within this new one.
+        // TODO: perhaps we should also check whether any existing occluders
+        // are fully contained within this new one.
 
         // Get the occluder coordinates in global space.
         const LMatrix4 &occluder_mat = occluder.get_net_transform()->get_mat();
@@ -282,8 +269,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         points_near[2] = occluder_node->get_vertex(2) * occluder_mat;
         points_near[3] = occluder_node->get_vertex(3) * occluder_mat;
 
-        // For the far points, project PAST the far clip of the lens
-        // to ensures we get stuff that might be intersecting the far clip.
+        // For the far points, project PAST the far clip of the lens to
+        // ensures we get stuff that might be intersecting the far clip.
         LPoint3 center = scene->get_cull_center().get_net_transform()->get_pos();
         PN_stdfloat far_clip = scene->get_lens()->get_far() * 2.0;
         LPoint3 points_far[4];
@@ -292,8 +279,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         points_far[2] = normalize(points_near[2] - center) * far_clip + points_near[2];
         points_far[3] = normalize(points_near[3] - center) * far_clip + points_near[3];
 
-        // With these points, construct the bounding frustum of the
-        // occluded region.
+        // With these points, construct the bounding frustum of the occluded
+        // region.
         PT(BoundingHexahedron) frustum =
           new BoundingHexahedron(points_far[1], points_far[2], points_far[3], points_far[0],
                                  points_near[1], points_near[2], points_near[3], points_near[0]);
@@ -312,20 +299,16 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::do_cull
-//       Access: Public
-//  Description: Tests the indicated bounding volume against all of
-//               the clip planes in this object.  Sets result to an
-//               appropriate union of
-//               BoundingVolume::IntersectionFlags, similar to the
-//               result of BoundingVolume::contains().
-//
-//               Also, if the bounding volume is completely in front
-//               of any of the clip planes, removes those planes both
-//               from this object and from the indicated state,
-//               returning a new CullPlanes object in that case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tests the indicated bounding volume against all of the clip planes in this
+ * object.  Sets result to an appropriate union of
+ * BoundingVolume::IntersectionFlags, similar to the result of
+ * BoundingVolume::contains().
+ *
+ * Also, if the bounding volume is completely in front of any of the clip
+ * planes, removes those planes both from this object and from the indicated
+ * state, returning a new CullPlanes object in that case.
+ */
 CPT(CullPlanes) CullPlanes::
 do_cull(int &result, CPT(RenderState) &state,
         const GeometricBoundingVolume *node_gbv) const {
@@ -337,9 +320,9 @@ do_cull(int &result, CPT(RenderState) &state,
   CPT(CullPlanes) new_planes = this;
 
   if (orig_cpa == (ClipPlaneAttrib *)NULL) {
-    // If there are no clip planes in the state, the node is completely
-    // in front of all zero of the clip planes.  (This can happen if
-    // someone directly changes the state during the traversal.)
+    // If there are no clip planes in the state, the node is completely in
+    // front of all zero of the clip planes.  (This can happen if someone
+    // directly changes the state during the traversal.)
     CullPlanes *planes = new CullPlanes;
     planes->_occluders = _occluders;
     new_planes = planes;
@@ -351,15 +334,14 @@ do_cull(int &result, CPT(RenderState) &state,
     for (pi = _planes.begin(); pi != _planes.end(); ++pi) {
       int plane_result = (*pi).second->contains(node_gbv);
       if (plane_result == BoundingVolume::IF_no_intersection) {
-        // The node is completely behind this clip plane and gets
-        // culled.  Short-circuit the rest of the logic; none of the
-        // other planes matter.
+        // The node is completely behind this clip plane and gets culled.
+        // Short-circuit the rest of the logic; none of the other planes
+        // matter.
         result = plane_result;
         return new_planes;
       } else if ((plane_result & BoundingVolume::IF_all) != 0) {
-        // The node is completely in front of this clip plane.  We don't
-        // need to consider this plane ever again for any descendents of
-        // this node.
+        // The node is completely in front of this clip plane.  We don't need
+        // to consider this plane ever again for any descendents of this node.
         new_planes = new_planes->remove_plane((*pi).first);
         nassertr(new_planes != this, new_planes);
         new_cpa = DCAST(ClipPlaneAttrib, new_cpa->remove_on_plane((*pi).first));
@@ -381,21 +363,19 @@ do_cull(int &result, CPT(RenderState) &state,
   for (oi = _occluders.begin(); oi != _occluders.end(); ++oi) {
     int occluder_result = (*oi).second->contains(node_gbv);
     if (occluder_result == BoundingVolume::IF_no_intersection) {
-      // The node is completely in front of this occluder.  We don't
-      // need to consider this occluder ever again for any descendents of
-      // this node.
+      // The node is completely in front of this occluder.  We don't need to
+      // consider this occluder ever again for any descendents of this node.
 
-      // Reverse the sense of the test, because an occluder volume is
-      // the inverse of a cull plane volume: it describes the volume
-      // that is to be culled, not the volume that is to be kept.
+      // Reverse the sense of the test, because an occluder volume is the
+      // inverse of a cull plane volume: it describes the volume that is to be
+      // culled, not the volume that is to be kept.
       occluder_result = BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
       new_planes = new_planes->remove_occluder((*oi).first);
       nassertr(new_planes != this, new_planes);
 
     } else if ((occluder_result & BoundingVolume::IF_all) != 0) {
-      // The node is completely behind this occluder and gets culled.
-      // Short-circuit the rest of the logic; none of the other
-      // occluders matter.
+      // The node is completely behind this occluder and gets culled.  Short-
+      // circuit the rest of the logic; none of the other occluders matter.
       result = BoundingVolume::IF_no_intersection;
       return new_planes;
     }
@@ -406,13 +386,10 @@ do_cull(int &result, CPT(RenderState) &state,
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::remove_plane
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the indicated
-//               clip plane removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the indicated clip plane removed.
+ */
 CPT(CullPlanes) CullPlanes::
 remove_plane(const NodePath &clip_plane) const {
   PT(CullPlanes) new_planes;
@@ -429,13 +406,10 @@ remove_plane(const NodePath &clip_plane) const {
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::remove_occluder
-//       Access: Public
-//  Description: Returns a pointer to a new CullPlanes object that is
-//               the same as this one, but with the indicated
-//               occluder removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a new CullPlanes object that is the same as this one,
+ * but with the indicated occluder removed.
+ */
 CPT(CullPlanes) CullPlanes::
 remove_occluder(const NodePath &occluder) const {
   PT(CullPlanes) new_planes;
@@ -452,11 +426,9 @@ remove_occluder(const NodePath &occluder) const {
   return new_planes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CullPlanes::
 write(ostream &out) const {
   out << "CullPlanes (" << _planes.size() << " planes and "

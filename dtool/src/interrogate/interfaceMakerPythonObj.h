@@ -1,16 +1,15 @@
-// Filename: interfaceMakerPythonObj.h
-// Created by:  drose (19Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interfaceMakerPythonObj.h
+ * @author drose
+ * @date 2001-09-19
+ */
 
 #ifndef INTERFACEMAKERPYTHONOBJ_H
 #define INTERFACEMAKERPYTHONOBJ_H
@@ -29,12 +28,10 @@ class CPPInstance;
 class FunctionWriterPtrFromPython;
 class FunctionWriterPtrToPython;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerPythonObj
-// Description : An InterfaceMaker suitable for generating
-//               object-oriented Python code, that can be imported and
-//               used directly by Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * An InterfaceMaker suitable for generating object-oriented Python code, that
+ * can be imported and used directly by Python.
+ */
 class InterfaceMakerPythonObj : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonObj(InterrogateModuleDef *def);

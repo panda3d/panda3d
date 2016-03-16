@@ -1,16 +1,15 @@
-// Filename: fadeLodNodeData.h
-// Created by:  drose (29Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fadeLodNodeData.h
+ * @author drose
+ * @date 2004-09-29
+ */
 
 #ifndef FADELODNODEDATA_H
 #define FADELODNODEDATA_H
@@ -19,11 +18,10 @@
 
 #include "auxSceneData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FadeLODNodeData
-// Description : This is the data that is associated with a particular
-//               instance of the FadeLODNode for the scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the data that is associated with a particular instance of the
+ * FadeLODNode for the scene graph.
+ */
 class EXPCL_PANDA_PGRAPHNODES FadeLODNodeData : public AuxSceneData {
 public:
   enum FadeMode {
@@ -37,7 +35,7 @@ public:
   int _fade_in;
 
   virtual void output(ostream &out) const;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -57,4 +55,3 @@ private:
 };
 
 #endif
-

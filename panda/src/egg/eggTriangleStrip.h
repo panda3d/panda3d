@@ -1,16 +1,15 @@
-// Filename: eggTriangleStrip.h
-// Created by:  drose (13Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggTriangleStrip.h
+ * @author drose
+ * @date 2005-03-13
+ */
 
 #ifndef EGGTRIANGLESTRIP_H
 #define EGGTRIANGLESTRIP_H
@@ -19,12 +18,10 @@
 
 #include "eggCompositePrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTriangleStrip
-// Description : A connected strip of triangles.  This does not
-//               normally appear in an egg file; it is typically
-//               generated as a result of meshing.
-////////////////////////////////////////////////////////////////////
+/**
+ * A connected strip of triangles.  This does not normally appear in an egg
+ * file; it is typically generated as a result of meshing.
+ */
 class EXPCL_PANDAEGG EggTriangleStrip : public EggCompositePrimitive {
 PUBLISHED:
   INLINE EggTriangleStrip(const string &name = "");

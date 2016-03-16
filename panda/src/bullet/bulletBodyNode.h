@@ -1,16 +1,15 @@
-// Filename: bulletBodyNode.h
-// Created by:  enn0x (19Nov10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletBodyNode.h
+ * @author enn0x
+ * @date 2010-11-19
+ */
 
 #ifndef __BULLET_BODY_NODE_H__
 #define __BULLET_BODY_NODE_H__
@@ -28,10 +27,9 @@
 
 class BulletShape;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletBodyNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDABULLET BulletBodyNode : public PandaNode {
 protected:
   BulletBodyNode(const char *name);
@@ -159,7 +157,7 @@ public:
   }
   static void init_type() {
     PandaNode::init_type();
-    register_type(_type_handle, "BulletBodyNode", 
+    register_type(_type_handle, "BulletBodyNode",
                   PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -177,4 +175,3 @@ private:
 #include "bulletBodyNode.I"
 
 #endif // __BULLET_BODY_NODE_H__
-

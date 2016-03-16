@@ -1,16 +1,15 @@
-// Filename: AwMouseAndKeyboard.cxx
-// Created by:  Bei Yang (Mar2010)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file AwMouseAndKeyboard.cxx
+ * @author Bei Yang
+ * @date 2010-03
+ */
 
 #include "config_awesomium.h"
 #include "AwMouseAndKeyboard.h"
@@ -31,7 +30,7 @@ void AwMouseAndKeyboard::do_transmit_data(DataGraphTraverser *trav, const DataNo
   if (input.has_data(_button_events_input)) {
     const ButtonEventList *button_events;
     DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
-    
+
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = button_events->get_event(i);

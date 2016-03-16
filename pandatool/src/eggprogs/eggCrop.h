@@ -1,16 +1,15 @@
-// Filename: eggCrop.h
-// Created by:  drose (10Jun02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCrop.h
+ * @author drose
+ * @date 2002-06-10
+ */
 
 #ifndef EGGCROP_H
 #define EGGCROP_H
@@ -21,12 +20,10 @@
 
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCrop
-// Description : A program to read an egg file and write an equivalent
-//               egg file, possibly performing some minor operations
-//               along the way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write an equivalent egg file, possibly
+ * performing some minor operations along the way.
+ */
 class EggCrop : public EggFilter {
 public:
   EggCrop();
@@ -42,4 +39,3 @@ private:
 };
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: configVariableCore.cxx
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableCore.cxx
+ * @author drose
+ * @date 2004-10-15
+ */
 
 #include "configVariableCore.h"
 #include "configDeclaration.h"
@@ -25,12 +24,10 @@
 #include <algorithm>
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::Constructor
-//       Access: Private
-//  Description: Use the ConfigVariableManager::make_variable() 
-//               interface to create a new ConfigVariableCore.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use the ConfigVariableManager::make_variable() interface to create a new
+ * ConfigVariableCore.
+ */
 ConfigVariableCore::
 ConfigVariableCore(const string &name) :
   _name(name),
@@ -47,13 +44,11 @@ ConfigVariableCore(const string &name) :
 #endif  // PRC_INC_TRUST_LEVEL
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::Copy Constructor
-//       Access: Private
-//  Description: This is used by ConfigVariableManager to create the
-//               variable from a template--basically, another variable
-//               with all of the initial properties pre-defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used by ConfigVariableManager to create the variable from a
+ * template--basically, another variable with all of the initial properties
+ * pre-defined.
+ */
 ConfigVariableCore::
 ConfigVariableCore(const ConfigVariableCore &templ, const string &name) :
   _name(name),
@@ -71,40 +66,33 @@ ConfigVariableCore(const ConfigVariableCore &templ, const string &name) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::Destructor
-//       Access: Private
-//  Description: The destructor should never be called;
-//               ConfigVariableCore objects live forever and never get
-//               destructed.
-////////////////////////////////////////////////////////////////////
+/**
+ * The destructor should never be called; ConfigVariableCore objects live
+ * forever and never get destructed.
+ */
 ConfigVariableCore::
 ~ConfigVariableCore() {
   prc_cat->error()
     << "Internal error--ConfigVariableCore destructor called!\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::set_value_type
-//       Access: Public
-//  Description: Specifies the type of this variable.  See
-//               get_value_type().  It is not an error to call this
-//               multiple times, but if the value changes once
-//               get_declaration() has been called, a warning is printed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the type of this variable.  See get_value_type().  It is not an
+ * error to call this multiple times, but if the value changes once
+ * get_declaration() has been called, a warning is printed.
+ */
 void ConfigVariableCore::
 set_value_type(ConfigVariableCore::ValueType value_type) {
   if (_value_queried && _value_type != value_type) {
     if ((_flags & F_dconfig) != 0) {
-      // As a special exception, if the flags include F_dconfig, we
-      // don't report a warning for changing the type, assuming the
-      // variable is being defined through the older DConfig
-      // interface.
-      
+      // As a special exception, if the flags include F_dconfig, we don't
+      // report a warning for changing the type, assuming the variable is
+      // being defined through the older DConfig interface.
+
     } else {
       prc_cat->warning()
-        << "changing type for ConfigVariable " 
-        << get_name() << " from " << _value_type << " to " 
+        << "changing type for ConfigVariable "
+        << get_name() << " from " << _value_type << " to "
         << value_type << ".\n";
     }
   }
@@ -112,15 +100,11 @@ set_value_type(ConfigVariableCore::ValueType value_type) {
   _value_type = value_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::set_flags
-//       Access: Public
-//  Description: Specifies the trust level of this variable.  See
-//               get_flags().  It is not an error to call this
-//               multiple times, but if the value changes once
-//               get_declaration() has been called, a warning is
-//               printed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the trust level of this variable.  See get_flags().  It is not an
+ * error to call this multiple times, but if the value changes once
+ * get_declaration() has been called, a warning is printed.
+ */
 void ConfigVariableCore::
 set_flags(int flags) {
   if ((flags & F_dconfig) != 0) {
@@ -135,14 +119,14 @@ set_flags(int flags) {
     int bits_changed = (_flags ^ flags);
     if ((bits_changed & F_trust_level_mask) != 0) {
       prc_cat->warning()
-        << "changing trust level for ConfigVariable " 
-        << get_name() << " from " << (_flags & F_trust_level_mask) << " to " 
+        << "changing trust level for ConfigVariable "
+        << get_name() << " from " << (_flags & F_trust_level_mask) << " to "
         << (flags & F_trust_level_mask) << ".\n";
     }
     if ((bits_changed & ~(F_trust_level_mask | F_dconfig)) != 0) {
       prc_cat->warning()
-        << "changing flags for ConfigVariable " 
-        << get_name() << " from " << hex 
+        << "changing flags for ConfigVariable "
+        << get_name() << " from " << hex
         << (_flags & ~F_trust_level_mask) << " to "
         << (flags & ~F_trust_level_mask) << dec << ".\n";
     }
@@ -150,32 +134,28 @@ set_flags(int flags) {
 
   _flags = flags;
 
-  // Changing the trust level will require re-sorting the
-  // declarations.
+  // Changing the trust level will require re-sorting the declarations.
   _declarations_sorted = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::set_description
-//       Access: Public
-//  Description: Specifies the one-line description of this variable.
-//               See get_description().  It is not an error to call
-//               this multiple times, but if the value changes once
-//               get_declaration() has been called, a warning is printed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the one-line description of this variable.  See
+ * get_description().  It is not an error to call this multiple times, but if
+ * the value changes once get_declaration() has been called, a warning is
+ * printed.
+ */
 void ConfigVariableCore::
 set_description(const string &description) {
   if (_value_queried && _description != description) {
     if ((_flags & F_dconfig) != 0) {
-      // As a special exception, if the flags include F_dconfig, we
-      // don't change it, since this is presumably coming from the
-      // older DConfig interface.
+      // As a special exception, if the flags include F_dconfig, we don't
+      // change it, since this is presumably coming from the older DConfig
+      // interface.
       return;
     }
     if (description == "DConfig") {
-      // As a similar exception, we don't replace an existing
-      // description with one that reads simply "DConfig", unless it
-      // was empty previously.
+      // As a similar exception, we don't replace an existing description with
+      // one that reads simply "DConfig", unless it was empty previously.
       if (_description.empty()) {
         _description = description;
       }
@@ -194,19 +174,17 @@ set_description(const string &description) {
     }
 
     prc_cat->warning()
-      << "changing description for ConfigVariable " 
+      << "changing description for ConfigVariable "
       << get_name() << ".\n";
   }
 
   _description = description;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::set_default_value
-//       Access: Public
-//  Description: Specifies the default value for this variable if it
-//               is not defined in any prc file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the default value for this variable if it is not defined in any
+ * prc file.
+ */
 void ConfigVariableCore::
 set_default_value(const string &default_value) {
   if (_default_value == (ConfigDeclaration *)NULL) {
@@ -217,23 +195,21 @@ set_default_value(const string &default_value) {
   } else {
     // Modifying an existing default value.
 
-    // We set the original default value first, to avoid infinite
-    // recursion when the config variable in question happens to be
-    // consulted in NotifyCategory::out() (for instance,
-    // notify-timestamp).
+    // We set the original default value first, to avoid infinite recursion
+    // when the config variable in question happens to be consulted in
+    // NotifyCategory::out() (for instance, notify-timestamp).
     string orig_default_value = _default_value->get_string_value();
     _default_value->set_string_value(default_value);
 
     if (orig_default_value != default_value) {
       if ((_flags & F_dconfig) != 0) {
-        // As a special exception, if the flags include F_dconfig, we
-        // don't report a warning for changing the default value,
-        // assuming the variable is being defined through the older
-        // DConfig interface.
+        // As a special exception, if the flags include F_dconfig, we don't
+        // report a warning for changing the default value, assuming the
+        // variable is being defined through the older DConfig interface.
 
       } else {
         prc_cat->warning()
-          << "changing default value for ConfigVariable " 
+          << "changing default value for ConfigVariable "
           << get_name() << " from '" << orig_default_value
           << "' to '" << default_value << "'.\n";
       }
@@ -241,19 +217,15 @@ set_default_value(const string &default_value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::make_local_value
-//       Access: Public
-//  Description: Creates a new local value for this variable, if there
-//               is not already one specified.  This will shadow any
-//               values defined in the various .prc files.
-//
-//               If there is already a local value defined for this
-//               variable, simply returns that one.
-//
-//               Use clear_local_value() to remove the local value
-//               definition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new local value for this variable, if there is not already one
+ * specified.  This will shadow any values defined in the various .prc files.
+ *
+ * If there is already a local value defined for this variable, simply returns
+ * that one.
+ *
+ * Use clear_local_value() to remove the local value definition.
+ */
 ConfigDeclaration *ConfigVariableCore::
 make_local_value() {
   if (_local_value == (ConfigDeclaration *)NULL) {
@@ -272,16 +244,13 @@ make_local_value() {
   return _local_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::clear_local_value
-//       Access: Public
-//  Description: Removes the local value defined for this variable,
-//               and allows its value to be once again retrieved from
-//               the .prc files.
-//
-//               Returns true if the value was successfully removed,
-//               false if it did not exist in the first place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the local value defined for this variable, and allows its value to
+ * be once again retrieved from the .prc files.
+ *
+ * Returns true if the value was successfully removed, false if it did not
+ * exist in the first place.
+ */
 bool ConfigVariableCore::
 clear_local_value() {
   if (_local_value != (ConfigDeclaration *)NULL) {
@@ -294,13 +263,10 @@ clear_local_value() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::has_value
-//       Access: Public
-//  Description: Returns true if this variable has an explicit value,
-//               either from a prc file or locally set, or false if
-//               variable has its default value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this variable has an explicit value, either from a prc file
+ * or locally set, or false if variable has its default value.
+ */
 bool ConfigVariableCore::
 has_value() const {
   if (has_local_value()) {
@@ -310,14 +276,11 @@ has_value() const {
   return (!_trusted_declarations.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::get_num_declarations
-//       Access: Public
-//  Description: Returns the number of declarations that contribute to
-//               this variable's value.  If the variable has been
-//               defined, this will always be at least 1 (for the
-//               default value, at least).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of declarations that contribute to this variable's
+ * value.  If the variable has been defined, this will always be at least 1
+ * (for the default value, at least).
+ */
 size_t ConfigVariableCore::
 get_num_declarations() const {
   if (has_local_value()) {
@@ -332,16 +295,12 @@ get_num_declarations() const {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::get_declaration
-//       Access: Public
-//  Description: Returns the nth declarations that contributes to
-//               this variable's value.  The declarations are arranged
-//               in order such that earlier declarations shadow later
-//               declarations; thus, get_declaration(0) is always
-//               defined and always returns the current value of the
-//               variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth declarations that contributes to this variable's value.
+ * The declarations are arranged in order such that earlier declarations
+ * shadow later declarations; thus, get_declaration(0) is always defined and
+ * always returns the current value of the variable.
+ */
 const ConfigDeclaration *ConfigVariableCore::
 get_declaration(size_t n) const {
   ((ConfigVariableCore *)this)->_value_queried = true;
@@ -362,21 +321,17 @@ get_declaration(size_t n) const {
   return _default_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ConfigVariableCore::
 output(ostream &out) const {
   out << get_declaration(0)->get_string_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ConfigVariableCore::
 write(ostream &out) const {
   out << "ConfigVariable " << get_name() << ":\n";
@@ -388,10 +343,10 @@ write(ostream &out) const {
   }
 
   Declarations::const_iterator di;
-  for (di = _trusted_declarations.begin(); 
-       di != _trusted_declarations.end(); 
+  for (di = _trusted_declarations.begin();
+       di != _trusted_declarations.end();
        ++di) {
-    out << "  " << *(*di) 
+    out << "  " << *(*di)
         << "  (from " << (*di)->get_page()->get_name() << ")\n";
   }
 
@@ -399,10 +354,10 @@ write(ostream &out) const {
     out << "  " << *_default_value << "  (default value)\n";
   }
 
-  for (di = _untrusted_declarations.begin(); 
-       di != _untrusted_declarations.end(); 
+  for (di = _untrusted_declarations.begin();
+       di != _untrusted_declarations.end();
        ++di) {
-    out << "  " << *(*di) 
+    out << "  " << *(*di)
         << "  (from " << (*di)->get_page()->get_name() << ", untrusted)\n";
   }
 
@@ -411,13 +366,10 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::add_declaration
-//       Access: Private
-//  Description: Called only by the ConfigDeclaration constructor,
-//               this adds the indicated declaration to the list of
-//               declarations that reference this variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only by the ConfigDeclaration constructor, this adds the indicated
+ * declaration to the list of declarations that reference this variable.
+ */
 void ConfigVariableCore::
 add_declaration(ConfigDeclaration *decl) {
   _declarations.push_back(decl);
@@ -425,21 +377,18 @@ add_declaration(ConfigDeclaration *decl) {
   _declarations_sorted = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::remove_declaration
-//       Access: Private
-//  Description: Called only by the ConfigDeclaration destructor,
-//               this removes the indicated declaration from the list
-//               of declarations that reference this variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only by the ConfigDeclaration destructor, this removes the indicated
+ * declaration from the list of declarations that reference this variable.
+ */
 void ConfigVariableCore::
 remove_declaration(ConfigDeclaration *decl) {
   Declarations::iterator di;
   for (di = _declarations.begin(); di != _declarations.end(); ++di) {
     if ((*di) == decl) {
-      // Rather than deleting the declaration from the middle of the
-      // list, we maybe save a bit of time by swapping in the one at
-      // the end of the list (although this will unsort the list).
+      // Rather than deleting the declaration from the middle of the list, we
+      // maybe save a bit of time by swapping in the one at the end of the
+      // list (although this will unsort the list).
       Declarations::iterator di2 = _declarations.end();
       di2--;
       (*di) = (*di2);
@@ -460,24 +409,22 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::sort_declarations
-//       Access: Private
-//  Description: Sorts the list of declarations into priority order,
-//               so that the declaration at the front of the list is
-//               the one that shadows all following declarations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the list of declarations into priority order, so that the declaration
+ * at the front of the list is the one that shadows all following
+ * declarations.
+ */
 void ConfigVariableCore::
 sort_declarations() {
   sort(_declarations.begin(), _declarations.end(), CompareConfigDeclarations());
   Declarations::iterator di;
 
-  // Now that they're sorted, divide them into either trusted or
-  // untrusted declarations.
+  // Now that they're sorted, divide them into either trusted or untrusted
+  // declarations.
 #ifdef PRC_RESPECT_TRUST_LEVEL
-  // In this mode, normally for a release build, we sort the
-  // declarations honestly according to whether the prc file that
-  // defines them meets the required trust level.
+  // In this mode, normally for a release build, we sort the declarations
+  // honestly according to whether the prc file that defines them meets the
+  // required trust level.
   _trusted_declarations.clear();
   _untrusted_declarations.clear();
   for (di = _declarations.begin(); di != _declarations.end(); ++di) {
@@ -491,23 +438,22 @@ sort_declarations() {
   }
 
 #else  // PRC_RESPECT_TRUST_LEVEL
-  // In this mode, normally for the development environment, all
-  // declarations are trusted, regardless of the trust level.
+  // In this mode, normally for the development environment, all declarations
+  // are trusted, regardless of the trust level.
   _trusted_declarations = _declarations;
   _untrusted_declarations.clear();
 
 #endif  // PRC_RESPECT_TRUST_LEVEL
 
-  // Finally, determine the set of unique, trusted
-  // declarations--trusted declarations that have a unique string
-  // value.  This is usually unneeded, but what the heck, it doesn't
-  // need to be recomputed all that often.
+  // Finally, determine the set of unique, trusted declarations--trusted
+  // declarations that have a unique string value.  This is usually unneeded,
+  // but what the heck, it doesn't need to be recomputed all that often.
   _unique_declarations.clear();
 
   init_system_type_handles();  // Make sure pset_type_handle is initted.
   pset<string> already_added;
-  for (di = _trusted_declarations.begin(); 
-       di != _trusted_declarations.end(); 
+  for (di = _trusted_declarations.begin();
+       di != _trusted_declarations.end();
        ++di) {
     const ConfigDeclaration *decl = (*di);
     if (already_added.insert(decl->get_string_value()).second) {

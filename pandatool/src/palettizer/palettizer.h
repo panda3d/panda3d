@@ -1,16 +1,15 @@
-// Filename: palettizer.h
-// Created by:  drose (01Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file palettizer.h
+ * @author drose
+ * @date 2000-12-01
+ */
 
 #ifndef PALETTIZER_H
 #define PALETTIZER_H
@@ -32,14 +31,11 @@ class TextureImage;
 class TexturePlacement;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Palettizer
-// Description : This is the main engine behind egg-palettize.  It
-//               contains all of the program parameters, from the
-//               command line or saved from a previous session, and
-//               serves as the driving force in the actual palettizing
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main engine behind egg-palettize.  It contains all of the
+ * program parameters, from the command line or saved from a previous session,
+ * and serves as the driving force in the actual palettizing process.
+ */
 class Palettizer : public TypedWritable {
 public:
   Palettizer();
@@ -90,16 +86,16 @@ public:
 
   bool _is_valid;
 
-  // These values are not stored in the textures.boo file, but are
-  // specific to each session.
+  // These values are not stored in the textures.boo file, but are specific to
+  // each session.
   TxaFile _txa_file;
   string _default_groupname;
   string _default_groupdir;
   bool _noabs;
 
-  // The following parameter values specifically relate to textures
-  // and palettes.  These values are stored in the textures.boo file
-  // for future reference.
+  // The following parameter values specifically relate to textures and
+  // palettes.  These values are stored in the textures.boo file for future
+  // reference.
   string _generated_image_pattern;
   string _map_dirname;
   Filename _shadow_dirname;
@@ -160,8 +156,8 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
-  // These values are only filled in while reading from the bam file;
-  // don't use them otherwise.
+  // These values are only filled in while reading from the bam file; don't
+  // use them otherwise.
   int _num_egg_files;
   int _num_groups;
   int _num_textures;
@@ -186,9 +182,9 @@ private:
 };
 
 // This is a global Palettizer pointer that may be filled in when the
-// Palettizer is created, for convenience in referencing it from
-// multiple places.  (Generally, a standalone program will only create
-// one Palettizer object in a session.)
+// Palettizer is created, for convenience in referencing it from multiple
+// places.  (Generally, a standalone program will only create one Palettizer
+// object in a session.)
 extern Palettizer *pal;
 
 #endif

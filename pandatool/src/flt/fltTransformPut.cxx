@@ -1,16 +1,15 @@
-// Filename: fltTransformPut.cxx
-// Created by:  drose (29Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTransformPut.cxx
+ * @author drose
+ * @date 2000-08-29
+ */
 
 #include "fltTransformPut.h"
 #include "fltRecordReader.h"
@@ -20,11 +19,9 @@
 
 TypeHandle FltTransformPut::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltTransformPut::
 FltTransformPut(FltHeader *header) : FltTransformRecord(header) {
   _from_origin.set(0.0, 0.0, 0.0);
@@ -35,13 +32,10 @@ FltTransformPut(FltHeader *header) : FltTransformRecord(header) {
   _to_track.set(1.0, 0.0, 0.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::set
-//       Access: Public
-//  Description: Defines the put explicitly.  The transformation will
-//               map the three "from" points to the corresponding
-//               three "to" points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the put explicitly.  The transformation will map the three "from"
+ * points to the corresponding three "to" points.
+ */
 void FltTransformPut::
 set(const LPoint3d &from_origin, const LPoint3d &from_align,
     const LPoint3d &from_track,
@@ -57,71 +51,57 @@ set(const LPoint3d &from_origin, const LPoint3d &from_align,
   recompute_matrix();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::get_from_origin
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LPoint3d &FltTransformPut::
 get_from_origin() const {
   return _from_origin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::get_from_align
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LPoint3d &FltTransformPut::
 get_from_align() const {
   return _from_align;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::get_from_track
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LPoint3d &FltTransformPut::
 get_from_track() const {
   return _from_track;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::get_to_origin
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LPoint3d &FltTransformPut::
 get_to_origin() const {
   return _to_origin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::get_to_align
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LPoint3d &FltTransformPut::
 get_to_align() const {
   return _to_align;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::get_to_track
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 const LPoint3d &FltTransformPut::
 get_to_track() const {
   return _to_track;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::recompute_matrix
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FltTransformPut::
 recompute_matrix() {
   LMatrix4d r1, r2;
@@ -135,14 +115,11 @@ recompute_matrix() {
     LMatrix4d::translate_mat(_to_origin);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in
+ * the indicated datagram, whose opcode has already been read.  Returns true
+ * on success, false if the datagram is invalid.
+ */
 bool FltTransformPut::
 extract_record(FltRecordReader &reader) {
   if (!FltTransformRecord::extract_record(reader)) {
@@ -179,14 +156,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformPut::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this
+ * record, but does not advance the writer.  Returns true on success, false if
+ * there is some error.
+ */
 bool FltTransformPut::
 build_record(FltRecordWriter &writer) const {
   if (!FltTransformRecord::build_record(writer)) {
@@ -219,4 +193,3 @@ build_record(FltRecordWriter &writer) const {
 
   return true;
 }
-

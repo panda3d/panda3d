@@ -1,16 +1,15 @@
-// Filename: bamCacheIndex.h
-// Created by:  drose (19Jun06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamCacheIndex.h
+ * @author drose
+ * @date 2006-06-19
+ */
 
 #ifndef BAMCACHEINDEX_H
 #define BAMCACHEINDEX_H
@@ -24,16 +23,13 @@
 #include "pmap.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamCacheIndex
-// Description : This represents the in-memory index that records the
-//               list of files stored in the BamCache.  Since the
-//               memory is also flushed to disk from time to time,
-//               this class is a TypedWritable object.
-//
-//               For the most part, this class is used only by the
-//               BamCache class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the in-memory index that records the list of files stored
+ * in the BamCache.  Since the memory is also flushed to disk from time to
+ * time, this class is a TypedWritable object.
+ *
+ * For the most part, this class is used only by the BamCache class.
+ */
 class EXPCL_PANDA_PUTIL BamCacheIndex : public TypedWritable, public LinkedListNode {
 private:
   INLINE BamCacheIndex();
@@ -56,8 +52,8 @@ private:
   Records _records;
   streamsize _cache_size;
 
-  // This structure is a temporary container.  It is only filled in
-  // while reading from a bam file.
+  // This structure is a temporary container.  It is only filled in while
+  // reading from a bam file.
   typedef pvector< PT(BamCacheRecord) > RecordVector;
   RecordVector _record_vector;
 
@@ -69,7 +65,7 @@ protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

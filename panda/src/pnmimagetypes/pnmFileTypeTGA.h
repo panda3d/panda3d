@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeTGA.h
-// Created by:  drose (27Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeTGA.h
+ * @author drose
+ * @date 2001-04-27
+ */
 
 #ifndef PNMFILETYPETGA_H
 #define PNMFILETYPETGA_H
@@ -28,10 +27,9 @@
 struct ImageHeader;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeTGA
-// Description : For reading and writing Targa image files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing Targa image files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeTGA : public PNMFileType {
 public:
   PNMFileTypeTGA();
@@ -126,5 +124,3 @@ private:
 #endif  // HAVE_TGA
 
 #endif
-
-

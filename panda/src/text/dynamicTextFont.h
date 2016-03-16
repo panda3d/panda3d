@@ -1,16 +1,15 @@
-// Filename: dynamicTextFont.h
-// Created by:  drose (08Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dynamicTextFont.h
+ * @author drose
+ * @date 2002-02-08
+ */
 
 #ifndef DYNAMICTEXTFONT_H
 #define DYNAMICTEXTFONT_H
@@ -32,14 +31,11 @@
 
 class NurbsCurveResult;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DynamicTextFont
-// Description : A DynamicTextFont is a special TextFont object that
-//               rasterizes its glyphs from a standard font file
-//               (e.g. a TTF file) on the fly.  It requires the
-//               FreeType 2.0 library (or any higher,
-//               backward-compatible version).
-////////////////////////////////////////////////////////////////////
+/**
+ * A DynamicTextFont is a special TextFont object that rasterizes its glyphs
+ * from a standard font file (e.g.  a TTF file) on the fly.  It requires the
+ * FreeType 2.0 library (or any higher, backward-compatible version).
+ */
 class EXPCL_PANDA_TEXT DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
@@ -167,10 +163,9 @@ private:
   typedef pmap<int, const TextGlyph *> Cache;
   Cache _cache;
 
-  // This is a list of the glyphs that do not have any printable
-  // properties (e.g. space), but still have an advance measure.  We
-  // store them here to keep their reference counts; they also appear
-  // in the above table.
+  // This is a list of the glyphs that do not have any printable properties
+  // (e.g.  space), but still have an advance measure.  We store them here to
+  // keep their reference counts; they also appear in the above table.
   typedef pvector< PT(TextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
 

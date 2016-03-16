@@ -1,16 +1,15 @@
-// Filename: savedContext.h
-// Created by:  drose (11Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file savedContext.h
+ * @author drose
+ * @date 2001-06-11
+ */
 
 #ifndef SAVEDCONTEXT_H
 #define SAVEDCONTEXT_H
@@ -19,13 +18,11 @@
 
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SavedContext
-// Description : This is the base class for all GSG-specific context
-//               objects, such as TextureContext and GeomContext.  It
-//               exists mainly to provide some structural
-//               organization.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all GSG-specific context objects, such as
+ * TextureContext and GeomContext.  It exists mainly to provide some
+ * structural organization.
+ */
 class EXPCL_PANDA_GOBJ SavedContext : public TypedObject {
 public:
   INLINE SavedContext();
@@ -60,4 +57,3 @@ inline ostream &operator << (ostream &out, const SavedContext &context) {
 #include "savedContext.I"
 
 #endif
-

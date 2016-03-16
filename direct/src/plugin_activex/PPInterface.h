@@ -1,16 +1,15 @@
-// Filename: PPInterface.h
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file PPInterface.h
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #pragma once
 
@@ -36,7 +35,7 @@ public:
     HRESULT P3DGetProperty( P3D_object* p3dObject, CString& name, VARIANT FAR* varResult );
     HRESULT P3DSetProperty( P3D_object* p3dObject, CString& name, DISPPARAMS FAR* pdispparams, bool& result );
 
-    void p3dobj_to_variant(VARIANT* result, P3D_object* object); 
+    void p3dobj_to_variant(VARIANT* result, P3D_object* object);
     P3D_object* variant_to_p3dobj(COleVariant* variant);
     CString get_repr(COleVariant& variant);
 

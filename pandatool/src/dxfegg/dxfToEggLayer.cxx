@@ -1,16 +1,15 @@
-// Filename: dxfToEggLayer.cxx
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxfToEggLayer.cxx
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #include "dxfToEggLayer.h"
 #include "dxfToEggConverter.h"
@@ -23,11 +22,9 @@
 #include "eggVertexPool.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggLayer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DXFToEggLayer::
 DXFToEggLayer(const string &name, EggGroupNode *parent) : DXFLayer(name) {
   _group = new EggGroup(name);
@@ -37,14 +34,11 @@ DXFToEggLayer(const string &name, EggGroupNode *parent) : DXFLayer(name) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggLayer::add_polygon
-//       Access: Public
-//  Description: Given that done_entity() has just been called and that
-//               the current entity represents a polygon, adds the
-//               corresponding polygon to the layer's EggGroup and
-//               vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given that done_entity() has just been called and that the current entity
+ * represents a polygon, adds the corresponding polygon to the layer's
+ * EggGroup and vertex pool.
+ */
 void DXFToEggLayer::
 add_polygon(const DXFToEggConverter *entity) {
   EggPolygon *poly = new EggPolygon;
@@ -53,13 +47,12 @@ add_polygon(const DXFToEggConverter *entity) {
   const DXFFile::Color &color = entity->get_color();
   poly->set_color(LColor(color.r, color.g, color.b, 1.0));
 
-  // A polyline's vertices are stored in the attached vector by
-  // dxf.cxx.  They were defined in the DXF file using a series of
-  // "VERTEX" entries.
+  // A polyline's vertices are stored in the attached vector by dxf.cxx.  They
+  // were defined in the DXF file using a series of "VERTEX" entries.
 
-  // For a 3dface, the vertices are defined explicitly as part of the
-  // entity; but in this case, they were added to the vector before
-  // add_polygon() was called.
+  // For a 3dface, the vertices are defined explicitly as part of the entity;
+  // but in this case, they were added to the vector before add_polygon() was
+  // called.
 
   DXFVertices::const_iterator vi;
   for (vi = entity->_verts.begin();
@@ -72,12 +65,9 @@ add_polygon(const DXFToEggConverter *entity) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggLayer::add_line
-//       Access: Public
-//  Description: Similar to add_polygon(), but adds a set of point
-//               lights instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to add_polygon(), but adds a set of point lights instead.
+ */
 void DXFToEggLayer::
 add_line(const DXFToEggConverter *entity) {
   EggLine *line = new EggLine;
@@ -95,14 +85,11 @@ add_line(const DXFToEggConverter *entity) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggLayer::add_vertex
-//       Access: Public
-//  Description: Adds a unique vertex to the layer's vertex pool and
-//               returns it.  If the vertex was already defined
-//               previously, returns the original definition.  This is
-//               designed to share the common vertices within a layer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a unique vertex to the layer's vertex pool and returns it.  If the
+ * vertex was already defined previously, returns the original definition.
+ * This is designed to share the common vertices within a layer.
+ */
 EggVertex *DXFToEggLayer::
 add_vertex(const DXFVertex &vert) {
   EggVertex egg_vert;

@@ -1,16 +1,15 @@
-// Filename: p3dPythonMain.cxx
-// Created by:  drose (29Aug09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPythonMain.cxx
+ * @author drose
+ * @date 2009-08-29
+ */
 
 #include "run_p3dpython.h"
 
@@ -22,16 +21,15 @@
 using namespace std;
 
 #if defined(_WIN32) && defined(NON_CONSOLE)
-// On Windows, we may need to build p3dpythonw.exe, a non-console
-// version of this program.
+// On Windows, we may need to build p3dpythonw.exe, a non-console version of
+// this program.
 
 // We'll wrap the main() function with our own startup WinMain().
 #define main local_main
 int main(int argc, char *argv[]);
 
-// Returns a newly-allocated string representing the quoted argument
-// beginning at p.  Advances p to the first character following the
-// close quote.
+// Returns a newly-allocated string representing the quoted argument beginning
+// at p.  Advances p to the first character following the close quote.
 static char *
 parse_quoted_arg(char *&p) {
   char quote = *p;
@@ -50,8 +48,7 @@ parse_quoted_arg(char *&p) {
 }
 
 // Returns a newly-allocated string representing the unquoted argument
-// beginning at p.  Advances p to the first whitespace following the
-// argument.
+// beginning at p.  Advances p to the first whitespace following the argument.
 static char *
 parse_unquoted_arg(char *&p) {
   string result;
@@ -62,12 +59,12 @@ parse_unquoted_arg(char *&p) {
   return strdup(result.c_str());
 }
 
-int WINAPI 
+int WINAPI
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 
   vector<char *> argv;
-  
+
   char *p = command_line;
   while (*p != '\0') {
     if (*p == '"') {
@@ -89,13 +86,11 @@ WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 #endif  // NON_CONSOLE
 
-////////////////////////////////////////////////////////////////////
-//     Function: main
-//  Description: This is a trivial main() function that invokes
-//               P3DPythonRun.  It's used to build p3dpython.exe,
-//               which is the preferred way to run Python in a child
-//               process, as a separate executable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a trivial main() function that invokes P3DPythonRun.  It's used to
+ * build p3dpython.exe, which is the preferred way to run Python in a child
+ * process, as a separate executable.
+ */
 int
 main(int argc, char *argv[]) {
   const char *program_name = argv[0];

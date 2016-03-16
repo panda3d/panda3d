@@ -1,16 +1,15 @@
-// Filename: graphicsStateGuardian_ext.cxx
-// Created by:  rdb (10Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsStateGuardian_ext.cxx
+ * @author rdb
+ * @date 2013-12-10
+ */
 
 #include "graphicsStateGuardian_ext.h"
 #include "textureContext.h"
@@ -34,12 +33,10 @@ static bool traverse_callback(TextureContext *tc, void *data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_prepared_textures
-//       Access: Published
-//  Description: Returns a Python list of all of the
-//               currently-prepared textures within the GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Python list of all of the currently-prepared textures within the
+ * GSG.
+ */
 PyObject *Extension<GraphicsStateGuardian>::
 get_prepared_textures() const {
   PyObject *list = PyList_New(0);

@@ -1,16 +1,15 @@
-// Filename: collisionTraverser.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionTraverser.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef COLLISIONTRAVERSER_H
 #define COLLISIONTRAVERSER_H
@@ -33,19 +32,16 @@ class Geom;
 class NodePath;
 class CollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionTraverser
-// Description : This class manages the traversal through the scene
-//               graph to detect collisions.  It holds ownership of a
-//               number of collider objects, each of which is a
-//               CollisionNode and an associated CollisionHandler.
-//
-//               When traverse() is called, it begins at the indicated
-//               root and detects all collisions with any of its
-//               collider objects against nodes at or below the
-//               indicated root, calling the appropriate
-//               CollisionHandler for each detected collision.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class manages the traversal through the scene graph to detect
+ * collisions.  It holds ownership of a number of collider objects, each of
+ * which is a CollisionNode and an associated CollisionHandler.
+ *
+ * When traverse() is called, it begins at the indicated root and detects all
+ * collisions with any of its collider objects against nodes at or below the
+ * indicated root, calling the appropriate CollisionHandler for each detected
+ * collision.
+ */
 class EXPCL_PANDA_COLLIDE CollisionTraverser : public Namable {
 PUBLISHED:
   CollisionTraverser(const string &name = "ctrav");
@@ -148,7 +144,8 @@ private:
   PStatCollector _this_pcollector;
   typedef pvector<PStatCollector> PassCollectors;
   PassCollectors _pass_collectors;
-  // pstats category for actual collision detection (vs. bounding heirarchy collision detection)
+  // pstats category for actual collision detection (vs.  bounding heirarchy
+  // collision detection)
   typedef pvector<PStatCollector> SolidCollideCollectors;
   SolidCollideCollectors _solid_collide_collectors;
 
@@ -174,4 +171,3 @@ INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {
 #include "collisionTraverser.I"
 
 #endif
-

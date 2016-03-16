@@ -1,16 +1,15 @@
-// Filename: physxOverlapReport.h
-// Created by:  enn0x (21Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxOverlapReport.h
+ * @author enn0x
+ * @date 2009-10-21
+ */
 
 #ifndef PHYSXOVERLAPREPORT_H
 #define PHYSXOVERLAPREPORT_H
@@ -26,13 +25,11 @@ class PhysxShape;
 
 class PhysxUserEntityReport : public NxUserEntityReport<NxShape *> {};
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxOverlapReport
-// Description : Objects of this class are returned by the 'overlap
-//               shape' methods, for example overlapSphereShapes.
-//               They contain an iterable list of all sshapes that
-//               the raycast query produced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects of this class are returned by the 'overlap shape' methods, for
+ * example overlapSphereShapes.  They contain an iterable list of all sshapes
+ * that the raycast query produced.
+ */
 class EXPCL_PANDAPHYSX PhysxOverlapReport : public PhysxUserEntityReport {
 
 PUBLISHED:

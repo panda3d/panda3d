@@ -1,47 +1,39 @@
-// Filename: geomTransformer.I
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomTransformer.I
+ * @author drose
+ * @date 2002-03-14
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::get_max_collect_vertices
-//       Access: Public
-//  Description: Returns the maximum number of vertices that may be
-//               put into a single GeomVertexData as a result of
-//               collecting multiple objects in collect_vertex_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the maximum number of vertices that may be put into a single
+ * GeomVertexData as a result of collecting multiple objects in
+ * collect_vertex_data().
+ */
 INLINE int GeomTransformer::
 get_max_collect_vertices() const {
   return _max_collect_vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::set_max_collect_vertices
-//       Access: Public
-//  Description: Specifies the maximum number of vertices that may be
-//               put into a single GeomVertexData as a result of
-//               collecting multiple objects in collect_vertex_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the maximum number of vertices that may be put into a single
+ * GeomVertexData as a result of collecting multiple objects in
+ * collect_vertex_data().
+ */
 INLINE void GeomTransformer::
 set_max_collect_vertices(int max_collect_vertices) {
   _max_collect_vertices = max_collect_vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceVertices::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool GeomTransformer::SourceVertices::
 operator < (const GeomTransformer::SourceVertices &other) const {
   if (_vertex_data != other._vertex_data) {
@@ -50,11 +42,9 @@ operator < (const GeomTransformer::SourceVertices &other) const {
   return (_mat.compare_to(other._mat) < 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceTexCoords::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool GeomTransformer::SourceTexCoords::
 operator < (const GeomTransformer::SourceTexCoords &other) const {
   if (_vertex_data != other._vertex_data) {
@@ -69,11 +59,9 @@ operator < (const GeomTransformer::SourceTexCoords &other) const {
   return (_mat.compare_to(other._mat) < 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceColors::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool GeomTransformer::SourceColors::
 operator < (const GeomTransformer::SourceColors &other) const {
   if (_vertex_data != other._vertex_data) {
@@ -82,11 +70,9 @@ operator < (const GeomTransformer::SourceColors &other) const {
   return (_color.compare_to(other._color) < 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceTextureColors::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool GeomTransformer::SourceTextureColors::
 operator < (const GeomTransformer::SourceTextureColors &other) const {
   if (_vertex_data != other._vertex_data) {
@@ -107,11 +93,9 @@ operator < (const GeomTransformer::SourceTextureColors &other) const {
   return (_base_color.compare_to(other._base_color) < 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::SourceFormat::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool GeomTransformer::SourceFormat::
 operator < (const GeomTransformer::SourceFormat &other) const {
   if (_format != other._format) {
@@ -120,11 +104,9 @@ operator < (const GeomTransformer::SourceFormat &other) const {
   return _vertex_data < other._vertex_data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::NewCollectedKey::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool GeomTransformer::NewCollectedKey::
 operator < (const GeomTransformer::NewCollectedKey &other) const {
   if (_format != other._format) {
@@ -139,14 +121,10 @@ operator < (const GeomTransformer::NewCollectedKey &other) const {
   return _name < other._name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::VertexDataAssoc::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE GeomTransformer::VertexDataAssoc::
 VertexDataAssoc() {
   _might_have_unused = false;
 }
-
-

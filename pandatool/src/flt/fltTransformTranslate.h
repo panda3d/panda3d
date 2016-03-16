@@ -1,16 +1,15 @@
-// Filename: fltTransformTranslate.h
-// Created by:  drose (30Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTransformTranslate.h
+ * @author drose
+ * @date 2000-08-30
+ */
 
 #ifndef FLTTRANSFORMTRANSLATE_H
 #define FLTTRANSFORMTRANSLATE_H
@@ -19,10 +18,9 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformTranslate
-// Description : A transformation that applies a translation.
-////////////////////////////////////////////////////////////////////
+/**
+ * A transformation that applies a translation.
+ */
 class FltTransformTranslate : public FltTransformRecord {
 public:
   FltTransformTranslate(FltHeader *header);

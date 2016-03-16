@@ -1,16 +1,15 @@
-// Filename: P3DActiveX.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file P3DActiveX.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 // P3DActiveX.cpp : Implementation of CP3DActiveXApp and DLL registration.
 
@@ -72,7 +71,7 @@ HRESULT CreateComponentCategory(CATID catid, WCHAR *catDescription)
 
     // number of characters that may be read into catDescription.
 
-    // There must be room for a NULL-terminator. The third parameter
+    // There must be room for a NULL-terminator.  The third parameter
 
     // contains the number of characters excluding the NULL-terminator.
 
@@ -106,7 +105,7 @@ HRESULT CreateComponentCategory(CATID catid, WCHAR *catDescription)
 
 // HRESULT RegisterCLSIDInCategory -
 
-//      Register your component categories information
+// Register your component categories information
 
 
 HRESULT RegisterCLSIDInCategory(REFCLSID clsid, CATID catid)
@@ -168,8 +167,8 @@ BOOL CP3DActiveXApp::InitInstance()
     {
         // TODO: Add your own module initialization code here.
 
-      // Seed the lame random number generator in rand(); we use it to
-      // select a mirror for downloading.
+      // Seed the lame random number generator in rand(); we use it to select
+      // a mirror for downloading.
       srand((unsigned int)time(NULL));
     }
 

@@ -1,16 +1,15 @@
-// Filename: eggMesherEdge.h
-// Created by:  drose (13Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMesherEdge.h
+ * @author drose
+ * @date 2005-03-13
+ */
 
 #ifndef EGGMESHEREDGE_H
 #define EGGMESHEREDGE_H
@@ -22,13 +21,11 @@
 
 class EggMesherStrip;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMesherEdge
-// Description : Represents one edge of a triangle, as used by the
-//               EggMesher to discover connected triangles.  The edge
-//               is actually represented as a pair of vertex indices
-//               into the same vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents one edge of a triangle, as used by the EggMesher to discover
+ * connected triangles.  The edge is actually represented as a pair of vertex
+ * indices into the same vertex pool.
+ */
 class EggMesherEdge {
 public:
   INLINE EggMesherEdge(int vi_a, int vi_b);

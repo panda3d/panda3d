@@ -1,7 +1,8 @@
-// Filename: pandabullet.h
-// Created by:  enn0x (10May2011)
-// 
-////////////////////////////////////////////////////////////////////
+/**
+ * @file pandabullet.h
+ * @author enn0x
+ * @date 2011-05-10
+ */
 
 #ifndef PANDABULLET_H
 #define PANDABULLET_H

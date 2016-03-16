@@ -1,16 +1,15 @@
-// Filename: p3dInstanceManager.h
-// Created by:  drose (29May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dInstanceManager.h
+ * @author drose
+ * @date 2009-05-29
+ */
 
 #ifndef P3DINSTANCEMANAGER_H
 #define P3DINSTANCEMANAGER_H
@@ -39,11 +38,9 @@ class P3DPackage;
 class FileSpec;
 class TiXmlElement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DInstanceManager
-// Description : This global class manages the set of instances in the
-//               universe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This global class manages the set of instances in the universe.
+ */
 class P3DInstanceManager {
 private:
   P3DInstanceManager();
@@ -99,8 +96,8 @@ public:
   inline const string &get_super_mirror() const;
 
   P3DInstance *
-  create_instance(P3D_request_ready_func *func, 
-                  const P3D_token tokens[], size_t num_tokens, 
+  create_instance(P3D_request_ready_func *func,
+                  const P3D_token tokens[], size_t num_tokens,
                   int argc, const char *argv[], void *user_data);
 
   bool set_p3d_filename(P3DInstance *inst, bool is_local,
@@ -138,13 +135,13 @@ public:
   static string cert_to_der(X509 *cert);
 
   void uninstall_all();
-  
+
   static P3DInstanceManager *get_global_ptr();
   static void delete_global_ptr();
 
   static inline char encode_hexdigit(int c);
   static bool scan_directory(const string &dirname, vector<string> &contents);
-  static bool scan_directory_recursively(const string &dirname, 
+  static bool scan_directory_recursively(const string &dirname,
                                          vector<string> &filename_contents,
                                          vector<string> &dirname_contents,
                                          const string &prefix = "");
@@ -158,9 +155,8 @@ private:
   static void append_safe_dir_component(string &root, const string &component);
 
 private:
-  // The notify thread.  This thread runs only for the purpose of
-  // generating asynchronous notifications of requests, to callers who
-  // ask for it.
+  // The notify thread.  This thread runs only for the purpose of generating
+  // asynchronous notifications of requests, to callers who ask for it.
   THREAD_CALLBACK_DECLARATION(P3DInstanceManager, nt_thread_run);
   void nt_thread_run();
 
@@ -204,7 +200,7 @@ private:
   P3D_object *_false_object;
 
   typedef set<string> ApprovedCerts;
-  ApprovedCerts _approved_certs;  
+  ApprovedCerts _approved_certs;
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;
@@ -222,16 +218,16 @@ private:
 
   int _unique_id;
 
-  // This condition var is waited on the main thread and signaled in a
-  // sub-thread when new request notices arrive.
+  // This condition var is waited on the main thread and signaled in a sub-
+  // thread when new request notices arrive.
   P3DConditionVar _request_ready;
 
   // We may need a thread to send async request notices to callers.
   bool _notify_thread_continue;
   bool _started_notify_thread;
   THREAD _notify_thread;
-  // This queue of instances that need to send notifications is
-  // protected by _notify_ready's mutex.
+  // This queue of instances that need to send notifications is protected by
+  // _notify_ready's mutex.
   typedef vector<P3DInstance *> NotifyInstances;
   NotifyInstances _notify_instances;
   P3DConditionVar _notify_ready;

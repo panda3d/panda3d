@@ -1,16 +1,15 @@
-// Filename: eggTextureCollection.h
-// Created by:  drose (15Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggTextureCollection.h
+ * @author drose
+ * @date 2000-02-15
+ */
 
 #ifndef EGGTEXTURECOLLECTION_H
 #define EGGTEXTURECOLLECTION_H
@@ -23,19 +22,16 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTextureCollection
-// Description : This is a collection of textures by TRef name.  It
-//               can extract the textures from an egg file and sort
-//               them all together; it can also manage the creation of
-//               unique textures and the assignment of unique TRef
-//               names.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a collection of textures by TRef name.  It can extract the textures
+ * from an egg file and sort them all together; it can also manage the
+ * creation of unique textures and the assignment of unique TRef names.
+ */
 class EXPCL_PANDAEGG EggTextureCollection {
 
-  // This is a bit of private interface stuff that must be here as a
-  // forward reference.  This allows us to define the
-  // EggTextureCollection as an STL container.
+  // This is a bit of private interface stuff that must be here as a forward
+  // reference.  This allows us to define the EggTextureCollection as an STL
+  // container.
 
 private:
   typedef pmap<PT_EggTexture, int> Textures;
@@ -83,8 +79,8 @@ PUBLISHED:
   void sort_by_basename();
 
 public:
-  // Can be used to traverse all the textures in the collection, in
-  // order as last sorted.
+  // Can be used to traverse all the textures in the collection, in order as
+  // last sorted.
   INLINE iterator begin() const;
   INLINE iterator end() const;
   INLINE bool empty() const;
@@ -96,10 +92,9 @@ PUBLISHED:
   bool add_texture(EggTexture *texture);
   bool remove_texture(EggTexture *texture);
 
-  // create_unique_texture() creates a new texture if there is not
-  // already one equivalent (according to eq, see
-  // EggTexture::is_equivalent_to()) to the indicated texture, or
-  // returns the existing one if there is.
+  // create_unique_texture() creates a new texture if there is not already one
+  // equivalent (according to eq, see EggTexture::is_equivalent_to()) to the
+  // indicated texture, or returns the existing one if there is.
   EggTexture *create_unique_texture(const EggTexture &copy, int eq);
 
   // Find a texture with a particular TRef name.

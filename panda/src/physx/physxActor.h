@@ -1,16 +1,15 @@
-// Filename: physxActor.h
-// Created by:  enn0x (14Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxActor.h
+ * @author enn0x
+ * @date 2009-09-14
+ */
 
 #ifndef PHYSXACTOR_H
 #define PHYSXACTOR_H
@@ -31,20 +30,17 @@ class PhysxShapeDesc;
 class PhysxActorDesc;
 class PhysxBodyDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxActor
-// Description : Actors are the main simulation objects. Actors
-//               are owned by a scene (PhysxScene).
-//
-//               An actor may optionally encapsulate a dynamic rigid
-//               body by setting the body member of the actor's
-//               descriptor when it is created. Otherwise the actor
-//               will be static (fixed in the world).
-//
-//               Instances of PhysxActor are created by calling
-//               PhysxScene::create_actor() and destroyed by calling
-//               PhysxActor::release().
-////////////////////////////////////////////////////////////////////
+/**
+ * Actors are the main simulation objects.  Actors are owned by a scene
+ * (PhysxScene).
+ *
+ * An actor may optionally encapsulate a dynamic rigid body by setting the
+ * body member of the actor's descriptor when it is created.  Otherwise the
+ * actor will be static (fixed in the world).
+ *
+ * Instances of PhysxActor are created by calling PhysxScene::create_actor()
+ * and destroyed by calling PhysxActor::release().
+ */
 class EXPCL_PANDAPHYSX PhysxActor : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -94,7 +90,7 @@ PUBLISHED:
   MAKE_SEQ(get_shapes, get_num_shapes, get_shape);
 
   // Forces
-  void add_force(const LVector3f force, 
+  void add_force(const LVector3f force,
      PhysxForceMode mode=FM_force, bool wakeup=true);
   void add_force_at_pos(const LVector3f force, const LPoint3f &pos,
      PhysxForceMode mode=FM_force, bool wakeup=true);
@@ -150,9 +146,9 @@ PUBLISHED:
   LVector3f get_angular_velocity() const;
   float get_max_angular_velocity() const;
 
-  // Point Velocity 
+  // Point Velocity
   LVector3f get_point_velocity(const LPoint3f &point) const;
-  LVector3f get_local_point_velocity(const LPoint3f &point) const; 
+  LVector3f get_local_point_velocity(const LPoint3f &point) const;
 
   // Momentum
   void set_linear_momentum(const LVector3f &momentum);
@@ -182,7 +178,6 @@ PUBLISHED:
 public:
   void update_transform(const LMatrix4f &m);
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -201,14 +196,13 @@ private:
   PT(PhysxController) _controller;
   string _name;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxActor", 
+    register_type(_type_handle, "PhysxActor",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -1,9 +1,8 @@
-/*
-// Filename: lexer.lxx
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-*/
+/**
+ * @file lexer.lxx
+ * @author drose
+ * @date 1999-01-16
+ */
 
 %{
 #include "pandabase.h"

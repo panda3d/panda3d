@@ -1,29 +1,26 @@
-// Filename: bulletGenericConstraint.cxx
-// Created by:  enn0x (02Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletGenericConstraint.cxx
+ * @author enn0x
+ * @date 2010-03-02
+ */
 
 #include "bulletGenericConstraint.h"
 #include "bulletRigidBodyNode.h"
 
 TypeHandle BulletGenericConstraint::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletGenericConstraint::
-BulletGenericConstraint(const BulletRigidBodyNode *node_a, 
+BulletGenericConstraint(const BulletRigidBodyNode *node_a,
                         const TransformState *frame_a,
                         bool use_frame_a) {
 
@@ -33,11 +30,9 @@ BulletGenericConstraint(const BulletRigidBodyNode *node_a,
   _constraint = new btGeneric6DofConstraint(*ptr_a, trans_a, use_frame_a);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletGenericConstraint::
 BulletGenericConstraint(const BulletRigidBodyNode *node_a,
                         const BulletRigidBodyNode *node_b,
@@ -54,22 +49,18 @@ BulletGenericConstraint(const BulletRigidBodyNode *node_a,
   _constraint = new btGeneric6DofConstraint(*ptr_a, *ptr_b, trans_a, trans_b, use_frame_a);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 btTypedConstraint *BulletGenericConstraint::
 ptr() const {
 
   return _constraint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::get_axis
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LVector3 BulletGenericConstraint::
 get_axis(int axis) const {
 
@@ -80,11 +71,9 @@ get_axis(int axis) const {
   return btVector3_to_LVector3(_constraint->getAxis(axis));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::get_pivot
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat BulletGenericConstraint::
 get_pivot(int axis) const {
 
@@ -95,11 +84,9 @@ get_pivot(int axis) const {
   return _constraint->getRelativePivotPosition(axis);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::get_angle
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat BulletGenericConstraint::
 get_angle(int axis) const {
 
@@ -110,11 +97,9 @@ get_angle(int axis) const {
   return _constraint->getAngle(axis);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_linear_limit
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletGenericConstraint::
 set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
 
@@ -125,11 +110,9 @@ set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
   _constraint->setLimit(axis, low, high);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_angular_limit
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletGenericConstraint::
 set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
 
@@ -143,33 +126,27 @@ set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
   _constraint->setLimit(axis + 3, low, high);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::get_rotational_limit_motor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletRotationalLimitMotor BulletGenericConstraint::
 get_rotational_limit_motor(int axis) {
 
   return BulletRotationalLimitMotor(*_constraint->getRotationalLimitMotor(axis));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::get_translational_limit_motor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletTranslationalLimitMotor BulletGenericConstraint::
 get_translational_limit_motor() {
 
   return BulletTranslationalLimitMotor(*_constraint->getTranslationalLimitMotor());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::set_frames
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletGenericConstraint::
 set_frames(const TransformState *ts_a, const TransformState *ts_b) {
 
@@ -178,4 +155,3 @@ set_frames(const TransformState *ts_a, const TransformState *ts_b) {
 
   _constraint->setFrames(frame_a, frame_b);
 }
-

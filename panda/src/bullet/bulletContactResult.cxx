@@ -1,27 +1,24 @@
-// Filename: bulletContactResult.cxx
-// Created by:  enn0x (08Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletContactResult.cxx
+ * @author enn0x
+ * @date 2010-03-08
+ */
 
 #include "bulletContactResult.h"
 
 btManifoldPoint BulletContact::_empty;
 BulletContact BulletContactResult::_empty;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContact::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletContact::
 BulletContact() : _mp(_empty) {
 
@@ -29,11 +26,9 @@ BulletContact() : _mp(_empty) {
   _node1 = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContact::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletContact::
 BulletContact(const BulletContact &other) : _mp(other._mp) {
 
@@ -45,11 +40,9 @@ BulletContact(const BulletContact &other) : _mp(other._mp) {
   _idx1 = other._idx1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletContactResult::
 BulletContactResult() : btCollisionWorld::ContactResultCallback() {
 
@@ -61,11 +54,9 @@ BulletContactResult() : btCollisionWorld::ContactResultCallback() {
 }
 
 #if BT_BULLET_VERSION >= 281
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::use_filter
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletContactResult::
 use_filter(btOverlapFilterCallback *cb, btBroadphaseProxy *proxy) {
 
@@ -77,11 +68,9 @@ use_filter(btOverlapFilterCallback *cb, btBroadphaseProxy *proxy) {
   _filter_set = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::needsCollision
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BulletContactResult::
 needsCollision(btBroadphaseProxy *proxy0) const {
 
@@ -93,11 +82,9 @@ needsCollision(btBroadphaseProxy *proxy0) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::addSingleResult
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 btScalar BulletContactResult::
 addSingleResult(btManifoldPoint &mp,
                 const btCollisionObjectWrapper *wrap0, int part_id0, int idx0,
@@ -121,11 +108,9 @@ addSingleResult(btManifoldPoint &mp,
   return 1.0f;
 }
 #else
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::addSingleResult
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 btScalar BulletContactResult::
 addSingleResult(btManifoldPoint &mp,
                 const btCollisionObject *obj0, int part_id0, int idx0,
@@ -146,4 +131,3 @@ addSingleResult(btManifoldPoint &mp,
   return 1.0f;
 }
 #endif
-

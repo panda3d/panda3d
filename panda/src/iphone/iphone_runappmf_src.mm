@@ -1,25 +1,24 @@
-// Filename: iphone_runappmf_src.mm
-// Created by:  drose (26Apr09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iphone_runappmf_src.mm
+ * @author drose
+ * @date 2009-04-26
+ */
 
-#import <UIKit/UIKit.h> 
+#import <UIKit/UIKit.h>
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
 using namespace std;
 
 #include "pnotify.h"
-    
+
 #ifdef LINK_ALL_STATIC
 extern "C" void initlibpandaexpress();
 extern "C" void initlibpanda();
@@ -28,12 +27,12 @@ extern "C" void initlibpandafx();
 extern "C" void initlibdirect();
 #endif  // LINK_ALL_STATIC
 
-//@class AppMFViewController; 
-@interface AppMFAppDelegate : NSObject <UIApplicationDelegate> { 
+// @class AppMFViewController;
+@interface AppMFAppDelegate : NSObject <UIApplicationDelegate> {
   NSString *app_directory;
   NSTimer *animationTimer;
   NSTimeInterval animationInterval;
-} 
+}
 @property (nonatomic, assign) NSString *app_directory;
 @property (nonatomic, assign) NSTimer *animationTimer;
 @property NSTimeInterval animationInterval;
@@ -42,9 +41,9 @@ extern "C" void initlibdirect();
 - (void)stopAnimation;
 - (void)drawView;
 
-@end 
+@end
 
-@implementation AppMFAppDelegate 
+@implementation AppMFAppDelegate
 
 @synthesize app_directory;
 @synthesize animationTimer;
@@ -52,15 +51,15 @@ extern "C" void initlibdirect();
 
 int startup = 0;
 
-- (void)applicationDidFinishLaunching: (UIApplication *)application { 
+- (void)applicationDidFinishLaunching: (UIApplication *)application {
   // Get the App bundle directory.
   NSBundle *bundle = [NSBundle mainBundle];
   if (bundle != nil) {
     app_directory = [bundle bundlePath];
   }
 
-  // Set this as the current directory.  Not only is this convenient,
-  // but it also makes shared-library linking work.
+  // Set this as the current directory.  Not only is this convenient, but it
+  // also makes shared-library linking work.
   const char *app_directory_cstr = [app_directory cStringUsingEncoding: NSASCIIStringEncoding];
   int cd = chdir(app_directory_cstr);
   if (cd < 0) {
@@ -79,9 +78,9 @@ int startup = 0;
 
   animationInterval = 1.0 / 60.0;
   [self startAnimation];
-} 
+}
 
-- (void)applicationDidReceiveMemoryWarning: (UIApplication *)application { 
+- (void)applicationDidReceiveMemoryWarning: (UIApplication *)application {
   cerr << "applicationDidReceiveMemoryWarning\n";
 }
 
@@ -102,7 +101,7 @@ int startup = 0;
 
 
 - (void)setAnimationInterval:(NSTimeInterval)interval {
-    
+
     animationInterval = interval;
     if (animationTimer) {
         [self stopAnimation];
@@ -112,10 +111,10 @@ int startup = 0;
 
 - (void)drawView {
   if (startup == 0) {
-    // We are still just initializing the app.  Initialize Python now.
-    // We have this funny deferred-window technique, so SpringBoard
-    // will see that the app has fully initialized and won't kill us
-    // if we take a while starting up.
+    // We are still just initializing the app.  Initialize Python now.  We
+    // have this funny deferred-window technique, so SpringBoard will see that
+    // the app has fully initialized and won't kill us if we take a while
+    // starting up.
 
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
     NSString *app_pathname = [app_directory stringByAppendingString: @"/iphone_runappmf" ];
@@ -133,8 +132,8 @@ int startup = 0;
     Py_SetPythonHome((char *)app_directory_cstr);
 
 #ifdef LINK_ALL_STATIC
-    // Construct the Python modules for the interrogate-generated data
-    // we know we've already linked in.
+    // Construct the Python modules for the interrogate-generated data we know
+    // we've already linked in.
     initlibpandaexpress();
     initlibpanda();
     initlibpandaphysics();
@@ -195,8 +194,8 @@ int startup = 0;
     startup = 2;
 
   } else {
-    // We are fully initialized and running.  Run taskMgr.step() once
-    // each frame.
+    // We are fully initialized and running.  Run taskMgr.step() once each
+    // frame.
     PyObject *module = PyImport_ImportModule("direct.p3d.runp3d");
     if (module != (PyObject *)NULL) {
       PyObject *taskMgr = PyObject_GetAttrString(module, "taskMgr");
@@ -223,16 +222,16 @@ int startup = 0;
   Py_Finalize();
 }
 
-- (void)dealloc { 
-  [super dealloc]; 
-} 
+- (void)dealloc {
+  [super dealloc];
+}
 
-@end 
+@end
 
 extern "C" int main(int argc, char *argv[]);
 
 int
-main(int argc, char *argv[]) { 
+main(int argc, char *argv[]) {
   /*
   int logfile_fd = open("/tmp/foo.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (logfile_fd >= 0) {
@@ -243,11 +242,11 @@ main(int argc, char *argv[]) {
   */
 
   PyImport_FrozenModules = _PyImport_FrozenModules;
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-  /* Call with the name of our application delegate class */ 
-  int retVal = UIApplicationMain(argc, argv, nil, @"AppMFAppDelegate"); 
+  /* Call with the name of our application delegate class */
+  int retVal = UIApplicationMain(argc, argv, nil, @"AppMFAppDelegate");
 
-  [pool release]; 
-  return retVal; 
-} 
+  [pool release];
+  return retVal;
+}

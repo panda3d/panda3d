@@ -1,16 +1,15 @@
-// Filename: renderEffect.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderEffect.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef RENDEREFFECT_H
 #define RENDEREFFECT_H
@@ -29,30 +28,23 @@ class CullTraverser;
 class CullTraverserData;
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderEffect
-// Description : This is the base class for a number of special render
-//               effects that may be set on scene graph nodes to
-//               change the way they render.  This includes
-//               BillboardEffect, DecalEffect, etc.
-//
-//               RenderEffect represents render properties that must
-//               be applied as soon as they are encountered in the
-//               scene graph, rather than propagating down to the
-//               leaves.  This is different from RenderAttrib, which
-//               represents properties like color and texture that
-//               don't do anything until they propagate down to a
-//               GeomNode.
-//
-//               You should not attempt to create or modify a
-//               RenderEffect directly; instead, use the make() method
-//               of the appropriate kind of effect you want.  This
-//               will allocate and return a new RenderEffect of the
-//               appropriate type, and it may share pointers if
-//               possible.  Do not modify the new RenderEffect if you
-//               wish to change its properties; instead, create a new
-//               one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a number of special render effects that may be
+ * set on scene graph nodes to change the way they render.  This includes
+ * BillboardEffect, DecalEffect, etc.
+ *
+ * RenderEffect represents render properties that must be applied as soon as
+ * they are encountered in the scene graph, rather than propagating down to
+ * the leaves.  This is different from RenderAttrib, which represents
+ * properties like color and texture that don't do anything until they
+ * propagate down to a GeomNode.
+ *
+ * You should not attempt to create or modify a RenderEffect directly;
+ * instead, use the make() method of the appropriate kind of effect you want.
+ * This will allocate and return a new RenderEffect of the appropriate type,
+ * and it may share pointers if possible.  Do not modify the new RenderEffect
+ * if you wish to change its properties; instead, create a new one.
+ */
 class EXPCL_PANDA_PGRAPH RenderEffect : public TypedWritableReferenceCount {
 protected:
   RenderEffect();
@@ -107,7 +99,7 @@ public:
 protected:
   static TypedWritable *new_from_bam(RenderEffect *effect, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -134,4 +126,3 @@ INLINE ostream &operator << (ostream &out, const RenderEffect &effect) {
 #include "renderEffect.I"
 
 #endif
-

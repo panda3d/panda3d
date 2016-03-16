@@ -1,16 +1,15 @@
-// Filename: memoryInfo.h
-// Created by:  drose (04Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memoryInfo.h
+ * @author drose
+ * @date 2001-06-04
+ */
 
 #ifndef MEMORYINFO_H
 #define MEMORYINFO_H
@@ -24,16 +23,14 @@
 class ReferenceCount;
 class TypedObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryInfo
-// Description : This is a supporting class for MemoryUsage.  It
-//               records the detailed information for a particular
-//               pointer allocated by Panda code.  This record is only
-//               kept if track-mem-usage is configured #t.
-//
-//               It's not exported from the DLL, and it doesn't even
-//               exist if we're compiling NDEBUG.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a supporting class for MemoryUsage.  It records the detailed
+ * information for a particular pointer allocated by Panda code.  This record
+ * is only kept if track-mem-usage is configured #t.
+ *
+ * It's not exported from the DLL, and it doesn't even exist if we're
+ * compiling NDEBUG.
+ */
 class MemoryInfo {
 public:
   MemoryInfo();
@@ -61,7 +58,7 @@ private:
     F_size_known              = 0x0001,
     F_reconsider_dynamic_type = 0x0002,
   };
-  
+
   void *_void_ptr;
   ReferenceCount *_ref_ptr;
   TypedObject *_typed_ptr;
@@ -69,7 +66,7 @@ private:
   TypeHandle _static_type;
   TypeHandle _dynamic_type;
   int _flags;
-  
+
   double _time;
   int _freeze_index;
 
@@ -81,4 +78,3 @@ private:
 #endif  // DO_MEMORY_USAGE
 
 #endif
-

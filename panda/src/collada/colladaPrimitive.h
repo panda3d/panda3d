@@ -1,16 +1,15 @@
-// Filename: colladaPrimitive.h
-// Created by:  rdb (23May11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colladaPrimitive.h
+ * @author rdb
+ * @date 2011-05-23
+ */
 
 #ifndef COLLADAPRIMITIVE_H
 #define COLLADAPRIMITIVE_H
@@ -32,11 +31,10 @@ class domTriangles;
 class domTrifans;
 class domTristrips;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColladaPrimitive
-// Description : Class that deals with COLLADA primitive structures,
-//               such as <triangles> and <polylist>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that deals with COLLADA primitive structures, such as <triangles> and
+ * <polylist>.
+ */
 class ColladaPrimitive : public ReferenceCount {
 public:
   static ColladaPrimitive *from_dom(domLines &lines);

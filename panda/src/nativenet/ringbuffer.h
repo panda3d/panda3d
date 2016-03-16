@@ -3,17 +3,6 @@
 
 #include "membuffer.h"
 
-// RHH
-////////////////////////////////////////////////////////////////////
-//       Class : GmRingBuffer
-// Description : This is an implemention of the membuffer with ring
-//               buffer interface on it.
-//
-//               Main target right know is base class for network
-//               stream buffering both input and output
-//
-//               See also BufferedReader_Gm and BufferedWriter_Gm.
-////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_NATIVENET RingBuffer : protected MemBuffer {
 protected:
   size_t _StartPos;
@@ -42,4 +31,3 @@ public:
 #include "ringbuffer.I"
 
 #endif //__RINGBUFFER_GM_H__
-

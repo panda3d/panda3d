@@ -1,14 +1,15 @@
-// Filename: vrmlNode.cxx
-// Created by:  drose (23Jun99)
-// 
-////////////////////////////////////////////////////////////////////
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrmlNode.cxx
+ * @author drose
+ * @date 1999-06-23
+ */
 
 #include "vrmlNode.h"
 #include "vrmlParser.h"
@@ -26,7 +27,7 @@ VrmlNode::
 ~VrmlNode() {
 }
 
- 
+
 const VrmlFieldValue &VrmlNode::
 get_value(const char *field_name) const {
   Fields::const_iterator fi;

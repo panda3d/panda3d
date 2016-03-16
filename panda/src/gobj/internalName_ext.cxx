@@ -1,29 +1,25 @@
-// Filename: internalName_ext.cxx
-// Created by:  rdb (28Sep14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file internalName_ext.cxx
+ * @author rdb
+ * @date 2014-09-28
+ */
 
 #include "internalName_ext.h"
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::make
-//       Access: Published, Static
-//  Description: This extension method serves to allow coercion of
-//               Python interned strings to InternalName objects
-//               more efficiently by storing a mapping between
-//               Python and Panda interned strings.
-////////////////////////////////////////////////////////////////////
+/**
+ * This extension method serves to allow coercion of Python interned strings
+ * to InternalName objects more efficiently by storing a mapping between
+ * Python and Panda interned strings.
+ */
 #if PY_MAJOR_VERSION >= 3
 PT(InternalName) Extension<InternalName>::
 make(PyUnicodeObject *str) {
@@ -72,9 +68,8 @@ make(PyStringObject *str) {
 
     PT(InternalName) iname = InternalName::make(name);
 
-    // We basically leak references to both the PyObject and the
-    // InternalName.  We may want to change that in the future if it
-    // becomes a problem.
+    // We basically leak references to both the PyObject and the InternalName.
+    // We may want to change that in the future if it becomes a problem.
     Py_INCREF(str);
     iname->ref();
 

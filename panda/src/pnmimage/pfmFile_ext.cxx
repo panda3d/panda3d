@@ -1,16 +1,15 @@
-// Filename: pfmFile_ext.cxx
-// Created by:  rdb (26Feb14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pfmFile_ext.cxx
+ * @author rdb
+ * @date 2014-02-26
+ */
 
 #include "pfmFile_ext.h"
 
@@ -22,11 +21,9 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 extern struct Dtool_PyTypedObject Dtool_LPoint4f;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_points
-//       Access: Published
-//  Description: Returns a list of all of the points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of all of the points.
+ */
 PyObject *Extension<PfmFile>::
 get_points() const {
   int num_points = _this->get_x_size() * _this->get_y_size();
@@ -74,14 +71,11 @@ get_points() const {
 }
 
 #if PY_VERSION_HEX >= 0x02060000
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::__getbuffer__
-//       Access: Published
-//  Description: This is a very low-level function that returns a
-//               read-only multiview into the internal table of
-//               floating-point numbers.  Use this method at your own
-//               risk.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a very low-level function that returns a read-only multiview into
+ * the internal table of floating-point numbers.  Use this method at your own
+ * risk.
+ */
 int Extension<PfmFile>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 
@@ -91,12 +85,11 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
       return -1;
   }
 
-  // Since we have absolutely no guarantees about the lifetime
-  // of this object or the continued validity of the data pointer,
-  // we should arguably make a copy of the data.  However, since
-  // the whole point of this method is to provide fast access to
-  // the underlying data, perhaps we can trust the user to handle
-  // the copy operation himself if he needs to.
+  // Since we have absolutely no guarantees about the lifetime of this object
+  // or the continued validity of the data pointer, we should arguably make a
+  // copy of the data.  However, since the whole point of this method is to
+  // provide fast access to the underlying data, perhaps we can trust the user
+  // to handle the copy operation himself if he needs to.
   const vector_float &table = _this->get_table();
   int channels = _this->get_num_channels();
   int num_pixels = _this->get_x_size() * _this->get_y_size();

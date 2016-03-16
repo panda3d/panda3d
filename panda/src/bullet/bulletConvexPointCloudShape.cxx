@@ -1,16 +1,15 @@
-// Filename: bulletConvexPointCloudShape.cxx
-// Created by:  enn0x (30Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletConvexPointCloudShape.cxx
+ * @author enn0x
+ * @date 2010-01-30
+ */
 
 #include "bulletConvexPointCloudShape.h"
 
@@ -18,11 +17,9 @@
 
 TypeHandle BulletConvexPointCloudShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexPointCloudShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletConvexPointCloudShape::
 BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale) {
 
@@ -43,22 +40,18 @@ BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexPointCloudShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 btCollisionShape *BulletConvexPointCloudShape::
 ptr() const {
 
   return _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexPointCloudShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletConvexPointCloudShape::
 BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale) {
 
@@ -88,4 +81,3 @@ BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale) {
   _shape = new btConvexPointCloudShape(btPoints, points.size(), btScale);
   _shape->setUserPointer(this);
 }
-

@@ -1,16 +1,15 @@
-// Filename: perlinNoise2.h
-// Created by:  drose (05Oct05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file perlinNoise2.h
+ * @author drose
+ * @date 2005-10-05
+ */
 
 #ifndef PERLINNOISE2_H
 #define PERLINNOISE2_H
@@ -18,13 +17,11 @@
 #include "pandabase.h"
 #include "perlinNoise.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PerlinNoise2
-// Description : This class provides an implementation of Perlin noise
-//               for 2 variables.  This code is loosely based on the
-//               reference implementation at
-//               http://mrl.nyu.edu/~perlin/noise/ .
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides an implementation of Perlin noise for 2 variables.
+ * This code is loosely based on the reference implementation at
+ * http://mrl.nyu.edu/~perlin/noise/ .
+ */
 class EXPCL_PANDA_MATHUTIL PerlinNoise2 : public PerlinNoise {
 PUBLISHED:
   INLINE PerlinNoise2();
@@ -46,7 +43,7 @@ PUBLISHED:
   INLINE double operator ()(double x, double y) const;
   INLINE float operator ()(const LVecBase2f &value) const;
   INLINE double operator ()(const LVecBase2d &value) const;
-  
+
 private:
   void init_unscaled_xform();
   INLINE static double grad(int hash, double x, double y);
@@ -59,4 +56,3 @@ private:
 #include "perlinNoise2.I"
 
 #endif
-

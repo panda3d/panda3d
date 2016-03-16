@@ -1,33 +1,28 @@
-// Filename: writableParam.I
-// Created by:  jason (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file writableParam.I
+ * @author jason
+ * @date 2000-06-13
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: WritableParam::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE WritableParam::
 WritableParam(const Datagram &datagram) :
   _packet(datagram)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WritableParam::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE WritableParam::
 WritableParam(const WritableParam &copy) :
   FactoryParam(copy),
@@ -35,33 +30,26 @@ WritableParam(const WritableParam &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WritableParam::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE WritableParam::
 ~WritableParam() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WritableParam::Copy Assignment Operator
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void WritableParam::
 operator = (const WritableParam &) {
   // The assignment operator cannot be used for this class.
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WritableParam::get_datagram
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE const Datagram& WritableParam::
 get_datagram() {
   return _packet;
 }
-

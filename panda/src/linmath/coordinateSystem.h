@@ -1,16 +1,15 @@
-// Filename: coordinateSystem.h
-// Created by:  drose (24Sep99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file coordinateSystem.h
+ * @author drose
+ * @date 1999-09-24
+ */
 
 #ifndef COORDINATESYSTEM_H
 #define COORDINATESYSTEM_H
@@ -22,10 +21,9 @@
 BEGIN_PUBLISH
 
 enum CoordinateSystem {
-  // The CS_default entry does not refer to a particular coordinate
-  // system, but rather to the value stored in
-  // default_coordinate_system, which in turn is loaded from the
-  // config variable "coordinate-system".
+  // The CS_default entry does not refer to a particular coordinate system,
+  // but rather to the value stored in default_coordinate_system, which in
+  // turn is loaded from the config variable "coordinate-system".
   CS_default,
 
   CS_zup_right,
@@ -33,9 +31,9 @@ enum CoordinateSystem {
   CS_zup_left,
   CS_yup_left,
 
-  // CS_invalid is not a coordinate system at all.  It can be used in
-  // user-input processing code to indicate a contradictory coordinate
-  // system request.
+  // CS_invalid is not a coordinate system at all.  It can be used in user-
+  // input processing code to indicate a contradictory coordinate system
+  // request.
   CS_invalid,
 };
 
@@ -53,4 +51,3 @@ EXPCL_PANDA_LINMATH istream &operator >> (istream &in, CoordinateSystem &cs);
 
 
 #endif
-

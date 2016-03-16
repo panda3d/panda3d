@@ -1,16 +1,15 @@
-// Filename: p3dWinSplashWindow.cxx
-// Created by:  drose (17Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dWinSplashWindow.cxx
+ * @author drose
+ * @date 2009-06-17
+ */
 
 #include "p3dWinSplashWindow.h"
 
@@ -22,13 +21,11 @@
 
 bool P3DWinSplashWindow::_registered_window_class = false;
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DWinSplashWindow::
-P3DWinSplashWindow(P3DInstance *inst, bool make_visible) : 
+P3DWinSplashWindow(P3DInstance *inst, bool make_visible) :
   P3DSplashWindow(inst, make_visible)
 {
   _thread = NULL;
@@ -55,11 +52,9 @@ P3DWinSplashWindow(P3DInstance *inst, bool make_visible) :
   INIT_LOCK(_install_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DWinSplashWindow::
 ~P3DWinSplashWindow() {
   stop_thread();
@@ -67,13 +62,10 @@ P3DWinSplashWindow::
   DESTROY_LOCK(_install_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::set_wparams
-//       Access: Public, Virtual
-//  Description: Changes the window parameters, e.g. to resize or
-//               reposition the window; or sets the parameters for the
-//               first time, creating the initial window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the window parameters, e.g.  to resize or reposition the window; or
+ * sets the parameters for the first time, creating the initial window.
+ */
 void P3DWinSplashWindow::
 set_wparams(const P3DWindowParams &wparams) {
   P3DSplashWindow::set_wparams(wparams);
@@ -83,13 +75,10 @@ set_wparams(const P3DWindowParams &wparams) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::set_visible
-//       Access: Public, Virtual
-//  Description: Makes the splash window visible or invisible, so as
-//               not to compete with the embedded Panda window in the
-//               same space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the splash window visible or invisible, so as not to compete with the
+ * embedded Panda window in the same space.
+ */
 void P3DWinSplashWindow::
 set_visible(bool visible) {
   P3DSplashWindow::set_visible(visible);
@@ -101,12 +90,10 @@ set_visible(bool visible) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::set_image_filename
-//       Access: Public, Virtual
-//  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of a JPEG image file that is displayed in the center of
+ * the splash window.
+ */
 void P3DWinSplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
   nout << "image_filename = " << image_filename << ", thread_id = " << _thread_id << "\n";
@@ -124,7 +111,7 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
   case IP_button_rollover:
     image = &_button_rollover_image;
     break;
-   
+
   case IP_button_click:
     image = &_button_click_image;
     break;
@@ -143,19 +130,16 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
     PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
     if (!_thread_running && _thread_continue) {
-      // The user must have closed the window.  Let's shut down the
-      // instance, too.
+      // The user must have closed the window.  Let's shut down the instance,
+      // too.
       _inst->request_stop_main_thread();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::set_install_label
-//       Access: Public, Virtual
-//  Description: Specifies the text that is displayed above the
-//               install progress bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the text that is displayed above the install progress bar.
+ */
 void P3DWinSplashWindow::
 set_install_label(const string &install_label) {
   ACQUIRE_LOCK(_install_lock);
@@ -169,18 +153,16 @@ set_install_label(const string &install_label) {
     PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
     if (!_thread_running && _thread_continue) {
-      // The user must have closed the window.  Let's shut down the
-      // instance, too.
+      // The user must have closed the window.  Let's shut down the instance,
+      // too.
       _inst->request_stop_main_thread();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::set_install_progress
-//       Access: Public, Virtual
-//  Description: Moves the install progress bar from 0.0 to 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the install progress bar from 0.0 to 1.0.
+ */
 void P3DWinSplashWindow::
 set_install_progress(double install_progress,
                      bool is_progress_known, size_t received_data) {
@@ -195,21 +177,18 @@ set_install_progress(double install_progress,
     PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
     if (!_thread_running && _thread_continue) {
-      // The user must have closed the window.  Let's shut down the
-      // instance, too.
+      // The user must have closed the window.  Let's shut down the instance,
+      // too.
       _inst->request_stop_main_thread();
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::request_keyboard_focus
-//       Access: Private
-//  Description: The Panda window is asking us to manage keyboard
-//               focus in proxy for it.  This is used on Vista, where
-//               the Panda window may be disallowed from directly
-//               assigning itself keyboard focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda window is asking us to manage keyboard focus in proxy for it.
+ * This is used on Vista, where the Panda window may be disallowed from
+ * directly assigning itself keyboard focus.
+ */
 void P3DWinSplashWindow::
 request_keyboard_focus() {
   // Store the time at which we last requested focus.
@@ -219,19 +198,16 @@ request_keyboard_focus() {
   ACQUIRE_LOCK(_install_lock);
   ++_focus_seq;
   RELEASE_LOCK(_install_lock);
-  
+
   if (_thread_id != 0) {
     // Post a silly message to spin the message loop.
     PostThreadMessage(_thread_id, WM_USER, 0, 0);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::register_window_class
-//       Access: Public, Static
-//  Description: Registers the window class for this window, if
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the window class for this window, if needed.
+ */
 void P3DWinSplashWindow::
 register_window_class() {
   if (!_registered_window_class) {
@@ -243,7 +219,7 @@ register_window_class() {
     wc.hInstance = application;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.lpszClassName = "panda3d_splash";
-    
+
     if (!RegisterClass(&wc)) {
       nout << "Could not register window class panda3d_splash\n";
     }
@@ -251,12 +227,10 @@ register_window_class() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::unregister_window_class
-//       Access: Public, Static
-//  Description: Unregisters the window class for this window.  It is
-//               necessary to do this before unloading the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unregisters the window class for this window.  It is necessary to do this
+ * before unloading the DLL.
+ */
 void P3DWinSplashWindow::
 unregister_window_class() {
   if (_registered_window_class) {
@@ -269,25 +243,20 @@ unregister_window_class() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::button_click_detected
-//       Access: Protected, Virtual
-//  Description: Called when a button click by the user is detected in
-//               set_mouse_data(), this method simply turns around and
-//               notifies the instance.  It's a virtual method to give
-//               subclasses a chance to redirect this message to the
-//               main thread or process, as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a button click by the user is detected in set_mouse_data(),
+ * this method simply turns around and notifies the instance.  It's a virtual
+ * method to give subclasses a chance to redirect this message to the main
+ * thread or process, as necessary.
+ */
 void P3DWinSplashWindow::
 button_click_detected() {
   P3DSplashWindow::button_click_detected();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::start_thread
-//       Access: Private
-//  Description: Spawns the sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Spawns the sub-thread.
+ */
 void P3DWinSplashWindow::
 start_thread() {
   _thread_continue = true;
@@ -299,11 +268,9 @@ start_thread() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::stop_thread
-//       Access: Private
-//  Description: Terminates and joins the sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates and joins the sub-thread.
+ */
 void P3DWinSplashWindow::
 stop_thread() {
   _thread_continue = false;
@@ -314,32 +281,28 @@ stop_thread() {
   }
 
   if (_thread != NULL){
-    // If the thread doesn't close right away, call PeekMessage() to
-    // check for Windows messages that the thread might be waiting
-    // for.
+    // If the thread doesn't close right away, call PeekMessage() to check for
+    // Windows messages that the thread might be waiting for.
     while (WaitForSingleObject(_thread, 200) == WAIT_TIMEOUT) {
       MSG msg;
       PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
       nout << "Waiting for thread\n";
     }
- 
+
     CloseHandle(_thread);
     _thread = NULL;
 
-    // Now that the thread has exited, we can safely close its window.
-    // (We couldn't close the window in the thread, because that would
-    // cause a deadlock situation--the thread can't acknowledge the
-    // window closing until we spin the event loop in the parent
-    // thread.)
+    // Now that the thread has exited, we can safely close its window.  (We
+    // couldn't close the window in the thread, because that would cause a
+    // deadlock situation--the thread can't acknowledge the window closing
+    // until we spin the event loop in the parent thread.)
     close_window();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::thread_run
-//       Access: Private
-//  Description: The sub-thread's main run method.
-////////////////////////////////////////////////////////////////////
+/**
+ * The sub-thread's main run method.
+ */
 void P3DWinSplashWindow::
 thread_run() {
   make_window();
@@ -414,56 +377,51 @@ thread_run() {
   _inst->request_stop_sub_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::win_thread_run
-//       Access: Private, Static
-//  Description: The OS-specific thread callback function.
-////////////////////////////////////////////////////////////////////
+/**
+ * The OS-specific thread callback function.
+ */
 DWORD P3DWinSplashWindow::
 win_thread_run(LPVOID data) {
   ((P3DWinSplashWindow *)data)->thread_run();
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::make_window
-//       Access: Private
-//  Description: Creates the window for displaying progress.  Runs
-//               within the sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the window for displaying progress.  Runs within the sub-thread.
+ */
 void P3DWinSplashWindow::
 make_window() {
   register_window_class();
   HINSTANCE application = GetModuleHandle(NULL);
-  
+
   int width = 320;
   int height = 240;
   if (_wparams.get_win_width() != 0 && _wparams.get_win_height() != 0) {
     width = _wparams.get_win_width();
     height = _wparams.get_win_height();
   }
-  
+
   int x = _wparams.get_win_x();
   int y = _wparams.get_win_y();
   if (x == -1) x = CW_USEDEFAULT;
   if (y == -1) y = CW_USEDEFAULT;
   if (x == -2) x = (int)(0.5 * (GetSystemMetrics(SM_CXSCREEN) - width));
   if (y == -2) y = (int)(0.5 * (GetSystemMetrics(SM_CYSCREEN) - height));
-  
+
   if (_wparams.get_window_type() == P3D_WT_embedded) {
     // Create an embedded window.
-    DWORD window_style = 
+    DWORD window_style =
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
     const P3D_window_handle &handle = _wparams.get_parent_window();
     assert(handle._window_handle_type == P3D_WHT_win_hwnd);
     HWND parent_hwnd = handle._handle._win_hwnd._hwnd;
 
-    _hwnd = 
+    _hwnd =
       CreateWindow("panda3d_splash", "Panda3D", window_style,
                    x, y, width, height,
                    parent_hwnd, NULL, application, 0);
-    
+
     if (!_hwnd) {
       nout << "Could not create embedded window!\n";
       return;
@@ -471,7 +429,7 @@ make_window() {
 
   } else {
     // Create a toplevel window.
-    DWORD window_style = 
+    DWORD window_style =
       WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX |
       WS_SIZEBOX | WS_MAXIMIZEBOX;
@@ -479,7 +437,7 @@ make_window() {
     RECT win_rect = { 0, 0, width, height };
     // Adjust window size based on desired client area size
     AdjustWindowRect(&win_rect, window_style, FALSE);
-    _hwnd = 
+    _hwnd =
       CreateWindow("panda3d_splash", "Panda3D", window_style,
                    x, y,
                    win_rect.right - win_rect.left,
@@ -516,13 +474,10 @@ make_window() {
   _bar_bg_brush = CreateSolidBrush(RGB(_bar_bgcolor_r, _bar_bgcolor_g, _bar_bgcolor_b));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::update_image
-//       Access: Private
-//  Description: Loads the image from the named file (if it has
-//               changed), converts to to BITMAP form, and stores it
-//               in _bitmap.  Runs only in the sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the image from the named file (if it has changed), converts to to
+ * BITMAP form, and stores it in _bitmap.  Runs only in the sub-thread.
+ */
 void P3DWinSplashWindow::
 update_image(WinImageData &image) {
   if (!image._filename_changed) {
@@ -534,8 +489,7 @@ update_image(WinImageData &image) {
   // Clear the old image.
   image.dump_image();
 
-  // Since we'll be displaying a new image, we need to refresh the
-  // window.
+  // Since we'll be displaying a new image, we need to refresh the window.
   InvalidateRect(_hwnd, NULL, TRUE);
 
   // Go read the image.
@@ -552,8 +506,8 @@ update_image(WinImageData &image) {
   char *new_data = new char[new_data_length];
 
   if (image._num_channels == 4) {
-    // We have to reverse the order of the RGB channels: libjpeg and
-    // Windows follow an opposite convention.
+    // We have to reverse the order of the RGB channels: libjpeg and Windows
+    // follow an opposite convention.
     for (int yi = 0; yi < image._height; ++yi) {
       const char *sp = data.data() + yi * row_stride;
       char *dp = new_data + yi * new_row_stride;
@@ -567,8 +521,8 @@ update_image(WinImageData &image) {
       }
     }
   } else if (image._num_channels == 3) {
-    // We have to reverse the order of the RGB channels: libjpeg and
-    // Windows follow an opposite convention.
+    // We have to reverse the order of the RGB channels: libjpeg and Windows
+    // follow an opposite convention.
     for (int yi = 0; yi < image._height; ++yi) {
       const char *sp = data.data() + yi * row_stride;
       char *dp = new_data + yi * new_row_stride;
@@ -623,12 +577,10 @@ update_image(WinImageData &image) {
   nout << "Loaded image: " << image._filename << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::close_window
-//       Access: Private
-//  Description: Closes the window created above.  This call is
-//               actually made in the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window created above.  This call is actually made in the main
+ * thread.
+ */
 void P3DWinSplashWindow::
 close_window() {
   if (_hwnd != NULL) {
@@ -636,7 +588,7 @@ close_window() {
     CloseWindow(_hwnd);
     _hwnd = NULL;
   }
-  
+
   if (_fg_brush != NULL) {
     DeleteObject(_fg_brush);
     _fg_brush = NULL;
@@ -660,12 +612,9 @@ close_window() {
   _button_click_image.dump_image();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::paint_window
-//       Access: Private
-//  Description: Paints the contents of the window into the indicated
-//               DC.
-////////////////////////////////////////////////////////////////////
+/**
+ * Paints the contents of the window into the indicated DC.
+ */
 void P3DWinSplashWindow::
 paint_window(HDC dc) {
   RECT rect;
@@ -709,8 +658,8 @@ paint_window(HDC dc) {
     break;
   }
 
-  // Draw the progress bar.  We don't draw this bar at all unless we
-  // have nonzero progress.
+  // Draw the progress bar.  We don't draw this bar at all unless we have
+  // nonzero progress.
   if (!_drawn_progress_known || _drawn_progress != 0.0) {
     paint_progress_bar(bdc);
   }
@@ -721,14 +670,11 @@ paint_window(HDC dc) {
   DeleteObject(bdc);
   DeleteObject(buffer);
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::paint_image
-//       Access: Private
-//  Description: Draws the indicated image, centered within the
-//               window.  Returns true on success, false if the image
-//               is not defined.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Draws the indicated image, centered within the window.  Returns true on
+ * success, false if the image is not defined.
+ */
 bool P3DWinSplashWindow::
 paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
   if (image._bitmap == NULL) {
@@ -738,7 +684,7 @@ paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
   // Paint the background splash image.
   HDC mem_dc = CreateCompatibleDC(dc);
   SelectObject(mem_dc, image._bitmap);
-  
+
   // Determine the relative size of bitmap and window.
   int win_cx = _win_width / 2;
   int win_cy = _win_height / 2;
@@ -748,10 +694,10 @@ paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
   bf.BlendFlags = 0;
   bf.SourceConstantAlpha = 0xff;
   bf.AlphaFormat = AC_SRC_ALPHA;
-  
+
   if (image._width <= _win_width && image._height <= _win_height) {
     // The bitmap fits within the window; center it.
-    
+
     // This is the top-left corner of the bitmap in window coordinates.
     int p_x = win_cx - image._width / 2;
     int p_y = win_cy - image._height / 2;
@@ -764,7 +710,7 @@ paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
                  mem_dc, 0, 0, image._width, image._height,
                  bf);
     }
-    
+
   } else {
     // The bitmap is larger than the window; scale it down.
     double x_scale = (double)_win_width / (double)image._width;
@@ -772,7 +718,7 @@ paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
     double scale = min(x_scale, y_scale);
     int sc_width = (int)(image._width * scale);
     int sc_height = (int)(image._height * scale);
-    
+
     int p_x = win_cx - sc_width / 2;
     int p_y = win_cy - sc_height / 2;
 
@@ -780,30 +726,27 @@ paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
       StretchBlt(dc, p_x, p_y, sc_width, sc_height,
                  mem_dc, 0, 0, image._width, image._height, SRCCOPY);
     } else {
-      // For some reason, AlphaBlend has issues when scaling a
-      // black-and-white image to draw onto the window: it draws the
-      // image in the last fill color used on the dc, instead of
-      // black.  This only happens when the image consists only of
-      // black and white, and only when the image is being scaled.
-      // Weird.  But StretchBlt, above, doesn't have this problem.
+      // For some reason, AlphaBlend has issues when scaling a black-and-white
+      // image to draw onto the window: it draws the image in the last fill
+      // color used on the dc, instead of black.  This only happens when the
+      // image consists only of black and white, and only when the image is
+      // being scaled.  Weird.  But StretchBlt, above, doesn't have this
+      // problem.
       AlphaBlend(dc, p_x, p_y, sc_width, sc_height,
-                 mem_dc, 0, 0, image._width, image._height, 
+                 mem_dc, 0, 0, image._width, image._height,
                  bf);
     }
   }
-  
+
   SelectObject(mem_dc, NULL);
   DeleteDC(mem_dc);
 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::paint_progress_bar
-//       Access: Private
-//  Description: Draws the progress bar and the label within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the progress bar and the label within the window.
+ */
 void P3DWinSplashWindow::
 paint_progress_bar(HDC dc) {
   int bar_x, bar_y, bar_width, bar_height;
@@ -822,8 +765,8 @@ paint_progress_bar(HDC dc) {
       FillRect(dc, &prog_rect, _bar_brush);
     }
   } else {
-    // Progress is unknown.  Draw a moving block, not a progress bar
-    // filling up.
+    // Progress is unknown.  Draw a moving block, not a progress bar filling
+    // up.
     int block_width = (int)(bar_width * 0.1 + 0.5);
     int block_travel = bar_width - block_width;
     int progress = (int)(_received_data * _unknown_progress_rate);
@@ -832,7 +775,7 @@ paint_progress_bar(HDC dc) {
       progress = block_travel * 2 - progress;
     }
 
-    RECT prog_rect = { bar_x + progress, bar_y, 
+    RECT prog_rect = { bar_x + progress, bar_y,
                        bar_x + progress + block_width, bar_y + bar_height };
     FillRect(dc, &prog_rect, _bar_brush);
   }
@@ -872,16 +815,14 @@ paint_progress_bar(HDC dc) {
     // And finally, draw the text.
     SetTextColor(dc, RGB(_fgcolor_r, _fgcolor_g, _fgcolor_b));
     SetBkColor(dc, RGB(_bgcolor_r, _bgcolor_g, _bgcolor_b));
-    DrawText(dc, text, -1, &text_rect, 
+    DrawText(dc, text, -1, &text_rect,
              DT_VCENTER | DT_CENTER | DT_SINGLELINE);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::window_proc
-//       Access: Private
-//  Description: The windows event-processing handler.
-////////////////////////////////////////////////////////////////////
+/**
+ * The windows event-processing handler.
+ */
 LRESULT P3DWinSplashWindow::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
@@ -895,7 +836,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_ERASEBKGND:
     return true;
-    
+
   case WM_PAINT:
     {
       PAINTSTRUCT ps;
@@ -905,7 +846,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     return true;
 
-  case WM_MOUSEMOVE: 
+  case WM_MOUSEMOVE:
     set_mouse_data(LOWORD(lparam), HIWORD(lparam), _mouse_down);
     break;
 
@@ -920,12 +861,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_KILLFOCUS:
-    // Someone on the desktop is playing games with us.  It keeps
-    // wanting to grab the keyboard focus back immediately after we
-    // successfully call SetFocus().  Well, we really mean it, darn it
-    // all.  If we got a WM_KILLFOCUS within a few milliseconds of
-    // calling SetFocus(), well, call SetFocus() again, until it
-    // sticks.
+    // Someone on the desktop is playing games with us.  It keeps wanting to
+    // grab the keyboard focus back immediately after we successfully call
+    // SetFocus().  Well, we really mean it, darn it all.  If we got a
+    // WM_KILLFOCUS within a few milliseconds of calling SetFocus(), well,
+    // call SetFocus() again, until it sticks.
     {
       int elapsed = GetTickCount() - _request_focus_tick;
       if (elapsed < 200) {
@@ -946,7 +886,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_CHAR:
   case WM_SYSKEYDOWN:
   case WM_SYSCOMMAND:
-  case WM_KEYDOWN: 
+  case WM_KEYDOWN:
   case WM_SYSKEYUP:
   case WM_KEYUP:
     if (_inst->get_session() != NULL) {
@@ -958,11 +898,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::st_window_proc
-//       Access: Private, Static
-//  Description: The windows event-processing handler, static version.
-////////////////////////////////////////////////////////////////////
+/**
+ * The windows event-processing handler, static version.
+ */
 LRESULT P3DWinSplashWindow::
 st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   LONG_PTR self = GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -974,11 +912,9 @@ st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return ((P3DWinSplashWindow *)self)->window_proc(hwnd, msg, wparam, lparam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::WinImageData::dump_image
-//       Access: Public
-//  Description: Frees the previous image data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the previous image data.
+ */
 void P3DWinSplashWindow::WinImageData::
 dump_image() {
   if (_bitmap != NULL) {

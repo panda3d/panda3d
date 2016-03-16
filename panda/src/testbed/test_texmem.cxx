@@ -1,16 +1,15 @@
-// Filename: test_texmem.cxx
-// Created by:  drose (03Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_texmem.cxx
+ * @author drose
+ * @date 2002-09-03
+ */
 
 #include "pandaFramework.h"
 #include "cardMaker.h"
@@ -39,18 +38,18 @@ event_T(const Event *, void *data) {
     return;
   }
 
-  // We are doing a new shift-t.  Hide the normal models, and create a
-  // new bogus node to show the texture grid object.
+  // We are doing a new shift-t.  Hide the normal models, and create a new
+  // bogus node to show the texture grid object.
   models.hide();
   bogus_scene = render.attach_new_node("bogus");
 
-  // Try to force a flush of the texture memory by making a scene with
-  // lots of bogus textures.
+  // Try to force a flush of the texture memory by making a scene with lots of
+  // bogus textures.
   static const int num_quads_side = 20;
   static const int tex_x_size = 256;
   static const int tex_y_size = 256;
 
-  cerr << "Loading " << num_quads_side * num_quads_side << " textures at " 
+  cerr << "Loading " << num_quads_side * num_quads_side << " textures at "
        << tex_x_size << ", " << tex_y_size << "\n";
 
   PNMImage white_center(tex_x_size / 4, tex_y_size / 4);
@@ -79,7 +78,7 @@ event_T(const Event *, void *data) {
       bogus_image.copy_sub_image(white_center,
                                  (tex_x_size - white_center.get_x_size()) / 2,
                                  (tex_y_size - white_center.get_y_size()) / 2);
-      
+
       PT(Texture) tex = new Texture;
       tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
       tex->load(bogus_image);

@@ -1,16 +1,15 @@
-// Filename: dtoolbase.cxx
-// Created by:  drose (12Sep00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dtoolbase.cxx
+ * @author drose
+ * @date 2000-09-12
+ */
 
 #include "dtoolbase.h"
 #include "memoryHook.h"
@@ -22,18 +21,15 @@ bool __tau_shutdown = false;
 
 MemoryHook *memory_hook;
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_memory_hook
-//  Description: Any code that might need to use PANDA_MALLOC or
-//               PANDA_FREE, or any methods of the global memory_hook
-//               object, at static init time, should ensure that it
-//               calls init_memory_hook() first to ensure that the
-//               pointer has been properly initialized.  There is no
-//               harm in calling this function more than once.
-//
-//               There is no need to call this function other than at
-//               static init time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Any code that might need to use PANDA_MALLOC or PANDA_FREE, or any methods
+ * of the global memory_hook object, at static init time, should ensure that
+ * it calls init_memory_hook() first to ensure that the pointer has been
+ * properly initialized.  There is no harm in calling this function more than
+ * once.
+ *
+ * There is no need to call this function other than at static init time.
+ */
 void
 init_memory_hook() {
   if (memory_hook == NULL) {
@@ -41,8 +37,8 @@ init_memory_hook() {
   }
 }
 
-// Here's a quick way to ensure the above function is called at least
-// once at static init time.
+// Here's a quick way to ensure the above function is called at least once at
+// static init time.
 class InitMemoryHook {
 public:
   InitMemoryHook() {

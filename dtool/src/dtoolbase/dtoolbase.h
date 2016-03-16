@@ -1,8 +1,4 @@
-/* Filename: dtoolbase.h
- * Created by:  drose (12Sep00)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file dtoolbase.h
+ * @author drose
+ * @date 2000-09-12
+ */
 
 /* This file is included at the beginning of every header file and/or
    C or C++ file.  It must be compilable for C as well as C++ files,
@@ -63,17 +62,18 @@
 #if _MSC_VER >= 1300
  #if _MSC_VER >= 1310
    #define USING_MSVC7_1
-//#pragma message("VC 7.1")
+// #pragma message("VC 7.1")
  #else
-//#pragma message("VC 7.0")
+// #pragma message("VC 7.0")
  #endif
 #define USING_MSVC7
 #else
 // #pragma message("VC 6.0")
 #endif
 
-// Use NODEFAULT to optimize a switch() stmt to tell MSVC to automatically go to the final untested case
-// after it has failed all the other cases (i.e. 'assume at least one of the cases is always true')
+// Use NODEFAULT to optimize a switch() stmt to tell MSVC to automatically go
+// to the final untested case after it has failed all the other cases (i.e.
+// 'assume at least one of the cases is always true')
 #ifdef _DEBUG
 # define NODEFAULT  default: assert(0);
 #else
@@ -107,8 +107,8 @@
 #endif
 #endif
 
-// This is a workaround for a glibc bug that is triggered by
-// clang when compiling with -ffast-math.
+// This is a workaround for a glibc bug that is triggered by clang when
+// compiling with -ffast-math.
 #ifdef __clang__
 #include <sys/cdefs.h>
 #ifndef __extern_always_inline
@@ -117,9 +117,9 @@
 #endif
 
 #ifdef HAVE_PYTHON
-// Instead of including the Python headers, which will implicitly
-// add a linker flag to link in Python, we'll just excerpt the
-// forward declaration of PyObject.
+// Instead of including the Python headers, which will implicitly add a linker
+// flag to link in Python, we'll just excerpt the forward declaration of
+// PyObject.
 typedef struct _object PyObject;
 #endif
 
@@ -134,8 +134,8 @@ typedef struct _object PyObject;
 #include <assert.h>
 
 #ifdef __GNUC__
-// Large file >2GB support
-// this needs be be before systypes.h and other C headers
+// Large file >2GB support this needs be be before systypes.h and other C
+// headers
 #define _FILE_OFFSET_BITS 64
 #define _LARGEFILE_SOURCE 1
 #endif
@@ -354,38 +354,35 @@ typedef struct _object PyObject;
 #define ALIGN_16BYTE
 #endif
 
-// Do we need to implement memory-alignment enforcement within the
-// MemoryHook class, or will the underlying malloc implementation
-// provide it automatically?
+// Do we need to implement memory-alignment enforcement within the MemoryHook
+// class, or will the underlying malloc implementation provide it
+// automatically?
 #if !defined(LINMATH_ALIGN)
-// We don't actually require any special memory-alignment beyond what
-// the underlying implementation is likely to provide anyway.
+// We don't actually require any special memory-alignment beyond what the
+// underlying implementation is likely to provide anyway.
 #undef MEMORY_HOOK_DO_ALIGN
 
 #elif defined(USE_MEMORY_DLMALLOC)
-// This specialized malloc implementation can perform the required
-// alignment.
+// This specialized malloc implementation can perform the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
 #elif defined(USE_MEMORY_PTMALLOC2)
-// But not this one.  For some reason it crashes when we try to build
-// it with alignment 16.  So if we're using ptmalloc2, we need to
-// enforce alignment externally.
+// But not this one.  For some reason it crashes when we try to build it with
+// alignment 16.  So if we're using ptmalloc2, we need to enforce alignment
+// externally.
 #define MEMORY_HOOK_DO_ALIGN 1
 
 #elif defined(IS_OSX) || defined(_WIN64)
-// The OS-provided malloc implementation will do the required
-// alignment.
+// The OS-provided malloc implementation will do the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
 #elif defined(MEMORY_HOOK_DO_ALIGN)
 // We need memory alignment, and we're willing to provide it ourselves.
 
 #else
-// We need memory alignment, and we haven't specified whether it
-// should be provided on top of the existing malloc library, or
-// otherwise.  Let's rely on dlmalloc to provide it, it seems to be
-// the most memory-efficient option.
+// We need memory alignment, and we haven't specified whether it should be
+// provided on top of the existing malloc library, or otherwise.  Let's rely
+// on dlmalloc to provide it, it seems to be the most memory-efficient option.
 #define USE_MEMORY_DLMALLOC 1
 
 #endif
@@ -393,7 +390,7 @@ typedef struct _object PyObject;
 /* Determine our memory-allocation requirements. */
 #if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
 /* In this case we have some custom memory management requirements. */
-#else 
+#else
 /* Otherwise, if we have no custom memory management needs at all, we
    might as well turn it all off and go straight to the OS-level
    calls. */

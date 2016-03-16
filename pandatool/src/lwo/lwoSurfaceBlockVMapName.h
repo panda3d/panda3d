@@ -1,16 +1,15 @@
-// Filename: lwoSurfaceBlockVMapName.h
-// Created by:  drose (30Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoSurfaceBlockVMapName.h
+ * @author drose
+ * @date 2001-04-30
+ */
 
 #ifndef LWOSURFACEBLOCKVMAPNAME_H
 #define LWOSURFACEBLOCKVMAPNAME_H
@@ -19,11 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockVMapName
-// Description : Specifies the name of a set of UV's defined on the
-//               polygons that use this model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of a set of UV's defined on the polygons that use this
+ * model.
+ */
 class LwoSurfaceBlockVMapName : public LwoChunk {
 public:
   string _name;
@@ -51,5 +49,3 @@ private:
 };
 
 #endif
-
-

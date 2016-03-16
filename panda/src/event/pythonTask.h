@@ -1,16 +1,15 @@
-// Filename: pythonTask.h
-// Created by:  drose (16Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pythonTask.h
+ * @author drose
+ * @date 2008-09-16
+ */
 
 #ifndef PYTHONTASK_H
 #define PYTHONTASK_H
@@ -22,11 +21,10 @@
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PythonTask
-// Description : This class exists to allow association of a Python
-//               function with the AsyncTaskManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class exists to allow association of a Python function with the
+ * AsyncTaskManager.
+ */
 class PythonTask : public AsyncTask {
 PUBLISHED:
   PythonTask(PyObject *function = Py_None, const string &name = string());
@@ -59,17 +57,15 @@ PUBLISHED:
   // The name of this task.
   MAKE_PROPERTY(name, get_name, set_name);
 
-  // The amount of seconds that have elapsed since the task was
-  // started, according to the task manager's clock.
+  // The amount of seconds that have elapsed since the task was started,
+  // according to the task manager's clock.
   MAKE_PROPERTY(time, get_elapsed_time);
 
-  // If this task has been added to an AsyncTaskManager with a delay
-  // in effect, this contains the time at which the task is expected
-  // to awaken.  It has no meaning of the task has not yet been added
-  // to a queue, or if there was no delay in effect at the time the
-  // task was added.
-  //
-  // If the task's status is not S_sleeping, this contains 0.0.
+  // If this task has been added to an AsyncTaskManager with a delay in
+  // effect, this contains the time at which the task is expected to awaken.
+  // It has no meaning of the task has not yet been added to a queue, or if
+  // there was no delay in effect at the time the task was added.  If the
+  // task's status is not S_sleeping, this contains 0.0.
   MAKE_PROPERTY(wake_time, get_wake_time);
 
   // Alias of wake_time.
@@ -81,16 +77,16 @@ PUBLISHED:
   // Alias of delay_time.
   MAKE_PROPERTY(delayTime, get_delay, set_delay);
 
-  // The number of frames that have elapsed since the task was
-  // started, according to the task manager's clock.
+  // The number of frames that have elapsed since the task was started,
+  // according to the task manager's clock.
   MAKE_PROPERTY(frame, get_elapsed_frames);
 
-  // This is a number guaranteed to be unique for each different
-  // AsyncTask object in the universe.
+  // This is a number guaranteed to be unique for each different AsyncTask
+  // object in the universe.
   MAKE_PROPERTY(id, get_task_id);
 
-  // This is a special variable to hold the instance dictionary in
-  // which custom variables may be stored.
+  // This is a special variable to hold the instance dictionary in which
+  // custom variables may be stored.
   PyObject *__dict__;
 
 protected:
@@ -139,4 +135,3 @@ private:
 #endif  // HAVE_PYTHON
 
 #endif
-

@@ -1,33 +1,30 @@
-// Filename: fltTrans.cxx
-// Created by:  drose (11Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTrans.cxx
+ * @author drose
+ * @date 2001-04-11
+ */
 
 #include "fltTrans.h"
 
 #include "fltHeader.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrans::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltTrans::
 FltTrans() :
   WithOutputFile(true, false, true)
 {
-  // Indicate the extension name we expect the user to supply for
-  // output files.
+  // Indicate the extension name we expect the user to supply for output
+  // files.
   _preferred_extension = ".flt";
 
   set_program_brief("apply various operations to a MultiGen .flt file");
@@ -58,11 +55,9 @@ FltTrans() :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrans::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FltTrans::
 run() {
   if (_got_new_version) {
@@ -107,11 +102,9 @@ run() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrans::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FltTrans::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 1)) {

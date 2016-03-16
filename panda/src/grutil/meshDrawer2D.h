@@ -1,16 +1,15 @@
-// Filename: meshDrawer2D.h
-// Created by:  treeform (6Jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file meshDrawer2D.h
+ * @author treeform
+ * @date 2010-01-06
+ */
 
 #ifndef MESHDRAWER2D_H
 #define MESHDRAWER2D_H
@@ -39,13 +38,10 @@
 #include "geomNode.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MeshDrawer2D
-// Description : This class allows the drawing of 2d objects -
-//               mainly based on quads and rectangles.
-//               Allows clipping and serverl high level UI theme
-//               functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class allows the drawing of 2d objects - mainly based on quads and
+ * rectangles.  Allows clipping and serverl high level UI theme functions.
+ */
 class EXPCL_PANDA_GRUTIL MeshDrawer2D : public TypedObject {
 PUBLISHED:
   INLINE MeshDrawer2D();

@@ -1,16 +1,15 @@
-// Filename: movingPartBase.h
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movingPartBase.h
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #ifndef MOVINGPARTBASE_H
 #define MOVINGPARTBASE_H
@@ -21,16 +20,14 @@
 #include "partBundle.h"
 #include "animChannelBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovingPartBase
-// Description : This is the base class for a single animatable piece
-//               that may be bound to one channel (or more, if
-//               blending is in effect).  It corresponds to, for
-//               instance, a single joint or slider of a character.
-//
-//               MovingPartBase does not have a particular value type.
-//               See the derived template class, MovingPart, for this.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a single animatable piece that may be bound to
+ * one channel (or more, if blending is in effect).  It corresponds to, for
+ * instance, a single joint or slider of a character.
+ *
+ * MovingPartBase does not have a particular value type.  See the derived
+ * template class, MovingPart, for this.
+ */
 class EXPCL_PANDA_CHAN MovingPartBase : public PartGroup {
 protected:
   INLINE MovingPartBase(const MovingPartBase &copy);
@@ -56,12 +53,12 @@ PUBLISHED:
 
 public:
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
-                         PartGroup *parent, bool parent_changed, 
+                         PartGroup *parent, bool parent_changed,
                          bool anim_changed, Thread *current_thread);
 
   virtual void get_blend_value(const PartBundle *root)=0;
-  virtual bool update_internals(PartBundle *root, PartGroup *parent, 
-                                bool self_changed, bool parent_changed, 
+  virtual bool update_internals(PartBundle *root, PartGroup *parent,
+                                bool self_changed, bool parent_changed,
                                 Thread *current_thread);
 
 protected:
@@ -69,10 +66,10 @@ protected:
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index,
-                              int &joint_index, bool is_included, 
+                              int &joint_index, bool is_included,
                               BitArray &bound_joints,
                               const PartSubset &subset);
-  virtual void find_bound_joints(int &joint_index, bool is_included, 
+  virtual void find_bound_joints(int &joint_index, bool is_included,
                                  BitArray &bound_joints,
                                  const PartSubset &subset);
   virtual void determine_effective_channels(const CycleData *root_cdata);
@@ -85,16 +82,15 @@ protected:
   // actually have an effect on this part.
   int _num_effective_channels;
 
-  // This is the single channel that has an effect on this part, as
-  // determined by determine_effective_channels().  It is only set if
-  // there is exactly one channel that affects this part
-  // (i.e. _num_effective_channels is 1).  If there are multiple
-  // channels, or no channels at all, it is NULL.
+  // This is the single channel that has an effect on this part, as determined
+  // by determine_effective_channels().  It is only set if there is exactly
+  // one channel that affects this part (i.e.  _num_effective_channels is 1).
+  // If there are multiple channels, or no channels at all, it is NULL.
   AnimControl *_effective_control;
   PT(AnimChannelBase) _effective_channel;
 
-  // This is the particular channel that's been forced to this part,
-  // via set_forced_channel().  It overrides all of the above if set.
+  // This is the particular channel that's been forced to this part, via
+  // set_forced_channel().  It overrides all of the above if set.
   PT(AnimChannelBase) _forced_channel;
 
 public:
@@ -127,7 +123,3 @@ private:
 #include "movingPartBase.I"
 
 #endif
-
-
-
-

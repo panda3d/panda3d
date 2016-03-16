@@ -1,16 +1,15 @@
-// Filename: vrmlToEggConverter.h
-// Created by:  drose (01Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrmlToEggConverter.h
+ * @author drose
+ * @date 2004-10-01
+ */
 
 #ifndef VRMLTOEGGCONVERTER_H
 #define VRMLTOEGGCONVERTER_H
@@ -26,11 +25,10 @@ class EggGroupNode;
 class EggGroup;
 class LMatrix4d;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VRMLToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from a VRML file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a VRML
+ * file.
+ */
 class VRMLToEggConverter : public SomethingToEggConverter {
 public:
   VRMLToEggConverter();
@@ -49,7 +47,7 @@ private:
   typedef pmap<string, VrmlNode *> Nodes;
 
   void get_all_defs(SFNodeRef &vrml, Nodes &nodes);
-  void vrml_node(const SFNodeRef &vrml, EggGroupNode *egg, 
+  void vrml_node(const SFNodeRef &vrml, EggGroupNode *egg,
                  const LMatrix4d &net_transform);
 
   void vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
@@ -66,5 +64,3 @@ private:
 };
 
 #endif
-
-

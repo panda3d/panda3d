@@ -1,45 +1,36 @@
-// Filename: bamReaderParam.I
-// Created by:  jason (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamReaderParam.I
+ * @author jason
+ * @date 2000-06-13
+ */
 
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamReaderParam::get_iterator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE const DatagramIterator &BamReaderParam::
 get_iterator() {
   return _iterator;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReaderParam::get_manager
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE BamReader *BamReaderParam::
 get_manager() {
   return _manager;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReaderParam::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE BamReaderParam::
 BamReaderParam(const DatagramIterator &dgi, BamReader *manager) :
   _iterator(dgi),
@@ -47,11 +38,9 @@ BamReaderParam(const DatagramIterator &dgi, BamReader *manager) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamReaderParam::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE BamReaderParam::
 ~BamReaderParam() {
 }

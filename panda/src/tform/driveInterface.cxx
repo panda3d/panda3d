@@ -1,16 +1,15 @@
-// Filename: driveInterface.cxx
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file driveInterface.cxx
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #include "driveInterface.h"
 #include "config_tform.h"
@@ -41,8 +40,8 @@ PN_stdfloat DriveInterface::KeyHeld::
 get_effect(PN_stdfloat ramp_up_time, PN_stdfloat ramp_down_time) {
   double elapsed = ClockObject::get_global_clock()->get_frame_time() - _changed_time;
   if (_down) {
-    // We are currently holding down the key.  That means we base our
-    // effect on the ramp_up_time.
+    // We are currently holding down the key.  That means we base our effect
+    // on the ramp_up_time.
     if (ramp_up_time == 0.0f) {
       _effect = 1.0f;
 
@@ -51,8 +50,8 @@ get_effect(PN_stdfloat ramp_up_time, PN_stdfloat ramp_down_time) {
       _effect = min(_effect_at_change + change, (PN_stdfloat)1.0);
     }
   } else {
-    // We are *not* currently holding down the key.  That means we
-    // base our effect on the ramp_down_time.
+    // We are *not* currently holding down the key.  That means we base our
+    // effect on the ramp_down_time.
     if (ramp_down_time == 0.0f) {
       _effect = 0.0f;
 
@@ -84,8 +83,7 @@ clear() {
 bool DriveInterface::KeyHeld::
 operator < (const DriveInterface::KeyHeld &other) const {
   if (_down != other._down) {
-    // If one has the key held down and the other doesn't, the down
-    // key wins.
+    // If one has the key held down and the other doesn't, the down key wins.
     return _down;
   }
 
@@ -93,14 +91,12 @@ operator < (const DriveInterface::KeyHeld &other) const {
   return _changed_time > other._changed_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DriveInterface::
-DriveInterface(const string &name) : 
-  MouseInterfaceNode(name) 
+DriveInterface(const string &name) :
+  MouseInterfaceNode(name)
 {
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
@@ -139,21 +135,17 @@ DriveInterface(const string &name) :
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DriveInterface::
 ~DriveInterface() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::reset
-//       Access: Published
-//  Description: Reinitializes the driver to the origin and resets any
-//               knowledge about buttons being held down.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reinitializes the driver to the origin and resets any knowledge about
+ * buttons being held down.
+ */
 void DriveInterface::
 reset() {
   _xyz.set(0.0f, 0.0f, 0.0f);
@@ -165,50 +157,40 @@ reset() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_force_roll
-//       Access: Published
-//  Description: This function is no longer used and does nothing.  It
-//               will be removed soon.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is no longer used and does nothing.  It will be removed soon.
+ */
 void DriveInterface::
 set_force_roll(PN_stdfloat) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_mat
-//       Access: Published
-//  Description: Stores the indicated transform in the DriveInterface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated transform in the DriveInterface.
+ */
 void DriveInterface::
 set_mat(const LMatrix4 &mat) {
   LVecBase3 scale, shear;
   decompose_matrix(mat, scale, shear, _hpr, _xyz);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_mat
-//       Access: Published
-//  Description: Returns the current transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current transform.
+ */
 const LMatrix4 &DriveInterface::
 get_mat() {
-  compose_matrix(_mat, 
-                 LVecBase3(1.0f, 1.0f, 1.0f), 
+  compose_matrix(_mat,
+                 LVecBase3(1.0f, 1.0f, 1.0f),
                  LVecBase3(0.0f, 0.0f, 0.0f),
                  _hpr, _xyz);
   return _mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::force_dgraph
-//       Access: Public
-//  Description: This is a special kludge for DriveInterface to allow
-//               us to avoid the one-frame latency after a collision.
-//               It forces an immediate partial data flow for all data
-//               graph nodes below this node, causing all data nodes
-//               that depend on this matrix to be updated immediately.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kludge for DriveInterface to allow us to avoid the one-
+ * frame latency after a collision.  It forces an immediate partial data flow
+ * for all data graph nodes below this node, causing all data nodes that
+ * depend on this matrix to be updated immediately.
+ */
 void DriveInterface::
 force_dgraph() {
   _transform = TransformState::make_pos_hpr(_xyz, _hpr);
@@ -225,13 +207,10 @@ force_dgraph() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::apply
-//       Access: Private
-//  Description: Applies the operation indicated by the user's mouse
-//               motion to the current state.  Returns the matrix
-//               indicating the new state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the operation indicated by the user's mouse motion to the current
+ * state.  Returns the matrix indicating the new state.
+ */
 void DriveInterface::
 apply(double x, double y, bool any_button) {
   // First reset the speeds
@@ -239,22 +218,22 @@ apply(double x, double y, bool any_button) {
   _rot_speed = 0.0f;
 
   if (any_button || _force_mouse) {
-    // If we're holding down any of the mouse buttons, do this
-    // computation based on the mouse position.
+    // If we're holding down any of the mouse buttons, do this computation
+    // based on the mouse position.
 
-    // Determine, based on the mouse's position and the amount of time
-    // elapsed since last frame, how far forward/backward we should
-    // move and how much we should rotate.
+    // Determine, based on the mouse's position and the amount of time elapsed
+    // since last frame, how far forwardbackward we should move and how much
+    // we should rotate.
 
-    // First, how fast are we moving?  This is based on the mouse's
-    // vertical position.
+    // First, how fast are we moving?  This is based on the mouse's vertical
+    // position.
 
     PN_stdfloat dead_zone_top = _vertical_center + _vertical_dead_zone;
     PN_stdfloat dead_zone_bottom = _vertical_center - _vertical_dead_zone;
 
     if (y >= dead_zone_top) {
-      // Motion is forward.  Compute the throttle value: the ratio of
-      // the mouse pointer within the range of vertical movement.
+      // Motion is forward.  Compute the throttle value: the ratio of the
+      // mouse pointer within the range of vertical movement.
       PN_stdfloat throttle =
         // double 1.0, not 1.0f, is required here to satisfy min()
         (min(y, 1.0) - dead_zone_top) /
@@ -269,15 +248,14 @@ apply(double x, double y, bool any_button) {
       _speed = -throttle * _reverse_speed;
     }
 
-    // Now, what's our rotational velocity?  This is based on the
-    // mouse's horizontal position.
+    // Now, what's our rotational velocity?  This is based on the mouse's
+    // horizontal position.
     PN_stdfloat dead_zone_right = _horizontal_center + _horizontal_dead_zone;
     PN_stdfloat dead_zone_left = _horizontal_center - _horizontal_dead_zone;
 
     if (x >= dead_zone_right) {
-      // Rotation is to the right.  Compute the throttle value: the
-      // ratio of the mouse pointer within the range of horizontal
-      // movement.
+      // Rotation is to the right.  Compute the throttle value: the ratio of
+      // the mouse pointer within the range of horizontal movement.
       PN_stdfloat throttle =
         (min(x, 1.0) - dead_zone_right) /
         (1.0f - dead_zone_right);
@@ -292,8 +270,8 @@ apply(double x, double y, bool any_button) {
     }
 
   } else {
-    // If we're not holding down any of the mouse buttons, do this
-    // computation based on the arrow keys.
+    // If we're not holding down any of the mouse buttons, do this computation
+    // based on the arrow keys.
 
     // Which vertical arrow key changed state more recently?
     PN_stdfloat throttle;
@@ -344,8 +322,7 @@ apply(double x, double y, bool any_button) {
 
   // Now apply the vectors.
 
-  // rot_mat is the rotation matrix corresponding to our previous
-  // heading.
+  // rot_mat is the rotation matrix corresponding to our previous heading.
   LMatrix3 rot_mat;
   rot_mat.set_rotate_mat_normaxis(_hpr[0], LVector3::up());
 
@@ -353,9 +330,8 @@ apply(double x, double y, bool any_button) {
   _vel = LVector3::forward() * distance;
   LVector3 step = (_vel * rot_mat);
 
-  // To prevent upward drift due to numerical errors, force the
-  // vertical component of our step to zero (it should be pretty near
-  // zero anyway).
+  // To prevent upward drift due to numerical errors, force the vertical
+  // component of our step to zero (it should be pretty near zero anyway).
   switch (get_default_coordinate_system()) {
   case CS_zup_right:
   case CS_zup_left:
@@ -375,19 +351,14 @@ apply(double x, double y, bool any_button) {
   _hpr[0] -= rotation;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output
+ * parameters.  The input parameters may be accessed with the index numbers
+ * returned by the define_input() calls that were made earlier (presumably in
+ * the constructor); likewise, the output parameters should be set with the
+ * index numbers returned by the define_output() calls.
+ */
 void DriveInterface::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
@@ -399,7 +370,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   double x = 0.0f;
   double y = 0.0f;
 
-  //bool got_mouse = false;
+  // bool got_mouse = false;
 
   if (required_buttons_match && input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
@@ -408,7 +379,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     x = p[0];
     y = p[1];
 
-    //got_mouse = true;
+    // got_mouse = true;
   }
 
   // Look for keyboard events.
@@ -419,7 +390,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       const ButtonEvent &be = button_events->get_event(i);
       if (be._type != ButtonEvent::T_keystroke) {
         bool down = (be._type != ButtonEvent::T_up);
-        
+
         if (be._button == KeyboardButton::up()) {
           _up_arrow.set_key(down);
         } else if (be._button == KeyboardButton::down()) {

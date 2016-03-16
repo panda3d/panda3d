@@ -1,16 +1,15 @@
-// Filename: decalEffect.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file decalEffect.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef DECALEFFECT_H
 #define DECALEFFECT_H
@@ -21,12 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DecalEffect
-// Description : Applied to a GeomNode to indicate that the children
-//               of this GeomNode are coplanar and should be drawn as
-//               decals (eliminating Z-fighting).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applied to a GeomNode to indicate that the children of this GeomNode are
+ * coplanar and should be drawn as decals (eliminating Z-fighting).
+ */
 class EXPCL_PANDA_PGRAPH DecalEffect : public RenderEffect {
 private:
   INLINE DecalEffect();
@@ -45,7 +42,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -67,4 +64,3 @@ private:
 #include "decalEffect.I"
 
 #endif
-

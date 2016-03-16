@@ -1,16 +1,15 @@
-// Filename: fltBead.h
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltBead.h
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #ifndef FLTBEAD_H
 #define FLTBEAD_H
@@ -22,14 +21,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltBead
-// Description : A base class for any of a broad family of flt records
-//               that represent particular beads in the hierarchy.
-//               These are things like group beads and object beads,
-//               as opposed to things like push and pop or comment
-//               records.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any of a broad family of flt records that represent
+ * particular beads in the hierarchy.  These are things like group beads and
+ * object beads, as opposed to things like push and pop or comment records.
+ */
 class FltBead : public FltRecord {
 public:
   FltBead(FltHeader *header);
@@ -89,5 +85,3 @@ private:
 };
 
 #endif
-
-

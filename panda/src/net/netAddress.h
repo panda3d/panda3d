@@ -1,16 +1,15 @@
-// Filename: netAddress.h
-// Created by:  drose (08Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file netAddress.h
+ * @author drose
+ * @date 2000-02-08
+ */
 
 #ifndef NETADDRESS_H
 #define NETADDRESS_H
@@ -19,11 +18,10 @@
 #include "numeric_types.h"
 #include "socket_address.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NetAddress
-// Description : Represents a network address to which UDP packets may
-//               be sent or to which a TCP socket may be bound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a network address to which UDP packets may be sent or to which a
+ * TCP socket may be bound.
+ */
 class EXPCL_PANDA_NET NetAddress {
 PUBLISHED:
   NetAddress();
@@ -60,4 +58,3 @@ INLINE ostream &operator << (ostream &out, const NetAddress &addr) {
 }
 
 #endif
-

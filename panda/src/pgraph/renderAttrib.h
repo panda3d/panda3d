@@ -1,16 +1,15 @@
-// Filename: renderAttrib.h
-// Created by:  drose (21Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderAttrib.h
+ * @author drose
+ * @date 2002-02-21
+ */
 
 #ifndef RENDERATTRIB_H
 #define RENDERATTRIB_H
@@ -30,33 +29,25 @@ class CullTraverser;
 class CullTraverserData;
 class RenderState;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderAttrib
-// Description : This is the base class for a number of render
-//               attributes (other than transform) that may be set on
-//               scene graph nodes to control the appearance of
-//               geometry.  This includes TextureAttrib, ColorAttrib,
-//               etc.
-//
-//               RenderAttrib represents render attributes that always
-//               propagate down to the leaves without regard to the
-//               particular node they are assigned to.  A RenderAttrib
-//               will have the same effect on a leaf node whether it
-//               is assigned to the graph at the leaf or several nodes
-//               above.  This is different from RenderEffect, which
-//               represents a particular render property that is
-//               applied immediately to the node on which it is
-//               encountered, like billboarding or decaling.
-//
-//               You should not attempt to create or modify a
-//               RenderAttrib directly; instead, use the make() method
-//               of the appropriate kind of attrib you want.  This
-//               will allocate and return a new RenderAttrib of the
-//               appropriate type, and it may share pointers if
-//               possible.  Do not modify the new RenderAttrib if you
-//               wish to change its properties; instead, create a new
-//               one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a number of render attributes (other than
+ * transform) that may be set on scene graph nodes to control the appearance
+ * of geometry.  This includes TextureAttrib, ColorAttrib, etc.
+ *
+ * RenderAttrib represents render attributes that always propagate down to the
+ * leaves without regard to the particular node they are assigned to.  A
+ * RenderAttrib will have the same effect on a leaf node whether it is
+ * assigned to the graph at the leaf or several nodes above.  This is
+ * different from RenderEffect, which represents a particular render property
+ * that is applied immediately to the node on which it is encountered, like
+ * billboarding or decaling.
+ *
+ * You should not attempt to create or modify a RenderAttrib directly;
+ * instead, use the make() method of the appropriate kind of attrib you want.
+ * This will allocate and return a new RenderAttrib of the appropriate type,
+ * and it may share pointers if possible.  Do not modify the new RenderAttrib
+ * if you wish to change its properties; instead, create a new one.
+ */
 class EXPCL_PANDA_PGRAPH RenderAttrib : public TypedWritableReferenceCount {
 protected:
   RenderAttrib();
@@ -106,71 +97,67 @@ PUBLISHED:
     M_always            // Always draw.
   };
 
-  // This is the enumerated type for TexGenAttrib.  It is inherited
-  // into TexGenAttrib.  It is defined up at this level only to avoid
-  // circular dependencies in the header files.
+  // This is the enumerated type for TexGenAttrib.  It is inherited into
+  // TexGenAttrib.  It is defined up at this level only to avoid circular
+  // dependencies in the header files.
   enum TexGenMode {
     M_off,
 
-    // In the types below, "eye" means the coordinate space of the
-    // observing camera, and "world" means world coordinates, e.g. the
-    // coordinate space of the root of the graph.
+    // In the types below, "eye" means the coordinate space of the observing
+    // camera, and "world" means world coordinates, e.g.  the coordinate space
+    // of the root of the graph.
 
-    // Sphere maps are classic static reflection maps.  They are
-    // supported on just about any hardware, and require a precomputed
-    // 360-degree fisheye image.  Sphere maps only make sense in eye
-    // coordinate space.
+    // Sphere maps are classic static reflection maps.  They are supported on
+    // just about any hardware, and require a precomputed 360-degree fisheye
+    // image.  Sphere maps only make sense in eye coordinate space.
     M_eye_sphere_map,
 
-    // Cube maps are a modern improvement on the sphere map; they
-    // don't suffer from any polar singularities, but they require six
-    // texture images.  They can also be generated dynamically for
-    // real-time reflections (see GraphicsOutput::make_cube_map()).
-    // Typically, a statically-generated cube map will be in eye
-    // space, while a dynamically-generated map will be in world
-    // space.
-    //
-    // Cube mapping is not supported on all hardware.
+/*
+ * Cube maps are a modern improvement on the sphere map; they don't suffer
+ * from any polar singularities, but they require six texture images.  They
+ * can also be generated dynamically for real-time reflections (see
+ * GraphicsOutput::make_cube_map()). Typically, a statically-generated cube
+ * map will be in eye space, while a dynamically-generated map will be in
+ * world space.  Cube mapping is not supported on all hardware.
+ */
     M_world_cube_map,
     M_eye_cube_map,
 
-    // Normal maps are most useful for applying diffuse lighting
-    // effects via a pregenerated cube map.
+    // Normal maps are most useful for applying diffuse lighting effects via a
+    // pregenerated cube map.
     M_world_normal,
     M_eye_normal,
 
-    // Position maps convert XYZ coordinates directly to texture
-    // coordinates.  This is particularly useful for implementing
-    // projective texturing (see NodePath::project_texture()).
+    // Position maps convert XYZ coordinates directly to texture coordinates.
+    // This is particularly useful for implementing projective texturing (see
+    // NodePath::project_texture()).
     M_world_position,
     M_unused,  // formerly M_object_position, now deprecated.
     M_eye_position,
 
-    // With M_point_sprite, texture coordinates will be generated for
-    // large points in the range (0,0) - (1,1) from upper-left to
-    // lower-right across the point's face.  Without this, each point
-    // will have just a single uniform texture coordinate value across
-    // its face.
-    //
-    // Unfortunately, the generated texture coordinates are inverted
-    // (upside-down) from Panda's usual convention, but this is what
-    // the graphics card manufacturers decided to use.  You could use
-    // a texture matrix to re-invert the texture, but that will
-    // probably force the sprites' vertices to be computed in the CPU.
-    // You'll have to paint your textures upside-down if you want true
-    // hardware sprites.
+/*
+ * With M_point_sprite, texture coordinates will be generated for large points
+ * in the range (0,0) - (1,1) from upper-left to lower-right across the
+ * point's face.  Without this, each point will have just a single uniform
+ * texture coordinate value across its face.  Unfortunately, the generated
+ * texture coordinates are inverted (upside-down) from Panda's usual
+ * convention, but this is what the graphics card manufacturers decided to
+ * use.  You could use a texture matrix to re-invert the texture, but that
+ * will probably force the sprites' vertices to be computed in the CPU. You'll
+ * have to paint your textures upside-down if you want true hardware sprites.
+ */
     M_point_sprite,
 
     // M_light_vector generated special 3-d texture coordinates that
     // represented the vector to a particular Light in the scene graph,
-    // expressed in each vertex's tangent space.  This has now been
-    // removed.  We need to reserve the slot in the enum, though, to
-    // make sure the following enum value still has the same value.
+    // expressed in each vertex's tangent space.  This has now been removed.
+    // We need to reserve the slot in the enum, though, to make sure the
+    // following enum value still has the same value.
     M_unused2,
 
-    // M_constant generates the same fixed texture coordinates at each
-    // vertex.  Not terribly useful, of course, except for certain
-    // special effects involving moving a flat color over an object.
+    // M_constant generates the same fixed texture coordinates at each vertex.
+    // Not terribly useful, of course, except for certain special effects
+    // involving moving a flat color over an object.
     M_constant,
   };
 
@@ -207,8 +194,8 @@ private:
   int _saved_entry;
   size_t _hash;
 
-  // This keeps track of our current position through the garbage
-  // collection cycle.
+  // This keeps track of our current position through the garbage collection
+  // cycle.
   static int _garbage_index;
 
   static PStatCollector _garbage_collect_pcollector;
@@ -250,4 +237,3 @@ INLINE ostream &operator << (ostream &out, const RenderAttrib &attrib) {
 #include "renderAttrib.I"
 
 #endif
-

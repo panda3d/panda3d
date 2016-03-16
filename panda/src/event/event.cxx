@@ -1,27 +1,24 @@
-// Filename: event.cxx
-// Created by:  drose (08Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file event.cxx
+ * @author drose
+ * @date 1999-02-08
+ */
 
 #include "event.h"
 #include "config_event.h"
 
 TypeHandle Event::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Event::
 Event(const string &event_name, EventReceiver *receiver) :
   _name(event_name)
@@ -29,11 +26,9 @@ Event(const string &event_name, EventReceiver *receiver) :
   _receiver = receiver;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::Copy constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Event::
 Event(const Event &copy) :
   _parameters(copy._parameters),
@@ -42,11 +37,9 @@ Event(const Event &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void Event::
 operator = (const Event &copy) {
   _parameters = copy._parameters;
@@ -54,41 +47,33 @@ operator = (const Event &copy) {
   _name = copy._name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Event::
 ~Event() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::add_parameter
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void Event::
 add_parameter(const EventParameter &obj) {
   _parameters.push_back(obj);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::get_num_parameters
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int Event::
 get_num_parameters() const {
   return _parameters.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::get_parameter
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EventParameter Event::
 get_parameter(int n) const {
   nassertr(n >= 0 && n < (int)_parameters.size(), EventParameter(0));
@@ -96,51 +81,41 @@ get_parameter(int n) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::has_receiver
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool Event::
 has_receiver() const {
   return _receiver != (EventReceiver *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::get_receiver
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EventReceiver *Event::
 get_receiver() const {
   return _receiver;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::set_receiver
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void Event::
 set_receiver(EventReceiver *receiver) {
   _receiver = receiver;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::clear_receiver
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void Event::
 clear_receiver() {
   _receiver = (EventReceiver *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void Event::
 output(ostream &out) const {
   out << get_name();

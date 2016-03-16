@@ -1,16 +1,15 @@
-// Filename: odeTriMeshData.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeTriMeshData.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODETRIMESHDATA_H
 #define ODETRIMESHDATA_H
@@ -30,10 +29,9 @@
 
 #include "config_ode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeTriMeshData
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeTriMeshData : public TypedReferenceCount {
 public:
   static void link_data(dGeomID id, PT(OdeTriMeshData) data);
@@ -57,11 +55,9 @@ PUBLISHED:
 
   void destroy();
 
-  // INLINE void set(int data_id, void* in_data);
-  // INLINE void* get(int data_id);
-  // INLINE void get_buffer(unsigned char** buf, int* buf_len) const;
-  // INLINE void set_buffer(unsigned char* buf);
-  // INLINE void update();
+  // INLINE void set(int data_id, void* in_data); INLINE void* get(int
+  // data_id); INLINE void get_buffer(unsigned char** buf, int* buf_len)
+  // const; INLINE void set_buffer(unsigned char* buf); INLINE void update();
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
   void write_faces(ostream &out) const;
@@ -78,11 +74,11 @@ public:
                             const void* indices, int index_count, int tri_stride, \
                             const void* normals);
 
-  // Temporarily commenting these two out--ODE had an API change from
-  // (int *indices) to (dTriIndex *indices).  But since there's no
-  // #define that indicates the ODE version, we don't have any way to
-  // automatically put the right symbol in here.  However, we're not
-  // using these methods right now anyway.
+  // Temporarily commenting these two out--ODE had an API change from (int
+  // *indices) to (dTriIndex *indices).  But since there's no #define that
+  // indicates the ODE version, we don't have any way to automatically put the
+  // right symbol in here.  However, we're not using these methods right now
+  // anyway.
 
   /*
   INLINE void build_simple(const dReal* vertices, int vertex_count, \

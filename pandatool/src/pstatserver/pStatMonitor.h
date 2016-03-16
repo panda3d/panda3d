@@ -1,16 +1,15 @@
-// Filename: pStatMonitor.h
-// Created by:  drose (08Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatMonitor.h
+ * @author drose
+ * @date 2000-07-08
+ */
 
 #ifndef PSTATMONITOR_H
 #define PSTATMONITOR_H
@@ -29,21 +28,18 @@
 class PStatCollectorDef;
 class PStatServer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatMonitor
-// Description : This is an abstract class that presents the interface
-//               to any number of different front-ends for the stats
-//               monitor.  One of these will be created by the
-//               PStatMonitor as each client is connected; this class
-//               is responsible for opening up a new strip-chart graph
-//               or whatever is appropriate.  It defines a number of
-//               empty virtual functions that will be called as new
-//               data becomes available.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract class that presents the interface to any number of
+ * different front-ends for the stats monitor.  One of these will be created
+ * by the PStatMonitor as each client is connected; this class is responsible
+ * for opening up a new strip-chart graph or whatever is appropriate.  It
+ * defines a number of empty virtual functions that will be called as new data
+ * becomes available.
+ */
 class PStatMonitor : public ReferenceCount {
 public:
-  // The following functions are primarily for use by internal classes
-  // to set up the monitor.
+  // The following functions are primarily for use by internal classes to set
+  // up the monitor.
   PStatMonitor(PStatServer *server);
   virtual ~PStatMonitor();
 
@@ -54,8 +50,8 @@ public:
   void set_client_data(PStatClientData *client_data);
 
 
-  // The following functions are for use by user code to determine
-  // information about the client data available.
+  // The following functions are for use by user code to determine information
+  // about the client data available.
   bool is_alive() const;
   void close();
 
@@ -72,8 +68,8 @@ public:
   PStatView &get_level_view(int collector_index, int thread_index);
 
 
-  // The following virtual methods may be overridden by a derived
-  // monitor class to customize behavior.
+  // The following virtual methods may be overridden by a derived monitor
+  // class to customize behavior.
 
   virtual string get_monitor_name()=0;
 

@@ -1,16 +1,15 @@
-// Filename: glxGraphicsPipe.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glxGraphicsPipe.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef GLXGRAPHICSPIPE_H
 #define GLXGRAPHICSPIPE_H
@@ -34,15 +33,14 @@ class FrameBufferProperties;
 #include <GL/glx.h>
 #include "post_x11_include.h"
 
-// This must be included after we have included glgsg.h (which
-// includes gl.h), and after we have checked GLX_VERSION_1_3.  But we
-// must also include it before we redefine the GLXFBConfig types,
-// below.
+// This must be included after we have included glgsg.h (which includes gl.h),
+// and after we have checked GLX_VERSION_1_3.  But we must also include it
+// before we redefine the GLXFBConfig types, below.
 #include "panda_glxext.h"
 
-// drose: the version of GL/glx.h that ships with Fedora Core 2 seems
-// to define GLX_VERSION_1_4, but for some reason does not define
-// GLX_SAMPLE_BUFFERS or GLX_SAMPLES.  We work around that here.
+// drose: the version of GLglx.h that ships with Fedora Core 2 seems to define
+// GLX_VERSION_1_4, but for some reason does not define GLX_SAMPLE_BUFFERS or
+// GLX_SAMPLES.  We work around that here.
 
 #ifndef GLX_SAMPLE_BUFFERS
 #define GLX_SAMPLE_BUFFERS                 100000
@@ -71,12 +69,10 @@ class FrameBufferProperties;
 
 #endif  // CPPPARSER
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on an X-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on an X-based (e.g.  Unix) client.
+ */
 class glxGraphicsPipe : public x11GraphicsPipe {
 public:
   glxGraphicsPipe(const string &display = string());
@@ -84,7 +80,7 @@ public:
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
-  
+
 protected:
   virtual PT(GraphicsOutput) make_output(const string &name,
                                          const FrameBufferProperties &fb_prop,

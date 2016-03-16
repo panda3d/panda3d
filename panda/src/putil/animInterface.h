@@ -1,16 +1,15 @@
-// Filename: animInterface.h
-// Created by:  drose (20Sep05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animInterface.h
+ * @author drose
+ * @date 2005-09-20
+ */
 
 #ifndef ANIMINTERFACE_H
 #define ANIMINTERFACE_H
@@ -28,14 +27,11 @@ class BamReader;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimInterface
-// Description : This is the fundamental interface for things that
-//               have a play/loop/stop type interface for frame-based
-//               animation, such as animated characters.  This is the
-//               base class for AnimControl and other, similar
-//               classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the fundamental interface for things that have a play/loop/stop
+ * type interface for frame-based animation, such as animated characters.
+ * This is the base class for AnimControl and other, similar classes.
+ */
 class EXPCL_PANDA_PUTIL AnimInterface {
 protected:
   AnimInterface();
@@ -91,9 +87,8 @@ private:
     PM_pingpong,
   };
 
-  // This data is not cycled, because it is a semi-permanent part of
-  // the interface.  Also, some derivatives of AnimInterface don't
-  // even use it.
+  // This data is not cycled, because it is a semi-permanent part of the
+  // interface.  Also, some derivatives of AnimInterface don't even use it.
   int _num_frames;
 
   // This is the data that must be cycled between pipeline stages.
@@ -131,7 +126,7 @@ private:
     double _play_frames;
     int _from_frame;
     int _to_frame;
-    
+
     double _play_rate;
     double _effective_frame_rate;
     bool _paused;

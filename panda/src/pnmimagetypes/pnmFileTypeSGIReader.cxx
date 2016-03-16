@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeSGIReader.cxx
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeSGIReader.cxx
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #include "pnmFileTypeSGI.h"
 
@@ -73,17 +72,15 @@ static void       rle_decompress (ScanElem *src, long srclen, ScanElem *dest, lo
 #define MAXVAL_BYTE     255
 #define MAXVAL_WORD     65535
 
-// This flag shouldn't really be a static global, but it's a little
-// tricky to fix and it doesn't do any harm, since it only controls
-// whether an error message is repeated.
+// This flag shouldn't really be a static global, but it's a little tricky to
+// fix and it doesn't do any harm, since it only controls whether an error
+// message is repeated.
 static bool eof_err = false;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeSGI::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -144,11 +141,9 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMFileTypeSGI::Reader::
 ~Reader() {
   if (table != NULL) {
@@ -156,30 +151,23 @@ PNMFileTypeSGI::Reader::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::supports_read_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMReader supports a
-//               streaming interface to reading the data: that is, it
-//               is capable of returning the data one row at a time,
-//               via repeated calls to read_row().  Returns false if
-//               the only way to read from this file is all at once,
-//               via read_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMReader supports a streaming interface to
+ * reading the data: that is, it is capable of returning the data one row at a
+ * time, via repeated calls to read_row().  Returns false if the only way to
+ * read from this file is all at once, via read_data().
+ */
 bool PNMFileTypeSGI::Reader::
 supports_read_row() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::read_row
-//       Access: Public, Virtual
-//  Description: If supports_read_row(), above, returns true, this
-//               function may be called repeatedly to read the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully read, false
-//               if there is an error or end of file.
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_read_row(), above, returns true, this function may be called
+ * repeatedly to read the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully read, false if there is
+ * an error or end of file.
+ */
 bool PNMFileTypeSGI::Reader::
 read_row(xel *row_data, xelval *alpha_data, int x_size, int y_size) {
   if (!is_valid()) {
@@ -265,8 +253,8 @@ read_header(istream *ifp, Header *head, const string &magic_number) {
       return false;
     }
 
-    // Actually, some old broken SGI image writers put garbage in this
-    // field, so just ignore it.
+    // Actually, some old broken SGI image writers put garbage in this field,
+    // so just ignore it.
     /*
     if (head->colormap != CMAP_NORMAL) {
       pnmimage_sgi_cat.error()
@@ -277,10 +265,10 @@ read_header(istream *ifp, Header *head, const string &magic_number) {
 
     /* adjust ysize/zsize to dimension, just to be sure */
 
-    // On reflection, this is a bad idea.  Ignore the number of
-    // dimensions, and take the xsize/ysize/zsize at face value.  The
-    // table was written based on these numbers, after all; you can't
-    // just change them arbitrarily.
+    // On reflection, this is a bad idea.  Ignore the number of dimensions,
+    // and take the xsizeysizezsize at face value.  The table was written
+    // based on these numbers, after all; you can't just change them
+    // arbitrarily.
 
     /*
     switch( head->dimension ) {

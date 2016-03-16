@@ -1,19 +1,18 @@
-// Filename: fcollada_utils.h
-// Created by:  pro-rsoft (22Dec08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fcollada_utils.h
+ * @author rdb
+ * @date 2008-12-22
+ */
 
-// This file defines some conversion tools for conversion between
-// FCollada and Panda3D
+// This file defines some conversion tools for conversion between FCollada and
+// Panda3D
 
 #ifndef FCOLLADA_UTILS_H
 #define FCOLLADA_UTILS_H

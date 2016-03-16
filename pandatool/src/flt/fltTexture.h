@@ -1,16 +1,15 @@
-// Filename: fltTexture.h
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTexture.h
+ * @author drose
+ * @date 2000-08-25
+ */
 
 #ifndef FLTTEXTURE_H
 #define FLTTEXTURE_H
@@ -22,10 +21,9 @@
 #include "filename.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTexture
-// Description : Represents a single texture in the texture palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single texture in the texture palette.
+ */
 class FltTexture : public FltRecord {
 public:
   FltTexture(FltHeader *header);
@@ -252,5 +250,3 @@ private:
 };
 
 #endif
-
-

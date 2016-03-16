@@ -1,183 +1,149 @@
-// Filename: qtessInputEntry.I
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file qtessInputEntry.I
+ * @author drose
+ * @date 2003-10-13
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE QtessInputEntry::
 QtessInputEntry(const QtessInputEntry &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::add_node_name
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 add_node_name(const string &name) {
   _node_names.push_back(GlobPattern(name));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_importance
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_importance(double i) {
   _importance = i;
   _type = T_importance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_match_uu
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_match_uu() {
   _type = T_match_uu;
   _constrain_u = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_match_vv
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_match_vv() {
   _type = T_match_vv;
   _constrain_v = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_match_uv
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_match_uv() {
   _type = T_match_uv;
   _constrain_u = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_match_vu
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_match_vu() {
   _type = T_match_vu;
   _constrain_v = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_min_u
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_min_u(int min_u) {
   _type = T_min_u;
   _num_u = min_u;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_min_v
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_min_v(int min_v) {
   _type = T_min_v;
   _num_v = min_v;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_undefined
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_undefined() {
   _type = T_undefined;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_omit
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_omit() {
   _type = T_omit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_num_tris
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_num_tris(int nt) {
   _num_tris = nt;
   _type = T_num_tris;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_uv
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_uv(int u, int v) {
   set_uv(u, v, NULL, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_per_isoparam
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_per_isoparam(double pi) {
   _per_isoparam = pi;
   _type = T_per_isoparam;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::set_per_score
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void QtessInputEntry::
 set_per_score(double pi) {
   _per_isoparam = pi;
   _type = T_per_score;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputEntry::get_num_surfaces
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE int QtessInputEntry::
 get_num_surfaces() const {
   return _surfaces.size();
@@ -188,4 +154,3 @@ INLINE ostream &operator << (ostream &out, const QtessInputEntry &entry) {
   entry.output(out);
   return out;
 }
-

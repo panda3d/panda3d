@@ -70,6 +70,13 @@ class LockType:
     def __exit__(self, t, v, tb):
         self.release()
 
+# Helper to generate new thread names
+_counter = 0
+def _newname(template="Thread-%d"):
+    global _counter
+    _counter = _counter + 1
+    return template % _counter
+
 _threads = {}
 _nextThreadId = 0
 _threadsLock = core.Mutex('thread._threadsLock')

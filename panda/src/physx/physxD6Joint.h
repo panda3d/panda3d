@@ -1,16 +1,15 @@
-// Filename: physxD6Joint.h
-// Created by:  enn0x (02Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxD6Joint.h
+ * @author enn0x
+ * @date 2009-10-02
+ */
 
 #ifndef PHYSXD6JOINT_H
 #define PHYSXD6JOINT_H
@@ -22,14 +21,12 @@
 
 class PhysxD6JointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxD6Joint
-// Description : A D6 joint is a general constraint between two
-//               actors.  It allows the user to individually define
-//               the linear and rotational degrees of freedom.  It
-//               also allows the user to configure the joint with
-//               limits and driven degrees of freedom as they wish.
-////////////////////////////////////////////////////////////////////
+/**
+ * A D6 joint is a general constraint between two actors.  It allows the user
+ * to individually define the linear and rotational degrees of freedom.  It
+ * also allows the user to configure the joint with limits and driven degrees
+ * of freedom as they wish.
+ */
 class EXPCL_PANDAPHYSX PhysxD6Joint : public PhysxJoint {
 
 PUBLISHED:
@@ -44,7 +41,6 @@ PUBLISHED:
   void set_drive_orientation(const LQuaternionf &quat);
   void set_drive_position(const LPoint3f &pos);
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -54,14 +50,13 @@ public:
 private:
   NxD6Joint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxD6Joint", 
+    register_type(_type_handle, "PhysxD6Joint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

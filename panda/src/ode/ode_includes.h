@@ -1,22 +1,21 @@
-// Filename: ode_includes.h
-// Created by:  joswilso (30Jan07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ode_includes.h
+ * @author joswilso
+ * @date 2007-01-30
+ */
 
 #ifndef _ODE_INCLUDES_H_
 #define _ODE_INCLUDES_H_
 
 #include "pandabase.h"
- 
+
 #ifdef int8
   #define temp_ode_int8 int8
   #undef int8
@@ -38,8 +37,8 @@
 
 #include "ode/ode.h"
 
-// These are the ones that conflict with other defines in Panda.
-// It may be necessary to add to this list at a later time.
+// These are the ones that conflict with other defines in Panda.  It may be
+// necessary to add to this list at a later time.
 #undef int8
 #undef int32
 #undef uint32

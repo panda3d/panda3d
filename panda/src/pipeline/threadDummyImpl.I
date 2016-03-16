@@ -1,132 +1,104 @@
-// Filename: threadDummyImpl.I
-// Created by:  drose (09Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadDummyImpl.I
+ * @author drose
+ * @date 2002-08-09
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ThreadDummyImpl::
 ThreadDummyImpl(Thread *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ThreadDummyImpl::
 ~ThreadDummyImpl() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::setup_main_thread
-//       Access: Public
-//  Description: Called for the main thread only, which has been
-//               already started, to fill in the values appropriate to
-//               that thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for the main thread only, which has been already started, to fill in
+ * the values appropriate to that thread.
+ */
 void ThreadDummyImpl::
 setup_main_thread() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::start
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ThreadDummyImpl::
 start(ThreadPriority, bool) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::join
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadDummyImpl::
 join() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::preempt
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadDummyImpl::
 preempt() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::prepare_for_exit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadDummyImpl::
 prepare_for_exit() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::bind_thread
-//       Access: Public, Static
-//  Description: Associates the indicated Thread object with the
-//               currently-executing thread.  You should not call this
-//               directly; use Thread::bind_thread() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the indicated Thread object with the currently-executing thread.
+ * You should not call this directly; use Thread::bind_thread() instead.
+ */
 INLINE void ThreadDummyImpl::
 bind_thread(Thread *thread) {
   // This method shouldn't be called in the non-threaded case.
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::is_threading_supported
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ThreadDummyImpl::
 is_threading_supported() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::is_true_threads
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ThreadDummyImpl::
 is_true_threads() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::is_simple_threads
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ThreadDummyImpl::
 is_simple_threads() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::sleep
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadDummyImpl::
 sleep(double seconds) {
 #ifdef WIN32
@@ -139,20 +111,16 @@ sleep(double seconds) {
 #endif  // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::yield
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadDummyImpl::
 yield() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadDummyImpl::consider_yield
-//       Access: Public, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ThreadDummyImpl::
 consider_yield() {
 }

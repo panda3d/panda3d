@@ -1,16 +1,15 @@
-// Filename: geomVertexData.h
-// Created by:  drose (06Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexData.h
+ * @author drose
+ * @date 2005-03-06
+ */
 
 #ifndef GEOMVERTEXDATA_H
 #define GEOMVERTEXDATA_H
@@ -44,35 +43,28 @@ class FactoryParams;
 class GeomVertexColumn;
 class GeomVertexRewriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexData
-// Description : This defines the actual numeric vertex data stored in
-//               a Geom, in the structure defined by a particular
-//               GeomVertexFormat object.
-//
-//               The data consists of one or more arrays, each of
-//               which in turn consists of a series of rows, one per
-//               vertex.  All arrays should have the same number of
-//               rows; each vertex is defined by the column data from
-//               a particular row across all arrays.
-//
-//               Often, there will be only one array per Geom, and the
-//               various columns defined in the GeomVertexFormat will
-//               be interleaved within that array.  However, it is
-//               also possible to have multiple different arrays, with
-//               a certain subset of the total columns defined in each
-//               array.
-//
-//               However the data is distributed, the effect is of a
-//               single table of vertices, where each vertex is
-//               represented by one row of the table.
-//
-//               In general, application code should not attempt to
-//               directly manipulate the vertex data through this
-//               structure; instead, use the GeomVertexReader,
-//               GeomVertexWriter, and GeomVertexRewriter objects to
-//               read and write vertex data at a high level.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the actual numeric vertex data stored in a Geom, in the
+ * structure defined by a particular GeomVertexFormat object.
+ *
+ * The data consists of one or more arrays, each of which in turn consists of
+ * a series of rows, one per vertex.  All arrays should have the same number
+ * of rows; each vertex is defined by the column data from a particular row
+ * across all arrays.
+ *
+ * Often, there will be only one array per Geom, and the various columns
+ * defined in the GeomVertexFormat will be interleaved within that array.
+ * However, it is also possible to have multiple different arrays, with a
+ * certain subset of the total columns defined in each array.
+ *
+ * However the data is distributed, the effect is of a single table of
+ * vertices, where each vertex is represented by one row of the table.
+ *
+ * In general, application code should not attempt to directly manipulate the
+ * vertex data through this structure; instead, use the GeomVertexReader,
+ * GeomVertexWriter, and GeomVertexRewriter objects to read and write vertex
+ * data at a high level.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexData : public CopyOnWriteObject, public GeomEnums {
 private:
   GeomVertexData();
@@ -243,11 +235,10 @@ private:
   typedef CycleDataWriter<CDataCache> CDCacheWriter;
 
 public:
-  // The CacheKey class separates out just the part of CacheEntry that
-  // is used to key the cache entry within the map.  We have this as a
-  // separate class so we can easily look up a new entry in the map,
-  // without having to execute the relatively expensive CacheEntry
-  // constructor.
+  // The CacheKey class separates out just the part of CacheEntry that is used
+  // to key the cache entry within the map.  We have this as a separate class
+  // so we can easily look up a new entry in the map, without having to
+  // execute the relatively expensive CacheEntry constructor.
   class EXPCL_PANDA_GOBJ CacheKey {
   public:
     INLINE CacheKey(const GeomVertexFormat *modifier);
@@ -404,12 +395,10 @@ private:
   friend class GeomVertexDataPipelineWriter;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexDataPipelineBase
-// Description : The common code from
-//               GeomVertexDataPipelineReader and
-//               GeomVertexDataPipelineWriter.
-////////////////////////////////////////////////////////////////////
+/**
+ * The common code from GeomVertexDataPipelineReader and
+ * GeomVertexDataPipelineWriter.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineBase : public GeomEnums {
 protected:
   INLINE GeomVertexDataPipelineBase(GeomVertexData *object,
@@ -440,11 +429,10 @@ protected:
   GeomVertexData::CData *_cdata;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexDataPipelineReader
-// Description : Encapsulates the data from a GeomVertexData,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
+ * the pipeline.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
 public:
   INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, Thread *current_thread);
@@ -509,11 +497,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexDataPipelineWriter
-// Description : Encapsulates the data from a GeomVertexData,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a GeomVertexData, pre-fetched for one stage of
+ * the pipeline.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
 public:
   INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,

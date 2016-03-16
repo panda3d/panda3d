@@ -1,16 +1,15 @@
-// Filename: physxBox.h
-// Created by:  enn0x (31Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxBox.h
+ * @author enn0x
+ * @date 2009-10-31
+ */
 
 #ifndef PHYSXBOX_H
 #define PHYSXBOX_H
@@ -21,14 +20,12 @@
 #include "config_physx.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBox
-// Description : Represents an oriented bounding box, as a center
-//               point, extents(radii) and a rotation. i.e. the
-//               center of the box is at the center point, the box
-//               is rotated around this point with the rotation and
-//               it is 2*extents in width, height and depth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents an oriented bounding box, as a center point, extents(radii) and
+ * a rotation.  i.e.  the center of the box is at the center point, the box is
+ * rotated around this point with the rotation and it is 2*extents in width,
+ * height and depth.
+ */
 class EXPCL_PANDAPHYSX PhysxBox {
 
 PUBLISHED:

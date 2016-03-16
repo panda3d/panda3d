@@ -1,16 +1,15 @@
-// Filename: eglGraphicsPipe.h
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsPipe.h
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #ifndef EGLGRAPHICSPIPE_H
 #define EGLGRAPHICSPIPE_H
@@ -43,12 +42,10 @@ class eglGraphicsBuffer;
 class eglGraphicsPixmap;
 class eglGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL ES graphics windows on an X-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL ES graphics
+ * windows on an X-based (e.g.  Unix) client.
+ */
 class eglGraphicsPipe : public GraphicsPipe {
 public:
   eglGraphicsPipe(const string &display = string());
@@ -114,8 +111,8 @@ private:
   static IOErrorHandlerFunc *_prev_io_error_handler;
 
 public:
-  // This Mutex protects any X library calls, which all have to be
-  // single-threaded.  In particular, it protects eglMakeCurrent().
+  // This Mutex protects any X library calls, which all have to be single-
+  // threaded.  In particular, it protects eglMakeCurrent().
   static LightReMutex _x_mutex;
 
 public:

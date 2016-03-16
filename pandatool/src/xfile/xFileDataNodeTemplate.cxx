@@ -1,16 +1,15 @@
-// Filename: xFileDataNodeTemplate.cxx
-// Created by:  drose (03Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileDataNodeTemplate.cxx
+ * @author drose
+ * @date 2004-10-03
+ */
 
 #include "xFileDataNodeTemplate.h"
 #include "indent.h"
@@ -20,11 +19,9 @@
 
 TypeHandle XFileDataNodeTemplate::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XFileDataNodeTemplate::
 XFileDataNodeTemplate(XFile *x_file, const string &name,
                       XFileTemplate *xtemplate) :
@@ -32,36 +29,27 @@ XFileDataNodeTemplate(XFile *x_file, const string &name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::zero_fill
-//       Access: Public
-//  Description: Fills the data node with zero-valued elements
-//               appropriate to the template.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the data node with zero-valued elements appropriate to the template.
+ */
 void XFileDataNodeTemplate::
 zero_fill() {
   _template->fill_zero_data(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::is_complex_object
-//       Access: Public, Virtual
-//  Description: Returns true if this kind of data object is a complex
-//               object that can hold nested data elements, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this kind of data object is a complex object that can hold
+ * nested data elements, false otherwise.
+ */
 bool XFileDataNodeTemplate::
 is_complex_object() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::add_parse_double
-//       Access: Public
-//  Description: Adds the indicated list of doubles as a data element
-//               encountered in the parser.  It will later be
-//               processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated list of doubles as a data element encountered in the
+ * parser.  It will later be processed by finalize_parse_data().
+ */
 void XFileDataNodeTemplate::
 add_parse_double(PTA_double double_list) {
   XFileParseData pdata;
@@ -71,13 +59,10 @@ add_parse_double(PTA_double double_list) {
   _parse_data_list._list.push_back(pdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::add_parse_int
-//       Access: Public
-//  Description: Adds the indicated list of ints as a data element
-//               encountered in the parser.  It will later be
-//               processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated list of ints as a data element encountered in the
+ * parser.  It will later be processed by finalize_parse_data().
+ */
 void XFileDataNodeTemplate::
 add_parse_int(PTA_int int_list) {
   XFileParseData pdata;
@@ -87,13 +72,10 @@ add_parse_int(PTA_int int_list) {
   _parse_data_list._list.push_back(pdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::add_parse_string
-//       Access: Public
-//  Description: Adds the indicated string as a data element
-//               encountered in the parser.  It will later be
-//               processed by finalize_parse_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated string as a data element encountered in the parser.  It
+ * will later be processed by finalize_parse_data().
+ */
 void XFileDataNodeTemplate::
 add_parse_string(const string &str) {
   XFileParseData pdata;
@@ -103,25 +85,22 @@ add_parse_string(const string &str) {
   _parse_data_list._list.push_back(pdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::finalize_parse_data
-//       Access: Public
-//  Description: Processes all of the data elements added by
-//               add_parse_*(), checks them for syntactic and semantic
-//               correctness against the Template definition, and
-//               stores the appropriate child data elements.  Returns
-//               true on success, false if there is a mismatch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes all of the data elements added by add_parse_*(), checks them for
+ * syntactic and semantic correctness against the Template definition, and
+ * stores the appropriate child data elements.  Returns true on success, false
+ * if there is a mismatch.
+ */
 bool XFileDataNodeTemplate::
 finalize_parse_data() {
-  // Recursively walk through our template definition, while
-  // simultaneously walking through the list of parse data elements we
-  // encountered, and re-pack them as actual nested elements.
+  // Recursively walk through our template definition, while simultaneously
+  // walking through the list of parse data elements we encountered, and re-
+  // pack them as actual nested elements.
   PrevData prev_data;
   size_t index = 0;
   size_t sub_index = 0;
 
-  if (!_template->repack_data(this, _parse_data_list, 
+  if (!_template->repack_data(this, _parse_data_list,
                               prev_data, index, sub_index)) {
     return false;
   }
@@ -129,30 +108,24 @@ finalize_parse_data() {
   if (index != _parse_data_list._list.size()) {
     xyywarning("Too many data elements in structure.");
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::add_element
-//       Access: Public, Virtual
-//  Description: Adds the indicated element as a nested data element,
-//               if this data object type supports it.  Returns true
-//               if added successfully, false if the data object type
-//               does not support nested data elements.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated element as a nested data element, if this data object
+ * type supports it.  Returns true if added successfully, false if the data
+ * object type does not support nested data elements.
+ */
 bool XFileDataNodeTemplate::
 add_element(XFileDataObject *element) {
   _nested_elements.push_back(element);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::write_text
-//       Access: Public, Virtual
-//  Description: Writes a suitable representation of this node to an
-//               .x file in text mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a suitable representation of this node to an .x file in text mode.
+ */
 void XFileDataNodeTemplate::
 write_text(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -172,12 +145,9 @@ write_text(ostream &out, int indent_level) const {
     << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::write_data
-//       Access: Public, Virtual
-//  Description: Writes a suitable representation of this node to an
-//               .x file in text mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a suitable representation of this node to an .x file in text mode.
+ */
 void XFileDataNodeTemplate::
 write_data(ostream &out, int indent_level, const char *separator) const {
   if (!_nested_elements.empty()) {
@@ -185,8 +155,7 @@ write_data(ostream &out, int indent_level, const char *separator) const {
     for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
       XFileDataObject *object = _nested_elements[i];
       if (object->is_complex_object()) {
-        // If we have a "complex" nested object, output it on its own
-        // line.
+        // If we have a "complex" nested object, output it on its own line.
         if (indented) {
           out << "\n";
           indented = false;
@@ -203,8 +172,8 @@ write_data(ostream &out, int indent_level, const char *separator) const {
       }
     }
 
-    // The last object is the set is different, because it gets
-    // separator appended to it, and it always gets a newline.
+    // The last object is the set is different, because it gets separator
+    // appended to it, and it always gets a newline.
     XFileDataObject *object = _nested_elements.back();
     if (object->is_complex_object()) {
       if (indented) {
@@ -222,36 +191,28 @@ write_data(ostream &out, int indent_level, const char *separator) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::get_num_elements
-//       Access: Protected, Virtual
-//  Description: Returns the number of nested data elements within the
-//               object.  This may be, e.g. the size of the array, if
-//               it is an array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of nested data elements within the object.  This may be,
+ * e.g.  the size of the array, if it is an array.
+ */
 int XFileDataNodeTemplate::
 get_num_elements() const {
   return _nested_elements.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::get_element
-//       Access: Protected, Virtual
-//  Description: Returns the nth nested data element within the
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth nested data element within the object.
+ */
 XFileDataObject *XFileDataNodeTemplate::
 get_element(int n) {
   nassertr(n >= 0 && n < (int)_nested_elements.size(), NULL);
   return _nested_elements[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeTemplate::get_element
-//       Access: Protected, Virtual
-//  Description: Returns the nested data element within the
-//               object that has the indicated name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nested data element within the object that has the indicated
+ * name.
+ */
 XFileDataObject *XFileDataNodeTemplate::
 get_element(const string &name) {
   int child_index = _template->find_child_index(name);

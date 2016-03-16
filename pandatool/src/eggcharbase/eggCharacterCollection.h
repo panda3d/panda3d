@@ -1,16 +1,15 @@
-// Filename: eggCharacterCollection.h
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCharacterCollection.h
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #ifndef EGGCHARACTERCOLLECTION_H
 #define EGGCHARACTERCOLLECTION_H
@@ -26,12 +25,10 @@
 class EggTable;
 class EggAttributes;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCharacterCollection
-// Description : Represents a set of characters, as read and collected
-//               from possibly several model and/or animation egg
-//               files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a set of characters, as read and collected from possibly several
+ * model and/or animation egg files.
+ */
 class EggCharacterCollection {
 public:
   EggCharacterCollection();
@@ -93,8 +90,8 @@ private:
   void add_morph_back_pointers_vertex(EggVertex *vertex, EggObject *egg_object,
                                       int model_index, EggCharacterData *char_data);
 
-  // The _top_egg_nodes member is only used temporarily, when adding
-  // each pre-existing egg file to the structure for the first time.
+  // The _top_egg_nodes member is only used temporarily, when adding each pre-
+  // existing egg file to the structure for the first time.
   typedef pvector<EggNode *> EggNodeList;
   class ModelDescription {
   public:
@@ -118,5 +115,3 @@ private:
 #include "eggCharacterCollection.I"
 
 #endif
-
-

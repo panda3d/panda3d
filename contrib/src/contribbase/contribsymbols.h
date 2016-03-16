@@ -1,8 +1,4 @@
-/* Filename: contribsymbols.h
- * Created by:  rdb (30Dec09)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file contribsymbols.h
+ * @author rdb
+ * @date 2009-12-30
+ */
 
 #ifndef CONTRIBSYMBOLS_H
 #define CONTRIBSYMBOLS_H

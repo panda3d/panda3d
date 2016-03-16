@@ -1,22 +1,18 @@
-// Filename: maxEggLoader.cxx
-// Created by:  jyelon (15Jul05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-//
-// This file contains the code for class MaxEggLoader.  This class
-// does the actual work of copying an EggData tree into the max scene.
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxEggLoader.cxx
+ * @author jyelon
+ * @date 2005-07-15
+ *
+ * This file contains the code for class MaxEggLoader.  This class
+ * does the actual work of copying an EggData tree into the max scene.
+ */
 
 #include "pandatoolbase.h"
 #include "notifyCategoryProxy.h"
@@ -82,11 +78,7 @@ Point3 MakeMaxPoint(LVector3d vec)
   return Point3(vec[0], vec[1], vec[2]);
 }
 
-////////////////////////////////////////////////////////////////////
-//
 // MaxEggTex
-//
-////////////////////////////////////////////////////////////////////
 
 class MaxEggTex
 {
@@ -126,11 +118,7 @@ MaxEggTex *MaxEggLoader::GetTex(const Filename &fn)
   return res;
 }
 
-////////////////////////////////////////////////////////////////////
-//
 // MaxEggJoint
-//
-////////////////////////////////////////////////////////////////////
 
 class MaxEggJoint
 {
@@ -306,11 +294,7 @@ void MaxEggJoint::CreateMaxBone(void)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//
 // MaxEggMesh
-//
-////////////////////////////////////////////////////////////////////
 
 typedef pair<double, EggGroup *> MaxEggWeight;
 
@@ -566,14 +550,8 @@ void MaxEggLoader::CreateSkinModifier(MaxEggMesh *M)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// TraverseEggData
-//
-// We have an EggData in memory, and now we're going to copy that
-// over into the max scene graph.
-//
-////////////////////////////////////////////////////////////////////
+// TraverseEggData We have an EggData in memory, and now we're going to copy
+// that over into the max scene graph.
 
 void MaxEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
 {
@@ -721,11 +699,7 @@ bool MaxEggLoader::ConvertEggFile(const char *name, bool merge, bool model, bool
   return ConvertEggData(&data, merge, model, anim);
 }
 
-////////////////////////////////////////////////////////////////////
-//
 // The two global functions that form the API of this module.
-//
-////////////////////////////////////////////////////////////////////
 
 bool MaxLoadEggData(EggData *data, bool merge, bool model, bool anim)
 {
@@ -738,4 +712,3 @@ bool MaxLoadEggFile(const char *name, bool merge, bool model, bool anim)
   MaxEggLoader loader;
   return loader.ConvertEggFile(name, merge, model, anim);
 }
-

@@ -1,17 +1,16 @@
-// Filename: directd.cxx
-// Created by:  skyler 2002.04.08
-// Based on test_tcp_*.* by drose.
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file directd.cxx
+ * @author skyler
+ * @date 2002-04-08
+ * Based on test_tcp_*.* by drose.
+ */
 
 // This define tells the windows headers to include job objects:
 #define _WIN32_WINNT 0x0500
@@ -20,14 +19,10 @@
 /*#include "pandaFramework.h"
 #include "queuedConnectionManager.h"*/
 
-//#include <process.h>
-//#include <Windows.h>
-//#include "pandabase.h"
+// #include <process.h> #include <Windows.h> #include "pandabase.h"
 
-//#include "queuedConnectionManager.h"
-//#include "queuedConnectionListener.h"
-//#include "queuedConnectionReader.h"
-//#include "connectionWriter.h"
+// #include "queuedConnectionManager.h" #include "queuedConnectionListener.h"
+// #include "queuedConnectionReader.h" #include "connectionWriter.h"
 #include "netAddress.h"
 #include "connection.h"
 #include "datagramIterator.h"
@@ -36,11 +31,12 @@
 #include "pset.h"
 
 namespace {
-  // ...This section is part of the old stuff from the original implementation.
-  // The new stuff that uses job objects doesn't need this stuff:
+  // ...This section is part of the old stuff from the original
+  // implementation.  The new stuff that uses job objects doesn't need this
+  // stuff:
 
   // The following is from an MSDN example:
-  
+
   #define TA_FAILED 0
   #define TA_SUCCESS_CLEAN 1
   #define TA_SUCCESS_KILL 2
@@ -74,25 +70,25 @@ namespace {
         TA_SUCCESS_CLEAN - If the process was shutdown using WM_CLOSE.
         TA_SUCCESS_KILL - if the process was shut down with
            TerminateProcess().
-  */ 
+  */
   DWORD WINAPI
   TerminateApp(DWORD dwPID, DWORD dwTimeout) {
     HANDLE   hProc;
     DWORD   dwRet;
 
-    // If we can't open the process with PROCESS_TERMINATE rights,
-    // then we give up immediately.
+    // If we can't open the process with PROCESS_TERMINATE rights, then we
+    // give up immediately.
     hProc = OpenProcess(SYNCHRONIZE|PROCESS_TERMINATE, FALSE, dwPID);
     if(hProc == NULL) {
        return TA_FAILED;
     }
 
-    // TerminateAppEnum() posts WM_CLOSE to all windows whose PID
-    // matches your process's.
+    // TerminateAppEnum() posts WM_CLOSE to all windows whose PID matches your
+    // process's.
     EnumWindows((WNDENUMPROC)TerminateAppEnum, (LPARAM)dwPID);
 
-    // Wait on the handle. If it signals, great. If it times out,
-    // then you kill it.
+    // Wait on the handle.  If it signals, great.  If it times out, then you
+    // kill it.
     if(WaitForSingleObject(hProc, dwTimeout)!=WAIT_OBJECT_0) {
        dwRet=(TerminateProcess(hProc,0)?TA_SUCCESS_KILL:TA_FAILED);
     } else {
@@ -110,13 +106,13 @@ namespace {
   DWORD
   StartApp(const string& cmd) {
     DWORD pid=0;
-    STARTUPINFO si; 
-    PROCESS_INFORMATION pi; 
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(STARTUPINFO));
-    si.cb = sizeof(STARTUPINFO); 
+    si.cb = sizeof(STARTUPINFO);
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    if (CreateProcess(NULL, (char*)cmd.c_str(), 
-        0, 0, 1, NORMAL_PRIORITY_CLASS, 
+    if (CreateProcess(NULL, (char*)cmd.c_str(),
+        0, 0, 1, NORMAL_PRIORITY_CLASS,
         0, 0, &si, &pi)) {
       pid=pi.dwProcessId;
       CloseHandle(pi.hProcess);
@@ -141,11 +137,11 @@ DirectD::~DirectD() {
     _cm.close_connection((*ci));
   }
   _connections.clear();
-  
+
   kill_all();
 }
 
-int 
+int
 DirectD::client_ready(const string& server_host, int port,
     const string& cmd) {
   stringstream ss;
@@ -154,7 +150,7 @@ DirectD::client_ready(const string& server_host, int port,
   return 0;
 }
 
-int 
+int
 DirectD::tell_server(const string& server_host, int port,
     const string& cmd) {
   send_one_message(server_host, port, cmd);
@@ -176,15 +172,14 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
         The following can be more generalized with a little work.
         check_for_datagrams() could take a handler function as an arugment, maybe.
     */
-    ////check_for_datagrams();
-    // Process all available datagrams.
+    // check_for_datagrams(); Process all available datagrams.
     while (_reader.data_available()) {
       NetDatagram datagram;
       if (_reader.get_data(datagram)) {
         cout << count << ": Server at " << datagram.get_address()
             << " is ready." << endl;
         datagram.dump_hex(nout);
-        //handle_datagram(datagram);
+        // handle_datagram(datagram);
         DatagramIterator di(datagram);
         string s=di.get_string();
         if (s=="r" && !--count) {
@@ -194,15 +189,15 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
     }
 
     // Yield the timeslice before we poll again.
-    //PR_Sleep(PR_MillisecondsToInterval(wait_ms));
+    // PR_Sleep(PR_MillisecondsToInterval(wait_ms));
     Sleep(wait_ms);
   }
-  // We've waited long enough, assume they're not going to be
-  // ready in the time we want them:
+  // We've waited long enough, assume they're not going to be ready in the
+  // time we want them:
   return false;
 }
 
-int 
+int
 DirectD::server_ready(const string& client_host, int port) {
   send_one_message(client_host, port, "r");
   return 0;
@@ -224,24 +219,24 @@ DirectD::start_app(const string& cmd) {
       }
     }
     DWORD pid=0;
-    STARTUPINFO si; 
-    PROCESS_INFORMATION pi; 
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(STARTUPINFO));
-    si.cb = sizeof(STARTUPINFO); 
+    si.cb = sizeof(STARTUPINFO);
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    if (CreateProcess(NULL, (char*)cmd.c_str(), 
-        0, 0, 1, NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED, 
+    if (CreateProcess(NULL, (char*)cmd.c_str(),
+        0, 0, 1, NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED,
         0, 0, &si, &pi)) {
-      // The process must be created with CREATE_SUSPENDED to
-      // give us a chance to get the handle into our sgJobObject
-      // before the child processes starts sub-processes.
+      // The process must be created with CREATE_SUSPENDED to give us a chance
+      // to get the handle into our sgJobObject before the child processes
+      // starts sub-processes.
       if (!AssignProcessToJobObject(_jobObject, pi.hProcess)) {
         // ...The assign failed.
         cerr<<"StartJob AssignProcessToJobObject Error: "<<GetLastError()<<endl;
       }
       CloseHandle(pi.hProcess); //?????
-      // Because we called CreateProcess with the CREATE_SUSPEND flag,
-      // we must explicitly resume the processes main thread.
+      // Because we called CreateProcess with the CREATE_SUSPEND flag, we must
+      // explicitly resume the processes main thread.
       if (ResumeThread(pi.hThread) == -1) {
         cerr<<"StartJob ResumeThread Error: "<<GetLastError()<<endl;
       }
@@ -312,7 +307,7 @@ DirectD::handle_command(const string& cmd) {
 }
 
 void
-DirectD::send_one_message(const string& host_name, 
+DirectD::send_one_message(const string& host_name,
     int port,
     const string& message) {
   NetAddress host;
@@ -332,15 +327,14 @@ DirectD::send_one_message(const string& host_name,
        << c->get_address().get_port() << " and IP "
        << c->get_address() << "\n";
 
-  //_reader.add_connection(c);
-  
+  // _reader.add_connection(c);
+
   NetDatagram datagram;
   datagram.add_string(message);
   _writer.send(datagram, c);
-  
-  //PR_Sleep(PR_MillisecondsToInterval(200));
-  //wait_for_servers(1, 10*1000);
-  //_reader.remove_connection(c);
+
+  // PR_Sleep(PR_MillisecondsToInterval(200)); wait_for_servers(1, 10*1000);
+  // _reader.remove_connection(c);
   _cm.close_connection(c);
 }
 

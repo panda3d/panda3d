@@ -1,16 +1,15 @@
-// Filename: eventHandler.h
-// Created by:  drose (08Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eventHandler.h
+ * @author drose
+ * @date 1999-02-08
+ */
 
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
@@ -25,19 +24,15 @@
 
 class EventQueue;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EventHandler
-// Description : A class to monitor events from the C++ side of
-//               things.  It maintains a set of "hooks", function
-//               pointers assigned to event names, and calls the
-//               appropriate hooks when the matching event is
-//               detected.
-//
-//               This class is not necessary when the hooks are
-//               detected and processed entirely by the scripting
-//               language, e.g. via Scheme hooks or the messenger
-//               in Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class to monitor events from the C++ side of things.  It maintains a set
+ * of "hooks", function pointers assigned to event names, and calls the
+ * appropriate hooks when the matching event is detected.
+ *
+ * This class is not necessary when the hooks are detected and processed
+ * entirely by the scripting language, e.g.  via Scheme hooks or the messenger
+ * in Python.
+ */
 class EXPCL_PANDA_EVENT EventHandler : public TypedObject {
 public:
   // Define a function type suitable for receiving events.

@@ -1,16 +1,15 @@
-// Filename: pdecrypt.cxx
-// Created by:  drose (01Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pdecrypt.cxx
+ * @author drose
+ * @date 2004-09-01
+ */
 
 #include "pystub.h"
 #include "filename.h"
@@ -22,14 +21,14 @@
 string password;
 bool got_password = false;
 
-void 
+void
 usage() {
   cerr
     << "\nUsage:\n"
     << "   pdecrypt file.pe [file2.pe file3.pe ...]\n"
     << "   pdecrypt -o dest_file file.pe\n\n"
     << "\n"
-    
+
     << "This program reverses the operation of a previous pencrypt command.  It\n"
     << "decrypts the contents of the named source file(s) and removes the .pe\n"
     << "extension.  The encryption algorithm need not be specified; it can be\n"
@@ -39,7 +38,7 @@ usage() {
     << "if no error is reported.\n\n"
 
     << "Options:\n\n"
-    
+
     << "  -p \"password\"\n"
     << "      Specifies the password to use for decryption.  If this is not specified,\n"
     << "      the user is prompted from standard input.\n\n";
@@ -98,7 +97,7 @@ main(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     Filename source_file = Filename::from_os_specific(argv[i]);
     if (!got_dest_filename && source_file.get_extension() != "pe") {
-      cerr << source_file 
+      cerr << source_file
            << " doesn't end in .pe; can't derive filename of output file.\n";
       all_ok = false;
 
@@ -133,15 +132,15 @@ main(int argc, char **argv) {
 
           cerr << dest_file << "\n";
           bool success = decrypt_stream(read_stream, write_stream, password);
-          
+
           read_stream.close();
           write_stream.close();
-          
+
           if (!success) {
             cerr << "Failure decrypting " << source_file << "\n";
             all_ok = false;
             dest_file.unlink();
-            
+
           } else {
             if (!got_dest_filename) {
               source_file.unlink();

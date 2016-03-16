@@ -1,16 +1,15 @@
-// Filename: renderState_ext.h
-// Created by:  CFSworks (31Mar14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderState_ext.h
+ * @author CFSworks
+ * @date 2014-03-31
+ */
 
 #ifndef RENDERSTATE_EXT_H
 #define RENDERSTATE_EXT_H
@@ -23,12 +22,10 @@
 #include "renderState.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<RenderState>
-// Description : This class defines the extension methods for
-//               RenderState, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for RenderState, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<RenderState> : public ExtensionBase<RenderState> {
 public:

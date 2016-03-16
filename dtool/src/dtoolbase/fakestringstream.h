@@ -1,16 +1,15 @@
-// Filename: fakestringstream.h
-// Created by:  cary (04Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fakestringstream.h
+ * @author cary
+ * @date 1999-02-04
+ */
 
 #ifndef FAKESTRINGSTREAM_H
 #define FAKESTRINGSTREAM_H
@@ -79,10 +78,9 @@ public:
     _owns_str = false;
   }
 
-  // str() doesn't seem to compile cross-platform too reliably--Irix
-  // doesn't define pcount() for some reason.  On the other hand, why
-  // are you calling str() on a stringstream?  Just use an
-  // ostringstream.
+  // str() doesn't seem to compile cross-platform too reliably--Irix doesn't
+  // define pcount() for some reason.  On the other hand, why are you calling
+  // str() on a stringstream?  Just use an ostringstream.
 
   /*
   string str() {

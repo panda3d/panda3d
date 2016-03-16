@@ -1,16 +1,15 @@
-// Filename: eggRetargetAnim.h
-// Created by:  drose (05May05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggRetargetAnim.h
+ * @author drose
+ * @date 2005-05-05
+ */
 
 #ifndef EGGRETARGETANIM_H
 #define EGGRETARGETANIM_H
@@ -26,13 +25,11 @@ class EggCharacterData;
 class EggJointData;
 class EggCharacterDb;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggRetargetAnim
-// Description : Retargets one or more animation files from one
-//               particular skeleton to a similar, but differently
-//               scaled skeleton by preserving the rotation
-//               information but discarding translation and/or scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retargets one or more animation files from one particular skeleton to a
+ * similar, but differently scaled skeleton by preserving the rotation
+ * information but discarding translation and/or scale.
+ */
 class EggRetargetAnim : public EggCharacterFilter {
 public:
   EggRetargetAnim();
@@ -48,4 +45,3 @@ public:
 };
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: dxVertexBufferContext9.cxx
-// Created by:  drose (18Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxVertexBufferContext9.cxx
+ * @author drose
+ * @date 2005-03-18
+ */
 
 #include "dxVertexBufferContext9.h"
 #include "geomVertexArrayData.h"
@@ -24,11 +23,9 @@
 
 TypeHandle DXVertexBufferContext9::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(VertexBufferContext)::
 CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
                          PreparedGraphicsObjects *pgo,
@@ -39,8 +36,8 @@ CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
   // Now fill in the FVF code.
   const GeomVertexArrayFormat *array_format = data->get_array_format();
 
-  // We have to start with the vertex data, and work up from there in
-  // order, since that's the way the FVF is defined.
+  // We have to start with the vertex data, and work up from there in order,
+  // since that's the way the FVF is defined.
   int n = 0;
   int num_columns = array_format->get_num_columns();
 
@@ -106,8 +103,8 @@ CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
     ++n;
   }
 
-  // Now look for all of the texcoord names and enable them in the
-  // same order they appear in the array.
+  // Now look for all of the texcoord names and enable them in the same order
+  // they appear in the array.
   int texcoord_index = 0;
   while (n < num_columns &&
          array_format->get_column(n)->get_contents() == Geom::C_texcoord) {
@@ -163,21 +160,16 @@ CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXVertexBufferContext9::evict_lru
-//       Access: Public, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines
+ * that it is full.  May also be called externally when necessary to
+ * explicitly evict the page.
+ *
+ * It is legal for this method to either evict the page as requested, do
+ * nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void CLP(VertexBufferContext)::
 evict_lru() {
   dequeue_lru();
@@ -190,4 +182,3 @@ evict_lru() {
   update_data_size_bytes(0);
   mark_unloaded();
 }
-

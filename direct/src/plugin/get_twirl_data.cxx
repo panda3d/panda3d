@@ -1,16 +1,15 @@
-// Filename: get_twirl_data.cxx
-// Created by:  drose (24Aug11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file get_twirl_data.cxx
+ * @author drose
+ * @date 2011-08-24
+ */
 
 #include "get_twirl_data.h"
 #include "string.h"
@@ -38,9 +37,8 @@ static twirl_flip twirl_flip_table[twirl_num_steps + 1] = {
   { 3, false, false, false }    // the "failed" icon
 };
 
-// These tables are the raw data for the twirl icon data.  They're
-// extracted with bin2c from the three layers of twirl.xcf, in this
-// directory.
+// These tables are the raw data for the twirl icon data.  They're extracted
+// with bin2c from the three layers of twirl.xcf, in this directory.
 static const unsigned char twirl_0_data[] = {
   0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xfe, 0xfe,
   0xfe, 0xff, 0xfe, 0xfe, 0xfe, 0xff, 0xfe, 0xfe, 0xfe, 0xfe, 0xff,
@@ -902,24 +900,20 @@ static const unsigned char * const twirl_data[4] = {
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_twirl_data
-//  Description: Fills the indicated data array with a string of
-//               twirl_width * twirl_height * 3 bytes, representing
-//               the RGB pixel values of the twirl_width x
-//               twirl_height image at frame number step of
-//               twirl_num_steps frames.  The specified fg and bg
-//               colors are applied to the array appropriately.
-//
-//               Returns true on success, false on failure.  On false,
-//               the array is initialized with zero.
-//
-//               You must pass data_length = twirl_width *
-//               twirl_height * 3; this value is passed as a sanity
-//               check on array size.  You should pass step so that 0
-//               <= step < twirl_num_steps + 1.  (The special value of
-//               step == twirl_num_steps returns the "failed" icon.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated data array with a string of twirl_width * twirl_height
+ * * 3 bytes, representing the RGB pixel values of the twirl_width x
+ * twirl_height image at frame number step of twirl_num_steps frames.  The
+ * specified fg and bg colors are applied to the array appropriately.
+ *
+ * Returns true on success, false on failure.  On false, the array is
+ * initialized with zero.
+ *
+ * You must pass data_length = twirl_width * twirl_height * 3; this value is
+ * passed as a sanity check on array size.  You should pass step so that 0 <=
+ * step < twirl_num_steps + 1.  (The special value of step == twirl_num_steps
+ * returns the "failed" icon.)
+ */
 bool
 get_twirl_data(unsigned char data[], size_t data_length, int step,
                int fg_r, int fg_g, int fg_b,
@@ -967,4 +961,3 @@ get_twirl_data(unsigned char data[], size_t data_length, int step,
 
   return true;
 }
-

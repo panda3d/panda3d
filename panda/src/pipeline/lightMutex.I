@@ -1,23 +1,19 @@
-// Filename: lightMutex.I
-// Created by:  drose (08Oct08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lightMutex.I
+ * @author drose
+ * @date 2008-10-08
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex() : MutexDebug(string(), false, true)
@@ -27,11 +23,9 @@ LightMutex()
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex(const char *name) : MutexDebug(string(name), false, true)
@@ -41,11 +35,9 @@ LightMutex(const char *)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex(const string &name) : MutexDebug(name, false, true)
@@ -55,20 +47,16 @@ LightMutex(const string &)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE LightMutex::
 ~LightMutex() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Copy Constructor
-//       Access: Private
-//  Description: Do not attempt to copy lightMutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy lightMutexes.
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex(const LightMutex &copy) : MutexDebug(string(), false, true)
@@ -79,11 +67,9 @@ LightMutex(const LightMutex &copy) : MutexDebug(string(), false, true)
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not attempt to copy lightMutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy lightMutexes.
+ */
 INLINE void LightMutex::
 operator = (const LightMutex &copy) {
   nassertv(false);

@@ -1,23 +1,19 @@
-// Filename: pmutex.I
-// Created by:  drose (08Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pmutex.I
+ * @author drose
+ * @date 2002-08-08
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
 Mutex() : MutexDebug(string(), false, false)
@@ -27,11 +23,9 @@ Mutex()
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
 Mutex(const char *name) : MutexDebug(string(name), false, false)
@@ -41,11 +35,9 @@ Mutex(const char *)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
 Mutex(const string &name) : MutexDebug(name, false, false)
@@ -55,20 +47,16 @@ Mutex(const string &)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE Mutex::
 ~Mutex() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Copy Constructor
-//       Access: Private
-//  Description: Do not attempt to copy mutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy mutexes.
+ */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
 Mutex(const Mutex &copy) : MutexDebug(string(), false, false)
@@ -79,11 +67,9 @@ Mutex(const Mutex &copy) : MutexDebug(string(), false, false)
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Mutex::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not attempt to copy mutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy mutexes.
+ */
 INLINE void Mutex::
 operator = (const Mutex &copy) {
   nassertv(false);

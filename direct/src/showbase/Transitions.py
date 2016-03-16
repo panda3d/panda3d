@@ -3,7 +3,7 @@
 __all__ = ['Transitions']
 
 from panda3d.core import *
-from direct.gui.DirectGui import *
+from direct.gui.DirectGui import DirectFrame
 from direct.gui import DirectGuiGlobals as DGG
 from direct.interval.LerpInterval import LerpColorScaleInterval, LerpColorInterval, LerpScaleInterval, LerpPosInterval
 from direct.interval.MetaInterval import Sequence, Parallel

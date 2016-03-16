@@ -1,18 +1,17 @@
-// Filename: mayaCopy.cxx
-// Created by:  drose (10May02)
-// Modified 19Mar10 by ETC PandaSE team (see
-//   header comment for mayaToEgg.cxx for more details)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaCopy.cxx
+ * @author drose
+ * @date 2002-05-10
+ * Modified 19Mar10 by ETC PandaSE team (see
+ *   header comment for mayaToEgg.cxx for more details)
+ */
 
 #include "mayaCopy.h"
 #include "config_maya.h"
@@ -36,11 +35,9 @@
 #include <maya/MIntArray.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaCopy::
 MayaCopy() {
   set_program_brief("copy Maya .mb files into a CVS source hierarchy");
@@ -92,11 +89,9 @@ MayaCopy() {
   add_path_replace_options();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void MayaCopy::
 run() {
   _maya = MayaApi::open_api(_program_name);
@@ -119,14 +114,11 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::copy_file
-//       Access: Protected, Virtual
-//  Description: Called by import() if verify_file() indicates that a
-//               file needs to be copied.  This does the actual copy
-//               of a file from source to destination.  If new_file is
-//               true, then dest does not already exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by import() if verify_file() indicates that a file needs to be
+ * copied.  This does the actual copy of a file from source to destination.
+ * If new_file is true, then dest does not already exist.
+ */
 bool MayaCopy::
 copy_file(const Filename &source, const Filename &dest,
           CVSSourceDirectory *dir, void *extra_data, bool new_file) {
@@ -146,15 +138,12 @@ copy_file(const Filename &source, const Filename &dest,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::filter_filename
-//       Access: Protected, Virtual
-//  Description: Given a source filename (including the basename only,
-//               without a dirname), return the appropriate
-//               corresponding filename within the source directory.
-//               This may be used by derived classes to, for instance,
-//               strip a version number from the filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source filename (including the basename only, without a dirname),
+ * return the appropriate corresponding filename within the source directory.
+ * This may be used by derived classes to, for instance, strip a version
+ * number from the filename.
+ */
 string MayaCopy::
 filter_filename(const string &source) {
   if (_keep_ver) {
@@ -168,9 +157,9 @@ filter_filename(const string &source) {
 
   string extension = source.substr(dot);
   if (extension == ".ma" || extension == ".mb") {
-    // If we are reading a Maya file (as opposed to a texture image),
-    // then we always write ".mb" files out (unless -ma was specified
-    // on the command line).
+    // If we are reading a Maya file (as opposed to a texture image), then we
+    // always write ".mb" files out (unless -ma was specified on the command
+    // line).
     if (_maya_ascii) {
       extension = ".ma";
     } else {
@@ -186,11 +175,9 @@ filter_filename(const string &source) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::copy_maya_file
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool MayaCopy::
 copy_maya_file(const Filename &source, const Filename &dest,
                CVSSourceDirectory *dir) {
@@ -222,14 +209,16 @@ copy_maya_file(const Filename &source, const Filename &dest,
     status = MGlobal::executeCommand(MString(blah.c_str()), result);
     maya_cat.info() << "result = " << result.asChar() << endl;
 
-    // for multiple reference of the same model. maya throws in a {#} at the end, ignore that
+    // for multiple reference of the same model.  maya throws in a {#} at the
+    // end, ignore that
     size_t dup = lookup.find('{');
     if (dup != string::npos){
       lookup.erase(dup);
     }
 
-    // to check out this specific reference is actually loaded or not
-    // somehow this flag order of MEL script must be observed to guarantee proper working
+    // to check out this specific reference is actually loaded or not somehow
+    // this flag order of MEL script must be observed to guarantee proper
+    // working
     string refNode = result.asChar();
     string refCheckCmd = "file -rfn " + refNode + " -q -dr;";
     int deferredRef;
@@ -239,7 +228,7 @@ copy_maya_file(const Filename &source, const Filename &dest,
       continue;
     }
 
-    Filename filename = 
+    Filename filename =
       _path_replace->convert_path(Filename::from_os_specific(lookup));
 
     CVSSourceTree::FilePath path =
@@ -290,29 +279,30 @@ copy_maya_file(const Filename &source, const Filename &dest,
       << "Cannot write " << dest << "\n";
     return false;
   }
-  
+
   for (ref_index = 0; ref_index < num_refs; ref_index++) {
     if (1) { // we may want an option later to pull in all the referenced files
       continue;
     }
 
     string lookup = refs[ref_index].asChar();
-    // for multiple reference of the same model. maya throws in a {#} at the end, ignore that
+    // for multiple reference of the same model.  maya throws in a {#} at the
+    // end, ignore that
     size_t dup = lookup.find('{');
     if (dup != string::npos){
       lookup.erase(dup);
     }
 
-    Filename filename = 
+    Filename filename =
       _path_replace->convert_path(Filename::from_os_specific(lookup));
 
     maya_cat.info()
       << "External ref: " << filename << "\n";
-    
+
     // Now import the file
     ExtraData ed;
     ed._type = FT_maya;
-    
+
     CVSSourceTree::FilePath path = import(filename, &ed, _model_dir);
     if (!path.is_valid()) {
       exit(1);
@@ -322,14 +312,11 @@ copy_maya_file(const Filename &source, const Filename &dest,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::extract_texture
-//       Access: Private
-//  Description: Gets the texture out of the indicated color channel
-//               and copies it in, updating the channel with the new
-//               texture filename.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the texture out of the indicated color channel and copies it in,
+ * updating the channel with the new texture filename.  Returns true on
+ * success, false on failure.
+ */
 bool MayaCopy::
 extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
   Filename texture_filename =
@@ -345,16 +332,16 @@ extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
   } else {
     ExtraData ed;
     ed._type = FT_texture;
-    
+
     CVSSourceTree::FilePath texture_path =
       import(texture_filename, &ed, _map_dir);
-    
+
     if (!texture_path.is_valid()) {
       return false;
     }
-    
-    // Update the texture reference to point to the new texture
-    // filename, relative to the maya file.
+
+    // Update the texture reference to point to the new texture filename,
+    // relative to the maya file.
     Filename new_filename = texture_path.get_rel_from(dir);
     color_def.reset_maya_texture(new_filename);
   }
@@ -362,11 +349,9 @@ extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::copy_texture
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool MayaCopy::
 copy_texture(const Filename &source, const Filename &dest,
              CVSSourceDirectory *dir) {
@@ -377,12 +362,10 @@ copy_texture(const Filename &source, const Filename &dest,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::collect_shaders
-//       Access: Private
-//  Description: Recursively walks through the maya scene graph
-//               hierarchy, looking for shaders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks through the maya scene graph hierarchy, looking for
+ * shaders.
+ */
 bool MayaCopy::
 collect_shaders() {
   MStatus status;
@@ -393,9 +376,9 @@ collect_shaders() {
     return false;
   }
 
-  // This while loop walks through the entire Maya hierarchy, one node
-  // at a time.  Maya's MItDag object automatically performs a
-  // depth-first traversal of its scene graph.
+  // This while loop walks through the entire Maya hierarchy, one node at a
+  // time.  Maya's MItDag object automatically performs a depth-first
+  // traversal of its scene graph.
   bool all_ok = true;
   while (!dag_iterator.isDone()) {
     MDagPath dag_path;
@@ -419,12 +402,9 @@ collect_shaders() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::collect_shader_for_node
-//       Access: Private
-//  Description: Gets the relevant shader on the current node, if it
-//               has one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the relevant shader on the current node, if it has one.
+ */
 bool MayaCopy::
 collect_shader_for_node(const MDagPath &dag_path) {
   MStatus status;
@@ -452,7 +432,7 @@ collect_shader_for_node(const MDagPath &dag_path) {
       if (status) {
         unsigned int num_shaders = shaders.length();
         for (unsigned int shader_index = 0;
-             shader_index < num_shaders; 
+             shader_index < num_shaders;
              shader_index++) {
           MObject engine = shaders[shader_index];
           _shaders.find_shader_for_shading_engine(engine, false);
@@ -469,7 +449,8 @@ collect_shader_for_node(const MDagPath &dag_path) {
 
 
 int main(int argc, char *argv[]) {
-  // We don't want pystub on linux, since it gives problems with Maya's python.
+  // We don't want pystub on linux, since it gives problems with Maya's
+  // python.
 #ifdef _WIN32
   // A call to pystub() to force libpystub.so to be linked in.
   pystub();
@@ -480,4 +461,3 @@ int main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-

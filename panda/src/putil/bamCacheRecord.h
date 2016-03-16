@@ -1,16 +1,15 @@
-// Filename: bamCacheRecord.h
-// Created by:  drose (08Jun06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamCacheRecord.h
+ * @author drose
+ * @date 2006-06-08
+ */
 
 #ifndef BAMCACHERECORD_H
 #define BAMCACHERECORD_H
@@ -28,19 +27,16 @@ class FactoryParams;
 class BamCacheRecord;
 class VirtualFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamCacheRecord
-// Description : An instance of this class is written to the front of
-//               a Bam or Txo file to make the file a cached instance
-//               of some other loadable resource.  This record
-//               contains information needed to test the validity of
-//               the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * An instance of this class is written to the front of a Bam or Txo file to
+ * make the file a cached instance of some other loadable resource.  This
+ * record contains information needed to test the validity of the cache.
+ */
 class EXPCL_PANDA_PUTIL BamCacheRecord : public TypedWritableReferenceCount,
                                    public LinkedListNode {
 private:
   BamCacheRecord();
-  BamCacheRecord(const Filename &source_pathname, 
+  BamCacheRecord(const Filename &source_pathname,
                  const Filename &cache_filename);
   BamCacheRecord(const BamCacheRecord &copy);
 
@@ -107,16 +103,16 @@ private:
 
   typedef pvector<DependentFile> DependentFiles;
   DependentFiles _files;
-  
-  // The following are not recorded to disk; they are preserved
-  // in-memory only for the current session.
+
+  // The following are not recorded to disk; they are preserved in-memory only
+  // for the current session.
   Filename _cache_pathname;
   TypedWritable *_ptr;
   ReferenceCount *_ref_ptr;
 
-  // The following are not recorded to disk, nor even returned by the
-  // BamCache interface.  They are strictly meaningful to the
-  // BamCacheRecords stored internally within the BamCache object.
+  // The following are not recorded to disk, nor even returned by the BamCache
+  // interface.  They are strictly meaningful to the BamCacheRecords stored
+  // internally within the BamCache object.
   time_t _record_access_time;
 
 public:
@@ -126,7 +122,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

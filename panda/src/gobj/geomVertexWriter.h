@@ -1,16 +1,15 @@
-// Filename: geomVertexWriter.h
-// Created by:  drose (25Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexWriter.h
+ * @author drose
+ * @date 2005-03-25
+ */
 
 #ifndef GEOMVERTEXWRITER_H
 #define GEOMVERTEXWRITER_H
@@ -22,50 +21,37 @@
 #include "luse.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexWriter
-// Description : This object provides a high-level interface for
-//               quickly writing a sequence of numeric values from a
-//               vertex table.
-//
-//               This object can be used both to replace existing
-//               vertices in the table, or to extend the table with
-//               new vertices.  The set_data*() family of methods can
-//               only be used to replace existing data; it is an error
-//               to allow these to run past the end of the data.  The
-//               add_data*() family of methods, on the other hand, can
-//               be used to replace existing data or add new data; if
-//               you call set_row() into the middle of existing
-//               data the add_data*() methods will behave like the
-//               corresponding set_data*(), but if they run past the
-//               end of existing data they will quietly add new
-//               vertices.
-//
-//               Like GeomVertexReader, the writer is particularly
-//               optimized for writing a single column of data values
-//               for a series of vertices, without changing columns
-//               between each number.  Although you can also use one
-//               GeomVertexWriter to write across the columns if it is
-//               convenient, by calling set_column() repeatedly at
-//               each vertex, it is faster to write down the columns,
-//               and to use a different GeomVertexWriter for each
-//               column.
-//
-//               Note that, like a GeomVertexReader, a
-//               GeomVertexWriter does not keep a reference count to
-//               the actual vertex data buffer.  This means that it is
-//               important not to keep a GeomVertexWriter object
-//               around over a long period of time in which the data
-//               buffer is likely to be deallocated; it is intended
-//               for making a quick pass over the data in one session.
-//
-//               It also means that you should create any
-//               GeomVertexWriters *before* creating GeomVertexReaders
-//               on the same data, since the writer itself might cause
-//               the vertex buffer to be deallocated.  Better yet, use
-//               a GeomVertexRewriter if you are going to create both
-//               of them anyway.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object provides a high-level interface for quickly writing a sequence
+ * of numeric values from a vertex table.
+ *
+ * This object can be used both to replace existing vertices in the table, or
+ * to extend the table with new vertices.  The set_data*() family of methods
+ * can only be used to replace existing data; it is an error to allow these to
+ * run past the end of the data.  The add_data*() family of methods, on the
+ * other hand, can be used to replace existing data or add new data; if you
+ * call set_row() into the middle of existing data the add_data*() methods
+ * will behave like the corresponding set_data*(), but if they run past the
+ * end of existing data they will quietly add new vertices.
+ *
+ * Like GeomVertexReader, the writer is particularly optimized for writing a
+ * single column of data values for a series of vertices, without changing
+ * columns between each number.  Although you can also use one
+ * GeomVertexWriter to write across the columns if it is convenient, by
+ * calling set_column() repeatedly at each vertex, it is faster to write down
+ * the columns, and to use a different GeomVertexWriter for each column.
+ *
+ * Note that, like a GeomVertexReader, a GeomVertexWriter does not keep a
+ * reference count to the actual vertex data buffer.  This means that it is
+ * important not to keep a GeomVertexWriter object around over a long period
+ * of time in which the data buffer is likely to be deallocated; it is
+ * intended for making a quick pass over the data in one session.
+ *
+ * It also means that you should create any GeomVertexWriters *before*
+ * creating GeomVertexReaders on the same data, since the writer itself might
+ * cause the vertex buffer to be deallocated.  Better yet, use a
+ * GeomVertexRewriter if you are going to create both of them anyway.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexWriter : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexWriter(Thread *current_thread = Thread::get_current_thread());
@@ -207,11 +193,10 @@ private:
                          GeomVertexDataPipelineWriter *data_writer);
   bool set_array_column(const GeomVertexColumn *column);
 
-  // It is important that we only store *one* of the following two
-  // pointers.  If we are storing a GeomVertexData/array index, we
-  // must not keep a pointer to the particular ArrayData we are
-  // working on (if we do, it may result in an extra copy of the data
-  // due to holding the reference count).
+  // It is important that we only store *one* of the following two pointers.
+  // If we are storing a GeomVertexDataarray index, we must not keep a pointer
+  // to the particular ArrayData we are working on (if we do, it may result in
+  // an extra copy of the data due to holding the reference count).
   PT(GeomVertexData) _vertex_data;
   int _array;
   PT(GeomVertexArrayData) _array_data;
@@ -228,8 +213,8 @@ private:
   int _start_row;
 
 #ifndef NDEBUG
-  // This is defined just for the benefit of having something non-NULL
-  // to return from a nassertr() call.
+  // This is defined just for the benefit of having something non-NULL to
+  // return from a nassertr() call.
   static unsigned char empty_buffer[100];
 #endif
 };

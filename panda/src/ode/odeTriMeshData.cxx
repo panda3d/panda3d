@@ -1,17 +1,16 @@
-// Filename: odeTriMeshData.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-#include "config_ode.h"
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeTriMeshData.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
+
 #include "odeTriMeshData.h"
 
 TypeHandle OdeTriMeshData::_type_handle;
@@ -126,8 +125,8 @@ OdeTriMeshData::
     _faces = 0;
   }
   if (_normals != 0) {
-    // This is never allocated?  Until we use _normals, assert that we
-    // don't accidentally free it here through some mistake.
+    // This is never allocated?  Until we use _normals, assert that we don't
+    // accidentally free it here through some mistake.
     nassertv(false);
     PANDA_FREE_ARRAY(_normals);
   }
@@ -210,7 +209,7 @@ process_primitive(const GeomPrimitive *primitive,
   GeomVertexReader vReader(vData, "vertex");
   GeomVertexReader nReader(vData, "normal");
   LVecBase3f vertex, normal;
-  //CPT(GeomPrimitive) dPrimitive = primitive->decompose();
+  // CPT(GeomPrimitive) dPrimitive = primitive->decompose();
   CPT(GeomPrimitive) dPrimitive = primitive;
   ostream &out = odetrimeshdata_cat.debug();
   out.width(6); out << "" << "process_primitive(" << *dPrimitive << ")" << "\n";
@@ -226,7 +225,7 @@ process_primitive(const GeomPrimitive *primitive,
         vReader.set_row_unsafe(vRowIndex);
         nReader.set_row_unsafe(vRowIndex);
         vertex = vReader.get_data3f();
-        //normal = nReader.get_data3f();
+        // normal = nReader.get_data3f();
         _faces[_num_faces].Indices[m] = _num_vertices;
 
         _vertices[_num_vertices].Vertex[0] = vertex[0];
@@ -247,7 +246,7 @@ process_primitive(const GeomPrimitive *primitive,
         vReader.set_row_unsafe(vRowIndex);
         nReader.set_row_unsafe(vRowIndex);
         vertex = vReader.get_data3f();
-        //normal = nReader.get_data3f();
+        // normal = nReader.get_data3f();
 
         _vertices[_num_vertices].Vertex[0] = vertex[0];
         _vertices[_num_vertices].Vertex[1] = vertex[1];

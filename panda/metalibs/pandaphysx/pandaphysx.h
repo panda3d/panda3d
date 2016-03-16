@@ -1,7 +1,8 @@
-// Filename: pandaphysx.h
-// Created by:  pratt (20Apr2006)
-// 
-////////////////////////////////////////////////////////////////////
+/**
+ * @file pandaphysx.h
+ * @author pratt
+ * @date 2006-04-20
+ */
 
 #ifndef PANDAPHYSX_H
 #define PANDAPHYSX_H

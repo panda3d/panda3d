@@ -1,16 +1,15 @@
-// Filename: pbitops.h
-// Created by:  drose (10May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pbitops.h
+ * @author drose
+ * @date 2008-05-10
+ */
 
 #ifndef PBITOPS_H
 #define PBITOPS_H
@@ -22,10 +21,8 @@
 #include <intrin.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-// This file defines a few low-level bit-operation routines, optimized
-// all to heck.
-////////////////////////////////////////////////////////////////////
+// This file defines a few low-level bit-operation routines, optimized all to
+// heck.
 
 INLINE int count_bits_in_word(PN_uint16 x);
 INLINE int count_bits_in_word(PN_uint32 x);

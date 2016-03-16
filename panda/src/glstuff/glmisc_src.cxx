@@ -1,16 +1,15 @@
-// Filename: glmisc_src.cxx
-// Created by:  drose (09Feb04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glmisc_src.cxx
+ * @author drose
+ * @date 2004-02-09
+ */
 
 #include "pandaSystem.h"
 
@@ -338,7 +337,7 @@ void CLP(init_classes)() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system(GLSYSTEM_NAME);
 
-  // We can't add any tags defining the available OpenGL capabilities,
-  // since we won't know those until we create a graphics context (and
-  // the answer may be different for different contexts).
+  // We can't add any tags defining the available OpenGL capabilities, since
+  // we won't know those until we create a graphics context (and the answer
+  // may be different for different contexts).
 }

@@ -1,16 +1,15 @@
-// Filename: dcparse.cxx
-// Created by:  drose (05Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcparse.cxx
+ * @author drose
+ * @date 2000-10-05
+ */
 
 #include "dcbase.h"
 #include "dcFile.h"
@@ -22,7 +21,7 @@
 
 void
 usage() {
-  cerr << 
+  cerr <<
     "\n"
     "Usage:\n\n"
     "dcparse [options]  [file1 file2 ...]\n"
@@ -32,7 +31,7 @@ usage() {
 void
 help() {
   usage();
-  cerr << 
+  cerr <<
     "This program reads one or more DC files, which are used to describe the\n"
     "communication channels in the distributed class system.  By default,\n"
     "the file(s) are read and concatenated, and a single hash code is printed\n"
@@ -58,7 +57,7 @@ help() {
 }
 
 void
-write_class_hierarchy(int indent_level, const DCFile &file, 
+write_class_hierarchy(int indent_level, const DCFile &file,
                       const DCClass *this_dclass) {
   indent(cout, indent_level)
     << this_dclass->get_name() << "\n";
@@ -117,7 +116,7 @@ write_complete_field_list(const DCFile &file) {
 
 int
 main(int argc, char *argv[]) {
-  //  extern char *optarg;
+  // extern char *optarg;
   extern int optind;
   const char *optstr = "bvcfh";
 

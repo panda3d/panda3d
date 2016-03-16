@@ -1,16 +1,15 @@
-// Filename: clientTrackerDevice.h
-// Created by:  drose (25Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clientTrackerDevice.h
+ * @author drose
+ * @date 2001-01-25
+ */
 
 #ifndef CLIENTTRACKERDEVICE_H
 #define CLIENTTRACKERDEVICE_H
@@ -20,12 +19,10 @@
 #include "clientDevice.h"
 #include "trackerData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientTrackerDevice
-// Description : A device, attached to the ClientBase by a
-//               TrackerNode, that records the data from a single
-//               tracker device.
-////////////////////////////////////////////////////////////////////
+/**
+ * A device, attached to the ClientBase by a TrackerNode, that records the
+ * data from a single tracker device.
+ */
 class EXPCL_PANDA_DEVICE ClientTrackerDevice : public ClientDevice {
 protected:
   INLINE ClientTrackerDevice(ClientBase *client, const string &device_name);

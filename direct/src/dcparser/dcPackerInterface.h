@@ -1,16 +1,15 @@
-// Filename: dcPackerInterface.h
-// Created by:  drose (15Jun04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcPackerInterface.h
+ * @author drose
+ * @date 2004-06-15
+ */
 
 #ifndef DCPACKERINTERFACE_H
 #define DCPACKERINTERFACE_H
@@ -30,16 +29,16 @@ class DCPackData;
 class DCPackerCatalog;
 
 BEGIN_PUBLISH
-// This enumerated type is returned by get_pack_type() and represents
-// the best choice for a subsequent call to pack_*() or unpack_*().
+// This enumerated type is returned by get_pack_type() and represents the best
+// choice for a subsequent call to pack_*() or unpack_*().
 enum DCPackType {
   // This one should never be returned in a normal situation.
   PT_invalid,
 
-  // These PackTypes are all fundamental types, and should be packed
-  // (or unpacked) with the corresponding call to pack_double(),
-  // pack_int(), etc.  PT_blob is the same as PT_string, but implies
-  // that the string contains binary data.
+  // These PackTypes are all fundamental types, and should be packed (or
+  // unpacked) with the corresponding call to pack_double(), pack_int(), etc.
+  // PT_blob is the same as PT_string, but implies that the string contains
+  // binary data.
   PT_double,
   PT_int,
   PT_uint,
@@ -48,9 +47,9 @@ enum DCPackType {
   PT_string,
   PT_blob,
 
-  // The remaining PackTypes imply a need to call push() and pop().
-  // They are all variants on the same thing: a list of nested fields,
-  // but the PackType provides a bit of a semantic context.
+  // The remaining PackTypes imply a need to call push() and pop(). They are
+  // all variants on the same thing: a list of nested fields, but the PackType
+  // provides a bit of a semantic context.
   PT_array,
   PT_field,
   PT_class,
@@ -58,16 +57,13 @@ enum DCPackType {
 };
 END_PUBLISH
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCPackerInterface
-// Description : This defines the internal interface for packing
-//               values into a DCField.  The various different DC
-//               objects inherit from this.  
-//
-//               Normally these methods are called only by the
-//               DCPacker object; the user wouldn't normally call
-//               these directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the internal interface for packing values into a DCField.  The
+ * various different DC objects inherit from this.
+ *
+ * Normally these methods are called only by the DCPacker object; the user
+ * wouldn't normally call these directly.
+ */
 class EXPCL_DIRECT DCPackerInterface {
 public:
   DCPackerInterface(const string &name = string());
@@ -119,26 +115,26 @@ public:
                            bool &pack_error, bool &range_error) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
-  virtual void unpack_double(const char *data, size_t length, size_t &p, 
+  virtual void unpack_double(const char *data, size_t length, size_t &p,
                              double &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_int(const char *data, size_t length, size_t &p, 
+  virtual void unpack_int(const char *data, size_t length, size_t &p,
                           int &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_uint(const char *data, size_t length, size_t &p, 
+  virtual void unpack_uint(const char *data, size_t length, size_t &p,
                            unsigned int &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_int64(const char *data, size_t length, size_t &p, 
+  virtual void unpack_int64(const char *data, size_t length, size_t &p,
                             PN_int64 &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_uint64(const char *data, size_t length, size_t &p, 
+  virtual void unpack_uint64(const char *data, size_t length, size_t &p,
                              PN_uint64 &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_string(const char *data, size_t length, size_t &p, 
+  virtual void unpack_string(const char *data, size_t length, size_t &p,
                              string &value, bool &pack_error, bool &range_error) const;
-  virtual bool unpack_validate(const char *data, size_t length, size_t &p, 
+  virtual bool unpack_validate(const char *data, size_t length, size_t &p,
                                bool &pack_error, bool &range_error) const;
   virtual bool unpack_skip(const char *data, size_t length, size_t &p,
                            bool &pack_error) const;
 
-  // These are the low-level interfaces for packing and unpacking
-  // numbers from a buffer.  You're responsible for making sure the
-  // buffer has enough room, and for incrementing the pointer.
+  // These are the low-level interfaces for packing and unpacking numbers from
+  // a buffer.  You're responsible for making sure the buffer has enough room,
+  // and for incrementing the pointer.
   INLINE static void do_pack_int8(char *buffer, int value);
   INLINE static void do_pack_int16(char *buffer, int value);
   INLINE static void do_pack_int32(char *buffer, int value);
@@ -159,13 +155,13 @@ public:
   INLINE static PN_uint64 do_unpack_uint64(const char *buffer);
   INLINE static double do_unpack_float64(const char *buffer);
 
-  INLINE static void validate_int_limits(int value, int num_bits, 
+  INLINE static void validate_int_limits(int value, int num_bits,
                                          bool &range_error);
-  INLINE static void validate_int64_limits(PN_int64 value, int num_bits, 
+  INLINE static void validate_int64_limits(PN_int64 value, int num_bits,
                                            bool &range_error);
-  INLINE static void validate_uint_limits(unsigned int value, int num_bits, 
+  INLINE static void validate_uint_limits(unsigned int value, int num_bits,
                                           bool &range_error);
-  INLINE static void validate_uint64_limits(PN_uint64 value, int num_bits, 
+  INLINE static void validate_uint64_limits(PN_uint64 value, int num_bits,
                                             bool &range_error);
 
   const DCPackerCatalog *get_catalog() const;
@@ -174,8 +170,8 @@ protected:
   virtual bool do_check_match(const DCPackerInterface *other) const=0;
 
 public:
-  // These are declared public just so the derived classes can call
-  // them easily.  They're not intended to be called directly.
+  // These are declared public just so the derived classes can call them
+  // easily.  They're not intended to be called directly.
 
   virtual bool do_check_match_simple_parameter(const DCSimpleParameter *other) const;
   virtual bool do_check_match_class_parameter(const DCClassParameter *other) const;

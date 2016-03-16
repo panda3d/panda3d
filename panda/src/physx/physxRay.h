@@ -1,16 +1,15 @@
-// Filename: physxRay.h
-// Created by:  enn0x (21Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxRay.h
+ * @author enn0x
+ * @date 2009-10-21
+ */
 
 #ifndef PHYSXRAY_H
 #define PHYSXRAY_H
@@ -20,11 +19,10 @@
 
 #include "config_physx.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxRay
-// Description : Represents an ray as an origin and direction.
-//               The ray will be infinite if no length is given.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents an ray as an origin and direction.  The ray will be infinite if
+ * no length is given.
+ */
 class EXPCL_PANDAPHYSX PhysxRay {
 
 PUBLISHED:

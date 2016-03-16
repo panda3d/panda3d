@@ -1,16 +1,15 @@
-// Filename: cullTraverser.cxx
-// Created by:  drose (23eb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cullTraverser.cxx
+ * @author drose
+ * @date 2002-02-23
+ */
 
 #include "config_pgraph.h"
 #include "cullTraverser.h"
@@ -43,11 +42,9 @@ PStatCollector CullTraverser::_geoms_occluded_pcollector("Geoms:Occluded");
 
 TypeHandle CullTraverser::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CullTraverser::
 CullTraverser() :
   _gsg(NULL),
@@ -61,11 +58,9 @@ CullTraverser() :
   _effective_incomplete_render = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CullTraverser::
 CullTraverser(const CullTraverser &copy) :
   _gsg(copy._gsg),
@@ -82,13 +77,10 @@ CullTraverser(const CullTraverser &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::set_scene
-//       Access: Published, Virtual
-//  Description: Sets the SceneSetup object that indicates the initial
-//               camera position, etc.  This must be called before
-//               traversal begins.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the SceneSetup object that indicates the initial camera position, etc.
+ * This must be called before traversal begins.
+ */
 void CullTraverser::
 set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
           bool dr_incomplete_render) {
@@ -107,20 +99,17 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
   _effective_incomplete_render = _gsg->get_incomplete_render() && dr_incomplete_render;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::traverse
-//       Access: Published
-//  Description: Begins the traversal from the indicated node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins the traversal from the indicated node.
+ */
 void CullTraverser::
 traverse(const NodePath &root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
   nassertv(_scene_setup != (SceneSetup *)NULL);
 
   if (allow_portal_cull) {
-    // This _view_frustum is in cull_center space
-    //Erik: obsolete?
-    //PT(GeometricBoundingVolume) vf = _view_frustum;
+    // This _view_frustum is in cull_center space Erik: obsolete?
+    // PT(GeometricBoundingVolume) vf = _view_frustum;
 
     GeometricBoundingVolume *local_frustum = NULL;
     PT(BoundingVolume) bv = _scene_setup->get_lens()->make_bounds();
@@ -167,25 +156,20 @@ traverse(const NodePath &root) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::traverse
-//       Access: Published
-//  Description: Traverses from the next node with the given
-//               data, which has been constructed with the node but
-//               has not yet been converted into the node's space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Traverses from the next node with the given data, which has been
+ * constructed with the node but has not yet been converted into the node's
+ * space.
+ */
 void CullTraverser::
 traverse(CullTraverserData &data) {
   do_traverse(data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::traverse_below
-//       Access: Published, Virtual
-//  Description: Traverses all the children of the indicated node,
-//               with the given data, which has been converted into
-//               the node's space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Traverses all the children of the indicated node, with the given data,
+ * which has been converted into the node's space.
+ */
 void CullTraverser::
 traverse_below(CullTraverserData &data) {
   _nodes_pcollector.add_level(1);
@@ -198,9 +182,8 @@ traverse_below(CullTraverserData &data) {
     // Check for a decal effect.
     const RenderEffects *node_effects = node_reader->get_effects();
     if (node_effects->has_decal()) {
-      // If we *are* implementing decals with DepthOffsetAttribs,
-      // apply it now, so that each child of this node gets offset by
-      // a tiny amount.
+      // If we *are* implementing decals with DepthOffsetAttribs, apply it
+      // now, so that each child of this node gets offset by a tiny amount.
       data._state = data._state->compose(get_depth_offset_state());
 #ifndef NDEBUG
       // This is just a sanity check message.
@@ -232,24 +215,18 @@ traverse_below(CullTraverserData &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::end_traverse
-//       Access: Published, Virtual
-//  Description: Should be called when the traverser has finished
-//               traversing its scene, this gives it a chance to do
-//               any necessary finalization.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called when the traverser has finished traversing its scene, this
+ * gives it a chance to do any necessary finalization.
+ */
 void CullTraverser::
 end_traverse() {
   _cull_handler->end_traverse();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::draw_bounding_volume
-//       Access: Published
-//  Description: Draws an appropriate visualization of the indicated
-//               bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws an appropriate visualization of the indicated bounding volume.
+ */
 void CullTraverser::
 draw_bounding_volume(const BoundingVolume *vol,
                      const TransformState *internal_transform) const {
@@ -269,25 +246,19 @@ draw_bounding_volume(const BoundingVolume *vol,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::is_in_view
-//       Access: Protected, Virtual
-//  Description: Returns true if the current node is fully or
-//               partially within the viewing area and should be
-//               drawn, or false if it (and all of its children)
-//               should be pruned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the current node is fully or partially within the viewing
+ * area and should be drawn, or false if it (and all of its children) should
+ * be pruned.
+ */
 bool CullTraverser::
 is_in_view(CullTraverserData &data) {
   return data.is_in_view(_camera_mask);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::show_bounds
-//       Access: Private
-//  Description: Draws an appropriate visualization of the node's
-//               external bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws an appropriate visualization of the node's external bounding volume.
+ */
 void CullTraverser::
 show_bounds(CullTraverserData &data, bool tight) {
   PandaNode *node = data.node();
@@ -320,12 +291,9 @@ show_bounds(CullTraverserData &data, bool tight) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::make_bounds_viz
-//       Access: Private, Static
-//  Description: Returns an appropriate visualization of the indicated
-//               bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an appropriate visualization of the indicated bounding volume.
+ */
 PT(Geom) CullTraverser::
 make_bounds_viz(const BoundingVolume *vol) {
   PT(Geom) geom;
@@ -446,12 +414,10 @@ make_bounds_viz(const BoundingVolume *vol) {
   return geom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::make_tight_bounds_viz
-//       Access: Private
-//  Description: Returns a bounding-box visualization of the indicated
-//               node's "tight" bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a bounding-box visualization of the indicated node's "tight"
+ * bounding volume.
+ */
 PT(Geom) CullTraverser::
 make_tight_bounds_viz(PandaNode *node) const {
   PT(Geom) geom;
@@ -480,8 +446,8 @@ make_tight_bounds_viz(PandaNode *node) const {
 
     PT(GeomLinestrips) strip = new GeomLinestrips(Geom::UH_stream);
 
-    // We wind one long linestrip around the wireframe cube.  This
-    // does require backtracking a few times here and there.
+    // We wind one long linestrip around the wireframe cube.  This does
+    // require backtracking a few times here and there.
     strip->add_vertex(0);
     strip->add_vertex(1);
     strip->add_vertex(3);
@@ -507,12 +473,10 @@ make_tight_bounds_viz(PandaNode *node) const {
   return geom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::compute_point
-//       Access: Private, Static
-//  Description: Returns a point on the surface of the sphere.
-//               latitude and longitude range from 0.0 to 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a point on the surface of the sphere.  latitude and longitude range
+ * from 0.0 to 1.0.
+ */
 LVertex CullTraverser::
 compute_point(const BoundingSphere *sphere,
               PN_stdfloat latitude, PN_stdfloat longitude) {
@@ -526,16 +490,14 @@ compute_point(const BoundingSphere *sphere,
   return p * sphere->get_radius() + sphere->get_center();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::get_bounds_outer_viz_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for rendering the outside
-//               surfaces of the bounding volume visualizations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering the outside surfaces of the bounding
+ * volume visualizations.
+ */
 CPT(RenderState) CullTraverser::
 get_bounds_outer_viz_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
+  // Once someone asks for this pointer, we hold its reference count and never
+  // free it.
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
@@ -546,16 +508,14 @@ get_bounds_outer_viz_state() {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::get_bounds_inner_viz_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for rendering the inside
-//               surfaces of the bounding volume visualizations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering the inside surfaces of the bounding
+ * volume visualizations.
+ */
 CPT(RenderState) CullTraverser::
 get_bounds_inner_viz_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
+  // Once someone asks for this pointer, we hold its reference count and never
+  // free it.
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
@@ -566,16 +526,13 @@ get_bounds_inner_viz_state() {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::get_depth_offset_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for increasing the DepthOffset
-//               by one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for increasing the DepthOffset by one.
+ */
 CPT(RenderState) CullTraverser::
 get_depth_offset_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
+  // Once someone asks for this pointer, we hold its reference count and never
+  // free it.
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make

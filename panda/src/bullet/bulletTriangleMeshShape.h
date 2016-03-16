@@ -1,16 +1,15 @@
-// Filename: bulletTriangleMeshShape.h
-// Created by:  enn0x (09Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletTriangleMeshShape.h
+ * @author enn0x
+ * @date 2010-02-09
+ */
 
 #ifndef __BULLET_TRIANGLE_MESH_SHAPE_H__
 #define __BULLET_TRIANGLE_MESH_SHAPE_H__
@@ -24,10 +23,9 @@
 
 class BulletTriangleMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletTriangleMeshShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDABULLET BulletTriangleMeshShape : public BulletShape {
 private:
   INLINE BulletTriangleMeshShape();
@@ -72,7 +70,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletTriangleMeshShape", 
+    register_type(_type_handle, "BulletTriangleMeshShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

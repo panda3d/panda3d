@@ -1,16 +1,15 @@
-// Filename: eggScalarTablePointer.h
-// Created by:  drose (18Jul03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggScalarTablePointer.h
+ * @author drose
+ * @date 2003-07-18
+ */
 
 #ifndef EGGSCALARTABLEPOINTER_H
 #define EGGSCALARTABLEPOINTER_H
@@ -22,18 +21,16 @@
 #include "eggSAnimData.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggScalarTablePointer
-// Description : This stores a pointer back to an EggSAnimData table
-//               (i.e. an <S$Anim> entry in an egg file),
-//               corresponding to the animation data from a single
-//               bundle for this slider.
-////////////////////////////////////////////////////////////////////
+/**
+ * This stores a pointer back to an EggSAnimData table (i.e.  an <S$Anim>
+ * entry in an egg file), corresponding to the animation data from a single
+ * bundle for this slider.
+ */
 class EggScalarTablePointer : public EggSliderPointer {
 public:
   EggScalarTablePointer(EggObject *object);
 
-  virtual double get_frame_rate() const; 
+  virtual double get_frame_rate() const;
   virtual int get_num_frames() const;
   virtual void extend_to(int num_frames);
   virtual double get_frame(int n) const;
@@ -62,5 +59,3 @@ private:
 };
 
 #endif
-
-

@@ -1,16 +1,15 @@
-// Filename: configVariableInt64.h
-// Created by:  drose (19Dec07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configVariableInt64.h
+ * @author drose
+ * @date 2007-12-19
+ */
 
 #ifndef CONFIGVARIABLEINT64_H
 #define CONFIGVARIABLEINT64_H
@@ -19,11 +18,10 @@
 #include "configVariable.h"
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableInt64
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a 64-bit integer type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a 64-bit
+ * integer type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableInt64 : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableInt64(const string &name);

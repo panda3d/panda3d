@@ -1,16 +1,15 @@
-// Filename: dxfFile.h
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxfFile.h
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #ifndef DXFFILE_H
 #define DXFFILE_H
@@ -28,14 +27,11 @@
 static const int DXF_max_line = 256;
 static const int DXF_num_colors = 256;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFFile
-// Description : A generic DXF-reading class.  This class can read a
-//               DXF file but doesn't actually do anything with the
-//               data; it's intended to be inherited from and the
-//               appropriate functions overridden (particularly
-//               DoneEntity()).
-////////////////////////////////////////////////////////////////////
+/**
+ * A generic DXF-reading class.  This class can read a DXF file but doesn't
+ * actually do anything with the data; it's intended to be inherited from and
+ * the appropriate functions overridden (particularly DoneEntity()).
+ */
 class DXFFile : public MemoryBase {
 public:
   DXFFile();
@@ -44,10 +40,10 @@ public:
   void process(Filename filename);
   void process(istream *in, bool owns_in);
 
-  // These functions are called as the file is processed.  These are
-  // the main hooks for redefining how the class should dispense its
-  // data.  As each function is called, the state stored in the
-  // DXFFile class reflects the data that was most recently read.
+  // These functions are called as the file is processed.  These are the main
+  // hooks for redefining how the class should dispense its data.  As each
+  // function is called, the state stored in the DXFFile class reflects the
+  // data that was most recently read.
 
   virtual void begin_file();
   virtual void begin_section();
@@ -57,10 +53,10 @@ public:
   virtual void end_file();
   virtual void error();
 
-  // new_layer() is called whenever the DXFFile class encounters a new
-  // Layer definition, and must allocate a DXFLayer instance.  This
-  // function is provided so that user code may force allocate of a
-  // specialized DXFLayer instance instead.
+  // new_layer() is called whenever the DXFFile class encounters a new Layer
+  // definition, and must allocate a DXFLayer instance.  This function is
+  // provided so that user code may force allocate of a specialized DXFLayer
+  // instance instead.
   virtual DXFLayer *new_layer(const string &name) {
     return new DXFLayer(name);
   }
@@ -100,32 +96,30 @@ public:
     PF_continuous_linetype = 0x80,
   };
 
-  // This is a table of standard Autocad colors.  DXF files can store
-  // only a limited range of colors; specifically, the 255 colors
-  // defined by Autocad.
+  // This is a table of standard Autocad colors.  DXF files can store only a
+  // limited range of colors; specifically, the 255 colors defined by Autocad.
   struct Color {
     double r, g, b;
   };
   static Color _colors[DXF_num_colors];
 
-  // find_color() returns the index of the closest matching AutoCAD
-  // color to the indicated r, g, b.
+  // find_color() returns the index of the closest matching AutoCAD color to
+  // the indicated r, g, b.
   static int find_color(double r, double g, double b);
 
-  // get_color() returns the r,g,b of the current entity.  It is valid
-  // at the time done_entity() is called.
+  // get_color() returns the r,g,b of the current entity.  It is valid at the
+  // time done_entity() is called.
   const Color &get_color() const;
 
-  // Some entities are defined in world coordinates, in 3-d space;
-  // other entities are inherently 2-d in nature and are defined in
-  // planar coordinates and must be converted to 3-d space.  Call this
-  // function from done_entity() to convert a 2-d entity to 3-d world
-  // coordinates.
+  // Some entities are defined in world coordinates, in 3-d space; other
+  // entities are inherently 2-d in nature and are defined in planar
+  // coordinates and must be converted to 3-d space.  Call this function from
+  // done_entity() to convert a 2-d entity to 3-d world coordinates.
   void ocs_2_wcs();
 
-  // These members indicate the current state and describe properties
-  // of the current thing being processed.  They are valid at
-  // done_entity(), and at other times.
+  // These members indicate the current state and describe properties of the
+  // current thing being processed.  They are valid at done_entity(), and at
+  // other times.
   int _flags;
   Section _section;
   Entity _entity;
@@ -134,8 +128,8 @@ public:
   int _color_index;
   DXFLayer *_layer;
 
-  // _verts is the list of vertices associated with the current
-  // entity.  It is valid at the time done_entity() is called.
+  // _verts is the list of vertices associated with the current entity.  It is
+  // valid at the time done_entity() is called.
   DXFVertices _verts;
 
   // This is the set of layers encountered within the DXF file.

@@ -1,22 +1,19 @@
-// Filename: bulletHeightfieldShape.I
-// Created by:  enn0x (05Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletHeightfieldShape.I
+ * @author enn0x
+ * @date 2010-02-05
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHeightfieldShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE BulletHeightfieldShape::
 ~BulletHeightfieldShape() {
 
@@ -24,11 +21,9 @@ INLINE BulletHeightfieldShape::
   delete _data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHeightfieldShape::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE BulletHeightfieldShape::
 BulletHeightfieldShape(const BulletHeightfieldShape &copy) :
   _shape(copy._shape),
@@ -39,11 +34,9 @@ BulletHeightfieldShape(const BulletHeightfieldShape &copy) :
   memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(float));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHeightfieldShape::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void BulletHeightfieldShape::
 operator = (const BulletHeightfieldShape &copy) {
 
@@ -54,4 +47,3 @@ operator = (const BulletHeightfieldShape &copy) {
   _data = new float[_num_rows * _num_cols];
   memcpy(_data, copy._data, _num_rows * _num_cols * sizeof(float));
 }
-

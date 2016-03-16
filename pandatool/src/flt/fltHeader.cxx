@@ -1,16 +1,15 @@
-// Filename: fltHeader.cxx
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltHeader.cxx
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #include "fltHeader.h"
 #include "fltRecordReader.h"
@@ -26,21 +25,16 @@
 
 TypeHandle FltHeader::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::Constructor
-//       Access: Public
-//  Description: The FltHeader constructor accepts a PathReplace
-//               pointer; it uses this object to automatically convert
-//               all external filename and texture references.  (This
-//               is necessary because the FltHeader has to look in the
-//               same directory as the texture to find the .attr file,
-//               so it must pre-convert at least the texture
-//               references.)
-//
-//               Most of the other file converters do not have this
-//               requirement, so they do not need to pre-convert any
-//               pathname references.
-////////////////////////////////////////////////////////////////////
+/**
+ * The FltHeader constructor accepts a PathReplace pointer; it uses this
+ * object to automatically convert all external filename and texture
+ * references.  (This is necessary because the FltHeader has to look in the
+ * same directory as the texture to find the .attr file, so it must pre-
+ * convert at least the texture references.)
+ *
+ * Most of the other file converters do not have this requirement, so they do
+ * not need to pre-convert any pathname references.
+ */
 FltHeader::
 FltHeader(PathReplace *path_replace) : FltBeadID(this) {
   if (path_replace == (PathReplace *)NULL) {
@@ -109,15 +103,12 @@ FltHeader(PathReplace *path_replace) : FltBeadID(this) {
   _auto_attr_update = AU_if_missing;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::apply_converted_filenames
-//       Access: Public, Virtual
-//  Description: Walks the hierarchy at this record and below and
-//               copies the _converted_filename record into the
-//               _orig_filename record, so the flt file will be
-//               written out with the converted filename instead of
-//               what was originally read in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy at this record and below and copies the
+ * _converted_filename record into the _orig_filename record, so the flt file
+ * will be written out with the converted filename instead of what was
+ * originally read in.
+ */
 void FltHeader::
 apply_converted_filenames() {
   Textures::const_iterator ti;
@@ -129,51 +120,39 @@ apply_converted_filenames() {
   FltBeadID::apply_converted_filenames();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::set_path_replace
-//       Access: Public
-//  Description: Replaces the PathReplace object (which specifies how
-//               to mangle paths from the source to the destination
-//               file) with a new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the PathReplace object (which specifies how to mangle paths from
+ * the source to the destination file) with a new one.
+ */
 void FltHeader::
 set_path_replace(PathReplace *path_replace) {
   _path_replace = path_replace;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_path_replace
-//       Access: Public
-//  Description: Returns a pointer to the PathReplace object
-//               associated with this converter.  If the converter is
-//               non-const, this returns a non-const pointer, which
-//               can be adjusted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the PathReplace object associated with this converter.
+ * If the converter is non-const, this returns a non-const pointer, which can
+ * be adjusted.
+ */
 PathReplace *FltHeader::
 get_path_replace() {
   return _path_replace;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_path_replace
-//       Access: Public
-//  Description: Returns a pointer to the PathReplace object
-//               associated with this converter.  If the converter is
-//               non-const, this returns a non-const pointer, which
-//               can be adjusted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the PathReplace object associated with this converter.
+ * If the converter is non-const, this returns a non-const pointer, which can
+ * be adjusted.
+ */
 const PathReplace *FltHeader::
 get_path_replace() const {
   return _path_replace;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::convert_path
-//       Access: Public
-//  Description: Uses the PathReplace object to convert the named
-//               filename as read from the flt record to its actual
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the PathReplace object to convert the named filename as read from the
+ * flt record to its actual name.
+ */
 Filename FltHeader::
 convert_path(const Filename &orig_filename, const DSearchPath &additional_path) {
   DSearchPath file_path;
@@ -184,36 +163,27 @@ convert_path(const Filename &orig_filename, const DSearchPath &additional_path) 
   return _path_replace->convert_path(orig_filename, file_path);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::set_flt_filename
-//       Access: Public
-//  Description: Sets the filename--especially the directory part--in
-//               which the flt file is considered to reside.  This is
-//               also implicitly set by read_flt().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the filename--especially the directory part--in which the flt file is
+ * considered to reside.  This is also implicitly set by read_flt().
+ */
 void FltHeader::
 set_flt_filename(const Filename &flt_filename) {
   _flt_filename = flt_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_flt_filename
-//       Access: Public
-//  Description: Returns the directory in which the flt file is
-//               considered to reside.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the directory in which the flt file is considered to reside.
+ */
 const Filename &FltHeader::
 get_flt_filename() const {
   return _flt_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::read_flt
-//       Access: Public
-//  Description: Opens the indicated filename for reading and attempts
-//               to read the complete Flt file.  Returns FE_ok on
-//               success, otherwise on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename for reading and attempts to read the complete
+ * Flt file.  Returns FE_ok on success, otherwise on failure.
+ */
 FltError FltHeader::
 read_flt(Filename filename) {
   filename.set_binary();
@@ -230,13 +200,10 @@ read_flt(Filename filename) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::read_flt
-//       Access: Public
-//  Description: Attempts to read a complete Flt file from the
-//               already-opened stream.  Returns FE_ok on success,
-//               otherwise on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to read a complete Flt file from the already-opened stream.
+ * Returns FE_ok on success, otherwise on failure.
+ */
 FltError FltHeader::
 read_flt(istream &in) {
   FltRecordReader reader(in);
@@ -262,13 +229,10 @@ read_flt(istream &in) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_flt
-//       Access: Public
-//  Description: Opens the indicated filename for writing and attempts
-//               to write the complete Flt file.  Returns FE_ok on
-//               success, otherwise on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename for writing and attempts to write the complete
+ * Flt file.  Returns FE_ok on success, otherwise on failure.
+ */
 FltError FltHeader::
 write_flt(Filename filename) {
   filename.set_binary();
@@ -281,8 +245,8 @@ write_flt(Filename filename) {
 
 #ifdef HAVE_ZLIB
   if (filename.get_extension() == "pz") {
-    // The filename ends in .pz, which means to automatically compress
-    // the flt file that we write.
+    // The filename ends in .pz, which means to automatically compress the flt
+    // file that we write.
     OCompressStream compressor(&out, false);
     return write_flt(compressor);
   }
@@ -291,13 +255,10 @@ write_flt(Filename filename) {
   return write_flt(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_flt
-//       Access: Public
-//  Description: Attempts to write a complete Flt file to the
-//               already-opened stream.  Returns FE_ok on success,
-//               otherwise on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to write a complete Flt file to the already-opened stream.
+ * Returns FE_ok on success, otherwise on failure.
+ */
 FltError FltHeader::
 write_flt(ostream &out) {
   FltRecordWriter writer(out);
@@ -310,51 +271,40 @@ write_flt(ostream &out) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::set_auto_attr_update
-//       Access: Public
-//  Description: Controls whether texture .attr files are written
-//               automatically when write_flt() is called.  There are
-//               three possibilities:
-//
-//               AU_none: the .attr files are not written
-//               automatically; they must be written explicitly via a
-//               call to FltTexture::write_attr_data() if you want
-//               them to be written.
-//
-//               AU_if_missing: the .attr files are written only if
-//               they do not already exist.  This will not update any
-//               .attr files, even if the data is changed.
-//
-//               AU_always: the .attr files are always rewritten, even
-//               if they already exist and even if the data has not
-//               changed.
-//
-//               The default is AU_if_missing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Controls whether texture .attr files are written automatically when
+ * write_flt() is called.  There are three possibilities:
+ *
+ * AU_none: the .attr files are not written automatically; they must be
+ * written explicitly via a call to FltTexture::write_attr_data() if you want
+ * them to be written.
+ *
+ * AU_if_missing: the .attr files are written only if they do not already
+ * exist.  This will not update any .attr files, even if the data is changed.
+ *
+ * AU_always: the .attr files are always rewritten, even if they already exist
+ * and even if the data has not changed.
+ *
+ * The default is AU_if_missing.
+ */
 void FltHeader::
 set_auto_attr_update(FltHeader::AttrUpdate attr) {
   _auto_attr_update = attr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_auto_attr_update
-//       Access: Public
-//  Description: Returns the current setting of the auto_attr_update
-//               flag.  See sett_auto_attr_update().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current setting of the auto_attr_update flag.  See
+ * sett_auto_attr_update().
+ */
 FltHeader::AttrUpdate FltHeader::
 get_auto_attr_update() const {
   return _auto_attr_update;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_flt_version
-//       Access: Public
-//  Description: Returns the version number of the flt file as
-//               reported in the header, times 100.  Divide by 100 to
-//               get the floating-point version number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the version number of the flt file as reported in the header, times
+ * 100.  Divide by 100 to get the floating-point version number.
+ */
 int FltHeader::
 get_flt_version() const {
   if (_format_revision_level < 1420) {
@@ -364,13 +314,10 @@ get_flt_version() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::set_flt_version
-//       Access: Public
-//  Description: Changes the version number of the flt file that will
-//               be reported in the header.  Pass in the
-//               floating-point version number times 100.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the version number of the flt file that will be reported in the
+ * header.  Pass in the floating-point version number times 100.
+ */
 void FltHeader::
 set_flt_version(int version) {
   if (version < 14.2) {
@@ -380,40 +327,32 @@ set_flt_version(int version) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::min_flt_version
-//       Access: Public, Static
-//  Description: Returns the earliest flt version number that this
-//               codebase supports (times 100).  Earlier versions will
-//               probably not work.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the earliest flt version number that this codebase supports (times
+ * 100).  Earlier versions will probably not work.
+ */
 int FltHeader::
 min_flt_version() {
   return 1400;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::max_flt_version
-//       Access: Public, Static
-//  Description: Returns the latest flt version number that this
-//               codebase is known to support (times 100).  Later
-//               versions might work, but then again they may not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the latest flt version number that this codebase is known to
+ * support (times 100).  Later versions might work, but then again they may
+ * not.
+ */
 int FltHeader::
 max_flt_version() {
   return 1570;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::check_version
-//       Access: Public
-//  Description: Verifies that the version number read from the header
-//               is an understood version number, and prints a warning
-//               to the user if this is not so--the read may or may
-//               not succeed.  Returns true if the version number is
-//               acceptable (and no warning is printed), or false if
-//               it is questionable (and a warning is printed).
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the version number read from the header is an understood
+ * version number, and prints a warning to the user if this is not so--the
+ * read may or may not succeed.  Returns true if the version number is
+ * acceptable (and no warning is printed), or false if it is questionable (and
+ * a warning is printed).
+ */
 bool FltHeader::
 check_version() const {
   int version = get_flt_version();
@@ -440,13 +379,10 @@ check_version() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_units
-//       Access: Public
-//  Description: Returns the units indicated by the flt header, or
-//               DU_invalid if the units in the header are not
-//               understood.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the units indicated by the flt header, or DU_invalid if the units
+ * in the header are not understood.
+ */
 DistanceUnit FltHeader::
 get_units() const {
   switch (_vertex_units) {
@@ -470,23 +406,18 @@ get_units() const {
   return DU_invalid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::has_instance
-//       Access: Public
-//  Description: Returns true if a instance subtree with the given
-//               index has been defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a instance subtree with the given index has been defined.
+ */
 bool FltHeader::
 has_instance(int instance_index) const {
   return (_instances.count(instance_index) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_instance
-//       Access: Public
-//  Description: Returns the instance subtree associated with the
-//               given index, or NULL if there is no such instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the instance subtree associated with the given index, or NULL if
+ * there is no such instance.
+ */
 FltInstanceDefinition *FltHeader::
 get_instance(int instance_index) const {
   Instances::const_iterator mi;
@@ -497,67 +428,52 @@ get_instance(int instance_index) const {
   return (FltInstanceDefinition *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::clear_instances
-//       Access: Public
-//  Description: Removes all instance subtrees from the instance pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all instance subtrees from the instance pool.
+ */
 void FltHeader::
 clear_instances() {
   _instances.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::add_instance
-//       Access: Public
-//  Description: Defines a new instance subtree.  This subtree is not
-//               itself part of the hierarchy; it marks geometry that
-//               may be instanced to various beads elsewhere in the
-//               hierarchy by creating a corresponding FltInstanceRef
-//               bead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new instance subtree.  This subtree is not itself part of the
+ * hierarchy; it marks geometry that may be instanced to various beads
+ * elsewhere in the hierarchy by creating a corresponding FltInstanceRef bead.
+ */
 void FltHeader::
 add_instance(FltInstanceDefinition *instance) {
   _instances[instance->_instance_index] = instance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::remove_instance
-//       Access: Public
-//  Description: Removes a particular instance subtree from the pool,
-//               if it exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a particular instance subtree from the pool, if it exists.
+ */
 void FltHeader::
 remove_instance(int instance_index) {
   _instances.erase(instance_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_num_vertices
-//       Access: Public
-//  Description: Returns the number of vertices in the vertex palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vertices in the vertex palette.
+ */
 int FltHeader::
 get_num_vertices() const {
   return _vertices.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_vertex
-//       Access: Public
-//  Description: Returns the nth vertex of the vertex palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth vertex of the vertex palette.
+ */
 FltVertex *FltHeader::
 get_vertex(int n) const {
   nassertr(n >= 0 && n < (int)_vertices.size(), 0);
   return _vertices[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::clear_vertices
-//       Access: Public
-//  Description: Removes all vertices from the vertex palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all vertices from the vertex palette.
+ */
 void FltHeader::
 clear_vertices() {
   _vertices.clear();
@@ -567,13 +483,10 @@ clear_vertices() {
   _vertex_lookups_stale = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::add_vertex
-//       Access: Public
-//  Description: Adds a new vertex to the end of the vertex palette.
-//               If this particular vertex was already present in the
-//               palette, does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new vertex to the end of the vertex palette.  If this particular
+ * vertex was already present in the palette, does nothing.
+ */
 void FltHeader::
 add_vertex(FltVertex *vertex) {
   bool inserted = _unique_vertices.insert(vertex).second;
@@ -584,14 +497,11 @@ add_vertex(FltVertex *vertex) {
   nassertv(_unique_vertices.size() == _vertices.size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_vertex_by_offset
-//       Access: Public
-//  Description: Returns the particular vertex pointer associated with
-//               the given byte offset into the vertex palette.  If
-//               there is no such vertex in the palette, this
-//               generates an error message and returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the particular vertex pointer associated with the given byte offset
+ * into the vertex palette.  If there is no such vertex in the palette, this
+ * generates an error message and returns NULL.
+ */
 FltVertex *FltHeader::
 get_vertex_by_offset(int offset) {
   if (_vertex_lookups_stale) {
@@ -607,14 +517,11 @@ get_vertex_by_offset(int offset) {
   return (*vi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_offset_by_vertex
-//       Access: Public
-//  Description: Returns the byte offset into the vertex palette
-//               associated with the given vertex pointer.  If there
-//               is no such vertex in the palette, this generates an
-//               error message and returns 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the byte offset into the vertex palette associated with the given
+ * vertex pointer.  If there is no such vertex in the palette, this generates
+ * an error message and returns 0.
+ */
 int FltHeader::
 get_offset_by_vertex(FltVertex *vertex) {
   if (_vertex_lookups_stale) {
@@ -630,31 +537,24 @@ get_offset_by_vertex(FltVertex *vertex) {
   return (*vi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_num_colors
-//       Access: Public
-//  Description: Returns the total number of different colors in the
-//               color palette.  This includes all different colors,
-//               and represents the complete range of alloable color
-//               indices.  This is different from the actual number of
-//               color entries as read directly from the color
-//               palette, since each color entry defines a number of
-//               different intensity levels--the value returned by
-//               get_num_colors() is equal to get_num_color_entries()
-//               * get_num_color_shades().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of different colors in the color palette.  This
+ * includes all different colors, and represents the complete range of
+ * alloable color indices.  This is different from the actual number of color
+ * entries as read directly from the color palette, since each color entry
+ * defines a number of different intensity levels--the value returned by
+ * get_num_colors() is equal to get_num_color_entries() *
+ * get_num_color_shades().
+ */
 int FltHeader::
 get_num_colors() const {
   return _colors.size() * get_num_color_shades();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_color
-//       Access: Public
-//  Description: Returns the four-component color corresponding to the
-//               given color index.  Each component will be in the
-//               range [0, 1].
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the four-component color corresponding to the given color index.
+ * Each component will be in the range [0, 1].
+ */
 LColor FltHeader::
 get_color(int color_index) const {
   nassertr(color_index >= 0 && color_index < get_num_colors(),
@@ -670,13 +570,10 @@ get_color(int color_index) const {
   return color * ((double)level / (double)(num_color_shades - 1));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_rgb
-//       Access: Public
-//  Description: Returns the three-component color corresponding to
-//               the given color index, ignoring the alpha component.
-//               Each component will be in the range [0, 1].
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the three-component color corresponding to the given color index,
+ * ignoring the alpha component.  Each component will be in the range [0, 1].
+ */
 LRGBColor FltHeader::
 get_rgb(int color_index) const {
   nassertr(color_index >= 0 && color_index < get_num_colors(),
@@ -692,23 +589,17 @@ get_rgb(int color_index) const {
   return color * ((double)level / (double)(num_color_shades - 1));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::has_color_name
-//       Access: Public
-//  Description: Returns true if the given color is named, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the given color is named, false otherwise.
+ */
 bool FltHeader::
 has_color_name(int color_index) const {
   return (_color_names.count(color_index) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_color_name
-//       Access: Public
-//  Description: Returns the name associated with the given color, if
-//               any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name associated with the given color, if any.
+ */
 string FltHeader::
 get_color_name(int color_index) const {
   ColorNames::const_iterator ni;
@@ -719,20 +610,16 @@ get_color_name(int color_index) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_closest_color
-//       Access: Public
-//  Description: Returns the color index of the nearest color in the
-//               palette that matches the given four-component color,
-//               including alpha.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the color index of the nearest color in the palette that matches
+ * the given four-component color, including alpha.
+ */
 int FltHeader::
 get_closest_color(const LColor &color0) const {
-  // Since the colortable stores the brightest colors, with
-  // num_color_shades scaled versions of each color implicitly
-  // available, we really only care about the relative brightnesses of
-  // the various components.  Normalize the color in terms of the
-  // largest of these.
+  // Since the colortable stores the brightest colors, with num_color_shades
+  // scaled versions of each color implicitly available, we really only care
+  // about the relative brightnesses of the various components.  Normalize the
+  // color in terms of the largest of these.
   LColor color = color0;
 
   double scale = 1.0;
@@ -785,20 +672,16 @@ get_closest_color(const LColor &color0) const {
   return (best_i * num_color_shades) + shade_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_closest_rgb
-//       Access: Public
-//  Description: Returns the color index of the nearest color in the
-//               palette that matches the given three-component color,
-//               ignoring alpha.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the color index of the nearest color in the palette that matches
+ * the given three-component color, ignoring alpha.
+ */
 int FltHeader::
 get_closest_rgb(const LRGBColor &color0) const {
-  // Since the colortable stores the brightest colors, with
-  // num_color_shades scaled versions of each color implicitly
-  // available, we really only care about the relative brightnesses of
-  // the various components.  Normalize the color in terms of the
-  // largest of these.
+  // Since the colortable stores the brightest colors, with num_color_shades
+  // scaled versions of each color implicitly available, we really only care
+  // about the relative brightnesses of the various components.  Normalize the
+  // color in terms of the largest of these.
 
   LRGBColor color = color0;
   double scale = 1.0;
@@ -847,40 +730,30 @@ get_closest_rgb(const LRGBColor &color0) const {
   return (best_i * num_color_shades) + shade_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_num_color_entries
-//       Access: Public
-//  Description: Returns the number of actual entries in the color
-//               palette.  This is based on the version of the flt
-//               file, and is usually either 512 or 1024.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of actual entries in the color palette.  This is based
+ * on the version of the flt file, and is usually either 512 or 1024.
+ */
 int FltHeader::
 get_num_color_entries() const {
   return _colors.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_num_color_shades
-//       Access: Public
-//  Description: Returns the number of shades of brightness of each
-//               entry in the color palette.  This is a fixed property
-//               of MultiGen files: each entry in the palette actually
-//               represents a range of this many colors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of shades of brightness of each entry in the color
+ * palette.  This is a fixed property of MultiGen files: each entry in the
+ * palette actually represents a range of this many colors.
+ */
 int FltHeader::
 get_num_color_shades() const {
   return 128;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_color
-//       Access: Public
-//  Description: Decodes a MultiGen color, as stored on a face or
-//               vertex, into an actual four-component LColor.
-//               Normally you need not call this directly; there are
-//               color accessors defined on faces and vertices that do
-//               this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes a MultiGen color, as stored on a face or vertex, into an actual
+ * four-component LColor.  Normally you need not call this directly; there are
+ * color accessors defined on faces and vertices that do this.
+ */
 LColor FltHeader::
 get_color(int color_index, bool use_packed_color,
           const FltPackedColor &packed_color,
@@ -893,21 +766,17 @@ get_color(int color_index, bool use_packed_color,
   color[0] = packed_color._r / 255.0;
   color[1] = packed_color._g / 255.0;
   color[2] = packed_color._b / 255.0;
-  // MultiGen doesn't yet use the A component of RGBA.
-  //color[3] = packed_color._a / 255.0;
+  // MultiGen doesn't yet use the A component of RGBA. color[3] =
+  // packed_color._a  255.0;
   color[3] = 1.0 - (transparency / 65535.0);
   return color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_color
-//       Access: Public
-//  Description: Decodes a MultiGen color, as stored on a face or
-//               vertex, into an actual three-component LRGBColor.
-//               Normally you need not call this directly; there are
-//               color accessors defined on faces and vertices that do
-//               this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes a MultiGen color, as stored on a face or vertex, into an actual
+ * three-component LRGBColor.  Normally you need not call this directly; there
+ * are color accessors defined on faces and vertices that do this.
+ */
 LRGBColor FltHeader::
 get_rgb(int color_index, bool use_packed_color,
         const FltPackedColor &packed_color) {
@@ -922,23 +791,18 @@ get_rgb(int color_index, bool use_packed_color,
   return color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::has_material
-//       Access: Public
-//  Description: Returns true if a material with the given index has
-//               been defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a material with the given index has been defined.
+ */
 bool FltHeader::
 has_material(int material_index) const {
   return (_materials.count(material_index) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_material
-//       Access: Public
-//  Description: Returns the material associated with the given index,
-//               or NULL if there is no such material.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the material associated with the given index, or NULL if there is
+ * no such material.
+ */
 FltMaterial *FltHeader::
 get_material(int material_index) const {
   Materials::const_iterator mi;
@@ -949,24 +813,19 @@ get_material(int material_index) const {
   return (FltMaterial *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::clear_materials
-//       Access: Public
-//  Description: Removes all materials from the palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all materials from the palette.
+ */
 void FltHeader::
 clear_materials() {
   _materials.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::add_material
-//       Access: Public
-//  Description: Defines a new material.  The material is added in the
-//               position indicated by the material's index number.
-//               If there is already a material defined for that index
-//               number, it is replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new material.  The material is added in the position indicated by
+ * the material's index number.  If there is already a material defined for
+ * that index number, it is replaced.
+ */
 void FltHeader::
 add_material(FltMaterial *material) {
   if (material->_material_index < 0) {
@@ -975,42 +834,34 @@ add_material(FltMaterial *material) {
     _next_material_index++;
 
   } else {
-    // Make sure our next generated material index will be different
-    // from any existing material indices.
+    // Make sure our next generated material index will be different from any
+    // existing material indices.
     _next_material_index = max(_next_material_index, material->_material_index + 1);
   }
 
   _materials[material->_material_index] = material;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::remove_material
-//       Access: Public
-//  Description: Removes a particular material from the material
-//               palette, if it exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a particular material from the material palette, if it exists.
+ */
 void FltHeader::
 remove_material(int material_index) {
   _materials.erase(material_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::has_texture
-//       Access: Public
-//  Description: Returns true if a texture with the given index has
-//               been defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a texture with the given index has been defined.
+ */
 bool FltHeader::
 has_texture(int texture_index) const {
   return (_textures.count(texture_index) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_texture
-//       Access: Public
-//  Description: Returns the texture associated with the given index,
-//               or NULL if there is no such texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the texture associated with the given index, or NULL if there is no
+ * such texture.
+ */
 FltTexture *FltHeader::
 get_texture(int texture_index) const {
   Textures::const_iterator mi;
@@ -1021,24 +872,19 @@ get_texture(int texture_index) const {
   return (FltTexture *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::clear_textures
-//       Access: Public
-//  Description: Removes all textures from the palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all textures from the palette.
+ */
 void FltHeader::
 clear_textures() {
   _textures.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::add_texture
-//       Access: Public
-//  Description: Defines a new texture.  The texture is added in the
-//               position indicated by the texture's index number.
-//               If there is already a texture defined for that index
-//               number, it is replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new texture.  The texture is added in the position indicated by
+ * the texture's index number.  If there is already a texture defined for that
+ * index number, it is replaced.
+ */
 void FltHeader::
 add_texture(FltTexture *texture) {
   if (texture->_pattern_index < 0) {
@@ -1047,42 +893,34 @@ add_texture(FltTexture *texture) {
     _next_pattern_index++;
 
   } else {
-    // Make sure our next generated pattern index will be different
-    // from any existing texture indices.
+    // Make sure our next generated pattern index will be different from any
+    // existing texture indices.
     _next_pattern_index = max(_next_pattern_index, texture->_pattern_index + 1);
   }
 
   _textures[texture->_pattern_index] = texture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::remove_texture
-//       Access: Public
-//  Description: Removes a particular texture from the texture
-//               palette, if it exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a particular texture from the texture palette, if it exists.
+ */
 void FltHeader::
 remove_texture(int texture_index) {
   _textures.erase(texture_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::has_light_source
-//       Access: Public
-//  Description: Returns true if a light source with the given index
-//               has been defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a light source with the given index has been defined.
+ */
 bool FltHeader::
 has_light_source(int light_index) const {
   return (_light_sources.count(light_index) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_light_source
-//       Access: Public
-//  Description: Returns the light source associated with the given
-//               index, or NULL if there is no such light source.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the light source associated with the given index, or NULL if there
+ * is no such light source.
+ */
 FltLightSourceDefinition *FltHeader::
 get_light_source(int light_index) const {
   LightSources::const_iterator li;
@@ -1093,125 +931,98 @@ get_light_source(int light_index) const {
   return (FltLightSourceDefinition *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::clear_light_sources
-//       Access: Public
-//  Description: Removes all light sources from the palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all light sources from the palette.
+ */
 void FltHeader::
 clear_light_sources() {
   _light_sources.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::add_light_source
-//       Access: Public
-//  Description: Defines a new light source.  The light source is
-//               added in the position indicated by its light index
-//               number.  If there is already a light source defined
-//               for that index number, it is replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new light source.  The light source is added in the position
+ * indicated by its light index number.  If there is already a light source
+ * defined for that index number, it is replaced.
+ */
 void FltHeader::
 add_light_source(FltLightSourceDefinition *light_source) {
   _light_sources[light_source->_light_index] = light_source;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::remove_light_source
-//       Access: Public
-//  Description: Removes a particular light source from the light
-//               source palette, if it exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a particular light source from the light source palette, if it
+ * exists.
+ */
 void FltHeader::
 remove_light_source(int light_index) {
   _light_sources.erase(light_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::got_eyepoint_trackplane_palette
-//       Access: Public
-//  Description: Returns true if we have read an eyepoint/trackplane
-//               palette, and at least some of the eyepoints and
-//               trackplanes are therefore expected to be meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if we have read an eyepoint/trackplane palette, and at least
+ * some of the eyepoints and trackplanes are therefore expected to be
+ * meaningful.
+ */
 bool FltHeader::
 got_eyepoint_trackplane_palette() const {
   return _got_eyepoint_trackplane_palette;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::set_eyepoint_trackplane_palette
-//       Access: Public
-//  Description: Sets the state of the eyepoint/trackplane palette
-//               flag.  When this is false, the palette is believed to
-//               be meaningless, and will not be written; when it is
-//               true, the palette is believed to contain at least
-//               some meaningful data, and will be written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the state of the eyepoint/trackplane palette flag.  When this is
+ * false, the palette is believed to be meaningless, and will not be written;
+ * when it is true, the palette is believed to contain at least some
+ * meaningful data, and will be written.
+ */
 void FltHeader::
 set_eyepoint_trackplane_palette(bool flag) {
   _got_eyepoint_trackplane_palette = flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_num_eyepoints
-//       Access: Public
-//  Description: Returns the number of eyepoints in the
-//               eyepoint/trackplane palette.  This is presently fixed
-//               at 10, according to the MultiGen specs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of eyepoints in the eyepoint/trackplane palette.  This
+ * is presently fixed at 10, according to the MultiGen specs.
+ */
 int FltHeader::
 get_num_eyepoints() const {
   return 10;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_eyepoint
-//       Access: Public
-//  Description: Returns the nth eyepoint in the eyepoint/trackplane
-//               palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth eyepoint in the eyepoint/trackplane palette.
+ */
 FltEyepoint *FltHeader::
 get_eyepoint(int n) {
   nassertr(n >= 0 && n < get_num_eyepoints(), (FltEyepoint *)NULL);
   return &_eyepoints[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_num_trackplanes
-//       Access: Public
-//  Description: Returns the number of trackplanes in the
-//               eyepoint/trackplane palette.  This is presently fixed
-//               at 10, according to the MultiGen specs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of trackplanes in the eyepoint/trackplane palette.  This
+ * is presently fixed at 10, according to the MultiGen specs.
+ */
 int FltHeader::
 get_num_trackplanes() const {
   return 10;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_trackplane
-//       Access: Public
-//  Description: Returns the nth trackplane in the eyepoint/trackplane
-//               palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth trackplane in the eyepoint/trackplane palette.
+ */
 FltTrackplane *FltHeader::
 get_trackplane(int n) {
   nassertr(n >= 0 && n < get_num_trackplanes(), (FltTrackplane *)NULL);
   return &_trackplanes[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::update_vertex_lookups
-//       Access: Public
-//  Description: Recomputes the offsets_by_vertex and
-//               vertices_by_offset tables.  This reflects the flt
-//               file as it will be written out, but not necessarily
-//               as it was read in.
-//
-//               The return value is the total length of the vertex
-//               palette, including the header record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the offsets_by_vertex and vertices_by_offset tables.  This
+ * reflects the flt file as it will be written out, but not necessarily as it
+ * was read in.
+ *
+ * The return value is the total length of the vertex palette, including the
+ * header record.
+ */
 int FltHeader::
 update_vertex_lookups() {
   // We start with the length of the vertex palette record itself.
@@ -1231,14 +1042,11 @@ update_vertex_lookups() {
   return offset;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltHeader::
 extract_record(FltRecordReader &reader) {
   if (!FltBeadID::extract_record(reader)) {
@@ -1294,21 +1102,21 @@ extract_record(FltRecordReader &reader) {
     if (get_flt_version() >= 1520 && iterator.get_remaining_size() > 0) {
       iterator.skip_bytes(2 + 2 + 2 + 2);
       _earth_model = (EarthModel)iterator.get_be_int32();
-      
+
       // Undocumented padding.
       iterator.skip_bytes(4);
-      
+
       if (get_flt_version() >= 1560 && iterator.get_remaining_size() > 0) {
         _next_adaptive_id = iterator.get_be_int16();
         _next_curve_id = iterator.get_be_int16();
         iterator.skip_bytes(4);
-        
+
         if (get_flt_version() >= 1570 && iterator.get_remaining_size() > 0) {
           _delta_z = iterator.get_be_float64();
           _radius = iterator.get_be_float64();
           _next_mesh_id = iterator.get_be_int16();
           iterator.skip_bytes(2);
-          
+
           // Undocumented padding.
           iterator.skip_bytes(4);
         }
@@ -1320,15 +1128,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_ancillary
-//       Access: Protected, Virtual
-//  Description: Checks whether the given bead, which follows this
-//               bead sequentially in the file, is an ancillary record
-//               of this bead.  If it is, extracts the relevant
-//               information and returns true; otherwise, leaves it
-//               alone and returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the given bead, which follows this bead sequentially in the
+ * file, is an ancillary record of this bead.  If it is, extracts the relevant
+ * information and returns true; otherwise, leaves it alone and returns false.
+ */
 bool FltHeader::
 extract_ancillary(FltRecordReader &reader) {
   switch (reader.get_opcode()) {
@@ -1371,14 +1175,11 @@ extract_ancillary(FltRecordReader &reader) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this
+ * record, but does not advance the writer.  Returns true on success, false if
+ * there is some error.
+ */
 bool FltHeader::
 build_record(FltRecordWriter &writer) const {
   if (!FltBeadID::build_record(writer)) {
@@ -1457,13 +1258,10 @@ build_record(FltRecordWriter &writer) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_ancillary
-//       Access: Protected, Virtual
-//  Description: Writes whatever ancillary records are required for
-//               this bead.  Returns FE_ok on success, or something
-//               else on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes whatever ancillary records are required for this bead.  Returns
+ * FE_ok on success, or something else on error.
+ */
 FltError FltHeader::
 write_ancillary(FltRecordWriter &writer) const {
   FltError result;
@@ -1501,13 +1299,10 @@ write_ancillary(FltRecordWriter &writer) const {
   return FltBeadID::write_ancillary(writer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_vertex
-//       Access: Private
-//  Description: Reads a single vertex ancillary record.  It is
-//               assumed that all the vertex records will immediately
-//               follow the vertex palette record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single vertex ancillary record.  It is assumed that all the vertex
+ * records will immediately follow the vertex palette record.
+ */
 bool FltHeader::
 extract_vertex(FltRecordReader &reader) {
   FltVertex *vertex = new FltVertex(this);
@@ -1525,11 +1320,9 @@ extract_vertex(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_color_palette
-//       Access: Private
-//  Description: Reads the color palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the color palette.
+ */
 bool FltHeader::
 extract_color_palette(FltRecordReader &reader) {
   nassertr(reader.get_opcode() == FO_color_palette, false);
@@ -1574,11 +1367,9 @@ extract_color_palette(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_material
-//       Access: Private
-//  Description: Reads a single material ancillary record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single material ancillary record.
+ */
 bool FltHeader::
 extract_material(FltRecordReader &reader) {
   PT(FltMaterial) material = new FltMaterial(this);
@@ -1590,11 +1381,9 @@ extract_material(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_14_material_palette
-//       Access: Private
-//  Description: Reads the v14.2 material palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the v14.2 material palette.
+ */
 bool FltHeader::
 extract_14_material_palette(FltRecordReader &reader) {
   nassertr(reader.get_opcode() == FO_14_material_palette, false);
@@ -1624,11 +1413,9 @@ extract_14_material_palette(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_texture
-//       Access: Private
-//  Description: Reads a single texture ancillary record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single texture ancillary record.
+ */
 bool FltHeader::
 extract_texture(FltRecordReader &reader) {
   FltTexture *texture = new FltTexture(this);
@@ -1640,19 +1427,15 @@ extract_texture(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_texture_map
-//       Access: Private
-//  Description: Reads the a single texture mapping ancillary record.
-//               This describes a kind of texture mapping in the
-//               texture mapping palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the a single texture mapping ancillary record.  This describes a kind
+ * of texture mapping in the texture mapping palette.
+ */
 bool FltHeader::
 extract_texture_map(FltRecordReader &reader) {
-  // At the moment, we ignore this, since it's not needed for
-  // meaningful extraction of data: we can get this information from
-  // the UV's for a particular model.  We just add an
-  // UnsupportedRecord for it.
+  // At the moment, we ignore this, since it's not needed for meaningful
+  // extraction of data: we can get this information from the UV's for a
+  // particular model.  We just add an UnsupportedRecord for it.
   FltUnsupportedRecord *rec = new FltUnsupportedRecord(this);
   if (!rec->extract_record(reader)) {
     return false;
@@ -1662,11 +1445,9 @@ extract_texture_map(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_light_source
-//       Access: Private
-//  Description: Reads a single light source ancillary record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single light source ancillary record.
+ */
 bool FltHeader::
 extract_light_source(FltRecordReader &reader) {
   FltLightSourceDefinition *light_source = new FltLightSourceDefinition(this);
@@ -1678,11 +1459,9 @@ extract_light_source(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::extract_eyepoint_palette
-//       Access: Private
-//  Description: Reads the eyepoint/trackplane palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the eyepoint/trackplane palette.
+ */
 bool FltHeader::
 extract_eyepoint_palette(FltRecordReader &reader) {
   nassertr(reader.get_opcode() == FO_eyepoint_palette, false);
@@ -1708,20 +1487,17 @@ extract_eyepoint_palette(FltRecordReader &reader) {
   _got_eyepoint_trackplane_palette = true;
 
   if (get_flt_version() >= 1420) {
-    // I have no idea what bytes are supposed to be here in earlier
-    // versions that 14.2, but who really cares?  Don't bother
-    // reporting it if there are too many bytes in old versions.
+    // I have no idea what bytes are supposed to be here in earlier versions
+    // that 14.2, but who really cares?  Don't bother reporting it if there
+    // are too many bytes in old versions.
     check_remaining_size(iterator, "eyepoint palette");
   }
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_vertex_palette
-//       Access: Private
-//  Description: Writes out the vertex palette with all of its
-//               vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the vertex palette with all of its vertices.
+ */
 FltError FltHeader::
 write_vertex_palette(FltRecordWriter &writer) const {
   FltError result;
@@ -1749,11 +1525,9 @@ write_vertex_palette(FltRecordWriter &writer) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_color_palette
-//       Access: Private
-//  Description: Writes out the color palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the color palette.
+ */
 FltError FltHeader::
 write_color_palette(FltRecordWriter &writer) const {
   writer.set_opcode(FO_color_palette);
@@ -1773,8 +1547,8 @@ write_color_palette(FltRecordWriter &writer) const {
     num_colors--;
   }
 
-  // Now we might need to pad the record to fill up the required
-  // number of colors.
+  // Now we might need to pad the record to fill up the required number of
+  // colors.
   if (num_colors > 0) {
     FltPackedColor empty;
     while (num_colors > 0) {
@@ -1801,11 +1575,9 @@ write_color_palette(FltRecordWriter &writer) const {
   return writer.advance();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_material_palette
-//       Access: Private
-//  Description: Writes out the material palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the material palette.
+ */
 FltError FltHeader::
 write_material_palette(FltRecordWriter &writer) const {
   FltError result;
@@ -1857,11 +1629,9 @@ write_material_palette(FltRecordWriter &writer) const {
   return FE_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_texture_palette
-//       Access: Private
-//  Description: Writes out the texture palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the texture palette.
+ */
 FltError FltHeader::
 write_texture_palette(FltRecordWriter &writer) const {
   FltError result;
@@ -1879,11 +1649,9 @@ write_texture_palette(FltRecordWriter &writer) const {
   return FE_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_light_source_palette
-//       Access: Private
-//  Description: Writes out the light source palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the light source palette.
+ */
 FltError FltHeader::
 write_light_source_palette(FltRecordWriter &writer) const {
   FltError result;
@@ -1901,12 +1669,9 @@ write_light_source_palette(FltRecordWriter &writer) const {
   return FE_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::write_eyepoint_palette
-//       Access: Private
-//  Description: Writes out the eyepoint/trackplane palette, if we
-//               have one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the eyepoint/trackplane palette, if we have one.
+ */
 FltError FltHeader::
 write_eyepoint_palette(FltRecordWriter &writer) const {
   if (!_got_eyepoint_trackplane_palette) {
