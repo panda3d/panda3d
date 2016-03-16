@@ -57,10 +57,10 @@ update_vehicle(float dt) {
   // TODO !!!
 }
 
-/*
 /**
  * Returns the actor for this vehicle.
  */
+/*
 PhysxActor *PhysxVehicle::
 get_actor() const {
 
@@ -69,20 +69,22 @@ get_actor() const {
 }
 */
 
-/*
 /**
  * Returns the number of wheels on this vehicle.
  */
+/*
 unsigned int PhysxVehicle::
 get_num_wheels() const {
 
   nassertr(_error_type == ET_ok, 0);
   return _wheels.size();
 }
+*/
 
 /**
  * Returns the n-th wheel of this vehicle.
  */
+/*
 PhysxWheel *PhysxVehicle::
 get_wheel(unsigned int idx) const {
 
