@@ -16,6 +16,8 @@
 #include "filename.h"
 #include "pnmImage.h"
 
+#include FT_OUTLINE_H
+
 /**
  * The constructor expects the name of some font file that FreeType can read,
  * along with face_index, indicating which font within the file to load
