@@ -193,7 +193,6 @@ make_glyph(int glyph_index) {
 
       PN_stdfloat tex_x_size, tex_y_size, tex_x_orig, tex_y_orig;
       FT_BBox bounds;
-      TransparencyAttrib::Mode alpha_mode;
 
       // Calculate suitable texture dimensions for the signed distance field.
       // This is the same calculation that Freetype uses in its bitmap
