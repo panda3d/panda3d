@@ -2508,7 +2508,8 @@ spirv_analyze_shader(const string &data) {
     string _name;
     ShaderArgType _type;
     int _location;
-  } def_var = {string(), SAT_unknown, -1};
+    int _set;
+  } def_var = {string(), SAT_unknown, -1, -1};
 
   pvector<ShaderVar> vars(bound, def_var);
 
@@ -2691,6 +2692,8 @@ spirv_analyze_shader(const string &data) {
       // that variables can specify both.
       if (words[2] == SpvDecorationLocation || words[2] == SpvDecorationBinding) {
         vars[words[1]]._location = words[3];
+      } else if (words[2] == SpvDecorationDescriptorSet) {
+        vars[words[1]]._set = words[3];
       }
       break;
     }

@@ -32,7 +32,8 @@ VulkanGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _swapchain(VK_NULL_HANDLE),
   _render_pass(VK_NULL_HANDLE),
   _present_complete(VK_NULL_HANDLE),
-  _image_index(0)
+  _image_index(0),
+  _layout_defined(false)
 {
 }
 
@@ -101,8 +102,55 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     clear_cube_map_selection();
   }*/
 
-  // Now that we have a command buffer, start our render pass.
+  // Now that we have a command buffer, start our render pass.  First
+  // transition the swapchain images into the valid state for rendering into.
   VkCommandBuffer cmd = vkgsg->_cmd;
+
+  VkImageMemoryBarrier barriers[2];
+  barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+  barriers[0].pNext = NULL;
+  barriers[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+  barriers[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+  barriers[0].oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  barriers[0].srcQueueFamilyIndex = vkgsg->_graphics_queue_family_index; //TODO support separate present queue.
+  barriers[0].dstQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
+  barriers[0].image = _images[_image_index];
+  barriers[0].subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  barriers[0].subresourceRange.baseMipLevel = 0;
+  barriers[0].subresourceRange.levelCount = 1;
+  barriers[0].subresourceRange.baseArrayLayer = 0;
+  barriers[0].subresourceRange.layerCount = 1;
+
+  barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+  barriers[1].pNext = NULL;
+  barriers[1].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+  barriers[1].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+  barriers[1].oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  barriers[1].newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  barriers[1].srcQueueFamilyIndex = vkgsg->_graphics_queue_family_index; //TODO support separate present queue.
+  barriers[1].dstQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
+  barriers[1].image = _depth_stencil_image;
+  barriers[1].subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT |
+                                            VK_IMAGE_ASPECT_STENCIL_BIT;
+  barriers[1].subresourceRange.baseMipLevel = 0;
+  barriers[1].subresourceRange.levelCount = 1;
+  barriers[1].subresourceRange.baseArrayLayer = 0;
+  barriers[1].subresourceRange.layerCount = 1;
+
+  if (!_layout_defined) {
+    // If this is the first time we are using these images, they are still
+    // in the UNDEFINED layout.
+    barriers[0].srcAccessMask = 0;
+    barriers[0].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    barriers[1].srcAccessMask = 0;
+    barriers[1].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    _layout_defined = true;
+  }
+
+  vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0,
+                       0, NULL, 0, NULL, 2, barriers);
 
   VkClearValue clears[2];
   LColor clear_color = get_clear_color();
@@ -207,6 +255,9 @@ end_flip() {
   VkFence fence = vkgsg->_fence;
 
   nassertv(_present_complete != VK_NULL_HANDLE);
+  nassertv(_layout_defined);
+
+  VkCommandBuffer cmdbufs[2] = {vkgsg->_cmd, _present_cmds[_image_index]};
 
   // Submit the GSG's command buffers to the queue.
   VkPipelineStageFlags stage_flags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
@@ -216,8 +267,8 @@ end_flip() {
   submit_info.waitSemaphoreCount = 1;
   submit_info.pWaitSemaphores = &_present_complete;
   submit_info.pWaitDstStageMask = &stage_flags;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &vkgsg->_cmd;
+  submit_info.commandBufferCount = 2;
+  submit_info.pCommandBuffers = cmdbufs;
   submit_info.signalSemaphoreCount = 0;
   submit_info.pSignalSemaphores = NULL;
 
@@ -232,8 +283,10 @@ end_flip() {
   VkPresentInfoKHR present;
   present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   present.pNext = NULL;
-  present.waitSemaphoreCount = 1;
-  present.pWaitSemaphores = &_present_complete;
+  present.waitSemaphoreCount = 0;
+  present.pWaitSemaphores = NULL;
+  //present.waitSemaphoreCount = 1;
+  //present.pWaitSemaphores = &_present_complete;
   present.swapchainCount = 1;
   present.pSwapchains = &_swapchain;
   present.pImageIndices = &_image_index;
@@ -296,10 +349,10 @@ open_window() {
 
   // Make sure we have a GSG, which manages a VkDevice.
   VulkanGraphicsStateGuardian *vkgsg;
+  uint32_t queue_family_index = 0;
   if (_gsg == NULL) {
     // Find a queue suitable both for graphics and for presenting to our
     // surface.  TODO: fall back to separate graphics/present queues?
-    uint32_t queue_family_index;
     if (!vkpipe->find_queue_family_for_surface(queue_family_index, _surface, VK_QUEUE_GRAPHICS_BIT)) {
       vulkan_error(err, "Failed to find graphics queue that can present to surface");
       return false;
@@ -399,12 +452,12 @@ open_window() {
 
   // Get the images in the swap chain, which may be more than requested.
   vkGetSwapchainImagesKHR(device, _swapchain, &num_images, NULL);
+  _images.resize(num_images);
   _image_views.resize(num_images);
   _framebuffers.resize(num_images);
   _fb_properties.set_back_buffers(num_images - 1);
 
-  VkImage *images = (VkImage *)alloca(sizeof(VkImage) * num_images);
-  vkGetSwapchainImagesKHR(device, _swapchain, &num_images, images);
+  vkGetSwapchainImagesKHR(device, _swapchain, &num_images, &_images[0]);
 
   // Now create an image view for each image.
   for (uint32_t i = 0; i < num_images; ++i) {
@@ -412,7 +465,7 @@ open_window() {
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.pNext = NULL;
     view_info.flags = 0;
-    view_info.image = images[i];
+    view_info.image = _images[i];
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     view_info.format = swapchain_info.imageFormat;
     view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -449,7 +502,7 @@ open_window() {
   depth_img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   depth_img_info.queueFamilyIndexCount = 0;
   depth_img_info.pQueueFamilyIndices = NULL;
-  depth_img_info.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  depth_img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
   // Choose a suitable format that satisfies the requirements.
   if (_fb_properties.get_depth_bits() > 24 ||
@@ -467,8 +520,7 @@ open_window() {
     _fb_properties.set_stencil_bits(8);
   }
 
-  VkImage depth_image;
-  err = vkCreateImage(device, &depth_img_info, NULL, &depth_image);
+  err = vkCreateImage(device, &depth_img_info, NULL, &_depth_stencil_image);
   if (err) {
     vulkan_error(err, "Failed to create depth image");
     return false;
@@ -476,7 +528,7 @@ open_window() {
 
   // Get the memory requirements, and find an appropriate heap to alloc in.
   VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(device, depth_image, &mem_reqs);
+  vkGetImageMemoryRequirements(device, _depth_stencil_image, &mem_reqs);
 
   VkMemoryAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -496,7 +548,7 @@ open_window() {
   }
 
   // Bind memory to image.
-  err = vkBindImageMemory(device, depth_image, depth_mem, 0);
+  err = vkBindImageMemory(device, _depth_stencil_image, depth_mem, 0);
   if (err) {
     vulkan_error(err, "Failed to bind memory to depth image");
     return false;
@@ -506,7 +558,7 @@ open_window() {
   view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   view_info.pNext = NULL;
   view_info.flags = 0;
-  view_info.image = depth_image;
+  view_info.image = _depth_stencil_image;
   view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
   view_info.format = depth_img_info.format;
   view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -611,6 +663,71 @@ open_window() {
       vulkan_error(err, "Failed to create framebuffer");
       return false;
     }
+  }
+
+  // Prerecord the command buffers to transition the images into a presentable
+  // state.
+  VkCommandBufferAllocateInfo cmd_alloc;
+  cmd_alloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  cmd_alloc.pNext = NULL;
+  cmd_alloc.commandPool = vkgsg->_cmd_pool;
+  cmd_alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  cmd_alloc.commandBufferCount = num_images;
+
+  VkCommandBuffer *cmd_bufs =
+    (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer) * num_images);
+  err = vkAllocateCommandBuffers(device, &cmd_alloc, cmd_bufs);
+  if (err) {
+    vulkan_error(err, "Failed to create command buffer");
+    return false;
+  }
+
+  for (uint32_t i = 0; i < num_images; ++i) {
+    VkCommandBufferBeginInfo begin_info;
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.pNext = NULL;
+    begin_info.flags = 0;
+    begin_info.pInheritanceInfo = NULL;
+
+    err = vkBeginCommandBuffer(cmd_bufs[i], &begin_info);
+    if (err) {
+      vulkan_error(err, "Can't begin command buffer");
+      return false;
+    }
+
+    VkImageMemoryBarrier barriers[2];
+    barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barriers[0].pNext = NULL;
+    barriers[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    barriers[0].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    barriers[0].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    barriers[0].newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barriers[0].srcQueueFamilyIndex = queue_family_index;
+    barriers[0].dstQueueFamilyIndex = queue_family_index; //TODO support separate present queue.
+    barriers[0].image = _images[i];
+    barriers[0].subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barriers[0].subresourceRange.baseMipLevel = 0;
+    barriers[0].subresourceRange.levelCount = 1;
+    barriers[0].subresourceRange.baseArrayLayer = 0;
+    barriers[0].subresourceRange.layerCount = 1;
+
+    barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barriers[1].pNext = NULL;
+    barriers[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    barriers[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    barriers[1].oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    barriers[1].newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    barriers[1].srcQueueFamilyIndex = queue_family_index;
+    barriers[1].dstQueueFamilyIndex = queue_family_index; //TODO support separate present queue.
+    barriers[1].image = _depth_stencil_image;
+    barriers[1].subresourceRange = view_info.subresourceRange;
+
+    vkCmdPipelineBarrier(cmd_bufs[i], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                         VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0,
+                         0, NULL, 0, NULL, 2, barriers);
+
+    vkEndCommandBuffer(cmd_bufs[i]);
+    _present_cmds.push_back(cmd_bufs[i]);
   }
 
   return true;

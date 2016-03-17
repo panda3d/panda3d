@@ -72,7 +72,7 @@ VulkanGraphicsPipe() {
   app_info.applicationVersion = 0;
   app_info.pEngineName = "Panda3D";
   app_info.engineVersion = PANDA_NUMERIC_VERSION;
-  app_info.apiVersion = VK_API_VERSION;
+  app_info.apiVersion = VK_MAKE_VERSION(1, 0, 0); // Minimum requirement
 
   VkInstanceCreateInfo inst_info;
   inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

@@ -37,6 +37,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _device(VK_NULL_HANDLE),
   _queue(VK_NULL_HANDLE),
   _dma_queue(VK_NULL_HANDLE),
+  _graphics_queue_family_index(queue_family_index),
   _cmd_pool(VK_NULL_HANDLE),
   _cmd(VK_NULL_HANDLE),
   _transfer_cmd(VK_NULL_HANDLE),
@@ -61,7 +62,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queue_info.pNext = NULL;
   queue_info.flags = 0;
-  queue_info.queueFamilyIndex = queue_family_index;
+  queue_info.queueFamilyIndex = _graphics_queue_family_index;
   queue_info.queueCount = 2;
   queue_info.pQueuePriorities = queue_priorities;
 
@@ -84,8 +85,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     return;
   }
 
-  vkGetDeviceQueue(_device, queue_family_index, 0, &_queue);
-  vkGetDeviceQueue(_device, queue_family_index, 1, &_dma_queue);
+  vkGetDeviceQueue(_device, _graphics_queue_family_index, 0, &_queue);
+  vkGetDeviceQueue(_device, _graphics_queue_family_index, 1, &_dma_queue);
 
   // Create a fence to signal when the command buffers have finished.
   VkFenceCreateInfo fence_info;
@@ -104,7 +105,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   cmd_pool_info.pNext = NULL;
   cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
                         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  cmd_pool_info.queueFamilyIndex = queue_family_index;
+  cmd_pool_info.queueFamilyIndex = _graphics_queue_family_index;
 
   err = vkCreateCommandPool(_device, &cmd_pool_info, NULL, &_cmd_pool);
   if (err) {
@@ -355,6 +356,8 @@ TextureContext *VulkanGraphicsStateGuardian::
 prepare_texture(Texture *texture, int view) {
   nassertr(_transfer_cmd != VK_NULL_HANDLE, (TextureContext *)NULL);
 
+  PStatTimer timer(_prepare_texture_pcollector);
+
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
 
@@ -404,7 +407,7 @@ prepare_texture(Texture *texture, int view) {
   image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   image_info.queueFamilyIndexCount = 0;
   image_info.pQueueFamilyIndices = NULL;
-  image_info.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+  image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
   // Check if the format is actually supported.
   VkFormatProperties fmt_props;
@@ -663,6 +666,23 @@ prepare_texture(Texture *texture, int view) {
   tc->update_data_size_bytes(alloc_info.allocationSize);
   tc->mark_loaded();
 
+  // Issue a command to transition the image into a layout optimal for
+  // transferring into.
+  VkImageMemoryBarrier barrier;
+  barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+  barrier.pNext = NULL;
+  barrier.srcAccessMask = 0;
+  barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+  barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+  barrier.srcQueueFamilyIndex = _graphics_queue_family_index;
+  barrier.dstQueueFamilyIndex = _graphics_queue_family_index;
+  barrier.image = image;
+  barrier.subresourceRange = view_info.subresourceRange;
+  vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0,
+                       0, NULL, 0, NULL, 1, &barrier);
+
   // Do we even have an image to upload?
   if (texture->get_ram_image().is_null()) {
     if (texture->has_clear_color()) {
@@ -810,7 +830,8 @@ prepare_texture(Texture *texture, int view) {
       }
 
       // Schedule a copy from the staging buffer.
-      vkCmdCopyBufferToImage(_transfer_cmd, buffer, image, image_info.initialLayout, 1, &region);
+      vkCmdCopyBufferToImage(_transfer_cmd, buffer, image,
+                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
       region.bufferOffset += src_size;
       _data_transferred_pcollector.add_level(src_size);
 
@@ -886,6 +907,8 @@ extract_texture_data(Texture *) {
  */
 SamplerContext *VulkanGraphicsStateGuardian::
 prepare_sampler(const SamplerState &sampler) {
+  PStatTimer timer(_prepare_sampler_pcollector);
+
   VkSamplerAddressMode wrap_map[] = {VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
                                      VK_SAMPLER_ADDRESS_MODE_REPEAT,
                                      VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
@@ -967,6 +990,8 @@ prepare_shader(Shader *shader) {
     return (ShaderContext *)NULL;
   }
 
+  PStatTimer timer(_prepare_shader_pcollector);
+
   VkResult err;
   const Shader::ShaderType shader_types[] = {Shader::ST_vertex, Shader::ST_fragment};
   VulkanShaderContext *sc = new VulkanShaderContext(shader);
@@ -1016,6 +1041,8 @@ release_shader(ShaderContext *context) {
  */
 VertexBufferContext *VulkanGraphicsStateGuardian::
 prepare_vertex_buffer(GeomVertexArrayData *array_data) {
+  PStatTimer timer(_prepare_vertex_buffer_pcollector);
+
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
 
@@ -1106,6 +1133,8 @@ release_vertex_buffer(VertexBufferContext *context) {
  */
 IndexBufferContext *VulkanGraphicsStateGuardian::
 prepare_index_buffer(GeomPrimitive *primitive) {
+  PStatTimer timer(_prepare_index_buffer_pcollector);
+
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), NULL);
 

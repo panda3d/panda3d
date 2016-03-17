@@ -138,6 +138,7 @@ private:
   VkDevice _device;
   VkQueue _queue;
   VkQueue _dma_queue;
+  uint32_t _graphics_queue_family_index;
   VkFence _fence;
   VkBuffer _null_vertex_buffer;
   VkCommandPool _cmd_pool;

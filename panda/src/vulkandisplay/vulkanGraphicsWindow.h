@@ -57,10 +57,14 @@ private:
   VkRenderPass _render_pass;
   VkSemaphore _present_complete;
 
+  bool _layout_defined;
+  pvector<VkImage> _images;
   pvector<VkImageView> _image_views;
+  VkImage _depth_stencil_image;
   VkImageView _depth_stencil_view;
   pvector<VkFramebuffer> _framebuffers;
   uint32_t _image_index;
+  pvector<VkCommandBuffer> _present_cmds;
 
 public:
   static TypeHandle get_class_type() {
