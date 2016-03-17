@@ -42,12 +42,11 @@ set_shadow_caster(bool caster) {
  */
 INLINE void LightLensNode::
 set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_sort) {
-  if ((_shadow_caster && !caster) || buffer_xsize != _sb_xsize || buffer_ysize != _sb_ysize) {
+  if ((_shadow_caster && !caster) || buffer_xsize != _sb_size[0] || buffer_ysize != _sb_size[1]) {
     clear_shadow_buffers();
   }
   _shadow_caster = caster;
-  _sb_xsize = buffer_xsize;
-  _sb_ysize = buffer_ysize;
+  _sb_size.set(buffer_xsize, buffer_ysize);
 
   if (buffer_sort != _sb_sort) {
     ShadowBuffers::iterator it;
@@ -57,6 +56,25 @@ set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_so
     _sb_sort = buffer_sort;
   }
   set_active(caster);
+}
+
+/**
+ * Returns the size of the shadow buffer to be created for this light source.
+ */
+INLINE LVecBase2i LightLensNode::
+get_shadow_buffer_size() const {
+  return _sb_size;
+}
+
+/**
+ * Sets the size of the shadow buffer to be created for this light source.
+ */
+INLINE void LightLensNode::
+set_shadow_buffer_size(const LVecBase2i &size) {
+  if (size != _sb_size) {
+    clear_shadow_buffers();
+  }
+  _sb_size = size;
 }
 
 /**
