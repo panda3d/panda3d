@@ -2033,9 +2033,9 @@ set_component_type(Texture::ComponentType component_type) {
  * ram image needs to be replaced.
  */
 INLINE void Texture::
-set_loaded_from_image() {
+set_loaded_from_image(bool flag) {
   CDWriter cdata(_cycler, false);
-  cdata->_loaded_from_image = true;
+  cdata->_loaded_from_image = flag;
 }
 
 /**
@@ -2054,9 +2054,9 @@ get_loaded_from_image() const {
  * when a Texture is loaded.
  */
 INLINE void Texture::
-set_loaded_from_txo() {
+set_loaded_from_txo(bool flag) {
   CDWriter cdata(_cycler, false);
-  cdata->_loaded_from_txo = true;
+  cdata->_loaded_from_txo = flag;
 }
 
 /**
