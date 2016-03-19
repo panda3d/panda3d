@@ -1,16 +1,15 @@
-// Filename: xInputDevice.cxx
-// Created by:  rdb (21Jul15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xInputDevice.cxx
+ * @author rdb
+ * @date 2015-07-15
+ */
 
 #include "xInputDevice.h"
 
@@ -76,11 +75,9 @@ static pXInputGetBaseBusInformation get_base_bus_information = NULL;
 
 bool XInputDevice::_initialized = false;
 
-////////////////////////////////////////////////////////////////////
-//     Function: XInputDevice::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ * Protected constructor.  user_index is a number 0-3.
+ */
 XInputDevice::
 XInputDevice(DWORD user_index) :
   _index(user_index),
@@ -134,23 +131,18 @@ XInputDevice(DWORD user_index) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XInputDevice::Constructor
-//       Access: Published
-//  Description: Creates a new device using the Linux joystick
-//               device using the given device filename.
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 XInputDevice::
 ~XInputDevice() {
   do_set_vibration(0, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XInputDevice::detect
-//       Access: Public
-//  Description: Called periodically by the InputDeviceManager to
-//               detect whether the device is currently connected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called periodically by the InputDeviceManager to detect whether the device
+ * is currently connected.
+ */
 void XInputDevice::
 detect(InputDeviceManager *mgr) {
   bool connected = false;
@@ -179,11 +171,9 @@ detect(InputDeviceManager *mgr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XInputDevice::init_xinput
-//       Access: Private, Static
-//  Description: Initializes the XInput library.
-////////////////////////////////////////////////////////////////////
+/**
+ * Static method to initialize the XInput library.
+ */
 bool XInputDevice::
 init_xinput() {
   if (device_cat.is_debug()) {
@@ -247,12 +237,9 @@ init_xinput() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XInputDevice::init_device
-//       Access: Private
-//  Description: Initializes the device.  Called when the device was
-//               just connected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the device.  Called when the device was just connected.
+ */
 void XInputDevice::
 init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
   if (caps.Type == XINPUT_DEVTYPE_GAMEPAD) {
@@ -344,14 +331,11 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
   _last_packet = state.dwPacketNumber;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XInputDevice::do_set_vibration
-//       Access: Private, Virtual
-//  Description: Sets the vibration strength.  The first argument
-//               controls a low-frequency motor, if present, and
-//               the latter controls a high-frequency motor.  The
-//               values are within the 0-1 range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the vibration strength.  The first argument controls a low-frequency
+ * motor, if present, and the latter controls a high-frequency motor.
+ * The values are within the 0-1 range.
+ */
 void XInputDevice::
 do_set_vibration(double strong, double weak) {
   XINPUT_VIBRATION vibration;
@@ -360,15 +344,11 @@ do_set_vibration(double strong, double weak) {
   set_state(_index, &vibration);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDevice::do_poll
-//       Access: Public, Virtual
-//  Description: Polls the input device for new activity, to ensure
-//               it contains the latest events.  This will only have
-//               any effect for some types of input devices; others
-//               may be updated automatically, and this method will
-//               be a no-op.
-////////////////////////////////////////////////////////////////////
+/**
+ * Polls the input device for new activity, to ensure it contains the latest
+ * events.  This will only have any effect for some types of input devices;
+ * others may be updated automatically, and this method will be a no-op.
+ */
 void XInputDevice::
 do_poll() {
   XINPUT_STATE state;
@@ -383,7 +363,7 @@ do_poll() {
     return;
 
   } else if (!_is_connected) {
-    // Device was (re)connected.  It's a bit strange to call poll() on
+    // Device was (re)connected.  It's a bit strange to call poll() on a
     // disconnected device, but there's nothing stopping the user from
     // doing so.
     XINPUT_CAPABILITIES caps;
@@ -400,6 +380,7 @@ do_poll() {
     return;
   }
 
+  // Did any buttons change state?
   WORD changed_buttons = _last_buttons ^ state.Gamepad.wButtons;
 
   WORD mask = 1;

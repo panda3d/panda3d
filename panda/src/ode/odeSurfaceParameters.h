@@ -1,16 +1,15 @@
-// Filename: odeSurfaceParameters.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeSurfaceParameters.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODESURFACEPARAMETERS_H
 #define ODESURFACEPARAMETERS_H
@@ -23,10 +22,9 @@
 
 class OdeContact;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeSurfaceParameters
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeSurfaceParameters : public TypedObject {
   friend class OdeContact;
 
@@ -48,7 +46,7 @@ PUBLISHED:
                    MF_contactApprox1_1 = 0x1000,
                    MF_contactApprox1_2 = 0x2000,
                    MF_contactApprox1   = 0x3000 };
-  
+
   /*
   // Interrogate doesn't seem to handle this so well
   enum ModeFlags { MF_contact_mu2      = dContactMu2,

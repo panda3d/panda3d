@@ -1,16 +1,15 @@
-// Filename: daeToEggConverter.h
-// Created by:  pro-rsoft (08May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file daeToEggConverter.h
+ * @author rdb
+ * @date 2008-05-08
+ */
 
 #ifndef DAETOEGGCONVERTER_H
 #define DAETOEGGCONVERTER_H
@@ -38,11 +37,10 @@
 #include "daeCharacter.h"
 #include "pvector.h" // Include last
 
-////////////////////////////////////////////////////////////////////
-//       Class : DAEToEggConverter
-// Description : This class supervises the construction of an
-//               EggData structure from a DAE file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a DAE
+ * file.
+ */
 class DAEToEggConverter : public SomethingToEggConverter {
 public:
   DAEToEggConverter();

@@ -1,16 +1,15 @@
-// Filename: inputDeviceManager.h
-// Created by:  rdb (09Dec15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file inputDeviceManager.h
+ * @author rdb
+ * @date 2015-12-09
+ */
 
 #ifndef INPUTDEVICEMANAGER_H
 #define INPUTDEVICEMANAGER_H
@@ -24,12 +23,10 @@
 #include "xinputDevice.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : InputDeviceManager
-// Description : This class keeps track of all the devices on a
-//               system, and sends out events when a device has been
-//               hot-plugged.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class keeps track of all the devices on a system, and sends out events
+ * when a device has been hot-plugged.
+ */
 class EXPCL_PANDA_DEVICE InputDeviceManager {
 private:
   InputDeviceManager();

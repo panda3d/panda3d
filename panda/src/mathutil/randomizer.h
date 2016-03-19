@@ -1,16 +1,15 @@
-// Filename: randomizer.h
-// Created by:  drose (18Jan07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file randomizer.h
+ * @author drose
+ * @date 2007-01-18
+ */
 
 #ifndef RANDOMIZER_H
 #define RANDOMIZER_H
@@ -21,10 +20,9 @@
 #include <time.h>
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : Randomizer
-// Description : A handy class to return random numbers.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy class to return random numbers.
+ */
 class EXPCL_PANDA_MATHUTIL Randomizer {
 PUBLISHED:
   INLINE Randomizer(unsigned long seed = 0);

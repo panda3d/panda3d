@@ -1,16 +1,15 @@
-// Filename: eglGraphicsWindow.cxx
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsWindow.cxx
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #include "eglGraphicsWindow.h"
 #include "eglGraphicsStateGuardian.h"
@@ -39,11 +38,9 @@ TypeHandle eglGraphicsWindow::_type_handle;
 
 #define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 eglGraphicsWindow::
 eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
@@ -79,25 +76,21 @@ eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 eglGraphicsWindow::
 ~eglGraphicsWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if
+ * possible.
+ *
+ * Returns true if successful, false on failure.  This may fail if the mouse
+ * is not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool eglGraphicsWindow::
 move_pointer(int device, int x, int y) {
   // Note: this is not thread-safe; it should be called only from App.
@@ -106,8 +99,8 @@ move_pointer(int device, int x, int y) {
     // Move the system mouse pointer.
     if (!_properties.get_foreground() ||
         !_input_devices[0].get_pointer().get_in_window()) {
-      // If the window doesn't have input focus, or the mouse isn't
-      // currently within the window, forget it.
+      // If the window doesn't have input focus, or the mouse isn't currently
+      // within the window, forget it.
       return false;
     }
 
@@ -128,15 +121,12 @@ move_pointer(int device, int x, int y) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool eglGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -146,8 +136,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
   if (_awaiting_configure) {
-    // Don't attempt to draw while we have just reconfigured the
-    // window and we haven't got the notification back yet.
+    // Don't attempt to draw while we have just reconfigured the window and we
+    // haven't got the notification back yet.
     return false;
   }
 
@@ -160,8 +150,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
         eglGetCurrentSurface(EGL_READ) == _egl_surface &&
         eglGetCurrentSurface(EGL_DRAW) == _egl_surface &&
         eglGetCurrentContext() == eglgsg->_context) {
-      // No need to make the context current again.  Short-circuit
-      // this possibly-expensive call.
+      // No need to make the context current again.  Short-circuit this
+      // possibly-expensive call.
     } else {
       // Need to set the context.
       if (!eglMakeCurrent(_egl_display, _egl_surface, _egl_surface, eglgsg->_context)) {
@@ -171,10 +161,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
   }
 
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
+  // Now that we have made the context current to a window, we can reset the
+  // GSG state if this is the first time it has been used.  (We can't just
+  // call reset() when we construct the GSG, because reset() requires having a
+  // current context.)
   eglgsg->reset_if_new();
 
   if (mode == FM_render) {
@@ -186,13 +176,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void eglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -211,25 +199,22 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.
+ *
+ * This should cause the window to wait for the flip, if necessary.
+ */
 void eglGraphicsWindow::
 end_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
 
-    // It doesn't appear to be necessary to ensure the graphics
-    // context is current before flipping the windows, and insisting
-    // on doing so can be a significant performance hit.
+    // It doesn't appear to be necessary to ensure the graphics context is
+    // current before flipping the windows, and insisting on doing so can be a
+    // significant performance hit.
 
-    //make_current();
+    // make_current();
 
     LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
     eglSwapBuffers(_egl_display, _egl_surface);
@@ -237,16 +222,13 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties()
+ *
+ * This function is called only within the window thread.
+ */
 void eglGraphicsWindow::
 process_events() {
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
@@ -269,28 +251,27 @@ process_events() {
     }
 
     if (got_keyrelease_event) {
-      // If a keyrelease event is immediately followed by a matching
-      // keypress event, that's just key repeat and we should treat
-      // the two events accordingly.  It would be nice if X provided a
-      // way to differentiate between keyrepeat and explicit
-      // keypresses more generally.
+      // If a keyrelease event is immediately followed by a matching keypress
+      // event, that's just key repeat and we should treat the two events
+      // accordingly.  It would be nice if X provided a way to differentiate
+      // between keyrepeat and explicit keypresses more generally.
       got_keyrelease_event = false;
 
       if (event.type == KeyPress &&
           event.xkey.keycode == keyrelease_event.keycode &&
           (event.xkey.time - keyrelease_event.time <= 1)) {
-        // In particular, we only generate down messages for the
-        // repeated keys, not down-and-up messages.
+        // In particular, we only generate down messages for the repeated
+        // keys, not down-and-up messages.
         handle_keystroke(event.xkey);
 
-        // We thought about not generating the keypress event, but we
-        // need that repeat for backspace.  Rethink later.
+        // We thought about not generating the keypress event, but we need
+        // that repeat for backspace.  Rethink later.
         handle_keypress(event.xkey);
         continue;
 
       } else {
-        // This keyrelease event is not immediately followed by a
-        // matching keypress event, so it's a genuine release.
+        // This keyrelease event is not immediately followed by a matching
+        // keypress event, so it's a genuine release.
         handle_keyrelease(keyrelease_event);
       }
     }
@@ -305,12 +286,11 @@ process_events() {
     case ConfigureNotify:
       _awaiting_configure = false;
       if (_properties.get_fixed_size()) {
-        // If the window properties indicate a fixed size only, undo
-        // any attempt by the user to change them.  In X, there
-        // doesn't appear to be a way to universally disallow this
-        // directly (although we do set the min_size and max_size to
-        // the same value, which seems to work for most window
-        // managers.)
+        // If the window properties indicate a fixed size only, undo any
+        // attempt by the user to change them.  In X, there doesn't appear to
+        // be a way to universally disallow this directly (although we do set
+        // the min_size and max_size to the same value, which seems to work
+        // for most window managers.)
         WindowProperties current_props = get_properties();
         if (event.xconfigure.width != current_props.get_x_size() ||
             event.xconfigure.height != current_props.get_y_size()) {
@@ -351,9 +331,9 @@ process_events() {
       break;
 
     case KeyRelease:
-      // The KeyRelease can't be processed immediately, because we
-      // have to check first if it's immediately followed by a
-      // matching KeyPress event.
+      // The KeyRelease can't be processed immediately, because we have to
+      // check first if it's immediately followed by a matching KeyPress
+      // event.
       keyrelease_event = event.xkey;
       got_keyrelease_event = true;
       break;
@@ -391,17 +371,17 @@ process_events() {
 
     case ClientMessage:
       if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
-        // This is a message from the window manager indicating that
-        // the user has requested to close the window.
+        // This is a message from the window manager indicating that the user
+        // has requested to close the window.
         string close_request_event = get_close_request_event();
         if (!close_request_event.empty()) {
-          // In this case, the app has indicated a desire to intercept
-          // the request and process it directly.
+          // In this case, the app has indicated a desire to intercept the
+          // request and process it directly.
           throw_event(close_request_event);
 
         } else {
-          // In this case, the default case, the app does not intend
-          // to service the request, so we do by closing the window.
+          // In this case, the default case, the app does not intend to
+          // service the request, so we do by closing the window.
 
           // TODO: don't release the gsg in the window thread.
           close_window();
@@ -412,9 +392,8 @@ process_events() {
       break;
 
     case DestroyNotify:
-      // Apparently, we never get a DestroyNotify on a toplevel
-      // window.  Instead, we rely on hints from the window manager
-      // (see above).
+      // Apparently, we never get a DestroyNotify on a toplevel window.
+      // Instead, we rely on hints from the window manager (see above).
       egldisplay_cat.info()
         << "DestroyNotify\n";
       break;
@@ -426,29 +405,24 @@ process_events() {
   }
 
   if (got_keyrelease_event) {
-    // This keyrelease event is not immediately followed by a
-    // matching keypress event, so it's a genuine release.
+    // This keyrelease event is not immediately followed by a matching
+    // keypress event, so it's a genuine release.
     handle_keyrelease(keyrelease_event);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The return value is true if the properties are set, false if they are
+ * ignored.  This is mainly useful for derived classes to implement extensions
+ * to this function.
+ */
 void eglGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (_pipe == (GraphicsPipe *)NULL) {
@@ -461,10 +435,9 @@ set_properties_now(WindowProperties &properties) {
   DCAST_INTO_V(egl_pipe, _pipe);
 
   // Fullscreen mode is implemented with a hint to the window manager.
-  // However, we also implicitly set the origin to (0, 0) and the size
-  // to the desktop size, and request undecorated mode, in case the
-  // user has a less-capable window manager (or no window manager at
-  // all).
+  // However, we also implicitly set the origin to (0, 0) and the size to the
+  // desktop size, and request undecorated mode, in case the user has a less-
+  // capable window manager (or no window manager at all).
   if (properties.get_fullscreen()) {
     properties.set_undecorated(true);
     properties.set_origin(0, 0);
@@ -478,15 +451,15 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
-  // The window is already open; we are limited to what we can change
-  // on the fly.
+  // The window is already open; we are limited to what we can change on the
+  // fly.
 
   // We'll pass some property requests on as a window manager hint.
   WindowProperties wm_properties = _properties;
   wm_properties.add_properties(properties);
 
-  // The window title may be changed by issuing another hint request.
-  // Assume this will be honored.
+  // The window title may be changed by issuing another hint request.  Assume
+  // this will be honored.
   if (properties.has_title()) {
     _properties.set_title(properties.get_title());
     properties.clear_title();
@@ -498,10 +471,10 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_fullscreen();
   }
 
-  // The size and position of an already-open window are changed via
-  // explicit X calls.  These may still get intercepted by the window
-  // manager.  Rather than changing _properties immediately, we'll
-  // wait for the ConfigureNotify message to come back.
+  // The size and position of an already-open window are changed via explicit
+  // X calls.  These may still get intercepted by the window manager.  Rather
+  // than changing _properties immediately, we'll wait for the ConfigureNotify
+  // message to come back.
   XWindowChanges changes;
   int value_mask = 0;
 
@@ -518,10 +491,9 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_size();
   }
   if (properties.has_z_order()) {
-    // We'll send the classic stacking request through the standard
-    // interface, for users of primitive window managers; but we'll
-    // also send it as a window manager hint, for users of modern
-    // window managers.
+    // We'll send the classic stacking request through the standard interface,
+    // for users of primitive window managers; but we'll also send it as a
+    // window manager hint, for users of modern window managers.
     _properties.set_z_order(properties.get_z_order());
     switch (properties.get_z_order()) {
     case WindowProperties::Z_bottom:
@@ -571,12 +543,9 @@ set_properties_now(WindowProperties &properties) {
   set_wm_properties(wm_properties, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void eglGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -610,19 +579,16 @@ close_window() {
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool eglGraphicsWindow::
 open_window() {
   eglGraphicsPipe *egl_pipe;
   DCAST_INTO_R(egl_pipe, _pipe, false);
 
-  // GSG Creation/Initialization
+  // GSG CreationInitialization
   eglGraphicsStateGuardian *eglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
@@ -630,8 +596,8 @@ open_window() {
     eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), false, false);
     _gsg = eglgsg;
   } else {
-    // If the old gsg has the wrong pixel format, create a
-    // new one that shares with the old gsg.
+    // If the old gsg has the wrong pixel format, create a new one that shares
+    // with the old gsg.
     DCAST_INTO_R(eglgsg, _gsg, false);
     if (!eglgsg->get_fb_properties().subsumes(_fb_properties)) {
       eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, eglgsg);
@@ -656,7 +622,7 @@ open_window() {
   if (!_properties.has_size()) {
     _properties.set_size(100, 100);
   }
-  
+
   X11_Window parent_window = egl_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
   if (window_handle != NULL) {
@@ -666,7 +632,7 @@ open_window() {
     if (os_handle != NULL) {
       egldisplay_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
-      
+
       if (os_handle->is_of_type(NativeWindowHandle::X11Handle::get_class_type())) {
         NativeWindowHandle::X11Handle *x11_handle = DCAST(NativeWindowHandle::X11Handle, os_handle);
         parent_window = x11_handle->get_handle();
@@ -711,10 +677,10 @@ open_window() {
   }
   set_wm_properties(_properties, false);
 
-  // We don't specify any fancy properties of the XIC.  It would be
-  // nicer if we could support fancy IM's that want preedit callbacks,
-  // etc., but that can wait until we have an X server that actually
-  // supports these to test it on.
+  // We don't specify any fancy properties of the XIC.  It would be nicer if
+  // we could support fancy IM's that want preedit callbacks, etc., but that
+  // can wait until we have an X server that actually supports these to test
+  // it on.
   XIM im = egl_pipe->get_im();
   _ic = NULL;
   if (im) {
@@ -777,19 +743,16 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::set_wm_properties
-//       Access: Private
-//  Description: Asks the window manager to set the appropriate
-//               properties.  In X, these properties cannot be
-//               specified directly by the application; they must be
-//               requested via the window manager, which may or may
-//               not choose to honor the request.
-//
-//               If already_mapped is true, the window has already
-//               been mapped (manifested) on the display.  This means
-//               we may need to use a different action in some cases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Asks the window manager to set the appropriate properties.  In X, these
+ * properties cannot be specified directly by the application; they must be
+ * requested via the window manager, which may or may not choose to honor the
+ * request.
+ *
+ * If already_mapped is true, the window has already been mapped (manifested)
+ * on the display.  This means we may need to use a different action in some
+ * cases.
+ */
 void eglGraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // Name the window if there is a name
@@ -802,8 +765,8 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     }
   }
 
-  // The size hints request a window of a particular size and/or a
-  // particular placement onscreen.
+  // The size hints request a window of a particular size andor a particular
+  // placement onscreen.
   XSizeHints *size_hints_p = NULL;
   if (properties.has_origin() || properties.has_size()) {
     size_hints_p = XAllocSizeHints();
@@ -829,8 +792,8 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     }
   }
 
-  // The window manager hints include requests to the window manager
-  // other than those specific to window geometry.
+  // The window manager hints include requests to the window manager other
+  // than those specific to window geometry.
   XWMHints *wm_hints_p = NULL;
   wm_hints_p = XAllocWMHints();
   if (wm_hints_p != (XWMHints *)NULL) {
@@ -842,9 +805,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     wm_hints_p->flags = StateHint;
   }
 
-  // Two competing window manager interfaces have evolved.  One of
-  // them allows to set certain properties as a "type"; the other one
-  // as a "state".  We'll try to honor both.
+  // Two competing window manager interfaces have evolved.  One of them allows
+  // to set certain properties as a "type"; the other one as a "state".  We'll
+  // try to honor both.
   static const int max_type_data = 32;
   PN_int32 type_data[max_type_data];
   int next_type_data = 0;
@@ -865,8 +828,8 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   int next_set_data = 0;
 
   if (properties.get_fullscreen()) {
-    // For a "fullscreen" request, we pass this through, hoping the
-    // window manager will support EWMH.
+    // For a "fullscreen" request, we pass this through, hoping the window
+    // manager will support EWMH.
     type_data[next_type_data++] = _net_wm_window_type_fullscreen;
 
     // We also request it as a state.
@@ -876,15 +839,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     set_data[next_set_data++] = SetAction(_net_wm_state_fullscreen, _net_wm_state_remove);
   }
 
-  // If we asked for a window without a border, there's no excellent
-  // way to arrange that.  For users whose window managers follow the
-  // EWMH specification, we can ask for a "splash" screen, which is
-  // usually undecorated.  It's not exactly right, but the spec
-  // doesn't give us an exactly-right option.
+  // If we asked for a window without a border, there's no excellent way to
+  // arrange that.  For users whose window managers follow the EWMH
+  // specification, we can ask for a "splash" screen, which is usually
+  // undecorated.  It's not exactly right, but the spec doesn't give us an
+  // exactly-right option.
 
-  // For other users, we'll totally punt and just set the window's
-  // Class to "Undecorated", and let the user configure his/her window
-  // manager not to put a border around windows of this class.
+  // For other users, we'll totally punt and just set the window's Class to
+  // "Undecorated", and let the user configure hisher window manager not to
+  // put a border around windows of this class.
   XClassHint *class_hints_p = NULL;
   if (properties.get_undecorated()) {
     class_hints_p = XAllocClassHint();
@@ -930,9 +893,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   (unsigned char *)state_data, next_state_data);
 
   if (already_mapped) {
-    // We have to request state changes differently when the window
-    // has been mapped.  To do this, we need to send a client message
-    // to the root window for each change.
+    // We have to request state changes differently when the window has been
+    // mapped.  To do this, we need to send a client message to the root
+    // window for each change.
 
     eglGraphicsPipe *egl_pipe;
     DCAST_INTO_V(egl_pipe, _pipe);
@@ -969,10 +932,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     XFree(class_hints_p);
   }
 
-  // Also, indicate to the window manager that we'd like to get a
-  // chance to close our windows cleanly, rather than being rudely
-  // disconnected from the X server if the user requests a window
-  // close.
+  // Also, indicate to the window manager that we'd like to get a chance to
+  // close our windows cleanly, rather than being rudely disconnected from the
+  // X server if the user requests a window close.
   Atom protocols[] = {
     _wm_delete_window,
   };
@@ -981,12 +943,10 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   sizeof(protocols) / sizeof(Atom));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::setup_colormap
-//       Access: Private
-//  Description: Allocates a colormap appropriate to the visual and
-//               stores in in the _colormap method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a colormap appropriate to the visual and stores in in the
+ * _colormap method.
+ */
 void eglGraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   eglGraphicsPipe *egl_pipe;
@@ -1020,11 +980,9 @@ setup_colormap(XVisualInfo *visual) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::open_raw_mice
-//       Access: Private
-//  Description: Adds raw mice to the _input_devices list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds raw mice to the _input_devices list.
+ */
 void eglGraphicsWindow::
 open_raw_mice()
 {
@@ -1102,11 +1060,9 @@ open_raw_mice()
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::poll_raw_mice
-//       Access: Private
-//  Description: Reads events from the raw mouse device files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads events from the raw mouse device files.
+ */
 void eglGraphicsWindow::
 poll_raw_mice()
 {
@@ -1166,12 +1122,9 @@ poll_raw_mice()
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::handle_keystroke
-//       Access: Private
-//  Description: Generates a keystroke corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keystroke corresponding to the indicated X KeyPress event.
+ */
 void eglGraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
@@ -1188,8 +1141,7 @@ handle_keystroke(XKeyEvent &event) {
         << "Overflowed input buffer.\n";
     }
 
-    // Now each of the returned wide characters represents a
-    // keystroke.
+    // Now each of the returned wide characters represents a keystroke.
     for (int i = 0; i < len; i++) {
       _input_devices[0].keystroke(buffer[i]);
     }
@@ -1203,12 +1155,9 @@ handle_keystroke(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::handle_keypress
-//       Access: Private
-//  Description: Generates a keypress corresponding to the indicated
-//               X KeyPress event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keypress corresponding to the indicated X KeyPress event.
+ */
 void eglGraphicsWindow::
 handle_keypress(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
@@ -1232,12 +1181,9 @@ handle_keypress(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::handle_keyrelease
-//       Access: Private
-//  Description: Generates a keyrelease corresponding to the indicated
-//               X KeyRelease event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a keyrelease corresponding to the indicated X KeyRelease event.
+ */
 void eglGraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
@@ -1261,20 +1207,18 @@ handle_keyrelease(XKeyEvent &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::get_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               keyboard button indicated by the given key event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the keyboard button
+ * indicated by the given key event.
+ */
 ButtonHandle eglGraphicsWindow::
 get_button(XKeyEvent &key_event, bool allow_shift) {
   KeySym key = XLookupKeysym(&key_event, 0);
 
   if ((key_event.state & Mod2Mask) != 0) {
-    // Mod2Mask corresponds to NumLock being in effect.  In this case,
-    // we want to get the alternate keysym associated with any keypad
-    // keys.  Weird system.
+    // Mod2Mask corresponds to NumLock being in effect.  In this case, we want
+    // to get the alternate keysym associated with any keypad keys.  Weird
+    // system.
     KeySym k2;
     ButtonHandle button;
     switch (key) {
@@ -1317,8 +1261,8 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
       if (button != ButtonHandle::none()) {
         return button;
       }
-      // If that didn't produce a button we know, just fall through
-      // and handle the normal, un-numlocked key.
+      // If that didn't produce a button we know, just fall through and handle
+      // the normal, un-numlocked key.
       break;
 
     default:
@@ -1336,9 +1280,9 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
       }
     }
 
-    // If caps lock is down, shift lowercase letters to uppercase.  We
-    // can do this in just the ASCII set, because we handle
-    // international keyboards elsewhere (via an input context).
+    // If caps lock is down, shift lowercase letters to uppercase.  We can do
+    // this in just the ASCII set, because we handle international keyboards
+    // elsewhere (via an input context).
     if ((key_event.state & (ShiftMask | LockMask)) != 0) {
       if (key >= XK_a and key <= XK_z) {
         key += (XK_A - XK_a);
@@ -1349,12 +1293,10 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
   return map_button(key);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::map_button
-//       Access: Private
-//  Description: Maps from a single X keysym to Panda's ButtonHandle.
-//               Called by get_button(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from a single X keysym to Panda's ButtonHandle.  Called by
+ * get_button(), above.
+ */
 ButtonHandle eglGraphicsWindow::
 map_button(KeySym key) {
   switch (key) {
@@ -1669,12 +1611,10 @@ map_button(KeySym key) {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::get_mouse_button
-//       Access: Private
-//  Description: Returns the Panda ButtonHandle corresponding to the
-//               mouse button indicated by the given button event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda ButtonHandle corresponding to the mouse button indicated
+ * by the given button event.
+ */
 ButtonHandle eglGraphicsWindow::
 get_mouse_button(XButtonEvent &button_event) {
   int index = button_event.button;
@@ -1690,14 +1630,10 @@ get_mouse_button(XButtonEvent &button_event) {
     return MouseButton::button(index - 1);
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::check_event
-//       Access: Private, Static
-//  Description: This function is used as a predicate to
-//               XCheckIfEvent() to determine if the indicated queued
-//               X event is relevant and should be returned to this
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used as a predicate to XCheckIfEvent() to determine if the
+ * indicated queued X event is relevant and should be returned to this window.
+ */
 Bool eglGraphicsWindow::
 check_event(X11_Display *display, XEvent *event, char *arg) {
   const eglGraphicsWindow *self = (eglGraphicsWindow *)arg;

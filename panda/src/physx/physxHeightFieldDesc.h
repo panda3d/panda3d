@@ -1,16 +1,15 @@
-// Filename: physxHeightFieldDesc.h
-// Created by:  enn0x (15Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxHeightFieldDesc.h
+ * @author enn0x
+ * @date 2009-10-15
+ */
 
 #ifndef PHYSXHEIGHTFIELDDESC_H
 #define PHYSXHEIGHTFIELDDESC_H
@@ -20,14 +19,11 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxHeightFieldDesc
-// Description : Descriptor class for height fields. The height
-//               field data is copied when a PhysxHeightField object
-//               is created from this descriptor. After the call 
-//               the user may discard the original height data (e.g.
-//               release the PNGImage).
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for height fields.  The height field data is copied when a
+ * PhysxHeightField object is created from this descriptor.  After the call
+ * the user may discard the original height data (e.g.  release the PNGImage).
+ */
 class EXPCL_PANDAPHYSX PhysxHeightFieldDesc {
 
 PUBLISHED:

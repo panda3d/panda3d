@@ -1,16 +1,15 @@
-// Filename: pSphereLens.h
-// Created by:  drose (12Dec01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pSphereLens.h
+ * @author drose
+ * @date 2001-12-12
+ */
 
 #ifndef PSPHERELENS_H
 #define PSPHERELENS_H
@@ -19,22 +18,18 @@
 
 #include "lens.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PSphereLens
-// Description : A PSphereLens is a special nonlinear lens that
-//               doesn't correspond to any real physical lenses.  It's
-//               primarily useful for generating 360-degree wraparound
-//               images while avoiding the distortion associated with
-//               fisheye images.
-//
-//               A PSphereLens is similar to a cylindrical lens,
-//               except it is also curved in the vertical direction.
-//               This allows it to extend to both poles in the
-//               vertical direction.  The mapping is similar to what
-//               many modeling packages call a sphere mapping: the x
-//               coordinate is proportional to azimuth, while the y
-//               coordinate is proportional to altitude.
-////////////////////////////////////////////////////////////////////
+/**
+ * A PSphereLens is a special nonlinear lens that doesn't correspond to any
+ * real physical lenses.  It's primarily useful for generating 360-degree
+ * wraparound images while avoiding the distortion associated with fisheye
+ * images.
+ *
+ * A PSphereLens is similar to a cylindrical lens, except it is also curved in
+ * the vertical direction.  This allows it to extend to both poles in the
+ * vertical direction.  The mapping is similar to what many modeling packages
+ * call a sphere mapping: the x coordinate is proportional to azimuth, while
+ * the y coordinate is proportional to altitude.
+ */
 class EXPCL_PANDAFX PSphereLens : public Lens {
 PUBLISHED:
   INLINE PSphereLens();
@@ -47,9 +42,9 @@ public:
   virtual PT(Lens) make_copy() const;
 
 protected:
-  virtual bool do_extrude(const Lens::CData *lens_cdata, const LPoint3 &point2d, 
+  virtual bool do_extrude(const Lens::CData *lens_cdata, const LPoint3 &point2d,
                           LPoint3 &near_point, LPoint3 &far_point) const;
-  virtual bool do_project(const Lens::CData *lens_cdata, 
+  virtual bool do_project(const Lens::CData *lens_cdata,
                           const LPoint3 &point3d, LPoint3 &point2d) const;
 
   virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;

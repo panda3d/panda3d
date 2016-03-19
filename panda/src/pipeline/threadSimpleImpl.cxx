@@ -1,16 +1,15 @@
-// Filename: threadSimpleImpl.cxx
-// Created by:  drose (18Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file threadSimpleImpl.cxx
+ * @author drose
+ * @date 2007-06-18
+ */
 
 #include "selectThreadImpl.h"
 
@@ -24,11 +23,9 @@ ThreadSimpleImpl *volatile ThreadSimpleImpl::_st_this;
 
 int ThreadSimpleImpl::_next_unique_id = 1;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ThreadSimpleImpl::
 ThreadSimpleImpl(Thread *parent_obj) :
   _parent_obj(parent_obj)
@@ -60,15 +57,13 @@ ThreadSimpleImpl(Thread *parent_obj) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ThreadSimpleImpl::
 ~ThreadSimpleImpl() {
   if (thread_cat->is_debug()) {
-    thread_cat.debug() 
+    thread_cat.debug()
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
   nassertv(_status != TS_running);
@@ -81,13 +76,10 @@ ThreadSimpleImpl::
   _manager->remove_thread(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::setup_main_thread
-//       Access: Public
-//  Description: Called for the main thread only, which has been
-//               already started, to fill in the values appropriate to
-//               that thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for the main thread only, which has been already started, to fill in
+ * the values appropriate to that thread.
+ */
 void ThreadSimpleImpl::
 setup_main_thread() {
   _status = TS_running;
@@ -104,11 +96,9 @@ setup_main_thread() {
   _manager->set_current_thread(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::start
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool ThreadSimpleImpl::
 start(ThreadPriority priority, bool joinable) {
   if (thread_cat->is_debug()) {
@@ -131,11 +121,11 @@ start(ThreadPriority priority, bool joinable) {
   case TP_low:
     _priority_weight = _manager->_simple_thread_low_weight;
     break;
-    
+
   case TP_normal:
     _priority_weight = _manager->_simple_thread_normal_weight;
     break;
-    
+
   case TP_high:
     _priority_weight = _manager->_simple_thread_high_weight;
     break;
@@ -145,8 +135,8 @@ start(ThreadPriority priority, bool joinable) {
     break;
   }
 
-  // We'll keep the reference count upped while the thread is running.
-  // When the thread finishes, we'll drop the reference count.
+  // We'll keep the reference count upped while the thread is running.  When
+  // the thread finishes, we'll drop the reference count.
   _parent_obj->ref();
 
 #ifdef HAVE_PYTHON
@@ -161,13 +151,10 @@ start(ThreadPriority priority, bool joinable) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::join
-//       Access: Public
-//  Description: Blocks the calling process until the thread
-//               terminates.  If the thread has already terminated,
-//               this returns immediately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks the calling process until the thread terminates.  If the thread has
+ * already terminated, this returns immediately.
+ */
 void ThreadSimpleImpl::
 join() {
   nassertv(_joinable);
@@ -180,21 +167,17 @@ join() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::preempt
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ThreadSimpleImpl::
 preempt() {
   _manager->preempt(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::get_unique_id
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string ThreadSimpleImpl::
 get_unique_id() const {
   ostringstream strm;
@@ -208,62 +191,50 @@ get_unique_id() const {
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::prepare_for_exit
-//       Access: Public, Static
-//  Description: Waits for all threads to terminate.  Normally this is
-//               called only from the main thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for all threads to terminate.  Normally this is called only from the
+ * main thread.
+ */
 void ThreadSimpleImpl::
 prepare_for_exit() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   manager->prepare_for_exit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::sleep_this
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ThreadSimpleImpl::
 sleep_this(double seconds) {
   _manager->enqueue_sleep(this, seconds);
   _manager->next_context();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::yield_this
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ThreadSimpleImpl::
 yield_this(bool volunteer) {
   if (thread_cat->is_debug() && volunteer) {
-    thread_cat.debug() 
+    thread_cat.debug()
       << "Force-yielding " << _parent_obj->get_name() << "\n";
   }
   _manager->enqueue_ready(this, true);
   _manager->next_context();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::st_begin_thread
-//       Access: Private, Static
-//  Description: This method is called as the first introduction to a
-//               new thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called as the first introduction to a new thread.
+ */
 void ThreadSimpleImpl::
 st_begin_thread(void *data) {
   ThreadSimpleImpl *self = (ThreadSimpleImpl *)data;
   self->begin_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::begin_thread
-//       Access: Private
-//  Description: This method is called as the first introduction to a
-//               new thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called as the first introduction to a new thread.
+ */
 void ThreadSimpleImpl::
 begin_thread() {
 #ifdef HAVE_PYTHON
@@ -277,8 +248,8 @@ begin_thread() {
   _win32_system_thread_id = GetCurrentThreadId();
 #endif
 
-  // Here we are executing within the thread.  Run the thread_main
-  // function defined for this thread.
+  // Here we are executing within the thread.  Run the thread_main function
+  // defined for this thread.
   _parent_obj->thread_main();
 
   // Now we have completed the thread.
@@ -293,7 +264,7 @@ begin_thread() {
 
   _manager->enqueue_finished(this);
   _manager->next_context();
-  
+
   // Shouldn't get here.
   nassertv(false);
   abort();

@@ -1,16 +1,15 @@
-// Filename: interrogateElement.h
-// Created by:  drose (11Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateElement.h
+ * @author drose
+ * @date 2000-08-11
+ */
 
 #ifndef INTERROGATEELEMENT_H
 #define INTERROGATEELEMENT_H
@@ -21,11 +20,10 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateElement
-// Description : An internal representation of a data element, like a
-//               data member or a global variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a data element, like a data member or a
+ * global variable.
+ */
 class EXPCL_INTERROGATEDB InterrogateElement : public InterrogateComponent {
 public:
   INLINE InterrogateElement(InterrogateModuleDef *def = NULL);

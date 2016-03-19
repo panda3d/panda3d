@@ -1,16 +1,15 @@
-// Filename: gamepadButton.h
-// Created by:  rdb (21Aug15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gamepadButton.h
+ * @author rdb
+ * @date 2015-08-21
+ */
 
 #ifndef GAMEPADBUTTON_H
 #define GAMEPADBUTTON_H
@@ -19,12 +18,10 @@
 
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GamepadButton
-// Description : This class is just used as a convenient namespace for
-//               grouping all of these handy functions that return
-//               buttons which map to gamepad buttons.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is just used as a convenient namespace for grouping all of these
+ * handy functions that return buttons which map to gamepad buttons.
+ */
 class EXPCL_PANDA_PUTIL GamepadButton {
 PUBLISHED:
   static ButtonHandle lstick();

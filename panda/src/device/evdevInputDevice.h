@@ -1,16 +1,15 @@
-// Filename: evdevInputDevice.h
-// Created by:  rdb (24Aug15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file evdevInputDevice.h
+ * @author rdb
+ * @date 2015-08-24
+ */
 
 #ifndef EVDEVINPUTDEVICE_H
 #define EVDEVINPUTDEVICE_H
@@ -19,11 +18,11 @@
 
 #ifdef PHAVE_LINUX_INPUT_H
 
-////////////////////////////////////////////////////////////////////
-//       Class : EvdevInputDevice
-// Description : This is a type of device that uses the Linux
-//               /dev/input/event# API to read data from a raw mouse.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a type of device that uses the Linux /dev/input/event# API to read
+ * data from a raw mouse or other input device.  Unlike the joystick API, the
+ * evdev API supports sending force feedback (ie. rumble) events.
+ */
 class EXPCL_PANDA_DEVICE EvdevInputDevice : public InputDevice {
 public:
   EvdevInputDevice(int index);

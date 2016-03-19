@@ -1,23 +1,19 @@
-// Filename: reMutex.I
-// Created by:  drose (15Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file reMutex.I
+ * @author drose
+ * @date 2006-01-15
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
 ReMutex() : MutexDebug(string(), true, false)
@@ -27,11 +23,9 @@ ReMutex()
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
 ReMutex(const char *name) : MutexDebug(string(name), true, false)
@@ -41,11 +35,9 @@ ReMutex(const char *)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
 ReMutex(const string &name) : MutexDebug(name, true, false)
@@ -55,20 +47,16 @@ ReMutex(const string &)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ReMutex::
 ~ReMutex() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not attempt to copy mutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy mutexes.
+ */
 INLINE void ReMutex::
 operator = (const ReMutex &copy) {
   nassertv(false);

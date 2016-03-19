@@ -1,16 +1,15 @@
-// Filename: eggSliderPointer.h
-// Created by:  drose (18Jul03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggSliderPointer.h
+ * @author drose
+ * @date 2003-07-18
+ */
 
 #ifndef EGGSLIDERPOINTER_H
 #define EGGSLIDERPOINTER_H
@@ -21,11 +20,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSliderPointer
-// Description : This is a base class for EggVertexPointer and
-//               EggScalarTablePointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for EggVertexPointer and EggScalarTablePointer.
+ */
 class EggSliderPointer : public EggBackPointer {
 public:
   virtual int get_num_frames() const=0;
@@ -50,5 +47,3 @@ private:
 };
 
 #endif
-
-

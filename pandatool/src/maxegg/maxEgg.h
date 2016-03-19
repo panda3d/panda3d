@@ -1,11 +1,11 @@
 /*
-  MaxEgg.h 
-  Created by Steven "Sauce" Osman, 01/??/03
+  MaxEgg.h
+  Created by Steven "Sauce" Osman, Jan03
   Modified and maintained by Ken Strickland, (02/01/03)-(05/15/03)
   Modified and maintained by Corey Revilla, (05/22/03)-present
   Carnegie Mellon University, Entetainment Technology Center
 
-  This file contains a 3dsMax exporter derived from discreet's own SceneExport 
+  This file contains a 3dsMax exporter derived from discreet's own SceneExport
   plug-in class; this exporter is basically a wrapper around the MaxToEgg
   Panda-converter class, and just sets up the interface and environment
   in which the MaxToEgg class can be "run" as if it were a standalone app.
@@ -78,7 +78,7 @@ extern HINSTANCE hInstance;
 extern TCHAR *GetString(int id);
 
 /* This class defines the 3D Studio Max exporter itself.  It is basically a
-   shell that is invoked by 3D Studio Max's export API.  It then sets up 
+   shell that is invoked by 3D Studio Max's export API.  It then sets up
    MaxToEgg instance and attempts to "fool it" into thinking that it is
    actually being invoked as a standalone program.  The thought behind this
    is that some day MaxToEgg may well be a standalone program, provided that
@@ -90,7 +90,7 @@ extern TCHAR *GetString(int id);
   #define DefaultRemapDir NoRemap
 #endif
 
-class MaxEggPlugin : public HelperObject 
+class MaxEggPlugin : public HelperObject
 {
   MaxOptionsDialog **eggList;
   int numEggs;
@@ -100,18 +100,18 @@ class MaxEggPlugin : public HelperObject
   bool autoOverwrite;
   bool pview;
   bool logOutput;
-  
+
   // Class vars
   static Mesh mesh;           // This plugin generates no geometry, this mesh is not passed on to 3D Studio.
   static short meshBuilt;
   static HWND hMaxEggParams;
   static IObjParam *iObjParams;
 
-  //Constructor/Destructor
+  // ConstructorDestructor
   MaxEggPlugin();
   virtual ~MaxEggPlugin();
 
-  //Other class Methods
+  // Other class Methods
   void DoExport();
   void UpdateUI();
   void SaveCheckState();
@@ -121,8 +121,8 @@ class MaxEggPlugin : public HelperObject
   void RemoveEgg(int i);
   MaxOptionsDialog *GetEgg(int i) { return (i >= 0 && i < numEggs) ? eggList[i] : NULL; }
 
-  // Required implimented virtual methods:
-  // inherited virtual methods for Reference-management
+  // Required implimented virtual methods: inherited virtual methods for
+  // Reference-management
   RefResult NotifyRefChanged( Interval changeInt, RefTargetHandle hTarget, PartID& partID, RefMessage message );
   void GetMat(TimeValue t, INode* inod, ViewExp *vpt, Matrix3& mat);
 

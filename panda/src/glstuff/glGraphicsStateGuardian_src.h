@@ -1,18 +1,18 @@
-// Filename: glGraphicsStateGuardian_src.h
-// Created by:  drose (02Feb99)
-// Updated by: fperazzi, PandaSE (05May10) (added
-//   get_supports_cg_profile)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGraphicsStateGuardian_src.h
+ * @author drose
+ * @date 1999-02-02
+ * @author fperazzi, PandaSE
+ * @date 2010-05-05
+ *   get_supports_cg_profile)
+ */
 
 #include "pandabase.h"
 
@@ -44,18 +44,17 @@ class PlaneNode;
 class Light;
 
 #ifdef OPENGLES
-// This is a cheesy hack to allow the following typedefs to compile
-// for OpenGL ES.  We won't actually be calling any of the "double"
-// functions in this case (and they don't exist anyway), but we need
-// to be able to get past their declarations.
+// This is a cheesy hack to allow the following typedefs to compile for OpenGL
+// ES.  We won't actually be calling any of the "double" functions in this
+// case (and they don't exist anyway), but we need to be able to get past
+// their declarations.
 typedef double GLdouble;
 #endif  // OPENGLES
 
-// These typedefs are declared in glext.h, but we must repeat them
-// here, mainly because they will not be included from glext.h if the
-// system GL version matches or exceeds the GL version in which these
-// functions are defined, and the system gl.h sometimes doesn't
-// declare these typedefs.
+// These typedefs are declared in glext.h, but we must repeat them here,
+// mainly because they will not be included from glext.h if the system GL
+// version matches or exceeds the GL version in which these functions are
+// defined, and the system gl.h sometimes doesn't declare these typedefs.
 #if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
 typedef const GLubyte * (APIENTRYP PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 typedef void (APIENTRY *GLDEBUGPROC_P)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
@@ -73,7 +72,8 @@ typedef void (APIENTRYP PFNGLGETQUERYOBJECTUI64VPROC) (GLuint id, GLenum pname, 
 typedef void (APIENTRYP PFNGLGETINTEGER64VPROC) (GLenum pname, GLint64 *params);
 typedef void (APIENTRYP PFNGLPOINTPARAMETERFVPROC) (GLenum pname, const GLfloat *params);
 typedef void (APIENTRYP PFNGLDRAWRANGEELEMENTSPROC) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
-// There is some trivial disagreement between different gl.h headers about this one, so we use our own typename.
+// There is some trivial disagreement between different gl.h headers about
+// this one, so we use our own typename.
 typedef void (APIENTRYP PFNGLTEXIMAGE3DPROC_P) (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLCOPYTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
@@ -227,18 +227,16 @@ typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
 #endif  // OPENGLES
 #endif  // __EDG__
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLGraphicsStateGuardian
-// Description : A GraphicsStateGuardian specialized for rendering
-//               into OpenGL contexts.  There should be no GL calls
-//               outside of this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A GraphicsStateGuardian specialized for rendering into OpenGL contexts.
+ * There should be no GL calls outside of this object.
+ */
 class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
   CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe);
   virtual ~CLP(GraphicsStateGuardian)();
 
-  //#--- Zhao Nov/2011
+  // #--- Zhao Nov2011
   virtual string get_driver_vendor();
   virtual string get_driver_renderer();
   virtual string get_driver_version();
@@ -569,7 +567,9 @@ protected:
            Texture::ComponentType type,
            Texture::CompressionMode compression, int n);
 
+#ifdef SUPPORT_FIXED_FUNCTION
   void do_point_size();
+#endif
 
   enum AutoAntialiasMode {
     AA_poly,
@@ -641,9 +641,9 @@ protected:
 
   bool _supports_vertex_attrib_divisor;
 
-  // Cache the data necessary to bind each particular light each
-  // frame, so if we bind a given light multiple times, we only have
-  // to compute its data once.
+  // Cache the data necessary to bind each particular light each frame, so if
+  // we bind a given light multiple times, we only have to compute its data
+  // once.
   class DirectionalLightFrameData {
   public:
     LVector4 _neg_dir;
@@ -682,7 +682,7 @@ protected:
   string _gl_renderer;
   string _gl_version;
   int _gl_version_major, _gl_version_minor;
-  //#--- Zhao Nov/2011
+  // #--- Zhao Nov2011
   int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
 
   pset<string> _extensions;
@@ -828,6 +828,11 @@ public:
 
 #ifndef OPENGLES
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
+#endif
+
+#ifndef OPENGLES
+  bool _supports_empty_framebuffer;
+  PFNGLFRAMEBUFFERPARAMETERIPROC _glFramebufferParameteri;
 #endif
 
   bool _supports_framebuffer_multisample;
@@ -983,7 +988,7 @@ public:
   TextureSet _textures_needing_framebuffer_barrier;
 #endif
 
-  //RenderState::SlotMask _inv_state_mask;
+  // RenderState::SlotMask _inv_state_mask;
 
   int _error_count;
   double _last_error_check;

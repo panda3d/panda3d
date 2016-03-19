@@ -1,16 +1,15 @@
-// Filename: pointerEventList.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointerEventList.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef POINTEREVENTLIST_H
 #define POINTEREVENTLIST_H
@@ -26,14 +25,11 @@ class ModifierPointers;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointerEventList
-// Description : Records a set of pointer events that happened
-//               recently.  This class is usually used only in the
-//               data graph, to transmit the recent pointer presses,
-//               but it may be used anywhere a list of PointerEvents
-//               is desired.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a set of pointer events that happened recently.  This class is
+ * usually used only in the data graph, to transmit the recent pointer
+ * presses, but it may be used anywhere a list of PointerEvents is desired.
+ */
 class EXPCL_PANDA_EVENT PointerEventList : public ParamValueBase {
 PUBLISHED:
   INLINE PointerEventList();
@@ -96,4 +92,3 @@ INLINE ostream &operator << (ostream &out, const PointerEventList &pointerlist) 
 #include "pointerEventList.I"
 
 #endif
-

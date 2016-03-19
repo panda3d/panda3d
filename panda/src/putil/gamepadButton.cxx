@@ -1,16 +1,15 @@
-// Filename: gamepadButton.cxx
-// Created by:  rdb (21Aug15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gamepadButton.cxx
+ * @author rdb
+ * @date 2015-08-21
+ */
 
 #include "gamepadButton.h"
 #include "buttonRegistry.h"
@@ -42,12 +41,10 @@ DEFINE_GAMEPAD_BUTTON_HANDLE(action_x)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_y)
 DEFINE_GAMEPAD_BUTTON_HANDLE(action_z)
 
-////////////////////////////////////////////////////////////////////
-//     Function: GamepadButton::init_gamepad_buttons
-//       Access: Public, Static
-//  Description: This is intended to be called only once, by the
-//               static initialization performed in config_util.cxx.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is intended to be called only once, by the static initialization
+ * performed in config_util.cxx.
+ */
 void GamepadButton::
 init_gamepad_buttons() {
   ButtonRegistry::ptr()->register_button(_lstick, "lstick");

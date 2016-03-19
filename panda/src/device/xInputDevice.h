@@ -1,16 +1,15 @@
-// Filename: xInputDevice.h
-// Created by:  rdb (21Jul15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xInputDevice.h
+ * @author rdb
+ * @date 2015-07-15
+ */
 
 #ifndef XINPUTDEVICE_H
 #define XINPUTDEVICE_H
@@ -25,11 +24,10 @@ class InputDeviceManager;
 typedef struct _XINPUT_CAPABILITIES XINPUT_CAPABILITIES;
 typedef struct _XINPUT_STATE XINPUT_STATE;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XInputDevice
-// Description : This uses Microsoft's XInput library to interface
-//               with an Xbox 360 game controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * This implementation of InputDevice uses Microsoft's XInput library to
+ * interface with an Xbox 360 game controller.
+ */
 class EXPCL_PANDA_DEVICE XInputDevice FINAL : public InputDevice {
 public:
   XInputDevice(DWORD user_index);

@@ -1,19 +1,18 @@
-// Filename: mayaToEggConverter.cxx
-// Created by:  drose (10Nov99)
-// Modified 19Mar10 by ETC PandaSE team
-//   Added set_vertex_color_modern to fix Phong shader bug; also see
-//   header comment for mayaToEgg.cxx for more details
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaToEggConverter.cxx
+ * @author drose
+ * @date 1999-11-10
+ * Modified 19Mar10 by ETC PandaSE team
+ *   Added set_vertex_color_modern to fix Phong shader bug; also see
+ *   header comment for mayaToEgg.cxx for more details
+ */
 
 #include "mayaToEggConverter.h"
 #include "mayaShader.h"
@@ -78,11 +77,9 @@
 #include "post_maya_include.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaToEggConverter::
 MayaToEggConverter(const string &program_name) :
   _program_name(program_name),
@@ -106,11 +103,9 @@ MayaToEggConverter(const string &program_name) :
   _transform_type = TT_model;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaToEggConverter::
 MayaToEggConverter(const MayaToEggConverter &copy) :
   _program_name(copy._program_name),
@@ -135,71 +130,54 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaToEggConverter::
 ~MayaToEggConverter() {
   close_api();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *MayaToEggConverter::
 make_copy() {
   return new MayaToEggConverter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string MayaToEggConverter::
 get_name() const {
   return "Maya";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string MayaToEggConverter::
 get_extension() const {
   return "mb";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_additional_extensions
-//       Access: Public, Virtual
-//  Description: Returns a space-separated list of extension, in
-//               addition to the one returned by get_extension(), that
-//               are recognized by this converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a space-separated list of extension, in addition to the one
+ * returned by get_extension(), that are recognized by this converter.
+ */
 string MayaToEggConverter::
 get_additional_extensions() const {
   return "ma";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-//
-//               This is designed to be as generic as possible,
-//               generally in support of run-time loading.
-//               Also see convert_maya().
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns
+ * true if successful, false otherwise.
+ *
+ * This is designed to be as generic as possible, generally in support of run-
+ * time loading.  Also see convert_maya().
+ */
 bool MayaToEggConverter::
 convert_file(const Filename &filename) {
   if (!open_api()) {
@@ -207,11 +185,10 @@ convert_file(const Filename &filename) {
       << "Maya is not available.\n";
     return false;
   }
-  
-  // We must ensure our Maya pointers are cleared before we reset the
-  // Maya scene, because resetting the Maya scene will invalidate all
-  // the Maya pointers we are holding and cause a crash if we try to
-  // free them later.
+
+  // We must ensure our Maya pointers are cleared before we reset the Maya
+  // scene, because resetting the Maya scene will invalidate all the Maya
+  // pointers we are holding and cause a crash if we try to free them later.
   clear();
 
   if (!_maya->read(filename)) {
@@ -227,112 +204,87 @@ convert_file(const Filename &filename) {
   return convert_maya();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::clear_subroots
-//       Access: Public
-//  Description: Empties the list of subroot nodes added via
-//               add_subroot().  The entire file will once again be
-//               converted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of subroot nodes added via add_subroot().  The entire file
+ * will once again be converted.
+ */
 void MayaToEggConverter::
 clear_subroots() {
   _subroots.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::add_subroot
-//       Access: Public
-//  Description: Adds a name pattern to the list of subroot nodes.  If
-//               the list of subroot nodes is not empty, then only a
-//               subroot of the nodes in the maya file will be
-//               converted: those whose names match one of the
-//               patterns given on this list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a name pattern to the list of subroot nodes.  If the list of subroot
+ * nodes is not empty, then only a subroot of the nodes in the maya file will
+ * be converted: those whose names match one of the patterns given on this
+ * list.
+ */
 void MayaToEggConverter::
 add_subroot(const GlobPattern &glob) {
   _subroots.push_back(glob);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::clear_subsets
-//       Access: Public
-//  Description: Empties the list of subset nodes added via
-//               add_subset().  The entire file will once again be
-//               converted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of subset nodes added via add_subset().  The entire file
+ * will once again be converted.
+ */
 void MayaToEggConverter::
 clear_subsets() {
   _subsets.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::add_subset
-//       Access: Public
-//  Description: Adds a name pattern to the list of subset nodes.  If
-//               the list of subset nodes is not empty, then only a
-//               subset of the nodes in the maya file will be
-//               converted: those whose names match one of the
-//               patterns given on this list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a name pattern to the list of subset nodes.  If the list of subset
+ * nodes is not empty, then only a subset of the nodes in the maya file will
+ * be converted: those whose names match one of the patterns given on this
+ * list.
+ */
 void MayaToEggConverter::
 add_subset(const GlobPattern &glob) {
   _subsets.push_back(glob);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::clear_excludes
-//       Access: Public
-//  Description: Empties the list of excluded nodes added via
-//               add_exclude().
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of excluded nodes added via add_exclude().
+ */
 void MayaToEggConverter::
 clear_excludes() {
   _excludes.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::add_exclude
-//       Access: Public
-//  Description: Adds a name pattern to the list of excluded nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a name pattern to the list of excluded nodes.
+ */
 void MayaToEggConverter::
 add_exclude(const GlobPattern &glob) {
   _excludes.push_back(glob);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::clear_ignore_sliders
-//       Access: Public
-//  Description: Empties the list of ignore_sliders added via
-//               add_ignore_slider().  No sliders will be ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of ignore_sliders added via add_ignore_slider().  No
+ * sliders will be ignored.
+ */
 void MayaToEggConverter::
 clear_ignore_sliders() {
   _ignore_sliders.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::add_ignore_slider
-//       Access: Public
-//  Description: Adds a name pattern to the list of ignore_sliders.
-//               Any slider (blend shape deformer) that matches a name
-//               on the list will not be converted or otherwise
-//               molested by the converter.  This is occasionally
-//               necessary to filter out automatically-created sliders
-//               that are not intended to be used directly, but
-//               instead have an indirect effect on other sliders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a name pattern to the list of ignore_sliders.  Any slider (blend shape
+ * deformer) that matches a name on the list will not be converted or
+ * otherwise molested by the converter.  This is occasionally necessary to
+ * filter out automatically-created sliders that are not intended to be used
+ * directly, but instead have an indirect effect on other sliders.
+ */
 void MayaToEggConverter::
 add_ignore_slider(const GlobPattern &glob) {
   _ignore_sliders.push_back(glob);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::ignore_slider
-//       Access: Public
-//  Description: Returns true if the indicated name is on the list of
-//               sliders to ignore, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is on the list of sliders to ignore,
+ * false otherwise.
+ */
 bool MayaToEggConverter::
 ignore_slider(const string &name) const {
   Globs::const_iterator gi;
@@ -345,40 +297,33 @@ ignore_slider(const string &name) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::clear_force_joints
-//       Access: Public
-//  Description: Empties the list of force_joints added via
-//               add_force_joint().  No joints will be forced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of force_joints added via add_force_joint().  No joints
+ * will be forced.
+ */
 void MayaToEggConverter::
 clear_force_joints() {
   _force_joints.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::add_force_joint
-//       Access: Public
-//  Description: Adds a name pattern to the list of force_joints.
-//
-//               Any DAG node that matches a name on the list will be
-//               treated as if it were a joint during the conversion
-//               process; it will receive animation and position
-//               information.  Normally, a true Maya joint, as well as
-//               any DAG nodes whose transforms are animated, will
-//               automatically be flagged as a Panda joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a name pattern to the list of force_joints.
+ *
+ * Any DAG node that matches a name on the list will be treated as if it were
+ * a joint during the conversion process; it will receive animation and
+ * position information.  Normally, a true Maya joint, as well as any DAG
+ * nodes whose transforms are animated, will automatically be flagged as a
+ * Panda joint.
+ */
 void MayaToEggConverter::
 add_force_joint(const GlobPattern &glob) {
   _force_joints.push_back(glob);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::force_joint
-//       Access: Public
-//  Description: Returns true if the indicated name is on the list of
-//               DAG nodes to treat as a joint, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is on the list of DAG nodes to treat as
+ * a joint, false otherwise.
+ */
 bool MayaToEggConverter::
 force_joint(const string &name) const {
   Globs::const_iterator gi;
@@ -391,41 +336,32 @@ force_joint(const string &name) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::set_from_selection
-//       Access: Public
-//  Description: Sets the flag that indicates whether the currently
-//               selected Maya geometry will be converted.  If this is
-//               true, and the selection is nonempty, then only the
-//               selected geometry will be converted.  If this is
-//               false, the entire file will be converted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the flag that indicates whether the currently selected Maya geometry
+ * will be converted.  If this is true, and the selection is nonempty, then
+ * only the selected geometry will be converted.  If this is false, the entire
+ * file will be converted.
+ */
 void MayaToEggConverter::
 set_from_selection(bool from_selection) {
   _from_selection = from_selection;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_input_units
-//       Access: Public, Virtual
-//  Description: This may be called after convert_file() has been
-//               called and returned true, indicating a successful
-//               conversion.  It will return the distance units
-//               represented by the converted egg file, if known, or
-//               DU_invalid if not known.
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be called after convert_file() has been called and returned true,
+ * indicating a successful conversion.  It will return the distance units
+ * represented by the converted egg file, if known, or DU_invalid if not
+ * known.
+ */
 DistanceUnit MayaToEggConverter::
 get_input_units() {
   return _maya->get_units();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::convert_maya
-//       Access: Public
-//  Description: Fills up the egg_data structure according to the
-//               global maya model data.  Returns true if successful,
-//               false if there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the egg_data structure according to the global maya model data.
+ * Returns true if successful, false if there is an error.
+ */
 bool MayaToEggConverter::
 convert_maya() {
   clear();
@@ -455,7 +391,8 @@ convert_maya() {
     end_frame = get_end_frame();
   } else {
     end_frame = MAnimControl::maxTime().value();
-    //end_frame = MAnimControl::animationEndTime().value(); //masad: we could use this
+    // end_frame = MAnimControl::animationEndTime().value(); masad: we could
+    // use this
   }
   if (has_frame_inc()) {
     frame_inc = get_frame_inc();
@@ -532,24 +469,23 @@ convert_maya() {
         << "frame " << start_frame << "\n";
       MGlobal::viewFrame(MTime(start_frame, MTime::uiUnit()));
       // fall through
-      
+
     case AC_none:
       // none: just get out a static model, no animation.
       mayaegg_cat.info() << "ac_none" << endl;
       all_ok = convert_hierarchy(get_egg_data());
       break;
-      
+
     case AC_flip:
     case AC_strobe:
-      // flip or strobe: get out a series of static models, one per
-      // frame, under a sequence node for AC_flip.
+      // flip or strobe: get out a series of static models, one per frame,
+      // under a sequence node for AC_flip.
       all_ok = convert_flip(start_frame, end_frame, frame_inc,
                             output_frame_rate);
       break;
 
     case AC_model:
-      // model: get out an animatable model with joints and vertex
-      // membership.
+      // model: get out an animatable model with joints and vertex membership.
       all_ok = convert_char_model();
       break;
 
@@ -558,7 +494,7 @@ convert_maya() {
       all_ok = convert_char_chan(start_frame, end_frame, frame_inc,
                                  output_frame_rate);
       break;
-      
+
     case AC_both:
       // both: Put a model and its animation into the same egg file.
       _animation_convert = AC_model;
@@ -594,46 +530,36 @@ convert_maya() {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::open_api
-//       Access: Public
-//  Description: Attempts to open the Maya API if it was not already
-//               open, and returns true if successful, or false if
-//               there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the Maya API if it was not already open, and returns true
+ * if successful, or false if there is an error.
+ */
 bool MayaToEggConverter::
 open_api(bool revert_directory) {
 
   if (_maya == (MayaApi *)NULL || !_maya->is_valid()) {
-	  //maya to egg converter only needs a read license.
-	  //only egg2maya need write lisences.
+    // maya to egg converter only needs a read license.  only egg2maya need
+    // write lisences.
     _maya = MayaApi::open_api(_program_name, true, revert_directory);
   }
   return _maya->is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::close_api
-//       Access: Public
-//  Description: Closes the Maya API, if it was previously opened.
-//               Caution!  Maya appears to call exit() when its API is
-//               closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the Maya API, if it was previously opened.  Caution!  Maya appears
+ * to call exit() when its API is closed.
+ */
 void MayaToEggConverter::
 close_api() {
-  // We have to clear the shaders, at least, before we release the
-  // Maya API.
+  // We have to clear the shaders, at least, before we release the Maya API.
   clear();
   _maya.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::clear
-//       Access: Public
-//  Description: Frees all of the Maya pointers kept within this
-//               object, in preparation for loading a new scene or
-//               releasing the Maya API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees all of the Maya pointers kept within this object, in preparation for
+ * loading a new scene or releasing the Maya API.
+ */
 void MayaToEggConverter::
 clear() {
   _tree.clear();
@@ -641,17 +567,13 @@ clear() {
   _shaders.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::convert_flip
-//       Access: Private
-//  Description: Converts the animation as a series of models that
-//               cycle (flip) from one to the next at the appropriate
-//               frame rate.  This is the most likely to convert
-//               precisely (since we ask Maya to tell us the vertex
-//               position each time) but it is the most wasteful in
-//               terms of memory utilization (since a complete of the
-//               model is stored for each frame).
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the animation as a series of models that cycle (flip) from one to
+ * the next at the appropriate frame rate.  This is the most likely to convert
+ * precisely (since we ask Maya to tell us the vertex position each time) but
+ * it is the most wasteful in terms of memory utilization (since a complete of
+ * the model is stored for each frame).
+ */
 bool MayaToEggConverter::
 convert_flip(double start_frame, double end_frame, double frame_inc,
              double output_frame_rate) {
@@ -659,7 +581,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
 
   EggGroup *sequence_node = new EggGroup(_character_name);
   get_egg_data()->add_child(sequence_node);
-  if (_animation_convert == AC_flip) { 
+  if (_animation_convert == AC_flip) {
     sequence_node->set_switch_flag(true);
     sequence_node->set_switch_fps(output_frame_rate);
   }
@@ -685,12 +607,10 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::convert_char_model
-//       Access: Private
-//  Description: Converts the file as an animatable character
-//               model, with joints and vertex membership.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the file as an animatable character model, with joints and vertex
+ * membership.
+ */
 bool MayaToEggConverter::
 convert_char_model() {
   if (has_neutral_frame()) {
@@ -700,9 +620,9 @@ convert_char_model() {
     MGlobal::viewFrame(frame);
   }
 
-  // It's also important for us to reset all the blend shape sliders
-  // to 0 before we get out the model.  Otherwise, the model we
-  // convert will have the current positions of the sliders baked in.
+  // It's also important for us to reset all the blend shape sliders to 0
+  // before we get out the model.  Otherwise, the model we convert will have
+  // the current positions of the sliders baked in.
   _tree.reset_sliders();
 
   EggGroup *char_node = new EggGroup(_character_name);
@@ -712,17 +632,14 @@ convert_char_model() {
   return convert_hierarchy(char_node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::convert_char_chan
-//       Access: Private
-//  Description: Converts the animation as a series of tables to apply
-//               to the character model, as retrieved earlier via
-//               AC_model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the animation as a series of tables to apply to the character
+ * model, as retrieved earlier via AC_model.
+ */
 bool MayaToEggConverter::
 convert_char_chan(double start_frame, double end_frame, double frame_inc,
                   double output_frame_rate) {
-  //  MStatus status;
+  // MStatus status;
 
   EggTable *root_table_node = new EggTable();
   get_egg_data()->add_child(root_table_node);
@@ -734,17 +651,15 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   EggTable *morph_node = new EggTable("morph");
   bundle_node->add_child(morph_node);
 
-  // Set the frame rate before we start asking for anim tables to be
-  // created.
+  // Set the frame rate before we start asking for anim tables to be created.
   _tree._fps = output_frame_rate;
   _tree.clear_egg(get_egg_data(), NULL, skeleton_node, morph_node);
 
-  // Now we can get the animation data by walking through all of the
-  // frames, one at a time, and getting the joint angles at each
-  // frame.
+  // Now we can get the animation data by walking through all of the frames,
+  // one at a time, and getting the joint angles at each frame.
 
-  // This is just a temporary EggGroup to receive the transform for
-  // each joint each frame.
+  // This is just a temporary EggGroup to receive the transform for each joint
+  // each frame.
   PT(EggGroup) tgroup = new EggGroup;
 
   int num_nodes = _tree.get_num_nodes();
@@ -758,8 +673,8 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
       mayaegg_cat.spam(false)
         << "frame " << frame.value() << "\n";
     } else {
-      // We have to write to cerr instead of mayaegg_cat to allow
-      // flushing without writing a newline.
+      // We have to write to cerr instead of mayaegg_cat to allow flushing
+      // without writing a newline.
       cerr << "." << flush;
     }
     MGlobal::viewFrame(frame);
@@ -794,9 +709,9 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
     frame += frame_inc;
   }
 
-  // Now optimize all of the tables we just filled up, for no real
-  // good reason, except that it makes the resulting egg file a little
-  // easier to read.
+  // Now optimize all of the tables we just filled up, for no real good
+  // reason, except that it makes the resulting egg file a little easier to
+  // read.
   for (i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node_desc = _tree.get_node(i);
     if (node_desc->is_joint()) {
@@ -809,19 +724,16 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
     EggSAnimData *anim = _tree.get_egg_slider(blend_desc);
     anim->optimize();
   }
-  
+
   mayaegg_cat.info(false)
     << "\n";
 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::convert_hierarchy
-//       Access: Private
-//  Description: Generates egg structures for each node in the Maya
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates egg structures for each node in the Maya hierarchy.
+ */
 bool MayaToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
@@ -856,14 +768,11 @@ convert_hierarchy(EggGroupNode *egg_root) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::process_model_node
-//       Access: Private
-//  Description: Converts the indicated Maya node (given a MDagPath,
-//               similar in concept to Panda's NodePath) to the
-//               corresponding Egg structure.  Returns true if
-//               successful, false if an error was encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Maya node (given a MDagPath, similar in concept to
+ * Panda's NodePath) to the corresponding Egg structure.  Returns true if
+ * successful, false if an error was encountered.
+ */
 bool MayaToEggConverter::
 process_model_node(MayaNodeDesc *node_desc) {
   if (!node_desc->has_dag_path()) {
@@ -922,11 +831,11 @@ process_model_node(MayaNodeDesc *node_desc) {
         status.perror("MFnCamera constructor");
         return false;
       }
-    
+
       // Extract some interesting Camera data
       if (mayaegg_cat.is_spam()) {
         MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
-        mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " " 
+        mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " "
                            << eyePoint.y << " " << eyePoint.z << endl;
         mayaegg_cat.spam() << "  upDirection: "
                            << camera.upDirection(MSpace::kWorld) << endl;
@@ -947,14 +856,14 @@ process_model_node(MayaNodeDesc *node_desc) {
       }
 
       if (node_desc->is_tagged()) {
-        // Presumably, the camera's position has some meaning to the
-        // end-user, so we will implicitly tag it with the DCS flag so it
-        // won't get flattened out.
+        // Presumably, the camera's position has some meaning to the end-user,
+        // so we will implicitly tag it with the DCS flag so it won't get
+        // flattened out.
         if (_animation_convert != AC_model) {
-          // For now, don't set the DCS flag on cameras within
-          // character models, since egg-optchar doesn't understand
-          // this.  Perhaps there's no reason to ever change this, since
-          // cameras within character models may not be meaningful.
+          // For now, don't set the DCS flag on cameras within character
+          // models, since egg-optchar doesn't understand this.  Perhaps
+          // there's no reason to ever change this, since cameras within
+          // character models may not be meaningful.
           egg_group->set_dcs_type(EggGroup::DC_net);
         }
         get_transform(node_desc, dag_path, egg_group);
@@ -983,14 +892,14 @@ process_model_node(MayaNodeDesc *node_desc) {
       }
 
       if (node_desc->is_tagged()) {
-        // Presumably, the lighht's position has some meaning to the
-        // end-user, so we will implicitly tag it with the DCS flag so it
-        // won't get flattened out.
+        // Presumably, the lighht's position has some meaning to the end-user,
+        // so we will implicitly tag it with the DCS flag so it won't get
+        // flattened out.
         if (_animation_convert != AC_model) {
-          // For now, don't set the DCS flag on lights within
-          // character models, since egg-optchar doesn't understand
-          // this.  Perhaps there's no reason to ever change this, since
-          // lights within character models may not be meaningful.
+          // For now, don't set the DCS flag on lights within character
+          // models, since egg-optchar doesn't understand this.  Perhaps
+          // there's no reason to ever change this, since lights within
+          // character models may not be meaningful.
           egg_group->set_dcs_type(EggGroup::DC_net);
         }
         get_transform(node_desc, dag_path, egg_group);
@@ -1003,7 +912,7 @@ process_model_node(MayaNodeDesc *node_desc) {
           }
         }
       }
- 
+
     MFnLight light (dag_path, &status);
     if ( !status ) {
       status.perror("MFnLight constructor");
@@ -1014,12 +923,12 @@ process_model_node(MayaNodeDesc *node_desc) {
 
     mayaegg_cat.info() << "\"" << dag_path.partialPathName() << "\" : \n";
 
-    // Get the translation/rotation/scale data
+    // Get the translationrotationscale data
     MObject transformNode = dag_path.transform(&status);
     // This node has no transform - i.e., it's the world node
     if (!status && status.statusCode () == MStatus::kInvalidParameter)
       return false;
-    MFnDagNode	transform (transformNode, &status);
+    MFnDagNode  transform (transformNode, &status);
     if (!status) {
       status.perror("MFnDagNode constructor");
       return false;
@@ -1036,12 +945,13 @@ process_model_node(MayaNodeDesc *node_desc) {
     if (tl.z < 0.0001) {
       tl.z = 0;
     }
-    // We swap Y and Z in the next few bits cuz Panda is Z-up by default and Maya is Y-up
+    // We swap Y and Z in the next few bits cuz Panda is Z-up by default and
+    // Maya is Y-up
     mayaegg_cat.info() << "  \"translation\" : (" << tl.x << ", " << tl.z << ", " << tl.y << ")"
          << endl;
     double threeDoubles[3];
-    MTransformationMatrix::RotationOrder	rOrder;
-    
+    MTransformationMatrix::RotationOrder  rOrder;
+
     matrix.getRotation (threeDoubles, rOrder, MSpace::kWorld);
     mayaegg_cat.info() << "  \"rotation\": ("
          << threeDoubles[0] << ", "
@@ -1080,8 +990,8 @@ process_model_node(MayaNodeDesc *node_desc) {
     }
   } else if (dag_path.hasFn(MFn::kNurbsCurve)) {
     // Only convert NurbsCurves if we aren't making an animated model.
-    // Animated models, as a general rule, don't want these sorts of
-    // things in them.
+    // Animated models, as a general rule, don't want these sorts of things in
+    // them.
     if (_animation_convert != AC_model) {
       EggGroup *egg_group = _tree.get_egg_group(node_desc);
       get_transform(node_desc, dag_path, egg_group);
@@ -1097,7 +1007,7 @@ process_model_node(MayaNodeDesc *node_desc) {
         }
       }
     }
-      
+
   } else if (dag_path.hasFn(MFn::kMesh)) {
     if (node_desc->is_tagged()) {
       EggGroup *egg_group = _tree.get_egg_group(node_desc);
@@ -1140,14 +1050,14 @@ process_model_node(MayaNodeDesc *node_desc) {
     }
 
     if (node_desc->is_tagged()) {
-      // Presumably, the locator's position has some meaning to the
-      // end-user, so we will implicitly tag it with the DCS flag so it
-      // won't get flattened out.
+      // Presumably, the locator's position has some meaning to the end-user,
+      // so we will implicitly tag it with the DCS flag so it won't get
+      // flattened out.
       if (_animation_convert != AC_model) {
-        // For now, don't set the DCS flag on locators within
-        // character models, since egg-optchar doesn't understand
-        // this.  Perhaps there's no reason to ever change this, since
-        // locators within character models may not be meaningful.
+        // For now, don't set the DCS flag on locators within character
+        // models, since egg-optchar doesn't understand this.  Perhaps there's
+        // no reason to ever change this, since locators within character
+        // models may not be meaningful.
         egg_group->set_dcs_type(EggGroup::DC_net);
       }
       get_transform(node_desc, dag_path, egg_group);
@@ -1168,18 +1078,16 @@ process_model_node(MayaNodeDesc *node_desc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_transform
-//       Access: Private
-//  Description: Extracts the transform on the indicated Maya node,
-//               and applies it to the corresponding Egg node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the transform on the indicated Maya node, and applies it to the
+ * corresponding Egg node.
+ */
 void MayaToEggConverter::
-get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path, 
+get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
               EggGroup *egg_group) {
   if (_animation_convert == AC_model) {
-    // When we're getting an animated model, we only get transforms
-    // for joints, and they get converted in a special way.
+    // When we're getting an animated model, we only get transforms for
+    // joints, and they get converted in a special way.
 
     if (node_desc->is_joint()) {
       if (mayaegg_cat.is_spam()) {
@@ -1203,19 +1111,19 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     switch (_transform_type) {
     case TT_all:
       break;
-      
+
     case TT_model:
       if (!egg_group->get_model_flag() && !egg_group->has_dcs_type()) {
         return;
       }
       break;
-      
-    case TT_dcs: 
+
+    case TT_dcs:
       if (!egg_group->has_dcs_type()) {
         return;
       }
       break;
-      
+
     case TT_none:
     case TT_invalid:
       return;
@@ -1233,9 +1141,9 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
                 mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
 
-  // Maya has a rotate pivot, separate from its transform.  Usually we
-  // care more about the rotate pivot than we do about the transform,
-  // so get the rotate pivot too.
+  // Maya has a rotate pivot, separate from its transform.  Usually we care
+  // more about the rotate pivot than we do about the transform, so get the
+  // rotate pivot too.
   MFnTransform transform(transformNode, &status);
   if (!status) {
     status.perror("MFnTransform constructor");
@@ -1246,17 +1154,16 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     status.perror("Can't get rotate pivot");
     return;
   }
-  
-  // We need to convert the pivot to world coordinates.  (Maya can
-  // only tell it to us in local coordinates.)
+
+  // We need to convert the pivot to world coordinates.  (Maya can only tell
+  // it to us in local coordinates.)
   LPoint3d p3d(pivot[0], pivot[1], pivot[2]);
   p3d = p3d * m4d;
 
   // Now recenter the matrix about the pivot point.
   m4d.set_row(3, p3d);
 
-  // Convert the recentered matrix into the group's space and store
-  // it.
+  // Convert the recentered matrix into the group's space and store it.
   m4d = m4d * egg_group->get_node_frame_inv();
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
     egg_group->add_matrix4(m4d);
@@ -1264,16 +1171,13 @@ get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_joint_transform
-//       Access: Private
-//  Description: Extracts the transform on the indicated Maya node,
-//               as appropriate for a joint in an animated character,
-//               and applies it to the indicated node.  This is
-//               different from get_transform() in that it does not
-//               respect the _transform_type flag, and it does not
-//               consider the relative transforms within the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the transform on the indicated Maya node, as appropriate for a
+ * joint in an animated character, and applies it to the indicated node.  This
+ * is different from get_transform() in that it does not respect the
+ * _transform_type flag, and it does not consider the relative transforms
+ * within the egg file.
+ */
 void MayaToEggConverter::
 get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   // First, make sure there's not a transform on the group already.
@@ -1337,13 +1241,10 @@ get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_nurbs_surface
-//       Access: Private
-//  Description: Converts the indicated Maya NURBS surface to a
-//               corresponding egg structure, and attaches it to the
-//               indicated egg group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Maya NURBS surface to a corresponding egg structure,
+ * and attaches it to the indicated egg group.
+ */
 void MayaToEggConverter::
 make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                    MFnNurbsSurface &surface, EggGroup *egg_group) {
@@ -1373,15 +1274,14 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   MayaShader *shader = _shaders.find_shader_for_node(surface.object(), _legacy_shader);
 
   if (_polygon_output) {
-    // If we want polygon output only, tesselate the NURBS and output
-    // that.
+    // If we want polygon output only, tesselate the NURBS and output that.
     MTesselationParams params;
     params.setFormatType(MTesselationParams::kStandardFitFormat);
     params.setOutputType(MTesselationParams::kQuads);
     params.setStdFractionalTolerance(_polygon_tolerance);
 
-    // We'll create the tesselation as a sibling of the NURBS surface.
-    // That way we inherit all of the transformations.
+    // We'll create the tesselation as a sibling of the NURBS surface.  That
+    // way we inherit all of the transformations.
     MDagPath polyset_path = dag_path;
     MObject polyset_parent = polyset_path.node();
     MObject polyset =
@@ -1424,8 +1324,8 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     return;
   }
 
-  // Also get out all the alternate blend shapes for the surface by
-  // applying each morph slider one at a time.
+  // Also get out all the alternate blend shapes for the surface by applying
+  // each morph slider one at a time.
   pvector<MPointArray> morph_cvs;
   if (_animation_convert == AC_model) {
     int num_sliders = node_desc->get_num_blend_descs();
@@ -1433,8 +1333,8 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     for (int i = 0; i < num_sliders; i++) {
       MayaBlendDesc *blend_desc = node_desc->get_blend_desc(i);
 
-      // Temporarily push the slider up to 1.0 so we can see what the
-      // surface looks like at that value.
+      // Temporarily push the slider up to 1.0 so we can see what the surface
+      // looks like at that value.
       blend_desc->set_slider(1.0);
       MPointArray cv_array;
       status = surface.getCVs(cv_array, MSpace::kWorld);
@@ -1469,8 +1369,8 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   int u_cvs = surface.numCVsInU();
   int v_cvs = surface.numCVsInV();
 
-  // Maya repeats CVS at the end for a periodic surface, and doesn't
-  // count them in the joint weight array, below.
+  // Maya repeats CVS at the end for a periodic surface, and doesn't count
+  // them in the joint weight array, below.
   int maya_u_cvs = (u_form == MFnNurbsSurface::kPeriodic) ? u_cvs - u_degree : u_cvs;
   int maya_v_cvs = (v_form == MFnNurbsSurface::kPeriodic) ? v_cvs - v_degree : v_cvs;
 
@@ -1521,8 +1421,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
       // Now generate the morph targets for the vertex.
       if (!morph_cvs.empty()) {
-        // Morph deltas are given in 3-d space, not in 4-d homogenous
-        // space.
+        // Morph deltas are given in 3-d space, not in 4-d homogenous space.
         LPoint3d p3d(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
 
         for (unsigned int si = 0; si < morph_cvs.size(); si++) {
@@ -1558,18 +1457,18 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       for (unsigned li = 0; li < num_loops; li++) {
         egg_trim.push_back(EggNurbsSurface::Loop());
         EggNurbsSurface::Loop &egg_loop = egg_trim.back();
-        
+
         MFnNurbsSurface::BoundaryType type =
           surface.boundaryType(ti, li, &status);
         bool keep_loop = false;
-        
+
         if (!status) {
           status.perror("MFnNurbsSurface::BoundaryType");
         } else {
           keep_loop = (type == MFnNurbsSurface::kInner ||
                        type == MFnNurbsSurface::kOuter);
         }
-        
+
         if (keep_loop) {
           unsigned num_edges = surface.numEdges(ti, li);
           for (unsigned ei = 0; ei < num_edges; ei++) {
@@ -1606,8 +1505,8 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
   }
 
-  // We add the NURBS to the group down here, after all of the vpools
-  // for the trim curves have been added.
+  // We add the NURBS to the group down here, after all of the vpools for the
+  // trim curves have been added.
   egg_group->add_child(egg_nurbs);
 
   if (shader != (MayaShader *)NULL) {
@@ -1620,7 +1519,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   pvector<EggGroup *> joints;
   MFloatArray weights;
   if (_animation_convert == AC_model) {
-    got_weights = 
+    got_weights =
       get_vertex_weights(dag_path, surface, joints, weights);
   }
 
@@ -1628,8 +1527,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     int num_joints = joints.size();
     int num_weights = (int)weights.length();
     int num_verts = num_weights / num_joints;
-    // The number of weights should be an even multiple of verts *
-    // joints.
+    // The number of weights should be an even multiple of verts * joints.
     nassertv(num_weights == num_verts * num_joints);
 
     for (i = 0; i < egg_nurbs->get_num_cvs(); i++) {
@@ -1653,13 +1551,10 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_trim_curve
-//       Access: Private
-//  Description: Converts the indicated Maya NURBS trim curve to a
-//               corresponding egg structure, and returns it, or NULL
-//               if there is a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Maya NURBS trim curve to a corresponding egg
+ * structure, and returns it, or NULL if there is a problem.
+ */
 EggNurbsCurve *MayaToEggConverter::
 make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
                 EggGroupNode *egg_group, int trim_curve_index) {
@@ -1737,13 +1632,11 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
   return egg_curve;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_nurbs_curve
-//       Access: Private
-//  Description: Converts the indicated Maya NURBS curve (a standalone
-//               curve, not a trim curve) to a corresponding egg
-//               structure and attaches it to the indicated egg group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Maya NURBS curve (a standalone curve, not a trim
+ * curve) to a corresponding egg structure and attaches it to the indicated
+ * egg group.
+ */
 void MayaToEggConverter::
 make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
                  EggGroup *egg_group) {
@@ -1825,30 +1718,24 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::round uvs
-//       Access: Private
-//  Description: given uvsets, round them up or down
-////////////////////////////////////////////////////////////////////
+/**
+ * given uvsets, round them up or down
+ */
 int MayaToEggConverter::
 round(double value) {
   if (value < 0)
     return -(floor(-value + 0.5));
-  // or as an alternate use:
-  // return ceil ( value - 0.5);
+  // or as an alternate use: return ceil ( value - 0.5);
   else
     return   floor( value + 0.5);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_polyset
-//       Access: Private
-//  Description: Converts the indicated Maya polyset to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Maya polyset to a bunch of EggPolygons and parents
+ * them to the indicated egg group.
+ */
 void MayaToEggConverter::
-make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path, 
+make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
              const MFnMesh &mesh, EggGroup *egg_group,
              MayaShader *default_shader) {
   MStatus status;
@@ -1881,17 +1768,16 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   EggVertexPool *vpool = new EggVertexPool(vpool_name);
   egg_group->add_child(vpool);
 
-  // One way to convert the mesh would be to first get out all the
-  // vertices in the mesh and add them into the vpool, then when we
-  // traverse the polygons we would only have to index them into the
-  // vpool according to their Maya vertex index.
+  // One way to convert the mesh would be to first get out all the vertices in
+  // the mesh and add them into the vpool, then when we traverse the polygons
+  // we would only have to index them into the vpool according to their Maya
+  // vertex index.
 
-  // Unfortunately, since Maya may store multiple normals and/or
-  // colors for each vertex according to which polygon it is in, that
-  // approach won't necessarily work.  In egg, those split-property
-  // vertices have to become separate vertices.  So instead of adding
-  // all the vertices up front, we'll start with an empty vpool, and
-  // add vertices to it on the fly.
+  // Unfortunately, since Maya may store multiple normals andor colors for
+  // each vertex according to which polygon it is in, that approach won't
+  // necessarily work.  In egg, those split-property vertices have to become
+  // separate vertices.  So instead of adding all the vertices up front, we'll
+  // start with an empty vpool, and add vertices to it on the fly.
 
   MObject component_obj;
   MItMeshPolygon pi(dag_path, component_obj, &status);
@@ -1909,19 +1795,18 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     status.perror("MFnMesh::getConnectedShaders");
   }
 
-  // We will need to transform all vertices from world coordinate
-  // space into the vertex space appropriate to this node.  Usually,
-  // this is the same thing as world coordinate space, and this matrix
-  // will be identity; but if the node is under an instance
-  // (particularly, for instance, a billboard) then the vertex space
-  // will be different from world space.
+  // We will need to transform all vertices from world coordinate space into
+  // the vertex space appropriate to this node.  Usually, this is the same
+  // thing as world coordinate space, and this matrix will be identity; but if
+  // the node is under an instance (particularly, for instance, a billboard)
+  // then the vertex space will be different from world space.
   LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
 
   // Save these modeling flags for the check below.
   bool egg_vertex_color = false;
   bool egg_double_sided = false;
   if (egg_group->has_user_data(MayaEggGroupUserData::get_class_type())) {
-    MayaEggGroupUserData *user_data = 
+    MayaEggGroupUserData *user_data =
       DCAST(MayaEggGroupUserData, egg_group->get_user_data());
     egg_vertex_color = user_data->_vertex_color;
     egg_double_sided = user_data->_double_sided;
@@ -1929,8 +1814,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
   bool double_sided = maya_double_sided;
   if (!_respect_maya_double_sided) {
-    // If this flag is false, we respect the maya double-sided
-    // settings only if the egg "double-sided" flag is also set.
+    // If this flag is false, we respect the maya double-sided settings only
+    // if the egg "double-sided" flag is also set.
     if (!egg_double_sided) {
       double_sided = false;
     }
@@ -1942,16 +1827,17 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   }
 
   _shaders.bind_uvsets(mesh.object());
-  
+
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
 
     egg_poly->set_bface_flag(double_sided);
 
-    // Determine the MayaShader for this particular polygon. 
-    // There appears to be two diverging paths for any Maya node with a Material (MayaShader) on it
-    // This next bit kicks us out into mayaShader et al. to pull textures and everything else. 
+    // Determine the MayaShader for this particular polygon.  There appears to
+    // be two diverging paths for any Maya node with a Material (MayaShader)
+    // on it This next bit kicks us out into mayaShader et al.  to pull
+    // textures and everything else.
     MayaShader *shader = NULL;
     int index = pi.index();
     nassertv(index >= 0 && index < (int)poly_shader_indices.length());
@@ -1962,8 +1848,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       MObject engine = shaders[shader_index];
       shader =
         _shaders.find_shader_for_shading_engine(engine, _legacy_shader); //head out to the other classes
-      //does this mean if we didn't find a Maya shader give it a default value anyway?
-    } else if (default_shader != (MayaShader *)NULL) { 
+      // does this mean if we didn't find a Maya shader give it a default
+      // value anyway?
+    } else if (default_shader != (MayaShader *)NULL) {
       shader = default_shader;
     }
 
@@ -1975,18 +1862,17 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       default_color_def = shader->get_color_def();
     }
 
-    // Should we extract the color from the vertices?  Normally, in
-    // Maya a texture completely replaces the vertex color, so we
-    // should ignore the vertex color if we have a texture.
+    // Should we extract the color from the vertices?  Normally, in Maya a
+    // texture completely replaces the vertex color, so we should ignore the
+    // vertex color if we have a texture.
 
-    // However, this is an inconvenient property of Maya; sometimes we
-    // really do want both vertex color and texture applied to the
-    // same object.  To allow this, we define the special egg flag
-    // "vertex-color", which when set indicates that we should
-    // respect the vertex color anyway.
+    // However, this is an inconvenient property of Maya; sometimes we really
+    // do want both vertex color and texture applied to the same object.  To
+    // allow this, we define the special egg flag "vertex-color", which when
+    // set indicates that we should respect the vertex color anyway.
 
-    // Furthermore, if _always_show_vertex_color is true, we pretend
-    // that the "vertex-color" flag is always set.
+    // Furthermore, if _always_show_vertex_color is true, we pretend that the
+    // "vertex-color" flag is always set.
     bool ignore_vertex_color = false;
     if ( default_color_def != (MayaShaderColorDef *)NULL) {
       ignore_vertex_color = default_color_def->_has_texture && !(egg_vertex_color || _always_show_vertex_color);
@@ -1995,8 +1881,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     LColor poly_color(1.0f, 1.0f, 1.0f, 1.0f);
     if (!ignore_vertex_color) {
       // If we're respecting the vertex color, then remove the color
-      // specification from the polygon (so we can apply it to the
-      // vertices).
+      // specification from the polygon (so we can apply it to the vertices).
       poly_color = egg_poly->get_color();
       egg_poly->clear_color();
     }
@@ -2007,8 +1892,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     LPoint3d centroid(0.0, 0.0, 0.0);
 
     if (default_color_def != (MayaShaderColorDef *)NULL && default_color_def->has_projection()) {
-      // If the shader has a projection, we may need to compute the
-      // polygon's centroid to avoid seams at the edges.
+      // If the shader has a projection, we may need to compute the polygon's
+      // centroid to avoid seams at the edges.
       for (i = 0; i < num_verts; i++) {
         MPoint p = pi.point(i, MSpace::kWorld);
         LPoint3d p3d(p[0], p[1], p[2]);
@@ -2052,11 +1937,11 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         if (mayaegg_cat.is_spam()) {
           mayaegg_cat.spam() << "--uvset_name :" << uvset_name << endl;
         }
-        
-        // get the shader color def that matches this EggTexture
-        // Asad: optimizing uvset: to discard unused uvsets. This for 
-        // loop figures out which ones are unused.
-        
+
+        // get the shader color def that matches this EggTexture Asad:
+        // optimizing uvset: to discard unused uvsets.  This for loop figures
+        // out which ones are unused.
+
         bool keep_uv = keep_all_uvsets;
         bool project_uv = false;
         LTexCoordd uv_projection;
@@ -2085,10 +1970,10 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
           }
           continue;
         }
-        
+
         if (project_uv) {
-          // If the shader has a projection, use it instead of the
-          // polygon's built-in UV's.
+          // If the shader has a projection, use it instead of the polygon's
+          // built-in UV's.
           vert.set_uv(panda_uvset_name, uv_projection);
         } else {
           // Get the UV's from the polygon.
@@ -2101,7 +1986,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
             } else {
               if (_round_uvs) {
                 if (uvs[0] > 1.0 || uvs[0] < -1.0) {
-                  // apply upto 1/1000th precision, but round up
+                  // apply upto 11000th precision, but round up
                   uvs[0] = (long)(uvs[0]*1000);
                   mayaegg_cat.debug() << "before rounding uvs[0]: " << uvs[0] << endl;
                   uvs[0] = (double)(round((double)uvs[0]/10.0)*10.0)/1000.0;
@@ -2119,7 +2004,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
           }
         }
       }
-      
+
       if (!ignore_vertex_color) {
         if (mayaegg_cat.is_spam()) {
           mayaegg_cat.spam() << "poly_color = " << poly_color << endl;
@@ -2148,10 +2033,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       egg_poly->set_normal(face_normal);
     }
 
-    // Now, check that the vertex ordering is consistent with the
-    // direction of the normals.  If not, reverse the vertex ordering
-    // (since we have seen cases where Maya sets this in contradiction
-    // to its normals).
+    // Now, check that the vertex ordering is consistent with the direction of
+    // the normals.  If not, reverse the vertex ordering (since we have seen
+    // cases where Maya sets this in contradiction to its normals).
     LNormald order_normal;
     if (got_face_normal && egg_poly->calculate_normal(order_normal)) {
       if (order_normal.dot(face_normal) < 0.0) {
@@ -2162,22 +2046,22 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         }
       }
     }
-  
+
     pi.next();
   }
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam() << "done traversing polys" << endl;
   }
 
-  // Now that we've added all the polygons (and created all the
-  // vertices), go back through the vertex pool and set up the
-  // appropriate joint membership for each of the vertices.
+  // Now that we've added all the polygons (and created all the vertices), go
+  // back through the vertex pool and set up the appropriate joint membership
+  // for each of the vertices.
   bool got_weights = false;
 
   pvector<EggGroup *> joints;
   MFloatArray weights;
   if (_animation_convert == AC_model) {
-    got_weights = 
+    got_weights =
       get_vertex_weights(dag_path, mesh, joints, weights);
   }
 
@@ -2185,8 +2069,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     int num_joints = joints.size();
     int num_weights = (int)weights.length();
     int num_verts = num_weights / num_joints;
-    // The number of weights should be an even multiple of verts *
-    // joints.
+    // The number of weights should be an even multiple of verts * joints.
     nassertv(num_weights == num_verts * num_joints);
 
     EggVertexPool::iterator vi;
@@ -2208,12 +2091,11 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   }
 
 
-  // We also need to compute the vertex morphs for the polyset, based
-  // on whatever blend shapes may be present.  This is similar to the
-  // code in make_nurbs_surface(), except that since we don't have a
-  // one-to-one relationship of egg vertices to Maya vertices, we have
-  // to get the morphs down here, after we have added all of the egg
-  // vertices.
+  // We also need to compute the vertex morphs for the polyset, based on
+  // whatever blend shapes may be present.  This is similar to the code in
+  // make_nurbs_surface(), except that since we don't have a one-to-one
+  // relationship of egg vertices to Maya vertices, we have to get the morphs
+  // down here, after we have added all of the egg vertices.
 
   if (_animation_convert == AC_model) {
     int num_orig_mesh_verts = mesh.numVertices();
@@ -2222,12 +2104,12 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     for (int i = 0; i < num_sliders; i++) {
       MayaBlendDesc *blend_desc = node_desc->get_blend_desc(i);
 
-      // Temporarily push the slider up to 1.0 so we can see what the
-      // surface looks like at that value.
+      // Temporarily push the slider up to 1.0 so we can see what the surface
+      // looks like at that value.
       blend_desc->set_slider(1.0);
 
-      // We have to get the mesh object from the dag again after
-      // fiddling with the slider.
+      // We have to get the mesh object from the dag again after fiddling with
+      // the slider.
       MFnMesh blend_mesh(dag_path, &status);
       if (!status) {
         mayaegg_cat.warning()
@@ -2237,11 +2119,11 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       } else {
         if (blend_mesh.numVertices() != num_orig_mesh_verts) {
           mayaegg_cat.warning()
-            << "Ignoring " << blend_desc->get_name() << " for " 
+            << "Ignoring " << blend_desc->get_name() << " for "
             << name << "; blend shape has " << blend_mesh.numVertices()
-            << " vertices while original shape has " 
+            << " vertices while original shape has "
             << num_orig_mesh_verts << ".\n";
-          
+
         } else {
           MPointArray verts;
           status = blend_mesh.getPoints(verts, MSpace::kWorld);
@@ -2254,11 +2136,11 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
               EggVertex *vert = (*vi);
               int maya_vi = vert->get_external_index();
               nassertv(maya_vi >= 0 && maya_vi < num_verts);
-              
+
               const MPoint &m = verts[maya_vi];
               LPoint3d m3d(m[0] / m[3], m[1] / m[3], m[2] / m[3]);
               m3d = m3d * vertex_frame_inv;
-              
+
               LVector3d delta = m3d - vert->get_pos3();
               if (!delta.almost_equal(LVector3d::zero())) {
                 EggMorphVertex dxyz(blend_desc->get_name(), delta);
@@ -2278,11 +2160,11 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
               EggVertex *vert = (*vi);
               int maya_vi = vert->get_external_index2();
               nassertv(maya_vi >= 0 && maya_vi < num_norms);
-              
+
               const MFloatVector &m = norms[maya_vi];
               LVector3d m3d(m[0], m[1], m[2]);
               m3d = m3d * vertex_frame_inv;
-              
+
               LNormald delta = m3d - vert->get_normal();
               if (!delta.almost_equal(LVector3d::zero())) {
                 EggMorphNormal dnormal(blend_desc->get_name(), delta);
@@ -2298,16 +2180,12 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_locator
-//       Access: Private
-//  Description: Locators are used in Maya to indicate a particular
-//               position in space to the user or the modeler.  We
-//               represent that in egg with an ordinary Group node,
-//               which we transform by the locator's position, so that
-//               the indicated point becomes the origin at this node
-//               and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Locators are used in Maya to indicate a particular position in space to the
+ * user or the modeler.  We represent that in egg with an ordinary Group node,
+ * which we transform by the locator's position, so that the indicated point
+ * becomes the origin at this node and below.
+ */
 void MayaToEggConverter::
 make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
              EggGroup *egg_group) {
@@ -2323,7 +2201,7 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
 
   if (!found_locator) {
     mayaegg_cat.error()
-      << "Couldn't find locator within locator node " 
+      << "Couldn't find locator within locator node "
       << dag_path.fullPathName().asChar() << "\n";
     return;
   }
@@ -2331,13 +2209,13 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   LPoint3d p3d;
   if (!get_vec3d_attribute(locator, "localPosition", p3d)) {
     mayaegg_cat.error()
-      << "Couldn't get position of locator " 
+      << "Couldn't get position of locator "
       << dag_path.fullPathName().asChar() << "\n";
     return;
   }
 
-  // We need to convert the position to world coordinates.  For some
-  // reason, Maya can only tell it to us in local coordinates.
+  // We need to convert the position to world coordinates.  For some reason,
+  // Maya can only tell it to us in local coordinates.
   MMatrix mat = dag_path.inclusiveMatrix(&status);
   if (!status) {
     status.perror("Can't get coordinate space for locator");
@@ -2355,16 +2233,12 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   egg_group->add_translate3d(p3d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_camera_locator
-//       Access: Private
-//  Description: Locators are used in Maya to indicate a particular
-//               position in space to the user or the modeler.  We
-//               represent that in egg with an ordinary Group node,
-//               which we transform by the locator's position, so that
-//               the indicated point becomes the origin at this node
-//               and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Locators are used in Maya to indicate a particular position in space to the
+ * user or the modeler.  We represent that in egg with an ordinary Group node,
+ * which we transform by the locator's position, so that the indicated point
+ * becomes the origin at this node and below.
+ */
 void MayaToEggConverter::
 make_camera_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
              EggGroup *egg_group) {
@@ -2380,7 +2254,7 @@ make_camera_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
 
   if (!found_camera) {
     mayaegg_cat.error()
-      << "Couldn't find camera" 
+      << "Couldn't find camera"
       << dag_path.fullPathName().asChar() << "\n";
     return;
   }
@@ -2399,16 +2273,12 @@ make_camera_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::make_light_locator
-//       Access: Private
-//  Description: Locators are used in Maya to indicate a particular
-//               position in space to the user or the modeler.  We
-//               represent that in egg with an ordinary Group node,
-//               which we transform by the locator's position, so that
-//               the indicated point becomes the origin at this node
-//               and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Locators are used in Maya to indicate a particular position in space to the
+ * user or the modeler.  We represent that in egg with an ordinary Group node,
+ * which we transform by the locator's position, so that the indicated point
+ * becomes the origin at this node and below.
+ */
 void MayaToEggConverter::
 make_light_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
              EggGroup *egg_group) {
@@ -2428,15 +2298,15 @@ make_light_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
 
   if (!found_alight && !found_dlight && !found_plight) {
     mayaegg_cat.error()
-      << "Couldn't find light within locator node " 
+      << "Couldn't find light within locator node "
       << dag_path.fullPathName().asChar() << "\n";
     return;
   }
 
   LPoint3d p3d;
 
-  // We need to convert the position to world coordinates.  For some
-  // reason, Maya can only tell it to us in local coordinates.
+  // We need to convert the position to world coordinates.  For some reason,
+  // Maya can only tell it to us in local coordinates.
   MMatrix mat = dag_path.inclusiveMatrix(&status);
   if (!status) {
     status.perror("Can't get coordinate space for light");
@@ -2455,55 +2325,48 @@ make_light_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_vertex_weights
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool MayaToEggConverter::
 get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
                    pvector<EggGroup *> &joints, MFloatArray &weights) {
   MStatus status;
-  
-  // Since we are working with a mesh the input attribute that 
-  // creates the mesh is named "inMesh" 
-  // 
-  MObject attr = mesh.attribute("inMesh"); 
-  
-  // Create the plug to the "inMesh" attribute then use the 
-  // DG iterator to walk through the DG, at the node level.
-  // 
-  MPlug history(mesh.object(), attr); 
-  MItDependencyGraph it(history, MFn::kDependencyNode, 
-                        MItDependencyGraph::kUpstream, 
-                        MItDependencyGraph::kDepthFirst, 
+
+  // Since we are working with a mesh the input attribute that creates the
+  // mesh is named "inMesh"
+  MObject attr = mesh.attribute("inMesh");
+
+  // Create the plug to the "inMesh" attribute then use the DG iterator to
+  // walk through the DG, at the node level.
+  MPlug history(mesh.object(), attr);
+  MItDependencyGraph it(history, MFn::kDependencyNode,
+                        MItDependencyGraph::kUpstream,
+                        MItDependencyGraph::kDepthFirst,
                         MItDependencyGraph::kNodeLevel);
 
   while (!it.isDone()) {
-    // We will walk along the node level of the DG until we 
-    // spot a skinCluster node.
-    // 
-    MObject c_node = it.thisNode(); 
-    if (c_node.hasFn(MFn::kSkinClusterFilter)) { 
-      // We've found the cluster handle. Try to get the weight
-      // data.
-      // 
-      MFnSkinCluster cluster(c_node, &status); 
+    // We will walk along the node level of the DG until we spot a skinCluster
+    // node.
+    MObject c_node = it.thisNode();
+    if (c_node.hasFn(MFn::kSkinClusterFilter)) {
+      // We've found the cluster handle.  Try to get the weight data.
+      MFnSkinCluster cluster(c_node, &status);
       if (!status) {
         status.perror("MFnSkinCluster constructor");
         return false;
       }
 
-      // Get the set of objects that influence the vertices of this
-      // mesh.  Hopefully these will all be joints.
+      // Get the set of objects that influence the vertices of this mesh.
+      // Hopefully these will all be joints.
       MDagPathArray influence_objects;
-      cluster.influenceObjects(influence_objects, &status); 
+      cluster.influenceObjects(influence_objects, &status);
       if (!status) {
         status.perror("MFnSkinCluster::influenceObjects");
 
       } else {
-        // Fill up the vector with the corresponding table of egg
-        // groups for each joint.
+        // Fill up the vector with the corresponding table of egg groups for
+        // each joint.
         joints.clear();
         for (unsigned oi = 0; oi < influence_objects.length(); oi++) {
           MDagPath joint_dag_path = influence_objects[oi];
@@ -2512,36 +2375,35 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
           joints.push_back(joint);
         }
 
-        // Now use a component object to retrieve all of the weight
-        // data in one API call.
-        MFnSingleIndexedComponent sic; 
-        MObject sic_object = sic.create(MFn::kMeshVertComponent); 
-        sic.setCompleteData(mesh.numVertices()); 
-        unsigned influence_count; 
+        // Now use a component object to retrieve all of the weight data in
+        // one API call.
+        MFnSingleIndexedComponent sic;
+        MObject sic_object = sic.create(MFn::kMeshVertComponent);
+        sic.setCompleteData(mesh.numVertices());
+        unsigned influence_count;
 
-        status = cluster.getWeights(dag_path, sic_object, 
-                                    weights, influence_count); 
+        status = cluster.getWeights(dag_path, sic_object,
+                                    weights, influence_count);
         if (!status) {
           status.perror("MFnSkinCluster::getWeights");
         } else {
           if (influence_count != influence_objects.length()) {
             mayaegg_cat.error()
-              << "MFnSkinCluster::influenceObjects() returns " 
+              << "MFnSkinCluster::influenceObjects() returns "
               << influence_objects.length()
               << " objects, but MFnSkinCluster::getWeights() reports "
               << influence_count << " objects.\n";
-            
+
           } else {
-            // We've got the weights and the set of objects.  That's all
-            // we need.
+            // We've got the weights and the set of objects.  That's all we
+            // need.
             return true;
           }
         }
       }
     } else if (c_node.hasFn(MFn::kWeightGeometryFilt)) {
-      // We've found the joint cluster handle. (rigid Binding)
-      // 
-      MFnWeightGeometryFilter cluster(c_node, &status); 
+      // We've found the joint cluster handle.  (rigid Binding)
+      MFnWeightGeometryFilter cluster(c_node, &status);
       if (!status) {
         status.perror("MFnWeightGeometryFilter constructor");
         return false;
@@ -2568,15 +2430,15 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
               MayaNodeDesc *joint_node_desc = _tree.build_node(joint_dag_path);
               EggGroup *joint = _tree.get_egg_group(joint_node_desc);
               joints.push_back(joint);
-          
-              // Now use a component object to retrieve all of the weight
-              // data in one API call.
-              MFnSingleIndexedComponent sic; 
-              MObject sic_object = sic.create(MFn::kMeshVertComponent); 
-              sic.setCompleteData(mesh.numVertices()); 
-          
-              status = cluster.getWeights(dag_path, sic_object, 
-                                          weights); 
+
+              // Now use a component object to retrieve all of the weight data
+              // in one API call.
+              MFnSingleIndexedComponent sic;
+              MObject sic_object = sic.create(MFn::kMeshVertComponent);
+              sic.setCompleteData(mesh.numVertices());
+
+              status = cluster.getWeights(dag_path, sic_object,
+                                          weights);
               if (!status) {
                 status.perror("MFnWeightGeometryFilter::getWeights");
               } else {
@@ -2587,7 +2449,7 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
             }
           }
         }
-      }      
+      }
     }
 
     it.next();
@@ -2597,56 +2459,48 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_vertex_weights
-//       Access: Private
-//  Description: As above, for a NURBS surface instead of a polygon
-//               mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * As above, for a NURBS surface instead of a polygon mesh.
+ */
 bool MayaToEggConverter::
 get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
                    pvector<EggGroup *> &joints, MFloatArray &weights) {
   MStatus status;
-  
-  // Since we are working with a NURBS surface the input attribute that 
-  // creates the surface is named "create" 
-  // 
-  MObject attr = surface.attribute("create"); 
-  
-  // Create the plug to the "create" attribute then use the 
-  // DG iterator to walk through the DG, at the node level.
-  // 
-  MPlug history(surface.object(), attr); 
-  MItDependencyGraph it(history, MFn::kDependencyNode, 
-                        MItDependencyGraph::kUpstream, 
-                        MItDependencyGraph::kDepthFirst, 
+
+  // Since we are working with a NURBS surface the input attribute that
+  // creates the surface is named "create"
+  MObject attr = surface.attribute("create");
+
+  // Create the plug to the "create" attribute then use the DG iterator to
+  // walk through the DG, at the node level.
+  MPlug history(surface.object(), attr);
+  MItDependencyGraph it(history, MFn::kDependencyNode,
+                        MItDependencyGraph::kUpstream,
+                        MItDependencyGraph::kDepthFirst,
                         MItDependencyGraph::kNodeLevel);
 
   while (!it.isDone()) {
-    // We will walk along the node level of the DG until we 
-    // spot a skinCluster node.
-    // 
-    MObject c_node = it.thisNode(); 
-    if (c_node.hasFn(MFn::kSkinClusterFilter)) { 
-      // We've found the cluster handle. Try to get the weight
-      // data.
-      // 
-      MFnSkinCluster cluster(c_node, &status); 
+    // We will walk along the node level of the DG until we spot a skinCluster
+    // node.
+    MObject c_node = it.thisNode();
+    if (c_node.hasFn(MFn::kSkinClusterFilter)) {
+      // We've found the cluster handle.  Try to get the weight data.
+      MFnSkinCluster cluster(c_node, &status);
       if (!status) {
         status.perror("MFnSkinCluster constructor");
         return false;
       }
 
-      // Get the set of objects that influence the vertices of this
-      // surface.  Hopefully these will all be joints.
+      // Get the set of objects that influence the vertices of this surface.
+      // Hopefully these will all be joints.
       MDagPathArray influence_objects;
-      cluster.influenceObjects(influence_objects, &status); 
+      cluster.influenceObjects(influence_objects, &status);
       if (!status) {
         status.perror("MFnSkinCluster::influenceObjects");
 
       } else {
-        // Fill up the vector with the corresponding table of egg
-        // groups for each joint.
+        // Fill up the vector with the corresponding table of egg groups for
+        // each joint.
         joints.clear();
         for (unsigned oi = 0; oi < influence_objects.length(); oi++) {
           MDagPath joint_dag_path = influence_objects[oi];
@@ -2655,28 +2509,28 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
           joints.push_back(joint);
         }
 
-        // Now use a component object to retrieve all of the weight
-        // data in one API call.
-        MFnDoubleIndexedComponent dic; 
-        MObject dic_object = dic.create(MFn::kSurfaceCVComponent); 
-        dic.setCompleteData(surface.numCVsInU(), surface.numCVsInV()); 
-        unsigned influence_count; 
+        // Now use a component object to retrieve all of the weight data in
+        // one API call.
+        MFnDoubleIndexedComponent dic;
+        MObject dic_object = dic.create(MFn::kSurfaceCVComponent);
+        dic.setCompleteData(surface.numCVsInU(), surface.numCVsInV());
+        unsigned influence_count;
 
-        status = cluster.getWeights(dag_path, dic_object, 
-                                    weights, influence_count); 
+        status = cluster.getWeights(dag_path, dic_object,
+                                    weights, influence_count);
         if (!status) {
           status.perror("MFnSkinCluster::getWeights");
         } else {
           if (influence_count != influence_objects.length()) {
             mayaegg_cat.error()
-              << "MFnSkinCluster::influenceObjects() returns " 
+              << "MFnSkinCluster::influenceObjects() returns "
               << influence_objects.length()
               << " objects, but MFnSkinCluster::getWeights() reports "
               << influence_count << " objects.\n";
-            
+
           } else {
-            // We've got the weights and the set of objects.  That's all
-            // we need.
+            // We've got the weights and the set of objects.  That's all we
+            // need.
             return true;
           }
         }
@@ -2690,15 +2544,12 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::set_shader_attributes
-//       Access: Private
-//  Description: Applies the known shader attributes to the indicated
-//               egg primitive. Note: For multi-textures, Maya lists 
-//               the top most texture in slot 0. But Panda puts the 
-//               base texture at slot 0. Hence I parse the list of 
-//               textures from last to first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the known shader attributes to the indicated egg primitive.  Note:
+ * For multi-textures, Maya lists the top most texture in slot 0. But Panda
+ * puts the base texture at slot 0. Hence I parse the list of textures from
+ * last to first.
+ */
 void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
                       bool mesh) {
@@ -2709,28 +2560,26 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::set_shader_modern
-//       Access: Private
-//  Description: The modern implementation of set_shader_attributes.
-//
-//               In the modern codepath, the MayaShader is a direct,
-//               literal representation of a list of EggTextures.
-//               All this exporter has to do is translate the list
-//               without interpretation.  All the complex interpretation
-//               is handled elsewhere, in the MayaShader module.
-////////////////////////////////////////////////////////////////////
+/**
+ * The modern implementation of set_shader_attributes.
+ *
+ * In the modern codepath, the MayaShader is a direct, literal representation
+ * of a list of EggTextures.  All this exporter has to do is translate the
+ * list without interpretation.  All the complex interpretation is handled
+ * elsewhere, in the MayaShader module.
+ */
 void MayaToEggConverter::
 set_shader_modern(EggPrimitive &primitive, const MayaShader &shader,
                       bool mesh) {
-  
+
   for (size_t idx=0; idx < shader._all_maps.size(); idx++) {
     MayaShaderColorDef *def = shader._all_maps[idx];
     if ((def->_is_alpha)&&(def->_opposite != 0)) {
-      // This texture represents an alpha-filename.  It doesn't get its own <Texture>
+      // This texture represents an alpha-filename.  It doesn't get its own
+      // <Texture>
       continue;
     }
-    
+
     EggTexture tex(shader.get_name(), "");
     tex.set_format(def->_is_alpha ? EggTexture::F_alpha : EggTexture::F_rgb);
     apply_texture_filename(tex, *def);
@@ -2740,42 +2589,37 @@ set_shader_modern(EggPrimitive &primitive, const MayaShader &shader,
     apply_texture_uvprops(tex, *def);
     apply_texture_blendtype(tex, *def);
     tex.set_uv_name(def->get_panda_uvset_name());
-  
+
     EggTexture *new_tex =
       _textures.create_unique_texture(tex, ~0);
     primitive.add_texture(new_tex);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::set_shader_legacy
-//       Access: Private
-//  Description: The legacy implementation of set_shader_attributes.
-//               The old behavior of the exporter is just plain weird.
-//               It seems to be a result of an inexperienced coder
-//               who made some core mistakes, and then patched them
-//               up with kludges.  It seems to produce plausible
-//               results in certain specific cases, but overall, it
-//               doesn't make any sense.  Unfortunately, this weird
-//               behavior cannot be discarded - vast numbers of 3D
-//               models have been created that rely on this behavior.
-//               The solution is to compartmentalize the weirdness.
-//               The legacy codepath, when activated, implements the
-//               old weird behavior.  A brand-new codepath that
-//               shares almost nothing with the legacy codepath
-//               implements a much more straightforward behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * The legacy implementation of set_shader_attributes.  The old behavior of
+ * the exporter is just plain weird.  It seems to be a result of an
+ * inexperienced coder who made some core mistakes, and then patched them up
+ * with kludges.  It seems to produce plausible results in certain specific
+ * cases, but overall, it doesn't make any sense.  Unfortunately, this weird
+ * behavior cannot be discarded - vast numbers of 3D models have been created
+ * that rely on this behavior.  The solution is to compartmentalize the
+ * weirdness.  The legacy codepath, when activated, implements the old weird
+ * behavior.  A brand-new codepath that shares almost nothing with the legacy
+ * codepath implements a much more straightforward behavior.
+ */
 void MayaToEggConverter::
 set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
                       bool mesh) {
-  
-  // determine if the base texture or any of the top texture need to be rgb only
+
+  // determine if the base texture or any of the top texture need to be rgb
+  // only
   MayaShaderColorDef *color_def = NULL;
   bool is_rgb = false;
   bool is_decal = false;
   bool is_interpolate = false;
   int i;
-  // last shader is the base so lets skip it 
+  // last shader is the base so lets skip it
   for (i=0; i<(int)shader._color.size()-1; ++i) {
     color_def = shader.get_color_def(i);
     if (color_def->_has_texture) {
@@ -2783,8 +2627,8 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         is_interpolate = true;
       }
       else if ((EggTexture::EnvType)color_def->_blend_type == EggTexture::ET_modulate) {
-        // Maya's multiply is slightly different than panda's. Unless, _keep_alpha is set, 
-        // we are dropping the alpha.
+        // Maya's multiply is slightly different than panda's.  Unless,
+        // _keep_alpha is set, we are dropping the alpha.
         if (!color_def->_keep_alpha)
           is_rgb = true; // modulate forces the alpha to be ignored
       }
@@ -2794,16 +2638,17 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
     }
   }
 
-  // we don't want an extra light stage for interpolate mode, it takes care of automatically
+  // we don't want an extra light stage for interpolate mode, it takes care of
+  // automatically
   if (is_interpolate)
     is_decal = false;
-  
+
   // new decal mode needs an extra dummy layers of textureStage
   EggTexture *dummy_tex = (EggTexture *)NULL;
   string dummy_uvset_name;
 
-  // In Maya, a polygon is either textured or colored.  The texture,
-  // if present, replaces the color. Also now there could be multiple textures
+  // In Maya, a polygon is either textured or colored.  The texture, if
+  // present, replaces the color.  Also now there could be multiple textures
   const MayaShaderColorDef &trans_def = shader._transparency;
   for (i=shader._color.size()-1; i>=0; --i) {
     color_def = shader.get_color_def(i);
@@ -2823,19 +2668,18 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
       }
 
       if (color_def->_has_texture) {
-        // If we have a texture on color, apply it as the filename.
-        //if (mayaegg_cat.is_debug()) {
-          //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
-        //}
+        // If we have a texture on color, apply it as the filename.  if
+        // (mayaegg_cat.is_debug()) { mayaegg_cat.debug() << "ssa:got texture
+        // name" << color_def->_texture_filename << endl; }
         Filename filename = Filename::from_os_specific(color_def->_texture_filename);
         Filename fullpath, outpath;
         _path_replace->full_convert_path(filename, get_model_path(), fullpath, outpath);
         tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
         apply_texture_uvprops(tex, *color_def);
-        
-        // If we also have a texture on transparency, apply it as the
-        // alpha filename.
+
+        // If we also have a texture on transparency, apply it as the alpha
+        // filename.
         if (trans_def._has_texture) {
           if (color_def->_wrap_u != trans_def._wrap_u ||
               color_def->_wrap_u != trans_def._wrap_u) {
@@ -2843,7 +2687,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
               << "Shader " << shader.get_name()
               << " has contradictory wrap modes on color and texture.\n";
           }
-          
+
           if (!compare_texture_uvprops(tex, trans_def)) {
             // Only report each broken shader once.
             static pset<string> bad_shaders;
@@ -2853,25 +2697,25 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
                 << shader.get_name() << "\n";
             }
           }
-          //tex.set_format(EggTexture::F_rgba);
-          
-          // We should try to be smarter about whether the transparency
-          // value is connected to the texture's alpha channel or to its
-          // grayscale channel.  However, I'm not sure how to detect
-          // this at the moment; rather than spending days trying to
-          // figure out, for now I'll just assume that if the same
-          // texture image is used for both color and transparency, then
-          // the artist meant to use the alpha channel for transparency.
+          // tex.set_format(EggTexture::F_rgba);
+
+          // We should try to be smarter about whether the transparency value
+          // is connected to the texture's alpha channel or to its grayscale
+          // channel.  However, I'm not sure how to detect this at the moment;
+          // rather than spending days trying to figure out, for now I'll just
+          // assume that if the same texture image is used for both color and
+          // transparency, then the artist meant to use the alpha channel for
+          // transparency.
           if (trans_def._texture_filename == color_def->_texture_filename) {
-            // That means that we don't need to do anything special: use
-            // all the channels of the texture.
-            
+            // That means that we don't need to do anything special: use all
+            // the channels of the texture.
+
           } else {
-            // Otherwise, pull the alpha channel from the other image
-            // file.  Ideally, we should figure out which channel from
-            // the other image supplies alpha (and specify this via
-            // set_alpha_file_channel()), but for now we assume it comes
-            // from the grayscale data.
+            // Otherwise, pull the alpha channel from the other image file.
+            // Ideally, we should figure out which channel from the other
+            // image supplies alpha (and specify this via
+            // set_alpha_file_channel()), but for now we assume it comes from
+            // the grayscale data.
             filename = Filename::from_os_specific(trans_def._texture_filename);
             _path_replace->full_convert_path(filename, get_model_path(),
                                              fullpath, outpath);
@@ -2879,21 +2723,22 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
             tex.set_alpha_fullpath(fullpath);
           }
         } else {
-          // If there is no transparency texture specified, we don't
-          // have any transparency, so tell the egg format to ignore any
-          // alpha channel that might be on the color texture.
-          //tex.set_format(EggTexture::F_rgb);
+          // If there is no transparency texture specified, we don't have any
+          // transparency, so tell the egg format to ignore any alpha channel
+          // that might be on the color texture.
+          // tex.set_format(EggTexture::F_rgb);
         }
-        
+
         if (shader._color.size() > 1) {
-          // if multi-textured, first texture in maya is on top, so
-          // last shader on the list is the base one, which should always pick up the alpha
-          // from the texture file. But the top textures may have to strip the alpha
+          // if multi-textured, first texture in maya is on top, so last
+          // shader on the list is the base one, which should always pick up
+          // the alpha from the texture file.  But the top textures may have
+          // to strip the alpha
           if (i!=shader._color.size()-1) {
             if (!i && is_interpolate) {
-              // this is the grass path mode where alpha on this texture determines
-              // whether to show layer1 or layer2. Since by now other layers are set
-              // lets change those to get this effect
+              // this is the grass path mode where alpha on this texture
+              // determines whether to show layer1 or layer2. Since by now
+              // other layers are set lets change those to get this effect
               tex.set_combine_mode(EggTexture::CC_rgb, EggTexture::CM_interpolate);
               tex.set_combine_source(EggTexture::CC_rgb, 0, EggTexture::CS_previous);
               tex.set_combine_operand(EggTexture::CC_rgb, 0, EggTexture::CO_src_color);
@@ -2922,16 +2767,17 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
                 tex.set_env_type((EggTexture::EnvType)color_def->_blend_type);
                 if (tex.get_env_type() == EggTexture::ET_modulate) {
                   if (color_def->_has_alpha_channel) {
-                    // lets caution the artist that they should not be using a alpha channel on
-                    // this texture. 
+                    // lets caution the artist that they should not be using a
+                    // alpha channel on this texture.
                     if (mayaegg_cat.is_spam()) {
-                      maya_cat.spam() 
-                        << color_def->_texture_name 
+                      maya_cat.spam()
+                        << color_def->_texture_name
                         << " should not have alpha channel in multiply mode: ignoring\n";
                     }
                   }
                   if (is_rgb) {
-                    //tex.set_alpha_mode(EggRenderMode::AM_off);  // force alpha off
+                    // tex.set_alpha_mode(EggRenderMode::AM_off);   force
+                    // alpha off
                     tex.set_format(EggTexture::F_rgb);  // Change the format to be rgb only
                   }
                 }
@@ -2944,10 +2790,11 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
               tex.set_saved_result(true);
             }
             else if (is_decal) {
-              // decal in classic time, always overwrote the base color. That causes problem
-              // when the polygon wants to be lit or wants to retain vertex/polygon color
-              // In the new decal mode, we achieve this with a third dummy layer
-              // copy this layer to a new dummy layer
+              // decal in classic time, always overwrote the base color.  That
+              // causes problem when the polygon wants to be lit or wants to
+              // retain vertexpolygon color In the new decal mode, we achieve
+              // this with a third dummy layer copy this layer to a new dummy
+              // layer
               EggTexture texDummy(shader.get_name()+".dummy", "");
               if (mayaegg_cat.is_debug()) {
                 mayaegg_cat.debug() << "creating dummy shader: " << texDummy.get_name() << endl;
@@ -2968,8 +2815,8 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
           }
         }
       } else {  // trans_def._has_texture
-        // We have a texture on transparency only.  Apply it as the
-        // primary filename, and set the format accordingly.
+        // We have a texture on transparency only.  Apply it as the primary
+        // filename, and set the format accordingly.
         Filename filename = Filename::from_os_specific(trans_def._texture_filename);
         Filename fullpath,outpath;
         _path_replace->full_convert_path(filename, get_model_path(),
@@ -2979,7 +2826,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         tex.set_format(EggTexture::F_alpha);
         apply_texture_uvprops(tex, trans_def);
       }
-      
+
       if (mayaegg_cat.is_debug()) {
         mayaegg_cat.debug() << "ssa:tref_name:" << tex.get_name() << endl;
       }
@@ -2989,7 +2836,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
       }
       EggTexture *new_tex =
         _textures.create_unique_texture(tex, ~0);
-      
+
       if (mesh) {
         if (uvset_name.find("not found") == -1) {
           primitive.add_texture(new_tex);
@@ -3019,8 +2866,8 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
     mayaegg_cat.spam() << "ssa:rgba = " << rgba << endl;
   }
 
-  // The existence of a texture on either color channel completely
-  // replaces the corresponding flat color.
+  // The existence of a texture on either color channel completely replaces
+  // the corresponding flat color.
   if (color_def && color_def->_has_texture) {
     rgba[0] = 1.0f;
     rgba[1] = 1.0f;
@@ -3048,13 +2895,10 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::apply_texture_uvprops
-//       Access: Private
-//  Description: Applies all the appropriate texture properties to the
-//               EggTexture object, including wrap modes and texture
-//               matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies all the appropriate texture properties to the EggTexture object,
+ * including wrap modes and texture matrix.
+ */
 void MayaToEggConverter::
 apply_texture_uvprops(EggTexture &tex, const MayaShaderColorDef &color_def) {
   // Let's mipmap all textures by default.
@@ -3073,11 +2917,9 @@ apply_texture_uvprops(EggTexture &tex, const MayaShaderColorDef &color_def) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::apply_texture_blendtype
-//       Access: Private
-//  Description: Applies the blendtype to the EggTexture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the blendtype to the EggTexture.
+ */
 void MayaToEggConverter::
 apply_texture_blendtype(EggTexture &tex, const MayaShaderColorDef &color_def) {
   switch (color_def._blend_type) {
@@ -3129,11 +2971,9 @@ apply_texture_blendtype(EggTexture &tex, const MayaShaderColorDef &color_def) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::apply_texture_filename
-//       Access: Private
-//  Description: Applies the filename to the EggTexture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the filename to the EggTexture.
+ */
 void MayaToEggConverter::
 apply_texture_filename(EggTexture &tex, const MayaShaderColorDef &def) {
   Filename filename = Filename::from_os_specific(def._texture_filename);
@@ -3143,11 +2983,9 @@ apply_texture_filename(EggTexture &tex, const MayaShaderColorDef &def) {
   tex.set_fullpath(fullpath);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::apply_texture_alpha_filename
-//       Access: Private
-//  Description: Applies the alpha filename to the EggTexture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the alpha filename to the EggTexture.
+ */
 void MayaToEggConverter::
 apply_texture_alpha_filename(EggTexture &tex, const MayaShaderColorDef &def) {
   if (def._opposite) {
@@ -3162,23 +3000,20 @@ apply_texture_alpha_filename(EggTexture &tex, const MayaShaderColorDef &def) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::compare_texture_uvprops
-//       Access: Private
-//  Description: Compares the texture properties already on the
-//               texture (presumably set by a previous call to
-//               apply_texture_uvprops()) and returns false if they
-//               differ from that specified by the indicated color_def
-//               object, or true if they match.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the texture properties already on the texture (presumably set by a
+ * previous call to apply_texture_uvprops()) and returns false if they differ
+ * from that specified by the indicated color_def object, or true if they
+ * match.
+ */
 bool MayaToEggConverter::
-compare_texture_uvprops(EggTexture &tex, 
+compare_texture_uvprops(EggTexture &tex,
                         const MayaShaderColorDef &color_def) {
   bool okflag = true;
 
   EggTexture::WrapMode wrap_u = color_def._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp;
   EggTexture::WrapMode wrap_v = color_def._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp;
-  
+
   if (wrap_u != tex.determine_wrap_u()) {
     // Choose the more general of the two.
     if (wrap_u == EggTexture::WM_repeat) {
@@ -3192,7 +3027,7 @@ compare_texture_uvprops(EggTexture &tex,
     }
     okflag = false;
   }
-  
+
   LMatrix3d m = color_def.compute_texture_matrix();
   LMatrix4d mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
                  m(1, 0), m(1, 1), 0.0, m(1, 2),
@@ -3205,22 +3040,18 @@ compare_texture_uvprops(EggTexture &tex,
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::reparent_decals
-//       Access: Private
-//  Description: Recursively walks the egg hierarchy, reparenting
-//               "decal" type nodes below their corresponding
-//               "decalbase" type nodes, and setting the flags.
-//
-//               Returns true on success, false if some nodes were
-//               incorrect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the egg hierarchy, reparenting "decal" type nodes below
+ * their corresponding "decalbase" type nodes, and setting the flags.
+ *
+ * Returns true on success, false if some nodes were incorrect.
+ */
 bool MayaToEggConverter::
 reparent_decals(EggGroupNode *egg_parent) {
   bool okflag = true;
 
-  // First, walk through all children of this node, looking for the
-  // one decal base, if any.
+  // First, walk through all children of this node, looking for the one decal
+  // base, if any.
   EggGroup *decal_base = (EggGroup *)NULL;
   pvector<EggGroup *> decal_children;
 
@@ -3261,10 +3092,10 @@ reparent_decals(EggGroupNode *egg_parent) {
         << " has decalbase, but no sibling nodes have decal.\n";
 
     } else {
-      // All the decal children get moved to be a child of decal base.
-      // This usually will not affect the vertex positions, but it
-      // could if the decal base has a transform and the decal child
-      // is an instance node.  So don't do that.
+      // All the decal children get moved to be a child of decal base.  This
+      // usually will not affect the vertex positions, but it could if the
+      // decal base has a transform and the decal child is an instance node.
+      // So don't do that.
       pvector<EggGroup *>::iterator di;
       for (di = decal_children.begin(); di != decal_children.end(); ++di) {
         EggGroup *child_group = (*di);
@@ -3290,12 +3121,10 @@ reparent_decals(EggGroupNode *egg_parent) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::string_transform_type
-//       Access: Public, Static
-//  Description: Returns the TransformType value corresponding to the
-//               indicated string, or TT_invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TransformType value corresponding to the indicated string, or
+ * TT_invalid.
+ */
 MayaToEggConverter::TransformType MayaToEggConverter::
 string_transform_type(const string &arg) {
   if (cmp_nocase(arg, "all") == 0) {
@@ -3310,14 +3139,11 @@ string_transform_type(const string &arg) {
     return TT_invalid;
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::MayaToEggConverter::set_vertex_color
-//       Access: Private
-//  Description: Checks to see if we're using legacy or modern
-//               shaders and based on the result, it passes
-//               the vertex color calculations off to either
-//               the legacy or modern vertex color functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks to see if we're using legacy or modern shaders and based on the
+ * result, it passes the vertex color calculations off to either the legacy or
+ * modern vertex color functions.
+ */
 void MayaToEggConverter::
 set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color) {
     if (shader == (MayaShader *)NULL || shader->_legacy_mode) {
@@ -3326,15 +3152,12 @@ set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const Maya
       set_vertex_color_modern(vert, pi, vert_index, shader, color);
     }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::MayaToEggConverter::set_vertex_color_legacy
-//       Access: Private
-//  Description: Calls set_color on an EggVertex, determining the
-//               correct color values, based on the shader, vert_color
-//               Maya's vertex & flat color(s).  This is the original 
-//               implementation that works only on Lambert shaders/materials
-//               in Maya.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls set_color on an EggVertex, determining the correct color values,
+ * based on the shader, vert_color Maya's vertex & flat color(s).  This is the
+ * original implementation that works only on Lambert shaders/materials in
+ * Maya.
+ */
 void MayaToEggConverter::
 set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color){
   if (pi.hasColor()) {
@@ -3343,11 +3166,11 @@ set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, con
     if (!status) {
       status.perror("MItMeshPolygon::getColor");
     } else {
-      // I saw instances where the color components exceeded 1.0
-      // so lets clamp the values to 0 to 1
+      // I saw instances where the color components exceeded 1.0 so lets clamp
+      // the values to 0 to 1
       c /= 1.0;
-      // The vertex color is a color scale that modifies the
-      // polygon color, not an override that replaces it.
+      // The vertex color is a color scale that modifies the polygon color,
+      // not an override that replaces it.
       vert.set_color(LColor(c.r * color[0], c.g * color[1], c.b * color[2], c.a * color[3]));
 
       if (mayaegg_cat.is_spam()) {
@@ -3360,15 +3183,12 @@ set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, con
   }
 
 }
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::MayaToEggConverter::set_vertex_color_modern
-//       Access: Private
-//  Description: Calls set_color on an EggVertex, determining the
-//               correct color values, based on the shader, vert_color
-//               Maya's vertex & flat color(s).  This implementation
-//               is designed to work specifically with Phong materials
-//               or shaders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls set_color on an EggVertex, determining the correct color values,
+ * based on the shader, vert_color Maya's vertex & flat color(s).  This
+ * implementation is designed to work specifically with Phong materials or
+ * shaders.
+ */
 void MayaToEggConverter::
 set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color) {
   // If there's an explicit vertex color, output it.
@@ -3380,13 +3200,14 @@ set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, con
       return;
     }
   }
-  
-  // If there's no explicit color, use flat color, or white on a textured model.
+
+  // If there's no explicit color, use flat color, or white on a textured
+  // model.
   if (shader->_color_maps.empty()) {
     const LColord &c = shader->_flat_color;
     vert.set_color(LColor((PN_stdfloat)c[0], (PN_stdfloat)c[1], (PN_stdfloat)c[2], (PN_stdfloat)c[3]));
   } else {
-    //there's no explicit color anywhere, must be textured (or blank)
+    // there's no explicit color anywhere, must be textured (or blank)
     vert.set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
   }
 }

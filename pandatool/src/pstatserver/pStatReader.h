@@ -1,16 +1,15 @@
-// Filename: pStatReader.h
-// Created by:  drose (09Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatReader.h
+ * @author drose
+ * @date 2000-07-09
+ */
 
 #ifndef PSTATREADER_H
 #define PSTATREADER_H
@@ -30,17 +29,15 @@ class PStatMonitor;
 class PStatClientControlMessage;
 class PStatFrameData;
 
-// This is the maximum number of frame records that will be queued up
-// from this particular client between processing loops.
+// This is the maximum number of frame records that will be queued up from
+// this particular client between processing loops.
 static const int queued_frame_records = 500;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatReader
-// Description : This is the class that does all the work for handling
-//               communications from a single Panda client.  It reads
-//               sockets received from the client and boils them down
-//               into PStatData.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the class that does all the work for handling communications from a
+ * single Panda client.  It reads sockets received from the client and boils
+ * them down into PStatData.
+ */
 class PStatReader : public ConnectionReader {
 public:
   PStatReader(PStatServer *manager, PStatMonitor *monitor);

@@ -1,16 +1,15 @@
-// Filename: milesAudioSequence.h
-// Created by:  drose (31Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file milesAudioSequence.h
+ * @author drose
+ * @date 2007-07-31
+ */
 
 #ifndef MILESAUDIOSEQUENCE_H
 #define MILESAUDIOSEQUENCE_H
@@ -22,29 +21,28 @@
 #include "milesAudioManager.h"
 #include "mss.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MilesAudioSequence
-// Description : A MIDI file, preloaded and played from a memory
-//               buffer.  MIDI files cannot be streamed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MIDI file, preloaded and played from a memory buffer.  MIDI files cannot
+ * be streamed.
+ */
 class EXPCL_MILES_AUDIO MilesAudioSequence : public MilesAudioSound {
 private:
-  MilesAudioSequence(MilesAudioManager *manager, 
+  MilesAudioSequence(MilesAudioManager *manager,
                      MilesAudioManager::SoundData *sd,
                      const string &file_name);
 
 public:
   virtual ~MilesAudioSequence();
-  
+
   virtual void play();
   virtual void stop();
-  
+
   virtual PN_stdfloat get_time() const;
-  
+
   virtual void set_volume(PN_stdfloat volume=1.0f);
   virtual void set_balance(PN_stdfloat balance_right=0.0f);
   virtual void set_play_rate(PN_stdfloat play_rate=1.0f);
-  
+
   virtual PN_stdfloat length() const;
 
   virtual AudioSound::SoundStatus status() const;

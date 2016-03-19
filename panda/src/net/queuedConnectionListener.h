@@ -1,16 +1,15 @@
-// Filename: queuedConnectionListener.h
-// Created by:  drose (09Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file queuedConnectionListener.h
+ * @author drose
+ * @date 2000-02-09
+ */
 
 #ifndef QUEUEDCONNECTIONLISTENER_H
 #define QUEUEDCONNECTIONLISTENER_H
@@ -26,8 +25,8 @@
 
 class EXPCL_PANDA_NET ConnectionListenerData {
 public:
-  // We need these methods to make VC++ happy when we try to
-  // instantiate the template, below.  They don't do anything useful.
+  // We need these methods to make VC++ happy when we try to instantiate the
+  // template, below.  They don't do anything useful.
   INLINE bool operator == (const ConnectionListenerData &other) const;
   INLINE bool operator != (const ConnectionListenerData &other) const;
   INLINE bool operator < (const ConnectionListenerData &other) const;
@@ -39,12 +38,10 @@ public:
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<ConnectionListenerData>);
 
-////////////////////////////////////////////////////////////////////
-//       Class : QueuedConnectionListener
-// Description : This flavor of ConnectionListener will queue up all
-//               of the TCP connections it established for later
-//               detection by the client code.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of ConnectionListener will queue up all of the TCP connections
+ * it established for later detection by the client code.
+ */
 class EXPCL_PANDA_NET QueuedConnectionListener : public ConnectionListener,
                                  public QueuedReturn<ConnectionListenerData> {
 PUBLISHED:
@@ -66,4 +63,3 @@ protected:
 #include "queuedConnectionListener.I"
 
 #endif
-

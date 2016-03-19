@@ -1,35 +1,29 @@
-// Filename: odeSpace.I
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeSpace.I
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeSpace::is_empty
-//       Access: Published
-//  Description: Returns true if the ID is 0, meaning the OdeSpace
-//               does not point to a valid space. It is an error to
-//               call a method on an empty space.
-//               Note that an empty OdeSpace also evaluates to False.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the ID is 0, meaning the OdeSpace does not point to a valid
+ * space.  It is an error to call a method on an empty space.  Note that an
+ * empty OdeSpace also evaluates to False.
+ */
 INLINE bool OdeSpace::
 is_empty() const {
   return (_id == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeSpace::get_id
-//       Access: Published
-//  Description: Returns the underlying dSpaceID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the underlying dSpaceID.
+ */
 INLINE dSpaceID OdeSpace::
 get_id() const {
   return _id;
@@ -117,4 +111,3 @@ INLINE string OdeSpace::
 get_collision_event() {
   return _collision_event;
 }
-

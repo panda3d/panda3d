@@ -1,16 +1,15 @@
-// Filename: aiWorld.h
-// Created by: Deepak, John, Navin (08Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file aiWorld.h
+ * @author Deepak, John, Navin
+ * @date 2009-09-08
+ */
 
 #pragma warning (disable:4996)
 #pragma warning (disable:4005)
@@ -27,12 +26,11 @@
 class AICharacter;
 class Flock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AICharPool
-// Description : This class implements a linked list of AI Characters allowing
-//               the user to add and delete characters from the linked list.
-//               This will be used in the AIWorld class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements a linked list of AI Characters allowing the user to
+ * add and delete characters from the linked list.  This will be used in the
+ * AIWorld class.
+ */
 class EXPCL_PANDAAI AICharPool {
     public:
     struct node {
@@ -49,14 +47,13 @@ class EXPCL_PANDAAI AICharPool {
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : AIWorld
-// Description : A class that implements the virtual AI world which keeps track
-//               of the AI characters active at any given time. It contains a linked
-//               list of AI characters, obstactle data and unique name for each
-//               character. It also updates each characters state. The AI characters
-//               can also be added to the world as flocks.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class that implements the virtual AI world which keeps track of the AI
+ * characters active at any given time.  It contains a linked list of AI
+ * characters, obstactle data and unique name for each character.  It also
+ * updates each characters state.  The AI characters can also be added to the
+ * world as flocks.
+ */
 class EXPCL_PANDAAI AIWorld {
   private:
     AICharPool * _ai_char_pool;

@@ -1,16 +1,15 @@
-// Filename: connection.h
-// Created by:  jns (07Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file connection.h
+ * @author jns
+ * @date 2000-02-07
+ */
 
 #ifndef CONNECTION_H
 #define CONNECTION_H
@@ -24,11 +23,9 @@ class Socket_IP;
 class ConnectionManager;
 class NetDatagram;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Connection
-// Description : Represents a single TCP or UDP socket for input or
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single TCP or UDP socket for input or output.
+ */
 class EXPCL_PANDA_NET Connection : public ReferenceCount {
 PUBLISHED:
   Connection(ConnectionManager *manager, Socket_IP *socket);
@@ -47,8 +44,7 @@ PUBLISHED:
   BLOCKING bool consider_flush();
   BLOCKING bool flush();
 
-  // Socket options.
-  //  void set_nonblock(bool flag);
+  // Socket options.  void set_nonblock(bool flag);
   void set_linger(bool flag, double time);
   void set_reuse_addr(bool flag);
   void set_keep_alive(bool flag);

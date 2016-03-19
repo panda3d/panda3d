@@ -1,16 +1,15 @@
-// Filename: zStreamBuf.cxx
-// Created by:  drose (05Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file zStreamBuf.cxx
+ * @author drose
+ * @date 2002-08-05
+ */
 
 #include "zStreamBuf.h"
 
@@ -31,11 +30,9 @@ do_zlib_free(voidpf opaque, voidpf address) {
 }
 #endif  //  !USE_MEMORY_NOWRAPPERS
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ZStreamBuf::
 ZStreamBuf() {
   _source = (istream *)NULL;
@@ -56,11 +53,9 @@ ZStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ZStreamBuf::
 ~ZStreamBuf() {
   close_read();
@@ -70,11 +65,9 @@ ZStreamBuf::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::open_read
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ZStreamBuf::
 open_read(istream *source, bool owns_source) {
   _source = source;
@@ -102,11 +95,9 @@ open_read(istream *source, bool owns_source) {
   thread_consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::close_read
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ZStreamBuf::
 close_read() {
   if (_source != (istream *)NULL) {
@@ -125,11 +116,9 @@ close_read() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::open_write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ZStreamBuf::
 open_write(ostream *dest, bool owns_dest, int compression_level) {
   _dest = dest;
@@ -157,11 +146,9 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
   thread_consider_yield();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::close_write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ZStreamBuf::
 close_write() {
   if (_dest != (ostream *)NULL) {
@@ -183,12 +170,10 @@ close_write() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::overflow
-//       Access: Protected, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int ZStreamBuf::
 overflow(int ch) {
   size_t n = pptr() - pbase();
@@ -206,12 +191,10 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::sync
-//       Access: Protected, Virtual
-//  Description: Called by the system iostream implementation to
-//               implement a flush operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system iostream implementation to implement a flush
+ * operation.
+ */
 int ZStreamBuf::
 sync() {
   if (_source != (istream *)NULL) {
@@ -229,12 +212,10 @@ sync() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int ZStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -264,11 +245,9 @@ underflow() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::read_chars
-//       Access: Private
-//  Description: Gets some characters from the source stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets some characters from the source stream.
+ */
 size_t ZStreamBuf::
 read_chars(char *start, size_t length) {
   _z_source.next_out = (Bytef *)start;
@@ -282,7 +261,7 @@ read_chars(char *start, size_t length) {
       _source->read(decompress_buffer, decompress_buffer_size);
       size_t read_count = _source->gcount();
       eof = (read_count == 0 || _source->eof() || _source->fail());
-        
+
       _z_source.next_in = (Bytef *)decompress_buffer;
       _z_source.avail_in = read_count;
     }
@@ -295,9 +274,9 @@ read_chars(char *start, size_t length) {
       return bytes_read;
 
     } else if (result == Z_BUF_ERROR && flush == 0) {
-      // We might get this if no progress is possible, for instance if
-      // the input stream is truncated.  In this case, tell zlib to
-      // dump everything it's got.
+      // We might get this if no progress is possible, for instance if the
+      // input stream is truncated.  In this case, tell zlib to dump
+      // everything it's got.
       flush = Z_FINISH;
 
     } else if (result < 0) {
@@ -309,12 +288,10 @@ read_chars(char *start, size_t length) {
   return length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::write_chars
-//       Access: Private
-//  Description: Sends some characters to the dest stream.  The flush
-//               parameter is passed to deflate().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends some characters to the dest stream.  The flush parameter is passed to
+ * deflate().
+ */
 void ZStreamBuf::
 write_chars(const char *start, size_t length, int flush) {
   static const size_t compress_buffer_size = 4096;
@@ -357,11 +334,9 @@ write_chars(const char *start, size_t length, int flush) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZStreamBuf::show_zlib_error
-//       Access: Private
-//  Description: Reports a recent error code returned by zlib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports a recent error code returned by zlib.
+ */
 void ZStreamBuf::
 show_zlib_error(const char *function, int error_code, z_stream &z) {
   stringstream error_line;

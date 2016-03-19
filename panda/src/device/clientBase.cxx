@@ -1,28 +1,24 @@
-// Filename: clientBase.cxx
-// Created by:  jason (04Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clientBase.cxx
+ * @author jason
+ * @date 2000-08-04
+ */
 
 #include "clientBase.h"
 #include "config_device.h"
 
 TypeHandle ClientBase::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ClientBase::
 ClientBase() {
   _forked = false;
@@ -37,11 +33,9 @@ ClientBase() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ClientBase::
 ~ClientBase() {
   // We have to disconnect all of our devices before destructing.
@@ -60,24 +54,20 @@ ClientBase::
   if (_forked) {
     _shutdown = true;
 
-    // Join the loader thread - calling process blocks until the loader
-    // thread returns.
+    // Join the loader thread - calling process blocks until the loader thread
+    // returns.
     void *ret;
     _client_thread->join(&ret);
   }
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::fork_asynchronous_thread
-//       Access: Public
-//  Description: Forks a separate thread to do all the polling of
-//               connected devices.  The forked thread will poll after
-//               every poll_time seconds has elapsed.  Returns true if
-//               the fork was successful, or false otherwise (for
-//               instance, because we were already forked, or because
-//               asynchronous threads are disabled).
-////////////////////////////////////////////////////////////////////
+/**
+ * Forks a separate thread to do all the polling of connected devices.  The
+ * forked thread will poll after every poll_time seconds has elapsed.  Returns
+ * true if the fork was successful, or false otherwise (for instance, because
+ * we were already forked, or because asynchronous threads are disabled).
+ */
 bool ClientBase::
 fork_asynchronous_thread(double poll_time) {
 #ifdef OLD_HAVE_IPC
@@ -104,30 +94,24 @@ fork_asynchronous_thread(double poll_time) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::get_device
-//       Access: Public
-//  Description: Returns a ClientDevice pointer that corresponds to
-//               the named device of the indicated device type.  The
-//               device_type should be one of ClientTrackerDevice,
-//               ClientAnalogDevice, etc.; the device_name is
-//               implementation defined.
-//
-//               Normally, the user does not need to call this
-//               function directly; it is called automatically by
-//               creating a TrackerNode or AnalogNode or some such
-//               data graph node.
-//
-//               The return value is the pointer to the created device
-//               (which might be the same pointer returned by a
-//               previous call to this function with the same
-//               parameters).  When the pointer destructs (i.e. its
-//               reference count reaches zero) it will automatically
-//               be disconnected.
-//
-//               If the named device does not exist or cannot be
-//               connected for some reason, NULL is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a ClientDevice pointer that corresponds to the named device of the
+ * indicated device type.  The device_type should be one of
+ * ClientTrackerDevice, ClientAnalogDevice, etc.; the device_name is
+ * implementation defined.
+ *
+ * Normally, the user does not need to call this function directly; it is
+ * called automatically by creating a TrackerNode or AnalogNode or some such
+ * data graph node.
+ *
+ * The return value is the pointer to the created device (which might be the
+ * same pointer returned by a previous call to this function with the same
+ * parameters).  When the pointer destructs (i.e.  its reference count reaches
+ * zero) it will automatically be disconnected.
+ *
+ * If the named device does not exist or cannot be connected for some reason,
+ * NULL is returned.
+ */
 PT(ClientDevice) ClientBase::
 get_device(TypeHandle device_type, const string &device_name) {
   DevicesByName &dbn = _devices[device_type];
@@ -149,19 +133,14 @@ get_device(TypeHandle device_type, const string &device_name) {
   return device;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::disconnect_device
-//       Access: Protected, Virtual
-//  Description: Removes the device, which is presumably about to
-//               destruct, from the list of connected devices, and
-//               frees any data required to support it.  This device
-//               will no longer receive automatic updates with each
-//               poll.
-//
-//               The return value is true if the device was
-//               disconnected, or false if it was unknown (e.g. it was
-//               disconnected previously).
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the device, which is presumably about to destruct, from the list of
+ * connected devices, and frees any data required to support it.  This device
+ * will no longer receive automatic updates with each poll.
+ *
+ * The return value is true if the device was disconnected, or false if it was
+ * unknown (e.g.  it was disconnected previously).
+ */
 bool ClientBase::
 disconnect_device(TypeHandle device_type, const string &device_name,
                   ClientDevice *device) {
@@ -181,15 +160,12 @@ disconnect_device(TypeHandle device_type, const string &device_name,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::do_poll
-//       Access: Protected, Virtual
-//  Description: Implements the polling and updating of connected
-//               devices, if the ClientBase requires this.  This may
-//               be called in a sub-thread if
-//               fork_asynchronous_thread() was called; otherwise, it
-//               will be called once per frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements the polling and updating of connected devices, if the ClientBase
+ * requires this.  This may be called in a sub-thread if
+ * fork_asynchronous_thread() was called; otherwise, it will be called once
+ * per frame.
+ */
 void ClientBase::
 do_poll() {
   ClockObject *global_clock = ClockObject::get_global_clock();
@@ -198,18 +174,14 @@ do_poll() {
 }
 
 #ifdef OLD_HAVE_IPC
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::st_callback
-//       Access: Private, Static
-//  Description: Call back function for thread (if thread has been
-//               spawned).  A call back function must be static, so
-//               this merely calls the non-static member callback In
-//               addition, the function has a void* return type even
-//               though we don't actually return anything.  This is
-//               necessary because ipc assumes a function that does
-//               not return anything indicates that the associated
-//               thread should  be created as unjoinable (detached).
-////////////////////////////////////////////////////////////////////
+/**
+ * Call back function for thread (if thread has been spawned).  A call back
+ * function must be static, so this merely calls the non-static member
+ * callback In addition, the function has a void* return type even though we
+ * don't actually return anything.  This is necessary because ipc assumes a
+ * function that does not return anything indicates that the associated thread
+ * should  be created as unjoinable (detached).
+ */
 void *ClientBase::
 st_callback(void *arg) {
   nassertr(arg != NULL, NULL);
@@ -217,13 +189,10 @@ st_callback(void *arg) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::callback
-//       Access: Private
-//  Description: This is the main body of the sub-thread.  It sleeps
-//               a certain time and then polls all devices currently
-//               being watched
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main body of the sub-thread.  It sleeps a certain time and then
+ * polls all devices currently being watched
+ */
 void ClientBase::
 callback() {
   while (true) {

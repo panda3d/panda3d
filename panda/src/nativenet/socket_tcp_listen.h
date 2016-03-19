@@ -5,10 +5,9 @@
 #include "socket_ip.h"
 #include "socket_tcp.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_TCP_Listen
-// Description : Base functionality for a TCP rendezvous socket
-////////////////////////////////////////////////////////////////////
+/**
+ * Base functionality for a TCP rendezvous socket
+ */
 class EXPCL_PANDA_NATIVENET Socket_TCP_Listen : public Socket_IP
 {
 public:
@@ -38,10 +37,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: OpenForListen
-//  Description: This function will initialize a listening Socket
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will initialize a listening Socket
+ */
 inline bool Socket_TCP_Listen::OpenForListen(const Socket_Address & Inaddess, int backlog_size )
 {
     ErrorClose();
@@ -59,10 +57,9 @@ inline bool Socket_TCP_Listen::OpenForListen(const Socket_Address & Inaddess, in
 
     return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: GetIncomingConnection
-//  Description: This function is used to accept new connections
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used to accept new connections
+ */
 inline bool Socket_TCP_Listen::GetIncomingConnection(SOCKET & newsession, Socket_Address &address)
 {
     newsession = DO_ACCEPT(_socket, &address.GetAddressInfo());

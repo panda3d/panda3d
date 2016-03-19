@@ -1,16 +1,15 @@
-// Filename: graphicsWindowInputDevice.h
-// Created by:  drose (24May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsWindowInputDevice.h
+ * @author drose
+ * @date 2000-05-24
+ */
 
 #ifndef GRAPHICSWINDOWINPUTDEVICE_H
 #define GRAPHICSWINDOWINPUTDEVICE_H
@@ -21,14 +20,11 @@
 // Forward declarations
 class GraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsWindowInputDevice
-// Description : This is a virtual input device that represents
-//               the keyboard and mouse pair that is associated with
-//               a particular window.  It collects mouse and keyboard
-//               events from the windowing system while the window is
-//               in focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a virtual input device that represents the keyboard and mouse pair
+ * that is associated with a particular window.  It collects mouse and
+ * keyboard events from the windowing system while the window is in focus.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice : public InputDevice {
 private:
   GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags);
@@ -46,8 +42,8 @@ public:
   INLINE void set_device_index(int index);
 
 PUBLISHED:
-  // The following interface is for the various kinds of
-  // GraphicsWindows to record the data incoming on the device.
+  // The following interface is for the various kinds of GraphicsWindows to
+  // record the data incoming on the device.
   void button_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
   void button_resume_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
   void button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());

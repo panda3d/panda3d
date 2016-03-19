@@ -1,16 +1,15 @@
-// Filename: inputDeviceManager.cxx
-// Created by:  rdb (09Dec15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file inputDeviceManager.cxx
+ * @author rdb
+ * @date 2015-12-09
+ */
 
 #include "inputDeviceManager.h"
 #include "linuxJoystickDevice.h"
@@ -31,11 +30,11 @@ static ConfigVariableDouble xinput_detection_delay
 
 InputDeviceManager *InputDeviceManager::_global_ptr = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the input device manager by scanning which devices are currently
+ * connected and setting up any platform-dependent structures necessary for
+ * listening for future device connect events.
+ */
 #ifdef PHAVE_LINUX_INPUT_H
 InputDeviceManager::
 InputDeviceManager() : _inotify_fd(-1) {
@@ -89,7 +88,8 @@ InputDeviceManager() :
   _xinput_device3(3),
   _last_detection(0.0) {
 
-  // These devices are bound to the lifetime of the input manager.
+  // XInput provides four device slots, so we simply create four XInputDevice
+  // objects that are bound to the lifetime of the input manager.
   _xinput_device0.local_object();
   _xinput_device1.local_object();
   _xinput_device2.local_object();
@@ -114,11 +114,9 @@ InputDeviceManager() {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::Destructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes any resources that the device manager was using to listen for events.
+ */
 InputDeviceManager::
 ~InputDeviceManager() {
 #ifdef PHAVE_LINUX_INPUT_H
@@ -130,13 +128,12 @@ InputDeviceManager::
 }
 
 #ifdef PHAVE_LINUX_INPUT_H
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::consider_add_evdev_device
-//       Access: Private
-//  Description: Checks whether the event device with the given index
-//               is accessible, and if so, adds it.  Returns the
-//               device if it was newly connected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the event device with the given index is accessible, and if
+ * so, adds it.  Returns the device if it was newly connected.
+ *
+ * This is the preferred interface for input devices on Linux.
+ */
 InputDevice *InputDeviceManager::
 consider_add_evdev_device(int ev_index) {
   if (ev_index < _evdev_devices.size()) {
@@ -172,13 +169,12 @@ consider_add_evdev_device(int ev_index) {
     return _evdev_devices[ev_index];
   }
 
-  // Nope.  The permissions haven't been configured to allow it.
-  // Check if this corresponds to a /dev/input/jsX interface, which has
-  // a better chance of having read permissions set, but doesn't export
-  // all of the features (notably, force feedback).
+  // Nope.  The permissions haven't been configured to allow it.  Check if this
+  // corresponds to a /dev/input/jsX interface, which has a better chance of
+  // having read permissions set, but doesn't export all of the features
+  // (notably, force feedback).
 
-  // We do this by checking for a js# directory inside the sysfs
-  // device directory.
+  // We do this by checking for a js# directory inside the sysfs directory.
   sprintf(path, "/sys/class/input/event%d/device", ev_index);
 
   DIR *dir = opendir(path);
@@ -215,13 +211,13 @@ consider_add_evdev_device(int ev_index) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::consider_add_evdev_device
-//       Access: Private
-//  Description: Checks whether the joystick device with the given
-//               index is accessible, and if so, adds it.  Returns
-//               the device if it was newly connected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the joystick device with the given index is accessible, and
+ * if so, adds it.  Returns the device if it was newly connected.
+ *
+ * This is only used on Linux as a fallback interface for when an evdev device
+ * cannot be accessed.
+ */
 InputDevice *InputDeviceManager::
 consider_add_js_device(int js_index) {
   char path[64];
@@ -249,11 +245,9 @@ consider_add_js_device(int js_index) {
 
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::get_gamepads
-//       Access: Public
-//  Description: Returns all currently connected gamepad devices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Description: Returns all currently connected gamepad devices.
+ */
 InputDeviceSet InputDeviceManager::
 get_gamepads() const {
   InputDeviceSet gamepads;
@@ -269,14 +263,12 @@ get_gamepads() const {
   return gamepads;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::add_device
-//       Access: Published
-//  Description: Called when a new device has been discovered.  This
-//               may also be used to register virtual devices.
-//
-//               This sends a connect-device event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a new device has been discovered.  This may also be used to
+ * register virtual devices.
+ *
+ * This causes a connect-device event to be thrown.
+ */
 void InputDeviceManager::
 add_device(InputDevice *device) {
   {
@@ -292,14 +284,12 @@ add_device(InputDevice *device) {
   throw_event("connect-device", device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::remove_device
-//       Access: Published
-//  Description: Called when a device has been removed, or when a
-//               device should otherwise no longer be tracked.
-//
-//               This sends a disconnect-device event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a device has been removed, or when a device should otherwise no
+ * longer be tracked.
+ *
+ * This causes a disconnect-device event to be thrown.
+ */
 void InputDeviceManager::
 remove_device(InputDevice *device) {
   {
@@ -310,16 +300,14 @@ remove_device(InputDevice *device) {
   throw_event("disconnect-device", device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InputDeviceManager::update
-//       Access: Public
-//  Description: Polls the system to see if there are any new devices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Polls the system to see if there are any new devices.
+ */
 void InputDeviceManager::
 update() {
 #ifdef PHAVE_LINUX_INPUT_H
-  // Check for any devices that may be disconnected and need to be probed
-  // in order to see whether they have been reconnected.
+  // Check for any devices that may be disconnected and need to be probed in
+  // order to see whether they have been reconnected.
   InputDeviceSet inactive_devices;
   {
     LightMutexHolder holder(_lock);
@@ -332,8 +320,8 @@ update() {
     }
   }
 
-  // We use inotify to tell us whether a device was added, removed,
-  // or has changed permissions to allow us to access it.
+  // We use inotify to tell us whether a device was added, removed, or has
+  // changed permissions to allow us to access it.
   unsigned int avail = 0;
   ioctl(_inotify_fd, FIONREAD, &avail);
   if (avail == 0) {
@@ -386,10 +374,9 @@ update() {
       }
 
     } else if (event->mask & (IN_CREATE | IN_ATTRIB)) {
-      // The device was created, or it was chmodded to be accessible.  We
-      // need to check for the latter since it seems that the device may
-      // get the IN_CREATE event before the driver gets the permissions
-      // set properly.
+      // The device was created, or it was chmodded to be accessible.  We need
+      // to check for the latter since it seems that the device may get the
+      // IN_CREATE event before the driver gets the permissions set properly.
 
       int index = -1;
       if (sscanf(event->name, "event%d", &index) == 1) {
@@ -405,9 +392,9 @@ update() {
 #endif
 
 #ifdef _WIN32
-  // XInput doesn't provide a very good hot-plugging interface.  We just
-  // check if it's connected every so often.  Perhaps we can switch to
-  // using RegisterDeviceNotification in the future.
+  // XInput doesn't provide a very good hot-plugging interface.  We just check
+  // whether it's connected every so often.  Perhaps we can switch to using
+  // RegisterDeviceNotification in the future.
   double time_now = ClockObject::get_global_clock()->get_real_time();
   LightMutexHolder holder(_update_lock);
 

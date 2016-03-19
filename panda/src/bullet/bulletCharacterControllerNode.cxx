@@ -1,26 +1,23 @@
-// Filename: bulletCharacterControllerNode.cxx
-// Created by:  enn0x (21Nov10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletCharacterControllerNode.cxx
+ * @author enn0x
+ * @date 2010-11-21
+ */
 
 #include "bulletCharacterControllerNode.h"
 
 TypeHandle BulletCharacterControllerNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletCharacterControllerNode::
 BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name) : BulletBaseCharacterControllerNode(name) {
 
@@ -63,15 +60,12 @@ BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const
   // Retain a pointer to the shape
   _shape = shape;
 
-  // Default collide mask
-  // TODO set_into_collide_mask(CollideMask::all_on());
+  // Default collide mask TODO set_into_collide_mask(CollideMask::all_on());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_linear_movement
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_linear_movement(const LVector3 &movement, bool is_local) {
 
@@ -81,22 +75,18 @@ set_linear_movement(const LVector3 &movement, bool is_local) {
   _linear_movement_is_local = is_local;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_angular_movement
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_angular_movement(PN_stdfloat omega) {
 
   _angular_movement = omega;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::sync_p2b
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 sync_p2b(PN_stdfloat dt, int num_substeps) {
 
@@ -126,16 +116,14 @@ sync_p2b(PN_stdfloat dt, int num_substeps) {
     v = LVecBase3_to_btVector3(vp);
   }
 
-  //_character->setVelocityForTimeInterval(v, dt);
+  // _character->setVelocityForTimeInterval(v, dt);
   _character->setWalkDirection(v * dt);
   _angular_movement = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::sync_b2p
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 sync_b2p() {
 
@@ -156,11 +144,9 @@ sync_b2p() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::transform_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 transform_changed() {
 
@@ -196,119 +182,99 @@ transform_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::get_shape
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletShape *BulletCharacterControllerNode::
 get_shape() const {
 
   return _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::is_on_ground
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BulletCharacterControllerNode::
 is_on_ground() const {
 
   return _character->onGround();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::can_jump
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool BulletCharacterControllerNode::
 can_jump() const {
 
   return _character->canJump();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::do_jump
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 do_jump() {
 
   _character->jump();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_fall_speed
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_fall_speed(PN_stdfloat fall_speed) {
 
   _character->setFallSpeed((btScalar)fall_speed);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_jump_speed
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_jump_speed(PN_stdfloat jump_speed) {
 
   _character->setJumpSpeed((btScalar)jump_speed);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_max_jump_height
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_max_jump_height(PN_stdfloat max_jump_height) {
 
   _character->setMaxJumpHeight((btScalar)max_jump_height);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_max_slope
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_max_slope(PN_stdfloat max_slope) {
 
   _character->setMaxSlope((btScalar)max_slope);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::get_max_slope
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat BulletCharacterControllerNode::
 get_max_slope() const {
 
   return (PN_stdfloat)_character->getMaxSlope();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::get_gravity
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat BulletCharacterControllerNode::
 get_gravity() const {
 
   return (PN_stdfloat)_character->getGravity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_gravity
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_gravity(PN_stdfloat gravity) {
 
@@ -316,13 +282,11 @@ set_gravity(PN_stdfloat gravity) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_use_ghost_sweep_test
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BulletCharacterControllerNode::
 set_use_ghost_sweep_test(bool value) {
 
   return _character->setUseGhostSweepTest(value);
 }
-

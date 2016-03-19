@@ -1,20 +1,21 @@
-// Filename: shaderGenerator.cxx
-// Created by: jyelon (15Dec07)
-// Updated by: weifengh, PandaSE(15Apr10)
-// Updated by: agartner, PandaSE(16Apr10) - bug fix to synthesize_shader;
-// TextureStage::M_modulate (before this, separate textures formatted as
-// alpha wiped color off resulting rgb)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderGenerator.cxx
+ * @author jyelon
+ * @date 2007-12-15
+ * @author weifengh, PandaSE
+ * @date 2010-04-15
+ * @author agartner, PandaSE
+ * @date 2010-04-16
+ * TextureStage::M_modulate (before this, separate textures formatted as
+ * alpha wiped color off resulting rgb)
+ */
 
 #include "shaderGenerator.h"
 
@@ -48,21 +49,18 @@ TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::Constructor
-//       Access: Published
-//  Description: Create a ShaderGenerator.  This has no state,
-//               except possibly to cache certain results.
-//               The parameter that must be passed is the GSG to
-//               which the shader generator belongs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a ShaderGenerator.  This has no state, except possibly to cache
+ * certain results.  The parameter that must be passed is the GSG to which the
+ * shader generator belongs.
+ */
 ShaderGenerator::
 ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host) :
   _gsg(gsg), _host(host) {
 
-  // The ATTR# input semantics seem to map to generic vertex attributes
-  // in both arbvp1 and glslv, which behave more consistently.  However,
-  // they don't exist in Direct3D 9.  Use this silly little check for now.
+  // The ATTR# input semantics seem to map to generic vertex attributes in
+  // both arbvp1 and glslv, which behave more consistently.  However, they
+  // don't exist in Direct3D 9.  Use this silly little check for now.
 #ifdef _WIN32
   _use_generic_attr = !gsg->get_supports_hlsl();
 #else
@@ -70,22 +68,17 @@ ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::Destructor
-//       Access: Published, Virtual
-//  Description: Destroy a ShaderGenerator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroy a ShaderGenerator.
+ */
 ShaderGenerator::
 ~ShaderGenerator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::reset_register_allocator
-//       Access: Protected
-//  Description: Clears the register allocator.  Initially, the pool
-//               of available registers is empty.  You have to add
-//               some if you want there to be any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the register allocator.  Initially, the pool of available registers
+ * is empty.  You have to add some if you want there to be any.
+ */
 void ShaderGenerator::
 reset_register_allocator() {
   _vtregs_used = 0;
@@ -94,11 +87,9 @@ reset_register_allocator() {
   _fcregs_used = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::alloc_vreg
-//       Access: Protected
-//  Description: Allocate a vreg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocate a vreg.
+ */
 const char *ShaderGenerator::
 alloc_vreg() {
   if (_use_generic_attr) {
@@ -138,8 +129,8 @@ alloc_vreg() {
     case  1: _vcregs_used += 1; return "COLOR1";
     }
   }
-  // These don't exist in arbvp1, though they're reportedly
-  // supported by other profiles.
+  // These don't exist in arbvp1, though they're reportedly supported by other
+  // profiles.
   switch (_vtregs_used) {
   case  8: _vtregs_used += 1; return "TEXCOORD8";
   case  9: _vtregs_used += 1; return "TEXCOORD9";
@@ -153,11 +144,9 @@ alloc_vreg() {
   return "UNKNOWN";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::alloc_freg
-//       Access: Protected
-//  Description: Allocate a freg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocate a freg.
+ */
 const char *ShaderGenerator::
 alloc_freg() {
   switch (_ftregs_used) {
@@ -170,14 +159,13 @@ alloc_freg() {
   case  6: _ftregs_used += 1; return "TEXCOORD6";
   case  7: _ftregs_used += 1; return "TEXCOORD7";
   }
-  // We really shouldn't rely on COLOR fregs,
-  // since the clamping can have unexpected side-effects.
-  //switch (_fcregs_used) {
-  //case  0: _fcregs_used += 1; return "COLOR0";
-  //case  1: _fcregs_used += 1; return "COLOR1";
-  //}
-  // These don't exist in arbvp1/arbfp1, though they're
-  // reportedly supported by other profiles.
+/*
+ * We really shouldn't rely on COLOR fregs, since the clamping can have
+ * unexpected side-effects.  switch (_fcregs_used) { case  0: _fcregs_used +=
+ * 1; return "COLOR0"; case  1: _fcregs_used += 1; return "COLOR1"; } These
+ * don't exist in arbvp1arbfp1, though they're reportedly supported by other
+ * profiles.
+ */
   switch (_ftregs_used) {
   case  8: _ftregs_used += 1; return "TEXCOORD8";
   case  9: _ftregs_used += 1; return "TEXCOORD9";
@@ -191,18 +179,15 @@ alloc_freg() {
   return "UNKNOWN";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::analyze_renderstate
-//       Access: Protected
-//  Description: Analyzes the RenderState prior to shader generation.
-//               The results of the analysis are stored in instance
-//               variables of the Shader Generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Analyzes the RenderState prior to shader generation.  The results of the
+ * analysis are stored in instance variables of the Shader Generator.
+ */
 void ShaderGenerator::
 analyze_renderstate(const RenderState *rs) {
   clear_analysis();
 
-  //  verify_enforce_attrib_lock();
+  // verify_enforce_attrib_lock();
   _state = rs;
   const AuxBitplaneAttrib *aux_bitplane;
   rs->get_attrib_def(aux_bitplane);
@@ -224,6 +209,7 @@ analyze_renderstate(const RenderState *rs) {
   const TransparencyAttrib *transparency;
   rs->get_attrib_def(transparency);
   if ((transparency->get_mode() == TransparencyAttrib::M_alpha)||
+      (transparency->get_mode() == TransparencyAttrib::M_premultiplied_alpha)||
       (transparency->get_mode() == TransparencyAttrib::M_dual)) {
     _have_alpha_blend = true;
   }
@@ -320,8 +306,8 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
-  // See if there is a normal map, height map, gloss map, or glow map.
-  // Also check if anything has TexGen.
+  // See if there is a normal map, height map, gloss map, or glow map.  Also
+  // check if anything has TexGen.
 
   const TexGenAttrib *tex_gen;
   rs->get_attrib_def(tex_gen);
@@ -433,8 +419,8 @@ analyze_renderstate(const RenderState *rs) {
     _separate_ambient_diffuse = true;
   }
 
-  // Do we want to use the ARB_shadow extension?
-  // This also allows us to use hardware shadows / PCF.
+  // Do we want to use the ARB_shadow extension?  This also allows us to use
+  // hardware shadows  PCF.
 
   _use_shadow_filter = _gsg->get_supports_shadow_filter();
 
@@ -472,13 +458,10 @@ analyze_renderstate(const RenderState *rs) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::clear_analysis
-//       Access: Protected
-//  Description: Called after analyze_renderstate to discard all
-//               the results of the analysis.  This is generally done
-//               after shader generation is complete.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after analyze_renderstate to discard all the results of the
+ * analysis.  This is generally done after shader generation is complete.
+ */
 void ShaderGenerator::
 clear_analysis() {
   _vertex_colors = false;
@@ -524,13 +507,10 @@ clear_analysis() {
   _lights_np.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::create_shader_attrib
-//       Access: Protected
-//  Description: Creates a ShaderAttrib given a generated shader's
-//               body.  Also inserts the lights into the shader
-//               attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a ShaderAttrib given a generated shader's body.  Also inserts the
+ * lights into the shader attrib.
+ */
 CPT(RenderAttrib) ShaderGenerator::
 create_shader_attrib(const string &txt) {
   PT(Shader) shader = Shader::make(txt, Shader::SL_Cg);
@@ -542,40 +522,24 @@ create_shader_attrib(const string &txt) {
   return shattr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::synthesize_shader
-//       Access: Published, Virtual
-//  Description: This is the routine that implements the next-gen
-//               fixed function pipeline by synthesizing a shader.
-//               It also takes care of setting up any buffers
-//               needed to produce the requested effects.
-//
-//               Currently supports:
-//               - flat colors
-//               - vertex colors
-//               - lighting
-//               - normal maps, but not multiple
-//               - gloss maps, but not multiple
-//               - glow maps, but not multiple
-//               - materials, but not updates to materials
-//               - 2D textures
-//               - all texture stage modes, including combine modes
-//               - color scale attrib
-//               - light ramps (for cartoon shading)
-//               - shadow mapping
-//               - most texgen modes
-//               - texmatrix
-//               - 1D/2D/3D textures, cube textures, 2D tex arrays
-//               - linear/exp/exp2 fog
-//               - animation
-//
-//               Not yet supported:
-//               - dot3_rgb and dot3_rgba combine modes
-//
-//               Potential optimizations
-//               - omit attenuation calculations if attenuation off
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the routine that implements the next-gen fixed function pipeline by
+ * synthesizing a shader.  It also takes care of setting up any buffers needed
+ * to produce the requested effects.
+ *
+ * Currently supports: - flat colors - vertex colors - lighting - normal maps,
+ * but not multiple - gloss maps, but not multiple - glow maps, but not
+ * multiple - materials, but not updates to materials - 2D textures - all
+ * texture stage modes, including combine modes - color scale attrib - light
+ * ramps (for cartoon shading) - shadow mapping - most texgen modes -
+ * texmatrix - 1D/2D/3D textures, cube textures, 2D tex arrays -
+ * linear/exp/exp2 fog - animation
+ *
+ * Not yet supported: - dot3_rgb and dot3_rgba combine modes
+ *
+ * Potential optimizations - omit attenuation calculations if attenuation off
+ *
+ */
 CPT(ShaderAttrib) ShaderGenerator::
 synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   analyze_renderstate(rs);
@@ -936,7 +900,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (_out_aux_any) {
     text << "\t o_aux = float4(0, 0, 0, 0);\n";
   }
-  // Now generate any texture coordinates according to TexGenAttrib. If it has a TexMatrixAttrib, also transform them.
+  // Now generate any texture coordinates according to TexGenAttrib.  If it
+  // has a TexMatrixAttrib, also transform them.
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     if (tex_gen != NULL && tex_gen->has_stage(stage)) {
@@ -1011,7 +976,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     if (i != _map_index_height) {
       Texture *tex = texture->get_on_texture(texture->get_on_stage(i));
       nassertr(tex != NULL, NULL);
-      // Parallax mapping pushes the texture coordinates of the other textures away from the camera.
+      // Parallax mapping pushes the texture coordinates of the other textures
+      // away from the camera.
       if (_map_index_height >= 0 && parallax_mapping_samples > 0) {
         text << "\t texcoord" << i << ".xyz -= parallax_offset;\n";
       }
@@ -1258,8 +1224,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     text << "\t // End view-space light calculations\n";
 
-    // Combine in alpha, which bypasses lighting calculations.
-    // Use of lerp here is a workaround for a radeon driver bug.
+    // Combine in alpha, which bypasses lighting calculations.  Use of lerp
+    // here is a workaround for a radeon driver bug.
     if (_calc_primary_alpha) {
       if (_vertex_colors) {
         text << "\t result.a = l_color.a;\n";
@@ -1279,7 +1245,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
-  // Loop first to see if something is using primary_color or last_saved_result.
+  // Loop first to see if something is using primary_color or
+  // last_saved_result.
   bool have_saved_result = false;
   bool have_primary_color = false;
   for (int i=0; i<_num_textures; i++) {
@@ -1313,13 +1280,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       break; }
     case TextureStage::M_modulate_glow:
     case TextureStage::M_modulate_gloss:
-      //in the case of glow or spec we currently see the specularity evenly across the surface
-      //even if transparency or masking is present
-      //not sure if this is desired behavior or not.
-      //*MOST* would construct a spec map based off of
-      //what is/isn't seen based on the mask/transparency
-      //this may have to be left alone for now
-      //agartner
+      // in the case of glow or spec we currently see the specularity evenly
+      // across the surface even if transparency or masking is present not
+      // sure if this is desired behavior or not.  *MOST* would construct a
+      // spec map based off of what isisn't seen based on the masktransparency
+      // this may have to be left alone for now agartner
       text << "\t result.rgb *= tex" << i << ";\n";
       break;
     case TextureStage::M_decal:
@@ -1466,8 +1431,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
-  // The multiply is a workaround for a radeon driver bug.
-  // It's annoying as heck, since it produces an extra instruction.
+  // The multiply is a workaround for a radeon driver bug.  It's annoying as
+  // heck, since it produces an extra instruction.
   text << "\t o_color = result * 1.000001;\n";
   if (_subsume_alpha_test) {
     text << "\t // Shader subsumes normal alpha test.\n";
@@ -1490,11 +1455,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   return DCAST(ShaderAttrib, shattr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::combine_mode_as_string
-//       Access: Protected, Static
-//  Description: This 'synthesizes' a combine mode into a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * This 'synthesizes' a combine mode into a string.
+ */
 const string ShaderGenerator::
 combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
   ostringstream text;
@@ -1547,11 +1510,9 @@ combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode
   return text.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::combine_source_as_string
-//       Access: Protected, Static
-//  Description: This 'synthesizes' a combine source into a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * This 'synthesizes' a combine source into a string.
+ */
 const string ShaderGenerator::
 combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool single_value, short texindex) {
   TextureStage::CombineSource c_src = TextureStage::CS_undefined;
@@ -1632,12 +1593,9 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool si
   return csource.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::texture_type_as_string
-//       Access: Protected, Static
-//  Description: Returns 1D, 2D, 3D or CUBE, depending on the given
-//               texture type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 1D, 2D, 3D or CUBE, depending on the given texture type.
+ */
 const string ShaderGenerator::
 texture_type_as_string(Texture::TextureType ttype) {
   switch (ttype) {

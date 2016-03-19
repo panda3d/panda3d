@@ -1,16 +1,15 @@
-// Filename: assimpLoader.h
-// Created by:  rdb (29Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file assimpLoader.h
+ * @author rdb
+ * @date 2011-03-29
+ */
 
 #ifndef ASSIMPLOADER_H
 #define ASSIMPLOADER_H
@@ -38,12 +37,10 @@ struct char_cmp {
 typedef pmap<const char *, const aiNode *, char_cmp> BoneMap;
 typedef pmap<const char *, PT(Character), char_cmp> CharacterMap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AssimpLoader
-// Description : Class that interfaces with Assimp and builds Panda
-//               nodes to represent the Assimp structures.
-//               The loader should be reusable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that interfaces with Assimp and builds Panda nodes to represent the
+ * Assimp structures.  The loader should be reusable.
+ */
 class AssimpLoader : public TypedReferenceCount {
 public:
   AssimpLoader();

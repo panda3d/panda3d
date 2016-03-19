@@ -1,9 +1,8 @@
 #define MEMBUF_THRASH_SIZE  25
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::ClearBuffer
-//  Description: Releases all resources(Memory USed) is locally allocated
-//////////////////////////////////////////////////////////
+/**
+ * Releases all resources(Memory USed) is locally allocated
+ */
 inline void MemBuffer::
 ClearBuffer(void) {
   if (_BufferLocal == true) {
@@ -15,10 +14,9 @@ ClearBuffer(void) {
   }
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::AllocBuffer
-//  Description: Locally allocate a new buffer
-//////////////////////////////////////////////////////////
+/**
+ * Locally allocate a new buffer
+ */
 inline void MemBuffer::
 AllocBuffer(size_t len) {
   _Buffer = new char[len];
@@ -26,10 +24,9 @@ AllocBuffer(size_t len) {
   _BufferLen = len;
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::MemBuffer
-//  Description: default constructor
-//////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 inline MemBuffer::
 MemBuffer(void) {
   _Buffer = NULL;
@@ -37,19 +34,17 @@ MemBuffer(void) {
   _BufferLen = 0;
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::MemBuffer
-//  Description: Constructure to locall allocate a buffer
-//////////////////////////////////////////////////////////
+/**
+ * Constructure to locall allocate a buffer
+ */
 inline MemBuffer::
 MemBuffer(size_t len) {
   AllocBuffer(len);
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::MemBuffer
-//  Description: Constructure to use an external buffer
-//////////////////////////////////////////////////////////
+/**
+ * Constructure to use an external buffer
+ */
 inline MemBuffer::
 MemBuffer(char *data, size_t len) {
   _BufferLocal = false;
@@ -57,19 +52,17 @@ MemBuffer(char *data, size_t len) {
   _Buffer = data;
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::~MemBuffer
-//  Description: CLean UP a mess on Deletion
-//////////////////////////////////////////////////////////
+/**
+ * CLean UP a mess on Deletion
+ */
 inline MemBuffer::
 ~MemBuffer() {
   ClearBuffer();
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::SetBuffer
-//  Description: Assigns a buffer
-//////////////////////////////////////////////////////////
+/**
+ * Assigns a buffer
+ */
 inline void MemBuffer::
 SetBuffer(char * data, size_t len) {
   if (_BufferLocal == true) {
@@ -81,12 +74,11 @@ SetBuffer(char * data, size_t len) {
   _Buffer = data;
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::GrowBuffer
-//  Description: Grow a buffer is needed to get to a sertion size
-//                       No care is made here to preserve convtent unlike a vector of chars
-//
-//////////////////////////////////////////////////////////
+/**
+ * Grow a buffer is needed to get to a sertion size No care is made here to
+ * preserve convtent unlike a vector of chars
+ *
+ */
 inline void MemBuffer::
 GrowBuffer(size_t new_len) {
   if (new_len >= _BufferLen) {
@@ -107,19 +99,17 @@ GrowBuffer(size_t new_len) {
   }
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::GetBufferSize
-//  Description: Access to the BUffer Size Information
-//////////////////////////////////////////////////////////
+/**
+ * Access to the BUffer Size Information
+ */
 inline size_t MemBuffer::
 GetBufferSize(void) const {
   return  _BufferLen;
 }
 
-/////////////////////////////////////////////////////////////
-//     Function: MemBuffer::GetBuffer
-//  Description: Access to the actual BUffer
-//////////////////////////////////////////////////////////
+/**
+ * Access to the actual BUffer
+ */
 inline char *MemBuffer::
 GetBuffer(void) {
   return  _Buffer;
@@ -130,10 +120,9 @@ GetBuffer(void) const {
   return  _Buffer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemBuffer::InBufferRange
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline bool MemBuffer::
 InBufferRange(char *inpos) {
   return (inpos >= _Buffer && inpos <= (_Buffer + _BufferLen));

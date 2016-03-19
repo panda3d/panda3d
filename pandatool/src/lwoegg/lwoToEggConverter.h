@@ -1,16 +1,15 @@
-// Filename: lwoToEggConverter.h
-// Created by:  drose (17Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoToEggConverter.h
+ * @author drose
+ * @date 2001-04-17
+ */
 
 #ifndef LWOTOEGGCONVERTER_H
 #define LWOTOEGGCONVERTER_H
@@ -31,13 +30,11 @@ class CLwoPolygons;
 class CLwoSurface;
 class LwoClip;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from the data represented by the LwoHeader.
-//               Reading and writing the egg and lwo structures is
-//               left to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from the
+ * data represented by the LwoHeader.  Reading and writing the egg and lwo
+ * structures is left to the user.
+ */
 class LwoToEggConverter : public SomethingToEggConverter {
 public:
   LwoToEggConverter();
@@ -93,5 +90,3 @@ private:
 #include "lwoToEggConverter.I"
 
 #endif
-
-

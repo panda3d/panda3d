@@ -1,16 +1,15 @@
-// Filename: odeGeom.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeGeom.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #include "config_ode.h"
 #include "odeGeom.h"
@@ -27,8 +26,8 @@
 #include "odeRayGeom.h"
 #include "odeSphereGeom.h"
 
-//OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
-//OdeGeom::GeomCollideIdMap OdeGeom::_geom_collide_id_map;
+// OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
+// OdeGeom::GeomCollideIdMap OdeGeom::_geom_collide_id_map;
 TypeHandle OdeGeom::_type_handle;
 
 OdeGeom::
@@ -40,12 +39,12 @@ OdeGeom(dGeomID id) :
 OdeGeom::
 ~OdeGeom() {
   odegeom_cat.debug() << "~" << get_type() << "(" << _id << ")\n";
-  /*  
+  /*
   GeomSurfaceMap::iterator iter = _geom_surface_map.find(this->get_id());
   if (iter != _geom_surface_map.end()) {
     _geom_surface_map.erase(iter);
   }
-      
+
   GeomCollideIdMap::iterator iter2 = _geom_collide_id_map.find(this->get_id());
   if (iter2 != _geom_collide_id_map.end()) {
     _geom_collide_id_map.erase(iter2);
@@ -55,34 +54,34 @@ OdeGeom::
 
 /*
 int OdeGeom::
-get_surface_type() 
+get_surface_type()
 {
   return get_space().get_surface_type(this->get_id());
 }
 
 int OdeGeom::
-get_collide_id() 
+get_collide_id()
 {
   return get_space().get_collide_id(this->get_id());
 }
 
 void OdeGeom::
-set_surface_type(int surface_type) 
+set_surface_type(int surface_type)
 {
     get_space().set_surface_type(surface_type, this->get_id());
 }
 
 int OdeGeom::
-set_collide_id(int collide_id) 
+set_collide_id(int collide_id)
 {
     return get_space().set_collide_id(collide_id, this->get_id());
 }
 
 
 int OdeGeom::
-test_collide_id(int collide_id) 
+test_collide_id(int collide_id)
 {
-    
+
     odegeom_cat.debug() << "test_collide_id start" << "\n";
     int first = get_space().set_collide_id(collide_id, this->get_id());
     odegeom_cat.debug() << "returns" << first << "\n";
@@ -109,7 +108,7 @@ get_space() const {
 
 void OdeGeom::
 write(ostream &out, unsigned int indent) const {
-  out.width(indent); 
+  out.width(indent);
   out << get_type() << "(id = " << _id << ")";
 }
 
@@ -205,4 +204,3 @@ OdeGeom::
 operator bool () const {
   return (_id != NULL);
 }
-

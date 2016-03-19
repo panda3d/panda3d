@@ -1,16 +1,15 @@
-// Filename: odeTriMeshGeom.I
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeTriMeshGeom.I
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 INLINE void OdeTriMeshGeom::
 set_data(OdeTriMeshData &data) {
@@ -62,7 +61,7 @@ get_triangle(int face_index, LPoint3f &v0, LPoint3f &v1, LPoint3f &v2) const {
   nassertv(_id != 0);
   dVector3 dv0, dv1, dv2;
   dGeomTriMeshGetTriangle(_id, face_index, &dv0, &dv1, &dv2);
-  
+
   v0.set(dv0[0], dv0[1], dv0[2]);
   v1.set(dv1[0], dv1[1], dv1[2]);
   v2.set(dv2[0], dv2[1], dv2[2]);
@@ -94,4 +93,3 @@ get_tri_mesh_data_id() const {
   nassertr(_id != 0, 0);
   return dGeomTriMeshGetTriMeshDataID(_id);
 }
-

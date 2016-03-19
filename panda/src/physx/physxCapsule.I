@@ -1,46 +1,37 @@
-// Filename: physxCapsule.I
-// Created by:  enn0x (31Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxCapsule.I
+ * @author enn0x
+ * @date 2009-10-31
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsule::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE PhysxCapsule::
 PhysxCapsule() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsule::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE PhysxCapsule::
 PhysxCapsule(const PhysxSegment &segment, float radius) {
 
   _capsule = NxCapsule(segment._segment, radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsule::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE PhysxCapsule::
 ~PhysxCapsule() {
 
 }
-

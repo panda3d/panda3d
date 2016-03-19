@@ -1,16 +1,15 @@
-// Filename: pStatCollectorDef.cxx
-// Created by:  drose (09Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatCollectorDef.cxx
+ * @author drose
+ * @date 2000-07-09
+ */
 
 #include "pStatCollectorDef.h"
 
@@ -18,11 +17,9 @@
 #include "datagramIterator.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorDef::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatCollectorDef::
 PStatCollectorDef() {
   _index = 0;
@@ -37,11 +34,9 @@ PStatCollectorDef() {
   _active_explicitly_set = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorDef::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatCollectorDef::
 PStatCollectorDef(int index, const string &name) :
   _index(index),
@@ -58,14 +53,11 @@ PStatCollectorDef(int index, const string &name) :
   _active_explicitly_set = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorDef::set_parent
-//       Access: Public
-//  Description: This is normally called only by the PStatClient when
-//               the new PStatCollectorDef is created; it sets the
-//               parent of the CollectorDef and inherits whatever
-//               properties are appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is normally called only by the PStatClient when the new
+ * PStatCollectorDef is created; it sets the parent of the CollectorDef and
+ * inherits whatever properties are appropriate.
+ */
 void PStatCollectorDef::
 set_parent(const PStatCollectorDef &parent) {
   _parent_index = parent._index;
@@ -76,12 +68,9 @@ set_parent(const PStatCollectorDef &parent) {
   _active_explicitly_set = parent._active_explicitly_set;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorDef::write_datagram
-//       Access: Public
-//  Description: Writes the definition of the collectorDef to the
-//               datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the definition of the collectorDef to the datagram.
+ */
 void PStatCollectorDef::
 write_datagram(Datagram &destination) const {
   destination.add_int16(_index);
@@ -96,11 +85,9 @@ write_datagram(Datagram &destination) const {
   destination.add_float32(_factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorDef::read_datagram
-//       Access: Public
-//  Description: Extracts the collectorDef definition from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the collectorDef definition from the datagram.
+ */
 void PStatCollectorDef::
 read_datagram(DatagramIterator &source, PStatClientVersion *) {
   _index = source.get_int16();

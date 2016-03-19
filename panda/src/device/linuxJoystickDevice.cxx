@@ -1,16 +1,15 @@
-// Filename: linuxJoystickDevice.cxx
-// Created by:  rdb (21Aug15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linuxJoystickDevice.cxx
+ * @author rdb
+ * @date 2015-08-21
+ */
 
 #include "linuxJoystickDevice.h"
 
@@ -23,12 +22,9 @@
 
 TypeHandle LinuxJoystickDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinuxJoystickDevice::Constructor
-//       Access: Private
-//  Description: Creates a new device using the Linux joystick
-//               device using the given device filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new device using the Linux joystick device with the given index.
+ */
 LinuxJoystickDevice::
 LinuxJoystickDevice(int index) :
   _fd(-1),
@@ -42,11 +38,9 @@ LinuxJoystickDevice(int index) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinuxJoystickDevice::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LinuxJoystickDevice::
 ~LinuxJoystickDevice() {
   if (_fd != -1) {
@@ -55,11 +49,9 @@ LinuxJoystickDevice::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinuxJoystickDevice::check_events
-//       Access: Public
-//  Description: Returns true if there are pending events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are pending events.
+ */
 bool LinuxJoystickDevice::
 check_events() const {
   unsigned int avail = 0;
@@ -67,15 +59,11 @@ check_events() const {
   return (avail != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinuxJoystickDevice::do_poll
-//       Access: Private, Virtual
-//  Description: Polls the input device for new activity, to ensure
-//               it contains the latest events.  This will only have
-//               any effect for some types of input devices; others
-//               may be updated automatically, and this method will
-//               be a no-op.
-////////////////////////////////////////////////////////////////////
+/**
+ * Polls the input device for new activity, to ensure it contains the latest
+ * events.  This will only have any effect for some types of input devices;
+ * others may be updated automatically, and this method will be a no-op.
+ */
 void LinuxJoystickDevice::
 do_poll() {
   if (_fd != -1 && process_events()) {
@@ -90,13 +78,10 @@ do_poll() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinuxJoystickDevice::open_device
-//       Access: Private
-//  Description: Opens or reopens the joystick device, and reads out
-//               the button and axis mappings.
-//               Assumes the lock has been held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens or reopens the joystick device, and reads out the button and axis
+ * mappings.  Assumes the lock is already held.
+ */
 bool LinuxJoystickDevice::
 open_device() {
   nassertr(_lock.debug_is_locked(), false);
@@ -334,13 +319,11 @@ open_device() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinuxJoystickDevice::process_events
-//       Access: Private
-//  Description: Reads a number of events from the device.  Returns
-//               true if events were read, meaning this function
-//               should keep being called until it returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a number of events from the device.  Returns true if events were
+ * read, meaning this function should keep being called until it returns
+ * false.
+ */
 bool LinuxJoystickDevice::
 process_events() {
   // Read 8 events at a time.

@@ -1,16 +1,15 @@
-// Filename: wstring_encode.cxx
-// Created by:  drose (29Aug11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wstring_encode.cxx
+ * @author drose
+ * @date 2011-08-29
+ */
 
 #include "wstring_encode.h"
 
@@ -24,10 +23,9 @@
 
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: wstring_to_string
-//  Description: Encodes std::wstring to std::string using UTF-8.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes std::wstring to std::string using UTF-8.
+ */
 bool
 wstring_to_string(string &result, const wstring &source) {
   bool success = false;
@@ -49,10 +47,9 @@ wstring_to_string(string &result, const wstring &source) {
 #endif  // _WIN32
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: string_to_wstring
-//  Description: Decodes std::string to std::wstring using UTF-8.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes std::string to std::wstring using UTF-8.
+ */
 bool
 string_to_wstring(wstring &result, const string &source) {
   bool success = false;

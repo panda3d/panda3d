@@ -1,16 +1,15 @@
-// Filename: tinyXGraphicsWindow.cxx
-// Created by:  drose (03May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyXGraphicsWindow.cxx
+ * @author drose
+ * @date 2008-05-03
+ */
 
 #include "pandabase.h"
 
@@ -33,13 +32,11 @@
 
 TypeHandle TinyXGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyXGraphicsWindow::
-TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -56,11 +53,9 @@ TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   update_pixel_factor();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyXGraphicsWindow::
 ~TinyXGraphicsWindow() {
   if (_gc != NULL && _display != NULL) {
@@ -73,15 +68,12 @@ TinyXGraphicsWindow::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool TinyXGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -95,8 +87,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
   if (_awaiting_configure) {
-    // Don't attempt to draw while we have just reconfigured the
-    // window and we haven't got the notification back yet.
+    // Don't attempt to draw while we have just reconfigured the window and we
+    // haven't got the notification back yet.
     return false;
   }
 
@@ -109,18 +101,16 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     tinygsg->_current_frame_buffer = _full_frame_buffer;
   }
   tinygsg->reset_if_new();
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void TinyXGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -139,16 +129,13 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.
+ *
+ * This should cause the window to wait for the flip, if necessary.
+ */
 void TinyXGraphicsWindow::
 end_flip() {
   if (_xwindow == (X11_Window)NULL || !_flip_ready) {
@@ -158,17 +145,16 @@ end_flip() {
 
   if (_reduced_frame_buffer != (ZBuffer *)NULL) {
     // Zoom the reduced buffer onto the full buffer.
-    ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0, 
+    ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0,
                        _full_frame_buffer->xsize, _full_frame_buffer->ysize,
                        _reduced_frame_buffer, 0, 0,
                        _reduced_frame_buffer->xsize, _reduced_frame_buffer->ysize);
   }
 
-  // We can't just point the XPutImage directly at our own framebuffer
-  // data, even if the bytes_per_pixel matches, because some X
-  // displays will respect the alpha channel and make the window
-  // transparent there.  We don't want transparent windows where the
-  // alpha data happens to less than 1.0.
+  // We can't just point the XPutImage directly at our own framebuffer data,
+  // even if the bytes_per_pixel matches, because some X displays will respect
+  // the alpha channel and make the window transparent there.  We don't want
+  // transparent windows where the alpha data happens to less than 1.0.
   ZB_copyFrameBufferNoAlpha(_full_frame_buffer, _ximage->data, _pitch);
 
   XPutImage(_display, _xwindow, _gc, _ximage, 0, 0, 0, 0,
@@ -177,35 +163,28 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::supports_pixel_zoom
-//       Access: Published, Virtual
-//  Description: Returns true if a call to set_pixel_zoom() will be
-//               respected, false if it will be ignored.  If this
-//               returns false, then get_pixel_factor() will always
-//               return 1.0, regardless of what value you specify for
-//               set_pixel_zoom().
-//
-//               This may return false if the underlying renderer
-//               doesn't support pixel zooming, or if you have called
-//               this on a DisplayRegion that doesn't have both
-//               set_clear_color() and set_clear_depth() enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a call to set_pixel_zoom() will be respected, false if it
+ * will be ignored.  If this returns false, then get_pixel_factor() will
+ * always return 1.0, regardless of what value you specify for
+ * set_pixel_zoom().
+ *
+ * This may return false if the underlying renderer doesn't support pixel
+ * zooming, or if you have called this on a DisplayRegion that doesn't have
+ * both set_clear_color() and set_clear_depth() enabled.
+ */
 bool TinyXGraphicsWindow::
 supports_pixel_zoom() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties()
+ *
+ * This function is called only within the window thread.
+ */
 void TinyXGraphicsWindow::
 process_events() {
   LightReMutexHolder holder(TinyXGraphicsPipe::_x_mutex);
@@ -226,28 +205,27 @@ process_events() {
     }
 
     if (got_keyrelease_event) {
-      // If a keyrelease event is immediately followed by a matching
-      // keypress event, that's just key repeat and we should treat
-      // the two events accordingly.  It would be nice if X provided a
-      // way to differentiate between keyrepeat and explicit
-      // keypresses more generally.
+      // If a keyrelease event is immediately followed by a matching keypress
+      // event, that's just key repeat and we should treat the two events
+      // accordingly.  It would be nice if X provided a way to differentiate
+      // between keyrepeat and explicit keypresses more generally.
       got_keyrelease_event = false;
 
       if (event.type == KeyPress &&
           event.xkey.keycode == keyrelease_event.keycode &&
           (event.xkey.time - keyrelease_event.time <= 1)) {
-        // In particular, we only generate down messages for the
-        // repeated keys, not down-and-up messages.
+        // In particular, we only generate down messages for the repeated
+        // keys, not down-and-up messages.
         handle_keystroke(event.xkey);
 
-        // We thought about not generating the keypress event, but we
-        // need that repeat for backspace.  Rethink later.
+        // We thought about not generating the keypress event, but we need
+        // that repeat for backspace.  Rethink later.
         handle_keypress(event.xkey);
         continue;
 
       } else {
-        // This keyrelease event is not immediately followed by a
-        // matching keypress event, so it's a genuine release.
+        // This keyrelease event is not immediately followed by a matching
+        // keypress event, so it's a genuine release.
         handle_keyrelease(keyrelease_event);
       }
     }
@@ -262,12 +240,11 @@ process_events() {
     case ConfigureNotify:
       _awaiting_configure = false;
       if (_properties.get_fixed_size()) {
-        // If the window properties indicate a fixed size only, undo
-        // any attempt by the user to change them.  In X, there
-        // doesn't appear to be a way to universally disallow this
-        // directly (although we do set the min_size and max_size to
-        // the same value, which seems to work for most window
-        // managers.)
+        // If the window properties indicate a fixed size only, undo any
+        // attempt by the user to change them.  In X, there doesn't appear to
+        // be a way to universally disallow this directly (although we do set
+        // the min_size and max_size to the same value, which seems to work
+        // for most window managers.)
         WindowProperties current_props = get_properties();
         if (event.xconfigure.width != current_props.get_x_size() ||
             event.xconfigure.height != current_props.get_y_size()) {
@@ -295,7 +272,7 @@ process_events() {
       _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       _input->button_down(button);
       break;
-      
+
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
       _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
@@ -312,9 +289,9 @@ process_events() {
       break;
 
     case KeyRelease:
-      // The KeyRelease can't be processed immediately, because we
-      // have to check first if it's immediately followed by a
-      // matching KeyPress event.
+      // The KeyRelease can't be processed immediately, because we have to
+      // check first if it's immediately followed by a matching KeyPress
+      // event.
       keyrelease_event = event.xkey;
       got_keyrelease_event = true;
       break;
@@ -353,17 +330,17 @@ process_events() {
 
     case ClientMessage:
       if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
-        // This is a message from the window manager indicating that
-        // the user has requested to close the window.
+        // This is a message from the window manager indicating that the user
+        // has requested to close the window.
         string close_request_event = get_close_request_event();
         if (!close_request_event.empty()) {
-          // In this case, the app has indicated a desire to intercept
-          // the request and process it directly.
+          // In this case, the app has indicated a desire to intercept the
+          // request and process it directly.
           throw_event(close_request_event);
 
         } else {
-          // In this case, the default case, the app does not intend
-          // to service the request, so we do by closing the window.
+          // In this case, the default case, the app does not intend to
+          // service the request, so we do by closing the window.
 
           // TODO: don't release the gsg in the window thread.
           close_window();
@@ -374,9 +351,8 @@ process_events() {
       break;
 
     case DestroyNotify:
-      // Apparently, we never get a DestroyNotify on a toplevel
-      // window.  Instead, we rely on hints from the window manager
-      // (see above).
+      // Apparently, we never get a DestroyNotify on a toplevel window.
+      // Instead, we rely on hints from the window manager (see above).
       tinydisplay_cat.info()
         << "DestroyNotify\n";
       break;
@@ -388,18 +364,15 @@ process_events() {
   }
 
   if (got_keyrelease_event) {
-    // This keyrelease event is not immediately followed by a
-    // matching keypress event, so it's a genuine release.
+    // This keyrelease event is not immediately followed by a matching
+    // keypress event, so it's a genuine release.
     handle_keyrelease(keyrelease_event);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void TinyXGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -408,23 +381,20 @@ close_window() {
     tinygsg->_current_frame_buffer = NULL;
     _gsg.clear();
   }
-  
+
   x11GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool TinyXGraphicsWindow::
 open_window() {
   TinyXGraphicsPipe *tinyx_pipe;
   DCAST_INTO_R(tinyx_pipe, _pipe, false);
 
-  // GSG Creation/Initialization
+  // GSG CreationInitialization
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
@@ -452,7 +422,7 @@ open_window() {
   int num_vinfos = 0;
   XVisualInfo *vinfo_array;
   while (try_masks[i] != 0 && num_vinfos == 0) {
-    vinfo_array = 
+    vinfo_array =
       XGetVisualInfo(_display, try_masks[i], &vinfo_template, &num_vinfos);
     ++i;
   }
@@ -478,7 +448,7 @@ open_window() {
   case TrueColor:
     tinydisplay_cat.info(false) << "TrueColor\n";
     break;
-      
+
   case DirectColor:
     tinydisplay_cat.info(false) << "DirectColor\n";
     break;
@@ -519,13 +489,13 @@ open_window() {
   nassertr(_ximage != NULL, false);
 
   tinygsg->_current_frame_buffer = _full_frame_buffer;
-  
+
   tinygsg->reset_if_new();
   if (!tinygsg->is_valid()) {
     close_window();
     return false;
   }
-  
+
   XMapWindow(_display, _xwindow);
 
   if (_properties.get_raw_mice()) {
@@ -544,27 +514,22 @@ open_window() {
   if (_parent_window_handle != (WindowHandle *)NULL) {
     _parent_window_handle->attach_child(_window_handle);
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::pixel_factor_changed
-//       Access: Protected, Virtual
-//  Description: Called internally when the pixel factor changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the pixel factor changes.
+ */
 void TinyXGraphicsWindow::
 pixel_factor_changed() {
   x11GraphicsWindow::pixel_factor_changed();
   create_reduced_frame_buffer();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::create_full_frame_buffer
-//       Access: Private
-//  Description: Creates a suitable frame buffer for the current
-//               window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable frame buffer for the current window size.
+ */
 void TinyXGraphicsWindow::
 create_full_frame_buffer() {
   if (_full_frame_buffer != NULL) {
@@ -594,12 +559,9 @@ create_full_frame_buffer() {
   _pitch = (_full_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::create_reduced_frame_buffer
-//       Access: Private
-//  Description: Creates a suitable frame buffer for the current
-//               window size and pixel zoom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable frame buffer for the current window size and pixel zoom.
+ */
 void TinyXGraphicsWindow::
 create_reduced_frame_buffer() {
   if (!_full_frame_buffer) {
@@ -618,19 +580,16 @@ create_reduced_frame_buffer() {
     // No zooming is necessary.
 
   } else {
-    // The reduced size is different, so we need a separate buffer to
-    // render into.
+    // The reduced size is different, so we need a separate buffer to render
+    // into.
     _reduced_frame_buffer = ZB_open(x_size, y_size, _full_frame_buffer->mode, 0, 0, 0, 0);
   }
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::create_ximage
-//       Access: Private
-//  Description: Creates a suitable XImage for the current
-//               window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable XImage for the current window size.
+ */
 void TinyXGraphicsWindow::
 create_ximage() {
   if (_ximage != NULL) {
@@ -649,4 +608,3 @@ create_ximage() {
 }
 
 #endif  // HAVE_X11
-

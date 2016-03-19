@@ -1,16 +1,15 @@
-// Filename: graphicsWindow.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsWindow.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef GRAPHICSWINDOW_H
 #define GRAPHICSWINDOW_H
@@ -34,16 +33,14 @@
 #include "windowHandle.h"
 #include "touchInfo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsWindow
-// Description : A window, fullscreen or on a desktop, into which a
-//               graphics device sends its output for interactive
-//               display.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window, fullscreen or on a desktop, into which a graphics device sends
+ * its output for interactive display.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsWindow : public GraphicsOutput {
 protected:
   GraphicsWindow(GraphicsEngine *engine,
-                 GraphicsPipe *pipe, 
+                 GraphicsPipe *pipe,
                  const string &name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop,
@@ -118,9 +115,9 @@ public:
   virtual void request_open();
   virtual void request_close();
 
-  // It is an error to call any of the following methods from any
-  // thread other than the window thread.  These methods are normally
-  // called by the GraphicsEngine.
+  // It is an error to call any of the following methods from any thread other
+  // than the window thread.  These methods are normally called by the
+  // GraphicsEngine.
   virtual void set_close_now();
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
@@ -136,8 +133,8 @@ protected:
   virtual void mouse_mode_absolute();
   virtual void mouse_mode_relative();
 
-  // It is an error to call any of the following methods from any
-  // thread other than the window thread.
+  // It is an error to call any of the following methods from any thread other
+  // than the window thread.
   void system_changed_properties(const WindowProperties &properties);
   void system_changed_size(int x_size, int y_size);
 
@@ -155,9 +152,8 @@ protected:
   bool _got_expose_event;
 
 private:
-  LightReMutex _properties_lock; 
-  // protects _requested_properties, _rejected_properties, and
-  // _window_event.
+  LightReMutex _properties_lock;
+  // protects _requested_properties, _rejected_properties, and _window_event.
 
   WindowProperties _requested_properties;
   WindowProperties _rejected_properties;

@@ -1,16 +1,15 @@
-// Filename: occluderEffect.h
-// Created by:  drose (17Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file occluderEffect.h
+ * @author drose
+ * @date 2011-03-17
+ */
 
 #ifndef OCCLUDEREFFECT_H
 #define OCCLUDEREFFECT_H
@@ -23,16 +22,13 @@
 #include "ordered_vector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OccluderEffect
-// Description : This functions similarly to a LightAttrib or
-//               ClipPlaneAttrib.  It indicates the set of occluders
-//               that modify the geometry at this level and below.
-//               Unlike a ClipPlaneAttrib, an OccluderEffect takes
-//               effect immediately when it is encountered during
-//               traversal, and thus can only add occluders; it may
-//               not remove them.
-////////////////////////////////////////////////////////////////////
+/**
+ * This functions similarly to a LightAttrib or ClipPlaneAttrib.  It indicates
+ * the set of occluders that modify the geometry at this level and below.
+ * Unlike a ClipPlaneAttrib, an OccluderEffect takes effect immediately when
+ * it is encountered during traversal, and thus can only add occluders; it may
+ * not remove them.
+ */
 class EXPCL_PANDA_PGRAPH OccluderEffect : public RenderEffect {
 private:
   INLINE OccluderEffect();
@@ -77,7 +73,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -99,4 +95,3 @@ private:
 #include "occluderEffect.I"
 
 #endif
-

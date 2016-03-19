@@ -1,26 +1,24 @@
-// Filename: pathStore.cxx
-// Created by:  drose (10Feb03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pathStore.cxx
+ * @author drose
+ * @date 2003-02-10
+ */
 
 #include "pathStore.h"
 
 #include "string_utils.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: format_path_store
-//  Description: Returns the string corresponding to this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string corresponding to this method.
+ */
 string
 format_path_store(PathStore store) {
   switch (store) {
@@ -46,24 +44,21 @@ format_path_store(PathStore store) {
   return "**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PathStore output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &
 operator << (ostream &out, PathStore store) {
   return out << format_path_store(store);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: string_path_store
-//  Description: Stores from a string, as might be input by the
-//               user, to one of the known PathStore types.
-//               Returns PS_invalid if the string is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores from a string, as might be input by the user, to one of the known
+ * PathStore types.  Returns PS_invalid if the string is unknown.
+ */
 PathStore
 string_path_store(const string &str) {
-  if (cmp_nocase(str, "relative") == 0 || 
+  if (cmp_nocase(str, "relative") == 0 ||
       cmp_nocase(str, "rel") == 0) {
     return PS_relative;
 

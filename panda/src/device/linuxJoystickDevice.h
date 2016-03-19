@@ -1,16 +1,15 @@
-// Filename: linuxJoystickDevice.h
-// Created by:  rdb (21Aug15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linuxJoystickDevice.h
+ * @author rdb
+ * @date 2015-08-21
+ */
 
 #ifndef LINUXJOYSTICKDEVICE_H
 #define LINUXJOYSTICKDEVICE_H
@@ -19,11 +18,10 @@
 
 #ifdef PHAVE_LINUX_INPUT_H
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinuxJoystickDevice
-// Description : This is a type of device that uses the Linux
-//               /dev/input/js# API to read data from a game controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a type of device that uses the Linux /dev/input/js# API to read
+ * data from a game controller.
+ */
 class EXPCL_PANDA_DEVICE LinuxJoystickDevice : public InputDevice {
 public:
   LinuxJoystickDevice(int index);

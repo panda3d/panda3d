@@ -1,16 +1,15 @@
-// Filename: pencrypt.cxx
-// Created by:  drose (01Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pencrypt.cxx
+ * @author drose
+ * @date 2004-09-01
+ */
 
 #include "pystub.h"
 #include "filename.h"
@@ -28,13 +27,13 @@ bool got_key_length = false;
 int iteration_count = -1;
 bool got_iteration_count = false;
 
-void 
+void
 usage() {
   cerr
     << "\nUsage:\n"
     << "   pencrypt [opts] file [file2 file3 ...]\n"
     << "   pencrypt -o dest_file file\n\n"
-    
+
     << "This program will apply an encryption algorithm to a file (or multiple files),\n"
     << "creating an encrypted version of each file which can only be recovered using\n"
     << "pdecrypt and the same password that was supplied to pencrypt.  The compressed\n"
@@ -190,15 +189,15 @@ main(int argc, char **argv) {
           cerr << dest_file << "\n";
           bool success = encrypt_stream(read_stream, write_stream, password,
                                         algorithm, key_length, iteration_count);
-          
+
           read_stream.close();
           write_stream.close();
-          
+
           if (!success) {
             cerr << "Failure writing " << dest_file << "\n";
             all_ok = false;
             dest_file.unlink();
-            
+
           } else {
             if (!got_dest_filename) {
               source_file.unlink();

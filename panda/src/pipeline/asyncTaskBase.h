@@ -1,16 +1,15 @@
-// Filename: asyncTaskBase.h
-// Created by:  drose (09Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file asyncTaskBase.h
+ * @author drose
+ * @date 2010-02-09
+ */
 
 #ifndef ASYNCTASKBASE_H
 #define ASYNCTASKBASE_H
@@ -22,12 +21,10 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskBase
-// Description : The abstract base class for AsyncTask.  This is
-//               defined here only so we can store a pointer to the
-//               current task on the Thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for AsyncTask.  This is defined here only so we can
+ * store a pointer to the current task on the Thread.
+ */
 class EXPCL_PANDA_PIPELINE AsyncTaskBase : public TypedReferenceCount, public Namable {
 protected:
   AsyncTaskBase();
@@ -40,7 +37,7 @@ PUBLISHED:
 protected:
   void record_task(Thread *current_thread);
   void clear_task(Thread *current_thread);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

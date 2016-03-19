@@ -1,16 +1,15 @@
-// Filename: webcamVideoOpenCV.h
-// Created by:  drose (20Oct10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webcamVideoOpenCV.h
+ * @author drose
+ * @date 2010-10-20
+ */
 
 #ifndef WEBCAMVIDEOOPENCV_H
 #define WEBCAMVIDEOOPENCV_H
@@ -23,13 +22,11 @@
 
 class WebcamVideoCursorOpenCV;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoOpenCV
-// Description : The OpenCV implementation of webcams.  Probably won't
-//               be needed once we have a native webcam implementation
-//               for each Panda3D-supported platform.  (So far, we're
-//               2 for 3.)
-////////////////////////////////////////////////////////////////////
+/**
+ * The OpenCV implementation of webcams.  Probably won't be needed once we
+ * have a native webcam implementation for each Panda3D-supported platform.
+ * (So far, we're 2 for 3.)
+ */
 class WebcamVideoOpenCV : public WebcamVideo {
 private:
   WebcamVideoOpenCV(int camera_index);

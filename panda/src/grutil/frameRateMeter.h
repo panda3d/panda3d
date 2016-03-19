@@ -1,16 +1,15 @@
-// Filename: frameRateMeter.h
-// Created by:  drose (23Dec03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file frameRateMeter.h
+ * @author drose
+ * @date 2003-12-23
+ */
 
 #ifndef FRAMERATEMETER_H
 #define FRAMERATEMETER_H
@@ -26,18 +25,15 @@
 class GraphicsChannel;
 class ClockObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FrameRateMeter
-// Description : This is a special TextNode that automatically updates
-//               itself with the current frame rate.  It can be placed
-//               anywhere in the world where you'd like to see the
-//               frame rate.
-//
-//               It also has a special mode in which it may be
-//               attached directly to a channel or window.  If this is
-//               done, it creates a DisplayRegion for itself and renders
-//               itself in the upper-right-hand corner.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special TextNode that automatically updates itself with the
+ * current frame rate.  It can be placed anywhere in the world where you'd
+ * like to see the frame rate.
+ *
+ * It also has a special mode in which it may be attached directly to a
+ * channel or window.  If this is done, it creates a DisplayRegion for itself
+ * and renders itself in the upper-right-hand corner.
+ */
 class EXPCL_PANDA_GRUTIL FrameRateMeter : public TextNode {
 PUBLISHED:
   FrameRateMeter(const string &name);

@@ -1,32 +1,28 @@
-// Filename: filename_ext.cxx
-// Created by:  rdb (17Sep14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file filename_ext.cxx
+ * @author rdb
+ * @date 2014-09-17
+ */
 
 #include "filename_ext.h"
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<Filename>::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special Python method is implement to provide support for the pickle
+ * module.
+ */
 PyObject *Extension<Filename>::
 __reduce__(PyObject *self) const {
-  // We should return at least a 2-tuple, (Class, (args)): the
-  // necessary class object whose constructor we should call
-  // (e.g. this), and the arguments necessary to reconstruct this
-  // object.
+  // We should return at least a 2-tuple, (Class, (args)): the necessary class
+  // object whose constructor we should call (e.g.  this), and the arguments
+  // necessary to reconstruct this object.
   PyTypeObject *this_class = Py_TYPE(self);
   if (this_class == NULL) {
     return NULL;
@@ -36,12 +32,10 @@ __reduce__(PyObject *self) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<Filename>::__repr__
-//       Access: Published
-//  Description: Returns a string representation of the filename that
-//               communicates both its type and value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string representation of the filename that communicates both its
+ * type and value.
+ */
 PyObject *Extension<Filename>::
 __repr__() const {
 #if PY_MAJOR_VERSION >= 3
@@ -68,12 +62,10 @@ __repr__() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<Filename>::scan_directory
-//       Access: Published
-//  Description: This variant on scan_directory returns a Python list
-//               of strings on success, or None on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on scan_directory returns a Python list of strings on success,
+ * or None on failure.
+ */
 PyObject *Extension<Filename>::
 scan_directory() const {
   vector_string contents;
@@ -97,5 +89,3 @@ scan_directory() const {
   return result;
 }
 #endif  // HAVE_PYTHON
-
-

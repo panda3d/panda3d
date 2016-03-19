@@ -1,16 +1,15 @@
-// Filename: eggPalettize.cxx
-// Created by:  drose (28Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPalettize.cxx
+ * @author drose
+ * @date 2000-11-28
+ */
 
 #include "eggPalettize.h"
 #include "palettizer.h"
@@ -28,11 +27,9 @@
 
 #include <stdio.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggPalettize::
 EggPalettize() : EggMultiFilter(true) {
   set_program_brief("pack textures from various .egg models into palette images");
@@ -61,8 +58,8 @@ EggPalettize() : EggMultiFilter(true) {
   clear_runlines();
   add_runline("[opts] file.egg [file.egg ...]");
 
-  // We always have EggMultiBase's -f on: force complete load.  In
-  // fact, we use -f for our own purposes, below.
+  // We always have EggMultiBase's -f on: force complete load.  In fact, we
+  // use -f for our own purposes, below.
   remove_option("f");
   _force_complete = true;
 
@@ -121,8 +118,8 @@ EggPalettize() : EggMultiFilter(true) {
      "file.",
      &EggPalettize::dispatch_none, &_remove_eggs);
 
-  // We redefine -d using add_option() instead of redescribe_option()
-  // so it gets listed along with these other options that relate.
+  // We redefine -d using add_option() instead of redescribe_option() so it
+  // gets listed along with these other options that relate.
   add_option
     ("d", "dirname", 0,
      "The directory in which to write the palettized egg files.  This is "
@@ -201,8 +198,8 @@ EggPalettize() : EggMultiFilter(true) {
      &EggPalettize::dispatch_none, &_omitall);
 
   // This isn't even implemented yet.  Presently, we never lock anyway.
-  // Dangerous, but hard to implement reliable file locking across
-  // NFS/Samba and between multiple OS's.
+  // Dangerous, but hard to implement reliable file locking across NFSSamba
+  // and between multiple OS's.
   /*
   add_option
     ("nolock", "", 0,
@@ -222,14 +219,11 @@ EggPalettize() : EggMultiFilter(true) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggPalettize::
 handle_args(ProgramBase::Args &args) {
   if (_describe_input_file) {
@@ -238,8 +232,8 @@ handle_args(ProgramBase::Args &args) {
   }
 
   if (_remove_eggs) {
-    // If we're removing these egg files from the database, we don't
-    // want to try to load them up.  Instead, just save the filenames.
+    // If we're removing these egg files from the database, we don't want to
+    // try to load them up.  Instead, just save the filenames.
     _remove_egg_list = args;
     return true;
   }
@@ -248,11 +242,9 @@ handle_args(ProgramBase::Args &args) {
   return EggMultiFilter::handle_args(args);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::describe_input_file
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggPalettize::
 describe_input_file() {
   nout <<
@@ -569,17 +561,15 @@ describe_input_file() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggPalettize::
 run() {
-  // Fiddle with the loader severity, so we don't confuse the user
-  // with spurious "reading" and "writing" messages about the state
-  // file.  If the severity is currently NS_info (the default), set it
-  // to NS_warning instead.
+  // Fiddle with the loader severity, so we don't confuse the user with
+  // spurious "reading" and "writing" messages about the state file.  If the
+  // severity is currently NS_info (the default), set it to NS_warning
+  // instead.
   Notify *notify = Notify::ptr();
   NotifyCategory *loader_cat = notify->get_category(":loader");
   if (loader_cat != (NotifyCategory *)NULL &&
@@ -591,29 +581,29 @@ run() {
   BamFile state_file;
 
   if (_got_txa_script) {
-    // If we got a command-line script instead of a .txa file, we
-    // won't be encoding a .boo file either.
+    // If we got a command-line script instead of a .txa file, we won't be
+    // encoding a .boo file either.
     _nodb = true;
 
   } else {
     // Look for the .txa file.
     if (!_txa_filename.exists() && !_got_txa_filename) {
       // If we did not specify a filename, and the default filename of
-      // "textures.txa" doesn't exist, try looking in src/maps, as
-      // another likely possibility.
+      // "textures.txa" doesn't exist, try looking in srcmaps, as another
+      // likely possibility.
       Filename maybe = _txa_filename;
       maybe.set_dirname("src/maps");
       if (maybe.exists()) {
         _txa_filename = maybe;
       }
     }
-    
+
     if (!_txa_filename.exists()) {
       nout << FilenameUnifier::make_user_filename(_txa_filename)
            << " does not exist; cannot run.\n";
       exit(1);
     }
-    
+
     FilenameUnifier::set_txa_filename(_txa_filename);
 
     state_filename = _txa_filename;
@@ -621,8 +611,8 @@ run() {
   }
 
   if (_nodb) {
-    // -nodb means don't attempt to read textures.boo; in fact, don't
-    // even bother reporting this absence to the user.
+    // -nodb means don't attempt to read textures.boo; in fact, don't even
+    // bother reporting this absence to the user.
     pal = new Palettizer;
 
     // And -nodb implies -opt.
@@ -637,9 +627,8 @@ run() {
     pal->_omit_everything = true;
 
   } else {
-    // Read the Palettizer object from the Bam file written
-    // previously.  This will recover all of the state saved from the
-    // past session.
+    // Read the Palettizer object from the Bam file written previously.  This
+    // will recover all of the state saved from the past session.
     nout << "Reading " << FilenameUnifier::make_user_filename(state_filename)
          << "\n";
 
@@ -746,10 +735,9 @@ run() {
     FilenameUnifier::set_rel_dirname(_rel_dirname);
   }
 
-  // We only omit solitary textures from palettes if we're running in
-  // optimal mode.  Otherwise, we're likely to invalidate old egg
-  // files by changing a texture from solitary to nonsolitary state or
-  // vice-versa.
+  // We only omit solitary textures from palettes if we're running in optimal
+  // mode.  Otherwise, we're likely to invalidate old egg files by changing a
+  // texture from solitary to nonsolitary state or vice-versa.
   pal->_omit_solitary = _optimal;
 
   if (_omitall) {
@@ -794,8 +782,8 @@ run() {
   }
 
   if (_optimal) {
-    // If we're asking for an optimal packing, throw away the old
-    // packing and start fresh.
+    // If we're asking for an optimal packing, throw away the old packing and
+    // start fresh.
     pal->reset_images();
     _all_textures = true;
 
@@ -813,8 +801,8 @@ run() {
   }
 
   if (_optimal) {
-    // If we're asking for optimal packing, this also implies we want
-    // to resize the big empty palette images down.
+    // If we're asking for optimal packing, this also implies we want to
+    // resize the big empty palette images down.
     pal->optimal_resize();
   }
 
@@ -835,7 +823,7 @@ run() {
       }
     }
   }
-    
+
   if (okflag) {
     if (!pal->write_eggs()) {
       okflag = false;
@@ -843,16 +831,16 @@ run() {
   }
 
   if (!_nodb) {
-    // Make up a temporary filename to write the state file to, then
-    // move the state file into place.  We do this in case the user
-    // interrupts us (or we core dump) before we're done; that way we
-    // won't leave the state file incompletely written.
+    // Make up a temporary filename to write the state file to, then move the
+    // state file into place.  We do this in case the user interrupts us (or
+    // we core dump) before we're done; that way we won't leave the state file
+    // incompletely written.
     string dirname = state_filename.get_dirname();
     if (dirname.empty()) {
       dirname = ".";
     }
     Filename temp_filename = Filename::temporary(dirname, "pi");
-    
+
     if (!state_file.open_write(temp_filename) ||
         !state_file.write_object(pal)) {
       nout << "Unable to write palettization information to "
@@ -860,7 +848,7 @@ run() {
            << "\n";
       exit(1);
     }
-    
+
     state_file.close();
     state_filename.unlink();
     if (!temp_filename.rename_to(state_filename)) {
@@ -886,5 +874,3 @@ main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-
-

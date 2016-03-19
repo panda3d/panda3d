@@ -1,16 +1,15 @@
-// Filename: daeToEggConverter.cxx
-// Created by:  pro-rsoft (08May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file daeToEggConverter.cxx
+ * @author rdb
+ * @date 2008-05-08
+ */
 
 #include "daeToEggConverter.h"
 #include "fcollada_utils.h"
@@ -49,11 +48,9 @@
   #include "FCDocument/FCDGeometryPolygonsInput.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DAEToEggConverter::
 DAEToEggConverter() {
   _unit_name = "meter";
@@ -64,22 +61,18 @@ DAEToEggConverter() {
   _invert_transparency = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DAEToEggConverter::
 DAEToEggConverter(const DAEToEggConverter &copy) :
   SomethingToEggConverter(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DAEToEggConverter::
 ~DAEToEggConverter() {
   if (_error_handler != NULL) {
@@ -87,46 +80,35 @@ DAEToEggConverter::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *DAEToEggConverter::
 make_copy() {
   return new DAEToEggConverter(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string DAEToEggConverter::
 get_name() const {
   return "COLLADA";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string DAEToEggConverter::
 get_extension() const {
   return "dae";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns
+ * true if successful, false otherwise.
+ */
 bool DAEToEggConverter::
 convert_file(const Filename &filename) {
   // Reset stuff
@@ -256,8 +238,8 @@ convert_file(const Filename &filename) {
         }
       } else {
         // No sampling parameters given; not necessarily a failure, since the
-        // animation may already be sampled.  We use the key frames as animation
-        // frames.
+        // animation may already be sampled.  We use the key frames as
+        // animation frames.
         if (_end_frame != 0.0) {
           // An end frame was given, chop off all keys after that.
           float end = _end_frame;
@@ -302,8 +284,8 @@ convert_file(const Filename &filename) {
         }
       }
 
-      // It doesn't really matter which character we grab for this as
-      // it'll iterate over the whole graph right now anyway.
+      // It doesn't really matter which character we grab for this as it'll
+      // iterate over the whole graph right now anyway.
       for (size_t ch = 0; ch < visual_scene->GetChildrenCount(); ++ch) {
         character->build_table(skeleton, visual_scene->GetChild(ch), keys);
       }
@@ -317,15 +299,12 @@ convert_file(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEggConverter::get_input_units
-//       Access: Public, Virtual
-//  Description: This may be called after convert_file() has been
-//               called and returned true, indicating a successful
-//               conversion.  It will return the distance units
-//               represented by the converted egg file, if known, or
-//               DU_invalid if not known.
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be called after convert_file() has been called and returned true,
+ * indicating a successful conversion.  It will return the distance units
+ * represented by the converted egg file, if known, or DU_invalid if not
+ * known.
+ */
 DistanceUnit DAEToEggConverter::
 get_input_units() {
   if (IS_NEARLY_EQUAL(_unit_meters, 0.001)) {
@@ -385,7 +364,8 @@ process_asset() {
   }
 }
 
-// Process the node. If forced is true, it will even process it if its known to be a skeleton root.
+// Process the node.  If forced is true, it will even process it if its known
+// to be a skeleton root.
 void DAEToEggConverter::
 process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced) {
   nassertv(node != NULL);
@@ -413,7 +393,7 @@ process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced) {
   for (size_t tr = node->GetTransformCount(); tr > 0; --tr) {
     apply_transform(node_group, node->GetTransform(tr - 1));
   }
-  //node_group->set_transform3d(convert_matrix(node->ToMatrix()));
+  // node_group->set_transform3d(convert_matrix(node->ToMatrix()));
 
   // Loop through the instances and process them
   for (size_t in = 0; in < node->GetInstanceCount(); ++in) {
@@ -458,7 +438,7 @@ process_instance(EggGroup *parent, const FCDEntityInstance* instance) {
 
   case FCDEntityInstance::CONTROLLER:
     // Add the dart tag and process the controller instance
-    //parent->set_dart_type(EggGroup::DT_default);
+    // parent->set_dart_type(EggGroup::DT_default);
     process_controller(parent, (const FCDControllerInstance*) instance);
     break;
 
@@ -510,7 +490,8 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
   daeegg_cat.spam() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has " << mesh->GetPolygonsCount() << " polygon groups" << endl;
   if (mesh->GetPolygonsCount() == 0) return;
 
-  // This is an array of pointers, I know. But since they are refcounted, I don't have a better idea.
+  // This is an array of pointers, I know.  But since they are refcounted, I
+  // don't have a better idea.
   PT(EggGroup) *primitive_holders = new PT(EggGroup) [mesh->GetPolygonsCount()];
   for (size_t gr = 0; gr < mesh->GetPolygonsCount(); ++gr) {
     const FCDGeometryPolygons* polygons = mesh->GetPolygons(gr);
@@ -518,9 +499,11 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
 
     // Stores which group holds the primitives.
     PT(EggGroup) primitiveholder;
-    // If we have materials, make a group for each material. Then, apply the material's per-group stuff.
+    // If we have materials, make a group for each material.  Then, apply the
+    // material's per-group stuff.
     if (materials != NULL && (!polygons->GetMaterialSemantic().empty()) && mesh->GetPolygonsCount() > 1) {
-      //primitiveholder = new EggGroup(FROM_FSTRING(mesh->GetDaeId()) + "." + material_semantic);
+      // primitiveholder = new EggGroup(FROM_FSTRING(mesh->GetDaeId()) + "." +
+      // material_semantic);
       primitiveholder = new EggGroup;
       mesh_group->add_child(primitiveholder);
     } else {
@@ -704,7 +687,7 @@ process_spline(EggGroup *parent, const string group_name, FCDGeometrySpline* geo
   assert(geometry_spline != NULL);
   PT(EggGroup) result = new EggGroup(group_name);
   parent->add_child(result);
-  //TODO: if its not a nurbs, make it convert between the types
+  // TODO: if its not a nurbs, make it convert between the types
   if (geometry_spline->GetType() != FUDaeSplineType::NURBS) {
     daeegg_cat.warning() << "Only NURBS curves are supported (yet)!" << endl;
   } else {
@@ -722,7 +705,7 @@ process_spline(EggGroup *parent, const FCDSpline* spline) {
   // Now load in the nurbs curve to the egg library
   PT(EggNurbsCurve) nurbs_curve = new EggNurbsCurve(FROM_FSTRING(spline->GetName()));
   parent->add_child(nurbs_curve);
-  //TODO: what value is this?
+  // TODO: what value is this?
   nurbs_curve->setup(0, ((const FCDNURBSSpline*) spline)->GetKnotCount());
   for (size_t kn = 0; kn < ((const FCDNURBSSpline*) spline)->GetKnotCount(); ++kn) {
     const float* knot = ((const FCDNURBSSpline*) spline)->GetKnot(kn);
@@ -772,7 +755,7 @@ process_controller(EggGroup *parent, const FCDControllerInstance *instance) {
       assert(morph_target != NULL);
       PT(EggSAnimData) target = new EggSAnimData(FROM_FSTRING(morph_target->GetGeometry()->GetName()));
       if (morph_target->IsAnimated()) {
-        //TODO
+        // TODO
       } else {
         target->add_data(morph_target->GetWeight());
       }
@@ -821,7 +804,8 @@ void DAEToEggConverter::
 apply_transform(EggGroup *to, const FCDTransform* from) {
   assert(from != NULL);
   assert(to != NULL);
-  //to->set_transform3d(convert_matrix(from->ToMatrix()) * to->get_transform3d());
+  // to->set_transform3d(convert_matrix(from->ToMatrix()) *
+  // to->get_transform3d());
   switch (from->GetType()) {
   case FCDTransform::TRANSLATION:
     {

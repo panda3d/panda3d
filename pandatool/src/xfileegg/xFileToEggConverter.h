@@ -1,16 +1,15 @@
-// Filename: xFileToEggConverter.h
-// Created by:  drose (21Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file xFileToEggConverter.h
+ * @author drose
+ * @date 2001-06-21
+ */
 
 #ifndef XFILETOEGGCONVERTER_H
 #define XFILETOEGGCONVERTER_H
@@ -35,10 +34,9 @@ class EggTexture;
 class EggMaterial;
 class XFileDataObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileToEggConverter
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class XFileToEggConverter : public SomethingToEggConverter {
 public:
   XFileToEggConverter();
@@ -70,24 +68,24 @@ public:
 
 private:
   typedef XFileAnimationSet::FrameData FrameData;
-  
+
   bool get_toplevel();
   bool convert_toplevel_object(XFileDataNode *obj, EggGroupNode *egg_parent);
   bool convert_object(XFileDataNode *obj, EggGroupNode *egg_parent);
   bool convert_frame(XFileDataNode *obj, EggGroupNode *egg_parent);
   bool convert_transform(XFileDataNode *obj, EggGroupNode *egg_parent);
   bool convert_animation_set(XFileDataNode *obj);
-  bool convert_animation_set_object(XFileDataNode *obj, 
+  bool convert_animation_set_object(XFileDataNode *obj,
                                     XFileAnimationSet &animation_set);
-  bool convert_animation(XFileDataNode *obj, 
+  bool convert_animation(XFileDataNode *obj,
                          XFileAnimationSet &animation_set);
-  bool convert_animation_object(XFileDataNode *obj, 
+  bool convert_animation_object(XFileDataNode *obj,
                                 const string &joint_name, FrameData &table);
   bool convert_animation_key(XFileDataNode *obj, const string &joint_name,
                              FrameData &table);
-  bool set_animation_frame(const string &joint_name, FrameData &table, 
+  bool set_animation_frame(const string &joint_name, FrameData &table,
                            int frame, int key_type,
-                           const XFileDataObject &values); 
+                           const XFileDataObject &values);
   bool convert_mesh(XFileDataNode *obj, EggGroupNode *egg_parent);
 
   bool create_polygons();
@@ -106,7 +104,7 @@ private:
 
   typedef pvector<XFileAnimationSet *> AnimationSets;
   AnimationSets _animation_sets;
-    
+
   typedef pmap<string, EggGroup *> Joints;
   Joints _joints;
 

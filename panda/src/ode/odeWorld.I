@@ -1,35 +1,29 @@
-// Filename: odeWorld.I
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeWorld.I
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeWorld::is_empty
-//       Access: Published
-//  Description: Returns true if the ID is 0, meaning the OdeWorld
-//               does not point to a valid world. It is an error to
-//               call a method on an empty world.
-//               Note that an empty OdeWorld also evaluates to False.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the ID is 0, meaning the OdeWorld does not point to a valid
+ * world.  It is an error to call a method on an empty world.  Note that an
+ * empty OdeWorld also evaluates to False.
+ */
 INLINE bool OdeWorld::
 is_empty() const {
   return (_id == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeWorld::get_id
-//       Access: Published
-//  Description: Returns the underlying dWorldID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the underlying dWorldID.
+ */
 INLINE dWorldID OdeWorld::
 get_id() const {
   return _id;

@@ -1,16 +1,15 @@
-// Filename: eglGraphicsWindow.h
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsWindow.h
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #ifndef EGLGRAPHICSWINDOW_H
 #define EGLGRAPHICSWINDOW_H
@@ -22,12 +21,10 @@
 #include "buttonHandle.h"
 #include "get_x11.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsWindow
-// Description : An interface to the egl system for managing GLES
-//               windows under X.
-////////////////////////////////////////////////////////////////////
-class eglGraphicsWindow : public GraphicsWindow {
+/**
+ * An interface to the egl system for managing GLES windows under X.
+ */
+class eglGraphicsWindow : public x11GraphicsWindow {
 public:
   eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,

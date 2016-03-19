@@ -1,16 +1,15 @@
-// Filename: eventParameter.h
-// Created by:  drose (08Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eventParameter.h
+ * @author drose
+ * @date 1999-02-08
+ */
 
 #ifndef EVENTPARAMETER_H
 #define EVENTPARAMETER_H
@@ -25,16 +24,14 @@
 #include "bamWriter.h"
 #include "paramValue.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EventParameter
-// Description : An optional parameter associated with an event.  Each
-//               event may have zero or more of these.  Each parameter
-//               stores a pointer to a TypedWritableReferenceCount
-//               object, which of course could be pretty much
-//               anything.  To store a simple value like a double or a
-//               string, the EventParameter constructors transparently
-//               use the ParamValue template class from paramValue.h.
-////////////////////////////////////////////////////////////////////
+/**
+ * An optional parameter associated with an event.  Each event may have zero
+ * or more of these.  Each parameter stores a pointer to a
+ * TypedWritableReferenceCount object, which of course could be pretty much
+ * anything.  To store a simple value like a double or a string, the
+ * EventParameter constructors transparently use the ParamValue template class
+ * from paramValue.h.
+ */
 class EXPCL_PANDA_EVENT EventParameter {
 PUBLISHED:
   INLINE EventParameter();
@@ -50,10 +47,9 @@ PUBLISHED:
   INLINE ~EventParameter();
 
   // These functions are conveniences to easily determine if the
-  // EventParameter is one of the predefined parameter types, and
-  // retrieve the corresponding value.  Of course, it is possible that
-  // the EventParameter is some user-defined type, and is none of
-  // these.
+  // EventParameter is one of the predefined parameter types, and retrieve the
+  // corresponding value.  Of course, it is possible that the EventParameter
+  // is some user-defined type, and is none of these.
   INLINE bool is_empty() const;
   INLINE bool is_int() const;
   INLINE int get_int_value() const;

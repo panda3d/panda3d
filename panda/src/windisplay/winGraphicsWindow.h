@@ -1,16 +1,15 @@
-// Filename: winGraphicsWindow.h
-// Created by:  drose (20Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file winGraphicsWindow.h
+ * @author drose
+ * @date 2002-12-20
+ */
 
 #ifndef WINGRAPHICSWINDOW_H
 #define WINGRAPHICSWINDOW_H
@@ -38,19 +37,15 @@ typedef struct {
 }
 WINDOW_METRICS;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinGraphicsWindow
-// Description : An abstract base class for glGraphicsWindow and
-//               dxGraphicsWindow (and, in general, graphics windows
-//               that interface with the Microsoft Windows API).
-//
-//               This class includes all the code for manipulating
-//               windows themselves: opening them, closing them,
-//               responding to user keyboard and mouse input, and so
-//               on.  It does not make any 3-D rendering calls into
-//               the window; that is the province of the
-//               GraphicsStateGuardian.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for glGraphicsWindow and dxGraphicsWindow (and, in
+ * general, graphics windows that interface with the Microsoft Windows API).
+ *
+ * This class includes all the code for manipulating windows themselves:
+ * opening them, closing them, responding to user keyboard and mouse input,
+ * and so on.  It does not make any 3-D rendering calls into the window; that
+ * is the province of the GraphicsStateGuardian.
+ */
 class EXPCL_PANDAWIN WinGraphicsWindow : public GraphicsWindow {
 public:
   WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -168,10 +163,9 @@ private:
   bool _lost_keypresses;
 
   // These are used to store the status of the individual left and right
-  // shift, control, and alt keys.  Keyboard events are not sent for
-  // these individual keys, but for each pair as a whole.  The status
-  // of each key must be checked as keypress and keyrelease events are
-  // received.
+  // shift, control, and alt keys.  Keyboard events are not sent for these
+  // individual keys, but for each pair as a whole.  The status of each key
+  // must be checked as keypress and keyrelease events are received.
   bool _lshift_down;
   bool _rshift_down;
   bool _lcontrol_down;
@@ -181,8 +175,7 @@ private:
 
   GraphicsWindowInputDevice *_input;
 
-  // following adds support platform specfic window processing
-  // functions.
+  // following adds support platform specfic window processing functions.
   typedef pset<GraphicsWindowProc*> WinProcClasses;
   WinProcClasses _window_proc_classes;
 
@@ -196,19 +189,19 @@ private:
   typedef map<HWND, WinGraphicsWindow *> WindowHandles;
   static WindowHandles _window_handles;
 
-  // And we need a static pointer to the current WinGraphicsWindow we
-  // are creating at the moment, since CreateWindow() starts
-  // generating window events before it gives us the window handle.
+  // And we need a static pointer to the current WinGraphicsWindow we are
+  // creating at the moment, since CreateWindow() starts generating window
+  // events before it gives us the window handle.
   static WinGraphicsWindow *_creating_window;
 
-  // This tracks the current GraphicsWindow whose client area contains
-  // the mouse.  There will only be one of these at a time, and
-  // storing the pointer here allows us to handle ambiguities in the
-  // order in which messages are passed from Windows to the various
-  // windows we manage.  This pointer is used by
-  // set_cursor_in_window() to determine when it is time to call
-  // update_cursor() to hide the cursor (or do other related
-  // operations).
+/*
+ * This tracks the current GraphicsWindow whose client area contains the
+ * mouse.  There will only be one of these at a time, and storing the pointer
+ * here allows us to handle ambiguities in the order in which messages are
+ * passed from Windows to the various windows we manage.  This pointer is used
+ * by set_cursor_in_window() to determine when it is time to call
+ * update_cursor() to hide the cursor (or do other related operations).
+ */
   static WinGraphicsWindow *_cursor_window;
   static bool _cursor_hidden;
   static bool _got_saved_params;
@@ -219,9 +212,9 @@ private:
   // The mouse constraints before applying mouse mode M_confined.
   static RECT _mouse_unconfined_cliprect;
 
-  // Since the Panda API requests icons and cursors by filename, we
-  // need a table mapping filenames to handles, so we can avoid
-  // re-reading the file each time we change icons.
+  // Since the Panda API requests icons and cursors by filename, we need a
+  // table mapping filenames to handles, so we can avoid re-reading the file
+  // each time we change icons.
   typedef pmap<Filename, HANDLE> IconFilenames;
   static IconFilenames _icon_filenames;
   static IconFilenames _cursor_filenames;
@@ -229,10 +222,10 @@ private:
   static HICON get_icon(const Filename &filename);
   static HCURSOR get_cursor(const Filename &filename);
 
-  // The table of window classes we have registered.  We need to
-  // register a different window class for each different window icon
-  // (the cursor we can specify dynamically, later).  We might have
-  // other requirements too, later.
+  // The table of window classes we have registered.  We need to register a
+  // different window class for each different window icon (the cursor we can
+  // specify dynamically, later).  We might have other requirements too,
+  // later.
   class WindowClass {
   public:
     INLINE WindowClass(const WindowProperties &props);
@@ -248,10 +241,10 @@ private:
 
   static const WindowClass &register_window_class(const WindowProperties &props);
 private:
-  // This subclass of WindowHandle is stored in _window_handle to
-  // represent this particular window.  We use it to add hooks for
-  // communicating with the parent window, in particular to receive
-  // keyboard events from the parent window when necessary.
+  // This subclass of WindowHandle is stored in _window_handle to represent
+  // this particular window.  We use it to add hooks for communicating with
+  // the parent window, in particular to receive keyboard events from the
+  // parent window when necessary.
   class WinWindowHandle : public WindowHandle {
   public:
     WinWindowHandle(WinGraphicsWindow *window,

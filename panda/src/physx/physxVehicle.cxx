@@ -1,16 +1,15 @@
-// Filename: physxVehicle.cxx
-// Created by:  enn0x (23Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxVehicle.cxx
+ * @author enn0x
+ * @date 2010-03-23
+ */
 
 #include "physxVehicle.h"
 #include "physxActor.h"
@@ -19,11 +18,9 @@
 
 TypeHandle PhysxVehicle::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicle::create
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxVehicle::
 create(PhysxScene *scene, PhysxVehicleDesc &desc) {
 
@@ -37,11 +34,9 @@ create(PhysxScene *scene, PhysxVehicleDesc &desc) {
   _scene->_vehicles.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicle::release
-//       Access: Published
-//  Description: Destroys this vehicle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroys this vehicle.
+ */
 void PhysxVehicle::
 release() {
 
@@ -51,11 +46,9 @@ release() {
   _scene->_vehicles.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicle::update_vehicle
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxVehicle::
 update_vehicle(float dt) {
 
@@ -64,12 +57,10 @@ update_vehicle(float dt) {
   // TODO !!!
 }
 
+/**
+ * Returns the actor for this vehicle.
+ */
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicle::get_actor
-//       Access: Published
-//  Description: Returns the actor for this vehicle.
-////////////////////////////////////////////////////////////////////
 PhysxActor *PhysxVehicle::
 get_actor() const {
 
@@ -78,24 +69,22 @@ get_actor() const {
 }
 */
 
+/**
+ * Returns the number of wheels on this vehicle.
+ */
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicle::get_num_wheels
-//       Access: Published
-//  Description: Returns the number of wheels on this vehicle.
-////////////////////////////////////////////////////////////////////
 unsigned int PhysxVehicle::
 get_num_wheels() const {
 
   nassertr(_error_type == ET_ok, 0);
   return _wheels.size();
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicle::get_wheel
-//       Access: Published
-//  Description: Returns the n-th wheel of this vehicle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th wheel of this vehicle.
+ */
+/*
 PhysxWheel *PhysxVehicle::
 get_wheel(unsigned int idx) const {
 
@@ -103,4 +92,3 @@ get_wheel(unsigned int idx) const {
   return _wheels[idx];
 }
 */
-

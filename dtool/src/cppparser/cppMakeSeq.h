@@ -1,16 +1,15 @@
-// Filename: cppMakeSeq.h
-// Created by:  drose (06Nov08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppMakeSeq.h
+ * @author drose
+ * @date 2008-11-06
+ */
 
 #ifndef CPPMAKESEQ_H
 #define CPPMAKESEQ_H
@@ -21,14 +20,11 @@
 #include "cppIdentifier.h"
 #include "cppFunctionGroup.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPMakeSeq
-// Description : This is a MAKE_SEQ() declaration appearing within a
-//               class body.  It means to generate a sequence method
-//               within Python, replacing (for instance)
-//               get_num_nodes()/get_node(n) with a synthetic
-//               get_nodes() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a MAKE_SEQ() declaration appearing within a class body.  It means
+ * to generate a sequence method within Python, replacing (for instance)
+ * get_num_nodes()/get_node(n) with a synthetic get_nodes() method.
+ */
 class CPPMakeSeq : public CPPDeclaration {
 public:
   CPPMakeSeq(CPPIdentifier *ident,

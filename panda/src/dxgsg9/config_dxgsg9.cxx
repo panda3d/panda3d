@@ -1,16 +1,15 @@
-// Filename: config_dxgsg9.cxx
-// Created by:  drose (06Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_dxgsg9.cxx
+ * @author drose
+ * @date 1999-10-06
+ */
 
 #include "config_dxgsg9.h"
 #include "dxGraphicsStateGuardian9.h"
@@ -32,17 +31,19 @@ DToolConfigure(config_dxgsg9);
 NotifyCategoryDef(dxgsg9, ":display:gsg");
 NotifyCategoryDef(wdxdisplay9, "display");
 
-// Configure this variable true to cause the DXGSG to show each
-// transform space it renders by drawing a little unit axis.  This
-// cannot be enabled when the player is compiled in NDEBUG mode.
+// Configure this variable true to cause the DXGSG to show each transform
+// space it renders by drawing a little unit axis.  This cannot be enabled
+// when the player is compiled in NDEBUG mode.
 ConfigVariableBool dx_show_transforms
 ("dx-show-transforms", false);
 
-// if true, if card only supports per-vertex fog, it will be treated as no-HW fog capability
+// if true, if card only supports per-vertex fog, it will be treated as no-HW
+// fog capability
 ConfigVariableBool dx_no_vertex_fog
 ("dx-no-vertex-fog", false);
 
-// if true, overwrite cursor bitmap tip with "D3D" to distinguish it from GDI cursor
+// if true, overwrite cursor bitmap tip with "D3D" to distinguish it from GDI
+// cursor
 ConfigVariableBool dx_show_cursor_watermark
 ("dx-show-cursor-watermark",
 #ifdef _DEBUG
@@ -52,7 +53,8 @@ ConfigVariableBool dx_show_cursor_watermark
 #endif
     );
 
-// if true, triangle filter will be used to generate mipmap levels instead of default box filter
+// if true, triangle filter will be used to generate mipmap levels instead of
+// default box filter
 ConfigVariableBool dx_use_triangle_mipgen_filter
 ("dx-use-triangle-mipgen-filter", false);
 
@@ -89,8 +91,8 @@ ConfigVariableBool dx_count_all_cards_memory
           "via DX7 calls."));
 
 #ifndef NDEBUG
-// debugging flag
-// values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW
+// debugging flag values are same as D3DCULL enumtype, 0 - no force, 1 - force
+// none, 2 - force CW, 3 - force CCW
 ConfigVariableInt dx_force_backface_culling
 ("dx-force-backface-culling", 0);
 #endif
@@ -100,7 +102,8 @@ ConfigVariableBool dx_mipmap_everything
 ConfigVariableBool dx_ignore_mipmaps
 ("dx-ignore-mipmaps", false);
 
-// if this is set, more accurate but more expensive fog computations are performed
+// if this is set, more accurate but more expensive fog computations are
+// performed
 ConfigVariableBool dx_use_rangebased_fog
 ("dx-use-rangebased-fog", false);
 ConfigVariableBool dx_no_dithering
@@ -109,12 +112,12 @@ ConfigVariableBool dx_force_16bpp_zbuffer
 ("dx-force-16bpp-zbuffer", false);
 ConfigVariableBool dx_do_vidmemsize_check
 ("do-vidmemsize-check", true);
-// Setting this true theoretically hinders render performance, because
-// it forces the FPU to go through some extra work to clean itself up
-// after rendering a frame, but the performance cost seems to be
-// small.  On the other hand, setting it false can force the
-// application to run in single-precision arithmetic mode, even if
-// it believes it is using double-precision variables.
+// Setting this true theoretically hinders render performance, because it
+// forces the FPU to go through some extra work to clean itself up after
+// rendering a frame, but the performance cost seems to be small.  On the
+// other hand, setting it false can force the application to run in single-
+// precision arithmetic mode, even if it believes it is using double-precision
+// variables.
 ConfigVariableBool dx_preserve_fpu_state
 ("dx-preserve-fpu-state", true);
 
@@ -140,37 +143,34 @@ ConfigVariableBool dx_debug_view_mipmaps
 ConfigVariableBool dx_force_anisotropic_filtering
 ("dx-force-anisotropic-filtering", false);
 
-// set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom
-// together using degenerate tris
+// set 'retained-mode #t' and this to have prepare_geom concatenate all
+// tristrips within a geom together using degenerate tris
 ConfigVariableBool link_tristrips
 ("link-tristrips", false);
 
-// true = use DirectX management of video memory
-// false = see dx_lru_management config variable below
+// true = use DirectX management of video memory false = see dx_lru_management
+// config variable below
 ConfigVariableBool dx_management
 ("dx-management", false);
 
-// valid only if dx_management == false
-// true = use DirectX management of texture memory
-// false = lru will manage texture memory
+// valid only if dx_management == false true = use DirectX management of
+// texture memory false = lru will manage texture memory
 ConfigVariableBool dx_texture_management
 ("dx-texture-management", true);
 
-// valid only if dx_management == false
-// true = enable LRU management of video memory
-// false = no video memory management
+// valid only if dx_management == false true = enable LRU management of video
+// memory false = no video memory management
 ConfigVariableBool dx_lru_management
 ("dx-lru-management", true);
 
-// number of LRU pages to pre-allocate
-// if the maximum number of pages is used up,
-// then LRU pages will be dynamically allocated/freed
+// number of LRU pages to pre-allocate if the maximum number of pages is used
+// up, then LRU pages will be dynamically allocatedfreed
 ConfigVariableInt dx_lru_maximum_pages
 ("dx-lru-maximum-pages", 8192);
 
-// the amount of video memory the LRU will try not to use
-// this will allow DirectX some space in case of memory fragmentation, ...
-// this does not apply if dx_lru_minimum_memory_requirement is not met
+// the amount of video memory the LRU will try not to use this will allow
+// DirectX some space in case of memory fragmentation, ... this does not apply
+// if dx_lru_minimum_memory_requirement is not met
 ConfigVariableInt dx_lru_free_memory_requirement
 ("dx-lru-free-memory-requirement", 12000000);
 
@@ -178,30 +178,30 @@ ConfigVariableInt dx_lru_free_memory_requirement
 ConfigVariableInt dx_lru_minimum_memory_requirement
 ("dx-lru-minimum-memory-requirement", 64000000);
 
-// used to cap the amount of video memory used
-// 0 = use all available DirectX video memory
+// used to cap the amount of video memory used 0 = use all available DirectX
+// video memory
 ConfigVariableInt dx_lru_maximum_memory_requirement
 ("dx-lru-maximum-memory-requirement", 0);
 
-// the number of LRU pages the LRU will update per frame
-// do not set this too high or it will degrade performance
+// the number of LRU pages the LRU will update per frame do not set this too
+// high or it will degrade performance
 ConfigVariableInt dx_lru_maximum_page_updates_per_frame
 ("dx-lru-maximum-page-updates-per-frame", 40);
 
-// lru debug on/off
+// lru debug onoff
 ConfigVariableBool dx_lru_debug
 ("dx-lru-debug", false);
 
-// valid only if dx_lru_debug == true 
-// number of frames to wait until printing out the LRU status
+// valid only if dx_lru_debug == true number of frames to wait until printing
+// out the LRU status
 ConfigVariableInt dx_lru_debug_frames_til_output
 ("dx-lru-debug-frames-til-output", 500);
 
-// valid only if dx_lru_debug == true 
+// valid only if dx_lru_debug == true
 ConfigVariableBool dx_lru_debug_textures
 ("dx-lru-debug-textures", false);
 
-// valid only if dx_lru_debug == true 
+// valid only if dx_lru_debug == true
 ConfigVariableBool dx_lru_debug_vertex_buffers
 ("dx-lru-debug-vertex-buffers", false);
 
@@ -232,14 +232,12 @@ ConfigureFn(config_dxgsg9) {
   init_libdxgsg9();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdxgsg
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libdxgsg9() {
   static bool initialized = false;

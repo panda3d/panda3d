@@ -1,16 +1,15 @@
-// Filename: tinyOsxGraphicsPipe.cxx
-// Created by:  drose (12May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyOsxGraphicsPipe.cxx
+ * @author drose
+ * @date 2008-05-12
+ */
 
 #include "pandabase.h"
 
@@ -25,12 +24,10 @@
 #include "nativeWindowHandle.h"
 
 TypeHandle TinyOsxGraphicsPipe::_type_handle;
-  
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsPipe::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+
+/**
+ *
+ */
 TinyOsxGraphicsPipe::
 TinyOsxGraphicsPipe() {
   CGRect display_bounds = CGDisplayBounds(kCGDirectMainDisplay);
@@ -38,49 +35,37 @@ TinyOsxGraphicsPipe() {
   _display_height = CGRectGetHeight(display_bounds);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TinyOsxGraphicsPipe::
 ~TinyOsxGraphicsPipe() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to
+ * choose between several possible GraphicsPipes available on a particular
+ * platform, so the name should be meaningful and unique for a given platform.
+ */
 string TinyOsxGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               TinyOsxGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the
+ * user to make a default TinyOsxGraphicsPipe.
+ */
 PT(GraphicsPipe) TinyOsxGraphicsPipe::
 pipe_constructor() {
   return new TinyOsxGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsPipe::create_cg_image
-//       Access: Public, Static
-//  Description: Creates a new Quartz bitmap image with the data in
-//               the indicated PNMImage.  The caller should eventually
-//               free this image via CGImageRelease.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new Quartz bitmap image with the data in the indicated PNMImage.
+ * The caller should eventually free this image via CGImageRelease.
+ */
 CGImageRef TinyOsxGraphicsPipe::
 create_cg_image(const PNMImage &pnm_image) {
   size_t width = pnm_image.get_x_size();
@@ -145,8 +130,7 @@ create_cg_image(const PNMImage &pnm_image) {
     bitmap_info |= kCGImageAlphaLast;
   }
 
-  // Now convert the pixel data to a format friendly to
-  // CGImageCreate().
+  // Now convert the pixel data to a format friendly to CGImageCreate().
   char *char_array = (char *)PANDA_MALLOC_ARRAY(num_bytes);
 
   xelval *dp = (xelval *)char_array;
@@ -166,7 +150,7 @@ create_cg_image(const PNMImage &pnm_image) {
   }
   nassertr((void *)dp == (void *)(char_array + num_bytes), NULL);
 
-  CGDataProviderRef provider = 
+  CGDataProviderRef provider =
     CGDataProviderCreateWithData(NULL, char_array, num_bytes, release_data);
   nassertr(provider != NULL, NULL);
 
@@ -182,24 +166,20 @@ create_cg_image(const PNMImage &pnm_image) {
   return image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsPipe::release_data
-//       Access: Private, Static
-//  Description: This callback is assigned to delete the data array
-//               allocated within create_cg_image().
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback is assigned to delete the data array allocated within
+ * create_cg_image().
+ */
 void TinyOsxGraphicsPipe::
 release_data(void *info, const void *data, size_t size) {
   char *char_array = (char *)data;
   PANDA_FREE_ARRAY(char_array);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyOsxGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window or buffer on the pipe, if possible.
-//               This routine is only called from GraphicsEngine::make_output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window or buffer on the pipe, if possible.  This routine is
+ * only called from GraphicsEngine::make_output.
+ */
 PT(GraphicsOutput) TinyOsxGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -210,7 +190,7 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
-  
+
   if (!_is_valid) {
     return NULL;
   }
@@ -245,7 +225,7 @@ make_output(const string &name,
         << "Got parent_window " << *window_handle << "\n";
 #ifdef SUPPORT_SUBPROCESS_WINDOW
       WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-      if (os_handle != NULL && 
+      if (os_handle != NULL &&
           os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
         return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
                                     flags, gsg, host);
@@ -255,7 +235,7 @@ make_output(const string &name,
     return new TinyOsxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                      flags, gsg, host);
   }
-  
+
   // Second thing to try: a TinyGraphicsBuffer
   if (retry == 1) {
     if (((flags&BF_require_parasite)!=0)||
@@ -264,7 +244,7 @@ make_output(const string &name,
     }
     return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }
-  
+
   // Nothing else left to try.
   return NULL;
 }

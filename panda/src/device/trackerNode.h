@@ -1,16 +1,15 @@
-// Filename: trackerNode.h
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file trackerNode.h
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #ifndef TRACKERNODE_H
 #define TRACKERNODE_H
@@ -25,14 +24,12 @@
 #include "linmath_events.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TrackerNode
-// Description : This class reads the position and orientation
-//               information from a tracker device and makes it
-//               available as a transformation on the data graph.
-//               It is also the primary interface to a Tracker object
-//               associated with a ClientBase.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class reads the position and orientation information from a tracker
+ * device and makes it available as a transformation on the data graph.
+ * It is also the primary interface to a Tracker object associated with a
+ * ClientBase.
+ */
 class EXPCL_PANDA_DEVICE TrackerNode : public DataNode {
 PUBLISHED:
   TrackerNode(ClientBase *client, const string &device_name);

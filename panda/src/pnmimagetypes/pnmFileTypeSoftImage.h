@@ -1,16 +1,15 @@
-// Filename: pnmFileTypeSoftImage.h
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeSoftImage.h
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #ifndef PNMFILETYPESOFTIMAGE_H
 #define PNMFILETYPESOFTIMAGE_H
@@ -23,10 +22,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeSoftImage
-// Description : For reading and SoftImage native image files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and SoftImage native image files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeSoftImage : public PNMFileType {
 public:
   PNMFileTypeSoftImage();
@@ -95,5 +93,3 @@ private:
 #endif  // HAVE_SOFTIMAGE_PIC
 
 #endif
-
-

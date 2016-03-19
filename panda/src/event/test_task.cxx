@@ -1,16 +1,15 @@
-// Filename: test_task.cxx
-// Created by:  drose (16Sep08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_task.cxx
+ * @author drose
+ * @date 2008-09-16
+ */
 
 #include "pandabase.h"
 #include "asyncTask.h"
@@ -26,7 +25,7 @@ public:
   {
   }
   ALLOC_DELETED_CHAIN(MyTask);
-    
+
   virtual DoneStatus do_task() {
     cerr << "Doing " << *this << ", sort = " << get_sort()
          << ", priority = " << get_priority()

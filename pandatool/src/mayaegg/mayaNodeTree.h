@@ -1,16 +1,15 @@
-// Filename: mayaNodeTree.h
-// Created by:  drose (06Jun03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaNodeTree.h
+ * @author drose
+ * @date 2003-06-06
+ */
 
 #ifndef MAYANODETREE_H
 #define MAYANODETREE_H
@@ -32,11 +31,9 @@ class EggTable;
 class EggXfmSAnim;
 class EggSAnimData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaNodeTree
-// Description : Describes a complete tree of maya nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a complete tree of maya nodes for conversion.
+ */
 class MayaNodeTree {
 public:
   MayaNodeTree(MayaToEggConverter *converter);
@@ -44,7 +41,7 @@ public:
   bool build_hierarchy();
 
   void tag_joint_all();
-  //  bool tag_joint_selected();
+  // bool tag_joint_selected();
   bool tag_joint_named(const GlobPattern &glob);
 
   void tag_all();
@@ -56,7 +53,7 @@ public:
   MayaNodeDesc *get_node(int n) const;
 
   void clear();
-  void clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
+  void clear_egg(EggData *egg_data, EggGroupNode *egg_root,
                  EggGroupNode *skeleton_node, EggGroupNode *morph_node);
   EggGroup *get_egg_group(MayaNodeDesc *node_desc);
   EggTable *get_egg_table(MayaNodeDesc *node_desc);

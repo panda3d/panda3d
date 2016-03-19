@@ -1,16 +1,15 @@
-// Filename: config_pgraph.cxx
-// Created by:  drose (21Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_pgraph.cxx
+ * @author drose
+ * @date 2002-02-21
+ */
 
 #include "config_pgraph.h"
 
@@ -370,14 +369,12 @@ ConfigVariableBool allow_live_flatten
           "only has an effect when Panda is not compiled for a release "
           "build."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libpgraph
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libpgraph() {
   static bool initialized = false;
@@ -512,9 +509,9 @@ init_libpgraph() {
   TransformState::register_with_read_factory();
   TransparencyAttrib::register_with_read_factory();
 
-  // By initializing the _states map up front, we also guarantee that
-  // the _states_lock mutex gets created before we spawn any threads
-  // (assuming no one is creating threads at static init time).
+  // By initializing the _states map up front, we also guarantee that the
+  // _states_lock mutex gets created before we spawn any threads (assuming no
+  // one is creating threads at static init time).
   TransformState::init_states();
   RenderState::init_states();
   RenderEffects::init_states();

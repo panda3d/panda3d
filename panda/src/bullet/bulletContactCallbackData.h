@@ -1,16 +1,15 @@
-// Filename: bulletContactCallbackData.h
-// Created by:  enn0x (22Nov12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletContactCallbackData.h
+ * @author enn0x
+ * @date 2012-11-22
+ */
 
 #ifndef __BULLET_CONTACT_CALLBACK_DATA_H__
 #define __BULLET_CONTACT_CALLBACK_DATA_H__
@@ -23,14 +22,13 @@
 #include "bullet_utils.h"
 #include "bulletManifoldPoint.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletContactCallbackData
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDABULLET BulletContactCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletContactCallbackData(BulletManifoldPoint &mp, 
+  INLINE BulletContactCallbackData(BulletManifoldPoint &mp,
                                    PandaNode *node0, PandaNode *node1,
                                    int id0, int id1,
                                    int index0, int index1);
@@ -52,14 +50,13 @@ private:
   int _index0;
   int _index1;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     CallbackData::init_type();
-    register_type(_type_handle, "BulletContactCallbackData", 
+    register_type(_type_handle, "BulletContactCallbackData",
                   CallbackData::get_class_type());
   }
   virtual TypeHandle get_type() const {

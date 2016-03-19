@@ -1,16 +1,15 @@
-// Filename: standardMunger.h
-// Created by:  drose (21Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file standardMunger.h
+ * @author drose
+ * @date 2005-03-21
+ */
 
 #ifndef STANDARDMUNGER_H
 #define STANDARDMUNGER_H
@@ -24,13 +23,11 @@
 #include "pointerTo.h"
 #include "weakPointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StandardMunger
-// Description : Performs some generic munging that is appropriate for
-//               all GSG types; for instance, applies ColorAttrib and
-//               ColorScaleAttrib to the vertices, and checks for
-//               hardware-accelerated animation capabilities.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs some generic munging that is appropriate for all GSG types; for
+ * instance, applies ColorAttrib and ColorScaleAttrib to the vertices, and
+ * checks for hardware-accelerated animation capabilities.
+ */
 class EXPCL_PANDA_DISPLAY StandardMunger : public StateMunger {
 public:
   StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
@@ -86,4 +83,3 @@ private:
 #include "standardMunger.I"
 
 #endif
-

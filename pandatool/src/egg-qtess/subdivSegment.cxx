@@ -1,27 +1,24 @@
-// Filename: subdivSegment.cxx
-// Created by:  drose (14Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file subdivSegment.cxx
+ * @author drose
+ * @date 2003-10-14
+ */
 
 #include "subdivSegment.h"
 
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: binary_search
-//  Description: Performs a standard binary search.  This utility
-//               function is used below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a standard binary search.  This utility function is used below.
+ */
 static int
 binary_search(double val, const double *array, int bot, int top) {
   if (top < bot) {
@@ -37,11 +34,9 @@ binary_search(double val, const double *array, int bot, int top) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubdivSegment::cut
-//       Access: Public
-//  Description: Applies _num_cuts cuts to the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies _num_cuts cuts to the segment.
+ */
 void SubdivSegment::
 cut() {
   int c;
@@ -82,4 +77,3 @@ cut() {
     }
   }
 }
-

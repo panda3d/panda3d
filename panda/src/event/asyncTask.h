@@ -1,16 +1,15 @@
-// Filename: asyncTask.h
-// Created by:  drose (23Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file asyncTask.h
+ * @author drose
+ * @date 2006-08-23
+ */
 
 #ifndef ASYNCTASK_H
 #define ASYNCTASK_H
@@ -25,13 +24,11 @@
 class AsyncTaskManager;
 class AsyncTaskChain;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTask
-// Description : This class represents a concrete task performed by an
-//               AsyncManager.  Normally, you would subclass from this
-//               class, and override do_task(), to define the
-//               functionality you wish to have the task perform.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class represents a concrete task performed by an AsyncManager.
+ * Normally, you would subclass from this class, and override do_task(), to
+ * define the functionality you wish to have the task perform.
+ */
 class EXPCL_PANDA_EVENT AsyncTask : public AsyncTaskBase {
 public:
   AsyncTask(const string &name = string());
@@ -71,7 +68,7 @@ PUBLISHED:
   INLINE double get_delay() const;
   double get_wake_time() const;
   void recalc_wake_time();
-  
+
   INLINE double get_start_time() const;
   double get_elapsed_time() const;
   INLINE int get_start_frame() const;
@@ -147,7 +144,7 @@ private:
 #ifdef HAVE_PYTHON
   PyObject *_python_object;
 #endif  // HAVE_PYTHON
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

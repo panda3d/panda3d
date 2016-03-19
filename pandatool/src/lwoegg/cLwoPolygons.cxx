@@ -1,16 +1,15 @@
-// Filename: cLwoPolygons.cxx
-// Created by:  drose (25Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cLwoPolygons.cxx
+ * @author drose
+ * @date 2001-04-25
+ */
 
 #include "cLwoPolygons.h"
 #include "lwoToEggConverter.h"
@@ -26,14 +25,11 @@
 #include "eggPoint.h"
 #include "deg_2_rad.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::add_ptags
-//       Access: Public
-//  Description: Associates the indicated PolygonTags and Tags with
-//               the polygons in this chunk.  This may define features
-//               such as per-polygon surfaces, parts, and smoothing
-//               groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the indicated PolygonTags and Tags with the polygons in this
+ * chunk.  This may define features such as per-polygon surfaces, parts, and
+ * smoothing groups.
+ */
 void CLwoPolygons::
 add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags) {
   if (_tags != (LwoTags *)NULL && _tags != tags) {
@@ -55,14 +51,11 @@ add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::add_vmad
-//       Access: Public
-//  Description: Associates the indicated DiscontinousVertexMap with
-//               the polygons.  This can be used in conjunction with
-//               (or in place of) the VertexMap associated with the
-//               points set, to define per-polygon UV's etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the indicated DiscontinousVertexMap with the polygons.  This can
+ * be used in conjunction with (or in place of) the VertexMap associated with
+ * the points set, to define per-polygon UV's etc.
+ */
 void CLwoPolygons::
 add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad) {
   IffId map_type = lwo_vmad->_map_type;
@@ -83,12 +76,10 @@ add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::get_surface
-//       Access: Public
-//  Description: Returns the surface associated with the given
-//               polygon, or NULL if no surface is associated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the surface associated with the given polygon, or NULL if no
+ * surface is associated.
+ */
 CLwoSurface *CLwoPolygons::
 get_surface(int polygon_index) const {
   if (_surf_ptags == (LwoPolygonTags *)NULL) {
@@ -121,21 +112,16 @@ get_surface(int polygon_index) const {
   return surface;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::get_uv
-//       Access: Public
-//  Description: Returns true if there is a UV of the indicated name
-//               associated with the given vertex of the indicated
-//               polygon, false otherwise.  If true, fills in uv with
-//               the value.
-//
-//               This performs a lookup in the optional
-//               "discontinuous" vertex mapping, which provides the
-//               ability to map different UV's per each polygon for
-//               the same vertex.  If the UV is not defined here, it
-//               may also be defined in the standard vertex map, which
-//               is associated with the points themselves.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a UV of the indicated name associated with the
+ * given vertex of the indicated polygon, false otherwise.  If true, fills in
+ * uv with the value.
+ *
+ * This performs a lookup in the optional "discontinuous" vertex mapping,
+ * which provides the ability to map different UV's per each polygon for the
+ * same vertex.  If the UV is not defined here, it may also be defined in the
+ * standard vertex map, which is associated with the points themselves.
+ */
 bool CLwoPolygons::
 get_uv(const string &uv_name, int pi, int vi, LPoint2 &uv) const {
   VMad::const_iterator ni = _txuv.find(uv_name);
@@ -160,16 +146,13 @@ get_uv(const string &uv_name, int pi, int vi, LPoint2 &uv) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::make_egg
-//       Access: Public
-//  Description: Creates the egg structures associated with this
-//               Lightwave object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the egg structures associated with this Lightwave object.
+ */
 void CLwoPolygons::
 make_egg() {
-  // First, we need a temporary group to hold all of the polygons
-  // we'll create.
+  // First, we need a temporary group to hold all of the polygons we'll
+  // create.
   _egg_group = new EggGroup;
 
   if (_polygons->_polygon_type == IffId("CURV")) {
@@ -194,11 +177,9 @@ make_egg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::connect_egg
-//       Access: Public
-//  Description: Connects all the egg structures together.
-////////////////////////////////////////////////////////////////////
+/**
+ * Connects all the egg structures together.
+ */
 void CLwoPolygons::
 connect_egg() {
   nassertv(_points->_layer->_egg_group != (EggGroup *)NULL);
@@ -207,11 +188,9 @@ connect_egg() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::make_faces
-//       Access: Public
-//  Description: Generates "face" polygons, i.e. actual polygons.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates "face" polygons, i.e.  actual polygons.
+ */
 void CLwoPolygons::
 make_faces() {
   PN_stdfloat smooth_angle = -1.0;
@@ -228,10 +207,10 @@ make_faces() {
     int num_points = points->get_num_points();
     EggVertexPool *egg_vpool = _points->_egg_vpool;
 
-    // We reverse the vertex ordering to compensate for Lightwave's
-    // clockwise ordering convention.  We also want to start with the
-    // last vertex, so that the first convex angle is the first angle
-    // in the EggPolygon (for determining correct normals).
+    // We reverse the vertex ordering to compensate for Lightwave's clockwise
+    // ordering convention.  We also want to start with the last vertex, so
+    // that the first convex angle is the first angle in the EggPolygon (for
+    // determining correct normals).
     PT(EggPrimitive) egg_prim;
 
     if (poly->_vertices.size() == 1) {
@@ -241,8 +220,8 @@ make_faces() {
     }
 
     // First, we have to create a temporary vector of vertices for the
-    // polygon, so we can possibly adjust the properties of these
-    // vertices (like the UV's) in the shader before we create them.
+    // polygon, so we can possibly adjust the properties of these vertices
+    // (like the UV's) in the shader before we create them.
     vector_PT_EggVertex egg_vertices;
 
     int num_vertices = poly->_vertices.size();
@@ -261,13 +240,13 @@ make_faces() {
           string uv_name = surface->get_uv_name();
           LPoint2 uv;
           if (get_uv(uv_name, pindex, vindex, uv)) {
-            // This UV is defined in a "discontinuous" map, that
-            // associated a particular UV per each polygon.
+            // This UV is defined in a "discontinuous" map, that associated a
+            // particular UV per each polygon.
             egg_vertex->set_uv(LCAST(double, uv));
 
           } else if (_points->get_uv(uv_name, vindex, uv)) {
-            // The UV does not appear in a discontinuous map, but it
-            // is defined in the points set.
+            // The UV does not appear in a discontinuous map, but it is
+            // defined in the points set.
             egg_vertex->set_uv(LCAST(double, uv));
           }
         }
@@ -301,4 +280,3 @@ make_faces() {
     _egg_group->recompute_polygon_normals(cs);
   }
 }
-

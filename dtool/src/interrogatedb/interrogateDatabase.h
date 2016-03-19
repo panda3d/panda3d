@@ -1,16 +1,15 @@
-// Filename: interrogateDatabase.h
-// Created by:  drose (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateDatabase.h
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #ifndef INTERROGATEDATABASE_H
 #define INTERROGATEDATABASE_H
@@ -30,11 +29,10 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateDatabase
-// Description : This stores all of the interrogate data and handles
-//               reading the data from a disk file when necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This stores all of the interrogate data and handles reading the data from a
+ * disk file when necessary.
+ */
 class EXPCL_INTERROGATEDB InterrogateDatabase {
 private:
   InterrogateDatabase();
@@ -152,15 +150,14 @@ private:
   typedef vector<ElementIndex> GlobalElements;
   GlobalElements _global_elements;
 
-  // This data is compiled in directly to the shared libraries that we
-  // link with.
+  // This data is compiled in directly to the shared libraries that we link
+  // with.
   typedef vector<InterrogateModuleDef *> Modules;
   Modules _modules;
   typedef map<string, InterrogateModuleDef *> ModulesByHash;
   ModulesByHash _modules_by_hash;
 
-  // This records the set of database files that are still to be
-  // loaded.
+  // This records the set of database files that are still to be loaded.
   typedef vector<InterrogateModuleDef *> Requests;
   Requests _requests;
 

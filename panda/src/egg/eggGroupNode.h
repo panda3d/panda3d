@@ -1,16 +1,15 @@
-// Filename: eggGroupNode.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroupNode.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGGROUPNODE_H
 #define EGGGROUPNODE_H
@@ -35,29 +34,25 @@ class EggVertex;
 class EggVertexPool;
 class DSearchPath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroupNode
-// Description : A base class for nodes in the hierarchy that are not
-//               leaf nodes.  (See also EggGroup, which is
-//               specifically the "<Group>" node in egg.)
-//
-//               An EggGroupNode is an STL-style container of pointers
-//               to EggNodes, like a vector.  Functions
-//               push_back()/pop_back() and insert()/erase() are
-//               provided to manipulate the list.  The list may also
-//               be operated on (read-only) via iterators and
-//               begin()/end().
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for nodes in the hierarchy that are not leaf nodes.  (See also
+ * EggGroup, which is specifically the "<Group>" node in egg.)
+ *
+ * An EggGroupNode is an STL-style container of pointers to EggNodes, like a
+ * vector.  Functions push_back()/pop_back() and insert()/erase() are provided
+ * to manipulate the list.  The list may also be operated on (read-only) via
+ * iterators and begin()/end().
+ */
 class EXPCL_PANDAEGG EggGroupNode : public EggNode {
 
-  // This is a bit of private interface stuff that must be here as a
-  // forward reference.  This allows us to define the EggGroupNode as
-  // an STL container.
+  // This is a bit of private interface stuff that must be here as a forward
+  // reference.  This allows us to define the EggGroupNode as an STL
+  // container.
 
 private:
-  // We define the list of children as a list and not a vector, so we
-  // can avoid the bad iterator-invalidating properties of vectors as
-  // we insert/delete elements.
+  // We define the list of children as a list and not a vector, so we can
+  // avoid the bad iterator-invalidating properties of vectors as we
+  // insertdelete elements.
   typedef plist< PT(EggNode) > Children;
 
   // Here begins the actual public interface to EggGroupNode.
@@ -70,10 +65,10 @@ PUBLISHED:
 
   virtual void write(ostream &out, int indent_level) const;
 
-  // The EggGroupNode itself appears to be an STL container of
-  // pointers to EggNodes.  The set of children is read-only, however,
-  // except through the limited add_child/remove_child or insert/erase
-  // interface.  The following implements this.
+  // The EggGroupNode itself appears to be an STL container of pointers to
+  // EggNodes.  The set of children is read-only, however, except through the
+  // limited add_childremove_child or inserterase interface.  The following
+  // implements this.
 public:
 #if defined(WIN32_VC) || defined(WIN64_VC)
   typedef const PT(EggNode) *pointer;
@@ -106,10 +101,10 @@ PUBLISHED:
   size_type size() const;
   void clear();
 
-  // This is an alternate way to traverse the list of children.  It is
-  // mainly provided for scripting code, which can't use the iterators
-  // defined above (they don't export through interrogate very well).
-  // These are, of course, non-thread-safe.
+  // This is an alternate way to traverse the list of children.  It is mainly
+  // provided for scripting code, which can't use the iterators defined above
+  // (they don't export through interrogate very well). These are, of course,
+  // non-thread-safe.
   EggNode *get_first_child();
   EggNode *get_next_child();
 
@@ -162,7 +157,7 @@ PUBLISHED:
   virtual bool has_normals() const;
 
 public:
-  void rebuild_vertex_pools(EggVertexPools &vertex_pools, 
+  void rebuild_vertex_pools(EggVertexPools &vertex_pools,
                             unsigned int max_vertices,
                             bool recurse);
 
@@ -180,7 +175,7 @@ protected:
   CoordinateSystem find_coordsys_entry();
   int find_textures(EggTextureCollection *collection);
   int find_materials(EggMaterialCollection *collection);
-  bool r_load_externals(const DSearchPath &searchpath, 
+  bool r_load_externals(const DSearchPath &searchpath,
                         CoordinateSystem coordsys,
                         BamCacheRecord *record);
 
@@ -191,9 +186,9 @@ private:
   Children _children;
   const_iterator _gnc_iterator;
 
-  // Don't try to use these private functions.  User code should add
-  // and remove children via add_child()/remove_child(), or via the
-  // STL-like push_back()/pop_back() or insert()/erase(), above.
+  // Don't try to use these private functions.  User code should add and
+  // remove children via add_child()remove_child(), or via the STL-like
+  // push_back()pop_back() or insert()erase(), above.
   void prepare_add_child(EggNode *node);
   void prepare_remove_child(EggNode *node);
 
@@ -260,4 +255,3 @@ private:
 #include "eggGroupNode.I"
 
 #endif
-

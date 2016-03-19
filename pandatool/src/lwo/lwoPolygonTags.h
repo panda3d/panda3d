@@ -1,16 +1,15 @@
-// Filename: lwoPolygonTags.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoPolygonTags.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOPOLYGONTAGS_H
 #define LWOPOLYGONTAGS_H
@@ -19,13 +18,11 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoPolygonTags
-// Description : An association of polygons defined in the most recent
-//               LwoPolygons chunk to tag ids defined in the most
-//               recent LwoTags chunk.  This associated properties
-//               with the polygons, depending on the tag_type.
-////////////////////////////////////////////////////////////////////
+/**
+ * An association of polygons defined in the most recent LwoPolygons chunk to
+ * tag ids defined in the most recent LwoTags chunk.  This associated
+ * properties with the polygons, depending on the tag_type.
+ */
 class LwoPolygonTags : public LwoChunk {
 public:
   bool has_tag(int polygon_index) const;
@@ -60,5 +57,3 @@ private:
 };
 
 #endif
-
-

@@ -1,25 +1,23 @@
-// Filename: aa_luse.h
-// Created by:  drose (13Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file aa_luse.h
+ * @author drose
+ * @date 1999-01-13
+ */
 
 #ifndef AA_LUSE_H
 #define AA_LUSE_H
 
-// This file is include by luse.h to do all the work required by that
-// header file.  It is in a separate header file to avoid cyclic
-// header dependencies, and because interrogate wants to sort header
-// files in alphabetical order and this one should pretty much be
-// included first.
+// This file is include by luse.h to do all the work required by that header
+// file.  It is in a separate header file to avoid cyclic header dependencies,
+// and because interrogate wants to sort header files in alphabetical order
+// and this one should pretty much be included first.
 
 #include "pandabase.h"
 
@@ -35,13 +33,12 @@
 #include "lorientation.h"
 #include "lcast_to.h"
 
-//ensure FLOATTYPE is set to float for macros are used outside of LINMATH
+// ensure FLOATTYPE is set to float for macros are used outside of LINMATH
 #include "fltnames.h"
 
-// This macro defines the cast-to-another-numeric-type operator for
-// all of the things defined in this package.  It works by virtue of
-// there being an appropriate lcast_to() template function defined for
-// each class.
+// This macro defines the cast-to-another-numeric-type operator for all of the
+// things defined in this package.  It works by virtue of there being an
+// appropriate lcast_to() template function defined for each class.
 
 #define LCAST(numeric_type, object) lcast_to((numeric_type *)0, object)
 
@@ -62,8 +59,8 @@ typedef LPoint3d LTexCoord3d;
 typedef LVecBase4d LColord;
 typedef LVecBase3d LRGBColord;
 
-// The following names are only for legacy Python code.  These aren't
-// real typedefs; they're just commands to interrogate.
+// The following names are only for legacy Python code.  These aren't real
+// typedefs; they're just commands to interrogate.
 #ifdef CPPPARSER
 typedef LMatrix4f Mat4F;
 typedef LMatrix3f Mat3F;
@@ -91,11 +88,10 @@ typedef LPoint2d Point2D;
 typedef LQuaterniond QuatD;
 #endif // CPPPARSER
 
-// And finally, we define the unqualified "standard" float type, which
-// is based on the setting of STDFLOAT_DOUBLE.  This is the type that
-// is used for graphics-specific operations such as vertex and pos
-// value.  The default is single-precision floats, which is almost
-// always what you really want.
+// And finally, we define the unqualified "standard" float type, which is
+// based on the setting of STDFLOAT_DOUBLE.  This is the type that is used for
+// graphics-specific operations such as vertex and pos value.  The default is
+// single-precision floats, which is almost always what you really want.
 #ifndef STDFLOAT_DOUBLE
 // The default setting--single-precision floats.
 

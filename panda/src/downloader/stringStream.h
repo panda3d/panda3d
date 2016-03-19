@@ -1,16 +1,15 @@
-// Filename: stringStream.h
-// Created by:  drose (03Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stringStream.h
+ * @author drose
+ * @date 2007-07-03
+ */
 
 #ifndef STRINGSTREAM_H
 #define STRINGSTREAM_H
@@ -20,13 +19,11 @@
 #include "vector_uchar.h"
 #include "extension.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StringStream
-// Description : A bi-directional stream object that reads and writes
-//               data to an internal buffer, which can be retrieved
-//               and/or set as a string in Python 2 or a bytes object
-//               in Python 3.
-////////////////////////////////////////////////////////////////////
+/**
+ * A bi-directional stream object that reads and writes data to an internal
+ * buffer, which can be retrieved and/or set as a string in Python 2 or a
+ * bytes object in Python 3.
+ */
 class EXPCL_PANDAEXPRESS StringStream : public iostream {
 public:
   INLINE StringStream(const string &source);

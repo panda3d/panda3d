@@ -1,16 +1,15 @@
-// Filename: clipPlaneAttrib.h
-// Created by:  drose (11Jul02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clipPlaneAttrib.h
+ * @author drose
+ * @date 2002-07-11
+ */
 
 #ifndef CLIPPINGPLANEATTRIB_H
 #define CLIPPINGPLANEATTRIB_H
@@ -23,14 +22,12 @@
 #include "ordered_vector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClipPlaneAttrib
-// Description : This functions similarly to a LightAttrib.  It
-//               indicates the set of clipping planes that modify the
-//               geometry at this level and below.  A ClipPlaneAttrib
-//               can either add planes or remove planes from the total
-//               set of clipping planes in effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This functions similarly to a LightAttrib.  It indicates the set of
+ * clipping planes that modify the geometry at this level and below.  A
+ * ClipPlaneAttrib can either add planes or remove planes from the total set
+ * of clipping planes in effect.
+ */
 class EXPCL_PANDA_PGRAPH ClipPlaneAttrib : public RenderAttrib {
 private:
   INLINE ClipPlaneAttrib();
@@ -38,23 +35,22 @@ private:
 
 PUBLISHED:
 
-  // This is the old, deprecated interface to ClipPlaneAttrib.  Do not
-  // use any of these methods for new code; these methods will be
-  // removed soon.
+  // This is the old, deprecated interface to ClipPlaneAttrib.  Do not use any
+  // of these methods for new code; these methods will be removed soon.
   enum Operation {
     O_set,
     O_add,
     O_remove
   };
 
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 PlaneNode *plane);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 PlaneNode *plane1, PlaneNode *plane2);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 PlaneNode *plane1, PlaneNode *plane2,
                                 PlaneNode *plane3);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 PlaneNode *plane1, PlaneNode *plane2,
                                 PlaneNode *plane3, PlaneNode *plane4);
   static CPT(RenderAttrib) make_default();
@@ -69,8 +65,7 @@ PUBLISHED:
   CPT(RenderAttrib) remove_plane(PlaneNode *plane) const;
 
 
-  // The following is the new, more general interface to the
-  // ClipPlaneAttrib.
+  // The following is the new, more general interface to the ClipPlaneAttrib.
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_all_off();
 
@@ -113,7 +108,7 @@ private:
   typedef ov_set<NodePath> Planes;
   Planes _on_planes, _off_planes;
   bool _off_all_planes;
-  
+
   typedef pmap< int, CPT(ClipPlaneAttrib) > Filtered;
   Filtered _filtered;
 
@@ -139,7 +134,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -163,4 +158,3 @@ private:
 #include "clipPlaneAttrib.I"
 
 #endif
-

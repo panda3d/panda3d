@@ -1,16 +1,15 @@
-// Filename: eggCompositePrimitive.cxx
-// Created by:  drose (13Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCompositePrimitive.cxx
+ * @author drose
+ * @date 2005-03-13
+ */
 
 #include "eggCompositePrimitive.h"
 #include "eggGroupNode.h"
@@ -19,37 +18,29 @@
 TypeHandle EggCompositePrimitive::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggCompositePrimitive::
 ~EggCompositePrimitive() {
-  // Every derived class of EggCompositePrimitive must call clear() in
-  // its destructor.
+  // Every derived class of EggCompositePrimitive must call clear() in its
+  // destructor.
   nassertv(_components.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::get_shading
-//       Access: Published, Virtual
-//  Description: Returns the shading properties apparent on this
-//               particular primitive.  This returns S_per_vertex if
-//               the vertices have colors or normals (and they are not
-//               all the same values), or for a simple primitive,
-//               S_overall otherwise.  A composite primitive may also
-//               return S_per_face if the individual component
-//               primitives have colors or normals that are not all
-//               the same values.
-//
-//               To get the most accurate results, you should call
-//               clear_shading() on all connected primitives (or on
-//               all primitives in the egg file), followed by
-//               get_shading() on each primitive.  You may find it
-//               easiest to call these methods on the EggData root
-//               node (they are defined on EggGroupNode).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the shading properties apparent on this particular primitive.  This
+ * returns S_per_vertex if the vertices have colors or normals (and they are
+ * not all the same values), or for a simple primitive, S_overall otherwise.
+ * A composite primitive may also return S_per_face if the individual
+ * component primitives have colors or normals that are not all the same
+ * values.
+ *
+ * To get the most accurate results, you should call clear_shading() on all
+ * connected primitives (or on all primitives in the egg file), followed by
+ * get_shading() on each primitive.  You may find it easiest to call these
+ * methods on the EggData root node (they are defined on EggGroupNode).
+ */
 EggPrimitive::Shading EggCompositePrimitive::
 get_shading() const {
   Shading basic_shading = EggPrimitive::get_shading();
@@ -97,21 +88,15 @@ get_shading() const {
   return S_overall;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::triangulate_in_place
-//       Access: Published
-//  Description: Subdivides the composite primitive into triangles and
-//               adds those triangles to the parent group node in
-//               place of the original primitive.  Returns a pointer
-//               to the original primitive, which is likely about to
-//               be destructed.
-//
-//               If convex_also is true, both concave and convex
-//               polygons will be subdivided into triangles;
-//               otherwise, only concave polygons will be subdivided,
-//               and convex polygons will be copied unchanged into the
-//               container.
-////////////////////////////////////////////////////////////////////
+/**
+ * Subdivides the composite primitive into triangles and adds those triangles
+ * to the parent group node in place of the original primitive.  Returns a
+ * pointer to the original primitive, which is likely about to be destructed.
+ *
+ * If convex_also is true, both concave and convex polygons will be subdivided
+ * into triangles; otherwise, only concave polygons will be subdivided, and
+ * convex polygons will be copied unchanged into the container.
+ */
 PT(EggCompositePrimitive) EggCompositePrimitive::
 triangulate_in_place() {
   EggGroupNode *parent = get_parent();
@@ -124,30 +109,24 @@ triangulate_in_place() {
   return save_me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::unify_attributes
-//       Access: Published, Virtual
-//  Description: If the shading property is S_per_vertex, ensures that
-//               all vertices have a normal and a color, and the
-//               overall primitive does not.
-//
-//               If the shading property is S_per_face, and this is a
-//               composite primitive, ensures that all components have
-//               a normal and a color, and the vertices and overall
-//               primitive do not.  (If this is a simple primitive,
-//               S_per_face works the same as S_overall, below).
-//
-//               If the shading property is S_overall, ensures that no
-//               vertices or components have a normal or a color, and
-//               the overall primitive does (if any exists at all).
-//
-//               After this call, either the primitive will have
-//               normals or its vertices will, but not both.  Ditto
-//               for colors.
-//
-//               This may create redundant vertices in the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the shading property is S_per_vertex, ensures that all vertices have a
+ * normal and a color, and the overall primitive does not.
+ *
+ * If the shading property is S_per_face, and this is a composite primitive,
+ * ensures that all components have a normal and a color, and the vertices and
+ * overall primitive do not.  (If this is a simple primitive, S_per_face works
+ * the same as S_overall, below).
+ *
+ * If the shading property is S_overall, ensures that no vertices or
+ * components have a normal or a color, and the overall primitive does (if any
+ * exists at all).
+ *
+ * After this call, either the primitive will have normals or its vertices
+ * will, but not both.  Ditto for colors.
+ *
+ * This may create redundant vertices in the vertex pool.
+ */
 void EggCompositePrimitive::
 unify_attributes(EggPrimitive::Shading shading) {
   if (shading == S_unknown) {
@@ -219,7 +198,7 @@ unify_attributes(EggPrimitive::Shading shading) {
           PT(EggVertex) vertex = new EggVertex(*orig_vertex);
           vertex->clear_normal();
           vertex->clear_color();
-          
+
           EggVertexPool *vertex_pool = orig_vertex->get_pool();
           nassertv(vertex_pool != (EggVertexPool *)NULL);
           vertex = vertex_pool->create_unique_vertex(*vertex);
@@ -303,23 +282,18 @@ unify_attributes(EggPrimitive::Shading shading) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::apply_last_attribute
-//       Access: Published, Virtual
-//  Description: Sets the last vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               OpenGL convention of storing flat-shaded properties on
-//               the last vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the last vertex of the triangle (or each component) to the primitive
+ * normal and/or color, if the primitive is flat-shaded.  This reflects the
+ * OpenGL convention of storing flat-shaded properties on the last vertex,
+ * although it is not usually a convention in Egg.
+ *
+ * This may introduce redundant vertices to the vertex pool.
+ */
 void EggCompositePrimitive::
 apply_last_attribute() {
-  // The first component gets applied to the third vertex, and so on
-  // from there.
+  // The first component gets applied to the third vertex, and so on from
+  // there.
   int num_lead_vertices = get_num_lead_vertices();
   for (int i = 0; i < get_num_components(); i++) {
     EggAttributes *component = get_component(i);
@@ -327,37 +301,29 @@ apply_last_attribute() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::apply_first_attribute
-//       Access: Published, Virtual
-//  Description: Sets the first vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               DirectX convention of storing flat-shaded properties
-//               on the first vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the first vertex of the triangle (or each component) to the primitive
+ * normal and/or color, if the primitive is flat-shaded.  This reflects the
+ * DirectX convention of storing flat-shaded properties on the first vertex,
+ * although it is not usually a convention in Egg.
+ *
+ * This may introduce redundant vertices to the vertex pool.
+ */
 void EggCompositePrimitive::
 apply_first_attribute() {
-  // The first component gets applied to the first vertex, and so on
-  // from there.
+  // The first component gets applied to the first vertex, and so on from
+  // there.
   for (int i = 0; i < get_num_components(); i++) {
     EggAttributes *component = get_component(i);
     do_apply_flat_attribute(i, component);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::post_apply_flat_attribute
-//       Access: Published, Virtual
-//  Description: Intended as a followup to apply_last_attribute(),
-//               this also sets an attribute on the first vertices of
-//               the primitive, if they don't already have an
-//               attribute set, just so they end up with *something*.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended as a followup to apply_last_attribute(), this also sets an
+ * attribute on the first vertices of the primitive, if they don't already
+ * have an attribute set, just so they end up with *something*.
+ */
 void EggCompositePrimitive::
 post_apply_flat_attribute() {
   if (!empty()) {
@@ -366,9 +332,9 @@ post_apply_flat_attribute() {
       EggVertex *vertex = get_vertex(i);
       EggAttributes *component = get_component(max(i - num_lead_vertices, 0));
 
-      // Use set_normal() instead of copy_normal(), to avoid getting
-      // the morphs--we don't want them here, since we're just putting
-      // a bogus value on the normal anyway.
+      // Use set_normal() instead of copy_normal(), to avoid getting the
+      // morphs--we don't want them here, since we're just putting a bogus
+      // value on the normal anyway.
 
       if (component->has_normal() && !vertex->has_normal()) {
         vertex->set_normal(component->get_normal());
@@ -385,32 +351,25 @@ post_apply_flat_attribute() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::cleanup
-//       Access: Published, Virtual
-//  Description: Cleans up modeling errors in whatever context this
-//               makes sense.  For instance, for a polygon, this calls
-//               remove_doubled_verts(true).  For a point, it calls
-//               remove_nonunique_verts().  Returns true if the
-//               primitive is valid, or false if it is degenerate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Cleans up modeling errors in whatever context this makes sense.  For
+ * instance, for a polygon, this calls remove_doubled_verts(true).  For a
+ * point, it calls remove_nonunique_verts().  Returns true if the primitive is
+ * valid, or false if it is degenerate.
+ */
 bool EggCompositePrimitive::
 cleanup() {
   return (int)size() >= get_num_lead_vertices() + 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::prepare_add_vertex
-//       Access: Protected, Virtual
-//  Description: Marks the vertex as belonging to the primitive.  This
-//               is an internal function called by the STL-like
-//               functions push_back() and insert(), in preparation
-//               for actually adding the vertex.
-//
-//               i indicates the new position of the vertex in the
-//               list; n indicates the new number of vertices after
-//               the operation has completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the vertex as belonging to the primitive.  This is an internal
+ * function called by the STL-like functions push_back() and insert(), in
+ * preparation for actually adding the vertex.
+ *
+ * i indicates the new position of the vertex in the list; n indicates the new
+ * number of vertices after the operation has completed.
+ */
 void EggCompositePrimitive::
 prepare_add_vertex(EggVertex *vertex, int i, int n) {
   EggPrimitive::prepare_add_vertex(vertex, i, n);
@@ -424,21 +383,17 @@ prepare_add_vertex(EggVertex *vertex, int i, int n) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::prepare_remove_vertex
-//       Access: Protected, Virtual
-//  Description: Marks the vertex as removed from the primitive.  This
-//               is an internal function called by the STL-like
-//               functions pop_back() and erase(), in preparation for
-//               actually doing the removal.
-//
-//               i indicates the former position of the vertex in the
-//               list; n indicates the current number of vertices
-//               before the operation has completed.
-//
-//               It is an error to attempt to remove a vertex that is
-//               not already a vertex of this primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the vertex as removed from the primitive.  This is an internal
+ * function called by the STL-like functions pop_back() and erase(), in
+ * preparation for actually doing the removal.
+ *
+ * i indicates the former position of the vertex in the list; n indicates the
+ * current number of vertices before the operation has completed.
+ *
+ * It is an error to attempt to remove a vertex that is not already a vertex
+ * of this primitive.
+ */
 void EggCompositePrimitive::
 prepare_remove_vertex(EggVertex *vertex, int i, int n) {
   EggPrimitive::prepare_remove_vertex(vertex, i, n);
@@ -452,34 +407,26 @@ prepare_remove_vertex(EggVertex *vertex, int i, int n) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::triangulate_poly
-//       Access: Protected, Virtual
-//  Description: Fills the container up with EggPolygons that
-//               represent the component triangles of this triangle
-//               strip.
-//
-//               It is assumed that the EggCompositePrimitive is not
-//               already a child of any other group when this function
-//               is called.
-//
-//               Returns true if the triangulation is successful, or
-//               false if there was some error (in which case the
-//               container may contain some partial triangulation).
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the container up with EggPolygons that represent the component
+ * triangles of this triangle strip.
+ *
+ * It is assumed that the EggCompositePrimitive is not already a child of any
+ * other group when this function is called.
+ *
+ * Returns true if the triangulation is successful, or false if there was some
+ * error (in which case the container may contain some partial triangulation).
+ */
 bool EggCompositePrimitive::
 do_triangulate(EggGroupNode *container) const {
   container->add_child((EggCompositePrimitive *)this);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCompositePrimitive::write_body
-//       Access: Protected
-//  Description: Writes the attributes and the vertices referenced by
-//               the primitive to the indicated output stream in Egg
-//               format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the attributes and the vertices referenced by the primitive to the
+ * indicated output stream in Egg format.
+ */
 void EggCompositePrimitive::
 write_body(ostream &out, int indent_level) const {
   EggPrimitive::write_body(out, indent_level);

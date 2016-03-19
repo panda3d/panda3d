@@ -1,16 +1,15 @@
-// Filename: pgWaitBar.cxx
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgWaitBar.cxx
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #include "pgWaitBar.h"
 #include "pgMouseWatcherParameter.h"
@@ -19,11 +18,9 @@
 
 TypeHandle PGWaitBar::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGWaitBar::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGWaitBar::
 PGWaitBar(const string &name) : PGItem(name)
 {
@@ -34,20 +31,16 @@ PGWaitBar(const string &name) : PGItem(name)
   _bar_state = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGWaitBar::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGWaitBar::
 ~PGWaitBar() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGWaitBar::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PGWaitBar::
 PGWaitBar(const PGWaitBar &copy) :
   PGItem(copy),
@@ -57,45 +50,35 @@ PGWaitBar(const PGWaitBar &copy) :
   _bar_state = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGWaitBar::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PGWaitBar::
 make_copy() const {
   LightReMutexHolder holder(_lock);
   return new PGWaitBar(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGWaitBar::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.
+ *
+ * Note that this function will *not* be called unless set_cull_callback() is
+ * called in the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.
+ *
+ * By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ *
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PGWaitBar::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LightReMutexHolder holder(_lock);
@@ -103,12 +86,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return PGItem::cull_callback(trav, data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGWaitBar::setup
-//       Access: Published
-//  Description: Creates a PGWaitBar with the indicated dimensions,
-//               with the indicated maximum range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a PGWaitBar with the indicated dimensions, with the indicated
+ * maximum range.
+ */
 void PGWaitBar::
 setup(PN_stdfloat width, PN_stdfloat height, PN_stdfloat range) {
   LightReMutexHolder holder(_lock);
@@ -131,19 +112,17 @@ setup(PN_stdfloat width, PN_stdfloat height, PN_stdfloat range) {
   set_bar_style(style);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGWaitBar::update
-//       Access: Private
-//  Description: Computes the appropriate size of the bar frame
-//               according to the percentage completed.
-////////////////////////////////////////////////////////////////////
-void PGWaitBar:: 
+/**
+ * Computes the appropriate size of the bar frame according to the percentage
+ * completed.
+ */
+void PGWaitBar::
 update() {
   LightReMutexHolder holder(_lock);
   int state = get_state();
 
-  // If the bar was last drawn in this state and is still current, we
-  // don't have to draw it again.
+  // If the bar was last drawn in this state and is still current, we don't
+  // have to draw it again.
   if (_bar_state == state) {
     return;
   }
@@ -170,7 +149,7 @@ update() {
     PN_stdfloat frac = _value / _range;
     frac = max(min(frac, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
     bar_frame[1] = bar_frame[0] + frac * (bar_frame[1] - bar_frame[0]);
-    
+
     _bar = _bar_style.generate_into(root, bar_frame, 1);
   }
 

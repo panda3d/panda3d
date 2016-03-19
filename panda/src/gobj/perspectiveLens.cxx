@@ -1,16 +1,15 @@
-// Filename: perspectiveLens.cxx
-// Created by:  drose (18Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file perspectiveLens.cxx
+ * @author drose
+ * @date 1999-02-18
+ */
 
 #include "perspectiveLens.h"
 #include "bamReader.h"
@@ -18,60 +17,48 @@
 TypeHandle PerspectiveLens::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates a new Lens just like this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a new Lens just like this one.
+ */
 PT(Lens) PerspectiveLens::
 make_copy() const {
   return new PerspectiveLens(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::is_linear
-//       Access: Published, Virtual
-//  Description: Returns true if the lens represents a linear
-//               projection (e.g. PerspectiveLens, OrthographicLens),
-//               and therefore there is a valid matrix returned by
-//               get_projection_mat(), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the lens represents a linear projection (e.g.
+ * PerspectiveLens, OrthographicLens), and therefore there is a valid matrix
+ * returned by get_projection_mat(), or false otherwise.
+ */
 bool PerspectiveLens::
 is_linear() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::is_perspective
-//       Access: Published, Virtual
-//  Description: Returns true if the lens represents a perspective
-//               projection (i.e. it is a PerspectiveLens), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the lens represents a perspective projection (i.e.  it is a
+ * PerspectiveLens), false otherwise.
+ */
 bool PerspectiveLens::
 is_perspective() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::do_extrude_depth
-//       Access: Protected, Virtual
-//  Description: This is the generic implementation, which is based on
-//               do_extrude() and assumes a linear distribution of
-//               depth values between the near and far points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the generic implementation, which is based on do_extrude() and
+ * assumes a linear distribution of depth values between the near and far
+ * points.
+ */
 bool PerspectiveLens::
 do_extrude_depth(const CData *cdata,
                  const LPoint3 &point2d, LPoint3 &point3d) const {
   return do_extrude_depth_with_mat(cdata, point2d, point3d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::do_compute_projection_mat
-//       Access: Protected, Virtual
-//  Description: Computes the complete transformation matrix from 3-d
-//               point to 2-d point, if the lens is linear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the complete transformation matrix from 3-d point to 2-d point, if
+ * the lens is linear.
+ */
 void PerspectiveLens::
 do_compute_projection_mat(Lens::CData *lens_cdata) {
   CoordinateSystem cs = lens_cdata->_cs;
@@ -137,8 +124,8 @@ do_compute_projection_mat(Lens::CData *lens_cdata) {
     lens_cdata->_projection_mat_left = lens_cdata->_projection_mat_right = lens_cdata->_projection_mat;
 
   } else {
-    // Compute the left and right projection matrices in case this
-    // lens is assigned to a stereo DisplayRegion.
+    // Compute the left and right projection matrices in case this lens is
+    // assigned to a stereo DisplayRegion.
 
     LVector3 iod = lens_cdata->_interocular_distance * 0.5f * LVector3::left(lens_cdata->_cs);
     lens_cdata->_projection_mat_left = do_get_lens_mat_inv(lens_cdata) * LMatrix4::translate_mat(-iod) * canonical * do_get_film_mat(lens_cdata);
@@ -164,67 +151,52 @@ do_compute_projection_mat(Lens::CData *lens_cdata) {
                        CF_projection_mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::fov_to_film
-//       Access: Protected, Virtual
-//  Description: Given a field of view in degrees and a focal length,
-//               compute the correspdonding width (or height) on the
-//               film.  If horiz is true, this is in the horizontal
-//               direction; otherwise, it is in the vertical direction
-//               (some lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a field of view in degrees and a focal length, compute the
+ * correspdonding width (or height) on the film.  If horiz is true, this is in
+ * the horizontal direction; otherwise, it is in the vertical direction (some
+ * lenses behave differently in each direction).
+ */
 PN_stdfloat PerspectiveLens::
 fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool) const {
   return (ctan(deg_2_rad(fov * 0.5f)) * focal_length) * 2.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::fov_to_focal_length
-//       Access: Protected, Virtual
-//  Description: Given a field of view in degrees and a width (or
-//               height) on the film, compute the focal length of the
-//               lens.  If horiz is true, this is in the horizontal
-//               direction; otherwise, it is in the vertical direction
-//               (some lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a field of view in degrees and a width (or height) on the film,
+ * compute the focal length of the lens.  If horiz is true, this is in the
+ * horizontal direction; otherwise, it is in the vertical direction (some
+ * lenses behave differently in each direction).
+ */
 PN_stdfloat PerspectiveLens::
 fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool) const {
   return film_size * 0.5f / ctan(deg_2_rad(fov * 0.5f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::film_to_fov
-//       Access: Protected, Virtual
-//  Description: Given a width (or height) on the film and a focal
-//               length, compute the field of view in degrees.  If
-//               horiz is true, this is in the horizontal direction;
-//               otherwise, it is in the vertical direction (some
-//               lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a width (or height) on the film and a focal length, compute the field
+ * of view in degrees.  If horiz is true, this is in the horizontal direction;
+ * otherwise, it is in the vertical direction (some lenses behave differently
+ * in each direction).
+ */
 PN_stdfloat PerspectiveLens::
 film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool) const {
   return rad_2_deg(catan(film_size * 0.5f / focal_length)) * 2.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Lens.
+ */
 void PerspectiveLens::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Lens is encountered
-//               in the Bam file.  It should create the Lens
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type Lens is encountered in the Bam file.  It should create the Lens and
+ * extract its information from the file.
+ */
 TypedWritable *PerspectiveLens::
 make_from_bam(const FactoryParams &params) {
   PerspectiveLens *lens = new PerspectiveLens;

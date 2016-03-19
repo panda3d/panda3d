@@ -1,16 +1,15 @@
-// Filename: linearRandomForce.h
-// Created by:  charles (19Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearRandomForce.h
+ * @author charles
+ * @date 2000-06-19
+ */
 
 #ifndef LINEARRANDOMFORCE_H
 #define LINEARRANDOMFORCE_H
@@ -20,14 +19,13 @@
 #include "mathNumbers.h"
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearRandomForce
-// Description : Pure virtual, parent to noiseForce and jitterForce
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure virtual, parent to noiseForce and jitterForce
+ */
 class EXPCL_PANDAPHYSICS LinearRandomForce : public LinearForce {
 PUBLISHED:
   virtual ~LinearRandomForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

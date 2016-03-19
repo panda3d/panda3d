@@ -1,16 +1,15 @@
-// Filename: transformBlendTable.h
-// Created by:  drose (24Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transformBlendTable.h
+ * @author drose
+ * @date 2005-03-24
+ */
 
 #ifndef TRANSFORMBLENDTABLE_H
 #define TRANSFORMBLENDTABLE_H
@@ -32,21 +31,17 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TransformBlendTable
-// Description : This structure collects together the different
-//               combinations of transforms and blend amounts used by
-//               a GeomVertexData, to facilitate computing dynamic
-//               vertices on the CPU at runtime.  Each vertex has a
-//               pointer to exactly one of the entries in this table,
-//               and each entry defines a number of transform/blend
-//               combinations.
-//
-//               This structure is used for a GeomVertexData set up to
-//               compute its dynamic vertices on the CPU.  See
-//               TransformTable for one set up to compute its
-//               dynamic vertices on the graphics card.
-////////////////////////////////////////////////////////////////////
+/**
+ * This structure collects together the different combinations of transforms
+ * and blend amounts used by a GeomVertexData, to facilitate computing dynamic
+ * vertices on the CPU at runtime.  Each vertex has a pointer to exactly one
+ * of the entries in this table, and each entry defines a number of
+ * transform/blend combinations.
+ *
+ * This structure is used for a GeomVertexData set up to compute its dynamic
+ * vertices on the CPU.  See TransformTable for one set up to compute its
+ * dynamic vertices on the graphics card.
+ */
 class EXPCL_PANDA_GOBJ TransformBlendTable : public CopyOnWriteObject {
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
@@ -86,27 +81,26 @@ private:
   void clear_modified(Thread *current_thread);
 
 private:
-  // We don't bother with registering the table, or protecting its
-  // data in a CycleData structure--the interface on GeomVertexData
-  // guarantees that the pointer will be copied if we modify the
-  // table.
+  // We don't bother with registering the table, or protecting its data in a
+  // CycleData structure--the interface on GeomVertexData guarantees that the
+  // pointer will be copied if we modify the table.
   typedef pvector<TransformBlend> Blends;
   Blends _blends;
 
   SparseArray _rows;
 
-  // This map indexes directly into the above vector.  That means any
-  // time we add or remove anything from the vector, we must
-  // completely rebuild the index (since the vector might reallocate,
-  // invalidating all the pointers into it).
+  // This map indexes directly into the above vector.  That means any time we
+  // add or remove anything from the vector, we must completely rebuild the
+  // index (since the vector might reallocate, invalidating all the pointers
+  // into it).
   typedef pmap<const TransformBlend *, int, IndirectLess<TransformBlend> > BlendIndex;
   BlendIndex _blend_index;
   int _num_transforms;
   int _max_simultaneous_transforms;
 
-  // Even though we don't store the actual blend table data in a
-  // CycleData structure, we do need to keep a local cache of the
-  // relevant modified stamps there, so it can be updated per-thread.
+  // Even though we don't store the actual blend table data in a CycleData
+  // structure, we do need to keep a local cache of the relevant modified
+  // stamps there, so it can be updated per-thread.
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();

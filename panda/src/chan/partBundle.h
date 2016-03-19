@@ -1,16 +1,15 @@
-// Filename: partBundle.h
-// Created by:  drose (22Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file partBundle.h
+ * @author drose
+ * @date 1999-02-22
+ */
 
 #ifndef PARTBUNDLE_H
 #define PARTBUNDLE_H
@@ -40,17 +39,15 @@ class PartBundleNode;
 class TransformState;
 class AnimPreloadTable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PartBundle
-// Description : This is the root of a MovingPart hierarchy.  It
-//               defines the hierarchy of moving parts that make up an
-//               animatable object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the root of a MovingPart hierarchy.  It defines the hierarchy of
+ * moving parts that make up an animatable object.
+ */
 class EXPCL_PANDA_CHAN PartBundle : public PartGroup {
 public:
 
-  // This is passed down through the MovingParts during the
-  // do_update() call to specify the channels that are in effect.
+  // This is passed down through the MovingParts during the do_update() call
+  // to specify the channels that are in effect.
   typedef pmap<AnimControl *, PN_stdfloat> ChannelBlend;
 
 protected:
@@ -67,36 +64,34 @@ PUBLISHED:
   INLINE void clear_anim_preload();
   void merge_anim_preloads(const PartBundle *other);
 
-  // This is the parameter to set_blend_type() and specifies the kind
-  // of blending operation to be performed when multiple controls are
-  // in effect simultaneously (see set_control_effect()) or between
-  // sequential frames of the animation.
+  // This is the parameter to set_blend_type() and specifies the kind of
+  // blending operation to be performed when multiple controls are in effect
+  // simultaneously (see set_control_effect()) or between sequential frames of
+  // the animation.
   enum BlendType {
-    // BT_linear does a componentwise average of all blended matrices,
-    // which is a linear blend.  The result of this is that if a
-    // particular vertex would have been at point P in one animation
-    // and point Q in another one, it will end up on the line in
-    // between them in the resulting blend animation.  However, this
-    // tends to stretch and squash limbs in strange and disturbing
-    // ways.
+    // BT_linear does a componentwise average of all blended matrices, which
+    // is a linear blend.  The result of this is that if a particular vertex
+    // would have been at point P in one animation and point Q in another one,
+    // it will end up on the line in between them in the resulting blend
+    // animation.  However, this tends to stretch and squash limbs in strange
+    // and disturbing ways.
     BT_linear,
 
-    // BT_normalized_linear is a compromise on BT_linear.  The matrix
-    // is blended linearly without the scale and shear components, and
-    // the blended scale and shear components are applied separately.
-    // This keeps all of the character's body parts in the correct
-    // size and shape.  However, if the hierarchy is disconnected,
-    // body parts can fly off.  It's essential the skeleton hierarchy
-    // be completely connected to use this blend mode successully.
+    // BT_normalized_linear is a compromise on BT_linear.  The matrix is
+    // blended linearly without the scale and shear components, and the
+    // blended scale and shear components are applied separately.  This keeps
+    // all of the character's body parts in the correct size and shape.
+    // However, if the hierarchy is disconnected, body parts can fly off.
+    // It's essential the skeleton hierarchy be completely connected to use
+    // this blend mode successully.
     BT_normalized_linear,
 
-    // BT_componentwise linearly blends all components separately,
-    // including H, P, and R, and recomposes the matrix.
+    // BT_componentwise linearly blends all components separately, including
+    // H, P, and R, and recomposes the matrix.
     BT_componentwise,
 
-    // BT_componentwise_quat linearly blends all components
-    // separately, except for rotation which is blended as a
-    // quaternion.
+    // BT_componentwise_quat linearly blends all components separately, except
+    // for rotation which is blended as a quaternion.
     BT_componentwise_quat,
   };
 
@@ -126,7 +121,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
   PT(AnimControl) bind_anim(AnimBundle *anim,
-                            int hierarchy_match_flags = 0, 
+                            int hierarchy_match_flags = 0,
                             const PartSubset &subset = PartSubset());
   PT(AnimControl) load_bind_anim(Loader *loader,
                                  const Filename &filename,
@@ -143,11 +138,10 @@ PUBLISHED:
 
   bool update();
   bool force_update();
-  
+
 public:
-  // The following functions aren't really part of the public
-  // interface; they're just public so we don't have to declare a
-  // bunch of friends.
+  // The following functions aren't really part of the public interface;
+  // they're just public so we don't have to declare a bunch of friends.
   virtual void control_activated(AnimControl *control);
   INLINE void set_update_delay(double delay);
 

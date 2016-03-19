@@ -1,16 +1,15 @@
-// Filename: eggMultiBase.cxx
-// Created by:  drose (02Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMultiBase.cxx
+ * @author drose
+ * @date 2000-11-02
+ */
 
 #include "eggMultiBase.h"
 #include "eggBase.h"
@@ -19,11 +18,9 @@
 #include "filename.h"
 #include "dSearchPath.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiBase::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMultiBase::
 EggMultiBase() {
   add_option
@@ -41,19 +38,15 @@ EggMultiBase() {
      &EggMultiBase::dispatch_none, &_noabs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiBase::post_process_egg_files
-//       Access: Public
-//  Description: Performs any processing of the egg file(s) that is
-//               appropriate before writing them out.  This includes any
-//               normal adjustments the user requested via -np, etc.
-//
-//               Normally, you should not need to call this function
-//               directly; write_egg_files() calls it for you.  You
-//               should call this only if you do not use
-//               write_egg_files() to write out the resulting egg
-//               files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs any processing of the egg file(s) that is appropriate before
+ * writing them out.  This includes any normal adjustments the user requested
+ * via -np, etc.
+ *
+ * Normally, you should not need to call this function directly;
+ * write_egg_files() calls it for you.  You should call this only if you do
+ * not use write_egg_files() to write out the resulting egg files.
+ */
 void EggMultiBase::
 post_process_egg_files() {
   if (_eggs.empty()) {
@@ -114,18 +107,14 @@ post_process_egg_files() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiBase::read_egg
-//       Access: Protected, Virtual
-//  Description: Allocates and returns a new EggData structure that
-//               represents the indicated egg file.  If the egg file
-//               cannot be read for some reason, returns NULL.
-//
-//               This can be overridden by derived classes to control
-//               how the egg files are read, or to extend the
-//               information stored with each egg structure, by
-//               deriving from EggData.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new EggData structure that represents the indicated
+ * egg file.  If the egg file cannot be read for some reason, returns NULL.
+ *
+ * This can be overridden by derived classes to control how the egg files are
+ * read, or to extend the information stored with each egg structure, by
+ * deriving from EggData.
+ */
 PT(EggData) EggMultiBase::
 read_egg(const Filename &filename) {
   PT(EggData) data = new EggData;
@@ -144,12 +133,10 @@ read_egg(const Filename &filename) {
   DSearchPath file_path;
   file_path.append_directory(filename.get_dirname());
 
-  // We always resolve filenames first based on the source egg
-  // filename, since egg files almost always store relative paths.
-  // This is a temporary kludge around integrating the path_replace
-  // system with the EggData better.
-  //
-  // Update: I believe this kludge is obsolete. Commenting out. - Josh.
+  // We always resolve filenames first based on the source egg filename, since
+  // egg files almost always store relative paths.  This is a temporary kludge
+  // around integrating the path_replace system with the EggData better.
+  // Update: I believe this kludge is obsolete.  Commenting out.  - Josh.
   // data->resolve_filenames(file_path);
 
   if (_force_complete) {
@@ -158,8 +145,8 @@ read_egg(const Filename &filename) {
     }
   }
 
-  // Now resolve the filenames again according to the user's
-  // specified _path_replace.
+  // Now resolve the filenames again according to the user's specified
+  // _path_replace.
   EggBase::convert_paths(data, _path_replace, file_path);
 
   if (_got_coordinate_system) {

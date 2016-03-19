@@ -1,16 +1,15 @@
-// Filename: filename.h
-// Created by:  drose (18Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file filename.h
+ * @author drose
+ * @date 1999-01-18
+ */
 
 #ifndef FILENAME_H
 #define FILENAME_H
@@ -26,26 +25,21 @@
 
 class DSearchPath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Filename
-// Description : The name of a file, such as a texture file or an Egg
-//               file.  Stores the full pathname, and includes
-//               functions for extracting out the directory prefix
-//               part and the file extension and stuff.
-//
-//               A Filename is also aware of the mapping between the
-//               Unix-like filename convention we use internally, and
-//               the local OS's specific filename convention, and it
-//               knows how to perform basic OS-specific I/O, like
-//               testing for file existence and searching a
-//               searchpath, as well as the best way to open an
-//               fstream for reading or writing.
-////////////////////////////////////////////////////////////////////
+/**
+ * The name of a file, such as a texture file or an Egg file.  Stores the full
+ * pathname, and includes functions for extracting out the directory prefix
+ * part and the file extension and stuff.
+ *
+ * A Filename is also aware of the mapping between the Unix-like filename
+ * convention we use internally, and the local OS's specific filename
+ * convention, and it knows how to perform basic OS-specific I/O, like testing
+ * for file existence and searching a searchpath, as well as the best way to
+ * open an fstream for reading or writing.
+ */
 class EXPCL_DTOOL Filename {
 PUBLISHED:
   enum Type {
-    // These type values must fit within the bits allocated for
-    // F_type, below.
+    // These type values must fit within the bits allocated for F_type, below.
     T_general    = 0x00,
     T_dso        = 0x01,
     T_executable = 0x02,
@@ -78,9 +72,9 @@ PUBLISHED:
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
 #endif
 
-  // Static constructors to explicitly create a filename that refers
-  // to a text or binary file.  This is in lieu of calling set_text()
-  // or set_binary() or set_type().
+  // Static constructors to explicitly create a filename that refers to a text
+  // or binary file.  This is in lieu of calling set_text() or set_binary() or
+  // set_type().
   INLINE static Filename text_filename(const Filename &filename);
   INLINE static Filename text_filename(const string &filename);
   INLINE static Filename binary_filename(const Filename &filename);
@@ -149,10 +143,10 @@ PUBLISHED:
   void set_basename_wo_extension(const string &s);
   void set_extension(const string &s);
 
-  // Setting these flags appropriately is helpful when opening or
-  // searching for a file; it helps the Filename resolve OS-specific
-  // conventions (for instance, that dynamic library names should
-  // perhaps be changed from .so to .dll).
+  // Setting these flags appropriately is helpful when opening or searching
+  // for a file; it helps the Filename resolve OS-specific conventions (for
+  // instance, that dynamic library names should perhaps be changed from .so
+  // to .dll).
   INLINE void set_binary();
   INLINE void set_text();
   INLINE bool is_binary() const;
@@ -304,6 +298,3 @@ INLINE ostream &operator << (ostream &out, const Filename &n) {
 #include "filename.I"
 
 #endif
-
-
-

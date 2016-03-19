@@ -1,16 +1,15 @@
-// Filename: evdevInputDevice.cxx
-// Created by:  rdb (24Aug15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file evdevInputDevice.cxx
+ * @author rdb
+ * @date 2015-08-24
+ */
 
 #include "evdevInputDevice.h"
 
@@ -33,12 +32,9 @@ static InputDevice::ControlAxis axis_map[] = {
 
 TypeHandle EvdevInputDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::Constructor
-//       Access: Published
-//  Description: Creates a new device using the Linux joystick
-//               device using the given device filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new device representing the evdev device with the given index.
+ */
 EvdevInputDevice::
 EvdevInputDevice(int index) :
   _index(index),
@@ -69,11 +65,9 @@ EvdevInputDevice(int index) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EvdevInputDevice::
 ~EvdevInputDevice() {
   if (_fd != -1) {
@@ -89,14 +83,11 @@ EvdevInputDevice::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::do_set_vibration
-//       Access: Private, Virtual
-//  Description: Sets the vibration strength.  The first argument
-//               controls a low-frequency motor, if present, and
-//               the latter controls a high-frequency motor.  The
-//               values are within the 0-1 range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the vibration strength.  The first argument controls a low-frequency
+ * motor, if present, and the latter controls a high-frequency motor.
+ * The values are within the 0-1 range.
+ */
 void EvdevInputDevice::
 do_set_vibration(double strong, double weak) {
   if (_fd == -1 || !_can_write) {
@@ -147,15 +138,11 @@ do_set_vibration(double strong, double weak) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::do_poll
-//       Access: Private, Virtual
-//  Description: Polls the input device for new activity, to ensure
-//               it contains the latest events.  This will only have
-//               any effect for some types of input devices; others
-//               may be updated automatically, and this method will
-//               be a no-op.
-////////////////////////////////////////////////////////////////////
+/**
+ * Polls the input device for new activity, to ensure it contains the latest
+ * events.  This will only have any effect for some types of input devices;
+ * others may be updated automatically, and this method will be a no-op.
+ */
 void EvdevInputDevice::
 do_poll() {
   if (_fd != -1 && process_events()) {
@@ -170,11 +157,9 @@ do_poll() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::init_device
-//       Access: Private
-//  Description: Reads basic properties from the device.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads basic properties from the device.
+ */
 bool EvdevInputDevice::
 init_device() {
   nassertr(_fd >= 0, false);
@@ -357,13 +342,10 @@ init_device() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::process_events
-//       Access: Private
-//  Description: Reads a number of events from the device.  Returns
-//               true if events were read, meaning this function
-//               should keep being called until it returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a number of events from the device.  Returns true if events were read,
+ * meaning this function should keep being called until it returns false.
+ */
 bool EvdevInputDevice::
 process_events() {
   // Read 8 events at a time.
@@ -442,11 +424,9 @@ process_events() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EvdevInputDevice::map_button
-//       Access: Public, Static
-//  Description: Maps an evdev code to a ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Static function to map an evdev code to a ButtonHandle.
+ */
 ButtonHandle EvdevInputDevice::
 map_button(int code) {
   if (code >= 0 && code < 0x80) {

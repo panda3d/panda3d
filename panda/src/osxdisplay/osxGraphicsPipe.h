@@ -1,15 +1,13 @@
-// Filename: osxGraphicsPipe.h
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file osxGraphicsPipe.h
+ */
 
 #ifndef OSXGRAPHICSPIPE_H
 #define OSXGRAPHICSPIPE_H
@@ -22,12 +20,10 @@
 class osxGraphicsStateGuardian;
 class PNMImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : osxGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on the various
-//               OSX's.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on the various OSX's.
+ */
 class EXPCL_PANDAGL osxGraphicsPipe : public GraphicsPipe {
 public:
   osxGraphicsPipe();

@@ -1,16 +1,15 @@
-// Filename: eggGroupNode_ext.cxx
-// Created by:  rdb (09Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroupNode_ext.cxx
+ * @author rdb
+ * @date 2013-12-09
+ */
 
 #include "eggGroupNode_ext.h"
 
@@ -20,11 +19,9 @@
 extern struct Dtool_PyTypedObject Dtool_EggNode;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::get_children
-//       Access: Published
-//  Description: Returns a Python list containing the node's children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Python list containing the node's children.
+ */
 PyObject *Extension<EggGroupNode>::
 get_children() const {
   EggGroupNode::iterator it;

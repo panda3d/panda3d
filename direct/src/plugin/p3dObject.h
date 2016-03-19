@@ -1,16 +1,15 @@
-// Filename: p3dObject.h
-// Created by:  drose (30Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dObject.h
+ * @author drose
+ * @date 2009-06-30
+ */
 
 #ifndef P3DOBJECT_H
 #define P3DOBJECT_H
@@ -19,14 +18,12 @@
 
 class P3DPythonObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DObject
-// Description : The C++ implementation of P3D_value, corresponding
-//               to a single atomic value that is passed around
-//               between scripting languages.  This is an abstract
-//               base class; the actual implementations are provided
-//               by the various specialized classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The C++ implementation of P3D_value, corresponding to a single atomic value
+ * that is passed around between scripting languages.  This is an abstract
+ * base class; the actual implementations are provided by the various
+ * specialized classes.
+ */
 class P3DObject : public P3D_object {
 protected:
   inline P3DObject();
@@ -82,14 +79,13 @@ public:
 
 #include "p3dObject.I"
 
-// For classes that inherit from P3DObject, above, we can use the
-// virtual method to write the output simply.  (For classes that
-// inherit only from P3D_object, we have to use the generic C method
-// defined in p3d_plugin_common.h, a little clumsier.)
+// For classes that inherit from P3DObject, above, we can use the virtual
+// method to write the output simply.  (For classes that inherit only from
+// P3D_object, we have to use the generic C method defined in
+// p3d_plugin_common.h, a little clumsier.)
 inline ostream &operator << (ostream &out, P3DObject &value) {
   value.output(out);
   return out;
 }
 
 #endif
-

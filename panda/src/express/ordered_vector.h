@@ -1,26 +1,24 @@
-// Filename: ordered_vector.h
-// Created by:  drose (20Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ordered_vector.h
+ * @author drose
+ * @date 2002-02-20
+ */
 
 #ifndef ORDERED_VECTOR_H
 #define ORDERED_VECTOR_H
 #ifdef CPPPARSER // hack around this for  interigate...
-//****** HACK allert ***
-// this code is intended to tell interigate to not expand this class definition past basic names
-//    It drops the interigate memory foot pront and user time by a bunch
-// on pc cygwin from  3 minutes to 17 seconds ?? really need to explore interigate to figure out what is 
-// going on ..
-//
+// ****** HACK allert *** this code is intended to tell interigate to not
+// expand this class definition past basic names It drops the interigate
+// memory foot pront and user time by a bunch on pc cygwin from  3 minutes to
+// 17 seconds ?? really need to explore interigate to figure out what is going
+// on ..
 template<class Key, class Compare = less<int>, class Vector = pvector<Key> > class ov_multiset
 {
 };
@@ -43,18 +41,16 @@ template<class Key, class Compare = less<int>, class Vector = pvector<Key> > cla
 #include "pnotify.h"
 #include <algorithm>
 
-// There are some inheritance issues with template classes and typedef
-// names.  Template classes that inherit typedef names from their base
-// class, which is also a template class, may confuse the typedef
-// names with globally scoped template names.  In particular, the
-// local "iterator" type is easily confused with the std::iterator
-// template class.
+// There are some inheritance issues with template classes and typedef names.
+// Template classes that inherit typedef names from their base class, which is
+// also a template class, may confuse the typedef names with globally scoped
+// template names.  In particular, the local "iterator" type is easily
+// confused with the std::iterator template class.
 
-// To work around this problem, as well as a problem in gcc 2.95.3
-// with value_type etc. not inheriting properly (even though we
-// explicitly typedef them in the derived class), we rename the
-// questionable typedefs here so that they no longer conflict with the
-// global template classes.
+// To work around this problem, as well as a problem in gcc 2.95.3 with
+// value_type etc.  not inheriting properly (even though we explicitly typedef
+// them in the derived class), we rename the questionable typedefs here so
+// that they no longer conflict with the global template classes.
 
 #define KEY_TYPE key_type_0
 #define VALUE_TYPE value_type_0
@@ -69,42 +65,32 @@ template<class Key, class Compare = less<int>, class Vector = pvector<Key> > cla
 #define DIFFERENCE_TYPE difference_type_0
 #define SIZE_TYPE size_type_0
 
-////////////////////////////////////////////////////////////////////
-//       Class : ordered_vector
-// Description : This template class presents an interface similar to
-//               the STL set or multiset (and ov_set and ov_multiset
-//               are implemented specifically, below), but it is
-//               implemented using a vector that is kept always in
-//               sorted order.
-//
-//               In most cases, an ov_set or ov_multiset may be
-//               dropped in transparently in place of a set or
-//               multiset, but the implementation difference has a few
-//               implications:
-//
-//               (1) The ov_multiset will maintain stability of order
-//               between elements that sort equally: they are stored
-//               in the order in which they were added, from back to
-//               front.
-//
-//               (2) Insert and erase operations into the middle of
-//               the set can be slow, just as inserting into the
-//               middle of a vector can be slow.  In fact, building up
-//               an ov_set by inserting elements one at a time is an
-//               n^2 operation.  On the other hand, building up an
-//               ov_set by adding elements to the end, one at time, is
-//               somewhat faster than building up a traditional set;
-//               and you can even add unsorted elements with
-//               push_back() and then call sort() when you're done,
-//               for a log(n) operation.
-//
-//               (3) Iterators may not be valid for the life of the
-//               ordered_vector.  If the vector reallocates itself,
-//               all iterators are invalidated.
-//
-//               (4) Random access into the set is easy with the []
-//               operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class presents an interface similar to the STL set or
+ * multiset (and ov_set and ov_multiset are implemented specifically, below),
+ * but it is implemented using a vector that is kept always in sorted order.
+ *
+ * In most cases, an ov_set or ov_multiset may be dropped in transparently in
+ * place of a set or multiset, but the implementation difference has a few
+ * implications:
+ *
+ * (1) The ov_multiset will maintain stability of order between elements that
+ * sort equally: they are stored in the order in which they were added, from
+ * back to front.
+ *
+ * (2) Insert and erase operations into the middle of the set can be slow,
+ * just as inserting into the middle of a vector can be slow.  In fact,
+ * building up an ov_set by inserting elements one at a time is an n^2
+ * operation.  On the other hand, building up an ov_set by adding elements to
+ * the end, one at time, is somewhat faster than building up a traditional
+ * set; and you can even add unsorted elements with push_back() and then call
+ * sort() when you're done, for a log(n) operation.
+ *
+ * (3) Iterators may not be valid for the life of the ordered_vector.  If the
+ * vector reallocates itself, all iterators are invalidated.
+ *
+ * (4) Random access into the set is easy with the [] operator.
+ */
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ordered_vector {
 public:
@@ -116,9 +102,9 @@ public:
   typedef Compare KEY_COMPARE;
   typedef Compare VALUE_COMPARE;
 
-  // Be careful when using the non-const iterators that you do not
-  // disturb the sorted order of the vector, or that if you do, you
-  // call sort() when you are done.
+  // Be careful when using the non-const iterators that you do not disturb the
+  // sorted order of the vector, or that if you do, you call sort() when you
+  // are done.
   typedef TYPENAME Vector::iterator ITERATOR;
   typedef TYPENAME Vector::const_iterator CONST_ITERATOR;
   typedef TYPENAME Vector::reverse_iterator REVERSE_ITERATOR;
@@ -127,9 +113,9 @@ public:
   typedef TYPENAME Vector::difference_type DIFFERENCE_TYPE;
   typedef TYPENAME Vector::size_type SIZE_TYPE;
 
-  // Since the #define symbols do not actually expand to the correct
-  // names, we have to re-typedef them so callers can reference them
-  // by their correct, lowercase names.
+  // Since the #define symbols do not actually expand to the correct names, we
+  // have to re-typedef them so callers can reference them by their correct,
+  // lowercase names.
   typedef KEY_TYPE key_type;
   typedef VALUE_TYPE value_type;
   typedef REFERENCE reference;
@@ -144,8 +130,8 @@ public:
   typedef SIZE_TYPE size_type;
 
 public:
-  // Constructors.  We don't implement the whole slew of STL
-  // constructors here yet.
+  // Constructors.  We don't implement the whole slew of STL constructors here
+  // yet.
   INLINE ordered_vector(TypeHandle type_handle = ov_set_type_handle);
   INLINE ordered_vector(const Compare &compare,
                         TypeHandle type_handle = ov_set_type_handle);
@@ -224,9 +210,9 @@ public:
 
 private:
   INLINE ITERATOR nci(CONST_ITERATOR i);
-  INLINE ITERATOR find_insert_position(ITERATOR first, ITERATOR last, 
+  INLINE ITERATOR find_insert_position(ITERATOR first, ITERATOR last,
                                        const KEY_TYPE &key);
-  ITERATOR r_find_insert_position(ITERATOR first, ITERATOR last, 
+  ITERATOR r_find_insert_position(ITERATOR first, ITERATOR last,
                                   const KEY_TYPE &key);
   CONST_ITERATOR r_find(CONST_ITERATOR first, CONST_ITERATOR last,
                         CONST_ITERATOR not_found,
@@ -244,14 +230,14 @@ private:
   r_equal_range(CONST_ITERATOR first, CONST_ITERATOR last,
                 const KEY_TYPE &key) const;
 
-  // This function object is used in sort_unique().  It returns true
-  // if two consecutive sorted elements are equivalent.
+  // This function object is used in sort_unique().  It returns true if two
+  // consecutive sorted elements are equivalent.
   class EquivalentTest {
   public:
-    // For some reason, VC++ won't allow us to define these bodies
-    // outside the class; they must be defined here.  The error
-    // message is C3206: "member functions of nested classes of a
-    // template class cannot be defined outside the class".
+    // For some reason, VC++ won't allow us to define these bodies outside the
+    // class; they must be defined here.  The error message is C3206: "member
+    // functions of nested classes of a template class cannot be defined
+    // outside the class".
     INLINE EquivalentTest(const Compare &compare) :
       _compare(compare) { }
     INLINE bool operator () (const KEY_TYPE &a, const KEY_TYPE &b) {
@@ -266,12 +252,10 @@ private:
   Vector _vector;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ov_set
-// Description : A specialization of ordered_vector that emulates a
-//               standard STL set: one copy of each element is
-//               allowed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization of ordered_vector that emulates a standard STL set: one
+ * copy of each element is allowed.
+ */
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ov_set : public ordered_vector<Key, Compare, Vector> {
 public:
@@ -291,12 +275,10 @@ public:
   INLINE bool verify_list() const;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ov_multiset
-// Description : A specialization of ordered_vector that emulates a
-//               standard STL set: many copies of each element are
-//               allowed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization of ordered_vector that emulates a standard STL set: many
+ * copies of each element are allowed.
+ */
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ov_multiset : public ordered_vector<Key, Compare, Vector> {
 public:

@@ -1,16 +1,15 @@
-// Filename: test_client.cxx
-// Created by:  drose (09Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_client.cxx
+ * @author drose
+ * @date 2000-07-09
+ */
 
 #include "config_pstats.h"
 #include "pStatClient.h"
@@ -154,7 +153,7 @@ main(int argc, char *argv[]) {
     // Make up some random intervals to "wait".
     for (i = 0; i < (int)_collectors.size(); i++) {
       if (ds[i].is_level) {
-        // Make up an amount to add/delete to the level this frame.
+        // Make up an amount to adddelete to the level this frame.
         double increment = ds[i].max_ms * (rand() / (RAND_MAX + 1.0) - 0.5);
         _collectors[i].add_level(increment);
 
@@ -180,8 +179,8 @@ main(int argc, char *argv[]) {
       }
     }
 
-    // Put the wait requests in order, to allow for the jitter, and
-    // invoke them.
+    // Put the wait requests in order, to allow for the jitter, and invoke
+    // them.
 
     static const double delay = 1.0;
     _collectors[0].stop(client->get_main_thread(), start + delay);
@@ -199,8 +198,7 @@ main(int argc, char *argv[]) {
 
     _collectors[0].start(client->get_main_thread(), now + total_ms / 1000 + delay);
 
-    // Now actually wait some approximation of the time we said we
-    // did.
+    // Now actually wait some approximation of the time we said we did.
     Thread::sleep(total_ms / 1000.0 + delay);
   }
 

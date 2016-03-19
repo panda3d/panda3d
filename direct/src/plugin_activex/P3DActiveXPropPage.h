@@ -1,20 +1,20 @@
-// Filename: P3DActiveXPropPage.h
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file P3DActiveXPropPage.h
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
 #pragma once
 
-// P3DActiveXPropPage.h : Declaration of the CP3DActiveXPropPage property page class.
+// P3DActiveXPropPage.h : Declaration of the CP3DActiveXPropPage property page
+// class.
 #include "PPPandaObject.h"
 
 // CP3DActiveXPropPage : See P3DActiveXPropPage.cpp for implementation.
@@ -39,4 +39,3 @@ protected:
 protected:
     DECLARE_MESSAGE_MAP()
 };
-

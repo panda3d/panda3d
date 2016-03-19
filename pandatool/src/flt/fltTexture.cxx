@@ -1,16 +1,15 @@
-// Filename: fltTexture.cxx
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTexture.cxx
+ * @author drose
+ * @date 2000-08-25
+ */
 
 #include "fltTexture.h"
 #include "fltRecordReader.h"
@@ -21,11 +20,9 @@
 
 TypeHandle FltTexture::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltTexture::
 FltTexture(FltHeader *header) : FltRecord(header) {
   _pattern_index = -1;
@@ -85,71 +82,56 @@ FltTexture(FltHeader *header) : FltRecord(header) {
   _file_version = 1501;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::apply_converted_filenames
-//       Access: Public, Virtual
-//  Description: Walks the hierarchy at this record and below and
-//               copies the _converted_filename record into the
-//               _orig_filename record, so the flt file will be
-//               written out with the converted filename instead of
-//               what was originally read in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy at this record and below and copies the
+ * _converted_filename record into the _orig_filename record, so the flt file
+ * will be written out with the converted filename instead of what was
+ * originally read in.
+ */
 void FltTexture::
 apply_converted_filenames() {
   _orig_filename = _converted_filename.to_os_generic();
   FltRecord::apply_converted_filenames();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::get_texture_filename
-//       Access: Public
-//  Description: Returns the name of the texture image file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the texture image file.
+ */
 Filename FltTexture::
 get_texture_filename() const {
   return _converted_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::set_texture_filename
-//       Access: Public
-//  Description: Changes the name of the texture image file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the name of the texture image file.
+ */
 void FltTexture::
 set_texture_filename(const Filename &filename) {
-  _converted_filename = filename; 
+  _converted_filename = filename;
   _orig_filename = _converted_filename.to_os_generic();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::get_attr_filename
-//       Access: Public
-//  Description: Returns the name of the texture's associated .attr
-//               file.  This contains some additional MultiGen
-//               information about the texture parameters.  This is,
-//               of course, just the name of the texture with .attr
-//               appended.
-//
-//               Normally, it won't be necessary to access this file
-//               directly; you can call read_attr_data() or
-//               write_attr_data() to get at the data stored in this
-//               file.  (And read_attr_data() is called automatically
-//               when the Flt file is read in.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the texture's associated .attr file.  This contains
+ * some additional MultiGen information about the texture parameters.  This
+ * is, of course, just the name of the texture with .attr appended.
+ *
+ * Normally, it won't be necessary to access this file directly; you can call
+ * read_attr_data() or write_attr_data() to get at the data stored in this
+ * file.  (And read_attr_data() is called automatically when the Flt file is
+ * read in.)
+ */
 Filename FltTexture::
 get_attr_filename() const {
   string texture_filename = get_texture_filename();
   return Filename::binary_filename(texture_filename + ".attr");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::read_attr_data
-//       Access: Public
-//  Description: Opens up the texture's .attr file and reads its data
-//               into the extra FltTexture fields.  This is normally
-//               performed automatically when the Flt file is read
-//               from disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens up the texture's .attr file and reads its data into the extra
+ * FltTexture fields.  This is normally performed automatically when the Flt
+ * file is read from disk.
+ */
 FltError FltTexture::
 read_attr_data() {
   Filename attr_filename = get_attr_filename();
@@ -159,8 +141,7 @@ read_attr_data() {
     return FE_could_not_open;
   }
 
-  // Determine the file's size so we can read it all into one big
-  // datagram.
+  // Determine the file's size so we can read it all into one big datagram.
   attr.seekg(0, ios::end);
   if (attr.fail()) {
     return FE_read_error;
@@ -181,24 +162,19 @@ read_attr_data() {
   return unpack_attr(datagram);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::write_attr_data
-//       Access: Public
-//  Description: Writes the texture's .attr file.  This may or may
-//               not be performed automatically, according to the
-//               setting of FltHeader::set_auto_attr_update().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the texture's .attr file.  This may or may not be performed
+ * automatically, according to the setting of
+ * FltHeader::set_auto_attr_update().
+ */
 FltError FltTexture::
 write_attr_data() const {
   return write_attr_data(get_attr_filename());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::write_attr_data
-//       Access: Public
-//  Description: Writes the texture's .attr file to the named
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the texture's .attr file to the named file.
+ */
 FltError FltTexture::
 write_attr_data(Filename attr_filename) const {
   Datagram datagram;
@@ -220,14 +196,11 @@ write_attr_data(Filename attr_filename) const {
   return FE_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in
+ * the indicated datagram, whose opcode has already been read.  Returns true
+ * on success, false if the datagram is invalid.
+ */
 bool FltTexture::
 extract_record(FltRecordReader &reader) {
   if (!FltRecord::extract_record(reader)) {
@@ -255,14 +228,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this
+ * record, but does not advance the writer.  Returns true on success, false if
+ * there is some error.
+ */
 bool FltTexture::
 build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {
@@ -288,11 +258,9 @@ build_record(FltRecordWriter &writer) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::unpack_attr
-//       Access: Private
-//  Description: Reads the data from the attribute file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data from the attribute file.
+ */
 FltError FltTexture::
 unpack_attr(const Datagram &datagram) {
   DatagramIterator iterator(datagram);
@@ -399,11 +367,9 @@ unpack_attr(const Datagram &datagram) {
   return FE_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::pack_attr
-//       Access: Private
-//  Description: Packs the attribute data into a big datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the attribute data into a big datagram.
+ */
 FltError FltTexture::
 pack_attr(Datagram &datagram) const {
   datagram.add_be_int32(_num_texels_u);

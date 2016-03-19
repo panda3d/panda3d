@@ -1,16 +1,15 @@
-// Filename: pStatClient.h
-// Created by:  drose (09Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatClient.h
+ * @author drose
+ * @date 2000-07-09
+ */
 
 #ifndef PSTATCLIENT_H
 #define PSTATCLIENT_H
@@ -37,23 +36,19 @@ class PStatCollectorDef;
 class PStatThread;
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatClient
-// Description : Manages the communications to report statistics via a
-//               network connection to a remote PStatServer.
-//
-//               Normally, there is only one PStatClient in the world,
-//               although it is possible to have multiple PStatClients
-//               if extraordinary circumstances require in.  Since
-//               each PStatCollector registers itself with the
-//               PStatClient when it is created, having multiple
-//               PStatClients requires special care when constructing
-//               the various PStatCollectors.
-//
-//               If DO_PSTATS is not defined, we don't want to use
-//               stats at all.  This class is therefore defined as a
-//               stub class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Manages the communications to report statistics via a network connection to
+ * a remote PStatServer.
+ *
+ * Normally, there is only one PStatClient in the world, although it is
+ * possible to have multiple PStatClients if extraordinary circumstances
+ * require in.  Since each PStatCollector registers itself with the
+ * PStatClient when it is created, having multiple PStatClients requires
+ * special care when constructing the various PStatCollectors.
+ *
+ * If DO_PSTATS is not defined, we don't want to use stats at all.  This class
+ * is therefore defined as a stub class.
+ */
 #ifdef DO_PSTATS
 class EXPCL_PANDA_PSTATCLIENT PStatClient : public ConnectionManager, public Thread::PStatsCallback {
 public:
@@ -152,9 +147,8 @@ private:
   typedef pmap<string, vector_int> MultiThingsByName;
   MultiThingsByName _threads_by_name, _threads_by_sync_name;
 
-  // This is for the data that is per-collector, per-thread.  A vector
-  // of these is stored in each Collector object, below, indexed by
-  // thread index.
+  // This is for the data that is per-collector, per-thread.  A vector of
+  // these is stored in each Collector object, below, indexed by thread index.
   class PerThreadData {
   public:
     PerThreadData();
@@ -164,8 +158,8 @@ private:
   };
   typedef pvector<PerThreadData> PerThread;
 
-  // This is where the meat of the Collector data is stored.  (All the
-  // stuff in PStatCollector and PStatCollectorDef is just fluff.)
+  // This is where the meat of the Collector data is stored.  (All the stuff
+  // in PStatCollector and PStatCollectorDef is just fluff.)
   class Collector {
   public:
     INLINE Collector(int parent_index, const string &name);
@@ -178,12 +172,11 @@ private:
     void make_def(const PStatClient *client, int this_index);
 
   private:
-    // This pointer is initially NULL, and will be filled in when it
-    // is first needed.
+    // This pointer is initially NULL, and will be filled in when it is first
+    // needed.
     PStatCollectorDef *_def;
 
-    // This data is used to create the PStatCollectorDef when it is
-    // needed.
+    // This data is used to create the PStatCollectorDef when it is needed.
     int _parent_index;
     string _name;
 
@@ -197,9 +190,9 @@ private:
   AtomicAdjust::Integer _collectors_size;  // size of the allocated array
   AtomicAdjust::Integer _num_collectors;   // number of in-use elements within the array
 
-  // This defines a single thread, i.e. a separate chain of execution,
-  // independent of all other threads.  Timing and level data are
-  // maintained separately for each thread.
+  // This defines a single thread, i.e.  a separate chain of execution,
+  // independent of all other threads.  Timing and level data are maintained
+  // separately for each thread.
   class InternalThread {
   public:
     InternalThread(Thread *thread);
@@ -216,9 +209,9 @@ private:
     bool _thread_active;
     BitArray _active_collectors;  // no longer used.
 
-    // This mutex is used to protect writes to _frame_data for this
-    // particular thread, as well as writes to the _per_thread data
-    // for this particular thread in the Collector class, above.
+    // This mutex is used to protect writes to _frame_data for this particular
+    // thread, as well as writes to the _per_thread data for this particular
+    // thread in the Collector class, above.
     LightMutex _thread_lock;
   };
   typedef InternalThread *ThreadPointer;

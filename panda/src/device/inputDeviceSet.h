@@ -1,16 +1,15 @@
-// Filename: inputDeviceSet.h
-// Created by:  rdb (16Dec15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file inputDeviceSet.h
+ * @author rdb
+ * @date 2015-12-16
+ */
 
 #ifndef INPUTDEVICESET_H
 #define INPUTDEVICESET_H
@@ -19,13 +18,11 @@
 #include "ordered_vector.h"
 #include "inputDevice.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : InputDeviceSet
-// Description : Manages a list of InputDevice objects, as returned
-//               by various InputDeviceManager methods.  This is
-//               implemented like a set, meaning the same device
-//               cannot occur more than once.
-////////////////////////////////////////////////////////////////////
+/**
+ * Manages a list of InputDevice objects, as returned by various
+ * InputDeviceManager methods.  This is implemented like a set, meaning the
+ * same device cannot occur more than once.
+ */
 class EXPCL_PANDA_DEVICE InputDeviceSet {
 PUBLISHED:
   InputDeviceSet();
@@ -51,8 +48,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  // This is currently implemented as ov_set instead of a regular set
-  // so that we can still support random access.
+  // This is currently implemented as ov_set instead of a regular set so that
+  // we can still support random access.
   typedef ov_set<PT(InputDevice)> InputDevices;
   InputDevices _devices;
 };

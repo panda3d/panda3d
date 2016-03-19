@@ -1,9 +1,8 @@
 #ifndef __TIME_SPAN_H__
 #define __TIME_SPAN_H__
-////////////////////////////////////////////////////////////////////
-//       Class : Time_Span
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class Time_Span
 {
 public:
@@ -24,12 +23,10 @@ public:
     Time_Span(const Time_Clock& Time_SpanSrc);
     Time_Span(PN_stdfloat Seconds);
 
-////////////////////////////////////////////////////////////////////
 
     const Time_Span& operator=(const Time_Span& Time_SpanSrc);
 
-    // Attributes
-    // extract parts
+    // Attributes extract parts
     long GetDays() const;   // total # of days
     long GetTotalHours() const;
     int GetHours() const;
@@ -41,8 +38,7 @@ public:
     long GetTotal100Seconds() const;
     long GetMSeconds() const;
 
-    // Operations
-    // time math
+    // Operations time math
     const Time_Span& operator+=(Time_Span &Time_Span);
     const Time_Span& operator-=(Time_Span &Time_Span);
     bool operator==(Time_Span &Time_Span) const;
@@ -64,38 +60,34 @@ private:
     struct timeval _my_time;
     friend class Time_Clock;
 };
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Time_Span
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span::Time_Span(long seconds, int usecs)
 {
     _my_time.tv_sec = seconds;
     _my_time.tv_usec = usecs;
     NormalizeTime(_my_time);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Time_Span
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span::Time_Span(time_t time)
 {
     _my_time.tv_usec = 0;
     _my_time.tv_sec = (long)time;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Time_Span
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span::Time_Span(PN_stdfloat Seconds)
 {
     _my_time.tv_sec = (long)Seconds; // this truncats .. desired result..
     _my_time.tv_usec = (long)((Seconds - (double)_my_time.tv_sec) * (double)USEC);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Time_Span
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span::Time_Span(long lDays, int nHours, int nMins, int nSecs, int usecs)
 {
     _my_time.tv_sec = nSecs + 60 * (nMins + 60 * (nHours + 24 * lDays));
@@ -103,10 +95,9 @@ inline Time_Span::Time_Span(long lDays, int nHours, int nMins, int nSecs, int us
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Set
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline void Time_Span::Set(long lDays, int nHours, int nMins, int nSecs, int usecs)
 {
     _my_time.tv_sec = nSecs + 60 * (nMins + 60 * (nHours + 24 * lDays));
@@ -114,28 +105,25 @@ inline void Time_Span::Set(long lDays, int nHours, int nMins, int nSecs, int use
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Time_Span
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span::Time_Span(const Time_Span& Time_SpanSrc)
 {
     _my_time = Time_SpanSrc._my_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Time_Span
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span::Time_Span(const Time_Clock& Time_SpanSrc)
 {
     _my_time = Time_SpanSrc._my_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span& Time_Span::operator=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline const Time_Span& Time_Span::operator=(const Time_Span& Time_SpanSrc)
 {
     if (&Time_SpanSrc == this)
@@ -143,64 +131,57 @@ inline const Time_Span& Time_Span::operator=(const Time_Span& Time_SpanSrc)
     _my_time = Time_SpanSrc._my_time; return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetDays
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline long Time_Span::GetDays() const
 {
     return _my_time.tv_sec / (24*3600L);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetTotalHours
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline long Time_Span::GetTotalHours() const
 {
     return _my_time.tv_sec / 3600;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetHours
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline int Time_Span::GetHours() const
 {
     return (int)(GetTotalHours() - GetDays()*24);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetTotalMinutes
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline long Time_Span::GetTotalMinutes() const
 {
     return _my_time.tv_sec / 60;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetMinutes
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline int Time_Span::GetMinutes() const
 {
     return (int)(GetTotalMinutes() - GetTotalHours()*60);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetTotalSeconds
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline long Time_Span::GetTotalSeconds() const
 {
     return _my_time.tv_sec;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetTotalMSeconds
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline long Time_Span::GetTotalMSeconds() const
 {
     return (_my_time.tv_sec * 1000) + (_my_time.tv_usec / 1000);
@@ -214,29 +195,26 @@ inline long Time_Span::GetTotal100Seconds() const
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetTotalMSeconds
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline long Time_Span::GetMSeconds() const
 {
     return (_my_time.tv_usec / 1000);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::GetSeconds
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline int Time_Span::GetSeconds() const
 {
     return (int)(GetTotalSeconds() - GetTotalMinutes()*60);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimeDifference
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span TimeDifference(const Time_Span &Time_Span1, const Time_Span &Time_Span2)
 {
     timeval ans;
@@ -244,10 +222,9 @@ inline Time_Span TimeDifference(const Time_Span &Time_Span1, const Time_Span &Ti
     return Time_Span(ans);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimeAddition
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline Time_Span TimeAddition(const Time_Span &Time_Span1, const Time_Span &Time_Span2)
 {
     timeval ans;
@@ -255,10 +232,9 @@ inline Time_Span TimeAddition(const Time_Span &Time_Span1, const Time_Span &Time
     return Time_Span(ans);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span& Time_Span::operator+=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline const Time_Span& Time_Span::operator+=(Time_Span &Time_Span)
 {
     _my_time.tv_usec += Time_Span._my_time.tv_usec;
@@ -267,10 +243,9 @@ inline const Time_Span& Time_Span::operator+=(Time_Span &Time_Span)
     return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span& Time_Span::operator-=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline const Time_Span& Time_Span::operator-=(Time_Span &Time_Span)
 {
     _my_time.tv_usec -= Time_Span._my_time.tv_usec;
@@ -279,80 +254,70 @@ inline const Time_Span& Time_Span::operator-=(Time_Span &Time_Span)
     return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::operator==
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline bool Time_Span::operator==(Time_Span &Time_Span) const
 {
     return ((_my_time.tv_sec == Time_Span._my_time.tv_sec) && (_my_time.tv_usec == Time_Span._my_time.tv_usec));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::operator!=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline bool Time_Span::operator!=(Time_Span &Time_Span) const
 {
     return ((_my_time.tv_sec != Time_Span._my_time.tv_sec) || (_my_time.tv_usec != Time_Span._my_time.tv_usec));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::operator<
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline bool Time_Span::operator<(Time_Span &Time_Span) const
 {
     return ((_my_time.tv_sec < Time_Span._my_time.tv_sec) ||
         ((_my_time.tv_sec == Time_Span._my_time.tv_sec) && (_my_time.tv_usec < Time_Span._my_time.tv_usec)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::operator>
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline bool Time_Span::operator>(Time_Span &Time_Span) const
 {
     return ((_my_time.tv_sec > Time_Span._my_time.tv_sec) ||
         ((_my_time.tv_sec == Time_Span._my_time.tv_sec) && (_my_time.tv_usec > Time_Span._my_time.tv_usec)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::operator<=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline bool Time_Span::operator<=(Time_Span &Time_Span) const
 {
     return ((_my_time.tv_sec < Time_Span._my_time.tv_sec) ||
         ((_my_time.tv_sec == Time_Span._my_time.tv_sec) && (_my_time.tv_usec <= Time_Span._my_time.tv_usec)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::operator>=
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline bool Time_Span::operator>=(Time_Span &Time_Span) const
 {
     return ((_my_time.tv_sec > Time_Span._my_time.tv_sec) ||
         ((_my_time.tv_sec == Time_Span._my_time.tv_sec) && (_my_time.tv_usec >= Time_Span._my_time.tv_usec)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Format
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 inline std::string Time_Span::Format(char * pFormat) const
-// formatting Time_Spans is a little trickier than formatting
-//  * we are only interested in relative time formats, ie. it is illegal
-//      to format anything dealing with absolute time (i.e. years, months,
-//         day of week, day of year, timezones, ...)
-//  * the only valid formats:
-//      %D - # of days -- NEW !!!
-//      %H - hour in 24 hour format
-//      %M - minute (0-59)
-//      %S - seconds (0-59)
-//      %% - percent sign
-//      %N - nanosecs
+/*
+ * formatting Time_Spans is a little trickier than formatting * we are only
+ * interested in relative time formats, ie.  it is illegal to format anything
+ * dealing with absolute time (i.e.  years, months, day of week, day of year,
+ * timezones, ...) * the only valid formats: %D - # of days -- NEW !!! %H -
+ * hour in 24 hour format %M - minute (0-59) %S - seconds (0-59) %% - percent
+ * sign %N - nanosecs
+ */
 {
     char szBuffer[maxTimeBufferSize];
     char ch;

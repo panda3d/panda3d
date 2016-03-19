@@ -1,16 +1,15 @@
-// Filename: datagramInputFile.h
-// Created by:  drose (30Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagramInputFile.h
+ * @author drose
+ * @date 2000-10-30
+ */
 
 #ifndef DATAGRAMINPUTFILE_H
 #define DATAGRAMINPUTFILE_H
@@ -22,12 +21,10 @@
 #include "fileReference.h"
 #include "virtualFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramInputFile
-// Description : This class can be used to read a binary file that
-//               consists of an arbitrary header followed by a number
-//               of datagrams.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can be used to read a binary file that consists of an arbitrary
+ * header followed by a number of datagrams.
+ */
 class EXPCL_PANDA_PUTIL DatagramInputFile : public DatagramGenerator {
 PUBLISHED:
   INLINE DatagramInputFile();

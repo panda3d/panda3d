@@ -1,16 +1,15 @@
-// Filename: dcSubatomicType.h
-// Created by:  drose (05Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcSubatomicType.h
+ * @author drose
+ * @date 2000-10-05
+ */
 
 #ifndef DCSUBATOMICTYPE_H
 #define DCSUBATOMICTYPE_H
@@ -18,13 +17,11 @@
 #include "dcbase.h"
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-//        Enum : DCSubatomicType
-// Description : This defines the numeric type of each element of a
-//               DCAtomicField; that is, the particular values that
-//               will get added to the message when the atomic field
-//               method is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the numeric type of each element of a DCAtomicField; that is,
+ * the particular values that will get added to the message when the atomic
+ * field method is called.
+ */
 enum DCSubatomicType {
   ST_int8,
   ST_int16,
@@ -49,16 +46,15 @@ enum DCSubatomicType {
   ST_int8array,
   ST_uint8array,
 
-  // A special-purpose array: a list of alternating uint32 and uint8
-  // values.  In Python, this becomes a list of 2-tuples.
+  // A special-purpose array: a list of alternating uint32 and uint8 values.
+  // In Python, this becomes a list of 2-tuples.
   ST_uint32uint8array,
 
-  // Equivalent to uint8, except that it suggests a pack_type of
-  // PT_string.
+  // Equivalent to uint8, except that it suggests a pack_type of PT_string.
   ST_char,
 
-  // New additions should be added at the end to prevent the file hash
-  // code from changing.
+  // New additions should be added at the end to prevent the file hash code
+  // from changing.
 
   ST_invalid
 };
@@ -67,5 +63,3 @@ END_PUBLISH
 ostream &operator << (ostream &out, DCSubatomicType type);
 
 #endif
-
-

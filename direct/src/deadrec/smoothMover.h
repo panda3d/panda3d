@@ -1,16 +1,15 @@
-// Filename: smoothMover.h
-// Created by:  drose (19Oct01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file smoothMover.h
+ * @author drose
+ * @date 2001-10-19
+ */
 
 #ifndef SMOOTHMOVER_H
 #define SMOOTHMOVER_H
@@ -26,34 +25,28 @@ static const int max_position_reports = 10;
 static const int max_timestamp_delays = 10;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : SmoothMover
-// Description : This class handles smoothing of sampled motion points
-//               over time, e.g. for smoothing the apparent movement
-//               of remote avatars, whose positions are sent via
-//               occasional telemetry updates.
-//
-//               It can operate in any of three modes: off, in which
-//               it does not smooth any motion but provides the last
-//               position it was told; smoothing only, in which it
-//               smooths motion information but never tries to
-//               anticipate where the avatar might be going; or full
-//               prediction, in which it smooths motion as well as
-//               tries to predict the avatar's position in lead of the
-//               last position update.  The assumption is that all
-//               SmoothMovers in the world will be operating in the
-//               same mode together.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class handles smoothing of sampled motion points over time, e.g.  for
+ * smoothing the apparent movement of remote avatars, whose positions are sent
+ * via occasional telemetry updates.
+ *
+ * It can operate in any of three modes: off, in which it does not smooth any
+ * motion but provides the last position it was told; smoothing only, in which
+ * it smooths motion information but never tries to anticipate where the
+ * avatar might be going; or full prediction, in which it smooths motion as
+ * well as tries to predict the avatar's position in lead of the last position
+ * update.  The assumption is that all SmoothMovers in the world will be
+ * operating in the same mode together.
+ */
 class EXPCL_DIRECT SmoothMover {
 PUBLISHED:
   SmoothMover();
   ~SmoothMover();
 
   // These methods are used to specify each position update.  Call the
-  // appropriate set_* function(s), as needed, and then call
-  // mark_position().  The return value of each function is true if
-  // the parameter value has changed, or false if it remains the same
-  // as last time.
+  // appropriate set_* function(s), as needed, and then call mark_position().
+  // The return value of each function is true if the parameter value has
+  // changed, or false if it remains the same as last time.
   INLINE bool set_pos(const LVecBase3 &pos);
   INLINE bool set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   INLINE bool set_x(PN_stdfloat x);
@@ -75,7 +68,7 @@ PUBLISHED:
   INLINE void set_phony_timestamp(double timestamp = 0.0, bool period_adjust = false);
 
   INLINE void set_timestamp(double timestamp);
-  
+
   INLINE bool has_most_recent_timestamp() const;
   INLINE double get_most_recent_timestamp() const;
 
@@ -113,9 +106,8 @@ PUBLISHED:
   enum PredictionMode {
     PM_off,
     PM_on,
-    // Similarly for other kinds of prediction modes.  I don't know
-    // why, though; linear interpolation seems to work pretty darn
-    // well.
+    // Similarly for other kinds of prediction modes.  I don't know why,
+    // though; linear interpolation seems to work pretty darn well.
   };
 
   INLINE void set_smooth_mode(SmoothMode mode);
@@ -124,26 +116,26 @@ PUBLISHED:
   INLINE void set_prediction_mode(PredictionMode mode);
   INLINE PredictionMode get_prediction_mode();
 
-  INLINE void set_delay(double delay); 
-  INLINE double get_delay(); 
+  INLINE void set_delay(double delay);
+  INLINE double get_delay();
 
-  INLINE void set_accept_clock_skew(bool flag); 
-  INLINE bool get_accept_clock_skew(); 
+  INLINE void set_accept_clock_skew(bool flag);
+  INLINE bool get_accept_clock_skew();
 
-  INLINE void set_max_position_age(double age); 
-  INLINE double get_max_position_age(); 
+  INLINE void set_max_position_age(double age);
+  INLINE double get_max_position_age();
 
-  INLINE void set_expected_broadcast_period(double period); 
-  INLINE double get_expected_broadcast_period(); 
+  INLINE void set_expected_broadcast_period(double period);
+  INLINE double get_expected_broadcast_period();
 
-  INLINE void set_reset_velocity_age(double age); 
-  INLINE double get_reset_velocity_age(); 
+  INLINE void set_reset_velocity_age(double age);
+  INLINE double get_reset_velocity_age();
 
-  INLINE void set_directional_velocity(bool flag); 
-  INLINE bool get_directional_velocity(); 
+  INLINE void set_directional_velocity(bool flag);
+  INLINE bool get_directional_velocity();
 
-  INLINE void set_default_to_standing_still(bool flag); 
-  INLINE bool get_default_to_standing_still(); 
+  INLINE void set_default_to_standing_still(bool flag);
+  INLINE bool get_default_to_standing_still();
 
   void output(ostream &out) const;
   void write(ostream &out) const;
@@ -152,7 +144,7 @@ private:
   void set_smooth_pos(const LPoint3 &pos, const LVecBase3 &hpr,
                       double timestamp);
   void linear_interpolate(int point_before, int point_after, double timestamp);
-  void compute_velocity(const LVector3 &pos_delta, 
+  void compute_velocity(const LVector3 &pos_delta,
                         const LVecBase3 &hpr_delta,
                         double age);
 
@@ -160,8 +152,7 @@ private:
   INLINE double get_avg_timestamp_delay() const;
 
 public:
-  // This internal class is declared public to work around compiler
-  // issues.
+  // This internal class is declared public to work around compiler issues.
   class SamplePoint {
   public:
     LPoint3 _pos;
@@ -187,17 +178,16 @@ private:
   bool _has_most_recent_timestamp;
   double _most_recent_timestamp;
 
-  //  typedef CircBuffer<SamplePoint, max_position_reports> Points;
+  // typedef CircBuffer<SamplePoint, max_position_reports> Points;
   typedef pdeque<SamplePoint> Points;
   Points _points;
   int _last_point_before;
   int _last_point_after;
 
-  // This array is used to record the average delay in receiving
-  // timestamps from a particular client, in milliseconds.  This value
-  // will measure both the latency and clock skew from that client,
-  // allowing us to present smooth motion in spite of extreme latency
-  // or poor clock synchronization.
+  // This array is used to record the average delay in receiving timestamps
+  // from a particular client, in milliseconds.  This value will measure both
+  // the latency and clock skew from that client, allowing us to present
+  // smooth motion in spite of extreme latency or poor clock synchronization.
   typedef CircBuffer<int, max_timestamp_delays> TimestampDelays;
   TimestampDelays _timestamp_delays;
   int _net_timestamp_delay;

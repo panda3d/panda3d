@@ -1,16 +1,15 @@
-// Filename: interrogateType.cxx
-// Created by:  drose (31Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateType.cxx
+ * @author drose
+ * @date 2000-07-31
+ */
 
 #include "interrogateType.h"
 #include "indexRemapper.h"
@@ -19,11 +18,9 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 InterrogateType::
 InterrogateType(InterrogateModuleDef *def) :
   InterrogateComponent(def)
@@ -39,41 +36,33 @@ InterrogateType(InterrogateModuleDef *def) :
   _cppscope = (CPPScope *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 InterrogateType::
 InterrogateType(const InterrogateType &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::Derivation::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void InterrogateType::Derivation::
 output(ostream &out) const {
   out << _flags << " " << _base << " " << _upcast << " " << _downcast;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::Derivation::input
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void InterrogateType::Derivation::
 input(istream &in) {
   in >> _flags >> _base >> _upcast >> _downcast;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::EnumValue::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void InterrogateType::EnumValue::
 output(ostream &out) const {
   idf_output_string(out, _name);
@@ -82,11 +71,9 @@ output(ostream &out) const {
   out << _value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::EnumValue::input
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void InterrogateType::EnumValue::
 input(istream &in) {
   idf_input_string(in, _name);
@@ -95,11 +82,9 @@ input(istream &in) {
   in >> _value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void InterrogateType::
 operator = (const InterrogateType &copy) {
   InterrogateComponent::operator = (copy);
@@ -125,17 +110,14 @@ operator = (const InterrogateType &copy) {
   _cppscope = copy._cppscope;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::merge_with
-//       Access: Public
-//  Description: Combines type with the other similar definition.  If
-//               one type is "fully defined" and the other one isn't,
-//               the fully-defined type wins.
-////////////////////////////////////////////////////////////////////
+/**
+ * Combines type with the other similar definition.  If one type is "fully
+ * defined" and the other one isn't, the fully-defined type wins.
+ */
 void InterrogateType::
 merge_with(const InterrogateType &other) {
-  // The only thing we care about copying from the non-fully-defined
-  // type right now is the global flag.
+  // The only thing we care about copying from the non-fully-defined type
+  // right now is the global flag.
 
   if (is_fully_defined()) {
     // We win.
@@ -149,12 +131,9 @@ merge_with(const InterrogateType &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::output
-//       Access: Public
-//  Description: Formats the InterrogateType data for output to a data
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the InterrogateType data for output to a data file.
+ */
 void InterrogateType::
 output(ostream &out) const {
   InterrogateComponent::output(out);
@@ -182,12 +161,9 @@ output(ostream &out) const {
   idf_output_string(out, _comment, '\n');
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::input
-//       Access: Public
-//  Description: Reads the data file as previously formatted by
-//               output().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data file as previously formatted by output().
+ */
 void InterrogateType::
 input(istream &in) {
   InterrogateComponent::input(in);
@@ -219,13 +195,10 @@ input(istream &in) {
   idf_input_string(in, _comment);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::remap_indices
-//       Access: Public
-//  Description: Remaps all internal index numbers according to the
-//               indicated map.  This called from
-//               InterrogateDatabase::remap_indices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Remaps all internal index numbers according to the indicated map.  This
+ * called from InterrogateDatabase::remap_indices().
+ */
 void InterrogateType::
 remap_indices(const IndexRemapper &remap) {
   _outer_class = remap.map_from(_outer_class);

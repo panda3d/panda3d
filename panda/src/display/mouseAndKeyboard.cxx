@@ -1,16 +1,15 @@
-// Filename: mouseAndKeyboard.cxx
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mouseAndKeyboard.cxx
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #include "mouseAndKeyboard.h"
 #include "mouseData.h"
@@ -21,11 +20,9 @@
 
 TypeHandle MouseAndKeyboard::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseAndKeyboard::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MouseAndKeyboard::
 MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
   DataNode(name),
@@ -43,52 +40,40 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
   _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseAndKeyboard::set_source
-//       Access: Published
-//  Description: Redirects the class to get the data from the mouse
-//               and keyboard associated with a different window
-//               and/or device number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Redirects the class to get the data from the mouse and keyboard associated
+ * with a different window and/or device number.
+ */
 void MouseAndKeyboard::
 set_source(GraphicsWindow *window, int device) {
   _window = window;
   _device = device;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseAndKeyboard::get_source_window
-//       Access: Published
-//  Description: Returns the associated source window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the associated source window.
+ */
 PT(GraphicsWindow) MouseAndKeyboard::
 get_source_window() const {
   return _window;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseAndKeyboard::get_source_device
-//       Access: Published
-//  Description: Returns the associated source device.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the associated source device.
+ */
 int MouseAndKeyboard::
 get_source_device() const {
   return _device;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseAndKeyboard::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output
+ * parameters.  The input parameters may be accessed with the index numbers
+ * returned by the define_input() calls that were made earlier (presumably in
+ * the constructor); likewise, the output parameters should be set with the
+ * index numbers returned by the define_output() calls.
+ */
 void MouseAndKeyboard::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {

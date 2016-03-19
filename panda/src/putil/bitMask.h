@@ -1,16 +1,15 @@
-// Filename: bitMask.h
-// Created by:  drose (08Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bitMask.h
+ * @author drose
+ * @date 2000-06-08
+ */
 
 #ifndef BITMASK_H
 #define BITMASK_H
@@ -25,12 +24,10 @@
 #include "checksumHashGenerator.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : BitMask
-// Description : A general bitmask class.  This stores an array of
-//               bits of some length that must fit within a given word
-//               of the indicated type.  See also BitArray.
-////////////////////////////////////////////////////////////////////
+/**
+ * A general bitmask class.  This stores an array of bits of some length that
+ * must fit within a given word of the indicated type.  See also BitArray.
+ */
 template<class WType, int nbits>
 class BitMask {
 public:

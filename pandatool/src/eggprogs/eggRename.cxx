@@ -1,25 +1,22 @@
-// Filename: eggRename.cxx
-// Created by:  masad (22Apr05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggRename.cxx
+ * @author masad
+ * @date 2005-04-22
+ */
 
 #include "eggRename.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRename::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggRename::
 EggRename() {
   set_program_brief("rename nodes in .egg files");
@@ -33,11 +30,9 @@ EggRename() {
      &EggRename::dispatch_vector_string, NULL, &_strip_prefix);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRename::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggRename::
 run() {
   if (!_strip_prefix.empty()) {

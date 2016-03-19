@@ -1,16 +1,15 @@
-// Filename: inputDevice.h
-// Created by:  drose (24May00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file inputDevice.h
+ * @author rdb
+ * @date 2015-12-11
+ */
 
 #ifndef INPUTDEVICE_H
 #define INPUTDEVICE_H
@@ -32,31 +31,25 @@
 
 typedef MouseData PointerData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InputDevice
-// Description : This is a structure representing a single input
-//               device.  Input devices may have zero or more
-//               buttons, pointers, or controls associated with them,
-//               and optionally a tracker.
-//
-//               These devices are brought under a common interface
-//               because there is such a large range of devices out
-//               there that may support any number of these types of
-//               controls, we couldn't even begin to cover them with
-//               type-specific subclasses.
-//
-//               Use the various has_() and get_num_() methods to
-//               determine information about the device capabilities.
-//               For instance, has_keyboard() will give an indication
-//               that you can receive keystroke events from this
-//               device, and get_num_buttons() will tell you that
-//               the device may send button events.
-//
-//               There is the DeviceType enumeration, however, which
-//               will (if known) contain identification about the
-//               general category of devices this fits in, such as
-//               keyboard, mouse, gamepad, or flight stick.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a structure representing a single input device.  Input devices may
+ * have zero or more buttons, pointers, or controls associated with them, and
+ * optionally a motion tracker.
+ *
+ * These devices are brought under a common interface because there is such a
+ * large range of devices out there that may support any number of these types
+ * of controls, we couldn't even begin to cover them with type-specific
+ * subclasses.
+ *
+ * Use the various has_() and get_num_() methods to determine information about
+ * the device capabilities. For instance, has_keyboard() will give an
+ * indication that you can receive keystroke events from this device, and
+ * get_num_buttons() will tell you that the device may send button events.
+ *
+ * There is the DeviceType enumeration, however, which will (if known) contain
+ * identification of the general category of devices this fits in, such as
+ * keyboard, mouse, gamepad, or flight stick.
+ */
 class EXPCL_PANDA_DEVICE InputDevice : public TypedReferenceCount {
 PUBLISHED:
   // This enum contains information that can be used to identify the

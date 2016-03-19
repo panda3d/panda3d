@@ -1,16 +1,15 @@
-// Filename: config_display.cxx
-// Created by:  drose (06Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_display.cxx
+ * @author drose
+ * @date 1999-10-06
+ */
 
 #include "config_display.h"
 #include "callbackGraphicsWindow.h"
@@ -54,11 +53,10 @@ ConfigVariableBool pstats_unused_states
           "of per-frame overhead to count these things up."));
 
 
-// Warning!  The code that uses this is currently experimental and
-// incomplete, and will almost certainly crash!  Do not set
-// threading-model to anything other than its default of a
-// single-threaded model unless you are developing Panda's threading
-// system!
+// Warning!  The code that uses this is currently experimental and incomplete,
+// and will almost certainly crash!  Do not set threading-model to anything
+// other than its default of a single-threaded model unless you are developing
+// Panda's threading system!
 ConfigVariableString threading_model
 ("threading-model", "",
  PRC_DESC("This is the default threading model to use for new windows.  Use "
@@ -476,14 +474,12 @@ ConfigVariableBool basic_shaders_only
           "flaky becomes reliable, we may expand the definition of what "
           "constitutes 'basic' shaders."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdisplay
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libdisplay() {
   static bool initialized = false;

@@ -1,16 +1,15 @@
-// Filename: eggPrimitive.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPrimitive.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGPRIMITIVE_H
 #define EGGPRIMITIVE_H
@@ -35,26 +34,23 @@
 
 class EggVertexPool;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPrimitive
-// Description : A base class for any of a number of kinds of geometry
-//               primitives: polygons, point lights, nurbs patches,
-//               parametrics curves, etc.  Things with a set of
-//               vertices and some rendering properties like color.
-//
-//               An EggPrimitive is an STL-style container of pointers
-//               to EggVertex's.  In fact, it IS a vector, and can be
-//               manipulated in all the ways that vectors can.
-//               However, it is necessary that all vertices belong to
-//               the same vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any of a number of kinds of geometry primitives: polygons,
+ * point lights, nurbs patches, parametrics curves, etc.  Things with a set of
+ * vertices and some rendering properties like color.
+ *
+ * An EggPrimitive is an STL-style container of pointers to EggVertex's.  In
+ * fact, it IS a vector, and can be manipulated in all the ways that vectors
+ * can.  However, it is necessary that all vertices belong to the same vertex
+ * pool.
+ */
 class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
                      public EggRenderMode
 {
 
-  // This is a bit of private interface stuff that must be here as a
-  // forward reference.  This allows us to define the EggPrimitive as
-  // an STL container.
+  // This is a bit of private interface stuff that must be here as a forward
+  // reference.  This allows us to define the EggPrimitive as an STL
+  // container.
 
 private:
   typedef vector_PT_EggVertex Vertices;
@@ -63,8 +59,8 @@ private:
 
 PUBLISHED:
   enum Shading {
-    // The order here is important.  The later choices are more
-    // specific than the earlier ones.
+    // The order here is important.  The later choices are more specific than
+    // the earlier ones.
     S_unknown,
     S_overall,
     S_per_face,
@@ -129,10 +125,10 @@ PUBLISHED:
   virtual bool has_normals() const;
 
 
-  // The EggPrimitive itself appears to be an STL container of
-  // pointers to EggVertex objects.  The set of vertices is read-only,
-  // however, except through the limited add_vertex/remove_vertex or
-  // insert/erase interface.  The following implements this.
+  // The EggPrimitive itself appears to be an STL container of pointers to
+  // EggVertex objects.  The set of vertices is read-only, however, except
+  // through the limited add_vertexremove_vertex or inserterase interface.
+  // The following implements this.
 public:
 #if defined(WIN32_VC) || defined(WIN64_VC)
   typedef PT_EggVertex *pointer;
@@ -191,9 +187,9 @@ PUBLISHED:
 protected:
   Vertices _vertices;
 
-  // Don't try to use these private functions.  User code should add
-  // and remove vertices via add_vertex()/remove_vertex(), or via the
-  // STL-like push_back()/pop_back() or insert()/erase(), above.
+  // Don't try to use these private functions.  User code should add and
+  // remove vertices via add_vertex()remove_vertex(), or via the STL-like
+  // push_back()pop_back() or insert()erase(), above.
   virtual void prepare_add_vertex(EggVertex *vertex, int i, int n);
   virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);
 

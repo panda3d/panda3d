@@ -1,27 +1,24 @@
-// Filename: eggMultiFilter.cxx
-// Created by:  drose (02Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMultiFilter.cxx
+ * @author drose
+ * @date 2000-11-02
+ */
 
 #include "eggMultiFilter.h"
 
 #include "pnotify.h"
 #include "eggData.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggMultiFilter::
 EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
   clear_runlines();
@@ -61,22 +58,18 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
      "OS-imposed limits on the length of command lines.",
      &EggMultiFilter::dispatch_filename, &_got_input_filename, &_input_filename);
 
-  // Derived programs will set this true when they discover some
-  // command-line option that will prevent the program from generating
-  // output.  This removes some checks for an output specification in
-  // handle_args.
+  // Derived programs will set this true when they discover some command-line
+  // option that will prevent the program from generating output.  This
+  // removes some checks for an output specification in handle_args.
   _read_only = false;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggMultiFilter::
 handle_args(ProgramBase::Args &args) {
   if (_got_input_filename) {
@@ -143,9 +136,9 @@ handle_args(ProgramBase::Args &args) {
   for (ai = args.begin(); ai != args.end(); ++ai) {
     PT(EggData) data = read_egg(Filename::from_os_specific(*ai));
     if (data == (EggData *)NULL) {
-      // Rather than returning false, we simply exit here, so the
-      // ProgramBase won't try to tell the user how to run the program
-      // just because we got a bad egg file.
+      // Rather than returning false, we simply exit here, so the ProgramBase
+      // won't try to tell the user how to run the program just because we got
+      // a bad egg file.
       exit(1);
     }
 
@@ -155,11 +148,9 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::post_command_line
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool EggMultiFilter::
 post_command_line() {
   Eggs::iterator ei;
@@ -174,13 +165,10 @@ post_command_line() {
   return EggMultiBase::post_command_line();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::get_output_filename
-//       Access: Protected
-//  Description: Returns the output filename of the egg file with the
-//               given input filename.  This is based on the user's
-//               choice of -inplace, -o, or -d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the output filename of the egg file with the given input filename.
+ * This is based on the user's choice of -inplace, -o, or -d.
+ */
 Filename EggMultiFilter::
 get_output_filename(const Filename &source_filename) const {
   if (_got_output_filename) {
@@ -198,13 +186,11 @@ get_output_filename(const Filename &source_filename) const {
   return source_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::write_eggs
-//       Access: Protected, Virtual
-//  Description: Writes out all of the egg files in the _eggs vector,
-//               to the output directory if one is specified, or over
-//               the input files if -inplace was specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out all of the egg files in the _eggs vector, to the output
+ * directory if one is specified, or over the input files if -inplace was
+ * specified.
+ */
 void EggMultiFilter::
 write_eggs() {
   nassertv(!_read_only);

@@ -1,29 +1,25 @@
-// Filename: cLerpInterval.cxx
-// Created by:  drose (27Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cLerpInterval.cxx
+ * @author drose
+ * @date 2002-08-27
+ */
 
 #include "cLerpInterval.h"
 #include "string_utils.h"
 
 TypeHandle CLerpInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpInterval::string_blend_type
-//       Access: Published, Static
-//  Description: Returns the BlendType enumerated value corresponding
-//               to the indicated string, or BT_invalid if the string
-//               doesn't match anything.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the BlendType enumerated value corresponding to the indicated
+ * string, or BT_invalid if the string doesn't match anything.
+ */
 CLerpInterval::BlendType CLerpInterval::
 string_blend_type(const string &blend_type) {
   if (blend_type == "easeIn") {
@@ -39,20 +35,17 @@ string_blend_type(const string &blend_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpInterval::compute_delta
-//       Access: Protected
-//  Description: Given a t value in the range [0, get_duration()],
-//               returns the corresponding delta value clamped to the
-//               range [0, 1], after scaling by duration and applying
-//               the blend type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a t value in the range [0, get_duration()], returns the corresponding
+ * delta value clamped to the range [0, 1], after scaling by duration and
+ * applying the blend type.
+ */
 double CLerpInterval::
 compute_delta(double t) const {
   double duration = get_duration();
   if (duration == 0.0) {
-    // If duration is 0, the lerp works as a set.  Thus, the delta is
-    // always 1.0, the terminating value.
+    // If duration is 0, the lerp works as a set.  Thus, the delta is always
+    // 1.0, the terminating value.
     return 1.0;
   }
   t /= duration;

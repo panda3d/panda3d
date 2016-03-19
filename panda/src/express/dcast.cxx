@@ -1,16 +1,15 @@
-// Filename: dcast.cxx
-// Created by:  drose (07Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcast.cxx
+ * @author drose
+ * @date 2001-08-07
+ */
 
 #include "dcast.h"
 #include "config_express.h"
@@ -23,25 +22,23 @@
 #endif
 
 #ifdef DO_DCAST
-////////////////////////////////////////////////////////////////////
-//     Function: _dcast_verify
-//  Description: This function performs the actual check that the
-//               indicated TypedObject pointer is of the intended
-//               type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function performs the actual check that the indicated TypedObject
+ * pointer is of the intended type.
+ */
 bool
-_dcast_verify(TypeHandle want_handle, size_t want_size, 
+_dcast_verify(TypeHandle want_handle, size_t want_size,
               const TypedObject *ptr) {
   if (get_verify_dcast()) {
     if (ptr == (const TypedObject *)NULL) {
-      // This is allowed these days.  It used to be an error, but
-      // what the heck.
+      // This is allowed these days.  It used to be an error, but what the
+      // heck.
       return true;
     }
 #if defined(_DEBUG) && defined(_WIN32)
     if (IsBadWritePtr((TypedObject *)ptr, want_size)) {
       express_cat->warning()
-        << "Attempt to cast invalid pointer to " 
+        << "Attempt to cast invalid pointer to "
         << want_handle << "\n";
       return false;
     }
@@ -61,5 +58,3 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
   return true;
 }
 #endif  // DO_DCAST
-
-

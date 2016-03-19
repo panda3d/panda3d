@@ -1,22 +1,21 @@
-// Filename: config_ptloader.cxx
-// Created by:  drose (26Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_ptloader.cxx
+ * @author drose
+ * @date 2001-04-26
+ */
 
 #include "config_ptloader.h"
 
 // This needs to be included first to work around a bug in OSX 10.4.
 #if defined(HAVE_FCOLLADA) && defined(IS_OSX)
-#include "daeToEggConverter.h" 
+#include "daeToEggConverter.h"
 #endif
 
 #include "loaderFileTypePandatool.h"
@@ -34,7 +33,7 @@
 
 // Windows freaks out if this input is placed earlier.
 #if defined(HAVE_FCOLLADA) && !defined(IS_OSX)
-#include "daeToEggConverter.h" 
+#include "daeToEggConverter.h"
 #endif
 
 #include "dconfig.h"
@@ -62,14 +61,12 @@ ConfigVariableBool ptloader_load_node
           "always go through the egg library, which is more likely to be "
           "reliable."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libptloader
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libptloader() {
   static bool initialized = false;
@@ -104,17 +101,14 @@ init_libptloader() {
   EggToObjConverter *egg_obj = new EggToObjConverter;
   reg->register_type(new LoaderFileTypePandatool(obj_egg, egg_obj));
 
-//#ifdef HAVE_FCOLLADA
-//  DAEToEggConverter *dae = new DAEToEggConverter;
-//  reg->register_type(new LoaderFileTypePandatool(dae));
-//#endif
+// #ifdef HAVE_FCOLLADA DAEToEggConverter *dae = new DAEToEggConverter;
+// reg->register_type(new LoaderFileTypePandatool(dae)); #endif
 
 #ifdef HAVE_MAYA
-  // Register the Maya converter as a deferred type.  We don't compile
-  // it in directly, because it's big and bulky; we don't need to
-  // force people to load up libmayaloader (and, along with it, all of
-  // the Maya API libraries) until they actually try to load a Maya
-  // file.
+  // Register the Maya converter as a deferred type.  We don't compile it in
+  // directly, because it's big and bulky; we don't need to force people to
+  // load up libmayaloader (and, along with it, all of the Maya API libraries)
+  // until they actually try to load a Maya file.
   reg->register_deferred_type("mb", "mayaloader");
   reg->register_deferred_type("ma", "mayaloader");
 #endif

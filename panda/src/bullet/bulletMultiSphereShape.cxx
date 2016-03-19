@@ -1,16 +1,15 @@
-// Filename: bulletMultiSphereShape.cxx
-// Created by:  enn0x (05Jan12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletMultiSphereShape.cxx
+ * @author enn0x
+ * @date 2012-01-05
+ */
 
 #include "bulletMultiSphereShape.h"
 
@@ -18,11 +17,9 @@
 
 TypeHandle BulletMultiSphereShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletMultiSphereShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BulletMultiSphereShape::
 BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii) {
 
@@ -45,14 +42,11 @@ BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletMultiSphereShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 btCollisionShape *BulletMultiSphereShape::
 ptr() const {
 
   return _shape;
 }
-

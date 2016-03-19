@@ -1,16 +1,15 @@
-// Filename: typedWritable_ext.cxx
-// Created by:  rdb (10Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file typedWritable_ext.cxx
+ * @author rdb
+ * @date 2013-12-10
+ */
 
 #include "typedWritable_ext.h"
 
@@ -20,43 +19,35 @@
 extern Dtool_PyTypedObject Dtool_BamWriter;
 #endif  // CPPPARSER
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-//
-//               This hooks into the native pickle and cPickle
-//               modules, but it cannot properly handle
-//               self-referential BAM objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special Python method is implement to provide support for the pickle
+ * module.
+ *
+ * This hooks into the native pickle and cPickle modules, but it cannot
+ * properly handle self-referential BAM objects.
+ */
 PyObject *Extension<TypedWritable>::
 __reduce__(PyObject *self) const {
   return __reduce_persist__(self, NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::__reduce_persist__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-//
-//               This is similar to __reduce__, but it provides
-//               additional support for the missing persistent-state
-//               object needed to properly support self-referential
-//               BAM objects written to the pickle stream.  This hooks
-//               into the pickle and cPickle modules implemented in
-//               direct/src/stdpy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special Python method is implement to provide support for the pickle
+ * module.
+ *
+ * This is similar to __reduce__, but it provides additional support for the
+ * missing persistent-state object needed to properly support self-referential
+ * BAM objects written to the pickle stream.  This hooks into the pickle and
+ * cPickle modules implemented in direct/src/stdpy.
+ */
 PyObject *Extension<TypedWritable>::
 __reduce_persist__(PyObject *self, PyObject *pickler) const {
-  // We should return at least a 2-tuple, (Class, (args)): the
-  // necessary class object whose constructor we should call
-  // (e.g. this), and the arguments necessary to reconstruct this
-  // object.
+  // We should return at least a 2-tuple, (Class, (args)): the necessary class
+  // object whose constructor we should call (e.g.  this), and the arguments
+  // necessary to reconstruct this object.
 
-  // Check that we have a decode_from_bam_stream python method.  If not,
-  // we can't use this interface.
+  // Check that we have a decode_from_bam_stream python method.  If not, we
+  // can't use this interface.
   PyObject *method = PyObject_GetAttrString(self, "decode_from_bam_stream");
   if (method == NULL) {
     ostringstream stream;
@@ -97,9 +88,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
 
   PyObject *func;
   if (writer != NULL) {
-    // The modified pickle support: call the "persistent" version of
-    // this function, which receives the unpickler itself as an
-    // additional parameter.
+    // The modified pickle support: call the "persistent" version of this
+    // function, which receives the unpickler itself as an additional
+    // parameter.
     func = find_global_decode(this_class, "py_decode_TypedWritable_from_bam_stream_persist");
     if (func == NULL) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_TypedWritable_from_bam_stream_persist()");
@@ -108,8 +99,8 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     }
 
   } else {
-    // The traditional pickle support: call the non-persistent version
-    // of this function.
+    // The traditional pickle support: call the non-persistent version of this
+    // function.
 
     func = find_global_decode(this_class, "py_decode_TypedWritable_from_bam_stream");
     if (func == NULL) {
@@ -125,19 +116,15 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::find_global_decode
-//       Access: Public, Static
-//  Description: This is a support function for __reduce__().  It
-//               searches for the global function
-//               py_decode_TypedWritable_from_bam_stream() in this
-//               class's module, or in the module for any base class.
-//               (It's really looking for the libpanda module, but we
-//               can't be sure what name that module was loaded under,
-//               so we search upwards this way.)
-//
-//               Returns: new reference on success, or NULL on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a support function for __reduce__().  It searches for the global
+ * function py_decode_TypedWritable_from_bam_stream() in this class's module,
+ * or in the module for any base class.  (It's really looking for the libpanda
+ * module, but we can't be sure what name that module was loaded under, so we
+ * search upwards this way.)
+ *
+ * Returns: new reference on success, or NULL on failure.
+ */
 PyObject *Extension<TypedWritable>::
 find_global_decode(PyObject *this_class, const char *func_name) {
   PyObject *module_name = PyObject_GetAttrString(this_class, "__module__");
@@ -180,35 +167,26 @@ find_global_decode(PyObject *this_class, const char *func_name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: py_decode_TypedWritable_from_bam_stream
-//       Access: Published
-//  Description: This wrapper is defined as a global function to suit
-//               pickle's needs.
-//
-//               This hooks into the native pickle and cPickle
-//               modules, but it cannot properly handle
-//               self-referential BAM objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * This wrapper is defined as a global function to suit pickle's needs.
+ *
+ * This hooks into the native pickle and cPickle modules, but it cannot
+ * properly handle self-referential BAM objects.
+ */
 PyObject *
 py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data) {
   return py_decode_TypedWritable_from_bam_stream_persist(NULL, this_class, data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: py_decode_TypedWritable_from_bam_stream_persist
-//       Access: Published
-//  Description: This wrapper is defined as a global function to suit
-//               pickle's needs.
-//
-//               This is similar to
-//               py_decode_TypedWritable_from_bam_stream, but it
-//               provides additional support for the missing
-//               persistent-state object needed to properly support
-//               self-referential BAM objects written to the pickle
-//               stream.  This hooks into the pickle and cPickle
-//               modules implemented in direct/src/stdpy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This wrapper is defined as a global function to suit pickle's needs.
+ *
+ * This is similar to py_decode_TypedWritable_from_bam_stream, but it provides
+ * additional support for the missing persistent-state object needed to
+ * properly support self-referential BAM objects written to the pickle stream.
+ * This hooks into the pickle and cPickle modules implemented in
+ * direct/src/stdpy.
+ */
 PyObject *
 py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *this_class, const string &data) {
 
@@ -222,10 +200,10 @@ py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *thi
   }
 
   // We need the function PandaNode::decode_from_bam_stream or
-  // TypedWritableReferenceCount::decode_from_bam_stream, which
-  // invokes the BamReader to reconstruct this object.  Since we use
-  // the specific object's class as the pointer, we get the particular
-  // instance of decode_from_bam_stream appropriate to this class.
+  // TypedWritableReferenceCount::decode_from_bam_stream, which invokes the
+  // BamReader to reconstruct this object.  Since we use the specific object's
+  // class as the pointer, we get the particular instance of
+  // decode_from_bam_stream appropriate to this class.
 
   PyObject *func = PyObject_GetAttrString(this_class, "decode_from_bam_stream");
   if (func == NULL) {

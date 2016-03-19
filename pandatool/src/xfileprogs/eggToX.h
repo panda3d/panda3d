@@ -1,16 +1,15 @@
-// Filename: eggToX.h
-// Created by:  drose (19Jun01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToX.h
+ * @author drose
+ * @date 2001-06-19
+ */
 
 #ifndef EGGTOX_H
 #define EGGTOX_H
@@ -25,12 +24,10 @@
 
 class Node;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToX
-// Description : A program to read in a egg file and write an
-//               equivalent, or nearly equivalent, DirectX-style "x"
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read in a egg file and write an equivalent, or nearly
+ * equivalent, DirectX-style "x" file.
+ */
 class EggToX : public EggToSomething {
 public:
   EggToX();

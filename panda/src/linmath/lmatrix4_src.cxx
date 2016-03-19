@@ -1,16 +1,15 @@
-// Filename: lmatrix4_src.cxx
-// Created by:  drose (15Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lmatrix4_src.cxx
+ * @author drose
+ * @date 1999-01-15
+ */
 
 TypeHandle FLOATNAME(LMatrix4)::_type_handle;
 TypeHandle FLOATNAME(UnalignedLMatrix4)::_type_handle;
@@ -63,12 +62,10 @@ const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_lz_to_ry_mat =
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ly_to_rz_mat =
   FLOATNAME(LMatrix4)::_flip_z_mat * FLOATNAME(LMatrix4)::_y_to_z_up_mat;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::convert_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that transforms from the indicated
-//               coordinate system to the indicated coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a matrix that transforms from the indicated coordinate system to
+ * the indicated coordinate system.
+ */
 const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 convert_mat(CoordinateSystem from, CoordinateSystem to) {
   TAU_PROFILE("LMatrix4 LMatrix4::convert_mat(CoordinateSystem, CoordinateSystem)", " ", TAU_USER);
@@ -128,20 +125,16 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
   return _ident_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::compare_to
-//       Access: Public
-//  Description: Sorts matrices lexicographically, componentwise.
-//               Returns a number less than 0 if this matrix sorts
-//               before the other one, greater than zero if it sorts
-//               after, 0 if they are equivalent (within the indicated
-//               tolerance).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts matrices lexicographically, componentwise.  Returns a number less
+ * than 0 if this matrix sorts before the other one, greater than zero if it
+ * sorts after, 0 if they are equivalent (within the indicated tolerance).
+ */
 int FLOATNAME(LMatrix4)::
 compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("int LMatrix4::compare_to(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
-  // We compare values in reverse order, since the last row of the
-  // matrix is most likely to be different between different matrices.
+  // We compare values in reverse order, since the last row of the matrix is
+  // most likely to be different between different matrices.
   for (int r = 3; r >= 0; --r) {
     for (int c = 0; c < 4; ++c) {
       if (!IS_THRESHOLD_COMPEQ(_m(r, c), other._m(r, c), threshold)) {
@@ -152,13 +145,10 @@ compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::set_rotate_mat
-//       Access: Public
-//  Description: Sets mat to a matrix that rotates by the given angle
-//               in degrees counterclockwise about the indicated
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets mat to a matrix that rotates by the given angle in degrees
+ * counterclockwise about the indicated vector.
+ */
 void FLOATNAME(LMatrix4)::
 set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
                CoordinateSystem cs) {
@@ -169,8 +159,8 @@ set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   }
 
   if (IS_LEFT_HANDED_COORDSYSTEM(cs)) {
-    // In a left-handed coordinate system, counterclockwise is the
-    // other direction.
+    // In a left-handed coordinate system, counterclockwise is the other
+    // direction.
     angle = -angle;
   }
 
@@ -223,13 +213,11 @@ set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   _m(3, 3) = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::set_rotate_mat_normaxis
-//       Access: Public
-//  Description: Fills mat with a matrix that rotates by the given
-//               angle in degrees counterclockwise about the indicated
-//               vector.  Assumes axis has been prenormalized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills mat with a matrix that rotates by the given angle in degrees
+ * counterclockwise about the indicated vector.  Assumes axis has been
+ * prenormalized.
+ */
 void FLOATNAME(LMatrix4)::
 set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
                         CoordinateSystem cs) {
@@ -239,8 +227,8 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   }
 
   if (IS_LEFT_HANDED_COORDSYSTEM(cs)) {
-    // In a left-handed coordinate system, counterclockwise is the
-    // other direction.
+    // In a left-handed coordinate system, counterclockwise is the other
+    // direction.
     angle = -angle;
   }
 
@@ -284,14 +272,11 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   _m(3, 3) = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::almost_equal
-//       Access: Public
-//  Description: Returns true if two matrices are memberwise equal
-//               within a specified tolerance.  This is faster than
-//               the equivalence operator as this doesn't have to
-//               guarantee that it is transitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if two matrices are memberwise equal within a specified
+ * tolerance.  This is faster than the equivalence operator as this doesn't
+ * have to guarantee that it is transitive.
+ */
 bool FLOATNAME(LMatrix4)::
 almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("bool LMatrix4::almost_equal(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
@@ -317,11 +302,9 @@ almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FLOATNAME(LMatrix4)::
 output(ostream &out) const {
   out << "[ "
@@ -347,11 +330,9 @@ output(ostream &out) const {
       << " ]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FLOATNAME(LMatrix4)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -381,11 +362,9 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::generate_hash
-//       Access: Public
-//  Description: Adds the vector to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vector to the indicated hash generator.
+ */
 void FLOATNAME(LMatrix4)::
 generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
   TAU_PROFILE("void LMatrix4::generate_hash(ChecksumHashGenerator &, FLOATTYPE)", " ", TAU_USER);
@@ -396,11 +375,9 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::decompose_mat
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FLOATNAME(LMatrix4)::
 decompose_mat(int index[4]) {
   TAU_PROFILE("bool LMatrix4::decompose_mat(int[4])", " ", TAU_USER);
@@ -415,11 +392,10 @@ decompose_mat(int index[4]) {
       }
     }
 
-    // We throw the value out only if it's smaller than our "small"
-    // threshold squared.  This helps reduce overly-sensitive
-    // rejections.
+    // We throw the value out only if it's smaller than our "small" threshold
+    // squared.  This helps reduce overly-sensitive rejections.
     if (IS_THRESHOLD_ZERO(big, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
-      //    if (IS_NEARLY_ZERO(big)) {
+      // if (IS_NEARLY_ZERO(big)) {
       return false;
     }
     vv[i] = 1.0f / big;
@@ -474,11 +450,9 @@ decompose_mat(int index[4]) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::back_sub_mat
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FLOATNAME(LMatrix4)::
 back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
   TAU_PROFILE("bool LMatrix4::back_sub_mat(int[4], LMatrix4 &, int)", " ", TAU_USER);
@@ -510,17 +484,13 @@ back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::write_datagram_fixed
-//       Access: Published
-//  Description: Writes the matrix to the Datagram using add_float32()
-//               or add_float64(), depending on the type of floats in
-//               the matrix, regardless of the setting of
-//               Datagram::set_stdfloat_double().  This is appropriate
-//               when you want to write a fixed-width value to the
-//               datagram, especially when you are not writing a bam
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the matrix to the Datagram using add_float32() or add_float64(),
+ * depending on the type of floats in the matrix, regardless of the setting of
+ * Datagram::set_stdfloat_double().  This is appropriate when you want to
+ * write a fixed-width value to the datagram, especially when you are not
+ * writing a bam file.
+ */
 void FLOATNAME(LMatrix4)::
 write_datagram_fixed(Datagram &destination) const {
   for (int i = 0; i < 4; ++i) {
@@ -534,12 +504,10 @@ write_datagram_fixed(Datagram &destination) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::read_datagram_fixed
-//       Access: Published
-//  Description: Reads the matrix from the Datagram using get_float32()
-//               or get_float64().  See write_datagram_fixed().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the matrix from the Datagram using get_float32() or get_float64().
+ * See write_datagram_fixed().
+ */
 void FLOATNAME(LMatrix4)::
 read_datagram_fixed(DatagramIterator &scan) {
   for (int i = 0; i < 4; ++i) {
@@ -553,14 +521,11 @@ read_datagram_fixed(DatagramIterator &scan) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::write_datagram
-//       Access: Published
-//  Description: Writes the matrix to the Datagram using
-//               add_stdfloat().  This is appropriate when you want to
-//               write the matrix using the standard width setting,
-//               especially when you are writing a bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the matrix to the Datagram using add_stdfloat().  This is
+ * appropriate when you want to write the matrix using the standard width
+ * setting, especially when you are writing a bam file.
+ */
 void FLOATNAME(LMatrix4)::
 write_datagram(Datagram &destination) const {
   for (int i = 0; i < 4; ++i) {
@@ -570,11 +535,9 @@ write_datagram(Datagram &destination) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::read_datagram
-//       Access: Published
-//  Description: Reads the matrix from the Datagram using get_stdfloat().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the matrix from the Datagram using get_stdfloat().
+ */
 void FLOATNAME(LMatrix4)::
 read_datagram(DatagramIterator &scan) {
   for (int i = 0; i < 4; ++i) {
@@ -584,11 +547,9 @@ read_datagram(DatagramIterator &scan) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FLOATNAME(LMatrix4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -597,11 +558,9 @@ init_type() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix4::init_type
-//       Access: Published, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FLOATNAME(UnalignedLMatrix4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {

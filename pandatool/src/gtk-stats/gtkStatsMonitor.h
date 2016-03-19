@@ -1,16 +1,15 @@
-// Filename: gtkStatsMonitor.h
-// Created by:  drose (16Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gtkStatsMonitor.h
+ * @author drose
+ * @date 2006-01-16
+ */
 
 #ifndef GTKSTATSMONITOR_H
 #define GTKSTATSMONITOR_H
@@ -29,11 +28,10 @@
 class GtkStatsServer;
 class GtkStatsChartMenu;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsMonitor
-// Description : This class represents a connection to a PStatsClient
-//               and manages the data exchange with the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class represents a connection to a PStatsClient and manages the data
+ * exchange with the client.
+ */
 class GtkStatsMonitor : public PStatMonitor {
 public:
   class MenuDef {
@@ -74,15 +72,15 @@ public:
   void set_time_units(int unit_mask);
   void set_scroll_speed(double scroll_speed);
   void set_pause(bool pause);
-  
+
 private:
   void add_graph(GtkStatsGraph *graph);
   void remove_graph(GtkStatsGraph *graph);
 
   void create_window();
   void shutdown();
-  static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event, 
-				      gpointer data);
+  static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
+              gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);
   void setup_frame_rate_label();
 

@@ -1,16 +1,15 @@
-// Filename: eggRenderMode.h
-// Created by:  drose (20Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggRenderMode.h
+ * @author drose
+ * @date 1999-01-20
+ */
 
 #ifndef EGGRENDERMODE_H
 #define EGGRENDERMODE_H
@@ -19,20 +18,16 @@
 #include "typedObject.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggRenderMode
-// Description : This class stores miscellaneous rendering properties
-//               that is associated with geometry, and which may be
-//               set on the geometry primitive level, on the group
-//               above it, or indirectly via a texture.  It's intended
-//               to be a base class for egg objects that can have
-//               these properties set.
-//
-//               This class cannot inherit from EggObject, because it
-//               causes problems at the EggPolygon level with multiple
-//               appearances of the EggObject base class.  And making
-//               EggObject a virtual base class is just no fun.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class stores miscellaneous rendering properties that is associated
+ * with geometry, and which may be set on the geometry primitive level, on the
+ * group above it, or indirectly via a texture.  It's intended to be a base
+ * class for egg objects that can have these properties set.
+ *
+ * This class cannot inherit from EggObject, because it causes problems at the
+ * EggPolygon level with multiple appearances of the EggObject base class.
+ * And making EggObject a virtual base class is just no fun.
+ */
 class EXPCL_PANDAEGG EggRenderMode {
 PUBLISHED:
   EggRenderMode();
@@ -42,7 +37,7 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
   enum AlphaMode {  // Specifies implementation of transparency.
-    AM_unspecified, 
+    AM_unspecified,
     AM_off,     // No transparency.
     AM_on,      // Use whatever the default model is.
     AM_blend,   // Normal alpha blending, e.g. TransparencyAttrib::M_alpha.
@@ -50,7 +45,8 @@ PUBLISHED:
     AM_ms,      // TransparencyAttrib::M_multisample
     AM_ms_mask, // TransparencyAttrib::M_multisample_mask
     AM_binary,  // TransparencyAttrib::M_binary
-    AM_dual     // TransparencyAttrib::M_dual
+    AM_dual,    // TransparencyAttrib::M_dual
+    AM_premultiplied // TransparencyAttrib::M_premultiplied_alpha
   };
 
   enum DepthWriteMode {
@@ -136,4 +132,3 @@ EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::VisibilityMode
 #include "eggRenderMode.I"
 
 #endif
-

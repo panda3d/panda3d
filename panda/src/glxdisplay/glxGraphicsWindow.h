@@ -1,16 +1,15 @@
-// Filename: glxGraphicsWindow.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glxGraphicsWindow.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef GLXGRAPHICSWINDOW_H
 #define GLXGRAPHICSWINDOW_H
@@ -22,14 +21,12 @@
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsWindow
-// Description : An interface to the glx system for managing GL
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the glx system for managing GL windows under X.
+ */
 class glxGraphicsWindow : public x11GraphicsWindow {
 public:
-  glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -48,7 +45,7 @@ protected:
 private:
   virtual void setup_colormap(GLXFBConfig fbconfig);
   virtual void setup_colormap(XVisualInfo *visual);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

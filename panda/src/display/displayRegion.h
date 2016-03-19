@@ -1,16 +1,15 @@
-// Filename: displayRegion.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegion.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef DISPLAYREGION_H
 #define DISPLAYREGION_H
@@ -47,17 +46,14 @@ class Camera;
 class PNMImage;
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegion
-// Description : A rectangular subregion within a window for rendering
-//               into.  Typically, there is one DisplayRegion that
-//               covers the whole window, but you may also create
-//               smaller DisplayRegions for having different regions
-//               within the window that represent different scenes.
-//               You may also stack up DisplayRegions like panes of
-//               glass, usually for layering 2-d interfaces on top of
-//               a 3-d scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * A rectangular subregion within a window for rendering into.  Typically,
+ * there is one DisplayRegion that covers the whole window, but you may also
+ * create smaller DisplayRegions for having different regions within the
+ * window that represent different scenes.  You may also stack up
+ * DisplayRegions like panes of glass, usually for layering 2-d interfaces on
+ * top of a 3-d scene.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegion : public DisplayRegionBase, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
@@ -211,8 +207,8 @@ protected:
                        GraphicsStateGuardian *gsg, Thread *current_thread);
 
 protected:
-  // The associated window is a permanent property of the
-  // DisplayRegion.  It doesn't need to be cycled.
+  // The associated window is a permanent property of the DisplayRegion.  It
+  // doesn't need to be cycled.
   GraphicsOutput *_window;
 
   bool _incomplete_render;
@@ -222,10 +218,9 @@ protected:
   PT(CullTraverser) _trav;
 
 private:
-  // This is the data that is associated with the DisplayRegion that
-  // needs to be cycled every frame, but represents the parameters as
-  // specified by the user, and which probably will not change that
-  // often.
+  // This is the data that is associated with the DisplayRegion that needs to
+  // be cycled every frame, but represents the parameters as specified by the
+  // user, and which probably will not change that often.
   class EXPCL_PANDA_DISPLAY CData : public CycleData {
   public:
     CData();
@@ -260,12 +255,11 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
-  // This is a special cycler created to hold the results from the
-  // cull traversal, for (a) the draw traversal, and (b) the next
-  // frame's cull traversal.  It needs to be cycled, but it gets its
-  // own cycler because it will certainly change every frame, so we
-  // don't need to lump all the heavy data above in with this
-  // lightweight cycler.
+  // This is a special cycler created to hold the results from the cull
+  // traversal, for (a) the draw traversal, and (b) the next frame's cull
+  // traversal.  It needs to be cycled, but it gets its own cycler because it
+  // will certainly change every frame, so we don't need to lump all the heavy
+  // data above in with this lightweight cycler.
   class EXPCL_PANDA_DISPLAY CDataCull : public CycleData {
   public:
     CDataCull();
@@ -309,11 +303,10 @@ private:
   friend class DisplayRegionPipelineReader;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionPipelineReader
-// Description : Encapsulates the data from a DisplayRegion,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a DisplayRegion, pre-fetched for one stage of
+ * the pipeline.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);

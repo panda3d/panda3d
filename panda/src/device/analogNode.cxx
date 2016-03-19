@@ -1,16 +1,15 @@
-// Filename: analogNode.cxx
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file analogNode.cxx
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #include "analogNode.h"
 #include "config_device.h"
@@ -20,11 +19,9 @@
 
 TypeHandle AnalogNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnalogNode::
 AnalogNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
@@ -68,23 +65,19 @@ AnalogNode(InputDevice *device) :
   nassertv(device != (InputDevice *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnalogNode::
 ~AnalogNode() {
-  // When the _analog pointer destructs, the ClientAnalogDevice
-  // disconnects itself from the ClientBase, and everything that needs
-  // to get turned off does.  Magic.
+  // When the _analog pointer destructs, the ClientAnalogDevice disconnects
+  // itself from the ClientBase, and everything that needs to get turned off
+  // does.  Magic.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AnalogNode::
 write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
@@ -94,21 +87,16 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output
+ * parameters.  The input parameters may be accessed with the index numbers
+ * returned by the define_input() calls that were made earlier (presumably in
+ * the constructor); likewise, the output parameters should be set with the
+ * index numbers returned by the define_output() calls.
+ */
 void AnalogNode::
-do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &, 
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
   if (is_valid()) {
     _analog->poll();

@@ -1,32 +1,26 @@
-// Filename: boundingLine.I
-// Created by:  drose (04Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file boundingLine.I
+ * @author drose
+ * @date 2000-07-04
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_MATHUTIL BoundingLine::
 BoundingLine() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE_MATHUTIL BoundingLine::
 BoundingLine(const LPoint3 &a, const LPoint3 &b) :
   _origin(a), _vector(b - a)
@@ -38,11 +32,9 @@ BoundingLine(const LPoint3 &a, const LPoint3 &b) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::get_point_a
-//       Access: Published
-//  Description: Returns the first point that defines the line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first point that defines the line.
+ */
 INLINE_MATHUTIL const LPoint3 &BoundingLine::
 get_point_a() const {
   nassertr(!is_empty(), _origin);
@@ -50,11 +42,9 @@ get_point_a() const {
   return _origin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingLine::get_point_b
-//       Access: Published
-//  Description: Returns the second point that defines the line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the second point that defines the line.
+ */
 INLINE_MATHUTIL LPoint3 BoundingLine::
 get_point_b() const {
   nassertr(!is_empty(), _origin);

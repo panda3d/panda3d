@@ -1,26 +1,23 @@
-// Filename: fltTrackplane.cxx
-// Created by:  drose (26Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTrackplane.cxx
+ * @author drose
+ * @date 2000-08-26
+ */
 
 #include "fltTrackplane.h"
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrackplane::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltTrackplane::
 FltTrackplane() {
   _origin.set(0.0, 0.0, 0.0);
@@ -37,11 +34,9 @@ FltTrackplane() {
   _grid_mask = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrackplane::extract_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FltTrackplane::
 extract_record(FltRecordReader &reader) {
   DatagramIterator &iterator = reader.get_iterator();
@@ -70,11 +65,9 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrackplane::build_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool FltTrackplane::
 build_record(FltRecordWriter &writer) const {
   Datagram &datagram = writer.update_datagram();

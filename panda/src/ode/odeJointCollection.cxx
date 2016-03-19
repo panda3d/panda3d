@@ -1,16 +1,15 @@
-// Filename: odeJointCollection.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeJointCollection.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #include "odeJointCollection.h"
 
@@ -32,8 +31,7 @@ void OdeJointCollection::
 add_joint(const OdeJoint &joint) {
   // If the pointer to our internal array is shared by any other
   // OdeJointCollections, we have to copy the array now so we won't
-  // inadvertently modify any of our brethren OdeJointCollection
-  // objects.
+  // inadvertently modify any of our brethren OdeJointCollection objects.
 
   if (_joints.get_ref_count() > 1) {
     Joints old_joints = _joints;
@@ -60,8 +58,7 @@ remove_joint(const OdeJoint &joint) {
 
   // If the pointer to our internal array is shared by any other
   // OdeJointCollections, we have to copy the array now so we won't
-  // inadvertently modify any of our brethren JointCollection
-  // objects.
+  // inadvertently modify any of our brethren JointCollection objects.
 
   if (_joints.get_ref_count() > 1) {
     Joints old_joints = _joints;
@@ -151,12 +148,10 @@ operator [] (int index) const {
   return get_joint(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJointCollection::size
-//       Access: Published
-//  Description: Returns the number of joints in the collection.  This
-//               is the same thing as get_num_joints().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of joints in the collection.  This is the same thing as
+ * get_num_joints().
+ */
 int OdeJointCollection::
 size() const {
   return _joints.size();

@@ -1,16 +1,15 @@
-// Filename: glGeomMunger_src.cxx
-// Created by:  drose (10Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGeomMunger_src.cxx
+ * @author drose
+ * @date 2005-03-10
+ */
 
 #include "dcast.h"
 
@@ -18,19 +17,17 @@ TypeHandle CLP(GeomMunger)::_type_handle;
 
 ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
   _texture((const TextureAttrib *)state->get_attrib(TextureAttrib::get_class_slot())),
   _tex_gen((const TexGenAttrib *)state->get_attrib(TexGenAttrib::get_class_slot()))
 {
-  // Set a callback to unregister ourselves when either the Texture or
-  // the TexGen object gets deleted.
+  // Set a callback to unregister ourselves when either the Texture or the
+  // TexGen object gets deleted.
   _texture.set_callback(this);
   _tex_gen.set_callback(this);
 
@@ -43,11 +40,9 @@ CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(GeomMunger)::
 ~CLP(GeomMunger)() {
   // We need to remove this pointer from all of the geom contexts that
@@ -59,25 +54,20 @@ CLP(GeomMunger)::
   _geom_contexts.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::wp_callback
-//       Access: Public, Virtual
-//  Description: This callback is set to be made whenever the
-//               associated _texture or _tex_gen attributes are
-//               destructed, in which case the GeomMunger is invalid
-//               and should no longer be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback is set to be made whenever the associated _texture or
+ * _tex_gen attributes are destructed, in which case the GeomMunger is invalid
+ * and should no longer be used.
+ */
 void CLP(GeomMunger)::
 wp_callback(void *) {
   unregister_myself();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::munge_format_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source GeomVertexFormat, converts it if necessary to the
+ * appropriate format for rendering.
+ */
 CPT(GeomVertexFormat) CLP(GeomMunger)::
 munge_format_impl(const GeomVertexFormat *orig,
                   const GeomVertexAnimationSpec &animation) {
@@ -88,8 +78,8 @@ munge_format_impl(const GeomVertexFormat *orig,
   DCAST_INTO_R(glgsg, get_gsg(), NULL);
 
 #ifndef OPENGLES
-  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices
-  // and texture coordinates.
+  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices and
+  // texture coordinates.
   const GeomVertexColumn *vertex_type = orig->get_vertex_column();
   if (vertex_type != (GeomVertexColumn *)NULL &&
       (vertex_type->get_numeric_type() == NT_int8 ||
@@ -131,8 +121,8 @@ munge_format_impl(const GeomVertexFormat *orig,
   if (color_type != (GeomVertexColumn *)NULL &&
       color_type->get_numeric_type() == NT_packed_dabc &&
       !glgsg->_supports_packed_dabc) {
-    // We need to convert the color format; OpenGL doesn't support the
-    // byte order of DirectX's packed ARGB format.
+    // We need to convert the color format; OpenGL doesn't support the byte
+    // order of DirectX's packed ARGB format.
     int color_array = orig->get_array_with(InternalName::get_color());
 
     PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
@@ -144,11 +134,10 @@ munge_format_impl(const GeomVertexFormat *orig,
   }
 
   if (animation.get_animation_type() == AT_hardware) {
-    // If we want hardware animation, we need to reserve space for the
-    // blend weights.
+    // If we want hardware animation, we need to reserve space for the blend
+    // weights.
 
-    // Make sure the old weights and indices are removed, just in
-    // case.
+    // Make sure the old weights and indices are removed, just in case.
     new_format->remove_column(InternalName::get_transform_weight());
     new_format->remove_column(InternalName::get_transform_index());
 
@@ -162,14 +151,14 @@ munge_format_impl(const GeomVertexFormat *orig,
          NT_stdfloat, C_other);
 
       if (animation.get_indexed_transforms()) {
-        // Also, if we'll be indexing into the transform table, reserve
-        // space for the index.
+        // Also, if we'll be indexing into the transform table, reserve space
+        // for the index.
 
-        // TODO: We should examine the maximum palette index so we can
-        // decide whether we need 16-bit indices.  That implies saving
-        // the maximum palette index, presumably in the AnimationSpec.
-        // At the moment, I don't think any existing hardware supports
-        // more than 255 indices anyway.
+        // TODO: We should examine the maximum palette index so we can decide
+        // whether we need 16-bit indices.  That implies saving the maximum
+        // palette index, presumably in the AnimationSpec.  At the moment, I
+        // don't think any existing hardware supports more than 255 indices
+        // anyway.
         new_array_format->add_column
           (InternalName::get_transform_index(), animation.get_num_transforms(),
            NT_uint8, C_index);
@@ -226,8 +215,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       new_format->remove_column(column->get_name());
     }
 
-    // Put only the used texture coordinates into the interleaved
-    // array.
+    // Put only the used texture coordinates into the interleaved array.
     if (_texture != (TextureAttrib *)NULL) {
       typedef pset<const InternalName *> UsedStages;
       UsedStages used_stages;
@@ -264,12 +252,10 @@ munge_format_impl(const GeomVertexFormat *orig,
   return format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::premunge_format_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source GeomVertexFormat, converts it if necessary to the
+ * appropriate format for rendering.
+ */
 CPT(GeomVertexFormat) CLP(GeomMunger)::
 premunge_format_impl(const GeomVertexFormat *orig) {
   PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
@@ -278,8 +264,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   DCAST_INTO_R(glgsg, get_gsg(), NULL);
 
 #ifndef OPENGLES
-  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices
-  // and texture coordinates.
+  // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices and
+  // texture coordinates.
   const GeomVertexColumn *vertex_type = orig->get_vertex_column();
   if (vertex_type != (GeomVertexColumn *)NULL &&
       (vertex_type->get_numeric_type() == NT_int8 ||
@@ -333,12 +319,11 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     format = GeomVertexFormat::register_format(new_format);
 
   } else {
-    // Combine the primary data columns into a single array.  Unlike
-    // the munge case, above, in the premunge case, we do this even if
-    // F_interleaved_arrays is not set (unless F_parallel_arrays is
-    // set), since the presumption is that you're more willing to pay
-    // the overhead of doing this step at load time than you might be
-    // at run time.
+    // Combine the primary data columns into a single array.  Unlike the munge
+    // case, above, in the premunge case, we do this even if
+    // F_interleaved_arrays is not set (unless F_parallel_arrays is set),
+    // since the presumption is that you're more willing to pay the overhead
+    // of doing this step at load time than you might be at run time.
     new_format = new GeomVertexFormat(*format);
     PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
 
@@ -369,9 +354,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       new_format->remove_column(column->get_name());
     }
 
-    // Put only the used texture coordinates into the interleaved
-    // array.  The others will be kept around, but in a parallel
-    // array.
+    // Put only the used texture coordinates into the interleaved array.  The
+    // others will be kept around, but in a parallel array.
     if (_texture != (TextureAttrib *)NULL) {
       typedef pset<const InternalName *> UsedStages;
       UsedStages used_stages;
@@ -401,9 +385,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       }
     }
 
-    // Now go through the remaining arrays and make sure they are
-    // tightly packed (with the column alignment restrictions).  If
-    // not, repack them.
+    // Now go through the remaining arrays and make sure they are tightly
+    // packed (with the column alignment restrictions).  If not, repack them.
     for (int i = 0; i < new_format->get_num_arrays(); ++i) {
       CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
       if (orig_a->count_unused_space() != 0) {
@@ -427,11 +410,9 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 }
 
 #ifdef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::munge_geom_impl
-//       Access: Protected, Virtual
-//  Description: Converts a Geom and/or its data as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a Geom and/or its data as necessary.
+ */
 void CLP(GeomMunger)::
 munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
                 Thread *current_thread) {
@@ -446,11 +427,9 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::premunge_geom_impl
-//       Access: Protected, Virtual
-//  Description: Converts a Geom and/or its data as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a Geom and/or its data as necessary.
+ */
 void CLP(GeomMunger)::
 premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
   StandardMunger::premunge_geom_impl(geom, vertex_data);
@@ -465,14 +444,11 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
 }
 #endif  // OPENGLES
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to compare two GeomMungers who are known to be of the same type, for
+ * an apples-to-apples comparison.  This will never be called on two pointers
+ * of a different type.
+ */
 int CLP(GeomMunger)::
 compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
@@ -489,14 +465,11 @@ compare_to_impl(const GeomMunger *other) const {
   return StandardMunger::compare_to_impl(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::geom_compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to compare two GeomMungers who are known to be of the same type, for
+ * an apples-to-apples comparison.  This will never be called on two pointers
+ * of a different type.
+ */
 int CLP(GeomMunger)::
 geom_compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;

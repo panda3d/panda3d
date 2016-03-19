@@ -1,26 +1,24 @@
-// Filename: NativeIStream.java
-// Created by:  rdb (22Jan13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file NativeIStream.java
+ * @author rdb
+ * @date 2013-01-22
+ */
 
 package org.panda3d.android;
 
 import java.io.InputStream;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NativeIStream
-// Description : An implementation of InputStream that gets its
-//               data from a C++ istream pointer, passed as long.
-////////////////////////////////////////////////////////////////////
+/**
+ * An implementation of InputStream that gets its data from a C++ istream
+ * pointer, passed as long.
+ */
 public class NativeIStream extends InputStream {
     private long streamPtr = 0;
 

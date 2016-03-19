@@ -1,16 +1,15 @@
-// Filename: binCullHandler.h
-// Created by:  drose (28Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file binCullHandler.h
+ * @author drose
+ * @date 2002-02-28
+ */
 
 #ifndef BINCULLHANDLER_H
 #define BINCULLHANDLER_H
@@ -20,18 +19,16 @@
 #include "cullResult.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BinCullHandler
-// Description : This CullHandler sends all of the geoms it receives
-//               into a CullResult object, for binning (and later
-//               drawing).  This is the kind of CullHandler to use for
-//               most normal rendering needs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This CullHandler sends all of the geoms it receives into a CullResult
+ * object, for binning (and later drawing).  This is the kind of CullHandler
+ * to use for most normal rendering needs.
+ */
 class EXPCL_PANDA_CULL BinCullHandler : public CullHandler {
 public:
   INLINE BinCullHandler(CullResult *cull_result);
 
-  virtual void record_object(CullableObject *object, 
+  virtual void record_object(CullableObject *object,
                              const CullTraverser *traverser);
 
 private:
@@ -41,6 +38,3 @@ private:
 #include "binCullHandler.I"
 
 #endif
-
-
-  

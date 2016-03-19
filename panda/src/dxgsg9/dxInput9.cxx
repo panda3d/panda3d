@@ -1,16 +1,15 @@
-// Filename: dxInput9.cxx
-// Created by:  angelina jolie (07Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxInput9.cxx
+ * @author angelina jolie
+ * @date 1999-10-07
+ */
 
 #include "config_wdxdisplay9.h"
 #include "dxInput9.h"
@@ -44,9 +43,7 @@ DInput9Info::~DInput9Info() {
       SAFE_RELEASE(_DeviceList[i]);
   }
 
-  // bugbug: need to handle this
-  // if(_JoystickPollTimer!=NULL)
-  //   KillTimer(...)
+  // bugbug: need to handle this if(_JoystickPollTimer!=NULL) KillTimer(...)
 
   SAFE_RELEASE(_pDInput9);
   if(_hDInputDLL) {
@@ -58,8 +55,8 @@ DInput9Info::~DInput9Info() {
 bool DInput9Info::InitDirectInput() {
     HRESULT hr;
 
-    // assumes dx9 exists
-    // use dynamic load so non-dinput programs don't have to load dinput
+    // assumes dx9 exists use dynamic load so non-dinput programs don't have
+    // to load dinput
     #define DLLNAME "dinput9.dll"
     #define DINPUTCREATE "DirectInput9Create"
 
@@ -78,16 +75,15 @@ bool DInput9Info::InitDirectInput() {
         exit(1);
     }
 
-    // Register with the DirectInput subsystem and get a pointer
-    // to a IDirectInput interface we can use.
-    // Create a DInput object
+    // Register with the DirectInput subsystem and get a pointer to a
+    // IDirectInput interface we can use.  Create a DInput object
     if( FAILED( hr = (*pDInputCreate9)(GetModuleHandle(NULL), DIRECTINPUT_VERSION,
                                          IID_IDirectInput9, (VOID**)&_pDInput9, NULL ) ) ) {
         wdxdisplay_cat.error() << DINPUTCREATE << "failed" << D3DERRORSTRING(hr);
         return false;
     }
 
-    // enum all the joysticks,etc  (but not keybd/mouse)
+    // enum all the joysticks,etc  (but not keybdmouse)
     if( FAILED( hr = _pDInput9->EnumDevices(DI9DEVCLASS_GAMECTRL,
                                          EnumGameCtrlsCallback,
                                          (LPVOID)&_DevInfos, DIEDFL_ATTACHEDONLY ) ) ) {
@@ -129,11 +125,11 @@ bool DInput9Info::CreateJoystickOrPad(HWND _window) {
     assert(pJoyDevice!=NULL);
     _DeviceList.push_back(pJoyDevice);
 
-    // Set the data format to "simple joystick" - a predefined data format
-    //
-    // A data format specifies which controls on a device we are interested in,
-    // and how they should be reported. This tells DInput that we will be
-    // passing a DIJOYSTATE2 structure to IDirectInputDevice::GetDeviceState().
+    // Set the data format to "simple joystick" - a predefined data format A
+    // data format specifies which controls on a device we are interested in,
+    // and how they should be reported.  This tells DInput that we will be
+    // passing a DIJOYSTATE2 structure to
+    // IDirectInputDevice::GetDeviceState().
     hr = pJoyDevice->SetDataFormat(&c_dfDIJoystick2);
     if(FAILED(hr)) {
         errstr="SetDataFormat";
@@ -158,7 +154,7 @@ bool DInput9Info::CreateJoystickOrPad(HWND _window) {
         goto handle_error;
     }
 
-    // set the min/max values property for discovered axes.
+    // set the minmax values property for discovered axes.
     hr = pJoyDevice->EnumObjects(EnumObjectsCallbackJoystick, (LPVOID)pJoyDevice, DIDFT_AXIS);
     if(FAILED(hr)) {
         errstr="EnumObjects";
@@ -172,12 +168,12 @@ bool DInput9Info::CreateJoystickOrPad(HWND _window) {
     return false;
 }
 
-//-----------------------------------------------------------------------------
-// Name: EnumObjectsCallback()
-// Desc: Callback function for enumerating objects (axes, buttons, POVs) on a
-//       joystick. This function enables user interface elements for objects
-//       that are found to exist, and scales axes min/max values.
-//-----------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// -- Name: EnumObjectsCallback() Desc: Callback function for enumerating
+// objects (axes, buttons, POVs) on a joystick.  This function enables user
+// interface elements for objects that are found to exist, and scales axes
+// minmax values.  -----------------------------------------------------------
+// ------------------
 BOOL CALLBACK EnumObjectsCallbackJoystick( const DIDEVICEOBJECTINSTANCE* pdidoi,
                                    VOID* pContext ) {
 
@@ -185,7 +181,7 @@ BOOL CALLBACK EnumObjectsCallbackJoystick( const DIDEVICEOBJECTINSTANCE* pdidoi,
     HRESULT hr;
 
     // For axes that are returned, set the DIPROP_RANGE property for the
-    // enumerated axis in order to scale min/max values.
+    // enumerated axis in order to scale minmax values.
     if( pdidoi->dwType & DIDFT_AXIS ) {
         DIPROPRANGE diprg;
         diprg.diph.dwSize       = sizeof(DIPROPRANGE);
@@ -223,10 +219,10 @@ bool DInput9Info::ReadJoystick(int devnum, DIJOYSTATE2 &js) {
     hr = pJoystick->Poll();
 
     if( FAILED(hr) ) {
-        // DInput is telling us that the input stream has been
-        // interrupted. We aren't tracking any state between polls, so
-        // we don't have any special reset that needs to be done. We
-        // just re-acquire and try again.
+        // DInput is telling us that the input stream has been interrupted.
+        // We aren't tracking any state between polls, so we don't have any
+        // special reset that needs to be done.  We just re-acquire and try
+        // again.
 
         if((hr==DIERR_NOTACQUIRED)||(hr == DIERR_INPUTLOST)) {
             hr = pJoystick->Acquire();
@@ -235,8 +231,8 @@ bool DInput9Info::ReadJoystick(int devnum, DIJOYSTATE2 &js) {
                 if(wdxdisplay_cat.is_spam())
                    wdxdisplay_cat.spam() << "Acquire failed" << D3DERRORSTRING(hr);
 
-                // hr may be DIERR_OTHERAPPHASPRIO or other errors.  This
-                // may occur when the app is minimized or in the process of
+                // hr may be DIERR_OTHERAPPHASPRIO or other errors.  This may
+                // occur when the app is minimized or in the process of
                 // switching, so just try again later
                 return false;
             }
@@ -253,7 +249,8 @@ bool DInput9Info::ReadJoystick(int devnum, DIJOYSTATE2 &js) {
         }
     }
 
-    // should we make a vector of devstate dataformats to generalize this fn for all device types?
+    // should we make a vector of devstate dataformats to generalize this fn
+    // for all device types?
 
     // Get the input's device state
     hr = pJoystick->GetDeviceState( sizeof(DIJOYSTATE2), &js);

@@ -1,16 +1,15 @@
-// Filename: rangeDescription.h
-// Created by:  drose (07Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rangeDescription.h
+ * @author drose
+ * @date 2003-09-07
+ */
 
 #ifndef RANGEDESCRIPTION_H
 #define RANGEDESCRIPTION_H
@@ -18,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : RangeDescription
-// Description : This describes a sparse range of Unicode character
-//               codes for conversion that may be specified on the
-//               command line.
-////////////////////////////////////////////////////////////////////
+/**
+ * This describes a sparse range of Unicode character codes for conversion
+ * that may be specified on the command line.
+ */
 class RangeDescription {
 public:
   RangeDescription();
@@ -61,4 +58,3 @@ INLINE ostream &operator << (ostream &out, const RangeDescription &range);
 #include "rangeDescription.I"
 
 #endif
-

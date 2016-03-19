@@ -1,3 +1,18 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeUniversalJoint.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
+
+
+
 #ifndef ODEUNIVERSALJOINT_H
 #define ODEUNIVERSALJOINT_H
 
@@ -9,10 +24,9 @@
 
 #include "odeJoint.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeUniversalJoint
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeUniversalJoint : public OdeJoint {
   friend class OdeJoint;
 

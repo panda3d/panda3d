@@ -1,16 +1,15 @@
-// Filename: sceneSetup.h
-// Created by:  drose (27Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneSetup.h
+ * @author drose
+ * @date 2002-03-27
+ */
 
 #ifndef SCENESETUP_H
 #define SCENESETUP_H
@@ -26,12 +25,10 @@
 
 class DisplayRegion;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SceneSetup
-// Description : This object holds the camera position, etc., and
-//               other general setup information for rendering a
-//               particular scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object holds the camera position, etc., and other general setup
+ * information for rendering a particular scene.
+ */
 class EXPCL_PANDA_PGRAPH SceneSetup : public TypedReferenceCount {
 public:
   INLINE SceneSetup();

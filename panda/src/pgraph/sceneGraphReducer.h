@@ -1,16 +1,15 @@
-// Filename: sceneGraphReducer.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sceneGraphReducer.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef SCENEGRAPHREDUCER_H
 #define SCENEGRAPHREDUCER_H
@@ -29,17 +28,14 @@
 
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SceneGraphReducer
-// Description : An interface for simplifying ("flattening") scene
-//               graphs by eliminating unneeded nodes and collapsing
-//               out unneeded state changes and transforms.
-//
-//               This class is designed so that it may be inherited
-//               from and specialized, if needed, to fine-tune the
-//               flattening behavior, but normally the default
-//               behavior is sufficient.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface for simplifying ("flattening") scene graphs by eliminating
+ * unneeded nodes and collapsing out unneeded state changes and transforms.
+ *
+ * This class is designed so that it may be inherited from and specialized, if
+ * needed, to fine-tune the flattening behavior, but normally the default
+ * behavior is sufficient.
+ */
 class EXPCL_PANDA_PGRAPH SceneGraphReducer {
 PUBLISHED:
   INLINE SceneGraphReducer(GraphicsStateGuardianBase *gsg = NULL);
@@ -64,55 +60,52 @@ PUBLISHED:
   };
 
   enum CollectVertexData {
-    // If set, two GeomVertexDatas with different names will not be
-    // collected together.
+    // If set, two GeomVertexDatas with different names will not be collected
+    // together.
     CVD_name           = 0x001,
 
-    // If set, a ModelNode begins a subgraph of nodes whose
-    // GeomVertexDatas will not be collected with nodes outside the
-    // subgraph.
+    // If set, a ModelNode begins a subgraph of nodes whose GeomVertexDatas
+    // will not be collected with nodes outside the subgraph.
     CVD_model          = 0x002,
 
-    // If set, a non-identity transform begins a subgraph of nodes
-    // whose GeomVertexDatas will not be collected with nodes outside
-    // the subgraph.
+    // If set, a non-identity transform begins a subgraph of nodes whose
+    // GeomVertexDatas will not be collected with nodes outside the subgraph.
     CVD_transform      = 0x004,
 
-    // If set, GeomVertexDatas with any usage_hint other than
-    // UH_static will not be collected with any other Geoms in a
-    // different GeomNode.  However, two different dynamic Geoms
-    // within the same node might still be collected together.
+    // If set, GeomVertexDatas with any usage_hint other than UH_static will
+    // not be collected with any other Geoms in a different GeomNode.
+    // However, two different dynamic Geoms within the same node might still
+    // be collected together.
     CVD_avoid_dynamic  = 0x008,
 
-    // If set, only those GeomVertexDatas within the same node might
-    // be collected together.
+    // If set, only those GeomVertexDatas within the same node might be
+    // collected together.
     CVD_one_node_only  = 0x010,
 
     // If set, two GeomVertexDatas with different formats will not be
-    // collected together.  If not set, GeomVertexDatas of different
-    // formats may be combined by expanding all GeomVertexDatas to the
-    // union of all defined columns.
+    // collected together.  If not set, GeomVertexDatas of different formats
+    // may be combined by expanding all GeomVertexDatas to the union of all
+    // defined columns.
     CVD_format         = 0x020,
 
-    // If set, two GeomVertexDatas with different usage hints (for
-    // instance, UH_static vs. UH_dynamic) will not be collected
-    // together.
+    // If set, two GeomVertexDatas with different usage hints (for instance,
+    // UH_static vs.  UH_dynamic) will not be collected together.
     CVD_usage_hint     = 0x040,
 
-    // If set, GeomVertexDatas with unanimated vertices will not be
-    // combined with GeomVertexDatas with animated vertices.
-    CVD_animation_type = 0x080, 
+    // If set, GeomVertexDatas with unanimated vertices will not be combined
+    // with GeomVertexDatas with animated vertices.
+    CVD_animation_type = 0x080,
   };
 
   enum MakeNonindexed {
-    // If set, only composite primitives such as tristrips and trifans
-    // will be made nonindexed; simple primitives such as triangles
-    // will be left indexed.
+    // If set, only composite primitives such as tristrips and trifans will be
+    // made nonindexed; simple primitives such as triangles will be left
+    // indexed.
     MN_composite_only  = 0x001,
 
-    // If set any GeomVertexData with any animation indication will
-    // not be adjusted, whether the animation is to be performed on
-    // the CPU or on the graphics pipe.
+    // If set any GeomVertexData with any animation indication will not be
+    // adjusted, whether the animation is to be performed on the CPU or on the
+    // graphics pipe.
     MN_avoid_animated  = 0x002,
 
     // If set, any GeomVertexData or Geom with a usage_hint other than
@@ -136,7 +129,7 @@ PUBLISHED:
   int remove_column(PandaNode *root, const InternalName *column);
 
   int make_compatible_state(PandaNode *root);
-  
+
   INLINE int make_compatible_format(PandaNode *root, int collect_bits = ~0);
   void decompose(PandaNode *root);
 
@@ -162,15 +155,15 @@ protected:
   bool consider_siblings(PandaNode *parent_node, PandaNode *child1,
                          PandaNode *child2);
 
-  bool do_flatten_child(PandaNode *grandparent_node, 
+  bool do_flatten_child(PandaNode *grandparent_node,
                         PandaNode *parent_node, PandaNode *child_node);
 
-  PandaNode *do_flatten_siblings(PandaNode *parent_node, 
+  PandaNode *do_flatten_siblings(PandaNode *parent_node,
                                  PandaNode *child1, PandaNode *child2);
 
-  PT(PandaNode) collapse_nodes(PandaNode *node1, PandaNode *node2, 
+  PT(PandaNode) collapse_nodes(PandaNode *node1, PandaNode *node2,
                                bool siblings);
-  void choose_name(PandaNode *preserve, PandaNode *source1, 
+  void choose_name(PandaNode *preserve, PandaNode *source1,
                    PandaNode *source2);
 
   int r_remove_column(PandaNode *node, const InternalName *column,
