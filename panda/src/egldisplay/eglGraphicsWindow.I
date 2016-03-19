@@ -10,11 +10,3 @@
  * @author rdb
  * @date 2009-05-21
  */
-
-/**
- * Returns the X11 Window handle.
- */
-INLINE X11_Window eglGraphicsWindow::
-get_xwindow() const {
-  return _xwindow;
-}

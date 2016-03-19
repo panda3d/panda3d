@@ -39,12 +39,4 @@
   extern EXPCL_PANDAGLES const string get_egl_error_string(int error);
 #endif
 
-extern ConfigVariableString display_cfg;
-extern ConfigVariableBool x_error_abort;
-
-extern ConfigVariableInt x_wheel_up_button;
-extern ConfigVariableInt x_wheel_down_button;
-extern ConfigVariableInt x_wheel_left_button;
-extern ConfigVariableInt x_wheel_right_button;
-
 #endif
