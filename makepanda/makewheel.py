@@ -13,7 +13,9 @@ import os
 from os.path import join
 import shutil
 import zipfile
+import hashlib
 from makepandacore import ColorText
+from base64 import urlsafe_b64encode
 
 
 def get_platform():
@@ -28,13 +30,13 @@ def get_platform():
 # Other global parameters
 PY_VERSION = "cp{}{}".format(sys.version_info.major, sys.version_info.minor)
 ABI_TAG = "none"
-PLATFORM_VERSION = get_platform()
+PLATFORM_TAG = get_platform()
+EXCLUDE_EXT = [".pyc", ".pyo", ".N", ".prebuilt", ".xcf", ".plist", ".vcproj", ".sln"]
 
 WHEEL_DATA = """Wheel-Version: 1.0
-Generator: bdist_wheel 1.0
+Generator: makepanda
 Root-Is-Purelib: false
 Tag: {}-{}-{}
-Build: 1
 """
 
 METADATA = {
@@ -84,24 +86,82 @@ def write_metadata(info_target):
     email = details["contacts"][0]["email"]
     with open(join(info_target, 'METADATA'), 'w') as outfile:
         outfile.writelines([
-            "Metadata-Version: {metadata_version}",
-            "Name: {name}",
-            "Version: {version}",
-            "Summary: {summary}",
-            "License: {license}".format(**METADATA),
-            "Home-page: {}".format(homepage),
-            "Author: {}".format(author),
-            "Author-email: {}".format(email),
-            "Platform: {}".format(PLATFORM_VERSION),
-        ] + ["Classifier: {}".format(c) for c in METADATA['classifiers']])
+            "Metadata-Version: {metadata_version}\n",
+            "Name: {name}\n",
+            "Version: {version}\n",
+            "Summary: {summary}\n",
+            "License: {license}\n".format(**METADATA),
+            "Home-page: {}\n".format(homepage),
+            "Author: {}\n".format(author),
+            "Author-email: {}\n".format(email),
+            "Platform: {}\n".format(PLATFORM_TAG),
+        ] + ["Classifier: {}\n".format(c) for c in METADATA['classifiers']])
 
 
-def zip_directory(path, zip_handler):
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            full_path = os.path.join(root, file)
-            short_path = full_path.replace(path, '')
-            zip_handler.write(full_path, short_path)
+class WheelFile(object):
+    def __init__(self, name, version):
+        self.name = name
+        self.version = version
+
+        wheel_name = "{}-{}-{}-{}-{}.whl".format(
+            name, version, PY_VERSION, ABI_TAG, PLATFORM_TAG)
+
+        self.zip_file = zipfile.ZipFile(wheel_name, 'w')
+        self.records = []
+
+    def write_file(self, target_path, source_path):
+        """Adds the given file to the .whl file."""
+
+        # Calculate the SHA-256 hash and size.
+        sha = hashlib.sha256()
+        fp = open(source_path, 'rb')
+        size = 0
+        data = fp.read(1024 * 1024)
+        while data:
+            size += len(data)
+            sha.update(data)
+            data = fp.read(1024 * 1024)
+        fp.close()
+
+        # Save it in PEP-0376 format for writing out later.
+        digest = str(urlsafe_b64encode(sha.digest()))
+        digest = digest.rstrip('=')
+        self.records.append("{},sha256={},{}\n".format(target_path, digest, size))
+
+        print("Adding %s from %s" % (target_path, source_path))
+        self.zip_file.write(source_path, target_path)
+
+    def write_file_data(self, target_path, source_data):
+        """Adds the given file from a string."""
+
+        sha = hashlib.sha256()
+        sha.update(source_data.encode())
+        digest = str(urlsafe_b64encode(sha.digest()))
+        digest = digest.rstrip('=')
+        self.records.append("{},sha256={},{}\n".format(target_path, digest, len(source_data)))
+
+        print("Adding %s from data" % target_path)
+        self.zip_file.writestr(target_path, source_data)
+
+    def write_directory(self, target_dir, source_dir):
+        """Adds the given directory recursively to the .whl file."""
+
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                if os.path.splitext(file)[1] in EXCLUDE_EXT:
+                    continue
+
+                source_path = os.path.join(root, file)
+                target_path = os.path.join(target_dir, os.path.relpath(source_path, source_dir))
+                self.write_file(target_path, source_path)
+
+    def close(self):
+        # Write the RECORD file.
+        record_file = "{}-{}.dist-info/RECORD".format(self.name, self.version)
+        self.records.append(record_file + ",,\n")
+
+        self.zip_file.writestr(record_file, "".join(self.records))
+        self.zip_file.close()
 
 
 def copy_files(src, target):
@@ -114,24 +174,21 @@ def copy_files(src, target):
 
 def makewheel(version, output_dir):
     # Global filepaths
-    lib_src = join(output_dir, "lib")  # TODO: A special wheel lib dir
-    panda3d_src = join(output_dir, "panda3d")  # TODO: Empty?
+    lib_src = join(output_dir, "lib")
+    panda3d_src = join(output_dir, "panda3d")
     pandac_src = join(output_dir, "pandac")
     direct_src = join(output_dir, "direct")
     models_src = join(output_dir, "models")
-    plugins_src = join(output_dir, "plugins")
     etc_src = join(output_dir, "etc")
     bin_src = join(output_dir, "bin")
     license_src = "LICENSE"
     readme_src = "README.md"
+
+    # TODO: Do this without a wheel directory.
     wheel_target = join(output_dir, "wheel")
     panda3d_target = join(wheel_target, "panda3d")
-    pandac_target = join(wheel_target, "pandac")
-    direct_target = join(wheel_target, "direct")
     data_target = join(wheel_target, "panda3d-{}.data".format(version))
     info_target = join(wheel_target, "panda3d-{}.dist-info".format(version))
-    wheel_name = "panda3d-{}-{}-{}-{}.whl".format(
-        version, PY_VERSION, ABI_TAG, PLATFORM_VERSION)
 
     # Update relevant METADATA entries
     METADATA['version'] = version
@@ -141,7 +198,7 @@ def makewheel(version, output_dir):
     ]
     METADATA['classifiers'].extend(version_classifiers)
 
-    # Clean
+    # Clean TODO: Should go away
     print("Clearing wheel cache...")
     try:
         shutil.rmtree(wheel_target)
@@ -154,39 +211,86 @@ def makewheel(version, output_dir):
     os.makedirs(data_target)
     os.makedirs(info_target)
 
-    # Copy the built libraries
-    shutil.copytree(panda3d_src, panda3d_target)
-    copy_files(lib_src, panda3d_target)
-    shutil.copytree(direct_src, direct_target)
-    shutil.copytree(pandac_src, pandac_target)
-
     # For linux only, we need to set the rpath on each .so file
     if get_platform() == "any":
+        shutil.copytree(panda3d_src, panda3d_target)
+        copy_files(lib_src, panda3d_target)
         for filename in os.listdir(panda3d_target):
             if ".so" in filename:
                 path = os.path.join(panda3d_target, filename)
                 os.system("patchelf --set-rpath '$ORIGIN' {}".format(path))
 
-    # Copy the data files
-    shutil.copytree(models_src, join(data_target, "data", "models"))
-    shutil.copytree(plugins_src, join(data_target, "data", "plugins"))
-    shutil.copytree(etc_src, join(data_target, "data", "etc"))
-    shutil.copytree(bin_src, join(data_target, "scripts"))
-
     # Build out the metadata
-    shutil.copy2(license_src, join(info_target, "LICENSE.txt"))
+    details = METADATA["extensions"]["python.details"]
+    homepage = details["project_urls"]["Home"]
+    author = details["contacts"][0]["name"]
+    email = details["contacts"][0]["email"]
+    metadata = ''.join([
+        "Metadata-Version: {metadata_version}\n" \
+        "Name: {name}\n" \
+        "Version: {version}\n" \
+        "Summary: {summary}\n" \
+        "License: {license}\n".format(**METADATA),
+        "Home-page: {}\n".format(homepage),
+        "Author: {}\n".format(author),
+        "Author-email: {}\n".format(email),
+        "Platform: {}\n".format(PLATFORM_TAG),
+    ] + ["Classifier: {}\n".format(c) for c in METADATA['classifiers']])
+
     shutil.copy2(readme_src, info_target)
     with open(join(info_target, 'metadata.json'), 'w') as outfile:
         json.dump(METADATA, outfile)
-    with open(join(info_target, 'RECORD'), 'w') as outfile:
-        # TODO: Populate the RECORD file with all the proper hashes
-        pass
+
     with open(join(info_target, 'WHEEL'), 'w') as outfile:
-        outfile.write(WHEEL_DATA.format(PY_VERSION, ABI_TAG, PLATFORM_VERSION))
+        outfile.write(WHEEL_DATA.format(PY_VERSION, ABI_TAG, PLATFORM_TAG))
     write_metadata(info_target)
 
     # Zip it up and name it the right thing
     print("Zipping files into a wheel...")
-    zip_file = zipfile.ZipFile(wheel_name, 'w')
-    zip_directory(wheel_target, zip_file)
-    zip_file.close()
+    whl = WheelFile('panda3d', version)
+
+    # Add the trees with Python modules.
+    whl.write_directory('direct', direct_src)
+
+    for file in os.listdir(panda3d_target):  # TODO: Should be panda3d_src (except rpath)
+        file_ext = os.path.splitext(file)[1]
+        print(file_ext)
+        if file_ext in ('.pyd', '.so', '.py', '.10'):  # TODO: The .10 is a hack
+            source_path = os.path.join(panda3d_target, file)
+
+            if file_ext == '.pyd' and PLATFORM_TAG.startswith('cygwin'):
+                # Rename it to .dll for cygwin Python to be able to load it.
+                target_path = 'panda3d/' + os.path.splitext(file)[0] + '.dll'
+            else:
+                target_path = 'panda3d/' + file
+            whl.write_file(target_path, source_path)
+
+    # Add dependent DLLs from the bin directory.
+    for file in os.listdir(bin_src):
+        file_ext = os.path.splitext(file)[1]
+        if file_ext == '.dll':
+            source_path = os.path.join(bin_src, file)
+            target_path = 'panda3d/' + file
+            whl.write_file(target_path, source_path)
+
+    # Add the pandac tree for backward compatibility.
+    whl.write_file('pandac/__init__.py', os.path.join(pandac_src, '__init__.py'))
+    whl.write_file('pandac/PandaModules.py', os.path.join(pandac_src, 'PandaModules.py'))
+
+    # Add the .data directory, containing additional files.
+    data_dir = 'panda3d-{}.data'.format(version)
+    whl.write_directory(data_dir + '/data/etc', etc_src)
+    whl.write_directory(data_dir + '/data/models', models_src)
+
+    # Add the dist-info directory last.
+    info_dir = 'panda3d-{}.dist-info'.format(version)
+    whl.write_file_data(info_dir + '/metadata.json', json.dumps(METADATA, indent=4, separators=(',', ': ')))
+    whl.write_file_data(info_dir + '/METADATA', metadata)
+    whl.write_file_data(info_dir + '/WHEEL', WHEEL_DATA.format(PY_VERSION, ABI_TAG, PLATFORM_TAG))
+    whl.write_file(info_dir + '/LICENSE.txt', license_src)
+    whl.write_file(info_dir + '/README.md', readme_src)
+    whl.write_file_data(info_dir + '/top_level.txt', 'direct\npanda3d\npandac\n')
+
+    whl.close()
+
+# makewheel("1.10.0", "built_x64")
