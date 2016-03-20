@@ -18,7 +18,8 @@ INLINE Spotlight::CData::
 CData() :
   _exponent(50.0f),
   _specular_color(1.0f, 1.0f, 1.0f, 1.0f),
-  _attenuation(1.0f, 0.0f, 0.0f)
+  _attenuation(1.0f, 0.0f, 0.0f),
+  _max_distance(make_inf((PN_stdfloat)0))
 {
 }
 
@@ -29,7 +30,8 @@ INLINE Spotlight::CData::
 CData(const Spotlight::CData &copy) :
   _exponent(copy._exponent),
   _specular_color(copy._specular_color),
-  _attenuation(copy._attenuation)
+  _attenuation(copy._attenuation),
+  _max_distance(copy._max_distance)
 {
 }
 
@@ -110,4 +112,24 @@ INLINE void Spotlight::
 set_attenuation(const LVecBase3 &attenuation) {
   CDWriter cdata(_cycler);
   cdata->_attenuation = attenuation;
+}
+
+/**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */
+INLINE PN_stdfloat Spotlight::
+get_max_distance() const {
+  CDReader cdata(_cycler);
+  return cdata->_max_distance;
+}
+
+/**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */
+INLINE void Spotlight::
+set_max_distance(PN_stdfloat max_distance) {
+  CDWriter cdata(_cycler);
+  cdata->_max_distance = max_distance;
 }

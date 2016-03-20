@@ -789,7 +789,11 @@ make_default_pipe() {
   // folks) that have been loaded in at runtime from the load-display andor
   // aux-display Configrc variables.
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
-  selection->print_pipe_types();
+
+  if (print_pipe_types) {
+    selection->print_pipe_types();
+  }
+
   _default_pipe = selection->make_default_pipe();
 
   if (_default_pipe == (GraphicsPipe*)NULL) {

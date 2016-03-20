@@ -17,6 +17,7 @@
 #include "cppType.h"
 #include "cppSimpleType.h"
 #include "cppPointerType.h"
+#include "cppEnumType.h"
 #include "cppConstType.h"
 #include "cppArrayType.h"
 #include "cppPreprocessor.h"

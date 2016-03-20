@@ -532,12 +532,19 @@ class ShowBase(DirectObject.DirectObject):
             del self.winList
             del self.pipe
 
-    def makeDefaultPipe(self, printPipeTypes = True):
+    def makeDefaultPipe(self, printPipeTypes = None):
         """
         Creates the default GraphicsPipe, which will be used to make
         windows unless otherwise specified.
         """
         assert self.pipe == None
+
+        if printPipeTypes is None:
+            # When the user didn't specify an explicit setting, take the value
+            # from the config variable. We could just omit the parameter, however
+            # this way we can keep backward compatibility.
+            printPipeTypes = ConfigVariableBool("print-pipe-types", True)
+
         selection = GraphicsPipeSelection.getGlobalPtr()
         if printPipeTypes:
             selection.printPipeTypes()
@@ -567,7 +574,6 @@ class ShowBase(DirectObject.DirectObject):
         Creates all GraphicsPipes that the system knows about and fill up
         self.pipeList with them.
         """
-        shouldPrintPipes = 0
         selection = GraphicsPipeSelection.getGlobalPtr()
         selection.loadAuxModules()
 

@@ -4594,8 +4594,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles.dll', input='pandagles_pandagles.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_config_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
@@ -4613,8 +4612,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
   TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')

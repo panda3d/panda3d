@@ -535,16 +535,10 @@ get_hard_stretch_limitation_factor() const {
 #endif // NX_SDK_VERSION_NUMBER > 281
 
 
-
-
-
-
-
-
-/*
 /**
  * Attaches a cloth vertex to a position in world space.
  */
+/*
 void PhysxSoftBody::
 attach_vertex_to_global_pos(unsigned int vertexId, LPoint3f const &pos) {
 
@@ -553,6 +547,7 @@ attach_vertex_to_global_pos(unsigned int vertexId, LPoint3f const &pos) {
 
   _ptr->attachVertexToGlobalPosition(vertexId, PhysxManager::point3_to_nxVec3(pos));
 }
+*/
 
 /**
  * Attaches the cloth to a shape.  All cloth points currently inside the shape
@@ -561,6 +556,7 @@ attach_vertex_to_global_pos(unsigned int vertexId, LPoint3f const &pos) {
  * This method only works with primitive and convex shapes.  Since the inside
  * of a general triangle mesh is not clearly defined.
  */
+/*
 void PhysxSoftBody::
 attach_to_shape(PhysxShape *shape) {
 
@@ -570,6 +566,7 @@ attach_to_shape(PhysxShape *shape) {
   NxU32 attachmentFlags = 0; // --TODO--
   _ptr->attachToShape(shape->ptr(), attachmentFlags);
 }
+*/
 
 /**
  * Attaches the cloth to all shapes, currently colliding.
@@ -577,6 +574,7 @@ attach_to_shape(PhysxShape *shape) {
  * This method only works with primitive and convex shapes.  Since the inside
  * of a general triangle mesh is not clearly defined.
  */
+/*
 void PhysxSoftBody::
 attach_to_colliding_shapes() {
 
@@ -585,6 +583,7 @@ attach_to_colliding_shapes() {
   NxU32 attachmentFlags = 0; // --TODO--
   _ptr->attachToCollidingShapes(attachmentFlags);
 }
+*/
 
 /**
  * Detaches the cloth from a shape it has been attached to before.
@@ -592,6 +591,7 @@ attach_to_colliding_shapes() {
  * If the cloth has not been attached to the shape before, the call has no
  * effect.
  */
+/*
 void PhysxSoftBody::
 detach_from_shape(PhysxShape *shape) {
 
@@ -600,20 +600,24 @@ detach_from_shape(PhysxShape *shape) {
 
   _ptr->detachFromShape(shape->ptr());
 }
+*/
 
 /**
  * Frees a previously attached cloth point.
  */
+/*
 void PhysxSoftBody::
 free_vertex(unsigned int vertexId) {
 
   nassertv(_error_type == ET_ok);
   _ptr->freeVertex(vertexId);
 }
+*/
 
 /**
  * Attaches a cloth vertex to a local position within a shape.
  */
+/*
 void PhysxSoftBody::
 attach_vertex_to_shape(unsigned int vertexId, PhysxShape *shape, LPoint3f const &localPos) {
 
@@ -626,10 +630,12 @@ attach_vertex_to_shape(unsigned int vertexId, PhysxShape *shape, LPoint3f const 
                             PhysxManager::point3_to_nxVec3(localPos),
                             attachmentFlags);
 }
+*/
 
 /**
  * Return the attachment status of the given vertex.
  */
+/*
 PhysxEnums::PhysxVertexAttachmentStatus PhysxSoftBody::
 get_vertex_attachment_status(unsigned int vertexId) const {
 
@@ -638,12 +644,14 @@ get_vertex_attachment_status(unsigned int vertexId) const {
 
   return (PhysxVertexAttachmentStatus) _ptr->getVertexAttachmentStatus(vertexId);
 }
+*/
 
 /**
  * Returns the pointer to an attached shape pointer of the given vertex.  If
  * the vertex is not attached or attached to a global position, NULL is
  * returned.
  */
+/*
 PhysxShape *PhysxSoftBody::
 get_vertex_attachment_shape(unsigned int vertexId) const {
 
@@ -655,12 +663,14 @@ get_vertex_attachment_shape(unsigned int vertexId) const {
 
   return shape;
 }
+*/
 
 /**
  * Returns the attachment position of the given vertex.  If the vertex is
  * attached to shape, the position local to the shape's pose is returned.  If
  * the vertex is not attached, the return value is undefined.
  */
+/*
 LPoint3f PhysxSoftBody::
 get_vertex_attachment_pos(unsigned int vertexId) const {
 
@@ -670,11 +680,13 @@ get_vertex_attachment_pos(unsigned int vertexId) const {
 
   return PhysxManager::nxVec3_to_point3(_ptr->getVertexAttachmentPosition(vertexId));
 }
+*/
 
 /**
  * Sets an external acceleration which affects all non attached particles of
  * the cloth.
  */
+/*
 void PhysxSoftBody::
 set_external_acceleration(LVector3f const &acceleration) {
 
@@ -683,10 +695,12 @@ set_external_acceleration(LVector3f const &acceleration) {
 
   _ptr->setExternalAcceleration(PhysxManager::vec3_to_nxVec3(acceleration));
 }
+*/
 
 /**
  * Sets an acceleration acting normal to the cloth surface at each vertex.
  */
+/*
 void PhysxSoftBody::
 set_wind_acceleration(LVector3f const &acceleration) {
 
@@ -695,33 +709,39 @@ set_wind_acceleration(LVector3f const &acceleration) {
 
   _ptr->setWindAcceleration(PhysxManager::vec3_to_nxVec3(acceleration));
 }
+*/
 
 /**
  * Retrieves the external acceleration which affects all non attached
  * particles of the cloth.
  */
+/*
 LVector3f PhysxSoftBody::
 get_external_acceleration() const {
 
   nassertr(_error_type == ET_ok, LVector3f::zero());
   return PhysxManager::nxVec3_to_vec3(_ptr->getExternalAcceleration());
 }
+*/
 
 /**
  * Retrieves the acceleration acting normal to the cloth surface at each
  * vertex
  */
+/*
 LVector3f PhysxSoftBody::
 get_wind_acceleration() const {
 
   nassertr(_error_type == ET_ok, LVector3f::zero());
   return PhysxManager::nxVec3_to_vec3(_ptr->getWindAcceleration());
 }
+*/
 
 /**
  * Applies a force (or impulse) defined in the global coordinate frame, to a
  * particular vertex of the cloth.
  */
+/*
 void PhysxSoftBody::
 add_force_at_vertex(LVector3f const &force, int vertexId, PhysxForceMode mode) {
 
@@ -730,11 +750,13 @@ add_force_at_vertex(LVector3f const &force, int vertexId, PhysxForceMode mode) {
                          vertexId,
                          (NxForceMode) mode);
 }
+*/
 
 /**
  * Applies a radial force (or impulse) at a particular position.  All vertices
  * within radius will be affected with a quadratic drop-off.
  */
+/*
 void PhysxSoftBody::
 add_force_at_pos(LPoint3f const &pos, float magnitude, float radius, PhysxForceMode mode) {
 
@@ -744,11 +766,13 @@ add_force_at_pos(LPoint3f const &pos, float magnitude, float radius, PhysxForceM
                       radius,
                       (NxForceMode) mode);
 }
+*/
 
 /**
  * Applies a directed force (or impulse) at a particular position.  All
  * vertices within radius will be affected with a quadratic drop-off.
  */
+/*
 void PhysxSoftBody::
 add_directed_force_at_pos(LPoint3f const &pos, LVector3f const &force, float radius, PhysxForceMode mode) {
 

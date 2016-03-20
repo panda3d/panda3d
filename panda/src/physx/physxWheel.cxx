@@ -17,10 +17,10 @@
 
 TypeHandle PhysxWheel::_type_handle;
 
-/*
 /**
  *
  */
+/*
 PhysxWheelShape *PhysxWheel::
 get_wheel_shape() const {
 
@@ -28,7 +28,6 @@ get_wheel_shape() const {
 }
 */
 
-/*
 /**
  * Attaches a node path to this wheel.  The node path's transform will be
  * updated automatically.
@@ -36,6 +35,7 @@ get_wheel_shape() const {
  * Note: any non-uniform scale or shear set on the NodePath's transform will
  * be overwritten at the time of the first update.
  */
+/*
 void PhysxWheel::
 attach_node_path(const NodePath &np) {
 
@@ -43,22 +43,26 @@ attach_node_path(const NodePath &np) {
   nassertv_always(!np.is_empty());
   _np = NodePath(np);
 }
+*/
 
 /**
  * Detaches a previously assigned NodePath from this wheel.  The NodePath's
  * transform will no longer be updated.
  */
+/*
 void PhysxWheel::
 detach_node_path() {
 
   nassertv(_error_type == ET_ok);
   _np = NodePath();
 }
+*/
 
 /**
  * Retrieves a previously attached NodePath.  An empty NodePath will be
  * returned if no NodePath has been attached to this wheel.
  */
+/*
 NodePath PhysxWheel::
 get_node_path() const {
 

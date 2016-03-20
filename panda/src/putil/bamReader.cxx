@@ -236,7 +236,8 @@ read_object() {
  * This flavor of read_object() returns both a TypedWritable and a
  * ReferenceCount pointer to the same object, so the reference count may be
  * tracked reliably, without having to know precisely what type of object we
- * have.  It returns true on success, or false on failure.
+ * have.
+ * @return true on success, or false on failure.
  */
 bool BamReader::
 read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {

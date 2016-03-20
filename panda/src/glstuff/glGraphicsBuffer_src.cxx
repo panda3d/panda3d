@@ -509,6 +509,7 @@ rebuild_bitplanes() {
 
   // Now create the FBO's.
   _have_any_color = false;
+  bool have_any_depth = false;
 
   if (num_fbos > _fbo.size()) {
     // Generate more FBO handles.
@@ -542,8 +543,10 @@ rebuild_bitplanes() {
     // For all slots, update the slot.
     if (_use_depth_stencil) {
       bind_slot(layer, rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+      have_any_depth = true;
     } else if (attach[RTP_depth] || _fb_properties.get_depth_bits() > 0) {
       bind_slot(layer, rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+      have_any_depth = true;
     }
 
     int next = GL_COLOR_ATTACHMENT0_EXT;
@@ -581,11 +584,23 @@ rebuild_bitplanes() {
     }
 #endif  // OPENGLES
 
-    // Clear if the fbo was just created, regardless of the clear settings per
-    // frame.
-    if (_initial_clear) {
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    if (_have_any_color || have_any_depth) {
+      // Clear if the fbo was just created, regardless of the clear settings per
+      // frame.
+      if (_initial_clear) {
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      }
+#ifndef OPENGLES
+    } else if (glgsg->_supports_empty_framebuffer) {
+      // Set the "default" width and height, which is required to have an FBO
+      // without any attachments.
+      glgsg->_glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_WIDTH, _rb_size_x);
+      glgsg->_glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_HEIGHT, _rb_size_y);
+#endif
+    } else {
+      // If all else fails, just bind a "dummy" attachment.
+      bind_slot(layer, rb_resize, attach, RTP_color, next++);
     }
   }
 
@@ -1363,8 +1378,10 @@ open_buffer() {
     _fb_properties.set_depth_bits(32);
   } else if (_fb_properties.get_depth_bits() > 16) {
     _fb_properties.set_depth_bits(24);
-  } else {
+  } else if (_fb_properties.get_depth_bits() > 0) {
     _fb_properties.set_depth_bits(16);
+  } else {
+    _fb_properties.set_depth_bits(0);
   }
 
   // We're not going to get more than this, ever.  At least not until OpenGL

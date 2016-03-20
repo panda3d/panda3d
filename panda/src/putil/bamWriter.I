@@ -35,6 +35,22 @@ get_filename() const {
 }
 
 /**
+ * Returns the major version number of the Bam file currently being written.
+ */
+INLINE int BamWriter::
+get_file_major_ver() const {
+  return _file_major;
+}
+
+/**
+ * Returns the minor version number of the Bam file currently being written.
+ */
+INLINE int BamWriter::
+get_file_minor_ver() const {
+  return _file_minor;
+}
+
+/**
  * Returns the endian preference indicated by the Bam file currently being
  * written.  This does not imply that every number is stored using the
  * indicated convention, but individual objects may choose to respect this

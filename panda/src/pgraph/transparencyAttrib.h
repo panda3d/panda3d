@@ -36,7 +36,7 @@ PUBLISHED:
     // corresponded to M_none or M_alpha).
     M_none = 0,         // No transparency.
     M_alpha = 1,        // Normal transparency, panda will sort back-to-front.
-    M_notused,          // Unused placeholder.  Do not use this.
+    M_premultiplied_alpha, // Assume textures use premultiplied alpha.
     M_multisample,      // Uses ms buffer, alpha values modified to 1.0.
     M_multisample_mask, // Uses ms buffer, alpha values not modified.
     M_binary,           // Only writes pixels with alpha >= 0.5.

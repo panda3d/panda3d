@@ -313,12 +313,13 @@ template<class T> INLINE bool DTOOL_Call_ExtractThisPointer(PyObject *self, T *&
 }
 
 // Functions related to error reporting.
+EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
 
 #ifdef NDEBUG
 // _PyErr_OCCURRED is an undocumented inline version of PyErr_Occurred.
 #define Dtool_CheckErrorOccurred() (_PyErr_OCCURRED() != NULL)
 #else
-EXPCL_INTERROGATEDB bool Dtool_CheckErrorOccurred();
+#define Dtool_CheckErrorOccurred() _Dtool_CheckErrorOccurred()
 #endif
 
 EXPCL_INTERROGATEDB PyObject *Dtool_Raise_AssertionError();

@@ -55,6 +55,10 @@ output(ostream &out) const {
     out << "alpha";
     break;
 
+  case M_premultiplied_alpha:
+    out << "premultiplied alpha";
+    break;
+
   case M_multisample:
     out << "multisample";
     break;
@@ -69,9 +73,6 @@ output(ostream &out) const {
 
   case M_dual:
     out << "dual";
-    break;
-
-  case M_notused:
     break;
   }
 }

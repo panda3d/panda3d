@@ -18,6 +18,7 @@ INLINE PointLight::CData::
 CData() :
   _specular_color(1.0f, 1.0f, 1.0f, 1.0f),
   _attenuation(1.0f, 0.0f, 0.0f),
+  _max_distance(make_inf((PN_stdfloat)0)),
   _point(0.0f, 0.0f, 0.0f)
 {
 }
@@ -29,6 +30,7 @@ INLINE PointLight::CData::
 CData(const PointLight::CData &copy) :
   _specular_color(copy._specular_color),
   _attenuation(copy._attenuation),
+  _max_distance(copy._max_distance),
   _point(copy._point)
 {
 }
@@ -89,8 +91,28 @@ set_attenuation(const LVecBase3 &attenuation) {
 }
 
 /**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */
+INLINE PN_stdfloat PointLight::
+get_max_distance() const {
+  CDReader cdata(_cycler);
+  return cdata->_max_distance;
+}
+
+/**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */
+INLINE void PointLight::
+set_max_distance(PN_stdfloat max_distance) {
+  CDWriter cdata(_cycler);
+  cdata->_max_distance = max_distance;
+}
+
+/**
  * Returns the point in space at which the light is located.  This is local to
- * the coordinate space in which the light is assigned.
+ * the coordinate space in which the light is assigned, and is usually 0.
  */
 INLINE const LPoint3 &PointLight::
 get_point() const {
@@ -99,7 +121,7 @@ get_point() const {
 }
 
 /**
- * Sets the point in space at which the light is located.
+ * Sets the point in space at which the light is located.  Usually 0.
  */
 INLINE void PointLight::
 set_point(const LPoint3 &point) {

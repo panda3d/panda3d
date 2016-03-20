@@ -235,7 +235,13 @@ open_write_file(const Filename &file, bool truncate) {
   if (truncate) {
     // Reset to an empty string.
     f->_data.str(string());
-    f->_timestamp = time(NULL);
+
+    // Instead of setting the time, we ensure that we always store a newer time.
+    // This is a workarround for the case that a file is written twice per
+    // second, since the timer only has a one second precision. The proper
+    // solution to fix this would be to switch to a higher precision
+    // timer everywhere.
+    f->_timestamp = max(f->_timestamp + 1, time(NULL));
   }
 
   return new OSubStream(&f->_wrapper, 0, 0);
@@ -275,7 +281,9 @@ open_read_write_file(const Filename &file, bool truncate) {
   if (truncate) {
     // Reset to an empty string.
     f->_data.str(string());
-    f->_timestamp = time(NULL);
+
+    // See open_write_file
+    f->_timestamp = max(f->_timestamp + 1, time(NULL));
   }
 
   return new SubStream(&f->_wrapper, 0, 0);

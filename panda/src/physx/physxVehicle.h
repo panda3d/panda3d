@@ -34,10 +34,11 @@ PUBLISHED:
   INLINE PhysxVehicle();
   INLINE ~PhysxVehicle();
 
-  // PhysxActor *get_actor() const;
+  //PhysxActor *get_actor() const;
 
-  // unsigned int get_num_wheels() const; PhysxWheel *get_wheel(unsigned int
-  // idx) const; MAKE_SEQ(get_wheels, get_num_wheels, get_wheel);
+  //unsigned int get_num_wheels() const;
+  //PhysxWheel *get_wheel(unsigned int idx) const;
+  //MAKE_SEQ(get_wheels, get_num_wheels, get_wheel);
 
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level=0) const;

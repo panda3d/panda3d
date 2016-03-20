@@ -26,9 +26,9 @@ Camera(const string &name, Lens *lens) :
   LensNode(name, lens),
   _active(true),
   _camera_mask(~PandaNode::get_overall_bit()),
-  _initial_state(RenderState::make_empty())
+  _initial_state(RenderState::make_empty()),
+  _lod_scale(1)
 {
-  set_lod_scale(1.0);
 }
 
 /**
@@ -271,6 +271,23 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   dg.add_bool(_active);
   dg.add_uint32(_camera_mask.get_word());
+
+  manager->write_pointer(dg, _initial_state);
+  dg.add_stdfloat(_lod_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int Camera::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = LensNode::complete_pointers(p_list, manager);
+  _initial_state = DCAST(RenderState, p_list[pi++]);
+  return pi;
 }
 
 /**
@@ -300,4 +317,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _active = scan.get_bool();
   _camera_mask.set_word(scan.get_uint32());
+
+  if (manager->get_file_minor_ver() >= 41) {
+    manager->read_pointer(scan);
+    _lod_scale = scan.get_stdfloat();
+  }
 }

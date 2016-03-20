@@ -300,70 +300,115 @@ PUBLISHED:
 
   INLINE bool has_filename() const;
   INLINE const Filename &get_filename() const;
+  INLINE void set_filename(const Filename &filename);
+  INLINE void clear_filename();
+  MAKE_PROPERTY2(filename, has_filename, get_filename, set_filename, clear_filename);
+
   INLINE bool has_alpha_filename() const;
   INLINE const Filename &get_alpha_filename() const;
-  MAKE_PROPERTY2(filename, has_filename, get_filename);
-  MAKE_PROPERTY2(alpha_filename, has_alpha_filename, get_alpha_filename);
+  INLINE void set_alpha_filename(const Filename &alpha_filename);
+  INLINE void clear_alpha_filename();
+  MAKE_PROPERTY2(alpha_filename, has_alpha_filename, get_alpha_filename, set_alpha_filename, clear_alpha_filename);
 
   INLINE bool has_fullpath() const;
   INLINE const Filename &get_fullpath() const;
+  INLINE void set_fullpath(const Filename &fullpath);
+  INLINE void clear_fullpath();
+  MAKE_PROPERTY2(fullpath, has_fullpath, get_fullpath, set_fullpath, clear_fullpath);
+
   INLINE bool has_alpha_fullpath() const;
   INLINE const Filename &get_alpha_fullpath() const;
-  MAKE_PROPERTY2(fullpath, has_fullpath, get_fullpath);
-  MAKE_PROPERTY2(alpha_fullpath, has_alpha_fullpath, get_alpha_fullpath);
+  INLINE void set_alpha_fullpath(const Filename &alpha_fullpath);
+  INLINE void clear_alpha_fullpath();
+  MAKE_PROPERTY2(alpha_fullpath, has_alpha_fullpath, get_alpha_fullpath, set_alpha_fullpath, clear_alpha_fullpath);
 
   INLINE int get_x_size() const;
+  INLINE void set_x_size(int x_size);
+  MAKE_PROPERTY(x_size, get_x_size, set_x_size);
+
   INLINE int get_y_size() const;
+  INLINE void set_y_size(int y_size);
+  MAKE_PROPERTY(y_size, get_y_size, set_y_size);
+
   INLINE int get_z_size() const;
+  INLINE void set_z_size(int z_size);
+  MAKE_PROPERTY(z_size, get_z_size, set_z_size);
+
   INLINE int get_num_views() const;
+  INLINE void set_num_views(int num_views);
+  MAKE_PROPERTY(num_views, get_num_views, set_num_views);
+
   INLINE int get_num_pages() const;
   INLINE int get_num_components() const;
   INLINE int get_component_width() const;
   INLINE TextureType get_texture_type() const;
-  INLINE Format get_format() const;
-  INLINE ComponentType get_component_type() const;
   INLINE GeomEnums::UsageHint get_usage_hint() const;
-  MAKE_PROPERTY(num_views, get_num_views);
+
   MAKE_PROPERTY(num_pages, get_num_pages);
   MAKE_PROPERTY(num_components, get_num_components);
   MAKE_PROPERTY(component_width, get_component_width);
   MAKE_PROPERTY(texture_type, get_texture_type);
-  MAKE_PROPERTY(format, get_format);
-  MAKE_PROPERTY(component_type, get_component_type);
   MAKE_PROPERTY(usage_hint, get_usage_hint);
 
+  INLINE Format get_format() const;
+  INLINE void set_format(Format format);
+  MAKE_PROPERTY(format, get_format, set_format);
+
+  INLINE ComponentType get_component_type() const;
+  INLINE void set_component_type(ComponentType component_type);
+  MAKE_PROPERTY(component_type, get_component_type, set_component_type);
+
+  INLINE SamplerState::WrapMode get_wrap_u() const;
   INLINE void set_wrap_u(WrapMode wrap);
+  MAKE_PROPERTY(wrap_u, get_wrap_u, set_wrap_u);
+
+  INLINE SamplerState::WrapMode get_wrap_v() const;
   INLINE void set_wrap_v(WrapMode wrap);
+  MAKE_PROPERTY(wrap_v, get_wrap_v, set_wrap_v);
+
+  INLINE SamplerState::WrapMode get_wrap_w() const;
   INLINE void set_wrap_w(WrapMode wrap);
+  MAKE_PROPERTY(wrap_w, get_wrap_w, set_wrap_w);
+
+  INLINE SamplerState::FilterType get_minfilter() const;
+  INLINE SamplerState::FilterType get_effective_minfilter() const;
   INLINE void set_minfilter(FilterType filter);
+  MAKE_PROPERTY(minfilter, get_minfilter, set_minfilter);
+  MAKE_PROPERTY(effective_minfilter, get_effective_minfilter);
+
+  INLINE SamplerState::FilterType get_magfilter() const;
+  INLINE SamplerState::FilterType get_effective_magfilter() const;
   INLINE void set_magfilter(FilterType filter);
+  MAKE_PROPERTY(magfilter, get_magfilter, set_magfilter);
+  MAKE_PROPERTY(effective_magfilter, get_effective_magfilter);
+
+  INLINE int get_anisotropic_degree() const;
+  INLINE int get_effective_anisotropic_degree() const;
   INLINE void set_anisotropic_degree(int anisotropic_degree);
+  MAKE_PROPERTY(anisotropic_degree, get_anisotropic_degree, set_anisotropic_degree);
+  MAKE_PROPERTY(effective_anisotropic_degree, get_effective_anisotropic_degree);
+
+  INLINE LColor get_border_color() const;
   INLINE void set_border_color(const LColor &color);
+  MAKE_PROPERTY(border_color, get_border_color, set_border_color);
+
+  INLINE bool has_compression() const;
+  INLINE CompressionMode get_compression() const;
   INLINE void set_compression(CompressionMode compression);
+  MAKE_PROPERTY(compression, get_compression, set_compression); // Could maybe use has_compression here, too
+
+  INLINE bool get_render_to_texture() const;
   INLINE void set_render_to_texture(bool render_to_texture);
+  MAKE_PROPERTY(render_to_texture, get_render_to_texture, set_render_to_texture);
 
   INLINE const SamplerState &get_default_sampler() const;
   INLINE void set_default_sampler(const SamplerState &sampler);
-  INLINE SamplerState::WrapMode get_wrap_u() const;
-  INLINE SamplerState::WrapMode get_wrap_v() const;
-  INLINE SamplerState::WrapMode get_wrap_w() const;
-  INLINE SamplerState::FilterType get_minfilter() const;
-  INLINE SamplerState::FilterType get_magfilter() const;
-  INLINE SamplerState::FilterType get_effective_minfilter() const;
-  INLINE SamplerState::FilterType get_effective_magfilter() const;
-  INLINE int get_anisotropic_degree() const;
-  INLINE int get_effective_anisotropic_degree() const;
-  INLINE LColor get_border_color() const;
-  INLINE CompressionMode get_compression() const;
-  INLINE bool has_compression() const;
-  INLINE bool get_render_to_texture() const;
-  INLINE bool uses_mipmaps() const;
   MAKE_PROPERTY(default_sampler, get_default_sampler, set_default_sampler);
-  MAKE_PROPERTY(compression, get_compression, set_compression);
+  INLINE bool uses_mipmaps() const;
 
-  INLINE void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
   INLINE QualityLevel get_effective_quality_level() const;
+  INLINE void set_quality_level(QualityLevel quality_level);
   MAKE_PROPERTY(quality_level, get_quality_level, set_quality_level);
   MAKE_PROPERTY(effective_quality_level, get_effective_quality_level);
 
@@ -372,6 +417,7 @@ PUBLISHED:
   INLINE int get_expected_mipmap_y_size(int n) const;
   INLINE int get_expected_mipmap_z_size(int n) const;
   INLINE int get_expected_mipmap_num_pages(int n) const;
+  MAKE_PROPERTY(expected_num_mipmap_levels, get_expected_num_mipmap_levels);
 
   INLINE bool has_ram_image() const;
   INLINE bool has_uncompressed_ram_image() const;
@@ -381,6 +427,12 @@ PUBLISHED:
   INLINE size_t get_ram_page_size() const;
   INLINE size_t get_expected_ram_image_size() const;
   INLINE size_t get_expected_ram_page_size() const;
+  MAKE_PROPERTY(ram_image_size, get_ram_image_size);
+  MAKE_PROPERTY(ram_view_size, get_ram_view_size);
+  MAKE_PROPERTY(ram_page_size, get_ram_page_size);
+  MAKE_PROPERTY(expected_ram_image_size, get_expected_ram_image_size);
+  MAKE_PROPERTY(expected_ram_page_size, get_expected_ram_page_size);
+
   INLINE CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
   INLINE CPTA_uchar get_uncompressed_ram_image();
@@ -394,6 +446,10 @@ PUBLISHED:
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
   virtual bool is_cacheable() const;
+
+  MAKE_PROPERTY(ram_image_compression, get_ram_image_compression);
+  MAKE_PROPERTY(keep_ram_image, get_keep_ram_image, set_keep_ram_image);
+  MAKE_PROPERTY(cacheable, is_cacheable);
 
   INLINE bool compress_ram_image(CompressionMode compression = CM_on,
                                  QualityLevel quality_level = QL_default,
@@ -421,6 +477,9 @@ PUBLISHED:
   INLINE void clear_ram_mipmap_images();
   INLINE void generate_ram_mipmap_images();
 
+  MAKE_PROPERTY(num_ram_mipmap_images, get_num_ram_mipmap_images);
+  MAKE_PROPERTY(num_loadable_ram_mipmap_images, get_num_loadable_ram_mipmap_images);
+
   INLINE int get_simple_x_size() const;
   INLINE int get_simple_y_size() const;
   INLINE bool has_simple_ram_image() const;
@@ -432,6 +491,10 @@ PUBLISHED:
   void generate_simple_ram_image();
   INLINE void clear_simple_ram_image();
 
+  MAKE_PROPERTY(simple_x_size, get_simple_x_size);
+  MAKE_PROPERTY(simple_y_size, get_simple_y_size);
+  MAKE_PROPERTY2(simple_ram_image, has_simple_ram_image, get_simple_ram_image);
+
   PT(TexturePeeker) peek();
 
   INLINE UpdateSeq get_properties_modified() const;
@@ -441,9 +504,9 @@ PUBLISHED:
   MAKE_PROPERTY(image_modified, get_image_modified);
   MAKE_PROPERTY(simple_image_modified, get_simple_image_modified);
 
-  INLINE void set_auto_texture_scale(AutoTextureScale scale);
-  INLINE AutoTextureScale get_auto_texture_scale() const;
   INLINE bool has_auto_texture_scale() const;
+  INLINE AutoTextureScale get_auto_texture_scale() const;
+  INLINE void set_auto_texture_scale(AutoTextureScale scale);
   MAKE_PROPERTY(auto_texture_scale, get_auto_texture_scale,
                                     set_auto_texture_scale);
 
@@ -470,22 +533,6 @@ PUBLISHED:
   INLINE static bool has_textures_power_2();
 
 PUBLISHED:
-  // These are published, but in general, you shouldn't be mucking with these
-  // values; they are set automatically when a texture is loaded.
-  INLINE void set_filename(const Filename &filename);
-  INLINE void clear_filename();
-  INLINE void set_alpha_filename(const Filename &alpha_filename);
-  INLINE void clear_alpha_filename();
-
-  INLINE void set_fullpath(const Filename &fullpath);
-  INLINE void clear_fullpath();
-  INLINE void set_alpha_fullpath(const Filename &alpha_fullpath);
-  INLINE void clear_alpha_fullpath();
-
-  INLINE void set_x_size(int x_size);
-  INLINE void set_y_size(int y_size);
-  INLINE void set_z_size(int z_size);
-  INLINE void set_num_views(int num_views);
 
   INLINE int get_pad_x_size() const;
   INLINE int get_pad_y_size() const;
@@ -499,21 +546,29 @@ PUBLISHED:
   INLINE int get_orig_file_y_size() const;
   INLINE int get_orig_file_z_size() const;
 
+  MAKE_PROPERTY(orig_file_x_size, get_orig_file_x_size);
+  MAKE_PROPERTY(orig_file_y_size, get_orig_file_y_size);
+  MAKE_PROPERTY(orig_file_z_size, get_orig_file_z_size);
+
   void set_orig_file_size(int x, int y, int z = 1);
 
-  INLINE void set_format(Format format);
-  INLINE void set_component_type(ComponentType component_type);
-  INLINE void set_loaded_from_image();
+  INLINE void set_loaded_from_image(bool flag = true);
   INLINE bool get_loaded_from_image() const;
+  MAKE_PROPERTY(loaded_from_image, get_loaded_from_image, set_loaded_from_image);
 
-  INLINE void set_loaded_from_txo();
+  INLINE void set_loaded_from_txo(bool flag = true);
   INLINE bool get_loaded_from_txo() const;
+  MAKE_PROPERTY(loaded_from_txo, get_loaded_from_txo, set_loaded_from_txo);
 
   INLINE bool get_match_framebuffer_format() const;
   INLINE void set_match_framebuffer_format(bool flag);
+  MAKE_PROPERTY(match_framebuffer_format, get_match_framebuffer_format,
+                                          set_match_framebuffer_format);
 
   INLINE bool get_post_load_store_cache() const;
   INLINE void set_post_load_store_cache(bool flag);
+  MAKE_PROPERTY(post_load_store_cache, get_post_load_store_cache,
+                                       set_post_load_store_cache);
 
   TextureContext *prepare_now(int view,
                               PreparedGraphicsObjects *prepared_objects,
@@ -697,7 +752,7 @@ protected:
   INLINE void do_clear_ram_image(CData *cdata);
   void do_clear_simple_ram_image(CData *cdata);
   void do_clear_ram_mipmap_images(CData *cdata);
-  void do_generate_ram_mipmap_images(CData *cdata);
+  void do_generate_ram_mipmap_images(CData *cdata, bool allow_recompress);
   void do_set_pad_size(CData *cdata, int x, int y, int z);
   virtual bool do_can_reload(const CData *cdata) const;
   bool do_reload(CData *cdata);

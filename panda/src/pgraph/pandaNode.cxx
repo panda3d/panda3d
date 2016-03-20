@@ -3750,6 +3750,8 @@ void PandaNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
+  remove_all_children();
+
   string name = scan.get_string();
   set_name(name);
 

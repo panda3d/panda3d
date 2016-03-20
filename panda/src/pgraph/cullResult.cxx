@@ -131,6 +131,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   if (object->_state->get_attrib(trans)) {
     switch (trans->get_mode()) {
     case TransparencyAttrib::M_alpha:
+    case TransparencyAttrib::M_premultiplied_alpha:
       // M_alpha implies an alpha-write test, so we don't waste time writing
       // 0-valued pixels.
       object->_state = object->_state->compose(get_alpha_state());

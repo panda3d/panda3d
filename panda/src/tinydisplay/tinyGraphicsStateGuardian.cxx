@@ -804,6 +804,21 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
     break;
 
+  case TransparencyAttrib::M_premultiplied_alpha:
+    {
+      // Implement a color mask, with pre-multiplied alpha blending.
+      int op_a = get_color_blend_op(ColorBlendAttrib::O_one);
+      int op_b = get_color_blend_op(ColorBlendAttrib::O_one_minus_incoming_alpha);
+
+      if (srgb_blend) {
+        _c->zb->store_pix_func = store_pixel_funcs_sRGB[op_a][op_b][color_channels];
+      } else {
+        _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+      }
+      color_write_state = 2;   // cgeneral
+    }
+    break;
+
   default:
     break;
   }

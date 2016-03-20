@@ -333,6 +333,10 @@ fill_state(EggPrimitive *egg_prim) {
     add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_dual));
     break;
 
+  case EggRenderMode::AM_premultiplied:
+    add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_premultiplied_alpha));
+    break;
+
   default:
     break;
   }

@@ -183,6 +183,8 @@ string_alpha_mode(const string &string) {
     return AM_binary;
   } else if (cmp_nocase_uh(string, "dual") == 0) {
     return AM_dual;
+  } else if (cmp_nocase_uh(string, "premultiplied") == 0) {
+    return AM_premultiplied;
   } else {
     return AM_unspecified;
   }
@@ -260,6 +262,8 @@ ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode) {
     return out << "binary";
   case EggRenderMode::AM_dual:
     return out << "dual";
+  case EggRenderMode::AM_premultiplied:
+    return out << "premultiplied";
   }
 
   nassertr(false, out);

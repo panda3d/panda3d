@@ -1678,9 +1678,12 @@ clear_ram_mipmap_images() {
  */
 INLINE void Texture::
 generate_ram_mipmap_images() {
-  CDWriter cdata(_cycler, unlocked_ensure_ram_image(false));
+  // Don't use unlocked_ensure_ram_image here, because
+  // do_generate_ram_mipmap_images will want to decompress and recompress the
+  // image itself.
+  CDWriter cdata(_cycler, false);
   cdata->inc_image_modified();
-  do_generate_ram_mipmap_images(cdata);
+  do_generate_ram_mipmap_images(cdata, true);
 }
 
 /**
@@ -2030,9 +2033,9 @@ set_component_type(Texture::ComponentType component_type) {
  * ram image needs to be replaced.
  */
 INLINE void Texture::
-set_loaded_from_image() {
+set_loaded_from_image(bool flag) {
   CDWriter cdata(_cycler, false);
-  cdata->_loaded_from_image = true;
+  cdata->_loaded_from_image = flag;
 }
 
 /**
@@ -2051,9 +2054,9 @@ get_loaded_from_image() const {
  * when a Texture is loaded.
  */
 INLINE void Texture::
-set_loaded_from_txo() {
+set_loaded_from_txo(bool flag) {
   CDWriter cdata(_cycler, false);
-  cdata->_loaded_from_txo = true;
+  cdata->_loaded_from_txo = flag;
 }
 
 /**

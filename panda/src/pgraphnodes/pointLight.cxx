@@ -33,9 +33,12 @@ make_copy() const {
  * Bam file.
  */
 void PointLight::CData::
-write_datagram(BamWriter *, Datagram &dg) const {
+write_datagram(BamWriter *manager, Datagram &dg) const {
   _specular_color.write_datagram(dg);
   _attenuation.write_datagram(dg);
+  if (manager->get_file_minor_ver() >= 41) {
+    dg.add_stdfloat(_max_distance);
+  }
   _point.write_datagram(dg);
 }
 
@@ -44,9 +47,12 @@ write_datagram(BamWriter *, Datagram &dg) const {
  * relevant data from the BamFile for the new Light.
  */
 void PointLight::CData::
-fillin(DatagramIterator &scan, BamReader *) {
+fillin(DatagramIterator &scan, BamReader *manager) {
   _specular_color.read_datagram(scan);
   _attenuation.read_datagram(scan);
+  if (manager->get_file_minor_ver() >= 41) {
+    _max_distance = scan.get_stdfloat();
+  }
   _point.read_datagram(scan);
 }
 
@@ -127,6 +133,11 @@ write(ostream &out, int indent_level) const {
   }
   indent(out, indent_level + 2)
     << "attenuation " << get_attenuation() << "\n";
+
+  if (!cinf(get_max_distance())) {
+    indent(out, indent_level + 2)
+      << "max distance " << get_max_distance() << "\n";
+  }
 }
 
 /**

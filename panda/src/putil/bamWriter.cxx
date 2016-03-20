@@ -41,6 +41,8 @@ BamWriter(DatagramSink *target) :
   _next_pta_id = 1;
   _long_pta_id = false;
 
+  _file_major = _bam_major_ver;
+  _file_minor = _bam_minor_ver;
   _file_endian = bam_endian;
   _file_stdfloat_double = bam_stdfloat_double;
   _file_texture_mode = bam_texture_mode;
@@ -96,6 +98,8 @@ init() {
   _next_pta_id = 1;
   _long_pta_id = false;
 
+  _file_major = _bam_major_ver;
+  _file_minor = _bam_minor_ver;
   _file_endian = bam_endian;
   _file_texture_mode = bam_texture_mode;
 
