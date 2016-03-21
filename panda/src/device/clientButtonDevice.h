@@ -1,16 +1,15 @@
-// Filename: clientButtonDevice.h
-// Created by:  drose (26Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file clientButtonDevice.h
+ * @author drose
+ * @date 2001-01-26
+ */
 
 #ifndef CLIENTBUTTONDEVICE_H
 #define CLIENTBUTTONDEVICE_H
@@ -24,16 +23,12 @@
 #include "buttonEventList.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientButtonDevice
-// Description : A device, attached to the ClientBase by a
-//               ButtonNode, that records the data from a single
-//               named button device.  The named device can contain
-//               any number of up/down style buttons, numbered in
-//               sequence beginning at zero; these are mapped by this
-//               class to a sequence of ButtonHandles specified by the
-//               user.
-////////////////////////////////////////////////////////////////////
+/**
+ * A device, attached to the ClientBase by a ButtonNode, that records the data
+ * from a single named button device.  The named device can contain any number
+ * of up/down style buttons, numbered in sequence beginning at zero; these are
+ * mapped by this class to a sequence of ButtonHandles specified by the user.
+ */
 class EXPCL_PANDA_DEVICE ClientButtonDevice : public ClientDevice {
 protected:
   ClientButtonDevice(ClientBase *client, const string &device_name);

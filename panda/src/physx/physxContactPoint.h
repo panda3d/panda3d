@@ -1,16 +1,15 @@
-// Filename: physxContactPoint.h
-// Created by:  enn0x (20Dec09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxContactPoint.h
+ * @author enn0x
+ * @date 2009-12-20
+ */
 
 #ifndef PHYSXCONTACTPOINT_H
 #define PHYSXCONTACTPOINT_H
@@ -23,11 +22,10 @@
 
 class PhysxShape;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxContactPoint
-// Description : A helper structure for iterating over contact
-//               streams reported by PhysxContactPair.
-////////////////////////////////////////////////////////////////////
+/**
+ * A helper structure for iterating over contact streams reported by
+ * PhysxContactPair.
+ */
 class EXPCL_PANDAPHYSX PhysxContactPoint : public TypedObject {
 
 PUBLISHED:
@@ -54,14 +52,13 @@ private:
   NxU32 _feature_index0;
   NxU32 _feature_index1;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "PhysxContactPoint", 
+    register_type(_type_handle, "PhysxContactPoint",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

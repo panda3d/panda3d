@@ -1,16 +1,15 @@
-// Filename: cConstrainHprInterval.h
-// Created by:  pratt (10Mar08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cConstrainHprInterval.h
+ * @author pratt
+ * @date 2008-03-10
+ */
 
 #ifndef CCONSTRAINHPRINTERVAL_H
 #define CCONSTRAINHPRINTERVAL_H
@@ -21,11 +20,10 @@
 #include "lvecBase3.h"
 #include "lquaternion.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConstrainHprInterval
-// Description : A constraint interval that will constrain the
-//               orientation of one node to the orientation of another.
-////////////////////////////////////////////////////////////////////
+/**
+ * A constraint interval that will constrain the orientation of one node to
+ * the orientation of another.
+ */
 class EXPCL_DIRECT CConstrainHprInterval : public CConstraintInterval {
 PUBLISHED:
   CConstrainHprInterval(const string &name, double duration,
@@ -65,4 +63,3 @@ private:
 #include "cConstrainHprInterval.I"
 
 #endif
-

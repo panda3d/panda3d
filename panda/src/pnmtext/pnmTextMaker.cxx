@@ -1,53 +1,47 @@
-// Filename: pnmTextMaker.cxx
-// Created by:  drose (03Apr02)
-//
-////////////////////////////////////////////////////////////////////
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmTextMaker.cxx
+ * @author drose
+ * @date 2002-04-03
+ */
 
 #include "pnmTextMaker.h"
 #include "pnmTextGlyph.h"
 #include "filename.h"
 #include "pnmImage.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::Constructor
-//       Access: Public
-//  Description: The constructor expects the name of some font file
-//               that FreeType can read, along with face_index,
-//               indicating which font within the file to load
-//               (usually 0).
-////////////////////////////////////////////////////////////////////
+#include FT_OUTLINE_H
+
+/**
+ * The constructor expects the name of some font file that FreeType can read,
+ * along with face_index, indicating which font within the file to load
+ * (usually 0).
+ */
 PNMTextMaker::
 PNMTextMaker(const Filename &font_filename, int face_index) {
   initialize();
   _is_valid = load_font(font_filename, face_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::Constructor
-//       Access: Public
-//  Description: This constructor works as above, but it takes the
-//               font data from an in-memory buffer instead of from a
-//               named file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor works as above, but it takes the font data from an in-
+ * memory buffer instead of from a named file.
+ */
 PNMTextMaker::
 PNMTextMaker(const char *font_data, int data_length, int face_index) {
   initialize();
   _is_valid = load_font(font_data, data_length, face_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMTextMaker::
 PNMTextMaker(const PNMTextMaker &copy) :
   FreetypeFont(copy),
@@ -60,11 +54,9 @@ PNMTextMaker(const PNMTextMaker &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMTextMaker::
 PNMTextMaker(const FreetypeFont &copy) :
   FreetypeFont(copy),
@@ -73,23 +65,18 @@ PNMTextMaker(const FreetypeFont &copy) :
   initialize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMTextMaker::
 ~PNMTextMaker() {
   empty_cache();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::generate_into
-//       Access: Public
-//  Description: Generates a single line of text into the indicated
-//               image at the indicated position; the return value is
-//               the total width in pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a single line of text into the indicated image at the indicated
+ * position; the return value is the total width in pixels.
+ */
 int PNMTextMaker::
 generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
   // First, measure the total width in pixels.
@@ -128,12 +115,9 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
   return width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::calc_width
-//       Access: Public
-//  Description: Returns the width in pixels of the indicated line of
-//               text.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width in pixels of the indicated line of text.
+ */
 int PNMTextMaker::
 calc_width(const wstring &text) {
   int width = 0;
@@ -146,12 +130,10 @@ calc_width(const wstring &text) {
   return width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::get_glyph
-//       Access: Public
-//  Description: Returns the glyph for the indicated index, or NULL if
-//               it is not defined in the font.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the glyph for the indicated index, or NULL if it is not defined in
+ * the font.
+ */
 PNMTextGlyph *PNMTextMaker::
 get_glyph(int character) {
   FT_Face face = acquire_face();
@@ -169,12 +151,9 @@ get_glyph(int character) {
   return glyph;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::initialize
-//       Access: Private
-//  Description: Called from both constructors to set up some initial
-//               values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from both constructors to set up some initial values.
+ */
 void PNMTextMaker::
 initialize() {
   _align = A_left;
@@ -184,12 +163,9 @@ initialize() {
   _distance_field_radius = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::make_glyph
-//       Access: Private
-//  Description: Creates a new PNMTextGlyph object for the indicated
-//               index, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new PNMTextGlyph object for the indicated index, if possible.
+ */
 PNMTextGlyph *PNMTextMaker::
 make_glyph(int glyph_index) {
   FT_Face face = acquire_face();
@@ -214,16 +190,15 @@ make_glyph(int glyph_index) {
     PNMImage &glyph_image = glyph->_image;
 
     if (_distance_field_radius != 0) {
-      // Ask FreeType to extract the contours out of the outline
-      // description.
+      // Ask FreeType to extract the contours out of the outline description.
       decompose_outline(slot->outline);
 
       PN_stdfloat tex_x_size, tex_y_size, tex_x_orig, tex_y_orig;
       FT_BBox bounds;
-      TransparencyAttrib::Mode alpha_mode;
 
       // Calculate suitable texture dimensions for the signed distance field.
-      // This is the same calculation that Freetype uses in its bitmap renderer.
+      // This is the same calculation that Freetype uses in its bitmap
+      // renderer.
       FT_Outline_Get_CBox(&slot->outline, &bounds);
 
       bounds.xMin = bounds.xMin & ~63;
@@ -274,11 +249,9 @@ make_glyph(int glyph_index) {
   return glyph;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMTextMaker::empty_cache
-//       Access: Private
-//  Description: Empties the cache of previously-generated glyphs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the cache of previously-generated glyphs.
+ */
 void PNMTextMaker::
 empty_cache() {
   Glyphs::iterator gi;

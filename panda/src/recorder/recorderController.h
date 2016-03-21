@@ -1,16 +1,15 @@
-// Filename: recorderController.h
-// Created by:  drose (25Jan04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file recorderController.h
+ * @author drose
+ * @date 2004-01-25
+ */
 
 #ifndef RECORDERCONTROLLER_H
 #define RECORDERCONTROLLER_H
@@ -26,12 +25,10 @@
 class RecorderBase;
 class RecorderFrame;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderController
-// Description : This object manages the process of recording the
-//               user's runtime inputs to a bam file so that the
-//               session can be recreated later.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object manages the process of recording the user's runtime inputs to a
+ * bam file so that the session can be recreated later.
+ */
 class EXPCL_PANDA_RECORDER RecorderController : public TypedReferenceCount {
 PUBLISHED:
   RecorderController();
@@ -91,21 +88,20 @@ private:
   RecorderTable *_user_table;
   bool _user_table_modified;
 
-  // In playback mode, _file_table represents the table as read
-  // directly from the session file, with default recorders in each
-  // slot.
+  // In playback mode, _file_table represents the table as read directly from
+  // the session file, with default recorders in each slot.
   RecorderTable *_file_table;
 
-  // In playback mode, _active_table is the result of the merge of
-  // _file_table and _user_table, with a default recorder or a
-  // user-specified recorder in each active slot.
+  // In playback mode, _active_table is the result of the merge of _file_table
+  // and _user_table, with a default recorder or a user-specified recorder in
+  // each active slot.
   RecorderTable *_active_table;
 
   RecorderFrame *_next_frame;
   bool _eof;
 
   static RecorderFactory *_factory;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -129,4 +125,3 @@ private:
 #include "recorderController.I"
 
 #endif
-

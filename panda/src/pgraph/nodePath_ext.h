@@ -1,16 +1,15 @@
-// Filename: nodePath_ext.h
-// Created by:  rdb (09Dec13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodePath_ext.h
+ * @author rdb
+ * @date 2013-12-09
+ */
 
 #ifndef NODEPATH_EXT_H
 #define NODEPATH_EXT_H
@@ -23,12 +22,10 @@
 #include "nodePath.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<NodePath>
-// Description : This class defines the extension methods for
-//               NodePath, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for NodePath, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<NodePath> : public ExtensionBase<NodePath> {
 public:

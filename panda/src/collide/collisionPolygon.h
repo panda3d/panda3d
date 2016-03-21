@@ -1,16 +1,15 @@
-// Filename: collisionPolygon.h
-// Created by:  drose (25Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionPolygon.h
+ * @author drose
+ * @date 2000-04-25
+ */
 
 #ifndef COLLISIONPOLYGON_H
 #define COLLISIONPOLYGON_H
@@ -24,10 +23,9 @@
 
 class GeomNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionPolygon
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDA_COLLIDE CollisionPolygon : public CollisionPlane {
 PUBLISHED:
   INLINE CollisionPolygon(const LVecBase3 &a, const LVecBase3 &b,
@@ -105,7 +103,7 @@ private:
   static PN_stdfloat dist_to_line_segment(const LPoint2 &p,
                                     const LPoint2 &f, const LPoint2 &t,
                                     const LVector2 &v);
-  
+
 private:
   class PointDef {
   public:
@@ -176,5 +174,3 @@ private:
 #include "collisionPolygon.I"
 
 #endif
-
-

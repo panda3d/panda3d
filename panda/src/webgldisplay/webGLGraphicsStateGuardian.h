@@ -1,16 +1,15 @@
-// Filename: webGLGraphicsStateGuardian.h
-// Created by:  rdb (01Apr15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webGLGraphicsStateGuardian.h
+ * @author rdb
+ * @date 2015-04-01
+ */
 
 #ifndef WEBGLGRAPHICSSTATEGUARDIAN_H
 #define WEBGLGRAPHICSSTATEGUARDIAN_H
@@ -21,11 +20,10 @@
 
 #include <html5.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebGLGraphicsStateGuardian
-// Description : A specialization on GLES2GraphicsStateGuardian
-//               to add emscripten-specific context set-up.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization on GLES2GraphicsStateGuardian to add emscripten-specific
+ * context set-up.
+ */
 class WebGLGraphicsStateGuardian : public GLES2GraphicsStateGuardian {
 public:
   WebGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe);
@@ -43,6 +41,8 @@ private:
   bool _have_context;
 
 protected:
+  void context_lost();
+
   virtual void get_extra_extensions();
   virtual bool has_extension(const string &extension) const;
   virtual void *do_get_extension_func(const char *name);

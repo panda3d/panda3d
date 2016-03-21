@@ -1,45 +1,36 @@
-// Filename: dataNode.h
-// Created by:  drose (11Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dataNode.h
+ * @author drose
+ * @date 2002-03-11
+ */
 
 #ifndef DATANODE_H
 #define DATANODE_H
 
-////////////////////////////////////////////////////////////////////
-//
-// The Data Graph.
-//
-// The data graph is intended to hook up devices and their inputs
-// and/or outputs in a clean interface.  It uses the same graph
-// relationship that is used to construct the scene graph, with the
-// same sort of nodes and NodePaths.
-//
-// In a data graph, each node may potentially produce and/or consume
-// data, and the arcs transmit data downward, from the root of the
-// graph to its leaves.  Thus, an input device such as a mouse might
-// be added to the graph near the root, and a tformer-style object
-// that interprets the mouse data as a trackball motion and outputs a
-// matrix might be the immediate child of the mouse, followed by an
-// object that accepts a matrix and sets it on some particular arc in
-// the scene graph.
-//
-// Each different kind of DataNode defines its own set of input values
-// and output values, identified by name.  When a DataNode is attached
-// to another DataNode, the inputs of the child are automatically
-// connected up to the corresponding outputs of the parent, and an
-// error message is issued if there are no matching connections.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * The Data Graph.  The data graph is intended to hook up devices and their
+ * inputs andor outputs in a clean interface.  It uses the same graph
+ * relationship that is used to construct the scene graph, with the same sort
+ * of nodes and NodePaths.  In a data graph, each node may potentially produce
+ * andor consume data, and the arcs transmit data downward, from the root of
+ * the graph to its leaves.  Thus, an input device such as a mouse might be
+ * added to the graph near the root, and a tformer-style object that
+ * interprets the mouse data as a trackball motion and outputs a matrix might
+ * be the immediate child of the mouse, followed by an object that accepts a
+ * matrix and sets it on some particular arc in the scene graph.  Each
+ * different kind of DataNode defines its own set of input values and output
+ * values, identified by name.  When a DataNode is attached to another
+ * DataNode, the inputs of the child are automatically connected up to the
+ * corresponding outputs of the parent, and an error message is issued if
+ * there are no matching connections.
+ */
 
 #include "pandabase.h"
 
@@ -49,18 +40,15 @@
 class DataGraphTraverser;
 class DataNodeTransmit;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DataNode
-// Description : The fundamental type of node for the data graph.  The
-//               DataNode class is itself primarily intended as an
-//               abstract class; it defines no inputs and no outputs.
-//               Most kinds of data nodes will derive from this to
-//               specify the inputs and outputs in the constructor.
-//
-//               DataNode does not attempt to cycle its data with a
-//               PipelineCycler.  The data graph is intended to be
-//               used only within a single thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The fundamental type of node for the data graph.  The DataNode class is
+ * itself primarily intended as an abstract class; it defines no inputs and no
+ * outputs.  Most kinds of data nodes will derive from this to specify the
+ * inputs and outputs in the constructor.
+ *
+ * DataNode does not attempt to cycle its data with a PipelineCycler.  The
+ * data graph is intended to be used only within a single thread.
+ */
 class EXPCL_PANDA_DGRAPH DataNode : public PandaNode {
 PUBLISHED:
   INLINE DataNode(const string &name);

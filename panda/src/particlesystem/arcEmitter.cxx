@@ -1,35 +1,30 @@
-// Filename: arcEmitter.cxx
-// Created by:  charles (22Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file arcEmitter.cxx
+ * @author charles
+ * @date 2000-06-22
+ */
 
 #include "arcEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ArcEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 ArcEmitter::
 ArcEmitter() :
   RingEmitter(), _start_theta(0.0f), _end_theta(MathNumbers::pi_f)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ArcEmitter
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 ArcEmitter::
 ArcEmitter(const ArcEmitter &copy) :
   RingEmitter(copy) {
@@ -37,30 +32,24 @@ ArcEmitter(const ArcEmitter &copy) :
   _end_theta = copy._end_theta;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~ArcEmitter
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 ArcEmitter::
 ~ArcEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 BaseParticleEmitter *ArcEmitter::
 make_copy() {
   return new ArcEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ArcEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void ArcEmitter::
 assign_initial_position(LPoint3& pos) {
   PN_stdfloat theta;
@@ -81,12 +70,9 @@ assign_initial_position(LPoint3& pos) {
   pos.set(new_x, new_y, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a starc representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a starc representation of this instance to <out>.
+ */
 void ArcEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -94,12 +80,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a starc representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a starc representation of this instance to <out>.
+ */
 void ArcEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

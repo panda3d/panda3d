@@ -1,27 +1,24 @@
-// Filename: mayaToEgg_client.cxx
-// Adapted by: cbrunner (09Nov09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaToEgg_client.cxx
+ * @author cbrunner
+ * @date 2009-11-09
+ */
 
 #include "mayaToEgg_client.h"
 #ifdef _WIN32
   #include "pystub.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaToEggClient::
 MayaToEggClient() :
   SomethingToEgg("Maya", ".mb")
@@ -34,7 +31,8 @@ MayaToEggClient() :
 }
 
 int main(int argc, char *argv[]) {
-  // We don't want pystub on linux, since it gives problems with Maya's python.
+  // We don't want pystub on linux, since it gives problems with Maya's
+  // python.
 #ifdef _WIN32
   // A call to pystub() to force libpystub.so to be linked in.
   pystub();
@@ -83,4 +81,3 @@ int main(int argc, char *argv[]) {
     Thread::sleep(0.1);
   }
 }
-

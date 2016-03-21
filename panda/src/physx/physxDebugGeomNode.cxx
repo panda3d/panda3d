@@ -1,16 +1,15 @@
-// Filename: physxDebugGeomNode.cxx
-// Created by:  enn0x (15Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxDebugGeomNode.cxx
+ * @author enn0x
+ * @date 2009-09-15
+ */
 
 #include "physxDebugGeomNode.h"
 
@@ -19,11 +18,9 @@
 
 TypeHandle PhysxDebugGeomNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::update
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxDebugGeomNode::
 update(NxScene *scenePtr) {
 
@@ -106,33 +103,27 @@ update(NxScene *scenePtr) {
   physx_cat.spam() << "Updated PhysxDebugGeomNode geometry\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::on
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxDebugGeomNode::
 on() {
 
   NxGetPhysicsSDK()->setParameter(NX_VISUALIZATION_SCALE, _scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::off
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxDebugGeomNode::
 off() {
 
   NxGetPhysicsSDK()->setParameter(NX_VISUALIZATION_SCALE, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::toggle
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxDebugGeomNode::
 toggle() {
 
@@ -143,4 +134,3 @@ toggle() {
     off();
   }
 }
-

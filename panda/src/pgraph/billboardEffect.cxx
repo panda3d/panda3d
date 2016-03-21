@@ -1,16 +1,15 @@
-// Filename: billboardEffect.cxx
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file billboardEffect.cxx
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #include "billboardEffect.h"
 #include "cullTraverser.h"
@@ -24,12 +23,9 @@
 
 TypeHandle BillboardEffect::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::make
-//       Access: Published, Static
-//  Description: Constructs a new BillboardEffect object with the
-//               indicated properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new BillboardEffect object with the indicated properties.
+ */
 CPT(RenderEffect) BillboardEffect::
 make(const LVector3 &up_vector, bool eye_relative,
      bool axial_rotate, PN_stdfloat offset, const NodePath &look_at,
@@ -45,39 +41,30 @@ make(const LVector3 &up_vector, bool eye_relative,
   return return_new(effect);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::safe_to_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of RenderEffect by calling the
-//               xform() method, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to transform this particular kind of
+ * RenderEffect by calling the xform() method, false otherwise.
+ */
 bool BillboardEffect::
 safe_to_transform() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::prepare_flatten_transform
-//       Access: Public, Virtual
-//  Description: Preprocesses the accumulated transform that is about
-//               to be applied to (or through) this node due to a
-//               flatten operation.  The returned value will be used
-//               instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Preprocesses the accumulated transform that is about to be applied to (or
+ * through) this node due to a flatten operation.  The returned value will be
+ * used instead.
+ */
 CPT(TransformState) BillboardEffect::
 prepare_flatten_transform(const TransformState *net_transform) const {
-  // We don't want any flatten operation to rotate the billboarded
-  // node, since the billboard effect should eat any rotation that
-  // comes in from above.
+  // We don't want any flatten operation to rotate the billboarded node, since
+  // the billboard effect should eat any rotation that comes in from above.
   return net_transform->set_hpr(LVecBase3(0, 0, 0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void BillboardEffect::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -108,37 +95,28 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::has_cull_callback
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if cull_callback() has been defined.  Otherwise,
-//               returns false to indicate cull_callback() does not
-//               need to be called for this effect during the cull
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if cull_callback()
+ * has been defined.  Otherwise, returns false to indicate cull_callback()
+ * does not need to be called for this effect during the cull traversal.
+ */
 bool BillboardEffect::
 has_cull_callback() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::cull_callback
-//       Access: Public, Virtual
-//  Description: If has_cull_callback() returns true, this function
-//               will be called during the cull traversal to perform
-//               any additional operations that should be performed at
-//               cull time.  This may include additional manipulation
-//               of render state or additional visible/invisible
-//               decisions, or any other arbitrary operation.
-//
-//               At the time this function is called, the current
-//               node's transform and state have not yet been applied
-//               to the net_transform and net_state.  This callback
-//               may modify the node_transform and node_state to apply
-//               an effective change to the render state at this
-//               level.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_cull_callback() returns true, this function will be called during
+ * the cull traversal to perform any additional operations that should be
+ * performed at cull time.  This may include additional manipulation of render
+ * state or additional visible/invisible decisions, or any other arbitrary
+ * operation.
+ *
+ * At the time this function is called, the current node's transform and state
+ * have not yet been applied to the net_transform and net_state.  This
+ * callback may modify the node_transform and node_state to apply an effective
+ * change to the render state at this level.
+ */
 void BillboardEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
@@ -149,13 +127,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     return;
   }
 
-  // Since the "modelview" transform from the cull traverser already
-  // includes the inverse camera transform, the camera transform is
-  // identity.
+  // Since the "modelview" transform from the cull traverser already includes
+  // the inverse camera transform, the camera transform is identity.
   CPT(TransformState) camera_transform = TransformState::make_identity();
 
-  // But if we're rotating to face something other than the camera, we
-  // have to compute the "camera" transform to compensate for that.
+  // But if we're rotating to face something other than the camera, we have to
+  // compute the "camera" transform to compensate for that.
   if (!_look_at.is_empty()) {
     camera_transform = trav->get_camera_transform()->invert_compose(_look_at.get_net_transform());
   }
@@ -163,42 +140,34 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   compute_billboard(node_transform, modelview_transform, camera_transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::has_adjust_transform
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return
-//               true if adjust_transform() has been defined, and
-//               therefore the RenderEffect has some effect on the
-//               node's apparent local and net transforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by derived classes to return true if
+ * adjust_transform() has been defined, and therefore the RenderEffect has
+ * some effect on the node's apparent local and net transforms.
+ */
 bool BillboardEffect::
 has_adjust_transform() const {
-  // A BillboardEffect can only affect the net transform when it is to
-  // a particular node.  A billboard to a camera is camera-dependent,
-  // of course, so it has no effect in the absence of any particular
-  // camera viewing it.
+  // A BillboardEffect can only affect the net transform when it is to a
+  // particular node.  A billboard to a camera is camera-dependent, of course,
+  // so it has no effect in the absence of any particular camera viewing it.
   return !_look_at.is_empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::adjust_transform
-//       Access: Public, Virtual
-//  Description: Performs some operation on the node's apparent net
-//               and/or local transforms.  This will only be called if
-//               has_adjust_transform() is redefined to return true.
-//
-//               Both parameters are in/out.  The original transforms
-//               will be passed in, and they may (or may not) be
-//               modified in-place by the RenderEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs some operation on the node's apparent net and/or local transforms.
+ * This will only be called if has_adjust_transform() is redefined to return
+ * true.
+ *
+ * Both parameters are in/out.  The original transforms will be passed in, and
+ * they may (or may not) be modified in-place by the RenderEffect.
+ */
 void BillboardEffect::
 adjust_transform(CPT(TransformState) &net_transform,
                  CPT(TransformState) &node_transform,
                  PandaNode *) const {
-  // A BillboardEffect can only affect the net transform when it is to
-  // a particular node.  A billboard to a camera is camera-dependent,
-  // of course, so it has no effect in the absence of any particular
-  // camera viewing it.
+  // A BillboardEffect can only affect the net transform when it is to a
+  // particular node.  A billboard to a camera is camera-dependent, of course,
+  // so it has no effect in the absence of any particular camera viewing it.
   if (_look_at.is_empty()) {
     return;
   }
@@ -209,21 +178,18 @@ adjust_transform(CPT(TransformState) &net_transform,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived BillboardEffect
-//               types to return a unique number indicating whether
-//               this BillboardEffect is equivalent to the other one.
-//
-//               This should return 0 if the two BillboardEffect objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two BillboardEffect
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived BillboardEffect types to return a
+ * unique number indicating whether this BillboardEffect is equivalent to the
+ * other one.
+ *
+ * This should return 0 if the two BillboardEffect objects are equivalent, a
+ * number less than zero if this one should be sorted before the other one,
+ * and a number greater than zero otherwise.
+ *
+ * This will only be called with two BillboardEffect objects whose get_type()
+ * functions return the same.
+ */
 int BillboardEffect::
 compare_to_impl(const RenderEffect *other) const {
   const BillboardEffect *ta;
@@ -253,27 +219,23 @@ compare_to_impl(const RenderEffect *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::compute_billboard
-//       Access: Private
-//  Description: Computes the billboard operation given the parent's
-//               net transform and the camera transform.
-//
-//               The result is applied to node_transform, which is
-//               modified in-place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the billboard operation given the parent's net transform and the
+ * camera transform.
+ *
+ * The result is applied to node_transform, which is modified in-place.
+ */
 void BillboardEffect::
-compute_billboard(CPT(TransformState) &node_transform, 
-                  const TransformState *net_transform, 
+compute_billboard(CPT(TransformState) &node_transform,
+                  const TransformState *net_transform,
                   const TransformState *camera_transform) const {
-  // First, extract out just the translation component of the node's
-  // local transform.  This gets applied to the net transform, to
-  // compute the look-at direction properly.
+  // First, extract out just the translation component of the node's local
+  // transform.  This gets applied to the net transform, to compute the look-
+  // at direction properly.
   CPT(TransformState) translate = TransformState::make_pos(node_transform->get_pos());
 
-  // And then the translation gets removed from the node, but we keep
-  // its rotation etc., which gets applied after the billboard
-  // operation.
+  // And then the translation gets removed from the node, but we keep its
+  // rotation etc., which gets applied after the billboard operation.
   node_transform = node_transform->set_pos(LPoint3(0.0f, 0.0f, 0.0f));
 
   CPT(TransformState) rel_transform =
@@ -288,11 +250,10 @@ compute_billboard(CPT(TransformState) &node_transform,
   // Determine the look_at point in the camera space.
   LVector3 camera_pos, up;
 
-  // If this is an eye-relative Billboard, then (a) the up vector is
-  // relative to the camera, not to the world, and (b) the look
-  // direction is towards the plane that contains the camera,
-  // perpendicular to the forward direction, not directly to the
-  // camera.
+  // If this is an eye-relative Billboard, then (a) the up vector is relative
+  // to the camera, not to the world, and (b) the look direction is towards
+  // the plane that contains the camera, perpendicular to the forward
+  // direction, not directly to the camera.
 
   if (_eye_relative) {
     up = _up_vector * rel_mat;
@@ -311,8 +272,8 @@ compute_billboard(CPT(TransformState) &node_transform,
     look_at(rotate, camera_pos, up);
   }
 
-  // Also slide the billboard geometry towards the camera according to
-  // the offset factor.
+  // Also slide the billboard geometry towards the camera according to the
+  // offset factor.
   if (_offset != 0.0f) {
     LVector3 translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
     translate.normalize();
@@ -323,23 +284,18 @@ compute_billboard(CPT(TransformState) &node_transform,
   node_transform = translate->compose(TransformState::make_mat(rotate))->compose(node_transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               BillboardEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type BillboardEffect.
+ */
 void BillboardEffect::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void BillboardEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
@@ -351,18 +307,14 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(_offset);
   _look_at_point.write_datagram(dg);
 
-  // *** We don't write out the _look_at NodePath right now.  Maybe
-  // we should.
+  // *** We don't write out the _look_at NodePath right now.  Maybe we should.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type BillboardEffect is encountered
-//               in the Bam file.  It should create the BillboardEffect
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BillboardEffect is encountered in the Bam file.  It should create the
+ * BillboardEffect and extract its information from the file.
+ */
 TypedWritable *BillboardEffect::
 make_from_bam(const FactoryParams &params) {
   BillboardEffect *effect = new BillboardEffect;
@@ -375,13 +327,10 @@ make_from_bam(const FactoryParams &params) {
   return effect;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BillboardEffect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BillboardEffect.
+ */
 void BillboardEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);

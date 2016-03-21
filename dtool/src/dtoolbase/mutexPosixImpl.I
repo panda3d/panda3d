@@ -1,23 +1,19 @@
-// Filename: mutexPosixImpl.I
-// Created by:  drose (10Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mutexPosixImpl.I
+ * @author drose
+ * @date 2006-02-10
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE MutexPosixImpl::
 MutexPosixImpl() {
   TAU_PROFILE("MutexPosixImpl::MutexPosixImpl", " ", TAU_USER);
@@ -30,11 +26,9 @@ MutexPosixImpl() {
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE MutexPosixImpl::
 ~MutexPosixImpl() {
   TAU_PROFILE("MutexPosixImpl::~MutexPosixImpl", " ", TAU_USER);
@@ -42,11 +36,9 @@ INLINE MutexPosixImpl::
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void MutexPosixImpl::
 acquire() {
   TAU_PROFILE("void MutexPosixImpl::acquire", " ", TAU_USER);
@@ -54,11 +46,9 @@ acquire() {
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::try_acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool MutexPosixImpl::
 try_acquire() {
   TAU_PROFILE("bool MutexPosixImpl::try_acquire", " ", TAU_USER);
@@ -67,11 +57,9 @@ try_acquire() {
   return (result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::release
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void MutexPosixImpl::
 release() {
   TAU_PROFILE("void MutexPosixImpl::release", " ", TAU_USER);
@@ -79,21 +67,17 @@ release() {
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::get_posix_lock
-//       Access: Public
-//  Description: Returns the underlying Posix lock handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the underlying Posix lock handle.
+ */
 INLINE pthread_mutex_t *MutexPosixImpl::
 get_posix_lock() {
   return &_lock;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ReMutexPosixImpl::
 ReMutexPosixImpl() {
   TAU_PROFILE("ReMutexPosixImpl::ReMutexPosixImpl", " ", TAU_USER);
@@ -105,11 +89,9 @@ ReMutexPosixImpl() {
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE ReMutexPosixImpl::
 ~ReMutexPosixImpl() {
   TAU_PROFILE("ReMutexPosixImpl::~ReMutexPosixImpl", " ", TAU_USER);
@@ -117,11 +99,9 @@ INLINE ReMutexPosixImpl::
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ReMutexPosixImpl::
 acquire() {
   TAU_PROFILE("void ReMutexPosixImpl::acquire", " ", TAU_USER);
@@ -129,11 +109,9 @@ acquire() {
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::try_acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE bool ReMutexPosixImpl::
 try_acquire() {
   TAU_PROFILE("bool ReMutexPosixImpl::try_acquire", " ", TAU_USER);
@@ -142,11 +120,9 @@ try_acquire() {
   return (result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::release
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE void ReMutexPosixImpl::
 release() {
   TAU_PROFILE("void ReMutexPosixImpl::release", " ", TAU_USER);
@@ -154,11 +130,9 @@ release() {
   assert(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::get_posix_lock
-//       Access: Public
-//  Description: Returns the underlying Posix lock handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the underlying Posix lock handle.
+ */
 INLINE pthread_mutex_t *ReMutexPosixImpl::
 get_posix_lock() {
   return &_lock;

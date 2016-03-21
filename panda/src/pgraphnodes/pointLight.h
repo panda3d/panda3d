@@ -1,16 +1,15 @@
-// Filename: pointLight.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointLight.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef POINTLIGHT_H
 #define POINTLIGHT_H
@@ -19,11 +18,10 @@
 
 #include "lightLensNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointLight
-// Description : A light originating from a single point in space, and
-//               shining in all directions.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light originating from a single point in space, and shining in all
+ * directions.
+ */
 class EXPCL_PANDA_PGRAPHNODES PointLight : public LightLensNode {
 PUBLISHED:
   PointLight(const string &name);
@@ -49,6 +47,10 @@ PUBLISHED:
   INLINE const LVecBase3 &get_attenuation() const FINAL;
   INLINE void set_attenuation(const LVecBase3 &attenuation);
   MAKE_PROPERTY(attenuation, get_attenuation, set_attenuation);
+
+  INLINE PN_stdfloat get_max_distance() const;
+  INLINE void set_max_distance(PN_stdfloat max_distance);
+  MAKE_PROPERTY(max_distance, get_max_distance, set_max_distance);
 
   INLINE const LPoint3 &get_point() const;
   INLINE void set_point(const LPoint3 &point);
@@ -77,6 +79,7 @@ private:
 
     LColor _specular_color;
     LVecBase3 _attenuation;
+    PN_stdfloat _max_distance;
     LPoint3 _point;
   };
 

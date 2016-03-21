@@ -1,16 +1,15 @@
-// Filename: qtessSurface.h
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file qtessSurface.h
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #ifndef QTESSSURFACE_H
 #define QTESSSURFACE_H
@@ -25,12 +24,11 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : QtessSurface
-// Description : A reference to an EggNurbsSurface in the egg file,
-//               and its parameters as set by the user input file and
-//               as computed in relation to the other surfaces.
-////////////////////////////////////////////////////////////////////
+/**
+ * A reference to an EggNurbsSurface in the egg file, and its parameters as
+ * set by the user input file and as computed in relation to the other
+ * surfaces.
+ */
 class QtessSurface : public ReferenceCount {
 public:
   QtessSurface(EggNurbsSurface *egg_surface);
@@ -48,7 +46,7 @@ public:
   INLINE int count_tris() const;
 
   double get_score(double ratio);
-  
+
   int tesselate();
   int write_qtess_parameter(ostream &out);
   void omit();
@@ -74,9 +72,8 @@ private:
   PT(NurbsSurfaceResult) _nurbs_result;
   bool _has_vertex_color;
 
-  // Mapping arbitrary attributes to integer extended dimension
-  // values, so we can hang arbitrary data in the extra dimensional
-  // space of the surface.
+  // Mapping arbitrary attributes to integer extended dimension values, so we
+  // can hang arbitrary data in the extra dimensional space of the surface.
   int _next_d;
   typedef map<EggGroup *, int> JointTable;
   JointTable _joint_table;
@@ -88,24 +85,22 @@ private:
   int _tess_u, _tess_v;
   pvector<double> _iso_u, _iso_v;  // If nonempty, isoparams at which to tess.
 
-  // _importance is the relative importance of the surface along either
-  // axis; _importance2 is this number squared, which is the value set by
+  // _importance is the relative importance of the surface along either axis;
+  // _importance2 is this number squared, which is the value set by
   // set_importance().
   double _importance;
   double _importance2;
 
-  // _match_u and _match_v indicate which surface we must match
-  // exactly for tesselation in U or V.  This helps get edges to line
-  // up properly.  They are indirect pointers because we go through
-  // the surfaces in one pass, and might need to fill in the correct
-  // value later.
+  // _match_u and _match_v indicate which surface we must match exactly for
+  // tesselation in U or V.  This helps get edges to line up properly.  They
+  // are indirect pointers because we go through the surfaces in one pass, and
+  // might need to fill in the correct value later.
   QtessSurface **_match_u, **_match_v;
   bool _match_u_to_u, _match_v_to_v;
 
-  // _min_u and _min_v specify a mininum number of quads below which
-  // we should not attempt to subdivide the surface in either
-  // dimension.  This is intended to prevent degenerate cases like
-  // knife-fingers.
+  // _min_u and _min_v specify a mininum number of quads below which we should
+  // not attempt to subdivide the surface in either dimension.  This is
+  // intended to prevent degenerate cases like knife-fingers.
   int _min_u, _min_v;
 
   IsoPlacer _u_placer, _v_placer;
@@ -115,4 +110,3 @@ private:
 #include "qtessSurface.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: windowFramework.cxx
-// Created by:  drose (02Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file windowFramework.cxx
+ * @author drose
+ * @date 2002-04-02
+ */
 
 #include "windowFramework.h"
 #include "pandaFramework.h"
@@ -54,27 +53,24 @@
 #include "staticTextFont.h"
 #include "mouseButton.h"
 
-// This is generated data for the standard texture we apply to the
-// blue triangle.
+// This is generated data for the standard texture we apply to the blue
+// triangle.
 #include "rock_floor.rgb_src.c"
 
-// This is generated data for shuttle_controls.bam, a bamified version
-// of shuttle_controls.egg (found in the models tree).  It's
-// compiled in shuttle_controls.bam_src.c.
+// This is generated data for shuttle_controls.bam, a bamified version of
+// shuttle_controls.egg (found in the models tree).  It's compiled in
+// shuttle_controls.bam_src.c.
 #include "shuttle_controls.bam_src.c"
 
-// This number is chosen arbitrarily to override any settings in model
-// files.
+// This number is chosen arbitrarily to override any settings in model files.
 static const int override_priority = 100;
 
 PT(TextFont) WindowFramework::_shuttle_controls_font = NULL;
 TypeHandle WindowFramework::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WindowFramework::
 WindowFramework(PandaFramework *panda_framework) :
   _panda_framework(panda_framework)
@@ -94,11 +90,9 @@ WindowFramework(PandaFramework *panda_framework) :
   _background_type = BT_default;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WindowFramework::
 WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
   _panda_framework(copy._panda_framework),
@@ -124,22 +118,18 @@ WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
   _display_region_3d->set_camera(camera_np);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WindowFramework::
 ~WindowFramework() {
   close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::open_window
-//       Access: Protected
-//  Description: Opens the actual window or buffer.  This is normally
-//               called only from PandaFramework::open_window().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the actual window or buffer.  This is normally called only from
+ * PandaFramework::open_window().
+ */
 GraphicsOutput *WindowFramework::
 open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
             GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
@@ -158,13 +148,13 @@ open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
                         props, flags, gsg, NULL);
   if (winout != (GraphicsOutput *)NULL) {
     _window = winout;
-    //    _window->request_properties(props);
+    // _window->request_properties(props);
 
     // Create a display region that covers the entire window.
     _display_region_3d = _window->make_display_region();
 
-    // Make sure the DisplayRegion does the clearing, not the window,
-    // so we can have multiple DisplayRegions of different colors.
+    // Make sure the DisplayRegion does the clearing, not the window, so we
+    // can have multiple DisplayRegions of different colors.
     _window->set_clear_color_active(false);
     _window->set_clear_depth_active(false);
     _window->set_clear_stencil_active(false);
@@ -188,12 +178,10 @@ open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
   return _window;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::close_window
-//       Access: Protected
-//  Description: Closes the window or buffer.  This is normally called
-//               from PandaFramework::close_window().
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window or buffer.  This is normally called from
+ * PandaFramework::close_window().
+ */
 void WindowFramework::
 close_window() {
   _window.clear();
@@ -225,13 +213,10 @@ close_window() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_camera_group
-//       Access: Public
-//  Description: Returns the node above the collection of 3-d cameras
-//               in the scene graph.  This node may be moved around to
-//               represent the viewpoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the node above the collection of 3-d cameras in the scene graph.
+ * This node may be moved around to represent the viewpoint.
+ */
 NodePath WindowFramework::
 get_camera_group() {
   if (_camera_group.is_empty()) {
@@ -240,11 +225,9 @@ get_camera_group() {
   return _camera_group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_render
-//       Access: Public
-//  Description: Returns the root of the 3-d scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the root of the 3-d scene graph.
+ */
 NodePath WindowFramework::
 get_render() {
   if (_render.is_empty()) {
@@ -259,11 +242,9 @@ get_render() {
   return _render;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_render_2d
-//       Access: Public
-//  Description: Returns the root of the 2-d scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the root of the 2-d scene graph.
+ */
 NodePath WindowFramework::
 get_render_2d() {
   if (_render_2d.is_empty()) {
@@ -278,8 +259,8 @@ get_render_2d() {
 
     // Now set up a 2-d camera to view render_2d.
 
-    // Create a display region that matches the size of the 3-d
-    // display region.
+    // Create a display region that matches the size of the 3-d display
+    // region.
     PN_stdfloat l, r, b, t;
     _display_region_3d->get_dimensions(l, r, b, t);
     _display_region_2d = _window->make_mono_display_region(l, r, b, t);
@@ -306,20 +287,18 @@ get_render_2d() {
   return _render_2d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_aspect_2d
-//       Access: Public
-//  Description: Returns the node under the 2-d scene graph that is
-//               scaled to suit the window's aspect ratio.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the node under the 2-d scene graph that is scaled to suit the
+ * window's aspect ratio.
+ */
 NodePath WindowFramework::
 get_aspect_2d() {
   if (_aspect_2d.is_empty()) {
     PGTop *top = new PGTop("aspect_2d");
     _aspect_2d = get_render_2d().attach_new_node(top);
 
-    // Tell the PGTop about our MouseWatcher object, so the PGui
-    // system can operate.
+    // Tell the PGTop about our MouseWatcher object, so the PGui system can
+    // operate.
     PandaNode *mouse_node = get_mouse().node();
     if (mouse_node->is_of_type(MouseWatcher::get_class_type())) {
       top->set_mouse_watcher(DCAST(MouseWatcher, mouse_node));
@@ -345,14 +324,11 @@ get_aspect_2d() {
   return _aspect_2d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_pixel_2d
-//       Access: Public
-//  Description: Returns a special root that uses units in pixels that
-//               are relative to the window. The upperleft corner of
-//               the window is (0, 0), the lowerleft corner is
-//               (xsize, -ysize), in this coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a special root that uses units in pixels that are relative to the
+ * window.  The upperleft corner of the window is (0, 0), the lowerleft corner
+ * is (xsize, -ysize), in this coordinate system.
+ */
 NodePath WindowFramework::
 get_pixel_2d() {
   if (_pixel_2d.is_empty()) {
@@ -376,33 +352,30 @@ get_pixel_2d() {
   return _pixel_2d;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_mouse
-//       Access: Public
-//  Description: Returns the node in the data graph corresponding to
-//               the mouse associated with this window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the node in the data graph corresponding to the mouse associated
+ * with this window.
+ */
 NodePath WindowFramework::
 get_mouse() {
   if (_mouse.is_empty()) {
     NodePath mouse = _panda_framework->get_mouse(_window);
 
-    // Create a MouseWatcher to filter the mouse input.  We do this
-    // mainly so we can constrain the mouse input to our particular
-    // display region, if we have one.  This means the node we return
-    // from get_mouse() is actually a MouseWatcher, but since it
-    // presents the same interface as a Mouse, no one should mind.
+    // Create a MouseWatcher to filter the mouse input.  We do this mainly so
+    // we can constrain the mouse input to our particular display region, if
+    // we have one.  This means the node we return from get_mouse() is
+    // actually a MouseWatcher, but since it presents the same interface as a
+    // Mouse, no one should mind.
 
-    // Another advantage to using a MouseWatcher is that the PGTop of
-    // aspect2d likes it better.
+    // Another advantage to using a MouseWatcher is that the PGTop of aspect2d
+    // likes it better.
     PT(MouseWatcher) mw = new MouseWatcher("watcher");
 
     if (_window->get_side_by_side_stereo()) {
-      // If the window has side-by-side stereo enabled, then
-      // we should constrain the MouseWatcher to the window's
-      // DisplayRegion.  This will enable the MouseWatcher to
-      // track the left and right halves of the screen
-      // individually.
+      // If the window has side-by-side stereo enabled, then we should
+      // constrain the MouseWatcher to the window's DisplayRegion.  This will
+      // enable the MouseWatcher to track the left and right halves of the
+      // screen individually.
       mw->set_display_region(_window->get_overlay_display_region());
     }
 
@@ -411,23 +384,19 @@ get_mouse() {
   return _mouse;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_button_thrower
-//       Access: Public
-//  Description: Returns the node in the data graph corresponding to
-//               the ButtonThrower object associated with this window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the node in the data graph corresponding to the ButtonThrower
+ * object associated with this window.
+ */
 NodePath WindowFramework::
 get_button_thrower() {
   return _button_thrower;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::enable_keyboard
-//       Access: Public
-//  Description: Creates a ButtonThrower to listen to button presses
-//               and throw them as events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a ButtonThrower to listen to button presses and throw them as
+ * events.
+ */
 void WindowFramework::
 enable_keyboard() {
   if (_got_keyboard) {
@@ -438,8 +407,8 @@ enable_keyboard() {
       DCAST(GraphicsWindow, _window)->get_num_input_devices() > 0) {
     NodePath mouse = get_mouse();
 
-    // Create a button thrower to listen for our keyboard events and
-    // associate this WindowFramework pointer with each one.
+    // Create a button thrower to listen for our keyboard events and associate
+    // this WindowFramework pointer with each one.
     PT(ButtonThrower) bt = new ButtonThrower("kb-events");
     bt->add_parameter(EventParameter(this));
     ModifierButtons mods;
@@ -454,11 +423,9 @@ enable_keyboard() {
   _got_keyboard = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::setup_trackball
-//       Access: Public
-//  Description: Sets up the mouse to trackball around the camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the mouse to trackball around the camera.
+ */
 void WindowFramework::
 setup_trackball() {
   if (_got_trackball) {
@@ -482,12 +449,10 @@ setup_trackball() {
   _got_trackball = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::center_trackball
-//       Access: Public
-//  Description: Centers the trackball on the indicated object, and
-//               scales the trackball motion suitably.
-////////////////////////////////////////////////////////////////////
+/**
+ * Centers the trackball on the indicated object, and scales the trackball
+ * motion suitably.
+ */
 void WindowFramework::
 center_trackball(const NodePath &object) {
   if (_trackball == (Trackball *)NULL) {
@@ -520,8 +485,8 @@ center_trackball(const NodePath &object) {
     return;
   }
 
-  // The BoundingVolume might be a sphere (it's likely), but since it
-  // might not, we'll take no chances and make our own sphere.
+  // The BoundingVolume might be a sphere (it's likely), but since it might
+  // not, we'll take no chances and make our own sphere.
   PT(BoundingSphere) sphere = new BoundingSphere(gbv->get_approx_center(), 0.0f);
   if (!sphere->extend_by(gbv)) {
     framework_cat.warning()
@@ -534,9 +499,9 @@ center_trackball(const NodePath &object) {
 
   PN_stdfloat distance = 50.0f;
 
-  // Choose a suitable distance to view the whole volume in our frame.
-  // This is based on the camera lens in use.  Determine the lens
-  // based on the first camera; this will be the default camera.
+  // Choose a suitable distance to view the whole volume in our frame.  This
+  // is based on the camera lens in use.  Determine the lens based on the
+  // first camera; this will be the default camera.
   Lens *lens = (Lens *)NULL;
   if (!_cameras.empty()) {
     Cameras::const_iterator ci;
@@ -563,21 +528,18 @@ center_trackball(const NodePath &object) {
   _trackball->set_origin(center);
   _trackball->set_pos(LVector3::forward() * distance);
 
-  // Also set the movement scale on the trackball to be consistent
-  // with the size of the model and the lens field-of-view.
+  // Also set the movement scale on the trackball to be consistent with the
+  // size of the model and the lens field-of-view.
   _trackball->set_forward_scale(distance * 0.006);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::load_models
-//       Access: Public
-//  Description: Loads up all the model files listed in the indicated
-//               argument list.  If first_arg is supplied, it is the
-//               first argument in the list to consider.
-//
-//               Returns true if all models loaded successfully, or
-//               false if at least one of them had an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads up all the model files listed in the indicated argument list.  If
+ * first_arg is supplied, it is the first argument in the list to consider.
+ *
+ * Returns true if all models loaded successfully, or false if at least one of
+ * them had an error.
+ */
 bool WindowFramework::
 load_models(const NodePath &parent, int argc, char *argv[], int first_arg) {
   pvector<Filename> files;
@@ -589,15 +551,12 @@ load_models(const NodePath &parent, int argc, char *argv[], int first_arg) {
   return load_models(parent, files);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::load_models
-//       Access: Public
-//  Description: Loads up all the model files listed in the indicated
-//               argument list.
-//
-//               Returns true if all models loaded successfully, or
-//               false if at least one of them had an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads up all the model files listed in the indicated argument list.
+ *
+ * Returns true if all models loaded successfully, or false if at least one of
+ * them had an error.
+ */
 bool WindowFramework::
 load_models(const NodePath &parent, const pvector<Filename> &files) {
   bool all_ok = true;
@@ -614,24 +573,21 @@ load_models(const NodePath &parent, const pvector<Filename> &files) {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::load_model
-//       Access: Public
-//  Description: Loads up the indicated model and returns the new
-//               NodePath, or the empty NodePath if the model could
-//               not be loaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads up the indicated model and returns the new NodePath, or the empty
+ * NodePath if the model could not be loaded.
+ */
 NodePath WindowFramework::
 load_model(const NodePath &parent, Filename filename) {
   framework_cat.info() << "Loading " << filename << "\n";
 
-  // If the filename already exists where it is, or if it is fully
-  // qualified, don't search along the model path for it.
+  // If the filename already exists where it is, or if it is fully qualified,
+  // don't search along the model path for it.
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   bool search = !(filename.is_fully_qualified() || vfs->exists(filename));
 
-  // We allow loading image files here.  Check to see if it might be
-  // an image file, based on the filename extension.
+  // We allow loading image files here.  Check to see if it might be an image
+  // file, based on the filename extension.
   bool is_image = false;
   string extension = filename.get_extension();
 #ifdef HAVE_ZLIB
@@ -644,11 +600,10 @@ load_model(const NodePath &parent, Filename filename) {
     LoaderFileType *model_type =
       reg->get_type_from_extension(extension);
     if (model_type == (LoaderFileType *)NULL) {
-      // The extension isn't a known model file type; is it a known
-      // image file extension?
+      // The extension isn't a known model file type; is it a known image file
+      // extension?
       if (extension == "txo" || downcase(extension) == "dds") {
-        // A texture object.  Not exactly an image, but certainly a
-        // texture.
+        // A texture object.  Not exactly an image, but certainly a texture.
         is_image = true;
 
       } else {
@@ -684,22 +639,19 @@ load_model(const NodePath &parent, Filename filename) {
   return parent.attach_new_node(node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::load_default_model
-//       Access: Public
-//  Description: Loads our favorite blue triangle.  This is intended
-//               to provide some default geometry to have *something*
-//               to look at for testing, when no other models are
-//               provided.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads our favorite blue triangle.  This is intended to provide some default
+ * geometry to have *something* to look at for testing, when no other models
+ * are provided.
+ */
 NodePath WindowFramework::
 load_default_model(const NodePath &parent) {
   CPT(RenderState) state = RenderState::make_empty();
 
   state = state->add_attrib(ColorAttrib::make_flat(LColor(0.5, 0.5, 1.0, 1.0)));
 
-  // Get the default texture to apply to the triangle; it's compiled
-  // into the code these days.
+  // Get the default texture to apply to the triangle; it's compiled into the
+  // code these days.
   string rock_floor_string((const char *)rock_floor, rock_floor_len);
   istringstream rock_floor_strm(rock_floor_string);
   PNMImage rock_floor_pnm;
@@ -745,13 +697,10 @@ load_default_model(const NodePath &parent) {
   return parent.attach_new_node(geomnode);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::loop_animations
-//       Access: Public
-//  Description: Looks for characters and their matching animation
-//               files in the scene graph; binds and loops any
-//               matching animations found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for characters and their matching animation files in the scene graph;
+ * binds and loops any matching animations found.
+ */
 void WindowFramework::
 loop_animations(int hierarchy_match_flags) {
   // If we happened to load up both a character file and its matching
@@ -761,14 +710,11 @@ loop_animations(int hierarchy_match_flags) {
   _anim_controls.loop_all(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::stagger_animations
-//       Access: Public
-//  Description: Walks through all the animations that were bound by
-//               loop_animations() and staggers their play rate
-//               slightly so that they will not remain perfectly in
-//               sync.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through all the animations that were bound by loop_animations() and
+ * staggers their play rate slightly so that they will not remain perfectly in
+ * sync.
+ */
 void WindowFramework::
 stagger_animations() {
   for (int i = 0; i < _anim_controls.get_num_anims(); ++i) {
@@ -779,16 +725,12 @@ stagger_animations() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::next_anim_control
-//       Access: Public
-//  Description: Rotates the animation controls through all of the
-//               available animations.  If the animation controls are
-//               not already enabled, enables them at sets to the
-//               first animation; if they are already enabled, steps
-//               to the next animation; if that is the last animation,
-//               disables the animation controls.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rotates the animation controls through all of the available animations.  If
+ * the animation controls are not already enabled, enables them at sets to the
+ * first animation; if they are already enabled, steps to the next animation;
+ * if that is the last animation, disables the animation controls.
+ */
 void WindowFramework::
 next_anim_control() {
   if (_anim_controls_enabled) {
@@ -819,12 +761,10 @@ next_anim_control() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_anim_controls
-//       Access: Public
-//  Description: Creates an onscreen animation slider for
-//               frame-stepping through the animations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an onscreen animation slider for frame-stepping through the
+ * animations.
+ */
 void WindowFramework::
 set_anim_controls(bool enable) {
   _anim_controls_enabled = enable;
@@ -836,16 +776,12 @@ set_anim_controls(bool enable) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::adjust_dimensions
-//       Access: Public
-//  Description: Reevaluates the dimensions of the window,
-//               presumably after the window has been resized by the
-//               user or some other force.  Adjusts the render film
-//               size, aspect2d scale (aspect ratio) and the
-//               dimensionsas of pixel_2d according to the
-//               new window shape, or new config setting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reevaluates the dimensions of the window, presumably after the window has
+ * been resized by the user or some other force.  Adjusts the render film
+ * size, aspect2d scale (aspect ratio) and the dimensionsas of pixel_2d
+ * according to the new window shape, or new config setting.
+ */
 void WindowFramework::
 adjust_dimensions() {
   PN_stdfloat this_aspect_ratio = aspect_ratio;
@@ -892,16 +828,12 @@ adjust_dimensions() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::split_window
-//       Access: Public
-//  Description: Divides the window into two display regions, each of
-//               which gets its own trackball and keyboard events.
-//               The new window pointer is returned.
-//
-//               There is not an interface for recombining divided
-//               windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Divides the window into two display regions, each of which gets its own
+ * trackball and keyboard events.  The new window pointer is returned.
+ *
+ * There is not an interface for recombining divided windows.
+ */
 WindowFramework *WindowFramework::
 split_window(SplitType split_type) {
   DisplayRegion *new_region = NULL;
@@ -945,12 +877,9 @@ split_window(SplitType split_type) {
   return wf;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_wireframe
-//       Access: Public
-//  Description: Forces wireframe state (true) or restores default
-//               rendering (false).
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces wireframe state (true) or restores default rendering (false).
+ */
 void WindowFramework::
 set_wireframe(bool enable, bool filled) {
   if (enable == _wireframe_enabled && filled == _wireframe_filled) {
@@ -969,8 +898,8 @@ set_wireframe(bool enable, bool filled) {
         RenderModeAttrib::M_filled_wireframe,
         1.4f, false, LColor(1, 1, 1, .5f)),
         override_priority);
-      // Darken the scene so that the wireframe is clearly visible,
-      // even when the scene is completely white.
+      // Darken the scene so that the wireframe is clearly visible, even when
+      // the scene is completely white.
       render.set_color_scale(LColor(0.7f, 0.7f, 0.7f, 1), override_priority);
     } else {
       render.set_render_mode_wireframe(override_priority);
@@ -990,12 +919,9 @@ set_wireframe(bool enable, bool filled) {
   _wireframe_filled = filled;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_texture
-//       Access: Public
-//  Description: Forces textures off (false) or restores default
-//               rendering (true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces textures off (false) or restores default rendering (true).
+ */
 void WindowFramework::
 set_texture(bool enable) {
   if (enable == _texture_enabled) {
@@ -1013,12 +939,9 @@ set_texture(bool enable) {
   _texture_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_two_sided
-//       Access: Public
-//  Description: Forces two-sided rendering (true) or restores default
-//               rendering (false).
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces two-sided rendering (true) or restores default rendering (false).
+ */
 void WindowFramework::
 set_two_sided(bool enable) {
   if (enable == _two_sided_enabled) {
@@ -1039,13 +962,10 @@ set_two_sided(bool enable) {
   _one_sided_reverse_enabled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_one_sided_reverse
-//       Access: Public
-//  Description: Toggles one-sided reverse mode.  In this mode, the
-//               front sides of one-sided polygons are culled instead
-//               of the back side.
-////////////////////////////////////////////////////////////////////
+/**
+ * Toggles one-sided reverse mode.  In this mode, the front sides of one-sided
+ * polygons are culled instead of the back side.
+ */
 void WindowFramework::
 set_one_sided_reverse(bool enable) {
   if (enable == _one_sided_reverse_enabled) {
@@ -1067,11 +987,9 @@ set_one_sided_reverse(bool enable) {
   _one_sided_reverse_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_lighting
-//       Access: Public
-//  Description: Turns lighting on (true) or off (false).
-////////////////////////////////////////////////////////////////////
+/**
+ * Turns lighting on (true) or off (false).
+ */
 void WindowFramework::
 set_lighting(bool enable) {
   if (enable == _lighting_enabled) {
@@ -1093,11 +1011,9 @@ set_lighting(bool enable) {
   _lighting_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_perpixel
-//       Access: Public
-//  Description: Turns per-pixel lighting on (true) or off (false).
-////////////////////////////////////////////////////////////////////
+/**
+ * Turns per-pixel lighting on (true) or off (false).
+ */
 void WindowFramework::
 set_perpixel(bool enable) {
   if (enable == _perpixel_enabled) {
@@ -1115,14 +1031,11 @@ set_perpixel(bool enable) {
   _perpixel_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::set_background_type
-//       Access: Public
-//  Description: Sets the background of the window to one of the
-//               pre-canned background types (or to BT_other, which
-//               indicates the user intends to set up his own special
-//               background mode).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the background of the window to one of the pre-canned background types
+ * (or to BT_other, which indicates the user intends to set up his own special
+ * background mode).
+ */
 void WindowFramework::
 set_background_type(WindowFramework::BackgroundType type) {
   _background_type = type;
@@ -1179,12 +1092,9 @@ set_background_type(WindowFramework::BackgroundType type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::get_shuttle_controls_font
-//       Access: Public, Static
-//  Description: Returns a font that contains the shuttle controls
-//               icons.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a font that contains the shuttle controls icons.
+ */
 TextFont *WindowFramework::
 get_shuttle_controls_font() {
   if (_shuttle_controls_font == (TextFont *)NULL) {
@@ -1204,11 +1114,9 @@ get_shuttle_controls_font() {
   return _shuttle_controls_font;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::make_camera
-//       Access: Public
-//  Description: Makes a new 3-d camera for the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new 3-d camera for the window.
+ */
 NodePath WindowFramework::
 make_camera() {
   // Finally, we need a camera to associate with the display region.
@@ -1223,8 +1131,8 @@ make_camera() {
     lens->set_aspect_ratio(aspect_ratio);
 
   } else {
-    // Otherwise, infer the aspect ratio from the window size.  This
-    // does assume we have square pixels on our output device.
+    // Otherwise, infer the aspect ratio from the window size.  This does
+    // assume we have square pixels on our output device.
     if (_window->has_size()) {
       int x_size = _window->get_sbs_left_x_size();
       int y_size = _window->get_sbs_left_y_size();
@@ -1239,12 +1147,9 @@ make_camera() {
   return camera_np;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::setup_lights
-//       Access: Protected
-//  Description: Makes light nodes and attaches them to the camera for
-//               viewing the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes light nodes and attaches them to the camera for viewing the scene.
+ */
 void WindowFramework::
 setup_lights() {
   if (_got_lights) {
@@ -1266,13 +1171,10 @@ setup_lights() {
   _got_lights = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::load_image_as_model
-//       Access: Private
-//  Description: Loads the indicated image file as a texture, and
-//               creates a polygon to render it.  Returns the new
-//               model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the indicated image file as a texture, and creates a polygon to
+ * render it.  Returns the new model.
+ */
 PT(PandaNode) WindowFramework::
 load_image_as_model(const Filename &filename) {
   PT(Texture) tex = TexturePool::load_texture(filename);
@@ -1283,13 +1185,16 @@ load_image_as_model(const Filename &filename) {
   // Yes, it is an image file; make a texture out of it.
   tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
   tex->set_magfilter(SamplerState::FT_linear);
+  tex->set_wrap_u(SamplerState::WM_clamp);
+  tex->set_wrap_v(SamplerState::WM_clamp);
+  tex->set_wrap_w(SamplerState::WM_clamp);
 
   // Ok, now make a polygon to show the texture.
   bool has_alpha = true;
   LVecBase2 tex_scale = tex->get_tex_scale();
 
-  // Get the size from the original image (the texture may have
-  // scaled it to make a power of 2).
+  // Get the size from the original image (the texture may have scaled it to
+  // make a power of 2).
   int x_size = tex->get_orig_file_x_size();
   int y_size = tex->get_orig_file_y_size();
 
@@ -1424,12 +1329,10 @@ load_image_as_model(const Filename &filename) {
   return card_node.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::create_anim_controls
-//       Access: Private
-//  Description: Creates an onscreen animation slider for
-//               frame-stepping through the animations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an onscreen animation slider for frame-stepping through the
+ * animations.
+ */
 void WindowFramework::
 create_anim_controls() {
   destroy_anim_controls();
@@ -1511,7 +1414,7 @@ create_anim_controls() {
   NodePath pnp = _anim_controls_group.attach_new_node(_play_rate_slider);
   pnp.set_pos(0.75f, 0.0f, 0.15f);
 
-  // Set up the jog/shuttle buttons.  These use symbols from the
+  // Set up the jogshuttle buttons.  These use symbols from the
   // shuttle_controls_font file.
   setup_shuttle_button("9", 0, st_back_button);
   setup_shuttle_button(";", 1, st_pause_button);
@@ -1522,11 +1425,9 @@ create_anim_controls() {
   _panda_framework->get_task_mgr().add(_update_anim_controls_task);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::destroy_anim_controls
-//       Access: Private
-//  Description: Removes the previously-created anim controls, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the previously-created anim controls, if any.
+ */
 void WindowFramework::
 destroy_anim_controls() {
   if (!_anim_controls_group.is_empty()) {
@@ -1540,12 +1441,9 @@ destroy_anim_controls() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::update_anim_controls
-//       Access: Private
-//  Description: A per-frame callback to update the anim slider for
-//               the current frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * A per-frame callback to update the anim slider for the current frame.
+ */
 void WindowFramework::
 update_anim_controls() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
@@ -1566,12 +1464,10 @@ update_anim_controls() {
   control->set_play_rate(_play_rate_slider->get_value());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::setup_shuttle_button
-//       Access: Private
-//  Description: Creates a PGButton to implement the indicated shuttle
-//               event (play, pause, etc.).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a PGButton to implement the indicated shuttle event (play, pause,
+ * etc.).
+ */
 void WindowFramework::
 setup_shuttle_button(const string &label, int index,
                      EventHandler::EventCallbackFunction *func) {
@@ -1615,11 +1511,9 @@ setup_shuttle_button(const string &label, int index,
   _panda_framework->get_event_handler().add_hook(button->get_click_event(MouseButton::one()), func, (void *)this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::back_button
-//       Access: Private, Static
-//  Description: Handler for a shuttle button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handler for a shuttle button.
+ */
 void WindowFramework::
 back_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
@@ -1627,11 +1521,9 @@ back_button() {
   control->pose(control->get_frame() - 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::pause_button
-//       Access: Private, Static
-//  Description: Handler for a shuttle button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handler for a shuttle button.
+ */
 void WindowFramework::
 pause_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
@@ -1639,11 +1531,9 @@ pause_button() {
   control->stop();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::play_button
-//       Access: Private, Static
-//  Description: Handler for a shuttle button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handler for a shuttle button.
+ */
 void WindowFramework::
 play_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
@@ -1651,11 +1541,9 @@ play_button() {
   control->loop(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::forward_button
-//       Access: Private, Static
-//  Description: Handler for a shuttle button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handler for a shuttle button.
+ */
 void WindowFramework::
 forward_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
@@ -1664,11 +1552,9 @@ forward_button() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::st_update_anim_controls
-//       Access: Private, Static
-//  Description: The static task function.
-////////////////////////////////////////////////////////////////////
+/**
+ * The static task function.
+ */
 AsyncTask::DoneStatus WindowFramework::
 st_update_anim_controls(GenericAsyncTask *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
@@ -1677,44 +1563,36 @@ st_update_anim_controls(GenericAsyncTask *, void *data) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::st_back_button
-//       Access: Private, Static
-//  Description: The static event handler function.
-////////////////////////////////////////////////////////////////////
+/**
+ * The static event handler function.
+ */
 void WindowFramework::
 st_back_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->back_button();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::st_pause_button
-//       Access: Private, Static
-//  Description: The static event handler function.
-////////////////////////////////////////////////////////////////////
+/**
+ * The static event handler function.
+ */
 void WindowFramework::
 st_pause_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->pause_button();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::st_play_button
-//       Access: Private, Static
-//  Description: The static event handler function.
-////////////////////////////////////////////////////////////////////
+/**
+ * The static event handler function.
+ */
 void WindowFramework::
 st_play_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->play_button();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::st_forward_button
-//       Access: Private, Static
-//  Description: The static event handler function.
-////////////////////////////////////////////////////////////////////
+/**
+ * The static event handler function.
+ */
 void WindowFramework::
 st_forward_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;

@@ -457,7 +457,6 @@ SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(RTDIST)
-SdkLocateVisualStudio(MSVC_VERSION)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
@@ -496,6 +495,7 @@ if RUNTIME and not HOST_URL:
 
 if GetHost() == 'windows' and GetTarget() == 'windows':
     COMPILER = "MSVC"
+    SdkLocateVisualStudio(MSVC_VERSION)
 else:
     COMPILER = "GCC"
 
@@ -736,6 +736,9 @@ if (COMPILER=="GCC"):
         if (os.path.isdir("/usr/PCBSD")):
             IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
             LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
+
+    if GetTarget() != "windows":
+        PkgDisable("DIRECTCAM")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -1174,7 +1177,7 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
 
-        if not GetLinkAllStatic():
+        if not GetLinkAllStatic() and 'NOHIDDEN' not in opts:
             cmd += ' -fvisibility=hidden'
 
         # Mac-specific flags.
@@ -1636,7 +1639,8 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
             else:
                 cmd = cxx + ' -shared'
-                if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
+                if "MODULE" not in opts or GetTarget() == 'android':
+                    cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
         if GetTarget() == 'emscripten' and GetOrigExt(dll) != ".exe":
@@ -2253,11 +2257,11 @@ PRC_PARAMETERS=[
     ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
     ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
     ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
-    ("PRC_PATH2_ENVVARS",              '""',                     '""'),
+    ("PRC_PATH2_ENVVARS",              'UNDEF',                  'UNDEF'),
     ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
     ("PRC_ENCRYPTED_PATTERNS",         '"*.prc.pe"',             '"*.prc.pe"'),
     ("PRC_ENCRYPTION_KEY",             '""',                     '""'),
-    ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
+    ("PRC_EXECUTABLE_PATTERNS",        'UNDEF',                  'UNDEF'),
     ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
     ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
     ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
@@ -2348,6 +2352,14 @@ def WriteConfigSettings():
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["HAVE_NET"] = 'UNDEF'
         dtool_config["LINK_ALL_STATIC"] = '1'
+
+        # There are no environment vars either, or default prc files.
+        prc_parameters["DEFAULT_PRC_DIR"] = 'UNDEF'
+        prc_parameters["PRC_DIR_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATH_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATH2_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATTERNS"] = 'UNDEF'
+        prc_parameters["PRC_ENCRYPTED_PATTERNS"] = 'UNDEF'
 
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
@@ -4061,7 +4073,7 @@ if (not RUNTIME):
   TargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
 
   TargetAdd('core.pyd', input='core_module.obj')
-  TargetAdd('core.pyd', input='libp3tinyxml.ilb')
+  #TargetAdd('core.pyd', input='libp3tinyxml.ilb')
   TargetAdd('core.pyd', input='libp3interrogatedb.dll')
   TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('core.pyd', opts=['PYTHON', 'WINSOCK2'])
@@ -4370,7 +4382,7 @@ if (GetTarget() == 'windows' and not RUNTIME):
 # DIRECTORY: panda/metalibs/pandadx9/
 #
 
-if PkgSkip("DX9")==0 and not RUNTIME:
+if GetTarget() == 'windows' and PkgSkip("DX9")==0 and not RUNTIME:
   OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
   TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
   TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
@@ -4582,8 +4594,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles.dll', input='pandagles_pandagles.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_config_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
@@ -4601,8 +4612,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
   TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
@@ -4868,7 +4878,7 @@ if (not RUNTIME and GetTarget() == 'android'):
   TargetAdd('libp3android.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3android.dll', opts=['JNIGRAPHICS'])
 
-  TargetAdd('android_native_app_glue.obj', opts=OPTS, input='android_native_app_glue.c')
+  TargetAdd('android_native_app_glue.obj', opts=OPTS + ['NOHIDDEN'], input='android_native_app_glue.c')
   TargetAdd('android_main.obj', opts=OPTS, input='android_main.cxx')
 
   if (not RTDIST and PkgSkip("PVIEW")==0):

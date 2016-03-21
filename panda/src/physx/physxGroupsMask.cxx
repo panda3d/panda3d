@@ -1,24 +1,21 @@
-// Filename: physxGroupsMask.cxx
-// Created by:  enn0x (21Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxGroupsMask.cxx
+ * @author enn0x
+ * @date 2009-10-21
+ */
 
 #include "physxGroupsMask.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxGroupsMask::all_on
-//       Access: Published
-//  Description: Returns a PhysxGroupsMask whose bits are all on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PhysxGroupsMask whose bits are all on.
+ */
 PhysxGroupsMask PhysxGroupsMask::
 all_on() {
 
@@ -30,11 +27,9 @@ all_on() {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxGroupsMask::all_off
-//       Access: Published
-//  Description: Returns a PhysxGroupsMask whose bits are all off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PhysxGroupsMask whose bits are all off.
+ */
 PhysxGroupsMask PhysxGroupsMask::
 all_off() {
 
@@ -48,12 +43,9 @@ all_off() {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxGroupsMask::set_bit
-//       Access: Published
-//  Description: Sets the nth bit on.
-//               Index must be in the range [0, 127].
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit on.  Index must be in the range [0, 127].
+ */
 void PhysxGroupsMask::
 set_bit(unsigned int idx) {
 
@@ -75,12 +67,9 @@ set_bit(unsigned int idx) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxGroupsMask::clear_bit
-//       Access: Published
-//  Description: Sets the nth bit off.
-//               Index must be in the range [0, 127].
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit off.  Index must be in the range [0, 127].
+ */
 void PhysxGroupsMask::
 clear_bit(unsigned int idx) {
 
@@ -102,13 +91,10 @@ clear_bit(unsigned int idx) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxGroupsMask::get_bit
-//       Access: Published
-//  Description: Returns true if the nth bit is set, false if it is
-//               cleared.
-//               Index must be in the range [0, 127].
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the nth bit is set, false if it is cleared.  Index must be
+ * in the range [0, 127].
+ */
 bool PhysxGroupsMask::
 get_bit(unsigned int idx) const {
 
@@ -130,12 +116,9 @@ get_bit(unsigned int idx) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxGroupsMask::output
-//       Access: Published
-//  Description: Writes the PhysxGroupsMask out as a list of ones and
-//               zeros.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the PhysxGroupsMask out as a list of ones and zeros.
+ */
 void PhysxGroupsMask::
 output(ostream &out) const {
 
@@ -153,4 +136,3 @@ output(ostream &out) const {
 
   out << "/" << name0 << "-" << name1 << "-" << name2 << "-" << name3 << "/";
 }
-

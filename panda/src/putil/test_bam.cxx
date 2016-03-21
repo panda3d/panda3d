@@ -1,16 +1,15 @@
-// Filename: test_bam.cxx
-// Created by:  jason (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_bam.cxx
+ * @author jason
+ * @date 2000-06-13
+ */
 
 #include "pandabase.h"
 #include "pnotify.h"
@@ -39,9 +38,9 @@ ConfigureFn(config_test_bam)
 void Person::
 write_datagram(BamWriter* manager, Datagram &me)
 {
-  //Write out name
+  // Write out name
   me.add_string(_name);
-  //Write out gender
+  // Write out gender
   me.add_uint8(myGender);
   manager->write_pointer(me, _bro);
   manager->write_pointer(me, _sis);

@@ -1,16 +1,15 @@
-// Filename: webGLGraphicsPipe.cxx
-// Created by:  rdb (01Apr15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webGLGraphicsPipe.cxx
+ * @author rdb
+ * @date 2015-04-01
+ */
 
 #include "webGLGraphicsPipe.h"
 #include "webGLGraphicsWindow.h"
@@ -20,70 +19,54 @@
 
 TypeHandle WebGLGraphicsPipe::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsPipe::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WebGLGraphicsPipe::
 WebGLGraphicsPipe() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WebGLGraphicsPipe::
 ~WebGLGraphicsPipe() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to
+ * choose between several possible GraphicsPipes available on a particular
+ * platform, so the name should be meaningful and unique for a given platform.
+ */
 string WebGLGraphicsPipe::
 get_interface_name() const {
   return "WebGL";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               webGLGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the
+ * user to make a default webGLGraphicsPipe.
+ */
 PT(GraphicsPipe) WebGLGraphicsPipe::
 pipe_constructor() {
   return new WebGLGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsPipe::get_preferred_window_thread
-//       Access: Public, Virtual
-//  Description: Returns an indication of the thread in which this
-//               GraphicsPipe requires its window processing to be
-//               performed: typically either the app thread (e.g. X)
-//               or the draw thread (Windows).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an indication of the thread in which this GraphicsPipe requires its
+ * window processing to be performed: typically either the app thread (e.g.
+ * X) or the draw thread (Windows).
+ */
 GraphicsPipe::PreferredWindowThread WebGLGraphicsPipe::
 get_preferred_window_thread() const {
   // JavaScript has no threads, so does it matter?
   return PWT_draw;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) WebGLGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -123,13 +106,13 @@ make_output(const string &name,
   // Second thing to try: a GLES2GraphicsBuffer
   if (retry == 1) {
     if ((host==0)||
-  //        (!gl_support_fbo)||
+        //(!gl_support_fbo)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
       return NULL;
     }
-    // Early failure - if we are sure that this buffer WONT
-    // meet specs, we can bail out early.
+    // Early failure - if we are sure that this buffer WONT meet specs, we can
+    // bail out early.
     if ((flags & BF_fb_props_optional)==0) {
       if ((fb_prop.get_indexed_color() > 0)||
           (fb_prop.get_back_buffers() > 0)||
@@ -138,8 +121,8 @@ make_output(const string &name,
         return NULL;
       }
     }
-    // Early success - if we are sure that this buffer WILL
-    // meet specs, we can precertify it.
+    // Early success - if we are sure that this buffer WILL meet specs, we can
+    // precertify it.
     if ((web_gl != 0) &&
         (web_gl->is_valid()) &&
         (!web_gl->needs_reset()) &&

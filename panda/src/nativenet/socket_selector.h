@@ -1,10 +1,8 @@
 #ifndef __SOCKET_SELECTOR_H__
 #define __SOCKET_SELECTOR_H__
 
-////////////////////////////////////////////////////////////////////
-// This is a structure on purpose. only used as a helper class to save on typing
-//
-////////////////////////////////////////////////////////////////////
+// This is a structure on purpose.  only used as a helper class to save on
+// typing
 struct Socket_Selector
 {
     Socket_fdset _read;
@@ -26,12 +24,10 @@ struct Socket_Selector
     int WaitFor_Write_Error(const Socket_fdset & fd, const Time_Span & timeout);
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Selector::WaitFor
-//  Description: This function is the reason this call exists..
-//      It will wait for a read, write or error condition
-//      on a socket or it will time out
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is the reason this call exists.. It will wait for a read,
+ * write or error condition on a socket or it will time out
+ */
 inline int Socket_Selector::WaitFor(const Time_Span &timeout)
 {
     SOCKET local_max = 0;
@@ -47,10 +43,9 @@ inline int Socket_Selector::WaitFor(const Time_Span &timeout)
     return _answer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Selector::WaitFor_All
-//  Description: Helper function to utilize the WaitFor function
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper function to utilize the WaitFor function
+ */
 inline int Socket_Selector::WaitFor_All(const Socket_fdset & fd, const Time_Span & timeout)
 {
     _read = fd;
@@ -59,11 +54,9 @@ inline int Socket_Selector::WaitFor_All(const Socket_fdset & fd, const Time_Span
     return WaitFor(timeout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Selector::WaitFor_Read_Error
-//  Description: Helper function for WaitFor
-//      Only looks for readability and errors
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper function for WaitFor Only looks for readability and errors
+ */
 inline int Socket_Selector::WaitFor_Read_Error(const Socket_fdset & fd, const Time_Span & timeout)
 {
     _read = fd;
@@ -72,11 +65,9 @@ inline int Socket_Selector::WaitFor_Read_Error(const Socket_fdset & fd, const Ti
     return WaitFor(timeout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Selector::WaitFor_Write_Error
-//  Description: Helper function for WaitFor
-//      Only looks for writability and errors
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper function for WaitFor Only looks for writability and errors
+ */
 inline int Socket_Selector::WaitFor_Write_Error(const Socket_fdset & fd, const Time_Span & timeout)
 {
     _read.clear();

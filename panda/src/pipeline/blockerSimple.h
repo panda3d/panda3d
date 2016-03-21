@@ -1,16 +1,15 @@
-// Filename: blockerSimple.h
-// Created by:  drose (20Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file blockerSimple.h
+ * @author drose
+ * @date 2007-06-20
+ */
 
 #ifndef BLOCKERSIMPLE_H
 #define BLOCKERSIMPLE_H
@@ -22,13 +21,11 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BlockerSimple
-// Description : This is a base class for MutexSimpleImpl and
-//               ConditionVarSimpleImpl.  It represents a
-//               synchronization primitive that one or more threads
-//               might be blocked on.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for MutexSimpleImpl and ConditionVarSimpleImpl.  It
+ * represents a synchronization primitive that one or more threads might be
+ * blocked on.
+ */
 class EXPCL_PANDA_PIPELINE BlockerSimple {
 protected:
   INLINE BlockerSimple();

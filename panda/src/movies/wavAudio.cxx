@@ -1,16 +1,15 @@
-// Filename: wavAudio.cxx
-// Created by: rdb (23Aug13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wavAudio.cxx
+ * @author rdb
+ * @date 2013-08-23
+ */
 
 #include "wavAudio.h"
 #include "wavAudioCursor.h"
@@ -19,11 +18,9 @@
 
 TypeHandle WavAudio::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::Constructor
-//       Access: Protected
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 WavAudio::
 WavAudio(const Filename &name) :
   MovieAudio(name)
@@ -31,20 +28,16 @@ WavAudio(const Filename &name) :
   _filename = name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 WavAudio::
 ~WavAudio() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::open
-//       Access: Published, Virtual
-//  Description: Open this audio, returning a MovieAudioCursor
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this audio, returning a MovieAudioCursor
+ */
 PT(MovieAudioCursor) WavAudio::
 open() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -62,11 +55,9 @@ open() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::make
-//       Access: Published, Static
-//  Description: Obtains a MovieAudio that references a file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a MovieAudio that references a file.
+ */
 PT(MovieAudio) WavAudio::
 make(const Filename &name) {
   return DCAST(MovieAudio, new WavAudio(name));

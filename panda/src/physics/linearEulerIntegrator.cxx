@@ -1,56 +1,43 @@
-// Filename: linearEulerIntegrator.cxx
-// Created by:  charles (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearEulerIntegrator.cxx
+ * @author charles
+ * @date 2000-06-13
+ */
 
 #include "linearEulerIntegrator.h"
 #include "forceNode.h"
 #include "physicalNode.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearEulerIntegrator
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearEulerIntegrator::
 LinearEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearEulerIntegrator
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearEulerIntegrator::
 ~LinearEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Integrate
-//       Access: Public
-//  Description: Integrate a step of motion (based on dt) by
-//                applying every force in force_vec to every object
-//                in obj_vec.
-//
-//                physical,
-//                    The objects being acted upon and the
-//                    set of local forces that are applied
-//                    after the global forces.
-//                forces,
-//                    Global forces to be applied first.
-//                dt,
-//                    The delta time of this integration step.
-////////////////////////////////////////////////////////////////////
+/**
+ * Integrate a step of motion (based on dt) by applying every force in
+ * force_vec to every object in obj_vec.
+ *
+ * physical, The objects being acted upon and the set of local forces that are
+ * applied after the global forces.  forces, Global forces to be applied
+ * first.  dt, The delta time of this integration step.
+ */
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
                 LinearForceVector& forces,
@@ -72,21 +59,19 @@ child_integrate(Physical *physical,
   // Get the greater of the local or global viscosity:
   PN_stdfloat viscosityDamper=1.0f-physical->get_viscosity();
 
-  // Loop through each object in the set.  This processing occurs in O(pf) time,
-  // where p is the number of physical objects and f is the number of
-  // forces.  Unfortunately, no precomputation of forces can occur, as
-  // each force is possibly contingent on such things as the position and
-  // velocity of each physicsobject in the set.  Accordingly, we have
-  // to grunt our way through each one.  wrt caching of the xform matrix
-  // should help.
+  // Loop through each object in the set.  This processing occurs in O(pf)
+  // time, where p is the number of physical objects and f is the number of
+  // forces.  Unfortunately, no precomputation of forces can occur, as each
+  // force is possibly contingent on such things as the position and velocity
+  // of each physicsobject in the set.  Accordingly, we have to grunt our way
+  // through each one.  wrt caching of the xform matrix should help.
   PhysicsObject::Vector::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
   for (; current_object_iter != physical->get_object_vector().end();
        ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
 
-    // bail out if this object doesn't exist or doesn't want to be
-    // processed.
+    // bail out if this object doesn't exist or doesn't want to be processed.
     if (current_object == (PhysicsObject *) NULL) {
       continue;
     }
@@ -106,7 +91,7 @@ child_integrate(Physical *physical,
 
     // run through each acting force and sum it
     LVector3 f;
-    //    LMatrix4 force_to_object_xform;
+    // LMatrix4 force_to_object_xform;
 
     LinearForceVector::const_iterator f_cur;
 
@@ -160,8 +145,7 @@ child_integrate(Physical *physical,
     vel_vec = current_object->get_velocity();
     PN_stdfloat mass = current_object->get_mass();
 
-    // we want 'a' in F = ma
-    // get it by computing F / m
+    // we want 'a' in F = ma get it by computing F  m
     nassertv(mass != 0.0f);
     accel_vec = md_accum_vec / mass;
     accel_vec += non_md_accum_vec;
@@ -174,7 +158,8 @@ child_integrate(Physical *physical,
     PN_stdfloat len = vel_vec.length();
 
     if (len > current_object->get_terminal_velocity()) {
-      //cout << "Capping terminal velocity at: " << current_object->get_terminal_velocity() << endl;
+      // cout << "Capping terminal velocity at: " <<
+      // current_object->get_terminal_velocity() << endl;
       vel_vec *= current_object->get_terminal_velocity() / len;
     }
 
@@ -200,12 +185,9 @@ child_integrate(Physical *physical,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearEulerIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -213,12 +195,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearEulerIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -227,11 +206,3 @@ write(ostream &out, unsigned int indent) const {
   LinearIntegrator::write(out, indent+2);
   #endif //] NDEBUG
 }
-
-
-
-
-
-
-
-

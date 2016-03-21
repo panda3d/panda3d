@@ -1,16 +1,15 @@
-// Filename: eggMesherStrip.h
-// Created by:  drose (13Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMesherStrip.h
+ * @author drose
+ * @date 2005-03-13
+ */
 
 #ifndef EGGMESHERSTRIP_H
 #define EGGMESHERSTRIP_H
@@ -23,13 +22,11 @@
 
 class EggMesherEdge;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMesherStrip
-// Description : Represents a triangle strip or quad strip in
-//               progress, as assembled by the mesher.  It might also
-//               represent a single polygon such as a triangle or
-//               quad, since that's how strips generally start out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a triangle strip or quad strip in progress, as assembled by the
+ * mesher.  It might also represent a single polygon such as a triangle or
+ * quad, since that's how strips generally start out.
+ */
 class EggMesherStrip {
 public:
   enum PrimType {
@@ -45,10 +42,10 @@ public:
   };
 
   enum MesherOrigin {
-    MO_unknown, 
-    MO_user, 
-    MO_firstquad, 
-    MO_fanpoly, 
+    MO_unknown,
+    MO_user,
+    MO_firstquad,
+    MO_fanpoly,
     MO_mate
   };
 
@@ -129,9 +126,9 @@ public:
   Verts _verts;
 
   enum MesherStatus {
-    MS_alive, 
-    MS_dead, 
-    MS_done, 
+    MS_alive,
+    MS_dead,
+    MS_done,
     MS_paired
   };
 

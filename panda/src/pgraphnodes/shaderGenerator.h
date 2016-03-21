@@ -1,17 +1,17 @@
-// Filename: shaderGenerator.h
-// Created by: jyelon (15Dec07)
-// Updated by: weifengh, PandaSE(15Apr10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderGenerator.h
+ * @author jyelon
+ * @date 2007-12-15
+ * @author weifengh, PandaSE
+ * @date 2010-04-15
+ */
 
 #ifndef SHADERGENERATOR_H
 #define SHADERGENERATOR_H
@@ -35,39 +35,29 @@ class Spotlight;
 class LightAttrib;
 class GeomVertexAnimationSpec;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderGenerator
-// Description : The ShaderGenerator is a device that effectively
-//               replaces the classic fixed function pipeline with
-//               a 'next-gen' fixed function pipeline.  The next-gen
-//               fixed function pipeline supports features like
-//               normal mapping, gloss mapping, cartoon lighting,
-//               and so forth.  It works by automatically generating
-//               a shader from a given RenderState.
-//
-//               Currently, there is one ShaderGenerator object per
-//               GraphicsStateGuardian.  It is our intent that in
-//               time, people will write classes that derive from
-//               ShaderGenerator but which yield slightly different
-//               results.
-//
-//               The ShaderGenerator owes its existence to the
-//               'Bamboo Team' at Carnegie Mellon's Entertainment
-//               Technology Center.  This is a group of students
-//               who, as a semester project, decided that next-gen
-//               graphics should be accessible to everyone, even if
-//               they don't know shader programming.  The group
-//               consisted of:
-//
-//               Aaron Lo, Programmer
-//               Heegun Lee, Programmer
-//               Erin Fernandez, Artist/Tester
-//               Joe Grubb, Artist/Tester
-//               Ivan Ortega, Technical Artist/Tester
-//
-//               Thanks to them!
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * The ShaderGenerator is a device that effectively replaces the classic fixed
+ * function pipeline with a 'next-gen' fixed function pipeline.  The next-gen
+ * fixed function pipeline supports features like normal mapping, gloss
+ * mapping, cartoon lighting, and so forth.  It works by automatically
+ * generating a shader from a given RenderState.
+ *
+ * Currently, there is one ShaderGenerator object per GraphicsStateGuardian.
+ * It is our intent that in time, people will write classes that derive from
+ * ShaderGenerator but which yield slightly different results.
+ *
+ * The ShaderGenerator owes its existence to the 'Bamboo Team' at Carnegie
+ * Mellon's Entertainment Technology Center.  This is a group of students who,
+ * as a semester project, decided that next-gen graphics should be accessible
+ * to everyone, even if they don't know shader programming.  The group
+ * consisted of:
+ *
+ * Aaron Lo, Programmer Heegun Lee, Programmer Erin Fernandez, Artist/Tester
+ * Joe Grubb, Artist/Tester Ivan Ortega, Technical Artist/Tester
+ *
+ * Thanks to them!
+ *
+ */
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
   ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host);

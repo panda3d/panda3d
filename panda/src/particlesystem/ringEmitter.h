@@ -1,27 +1,24 @@
-// Filename: ringEmitter.h
-// Created by:  charles (22Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ringEmitter.h
+ * @author charles
+ * @date 2000-06-22
+ */
 
 #ifndef RINGEMITTER_H
 #define RINGEMITTER_H
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : RingEmitter
-// Description : Describes a planar ring region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a planar ring region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS RingEmitter : public BaseParticleEmitter {
 PUBLISHED:
   RingEmitter();

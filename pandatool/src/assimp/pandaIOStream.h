@@ -1,16 +1,15 @@
-// Filename: pandaIOStream.h
-// Created by:  rdb (29Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pandaIOStream.h
+ * @author rdb
+ * @date 2011-03-29
+ */
 
 #ifndef PANDAIOSTREAM_H
 #define PANDAIOSTREAM_H
@@ -21,12 +20,10 @@
 
 class PandaIOSystem;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaIOStream
-// Description : Custom implementation of Assimp::IOStream.  It
-//               simply wraps around an istream object, and is
-//               unable to write.
-////////////////////////////////////////////////////////////////////
+/**
+ * Custom implementation of Assimp::IOStream.  It simply wraps around an
+ * istream object, and is unable to write.
+ */
 class PandaIOStream : public Assimp::IOStream {
 public:
   PandaIOStream(istream &stream);

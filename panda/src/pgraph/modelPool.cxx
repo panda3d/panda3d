@@ -1,16 +1,15 @@
-// Filename: modelPool.cxx
-// Created by:  drose (12Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file modelPool.cxx
+ * @author drose
+ * @date 2002-03-12
+ */
 
 #include "modelPool.h"
 #include "loader.h"
@@ -21,23 +20,18 @@
 
 ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::write
-//       Access: Published, Static
-//  Description: Lists the contents of the model pool to the
-//               indicated output stream.
-//               Helps with debugging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists the contents of the model pool to the indicated output stream.  Helps
+ * with debugging.
+ */
 void ModelPool::
 write(ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_has_model
-//       Access: Private
-//  Description: The nonstatic implementation of has_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of has_model().
+ */
 bool ModelPool::
 ns_has_model(const Filename &filename) {
   LightMutexHolder holder(_lock);
@@ -51,11 +45,9 @@ ns_has_model(const Filename &filename) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_get_model
-//       Access: Private
-//  Description: The nonstatic implementation of get_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of get_model().
+ */
 ModelRoot *ModelPool::
 ns_get_model(const Filename &filename, bool verify) {
 
@@ -80,8 +72,8 @@ ns_get_model(const Filename &filename, bool verify) {
     }
 
     if (cached_model == NULL) {
-      // This filename was previously attempted, but it did not
-      // exist (or the model could not be loaded for some reason).
+      // This filename was previously attempted, but it did not exist (or the
+      // model could not be loaded for some reason).
       if (cache_check_timestamps) {
         // Check to see if there is a file there now.
         VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -91,8 +83,7 @@ ns_get_model(const Filename &filename, bool verify) {
         }
       }
     } else {
-      // This filename was previously attempted, and successfully
-      // loaded.
+      // This filename was previously attempted, and successfully loaded.
       if (cache_check_timestamps && cached_model->get_timestamp() != 0 &&
           !cached_model->get_fullpath().empty()) {
         // Compare the timestamp to the file on-disk.
@@ -103,8 +94,8 @@ ns_get_model(const Filename &filename, bool verify) {
           got_cached_model = false;
 
         } else if (vfile->get_timestamp() > cached_model->get_timestamp()) {
-          // The file still exists, but it has a newer timestamp than
-          // the one we previously loaded.  Force it to re-load.
+          // The file still exists, but it has a newer timestamp than the one
+          // we previously loaded.  Force it to re-load.
           got_cached_model = false;
         }
       }
@@ -122,11 +113,9 @@ ns_get_model(const Filename &filename, bool verify) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_load_model
-//       Access: Private
-//  Description: The nonstatic implementation of load_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_model().
+ */
 ModelRoot *ModelPool::
 ns_load_model(const Filename &filename, const LoaderOptions &options) {
 
@@ -163,8 +152,8 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
   {
     LightMutexHolder holder(_lock);
 
-    // Look again, in case someone has just loaded the model in
-    // another thread.
+    // Look again, in case someone has just loaded the model in another
+    // thread.
     Models::const_iterator ti;
     ti = _models.find(filename);
     if (ti != _models.end() && (*ti).second != cached_model) {
@@ -178,11 +167,9 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_add_model
-//       Access: Private
-//  Description: The nonstatic implementation of add_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of add_model().
+ */
 void ModelPool::
 ns_add_model(const Filename &filename, ModelRoot *model) {
   LightMutexHolder holder(_lock);
@@ -194,11 +181,9 @@ ns_add_model(const Filename &filename, ModelRoot *model) {
   _models[filename] = model;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_release_model
-//       Access: Private
-//  Description: The nonstatic implementation of release_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_model().
+ */
 void ModelPool::
 ns_release_model(const Filename &filename) {
   LightMutexHolder holder(_lock);
@@ -209,11 +194,9 @@ ns_release_model(const Filename &filename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_add_model
-//       Access: Private
-//  Description: The nonstatic implementation of add_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of add_model().
+ */
 void ModelPool::
 ns_add_model(ModelRoot *model) {
   LightMutexHolder holder(_lock);
@@ -221,11 +204,9 @@ ns_add_model(ModelRoot *model) {
   _models[model->get_fullpath()] = model;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_release_model
-//       Access: Private
-//  Description: The nonstatic implementation of release_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_model().
+ */
 void ModelPool::
 ns_release_model(ModelRoot *model) {
   LightMutexHolder holder(_lock);
@@ -236,22 +217,18 @@ ns_release_model(ModelRoot *model) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_release_all_models
-//       Access: Private
-//  Description: The nonstatic implementation of release_all_models().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_all_models().
+ */
 void ModelPool::
 ns_release_all_models() {
   LightMutexHolder holder(_lock);
   _models.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_garbage_collect
-//       Access: Private
-//  Description: The nonstatic implementation of garbage_collect().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of garbage_collect().
+ */
 int ModelPool::
 ns_garbage_collect() {
   LightMutexHolder holder(_lock);
@@ -278,11 +255,9 @@ ns_garbage_collect() {
   return num_released;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::ns_list_contents
-//       Access: Private
-//  Description: The nonstatic implementation of list_contents().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of list_contents().
+ */
 void ModelPool::
 ns_list_contents(ostream &out) const {
   LightMutexHolder holder(_lock);
@@ -304,12 +279,10 @@ ns_list_contents(ostream &out) const {
       << _models.size() - num_models << " entries for nonexistent files)\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::get_ptr
-//       Access: Private, Static
-//  Description: Initializes and/or returns the global pointer to the
-//               one ModelPool object in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes and/or returns the global pointer to the one ModelPool object
+ * in the system.
+ */
 ModelPool *ModelPool::
 get_ptr() {
   if (_global_ptr == (ModelPool *)NULL) {

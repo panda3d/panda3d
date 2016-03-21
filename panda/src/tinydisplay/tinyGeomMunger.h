@@ -1,16 +1,15 @@
-// Filename: tinyGeomMunger.h
-// Created by:  drose (29Apr08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyGeomMunger.h
+ * @author drose
+ * @date 2008-04-29
+ */
 
 #ifndef TINYGEOMMUNGER_H
 #define TINYGEOMMUNGER_H
@@ -20,13 +19,11 @@
 #include "graphicsStateGuardian.h"
 #include "renderState.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyGeomMunger
-// Description : This specialization on GeomMunger finesses vertices
-//               for TinyPanda rendering.  This actually doesn't have
-//               to do very much, since TinyPanda is not that
-//               particular.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on GeomMunger finesses vertices for TinyPanda
+ * rendering.  This actually doesn't have to do very much, since TinyPanda is
+ * not that particular.
+ */
 class EXPCL_TINYDISPLAY TinyGeomMunger : public StandardMunger {
 public:
   TinyGeomMunger(GraphicsStateGuardian *gsg, const RenderState *state);

@@ -1,16 +1,15 @@
-// Filename: textureReference.h
-// Created by:  drose (28Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureReference.h
+ * @author drose
+ * @date 2000-11-28
+ */
 
 #ifndef TEXTUREREFERENCE_H
 #define TEXTUREREFERENCE_H
@@ -33,13 +32,11 @@ class EggGroupNode;
 class EggPrimitive;
 class TexturePlacement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureReference
-// Description : This is the particular reference of a texture
-//               filename by an egg file.  It also includes
-//               information about the way in which the egg file uses
-//               the texture; e.g. does it repeat.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the particular reference of a texture filename by an egg file.  It
+ * also includes information about the way in which the egg file uses the
+ * texture; e.g.  does it repeat.
+ */
 class TextureReference : public TypedWritable {
 public:
   TextureReference();
@@ -144,5 +141,3 @@ operator << (ostream &out, const TextureReference &ref) {
 }
 
 #endif
-
-

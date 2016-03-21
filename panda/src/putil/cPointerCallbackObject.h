@@ -1,16 +1,15 @@
-// Filename: cPointerCallbackObject.h
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cPointerCallbackObject.h
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #ifndef CPOINTERCALLBACKOBJECT_H
 #define CPOINTERCALLBACKOBJECT_H
@@ -18,12 +17,10 @@
 #include "pandabase.h"
 #include "callbackObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPointerCallbackObject
-// Description : This is a specialization on CallbackObject to allow
-//               association with a C-style function pointer and a
-//               void * parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on CallbackObject to allow association with a
+ * C-style function pointer and a void * parameter.
+ */
 class EXPCL_PANDA_PUTIL CPointerCallbackObject : public CallbackObject {
 public:
   typedef void CallbackFunction(CallbackData *cbdata, void *data);

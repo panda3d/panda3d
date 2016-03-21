@@ -1,16 +1,15 @@
-// Filename: lightAttrib.h
-// Created by:  drose (26Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lightAttrib.h
+ * @author drose
+ * @date 2002-03-26
+ */
 
 #ifndef LIGHTATTRIB_H
 #define LIGHTATTRIB_H
@@ -23,13 +22,11 @@
 #include "ordered_vector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightAttrib
-// Description : Indicates which set of lights should be considered
-//               "on" to illuminate geometry at this level and below.
-//               A LightAttrib can either add lights or remove lights
-//               from the total set of "on" lights.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates which set of lights should be considered "on" to illuminate
+ * geometry at this level and below.  A LightAttrib can either add lights or
+ * remove lights from the total set of "on" lights.
+ */
 class EXPCL_PANDA_PGRAPH LightAttrib : public RenderAttrib {
 protected:
   INLINE LightAttrib();
@@ -37,22 +34,21 @@ protected:
 
 PUBLISHED:
 
-  // This is the old, deprecated interface to LightAttrib.  Do not use
-  // any of these methods for new code; these methods will be removed
-  // soon.
+  // This is the old, deprecated interface to LightAttrib.  Do not use any of
+  // these methods for new code; these methods will be removed soon.
   enum Operation {
     O_set,
     O_add,
     O_remove
   };
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light1, Light *light2);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light1, Light *light2,
                                 Light *light3);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light1, Light *light2,
                                 Light *light3, Light *light4);
   static CPT(RenderAttrib) make_default();
@@ -67,8 +63,7 @@ PUBLISHED:
   CPT(RenderAttrib) remove_light(Light *light) const;
 
 
-  // The following is the new, more general interface to the
-  // LightAttrib.
+  // The following is the new, more general interface to the LightAttrib.
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_all_off();
 
@@ -135,8 +130,7 @@ public:
   class BamAuxData : public BamReader::AuxData {
   public:
     // We hold a pointer to each of the PandaNodes on the on_list and
-    // off_list.  We will later convert these to NodePaths in
-    // finalize().
+    // off_list.  We will later convert these to NodePaths in finalize().
     int _num_off_lights;
     int _num_on_lights;
     NodeList _off_list;
@@ -153,7 +147,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -177,4 +171,3 @@ private:
 #include "lightAttrib.I"
 
 #endif
-

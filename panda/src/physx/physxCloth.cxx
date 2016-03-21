@@ -1,16 +1,15 @@
-// Filename: physxCloth.cxx
-// Created by:  enn0x (30Mar10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxCloth.cxx
+ * @author enn0x
+ * @date 2010-03-30
+ */
 
 #include "physxCloth.h"
 #include "physxClothDesc.h"
@@ -23,11 +22,9 @@
 
 TypeHandle PhysxCloth::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxCloth::
 link(NxCloth *clothPtr) {
 
@@ -42,11 +39,9 @@ link(NxCloth *clothPtr) {
   scene->_cloths.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxCloth::
 unlink() {
 
@@ -60,11 +55,9 @@ unlink() {
   _node = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxCloth::
 release() {
 
@@ -75,11 +68,9 @@ release() {
   _ptr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::update
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxCloth::
 update() {
 
@@ -98,11 +89,9 @@ update() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_scene
-//       Access: Published
-//  Description: Returns the scene which this cloth belongs to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scene which this cloth belongs to.
+ */
 PhysxScene *PhysxCloth::
 get_scene() const {
 
@@ -110,11 +99,9 @@ get_scene() const {
   return (PhysxScene *)_ptr->getScene().userData;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_cloth_node
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxClothNode *PhysxCloth::
 get_cloth_node() const {
 
@@ -122,11 +109,9 @@ get_cloth_node() const {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::create_cloth_node
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxClothNode *PhysxCloth::
 create_cloth_node(const char *name) {
 
@@ -138,14 +123,10 @@ create_cloth_node(const char *name) {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_name
-//       Access: Published
-//  Description: Sets a name string for the object that can be
-//               retrieved with get_name(). 
-//               This is for debugging and is not used by the
-//               engine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets a name string for the object that can be retrieved with get_name().
+ * This is for debugging and is not used by the engine.
+ */
 void PhysxCloth::
 set_name(const char *name) {
 
@@ -155,11 +136,9 @@ set_name(const char *name) {
   _ptr->setName(_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_name
-//       Access: Published
-//  Description: Retrieves the name string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the name string.
+ */
 const char *PhysxCloth::
 get_name() const {
 
@@ -167,12 +146,10 @@ get_name() const {
   return _ptr->getName();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_group
-//       Access: Published
-//  Description: Sets which collision group this cloth is part of.
-//               Collision group must be between 0 and 31.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets which collision group this cloth is part of.  Collision group must be
+ * between 0 and 31.
+ */
 void PhysxCloth::
 set_group(unsigned int group) {
 
@@ -181,12 +158,9 @@ set_group(unsigned int group) {
   _ptr->setGroup(group);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_group
-//       Access: Published
-//  Description: Retrieves the collision group this cloth is part
-//               of.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the collision group this cloth is part of.
+ */
 unsigned int PhysxCloth::
 get_group() const {
 
@@ -194,11 +168,9 @@ get_group() const {
   return _ptr->getGroup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_thickness
-//       Access: Published
-//  Description: Sets the cloth thickness (must be positive).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the cloth thickness (must be positive).
+ */
 void PhysxCloth::
 set_thickness(float thickness) {
 
@@ -206,11 +178,9 @@ set_thickness(float thickness) {
   _ptr->setThickness(thickness);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_thickness
-//       Access: Published
-//  Description: Gets the cloth thickness.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the cloth thickness.
+ */
 float PhysxCloth::
 get_thickness() const {
 
@@ -218,11 +188,9 @@ get_thickness() const {
   return _ptr->getThickness();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_density
-//       Access: Published
-//  Description: Gets the cloth density.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the cloth density.
+ */
 float PhysxCloth::
 get_density() const {
 
@@ -230,16 +198,12 @@ get_density() const {
   return _ptr->getDensity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_relative_grid_spacing
-//       Access: Published
-//  Description: Gets the relative grid spacing for the broad
-//               phase. The cloth is represented by a set of
-//               world aligned cubical cells in broad phase. The
-//               size of these cells is determined by multiplying
-//               the length of the diagonal of the AABB of the
-//               initial soft body size with this constant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the relative grid spacing for the broad phase.  The cloth is
+ * represented by a set of world aligned cubical cells in broad phase.  The
+ * size of these cells is determined by multiplying the length of the diagonal
+ * of the AABB of the initial soft body size with this constant.
+ */
 float PhysxCloth::
 get_relative_grid_spacing() const {
 
@@ -247,11 +211,9 @@ get_relative_grid_spacing() const {
   return _ptr->getRelativeGridSpacing();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_num_particles
-//       Access: Published
-//  Description: Gets the number of cloth particles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the number of cloth particles.
+ */
 unsigned int PhysxCloth::
 get_num_particles() {
 
@@ -259,11 +221,9 @@ get_num_particles() {
   return _ptr->getNumberOfParticles();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_flag
-//       Access: Published
-//  Description: Sets the value of a single flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the value of a single flag.
+ */
 void PhysxCloth::
 set_flag(PhysxClothFlag flag, bool value) {
 
@@ -273,7 +233,7 @@ set_flag(PhysxClothFlag flag, bool value) {
 
   if (value == true) {
     flags |= flag;
-  } 
+  }
   else {
     flags &= ~(flag);
   }
@@ -281,11 +241,9 @@ set_flag(PhysxClothFlag flag, bool value) {
   _ptr->setFlags(flags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_flag
-//       Access: Published
-//  Description: Retrieves the value of a single flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the value of a single flag.
+ */
 bool PhysxCloth::
 get_flag(PhysxClothFlag flag) const {
 
@@ -294,11 +252,9 @@ get_flag(PhysxClothFlag flag) const {
   return (_ptr->getFlags() & flag) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_groups_mask
-//       Access: Published
-//  Description: Sets 128-bit mask used for collision filtering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets 128-bit mask used for collision filtering.
+ */
 void PhysxCloth::
 set_groups_mask(const PhysxGroupsMask &mask) {
 
@@ -308,12 +264,9 @@ set_groups_mask(const PhysxGroupsMask &mask) {
   _ptr->setGroupsMask(_mask);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_groups_mask
-//       Access: Published
-//  Description: Gets the 128-bit groups mask used for collision
-//               filtering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the 128-bit groups mask used for collision filtering.
+ */
 PhysxGroupsMask PhysxCloth::
 get_groups_mask() const {
 
@@ -327,19 +280,15 @@ get_groups_mask() const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::is_sleeping
-//       Access: Published
-//  Description: Returns true if this cloth is sleeping. 
-//
-//               When a cloth does not move for a period of time,
-//               it is no longer simulated in order to save time.
-//               This state is called sleeping. However, because the
-//               object automatically wakes up when it is either
-//               touched by an awake object, or one of its
-//               properties is changed by the user, the entire sleep
-//               mechanism should be transparent to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this cloth is sleeping.
+ *
+ * When a cloth does not move for a period of time, it is no longer simulated
+ * in order to save time.  This state is called sleeping.  However, because
+ * the object automatically wakes up when it is either touched by an awake
+ * object, or one of its properties is changed by the user, the entire sleep
+ * mechanism should be transparent to the user.
+ */
 bool PhysxCloth::
 is_sleeping() const {
 
@@ -347,16 +296,13 @@ is_sleeping() const {
   return _ptr->isSleeping();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::wake_up
-//       Access: Published
-//  Description: Wakes up the cloth if it is sleeping. 
-//
-//               The wakeCounterValue determines how long until the
-//               body is put to sleep, a value of zero means that
-//               the body is sleeping. wake_up(0) is equivalent to
-//               PhysxCloth::put_to_sleep().
-////////////////////////////////////////////////////////////////////
+/**
+ * Wakes up the cloth if it is sleeping.
+ *
+ * The wakeCounterValue determines how long until the body is put to sleep, a
+ * value of zero means that the body is sleeping.  wake_up(0) is equivalent to
+ * PhysxCloth::put_to_sleep().
+ */
 void PhysxCloth::
 wake_up(float wakeCounterValue) {
 
@@ -364,17 +310,13 @@ wake_up(float wakeCounterValue) {
   _ptr->wakeUp(wakeCounterValue);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::put_to_sleep
-//       Access: Published
-//  Description: Forces the cloth to sleep. 
-//
-//               The cloth  will stay asleep until the next
-//               call to simulate, and will not wake up until then
-//               even when otherwise it would (for example a force
-//               is applied to it). It can however wake up during
-//               the next do_physics call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the cloth to sleep.
+ *
+ * The cloth  will stay asleep until the next call to simulate, and will not
+ * wake up until then even when otherwise it would (for example a force is
+ * applied to it). It can however wake up during the next do_physics call.
+ */
 void PhysxCloth::
 put_to_sleep() {
 
@@ -382,17 +324,13 @@ put_to_sleep() {
   _ptr->putToSleep();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_sleep_linear_velocity
-//       Access: Published
-//  Description: Sets the linear velocity below which an cloth
-//               may go to sleep. Cloths whose linear velocity is
-//               above this threshold will not be put to sleep.
-//
-//               Setting the sleep angular/linear velocity only
-//               makes sense when the BF_energy_sleep_test is not
-//               set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the linear velocity below which an cloth may go to sleep.  Cloths
+ * whose linear velocity is above this threshold will not be put to sleep.
+ *
+ * Setting the sleep angular/linear velocity only makes sense when the
+ * BF_energy_sleep_test is not set.
+ */
 void PhysxCloth::
 set_sleep_linear_velocity(float threshold) {
 
@@ -400,13 +338,11 @@ set_sleep_linear_velocity(float threshold) {
   _ptr->setSleepLinearVelocity(threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_sleep_linear_velocity
-//       Access: Published
-//  Description: Returns the linear velocity below which an soft
-//               body may go to sleep. cloths whose linear velocity
-//               is above this threshold will not be put to sleep.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear velocity below which an soft body may go to sleep.
+ * cloths whose linear velocity is above this threshold will not be put to
+ * sleep.
+ */
 float PhysxCloth::
 get_sleep_linear_velocity() const {
 
@@ -414,12 +350,9 @@ get_sleep_linear_velocity() const {
   return _ptr->getSleepLinearVelocity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::attach_vertex_to_global_pos
-//       Access: Published
-//  Description: Attaches a cloth vertex to a position in world
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches a cloth vertex to a position in world space.
+ */
 void PhysxCloth::
 attach_vertex_to_global_pos(unsigned int vertexId, LPoint3f const &pos) {
 
@@ -429,16 +362,13 @@ attach_vertex_to_global_pos(unsigned int vertexId, LPoint3f const &pos) {
   _ptr->attachVertexToGlobalPosition(vertexId, PhysxManager::point3_to_nxVec3(pos));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::attach_to_shape
-//       Access: Published
-//  Description: Attaches the cloth to a shape. All cloth points
-//               currently inside the shape are attached.
-//
-//               This method only works with primitive and convex
-//               shapes. Since the inside of a general triangle mesh
-//               is not clearly defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches the cloth to a shape.  All cloth points currently inside the shape
+ * are attached.
+ *
+ * This method only works with primitive and convex shapes.  Since the inside
+ * of a general triangle mesh is not clearly defined.
+ */
 void PhysxCloth::
 attach_to_shape(PhysxShape *shape) {
 
@@ -449,16 +379,12 @@ attach_to_shape(PhysxShape *shape) {
   _ptr->attachToShape(shape->ptr(), attachmentFlags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::attach_to_colliding_shapes
-//       Access: Published
-//  Description: Attaches the cloth to all shapes, currently
-//               colliding. 
-//
-//               This method only works with primitive and convex
-//               shapes. Since the inside of a general triangle mesh
-//               is not clearly defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches the cloth to all shapes, currently colliding.
+ *
+ * This method only works with primitive and convex shapes.  Since the inside
+ * of a general triangle mesh is not clearly defined.
+ */
 void PhysxCloth::
 attach_to_colliding_shapes() {
 
@@ -468,15 +394,12 @@ attach_to_colliding_shapes() {
   _ptr->attachToCollidingShapes(attachmentFlags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::detach_from_shape
-//       Access: Published
-//  Description: Detaches the cloth from a shape it has been
-//               attached to before. 
-//
-//               If the cloth has not been attached to the shape
-//               before, the call has no effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detaches the cloth from a shape it has been attached to before.
+ *
+ * If the cloth has not been attached to the shape before, the call has no
+ * effect.
+ */
 void PhysxCloth::
 detach_from_shape(PhysxShape *shape) {
 
@@ -486,11 +409,9 @@ detach_from_shape(PhysxShape *shape) {
   _ptr->detachFromShape(shape->ptr());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::free_vertex
-//       Access: Published
-//  Description: Frees a previously attached cloth point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees a previously attached cloth point.
+ */
 void PhysxCloth::
 free_vertex(unsigned int vertexId) {
 
@@ -498,12 +419,9 @@ free_vertex(unsigned int vertexId) {
   _ptr->freeVertex(vertexId);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::attach_vertex_to_shape
-//       Access: Published
-//  Description: Attaches a cloth vertex to a local position within
-//               a shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches a cloth vertex to a local position within a shape.
+ */
 void PhysxCloth::
 attach_vertex_to_shape(unsigned int vertexId, PhysxShape *shape, LPoint3f const &localPos) {
 
@@ -517,11 +435,9 @@ attach_vertex_to_shape(unsigned int vertexId, PhysxShape *shape, LPoint3f const 
                             attachmentFlags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_vertex_attachment_status
-//       Access: Published
-//  Description: Return the attachment status of the given vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the attachment status of the given vertex.
+ */
 PhysxEnums::PhysxVertexAttachmentStatus PhysxCloth::
 get_vertex_attachment_status(unsigned int vertexId) const {
 
@@ -531,13 +447,11 @@ get_vertex_attachment_status(unsigned int vertexId) const {
   return (PhysxVertexAttachmentStatus) _ptr->getVertexAttachmentStatus(vertexId);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_vertex_attachment_shape
-//       Access: Published
-//  Description: Returns the pointer to an attached shape pointer
-//               of the given vertex. If the vertex is not attached
-//               or attached to a global position, NULL is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to an attached shape pointer of the given vertex.  If
+ * the vertex is not attached or attached to a global position, NULL is
+ * returned.
+ */
 PhysxShape *PhysxCloth::
 get_vertex_attachment_shape(unsigned int vertexId) const {
 
@@ -550,30 +464,25 @@ get_vertex_attachment_shape(unsigned int vertexId) const {
   return shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_vertex_attachment_pos
-//       Access: Published
-//  Description: Returns the attachment position of the given
-//               vertex. If the vertex is attached to shape, the
-//               position local to the shape's pose is returned. If
-//               the vertex is not attached, the return value is
-//               undefined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the attachment position of the given vertex.  If the vertex is
+ * attached to shape, the position local to the shape's pose is returned.  If
+ * the vertex is not attached, the return value is undefined.
+ */
 LPoint3f PhysxCloth::
 get_vertex_attachment_pos(unsigned int vertexId) const {
 
   nassertr(_error_type == ET_ok, LPoint3f::zero());
-  // --TODO-- nassertr(vertexId < _ptr->getNumberOfParticles(), LPoint3f::zero());
+  // --TODO-- nassertr(vertexId < _ptr->getNumberOfParticles(),
+  // LPoint3f::zero());
 
   return PhysxManager::nxVec3_to_point3(_ptr->getVertexAttachmentPosition(vertexId));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_external_acceleration
-//       Access: Published
-//  Description: Sets an external acceleration which affects all non
-//               attached particles of the cloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets an external acceleration which affects all non attached particles of
+ * the cloth.
+ */
 void PhysxCloth::
 set_external_acceleration(LVector3f const &acceleration) {
 
@@ -583,12 +492,9 @@ set_external_acceleration(LVector3f const &acceleration) {
   _ptr->setExternalAcceleration(PhysxManager::vec3_to_nxVec3(acceleration));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::set_wind_acceleration
-//       Access: Published
-//  Description: Sets an acceleration acting normal to the cloth
-//               surface at each vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets an acceleration acting normal to the cloth surface at each vertex.
+ */
 void PhysxCloth::
 set_wind_acceleration(LVector3f const &acceleration) {
 
@@ -598,12 +504,10 @@ set_wind_acceleration(LVector3f const &acceleration) {
   _ptr->setWindAcceleration(PhysxManager::vec3_to_nxVec3(acceleration));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_external_acceleration
-//       Access: Published
-//  Description: Retrieves the external acceleration which affects
-//               all non attached particles of the cloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the external acceleration which affects all non attached
+ * particles of the cloth.
+ */
 LVector3f PhysxCloth::
 get_external_acceleration() const {
 
@@ -611,12 +515,10 @@ get_external_acceleration() const {
   return PhysxManager::nxVec3_to_vec3(_ptr->getExternalAcceleration());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::get_wind_acceleration
-//       Access: Published
-//  Description: Retrieves the acceleration acting normal to the
-//               cloth surface at each vertex
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the acceleration acting normal to the cloth surface at each
+ * vertex
+ */
 LVector3f PhysxCloth::
 get_wind_acceleration() const {
 
@@ -624,13 +526,10 @@ get_wind_acceleration() const {
   return PhysxManager::nxVec3_to_vec3(_ptr->getWindAcceleration());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::add_force_at_vertex
-//       Access: Published
-//  Description: Applies a force (or impulse) defined in the 
-//               global coordinate frame, to a particular vertex
-//               of the cloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a force (or impulse) defined in the global coordinate frame, to a
+ * particular vertex of the cloth.
+ */
 void PhysxCloth::
 add_force_at_vertex(LVector3f const &force, int vertexId, PhysxForceMode mode) {
 
@@ -640,13 +539,10 @@ add_force_at_vertex(LVector3f const &force, int vertexId, PhysxForceMode mode) {
                          (NxForceMode) mode);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::add_force_at_pos
-//       Access: Published
-//  Description: Applies a radial force (or impulse) at a
-//               particular position. All vertices within radius
-//               will be affected with a quadratic drop-off. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a radial force (or impulse) at a particular position.  All vertices
+ * within radius will be affected with a quadratic drop-off.
+ */
 void PhysxCloth::
 add_force_at_pos(LPoint3f const &pos, float magnitude, float radius, PhysxForceMode mode) {
 
@@ -657,13 +553,10 @@ add_force_at_pos(LPoint3f const &pos, float magnitude, float radius, PhysxForceM
                       (NxForceMode) mode);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCloth::add_directed_force_at_pos
-//       Access: Published
-//  Description: Applies a directed force (or impulse) at a
-//               particular position. All vertices within radius
-//               will be affected with a quadratic drop-off.  
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a directed force (or impulse) at a particular position.  All
+ * vertices within radius will be affected with a quadratic drop-off.
+ */
 void PhysxCloth::
 add_directed_force_at_pos(LPoint3f const &pos, LVector3f const &force, float radius, PhysxForceMode mode) {
 
@@ -673,4 +566,3 @@ add_directed_force_at_pos(LPoint3f const &pos, LVector3f const &force, float rad
                               radius,
                               (NxForceMode) mode);
 }
-

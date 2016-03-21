@@ -1,16 +1,15 @@
-// Filename: eggSwitchCondition.h
-// Created by:  drose (08Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggSwitchCondition.h
+ * @author drose
+ * @date 1999-02-08
+ */
 
 #ifndef EGGSWITCHCONDITION
 #define EGGSWITCHCONDITION
@@ -20,16 +19,13 @@
 #include "eggObject.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSwitchCondition
-// Description : This corresponds to a <SwitchCondition> entry within
-//               a group.  It indicates the condition at which a
-//               level-of-detail is switched in or out.  This is
-//               actually an abstract base class for potentially any
-//               number of specific different kinds of switching
-//               conditions; presently, only a <Distance> type is
-//               actually supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to a <SwitchCondition> entry within a group.  It indicates
+ * the condition at which a level-of-detail is switched in or out.  This is
+ * actually an abstract base class for potentially any number of specific
+ * different kinds of switching conditions; presently, only a <Distance> type
+ * is actually supported.
+ */
 class EXPCL_PANDAEGG EggSwitchCondition : public EggObject {
 PUBLISHED:
   virtual EggSwitchCondition *make_copy() const=0;
@@ -58,11 +54,10 @@ private:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSwitchConditionDistance
-// Description : A SwitchCondition that switches the levels-of-detail
-//               based on distance from the camera's eyepoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * A SwitchCondition that switches the levels-of-detail based on distance from
+ * the camera's eyepoint.
+ */
 class EXPCL_PANDAEGG EggSwitchConditionDistance : public EggSwitchCondition {
 PUBLISHED:
   EggSwitchConditionDistance(double switch_in, double switch_out,
@@ -96,4 +91,3 @@ private:
 
 
 #endif
-

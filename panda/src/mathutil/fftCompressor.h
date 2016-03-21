@@ -1,16 +1,15 @@
-// Filename: fftCompressor.h
-// Created by:  drose (11Dec00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fftCompressor.h
+ * @author drose
+ * @date 2000-12-11
+ */
 
 #ifndef FFTCOMPRESSOR_H
 #define FFTCOMPRESSOR_H
@@ -26,22 +25,18 @@
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FFTCompressor
-// Description : This class manages a lossy compression and
-//               decompression of a stream of floating-point numbers
-//               to a datagram, based a fourier transform algorithm
-//               (similar in principle to JPEG compression).
-//
-//               Actually, it doesn't do any real compression on its
-//               own; it just outputs a stream of integers that should
-//               compress much tighter via gzip than the original
-//               stream of floats would have.
-//
-//               This class depends on the external FFTW library;
-//               without it, it will fall back on lossless output of
-//               the original data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class manages a lossy compression and decompression of a stream of
+ * floating-point numbers to a datagram, based a fourier transform algorithm
+ * (similar in principle to JPEG compression).
+ *
+ * Actually, it doesn't do any real compression on its own; it just outputs a
+ * stream of integers that should compress much tighter via gzip than the
+ * original stream of floats would have.
+ *
+ * This class depends on the external FFTW library; without it, it will fall
+ * back on lossless output of the original data.
+ */
 class EXPCL_PANDA_MATHUTIL FFTCompressor {
 public:
   FFTCompressor();
@@ -71,10 +66,10 @@ public:
 
 private:
   enum RunWidth {
-    // We write a byte to the datagram at the beginning of each run to
-    // encode the width and length of the run.  The width is indicated
-    // by the top two bits, while the length fits in the lower six,
-    // except RW_double, which is a special case.
+    // We write a byte to the datagram at the beginning of each run to encode
+    // the width and length of the run.  The width is indicated by the top two
+    // bits, while the length fits in the lower six, except RW_double, which
+    // is a special case.
     RW_width_mask  = 0xc0,
     RW_length_mask = 0x3f,
     RW_0           = 0x00,
@@ -103,4 +98,3 @@ private:
 };
 
 #endif
-

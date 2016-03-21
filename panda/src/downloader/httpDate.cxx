@@ -1,16 +1,15 @@
-// Filename: httpDate.cxx
-// Created by:  drose (28Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpDate.cxx
+ * @author drose
+ * @date 2003-01-28
+ */
 
 #include "httpDate.h"
 
@@ -28,13 +27,10 @@ static const char * const months[num_months] = {
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Constructor
-//       Access: Published
-//  Description: Decodes the string into a sensible date.  Returns 0
-//               (!is_valid()) if the string cannot be correctly
-//               decoded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes the string into a sensible date.  Returns 0 (!is_valid()) if the
+ * string cannot be correctly decoded.
+ */
 HTTPDate::
 HTTPDate(const string &format) {
   _time = (time_t)(-1);
@@ -50,7 +46,7 @@ HTTPDate(const string &format) {
   bool got_minute = false;
   bool got_second = false;
 
-  enum ExpectNext { 
+  enum ExpectNext {
     EN_none,
     EN_second,
     EN_year
@@ -71,7 +67,7 @@ HTTPDate(const string &format) {
         if (!got_hour) {
           t.tm_hour = value;
           got_hour = true;
-          
+
         } else if (!got_minute) {
           t.tm_min = value;
           got_minute = true;
@@ -82,11 +78,11 @@ HTTPDate(const string &format) {
         }
 
       } else if (token[token.length() - 1] == '/') {
-        // If it ends in a colon, it must be mm/dd/.
+        // If it ends in a colon, it must be mmdd.
         if (!got_month) {
           t.tm_mon = value - 1;
           got_month = true;
-          
+
         } else if (!got_day) {
           t.tm_mday = value;
           got_day = true;
@@ -103,32 +99,32 @@ HTTPDate(const string &format) {
           got_second = true;
 
         } else if (expected == EN_year) {
-          // The first number following mm/dd/ is always the year.
+          // The first number following mmdd is always the year.
           t.tm_year = value;
           got_year = true;
-          
+
         } else if (!got_day) {
           // Assume it's a day.
           t.tm_mday = value;
           got_day = true;
-          
+
         } else if (!got_year) {
           // It must be the year.
           t.tm_year = value;
           got_year = true;
-          
+
         } else if (!got_hour) {
           t.tm_hour = value;
           got_hour = true;
-          
+
         } else if (!got_minute) {
           t.tm_min = value;
           got_minute = true;
-          
+
         } else if (!got_second) {
           t.tm_sec = value;
           got_second = true;
-          
+
         } else {
           // Huh, an unexpected numeric value.
           return;
@@ -136,9 +132,9 @@ HTTPDate(const string &format) {
       }
 
     } else {
-      // This is a string token.  It should be either a month name or
-      // a day name, or a timezone name--but the only timezone name we
-      // expect to see is "GMT".
+      // This is a string token.  It should be either a month name or a day
+      // name, or a timezone name--but the only timezone name we expect to see
+      // is "GMT".
       bool matched = false;
       int i;
 
@@ -184,23 +180,23 @@ HTTPDate(const string &format) {
 
   // Also validate the tokens we did get.
   if (t.tm_year < 100) {
-    // Two-digit year.  Assume it's in the same century, unless
-    // that assumption puts it more than 50 years in the future.
+    // Two-digit year.  Assume it's in the same century, unless that
+    // assumption puts it more than 50 years in the future.
     time_t now = time(NULL);
     struct tm *tp = gmtime(&now);
     t.tm_year += 100 * (tp->tm_year / 100);
     if (t.tm_year - tp->tm_year > 50) {
       t.tm_year -= 100;
     }
-    
+
   } else if (t.tm_year < 1900) {
     // Invalid three- or four-digit year.  Give up.
     return;
-    
+
   } else {
     t.tm_year -= 1900;
   }
-          
+
   if (!((t.tm_mon >= 0 && t.tm_mon < num_months) &&
         (t.tm_mday >= 1 && t.tm_mday <= 31) &&
         (t.tm_hour >= 0 && t.tm_hour < 60) &&
@@ -209,9 +205,9 @@ HTTPDate(const string &format) {
     return;
   }
 
-  // Everything checks out; convert the date.
-  // rdb made this an #if 0 check as timegm is a nonstandard extension
-  // so it fails in some situations even if the compiler defines __GNUC__
+  // Everything checks out; convert the date.  rdb made this an if 0 check as
+  // timegm is a nonstandard extension so it fails in some situations even if
+  // the compiler defines __GNUC__
 #if 0
 
   _time = timegm(&t);
@@ -221,8 +217,7 @@ HTTPDate(const string &format) {
   _time = mktime(&t);
 
   if (_time != (time_t)-1) {
-    // Unfortunately, mktime() assumes local time; convert this back
-    // to GMT.
+    // Unfortunately, mktime() assumes local time; convert this back to GMT.
 #if defined(IS_FREEBSD)
     time_t now = time(NULL);
     struct tm *tp = localtime(&now);
@@ -238,11 +233,9 @@ HTTPDate(const string &format) {
 #endif  // __GNUC__
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::get_string
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string HTTPDate::
 get_string() const {
   if (!is_valid()) {
@@ -253,7 +246,7 @@ get_string() const {
 
   ostringstream result;
   result
-    << weekdays[tp->tm_wday] << ", " 
+    << weekdays[tp->tm_wday] << ", "
     << setw(2) << setfill('0') << tp->tm_mday << " "
     << months[tp->tm_mon] << " "
     << setw(4) << setfill('0') << tp->tm_year + 1900 << " "
@@ -265,11 +258,9 @@ get_string() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::input
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool HTTPDate::
 input(istream &in) {
   (*this) = HTTPDate();
@@ -298,34 +289,27 @@ input(istream &in) {
   return is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void HTTPDate::
 output(ostream &out) const {
-  // We put quotes around the string on output, so we can reliably
-  // detect the end of the date string on input, above.
+  // We put quotes around the string on output, so we can reliably detect the
+  // end of the date string on input, above.
   out << '"' << get_string() << '"';
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::get_token
-//       Access: Published
-//  Description: Extracts the next token from the string starting at
-//               the indicated position.  Returns the token and
-//               updates pos.  When the last token has been extracted,
-//               returns empty string.
-//
-//               A token is defined as a contiguous sequence of digits
-//               or letters.  If it is a sequence of letters, the
-//               function quietly truncates it to three letters before
-//               returning, and forces the first letter to capital and
-//               the second two to lowercase.  If it is a sequence of
-//               digits, the function also returns the next character
-//               following the last digit (unless it is a letter).
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the next token from the string starting at the indicated position.
+ * Returns the token and updates pos.  When the last token has been extracted,
+ * returns empty string.
+ *
+ * A token is defined as a contiguous sequence of digits or letters.  If it is
+ * a sequence of letters, the function quietly truncates it to three letters
+ * before returning, and forces the first letter to capital and the second two
+ * to lowercase.  If it is a sequence of digits, the function also returns the
+ * next character following the last digit (unless it is a letter).
+ */
 string HTTPDate::
 get_token(const string &str, size_t &pos) {
   // Start by scanning for the first alphanumeric character.

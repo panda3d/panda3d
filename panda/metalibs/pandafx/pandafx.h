@@ -1,7 +1,8 @@
-// Filename: pandafx.h
-// Created by:  drose (11Dec01)
-// 
-////////////////////////////////////////////////////////////////////
+/**
+ * @file pandafx.h
+ * @author drose
+ * @date 2001-12-11
+ */
 
 #ifndef PANDAFX_H
 #define PANDAFX_H

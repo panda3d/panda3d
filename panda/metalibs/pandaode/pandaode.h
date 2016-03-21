@@ -1,7 +1,8 @@
-// Filename: pandaode.h
-// Created by:  drose (2Jan01)
-// 
-////////////////////////////////////////////////////////////////////
+/**
+ * @file pandaode.h
+ * @author drose
+ * @date 2001-01-02
+ */
 
 #ifndef PANDAODE_H
 #define PANDAODE_H

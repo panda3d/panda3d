@@ -1,16 +1,15 @@
-// Filename: rocketInputHandler.h
-// Created by:  rdb (20Dec11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rocketInputHandler.h
+ * @author rdb
+ * @date 2011-12-20
+ */
 
 #ifndef ROCKETINPUTHANDLER_H
 #define ROCKETINPUTHANDLER_H
@@ -25,11 +24,10 @@ namespace Rocket {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//       Class : RocketInputHandler
-// Description : DataNode that listens for keyboard and mouse
-//               events and passes them to libRocket.
-////////////////////////////////////////////////////////////////////
+/**
+ * DataNode that listens for keyboard and mouse events and passes them to
+ * libRocket.
+ */
 class EXPCL_ROCKET RocketInputHandler : public DataNode {
 PUBLISHED:
   RocketInputHandler(const string &name = string());

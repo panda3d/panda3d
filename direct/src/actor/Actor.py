@@ -3,6 +3,7 @@
 __all__ = ['Actor']
 
 from panda3d.core import *
+from panda3d.core import Loader as PandaLoader
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify import DirectNotifyGlobal
 import types
@@ -159,6 +160,8 @@ class Actor(DirectObject, NodePath):
 
         # initialize our NodePath essence
         NodePath.__init__(self)
+
+        self.loader = PandaLoader.getGlobalPtr()
 
         # Set the mergeLODBundles flag.  If this is true, all
         # different LOD's will be merged into a single common bundle
@@ -1901,14 +1904,22 @@ class Actor(DirectObject, NodePath):
                 loaderOptions = LoaderOptions(loaderOptions)
                 loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoRamCache)
 
+            if okMissing is not None:
+                if okMissing:
+                    loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFReportErrors)
+                else:
+                    loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFReportErrors)
+
             # Pass loaderOptions to specify that we want to
             # get the skeleton model.  This only matters to model
             # files (like .mb) for which we can choose to extract
             # either the skeleton or animation, or neither.
-            model = loader.loadModel(modelPath, loaderOptions = loaderOptions, okMissing = okMissing)
+            model = self.loader.loadSync(Filename(modelPath), loaderOptions)
+            if model is not None:
+                model = NodePath(model)
 
         if (model == None):
-            raise StandardError, "Could not load Actor model %s" % (modelPath)
+            raise IOError("Could not load Actor model %s" % (modelPath))
 
         if (model.node().isOfType(Character.getClassType())):
             bundleNP = model
@@ -2370,7 +2381,7 @@ class Actor(DirectObject, NodePath):
             # operation that will complete in the background, but if so it
             # will still return a usable AnimControl.
             animControl = bundle.loadBindAnim(
-                loader.loader, Filename(anim.filename), -1,
+                self.loader, Filename(anim.filename), -1,
                 subpartDef.subset, allowAsyncBind and self.allowAsyncBind)
 
         if not animControl:

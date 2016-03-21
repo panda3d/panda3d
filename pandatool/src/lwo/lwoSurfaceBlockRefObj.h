@@ -1,16 +1,15 @@
-// Filename: lwoSurfaceBlockRefObj.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoSurfaceBlockRefObj.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOSURFACEBLOCKREFOBJ_H
 #define LWOSURFACEBLOCKREFOBJ_H
@@ -19,11 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockRefObj
-// Description : Specifies a reference object that the texture UV's
-//               are to be computed relative to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a reference object that the texture UV's are to be computed
+ * relative to.
+ */
 class LwoSurfaceBlockRefObj : public LwoChunk {
 public:
   string _name;
@@ -51,5 +49,3 @@ private:
 };
 
 #endif
-
-

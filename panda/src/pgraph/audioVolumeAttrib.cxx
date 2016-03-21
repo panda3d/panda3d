@@ -1,16 +1,15 @@
-// Filename: audioVolumeAttrib.cxx
-// Created by:  darren (15Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file audioVolumeAttrib.cxx
+ * @author darren
+ * @date 2006-12-15
+ */
 
 #include "audioVolumeAttrib.h"
 #include "graphicsStateGuardianBase.h"
@@ -25,12 +24,9 @@ CPT(RenderAttrib) AudioVolumeAttrib::_identity_attrib;
 TypeHandle AudioVolumeAttrib::_type_handle;
 int AudioVolumeAttrib::_attrib_slot;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::Constructor
-//       Access: Protected
-//  Description: Use AudioVolumeAttrib::make() to construct a new
-//               AudioVolumeAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use AudioVolumeAttrib::make() to construct a new AudioVolumeAttrib object.
+ */
 AudioVolumeAttrib::
 AudioVolumeAttrib(bool off, PN_stdfloat volume) :
   _off(off),
@@ -40,15 +36,13 @@ AudioVolumeAttrib(bool off, PN_stdfloat volume) :
   _has_volume = !IS_NEARLY_EQUAL(_volume, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::make_identity
-//       Access: Published, Static
-//  Description: Constructs an identity audio volume attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an identity audio volume attrib.
+ */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make_identity() {
-  // We make identity a special case and store a pointer forever once
-  // we find it the first time.
+  // We make identity a special case and store a pointer forever once we find
+  // it the first time.
   if (_identity_attrib == (AudioVolumeAttrib *)NULL) {
     AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, 1.0f);;
     _identity_attrib = return_new(attrib);
@@ -57,51 +51,41 @@ make_identity() {
   return _identity_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a new AudioVolumeAttrib object that indicates
-//               audio volume should be scaled by the indicated factor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new AudioVolumeAttrib object that indicates audio volume
+ * should be scaled by the indicated factor.
+ */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make(PN_stdfloat volume) {
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, volume);
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::make_off
-//       Access: Published, Static
-//  Description: Constructs a new AudioVolumeAttrib object that ignores
-//               any AudioVolumeAttrib inherited from above.  You may
-//               also specify an additional volume scale to apply to
-//               geometry below (using set_volume()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new AudioVolumeAttrib object that ignores any
+ * AudioVolumeAttrib inherited from above.  You may also specify an additional
+ * volume scale to apply to geometry below (using set_volume()).
+ */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make_off() {
-  AudioVolumeAttrib *attrib = 
+  AudioVolumeAttrib *attrib =
     new AudioVolumeAttrib(true, 1.0f);
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make_default() {
   return return_new(new AudioVolumeAttrib(false, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::set_volume
-//       Access: Published
-//  Description: Returns a new AudioVolumeAttrib, just like this one, but
-//               with the volume changed to the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new AudioVolumeAttrib, just like this one, but with the volume
+ * changed to the indicated value.
+ */
 CPT(RenderAttrib) AudioVolumeAttrib::
 set_volume(PN_stdfloat volume) const {
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(*this);
@@ -111,11 +95,9 @@ set_volume(PN_stdfloat volume) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AudioVolumeAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -130,21 +112,18 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived AudioVolumeAttrib
-//               types to return a unique number indicating whether
-//               this AudioVolumeAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two AudioVolumeAttrib objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two AudioVolumeAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived AudioVolumeAttrib types to return a
+ * unique number indicating whether this AudioVolumeAttrib is equivalent to
+ * the other one.
+ *
+ * This should return 0 if the two AudioVolumeAttrib objects are equivalent, a
+ * number less than zero if this one should be sorted before the other one,
+ * and a number greater than zero otherwise.
+ *
+ * This will only be called with two AudioVolumeAttrib objects whose
+ * get_type() functions return the same.
+ */
 int AudioVolumeAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const AudioVolumeAttrib *ta = (const AudioVolumeAttrib *)other;
@@ -160,16 +139,12 @@ compare_to_impl(const RenderAttrib *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t AudioVolumeAttrib::
 get_hash_impl() const {
   size_t hash = 0;
@@ -178,23 +153,17 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               This should return the result of applying the other
-//               RenderAttrib to a node in the scene graph below this
-//               RenderAttrib, which was already applied.  In most
-//               cases, the result is the same as the other
-//               RenderAttrib (that is, a subsequent RenderAttrib
-//               completely replaces the preceding one).  On the other
-//               hand, some kinds of RenderAttrib (for instance,
-//               ColorTransformAttrib) might combine in meaningful
-//               ways.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.
+ *
+ * This should return the result of applying the other RenderAttrib to a node
+ * in the scene graph below this RenderAttrib, which was already applied.  In
+ * most cases, the result is the same as the other RenderAttrib (that is, a
+ * subsequent RenderAttrib completely replaces the preceding one).  On the
+ * other hand, some kinds of RenderAttrib (for instance, ColorTransformAttrib)
+ * might combine in meaningful ways.
+ */
 CPT(RenderAttrib) AudioVolumeAttrib::
 compose_impl(const RenderAttrib *other) const {
   const AudioVolumeAttrib *ta = (const AudioVolumeAttrib *)other;
@@ -207,15 +176,12 @@ compose_impl(const RenderAttrib *other) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::invert_compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               See invert_compose() and compose_impl().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.
+ *
+ * See invert_compose() and compose_impl().
+ */
 CPT(RenderAttrib) AudioVolumeAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
   if (is_off()) {
@@ -229,42 +195,34 @@ invert_compose_impl(const RenderAttrib *other) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               AudioVolumeAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type AudioVolumeAttrib.
+ */
 void AudioVolumeAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void AudioVolumeAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
-  // We cheat, and modify the bam stream without upping the bam
-  // version.  We can do this since we know that no existing bam files
-  // have an AudioVolumeAttrib in them.
+  // We cheat, and modify the bam stream without upping the bam version.  We
+  // can do this since we know that no existing bam files have an
+  // AudioVolumeAttrib in them.
   dg.add_bool(_off);
   dg.add_stdfloat(_volume);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type AudioVolumeAttrib is encountered
-//               in the Bam file.  It should create the AudioVolumeAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type AudioVolumeAttrib is encountered in the Bam file.  It should create
+ * the AudioVolumeAttrib and extract its information from the file.
+ */
 TypedWritable *AudioVolumeAttrib::
 make_from_bam(const FactoryParams &params) {
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, 1.0f);
@@ -277,13 +235,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new AudioVolumeAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new AudioVolumeAttrib.
+ */
 void AudioVolumeAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);

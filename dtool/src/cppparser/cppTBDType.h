@@ -1,16 +1,15 @@
-// Filename: cppTBDType.h
-// Created by:  drose (05Nov99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cppTBDType.h
+ * @author drose
+ * @date 1999-11-05
+ */
 
 #ifndef CPPTBDTYPE_H
 #define CPPTBDTYPE_H
@@ -21,14 +20,12 @@
 
 class CPPIdentifier;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPTBDType
-// Description : This represents a type whose exact meaning is still
-//               to-be-determined.  It happens when a typename is
-//               referenced in a template class (especially using the
-//               'typename' keyword) but the actual type cannot be
-//               known until the class is instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a type whose exact meaning is still to-be-determined.  It
+ * happens when a typename is referenced in a template class (especially using
+ * the 'typename' keyword) but the actual type cannot be known until the class
+ * is instantiated.
+ */
 class CPPTBDType : public CPPType {
 public:
   CPPTBDType(CPPIdentifier *ident);

@@ -1,16 +1,15 @@
-// Filename: parameterRemap.h
-// Created by:  drose (01Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file parameterRemap.h
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #ifndef PARAMETERREMAP_H
 #define PARAMETERREMAP_H
@@ -22,23 +21,18 @@
 class CPPType;
 class CPPExpression;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemap
-// Description : An abstract base class for a number of different
-//               kinds of ways to remap parameters for passing to
-//               wrapper functions.
-//
-//               Certain kinds of function parameters that are legal
-//               in C++ (for instance, passing by reference, or
-//               passing structures as concrete values) are not legal
-//               for a typical scripting language.  We map these types
-//               of parameters to something equivalent (for instance,
-//               a reference becomes a pointer).
-//
-//               For each kind of possible remapping, we define a
-//               class derived from ParameterRemap that defines the
-//               exact nature of the remap.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for a number of different kinds of ways to remap
+ * parameters for passing to wrapper functions.
+ *
+ * Certain kinds of function parameters that are legal in C++ (for instance,
+ * passing by reference, or passing structures as concrete values) are not
+ * legal for a typical scripting language.  We map these types of parameters
+ * to something equivalent (for instance, a reference becomes a pointer).
+ *
+ * For each kind of possible remapping, we define a class derived from
+ * ParameterRemap that defines the exact nature of the remap.
+ */
 class ParameterRemap {
 public:
   INLINE ParameterRemap(CPPType *orig_type);

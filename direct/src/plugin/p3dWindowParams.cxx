@@ -1,24 +1,21 @@
-// Filename: p3dWindowParams.cxx
-// Created by:  drose (22Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dWindowParams.cxx
+ * @author drose
+ * @date 2009-06-22
+ */
 
 #include "p3dWindowParams.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::Default Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DWindowParams::
 P3DWindowParams() :
   _window_type(P3D_WT_hidden),
@@ -27,11 +24,9 @@ P3DWindowParams() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DWindowParams::
 P3DWindowParams(P3D_window_type window_type,
                 int win_x, int win_y,
@@ -44,11 +39,9 @@ P3DWindowParams(P3D_window_type window_type,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::Copy Assignment
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void P3DWindowParams::
 operator = (const P3DWindowParams &other) {
   _window_type = other._window_type;
@@ -59,13 +52,10 @@ operator = (const P3DWindowParams &other) {
   _parent_window = other._parent_window;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::make_xml
-//       Access: Public
-//  Description: Returns a newly-allocated XML structure that
-//               corresponds to the window parameter data within this
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated XML structure that corresponds to the window
+ * parameter data within this instance.
+ */
 TiXmlElement *P3DWindowParams::
 make_xml(P3DInstance *inst) {
   TiXmlElement *xwparams = new TiXmlElement("wparams");
@@ -85,8 +75,8 @@ make_xml(P3DInstance *inst) {
     xwparams->SetAttribute("subprocess_window", inst->_shared_filename);
 
 #elif defined(HAVE_X11)
-    // TinyXml doesn't support a "long" attribute.  We'll use
-    // stringstream to do it ourselves.
+    // TinyXml doesn't support a "long" attribute.  We'll use stringstream to
+    // do it ourselves.
     {
       ostringstream strm;
       assert(_parent_window._window_handle_type == P3D_WHT_x11_window);

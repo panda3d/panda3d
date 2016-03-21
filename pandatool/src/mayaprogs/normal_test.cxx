@@ -96,7 +96,7 @@ get_slider(MString slider_name) {
       cerr << "selected element is not a blend shape\n";
     }
   }
-  
+
   cerr << "Couldn't find slider " << slider_name << "\n";
   exit(1);
 }
@@ -162,7 +162,7 @@ get_mesh(MString mesh_name) {
       cerr << "selected element is not a mesh\n";
     }
   }
-  
+
   cerr << "Couldn't find mesh " << mesh_name << "\n";
   exit(1);
 }
@@ -172,7 +172,7 @@ output_vertices(const char *filename, MFnMesh &mesh) {
   MStatus status;
 
   MPointArray verts;
-  //  status = mesh.getPoints(verts, MSpace::kObject);
+  // status = mesh.getPoints(verts, MSpace::kObject);
   status = mesh.getPoints(verts, MSpace::kWorld);
   if (!status) {
     status.perror("mesh.getPoints");
@@ -231,21 +231,21 @@ output_normals() {
       }
       */
     }
-    
+
     MItMeshPolygon faceIter(*_dag_path, component, &status);
     if( !status ) cerr << "Error at MItMeshPolygon" << endl;
-  
+
     MFnMesh meshFn(*_dag_path);
-  
+
     // Traverse the polygonal face
     for (; !faceIter.isDone();faceIter.next()) {
       int nVerts = faceIter.polygonVertexCount();
-      
+
       // Traverse the vertices to get their indexes and print out the normals
       for (int i = 0;i<nVerts;i++) {
         MVector normal;
         faceIter.getNormal( i, normal, MSpace::kWorld );
-        cerr << "MItMeshPolygon::getNormal for the vertex [" << faceIter.vertexIndex(i) 
+        cerr << "MItMeshPolygon::getNormal for the vertex [" << faceIter.vertexIndex(i)
              << "] for face [" << faceIter.index() << "] is " << normal << endl;
       }
     }

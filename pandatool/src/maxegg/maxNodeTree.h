@@ -1,17 +1,15 @@
-// Filename: maxNodeTree.h
-// Created by: crevilla
-// from mayaNodeTree.h created by:  drose (06Jun03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxNodeTree.h
+ * @author crevilla
+ * from mayaNodeTree.h created by:  drose (06Jun03)
+ */
 
 #ifndef MAXNODETREE_H
 #define MAXNODETREE_H
@@ -19,11 +17,9 @@
 class EggData;
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MaxNodeTree
-// Description : Describes a complete tree of max nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a complete tree of max nodes for conversion.
+ */
 class MaxNodeTree {
 public:
   MaxNodeTree();
@@ -36,7 +32,7 @@ public:
   int get_num_nodes() const;
   MaxNodeDesc *get_node(int n) const;
 
-  void clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
+  void clear_egg(EggData *egg_data, EggGroupNode *egg_root,
                  EggGroupNode *skeleton_node);
   EggGroup *get_egg_group(MaxNodeDesc *node_desc);
   EggTable *get_egg_table(MaxNodeDesc *node_desc);
@@ -44,10 +40,8 @@ public:
 
   MaxNodeDesc* _root;
   PN_stdfloat _fps;
-  // the flag for the setting up collision
-  //bool _has_collision;
-  //EggGroup::CollideFlags _cf_type;
-  //EggGroup::CollisionSolidType _cs_type;
+  // the flag for the setting up collision bool _has_collision;
+  // EggGroup::CollideFlags _cf_type; EggGroup::CollisionSolidType _cs_type;
   bool _export_mesh;
 
 private:

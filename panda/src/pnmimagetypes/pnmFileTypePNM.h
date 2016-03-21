@@ -1,16 +1,15 @@
-// Filename: pnmFileTypePNM.h
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypePNM.h
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #ifndef PNMFILETYPEPNM_H
 #define PNMFILETYPEPNM_H
@@ -23,11 +22,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypePNM
-// Description : For reading and writing basic PNM files--*.pbm,
-//               *.ppm, *.pnm.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing basic PNM files--*.pbm, *.ppm, *.pnm.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePNM : public PNMFileType {
 public:
   PNMFileTypePNM();
@@ -98,5 +95,3 @@ private:
 #endif  // HAVE_PNM
 
 #endif
-
-

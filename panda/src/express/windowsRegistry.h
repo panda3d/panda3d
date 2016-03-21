@@ -1,16 +1,15 @@
-// Filename: windowsRegistry.h
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file windowsRegistry.h
+ * @author drose
+ * @date 2001-08-06
+ */
 
 #ifndef WINDOWSREGISTRY_H
 #define WINDOWSREGISTRY_H
@@ -20,14 +19,12 @@
 // This class is only defined on Windows builds.
 #ifdef WIN32_VC
 
-////////////////////////////////////////////////////////////////////
-//       Class : WindowsRegistry
-// Description : This class provides a hook to Python to read and
-//               write strings and integers to the windows registry.
-//               It automatically converts strings from utf-8 encoding
-//               and stores them in Unicode (and conversely reconverts
-//               them on retrieval).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a hook to Python to read and write strings and integers
+ * to the windows registry.  It automatically converts strings from utf-8
+ * encoding and stores them in Unicode (and conversely reconverts them on
+ * retrieval).
+ */
 class EXPCL_PANDAEXPRESS WindowsRegistry
 {
 PUBLISHED:

@@ -1,16 +1,15 @@
-// Filename: aiBehaviors.h
-// Created by: Deepak, John, Navin (08Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file aiBehaviors.h
+ * @author Deepak, John, Navin
+ * @date 2009-09-08
+ */
 
 #pragma warning (disable:4996)
 #pragma warning (disable:4005)
@@ -36,15 +35,16 @@ class ObstacleAvoidance;
 typedef list<Flee, allocator<Flee> > ListFlee;
 typedef list<Evade, allocator<Evade> > ListEvade;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AIBehaviors
-// Description : This class implements all the steering behaviors of the AI framework, such as
-//               seek, flee, pursue, evade, wander and flock. Each steering behavior has a weight which is used when more than
-//               one type of steering behavior is acting on the same ai character. The weight decides the contribution of each
-//               type of steering behavior. The AICharacter class has a handle to an object of this class and this allows to
-//               invoke the steering behaviors via the AICharacter. This class also provides functionality such as pausing, resuming
-//               and removing the AI behaviors of an AI character at anytime.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements all the steering behaviors of the AI framework, such
+ * as seek, flee, pursue, evade, wander and flock.  Each steering behavior has
+ * a weight which is used when more than one type of steering behavior is
+ * acting on the same ai character.  The weight decides the contribution of
+ * each type of steering behavior.  The AICharacter class has a handle to an
+ * object of this class and this allows to invoke the steering behaviors via
+ * the AICharacter.  This class also provides functionality such as pausing,
+ * resuming and removing the AI behaviors of an AI character at anytime.
+ */
 class EXPCL_PANDAAI AIBehaviors {
 public:
   enum _behavior_type {
@@ -76,7 +76,8 @@ public:
   Flee *_flee_obj;
   LVecBase3 _flee_force;
 
-  //! This list is used if the ai character needs to flee from multiple onjects.
+  // ! This list is used if the ai character needs to flee from multiple
+  // onjects.
   ListFlee _flee_list;
   ListFlee::iterator _flee_itr;
 
@@ -86,14 +87,16 @@ public:
   Evade *_evade_obj;
   LVecBase3 _evade_force;
 
-  //! This list is used if the ai character needs to evade from multiple onjects.
+  // ! This list is used if the ai character needs to evade from multiple
+  // onjects.
   ListEvade _evade_list;
   ListEvade::iterator _evade_itr;
 
   Arrival *_arrival_obj;
   LVecBase3 _arrival_force;
 
-  //! Since Flock is a collective behavior the variables are declared within the AIBehaviors class.
+  // ! Since Flock is a collective behavior the variables are declared within
+  // the AIBehaviors class.
   float _flock_weight;
   LVecBase3 _flock_force;
   bool _flock_done;
@@ -159,7 +162,7 @@ PUBLISHED:
   void path_find_to(NodePath target, string type = "normal");
   void add_static_obstacle(NodePath obstacle);
   void add_dynamic_obstacle(NodePath obstacle);
-  //
+
 
   void remove_ai(string ai_type);
   void pause_ai(string ai_type);

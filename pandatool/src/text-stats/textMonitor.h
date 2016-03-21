@@ -1,16 +1,15 @@
-// Filename: textMonitor.h
-// Created by:  drose (12Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textMonitor.h
+ * @author drose
+ * @date 2000-07-12
+ */
 
 #ifndef TEXTMONITOR_H
 #define TEXTMONITOR_H
@@ -18,22 +17,21 @@
 #include "pandatoolbase.h"
 #include "pStatMonitor.h"
 
-//[PECI]
+// [PECI]
 #include <iostream>
 #include <fstream>
 
 class TextStats;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextMonitor
-// Description : A simple, scrolling-text stats monitor.  Guaranteed
-//               to compile on every platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple, scrolling-text stats monitor.  Guaranteed to compile on every
+ * platform.
+ */
 class TextMonitor : public PStatMonitor {
 public:
   TextMonitor(TextStats *server, ostream *outStream, bool show_raw_data);
   TextStats *get_server();
- 
+
   virtual string get_monitor_name();
 
   virtual void got_hello();
@@ -45,7 +43,7 @@ public:
 
   void show_ms(const PStatViewLevel *level, int indent_level);
   void show_level(const PStatViewLevel *level, int indent_level);
-  
+
 private:
   ostream *_outStream; //[PECI]
   bool _show_raw_data;

@@ -1,16 +1,15 @@
-// Filename: dcAtomicField.h
-// Created by:  drose (05Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcAtomicField.h
+ * @author drose
+ * @date 2000-10-05
+ */
 
 #ifndef DCATOMICFIELD_H
 #define DCATOMICFIELD_H
@@ -20,17 +19,14 @@
 #include "dcSubatomicType.h"
 #include "dcParameter.h"
 
-// Must use math.h instead of cmath.h so this can compile outside of
-// Panda.
+// Must use math.h instead of cmath.h so this can compile outside of Panda.
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCAtomicField
-// Description : A single atomic field of a Distributed Class, as read
-//               from a .dc file.  This defines an interface to the
-//               Distributed Class, and is always implemented as a
-//               remote procedure method.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single atomic field of a Distributed Class, as read from a .dc file.
+ * This defines an interface to the Distributed Class, and is always
+ * implemented as a remote procedure method.
+ */
 class EXPCL_DIRECT DCAtomicField : public DCField {
 public:
   DCAtomicField(const string &name, DCClass *dclass, bool bogus_field);

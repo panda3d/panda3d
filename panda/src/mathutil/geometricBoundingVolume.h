@@ -1,16 +1,15 @@
-// Filename: geometricBoundingVolume.h
-// Created by:  drose (07Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geometricBoundingVolume.h
+ * @author drose
+ * @date 1999-10-07
+ */
 
 #ifndef GEOMETRICBOUNDINGVOLUME_H
 #define GEOMETRICBOUNDINGVOLUME_H
@@ -22,12 +21,11 @@
 #include "luse.h"
 #include "lmatrix.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeometricBoundingVolume
-// Description : This is another abstract class, for a general class
-//               of bounding volumes that actually enclose points in
-//               3-d space, such as BSP's and bounding spheres.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is another abstract class, for a general class of bounding volumes
+ * that actually enclose points in 3-d space, such as BSP's and bounding
+ * spheres.
+ */
 class EXPCL_PANDA_MATHUTIL GeometricBoundingVolume : public BoundingVolume {
 public:
   INLINE_MATHUTIL GeometricBoundingVolume();
@@ -37,9 +35,9 @@ PUBLISHED:
   INLINE_MATHUTIL bool extend_by(const LPoint3 &point);
 
 public:
-  // It might be nice to make these template member functions so we
-  // could have true STL-style first/last iterators, but that's
-  // impossible for virtual functions.
+  // It might be nice to make these template member functions so we could have
+  // true STL-style firstlast iterators, but that's impossible for virtual
+  // functions.
   INLINE_MATHUTIL bool around(const GeometricBoundingVolume **first,
                               const GeometricBoundingVolume **last);
   INLINE_MATHUTIL bool around(const LPoint3 *first, const LPoint3 *last);
@@ -57,8 +55,8 @@ public:
   virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const FINAL;
 
 protected:
-  // Some virtual functions to implement fundamental bounding
-  // operations on points in 3-d space.
+  // Some virtual functions to implement fundamental bounding operations on
+  // points in 3-d space.
 
   virtual bool extend_by_point(const LPoint3 &point);
   virtual bool around_points(const LPoint3 *first,

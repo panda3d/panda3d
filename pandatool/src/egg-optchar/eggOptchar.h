@@ -1,16 +1,15 @@
-// Filename: eggOptchar.h
-// Created by:  drose (18Jul03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggOptchar.h
+ * @author drose
+ * @date 2003-07-18
+ */
 
 #ifndef EGGOPTCHAR_H
 #define EGGOPTCHAR_H
@@ -30,14 +29,11 @@ class EggJointData;
 class EggSliderData;
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggOptchar
-// Description : Performs basic optimizations of a character model and
-//               its associated animations, by analyzing the animation
-//               tables and removing unneeded joints and/or morphs.
-//               Can also be used to restructure the character
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs basic optimizations of a character model and its associated
+ * animations, by analyzing the animation tables and removing unneeded joints
+ * and/or morphs.  Can also be used to restructure the character hierarchy.
+ */
 class EggOptchar : public EggCharacterFilter {
 public:
   EggOptchar();
@@ -131,4 +127,3 @@ private:
 };
 
 #endif
-

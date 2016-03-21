@@ -1,16 +1,15 @@
-// Filename: fltFace.cxx
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltFace.cxx
+ * @author drose
+ * @date 2000-08-25
+ */
 
 #include "fltFace.h"
 #include "fltRecordReader.h"
@@ -20,23 +19,18 @@
 
 TypeHandle FltFace::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltFace::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltFace::
 FltFace(FltHeader *header) : FltGeometry(header) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltFace::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltFace::
 extract_record(FltRecordReader &reader) {
   if (!FltBeadID::extract_record(reader)) {
@@ -53,14 +47,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltFace::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this
+ * record, but does not advance the writer.  Returns true on success, false if
+ * there is some error.
+ */
 bool FltFace::
 build_record(FltRecordWriter &writer) const {
   if (!FltBeadID::build_record(writer)) {

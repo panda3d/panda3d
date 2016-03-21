@@ -1,16 +1,15 @@
-// Filename: p3dPatchFinder.h
-// Created by:  drose (27Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dPatchFinder.h
+ * @author drose
+ * @date 2009-09-27
+ */
 
 #ifndef P3DPATCHFINDER_H
 #define P3DPATCHFINDER_H
@@ -21,16 +20,14 @@
 #include <vector>
 #include <map>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DPatchFinder
-// Description : This class is used to reconstruct the patch
-//               chain--the chain of patch files needed to generate a
-//               file--for downloading a package via patches, rather
-//               than downloading the entire file.
-//
-//               It is similar to PatchMaker.py, except it only reads
-//               patches, it does not generate them.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to reconstruct the patch chain--the chain of patch files
+ * needed to generate a file--for downloading a package via patches, rather
+ * than downloading the entire file.
+ *
+ * It is similar to PatchMaker.py, except it only reads patches, it does not
+ * generate them.
+ */
 class P3DPatchFinder {
 public:
   class Package;
@@ -40,8 +37,8 @@ public:
   typedef vector<Patchfile *> Patchfiles;
   typedef vector<PackageVersion *> PackageVersionsList;
 
-  // This class is used to index into a map to locate PackageVersion
-  // objects, below.
+  // This class is used to index into a map to locate PackageVersion objects,
+  // below.
   class PackageVersionKey {
   public:
     PackageVersionKey(const string &package_name,
@@ -60,9 +57,9 @@ public:
     FileSpec _file;
   };
 
-  // A specific version of a package.  This is not just a package's
-  // "version" string; it also corresponds to the particular patch
-  // version, which increments independently of the "version".
+  // A specific version of a package.  This is not just a package's "version"
+  // string; it also corresponds to the particular patch version, which
+  // increments independently of the "version".
   class PackageVersion {
   public:
     PackageVersion(const PackageVersionKey &key);
@@ -78,8 +75,8 @@ public:
     FileSpec _file;
     string _print_name;
 
-    // The Package object that produces this version if this is the
-    // current form or the base form, respectively.
+    // The Package object that produces this version if this is the current
+    // form or the base form, respectively.
     Package *_package_current;
     Package *_package_base;
 
@@ -122,8 +119,8 @@ public:
     PackageVersion *_to_pv;
   };
 
-  // This is a particular package.  This contains all of the
-  // information extracted from the package's desc file.
+  // This is a particular package.  This contains all of the information
+  // extracted from the package's desc file.
   class Package {
   public:
     Package();
@@ -180,4 +177,3 @@ inline ostream &operator << (ostream &out, const P3DPatchFinder::PackageVersionK
 }
 
 #endif
-

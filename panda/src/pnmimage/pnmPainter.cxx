@@ -1,35 +1,28 @@
-// Filename: pnmPainter.cxx
-// Created by:  drose (02Feb07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmPainter.cxx
+ * @author drose
+ * @date 2007-02-02
+ */
 
 #include "pnmPainter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMPainter::Constructor
-//       Access: Published
-//  Description: The constructor stores a pointer to the PNMImage you
-//               pass it, but it does not take ownership of the
-//               object; you are responsible for ensuring that the
-//               PNMImage does not destruct during the lifetime of the
-//               PNMPainter object.
-//
-//               The xo, yo coordinates specify an optional offset for
-//               fill coordinates.  If you are painting with a pattern
-//               fill, these specify the virtual coordinates of the
-//               upper-left corner of the image, which can allow you
-//               to adjust the pattern to line up with nested images,
-//               if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor stores a pointer to the PNMImage you pass it, but it does
+ * not take ownership of the object; you are responsible for ensuring that the
+ * PNMImage does not destruct during the lifetime of the PNMPainter object.
+ *
+ * The xo, yo coordinates specify an optional offset for fill coordinates.  If
+ * you are painting with a pattern fill, these specify the virtual coordinates
+ * of the upper-left corner of the image, which can allow you to adjust the
+ * pattern to line up with nested images, if necessary.
+ */
 PNMPainter::
 PNMPainter(PNMImage &image, int xo, int yo) :
   _image(image),
@@ -39,16 +32,12 @@ PNMPainter(PNMImage &image, int xo, int yo) :
   _fill = PNMBrush::make_pixel(LColorf(1, 1, 1, 1));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMPainter::draw_line
-//       Access: Published
-//  Description: Draws an antialiased line on the PNMImage, using the
-//               current pen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws an antialiased line on the PNMImage, using the current pen.
+ */
 void PNMPainter::
 draw_line(float xa, float ya, float xb, float yb) {
-  // Shift the line coordinates to position the center of the pen on
-  // the line.
+  // Shift the line coordinates to position the center of the pen on the line.
   xa -= (_pen->get_xc() - 0.5);
   xb -= (_pen->get_xc() - 0.5);
   ya -= (_pen->get_yc() - 0.5);
@@ -143,20 +132,15 @@ draw_line(float xa, float ya, float xb, float yb) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMPainter::draw_rectangle
-//       Access: Published
-//  Description: Draws a filled rectangule on the PNMImage, using the
-//               current pen for the outline, and the current fill
-//               brush for the interior.
-//
-//               The two coordinates specify any two diagonally
-//               opposite corners.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a filled rectangule on the PNMImage, using the current pen for the
+ * outline, and the current fill brush for the interior.
+ *
+ * The two coordinates specify any two diagonally opposite corners.
+ */
 void PNMPainter::
 draw_rectangle(float xa, float ya, float xb, float yb) {
-  // Make (xa, ya) be the upper-left corner, and (xb, yb) the
-  // lower-right.
+  // Make (xa, ya) be the upper-left corner, and (xb, yb) the lower-right.
   if (xa > xb) {
     float t = xa;
     xa = xb;

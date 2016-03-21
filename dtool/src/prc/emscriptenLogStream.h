@@ -1,16 +1,15 @@
-// Filename: emscriptenLogStream.h
-// Created by:  rdb (02Apr15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file emscriptenLogStream.h
+ * @author rdb
+ * @date 2015-04-02
+ */
 
 #ifndef EMSCRIPTENLOGSTREAM_H
 #define EMSCRIPTENLOGSTREAM_H
@@ -23,11 +22,10 @@
 #include <string>
 #include <iostream>
 
-////////////////////////////////////////////////////////////////////
-//       Class : EmscriptenLogStream
-// Description : This is a type of ostream that writes each line
-//               to the JavaScript log window.
-///////////////////////////////////////////////////////////////////
+/**
+ * This is a type of ostream that writes each line to the JavaScript log
+ * window.
+ */
 class EmscriptenLogStream : public ostream {
 private:
   class EmscriptenLogStreamBuf : public streambuf {

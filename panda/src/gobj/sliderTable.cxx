@@ -1,16 +1,15 @@
-// Filename: sliderTable.cxx
-// Created by:  drose (28Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sliderTable.cxx
+ * @author drose
+ * @date 2005-03-28
+ */
 
 #include "sliderTable.h"
 #include "bamReader.h"
@@ -20,22 +19,18 @@
 SparseArray SliderTable::_empty_array;
 TypeHandle SliderTable::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SliderTable::
 SliderTable() :
   _is_registered(false)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::Copy Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SliderTable::
 SliderTable(const SliderTable &copy) :
   _is_registered(false),
@@ -44,11 +39,9 @@ SliderTable(const SliderTable &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::Copy Assignment Operator
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SliderTable::
 operator = (const SliderTable &copy) {
   nassertv(!_is_registered);
@@ -56,11 +49,9 @@ operator = (const SliderTable &copy) {
   _sliders_by_name = copy._sliders_by_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SliderTable::
 ~SliderTable() {
   if (_is_registered) {
@@ -68,12 +59,9 @@ SliderTable::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::set_slider
-//       Access: Published
-//  Description: Replaces the nth slider.  Only valid for
-//               unregistered tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the nth slider.  Only valid for unregistered tables.
+ */
 void SliderTable::
 set_slider(size_t n, const VertexSlider *slider) {
   nassertv(!_is_registered);
@@ -87,29 +75,23 @@ set_slider(size_t n, const VertexSlider *slider) {
   _sliders[n]._slider = slider;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::set_slider_rows
-//       Access: Published
-//  Description: Replaces the rows affected by the nth slider.  Only
-//               valid for unregistered tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the rows affected by the nth slider.  Only valid for unregistered
+ * tables.
+ */
 void SliderTable::
 set_slider_rows(size_t n, const SparseArray &rows) {
-  // We don't actually enforce the registration requirement, since
-  // gee, it doesn't actually matter here; and the GeomVertexData
-  // needs to be able to change the SparseArrays in the bam reader.
-  //  nassertv(!_is_registered);
+  // We don't actually enforce the registration requirement, since gee, it
+  // doesn't actually matter here; and the GeomVertexData needs to be able to
+  // change the SparseArrays in the bam reader.  nassertv(!_is_registered);
   nassertv(n < _sliders.size());
 
   _sliders[n]._rows = rows;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::remove_slider
-//       Access: Published
-//  Description: Removes the nth slider.  Only valid for
-//               unregistered tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth slider.  Only valid for unregistered tables.
+ */
 void SliderTable::
 remove_slider(size_t n) {
   nassertv(!_is_registered);
@@ -119,13 +101,10 @@ remove_slider(size_t n) {
   _sliders.erase(_sliders.begin() + n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::add_slider
-//       Access: Published
-//  Description: Adds a new slider to the table, and returns the
-//               index number of the new slider.  Only valid for
-//               unregistered tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new slider to the table, and returns the index number of the new
+ * slider.  Only valid for unregistered tables.
+ */
 size_t SliderTable::
 add_slider(const VertexSlider *slider, const SparseArray &rows) {
   nassertr(!_is_registered, 0);
@@ -141,24 +120,20 @@ add_slider(const VertexSlider *slider, const SparseArray &rows) {
   return new_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SliderTable::
 write(ostream &out) const {
   for (size_t i = 0; i < _sliders.size(); ++i) {
-    out << i << ". " << *_sliders[i]._slider << " " 
+    out << i << ". " << *_sliders[i]._slider << " "
         << _sliders[i]._rows << "\n";
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::do_register
-//       Access: Private
-//  Description: Called internally when the table is registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the table is registered.
+ */
 void SliderTable::
 do_register() {
   nassertv(!_is_registered);
@@ -172,12 +147,10 @@ do_register() {
   _is_registered = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::do_unregister
-//       Access: Private
-//  Description: Called internally when the table is unregistered
-//               (i.e. right before destruction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the table is unregistered (i.e.  right before
+ * destruction).
+ */
 void SliderTable::
 do_unregister() {
   nassertv(_is_registered);
@@ -190,23 +163,18 @@ do_unregister() {
   _is_registered = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               SliderTable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type SliderTable.
+ */
 void SliderTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void SliderTable::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -222,13 +190,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int SliderTable::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
@@ -244,14 +209,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type SliderTable is encountered
-//               in the Bam file.  It should create the SliderTable
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type SliderTable is encountered in the Bam file.  It should create the
+ * SliderTable and extract its information from the file.
+ */
 TypedWritable *SliderTable::
 make_from_bam(const FactoryParams &params) {
   SliderTable *object = new SliderTable;
@@ -264,13 +226,10 @@ make_from_bam(const FactoryParams &params) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new SliderTable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new SliderTable.
+ */
 void SliderTable::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
@@ -285,41 +244,34 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       _sliders[i]._rows.read_datagram(scan, manager);
     } else {
       // In this case, for bam files prior to 6.7, we must define the
-      // SparseArray with the full number of vertices.  This is done
-      // in GeomVertexData::complete_pointers().
+      // SparseArray with the full number of vertices.  This is done in
+      // GeomVertexData::complete_pointers().
     }
   }
 
   manager->read_cdata(scan, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CycleData *SliderTable::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
 void SliderTable::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SliderTable::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new SliderTable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new SliderTable.
+ */
 void SliderTable::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   Thread *current_thread = Thread::get_current_thread();

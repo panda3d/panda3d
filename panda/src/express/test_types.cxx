@@ -1,16 +1,15 @@
-// Filename: test_types.cxx
-// Created by:  drose (23Oct98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_types.cxx
+ * @author drose
+ * @date 1998-10-23
+ */
 
 #include "typedObject.h"
 #include "pointerTo.h"
@@ -157,8 +156,7 @@ void show_derivation(TypeHandle type) {
 
 int
 main() {
-  // This initialization would normally be done by a ConfigureFn
-  // block.
+  // This initialization would normally be done by a ConfigureFn block.
   ThatThingie::init_type();
   ThisThingie::init_type();
   TheOtherThingie::init_type();
@@ -263,7 +261,7 @@ main() {
 
   ConstPointerToArray<int> jarray = iarray;
 
-  //  jarray[4] = jarray[6];
+  // jarray[4] = jarray[6];
 
   nout << "jarray[4] is " << jarray[4] << "\n";
 

@@ -1,23 +1,19 @@
-// Filename: gtkStatsMonitor.I
-// Created by:  drose (16Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gtkStatsMonitor.I
+ * @author drose
+ * @date 2006-01-16
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::MenuDef::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 GtkStatsMonitor::MenuDef::
 MenuDef(int thread_index, int collector_index, bool show_level) :
   _thread_index(thread_index),
@@ -27,11 +23,9 @@ MenuDef(int thread_index, int collector_index, bool show_level) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::MenuDef::operator <
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool GtkStatsMonitor::MenuDef::
 operator < (const MenuDef &other) const {
   if (_thread_index != other._thread_index) {

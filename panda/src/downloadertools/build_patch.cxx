@@ -1,16 +1,13 @@
-// Filename: build_patch.cxx
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file build_patch.cxx
+ */
 
 #include "pandabase.h"
 #include "pystub.h"
@@ -19,7 +16,7 @@
 #include "patchfile.h"
 #include "filename.h"
 
-void 
+void
 usage() {
   cerr << "Usage: build_patch [opts] <old_file> <new_file>" << endl;
 }
@@ -61,7 +58,7 @@ main(int argc, char **argv) {
   bool complete_file = false;
   int footprint_length = 0;
 
-  //  extern char *optarg;
+  // extern char *optarg;
   extern int optind;
   static const char *optflags = "o:cf:h";
   preprocess_argv(argc, argv);

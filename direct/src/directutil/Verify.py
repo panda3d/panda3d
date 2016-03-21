@@ -41,7 +41,9 @@ only when debugging (i.e. when it won't be checked-in) or where it helps
 you resist using assert for error handling.
 """
 
-wantVerifyPdb = 0 # Set to true to load pdb on failure.
+from panda3d.core import ConfigVariableBool
+
+wantVerifyPdb = ConfigVariableBool('want-verify-pdb', False) # Set to true to load pdb on failure.
 
 
 def verify(assertion):

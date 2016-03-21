@@ -1,16 +1,15 @@
-// Filename: pnmImage.cxx
-// Created by:  drose (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmImage.cxx
+ * @author drose
+ * @date 2000-06-14
+ */
 
 #include "pnmImage.h"
 #include "pnmReader.h"
@@ -22,11 +21,9 @@
 #include "stackedPerlinNoise2.h"
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PNMImage::
 PNMImage(const Filename &filename, PNMFileType *type) {
   _array = NULL;
@@ -40,12 +37,10 @@ PNMImage(const Filename &filename, PNMFileType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::clear
-//       Access: Published
-//  Description: Frees all memory allocated for the image, and clears
-//               all its parameters (size, color, type, etc).
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees all memory allocated for the image, and clears all its parameters
+ * (size, color, type, etc).
+ */
 void PNMImage::
 clear() {
   if (_array != (xel *)NULL) {
@@ -68,12 +63,10 @@ clear() {
   _xel_encoding = XE_generic;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::clear
-//       Access: Published
-//  Description: This flavor of clear() reinitializes the image to an
-//               empty (black) image with the given dimensions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of clear() reinitializes the image to an empty (black) image
+ * with the given dimensions.
+ */
 void PNMImage::
 clear(int x_size, int y_size, int num_channels,
       xelval maxval, PNMFileType *type, ColorSpace color_space) {
@@ -102,11 +95,9 @@ clear(int x_size, int y_size, int num_channels,
   setup_rc();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::copy_from
-//       Access: Published
-//  Description: Makes this image become a copy of the other image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes this image become a copy of the other image.
+ */
 void PNMImage::
 copy_from(const PNMImage &copy) {
   clear();
@@ -120,12 +111,9 @@ copy_from(const PNMImage &copy) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::copy_channel
-//       Access: Published
-//  Description: Copies a channel from one image into another.
-//               Images must be the same size
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a channel from one image into another.  Images must be the same size
+ */
 void PNMImage::
 copy_channel(const PNMImage &copy, int src_channel, int dest_channel) {
   // Make sure the channels are in range
@@ -152,16 +140,13 @@ copy_channel(const PNMImage &copy, int src_channel, int dest_channel) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::copy_channel_bits
-//       Access: Published
-//  Description: Copies some subset of the bits of the specified
-//               channel from one image into some subset of the bits
-//               of the specified channel in another image.  Images
-//               must be the same size.
-//
-//               If right_shift is negative, it means a left shift.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies some subset of the bits of the specified channel from one image into
+ * some subset of the bits of the specified channel in another image.  Images
+ * must be the same size.
+ *
+ * If right_shift is negative, it means a left shift.
+ */
 void PNMImage::
 copy_channel_bits(const PNMImage &copy, int src_channel, int dest_channel, xelval src_mask, int right_shift) {
   // Make sure the channels are in range
@@ -203,14 +188,11 @@ copy_channel_bits(const PNMImage &copy, int src_channel, int dest_channel, xelva
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::copy_header_from
-//       Access: Published
-//  Description: Copies just the header information into this image.
-//               This will blow away any image data stored in the
-//               image.  The new image data will be allocated, but
-//               left unitialized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies just the header information into this image.  This will blow away
+ * any image data stored in the image.  The new image data will be allocated,
+ * but left unitialized.
+ */
 void PNMImage::
 copy_header_from(const PNMImageHeader &header) {
   clear();
@@ -231,12 +213,10 @@ copy_header_from(const PNMImageHeader &header) {
   setup_rc();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::take_from
-//       Access: Published
-//  Description: Move the contents of the other image into this one,
-//               and empty the other image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Move the contents of the other image into this one, and empty the other
+ * image.
+ */
 void PNMImage::
 take_from(PNMImage &orig) {
   clear();
@@ -254,12 +234,9 @@ take_from(PNMImage &orig) {
   orig.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::fill_val
-//       Access: Published
-//  Description: Sets the entire image (except the alpha channel) to
-//               the given color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the entire image (except the alpha channel) to the given color.
+ */
 void PNMImage::
 fill_val(xelval red, xelval green, xelval blue) {
   if (is_valid()) {
@@ -271,11 +248,9 @@ fill_val(xelval red, xelval green, xelval blue) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::alpha_fill_val
-//       Access: Published
-//  Description: Sets the entire alpha channel to the given level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the entire alpha channel to the given level.
+ */
 void PNMImage::
 alpha_fill_val(xelval alpha) {
   if (is_valid()) {
@@ -291,13 +266,11 @@ alpha_fill_val(xelval alpha) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::read
-//       Access: Published
-//  Description: Reads the indicated image filename.  If type is
-//               non-NULL, it is a suggestion for the type of file it
-//               is.  Returns true if successful, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated image filename.  If type is non-NULL, it is a
+ * suggestion for the type of file it is.  Returns true if successful, false
+ * on error.
+ */
 bool PNMImage::
 read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
   PNMReader *reader = make_reader(filename, type, report_unknown_type);
@@ -309,20 +282,18 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
   return read(reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::read
-//       Access: Published
-//  Description: Reads the image data from the indicated stream.
-//
-//               The filename is advisory only, and may be used
-//               to suggest a type if it has a known extension.
-//
-//               If type is non-NULL, it is a suggestion for the type
-//               of file it is (and a non-NULL type will override any
-//               magic number test or filename extension lookup).
-//
-//               Returns true if successful, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the image data from the indicated stream.
+ *
+ * The filename is advisory only, and may be used to suggest a type if it has
+ * a known extension.
+ *
+ * If type is non-NULL, it is a suggestion for the type of file it is (and a
+ * non-NULL type will override any magic number test or filename extension
+ * lookup).
+ *
+ * Returns true if successful, false on error.
+ */
 bool PNMImage::
 read(istream &data, const string &filename, PNMFileType *type,
      bool report_unknown_type) {
@@ -335,19 +306,14 @@ read(istream &data, const string &filename, PNMFileType *type,
   return read(reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::read
-//       Access: Published
-//  Description: This flavor of read() uses an already-existing
-//               PNMReader to read the image file.  You can get a
-//               reader via the PNMImageHeader::make_reader() methods.
-//               This is a good way to examine the header of a file
-//               (for instance, to determine its size) before actually
-//               reading the entire image.
-//
-//               The PNMReader is always deleted upon completion,
-//               whether successful or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of read() uses an already-existing PNMReader to read the image
+ * file.  You can get a reader via the PNMImageHeader::make_reader() methods.
+ * This is a good way to examine the header of a file (for instance, to
+ * determine its size) before actually reading the entire image.
+ *
+ * The PNMReader is always deleted upon completion, whether successful or not.
+ */
 bool PNMImage::
 read(PNMReader *reader) {
   bool has_read_size = _has_read_size;
@@ -383,8 +349,8 @@ read(PNMReader *reader) {
     return pfm.store(*this);
   }
 
-  // We reassign y_size after reading because we might have read a
-  // truncated file.
+  // We reassign y_size after reading because we might have read a truncated
+  // file.
   _y_size = reader->read_data(_array, _alpha);
   delete reader;
 
@@ -408,13 +374,10 @@ read(PNMReader *reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::write
-//       Access: Published
-//  Description: Writes the image to the indicated filename.  If type
-//               is non-NULL, it is a suggestion for the type of image
-//               file to write.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the image to the indicated filename.  If type is non-NULL, it is a
+ * suggestion for the type of image file to write.
+ */
 bool PNMImage::
 write(const Filename &filename, PNMFileType *type) const {
   if (!is_valid()) {
@@ -429,17 +392,15 @@ write(const Filename &filename, PNMFileType *type) const {
   return write(writer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::write
-//       Access: Published
-//  Description: Writes the image to the indicated ostream.
-//
-//               The filename is advisory only, and may be used
-//               suggest a type if it has a known extension.
-//
-//               If type is non-NULL, it is a suggestion for the type
-//               of image file to write.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the image to the indicated ostream.
+ *
+ * The filename is advisory only, and may be used suggest a type if it has a
+ * known extension.
+ *
+ * If type is non-NULL, it is a suggestion for the type of image file to
+ * write.
+ */
 bool PNMImage::
 write(ostream &data, const string &filename, PNMFileType *type) const {
   if (!is_valid()) {
@@ -455,16 +416,13 @@ write(ostream &data, const string &filename, PNMFileType *type) const {
   return write(writer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::write
-//       Access: Published
-//  Description: This flavor of write() uses an already-existing
-//               PNMWriter to write the image file.  You can get a
-//               writer via the PNMImageHeader::make_writer() methods.
-//
-//               The PNMWriter is always deleted upon completion,
-//               whether successful or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of write() uses an already-existing PNMWriter to write the
+ * image file.  You can get a writer via the PNMImageHeader::make_writer()
+ * methods.
+ *
+ * The PNMWriter is always deleted upon completion, whether successful or not.
+ */
 bool PNMImage::
 write(PNMWriter *writer) const {
   if (writer == NULL) {
@@ -479,8 +437,8 @@ write(PNMWriter *writer) const {
   writer->copy_header_from(*this);
 
   if (!writer->supports_integer()) {
-    // Hmm, it's only a floating-point file type.  Convert it from the
-    // integer data we have.
+    // Hmm, it's only a floating-point file type.  Convert it from the integer
+    // data we have.
     PfmFile pfm;
     if (!pfm.load(*this)) {
       delete writer;
@@ -506,16 +464,13 @@ write(PNMWriter *writer) const {
   return (result == _y_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_color_type
-//       Access: Published
-//  Description: Translates the image to or from grayscale, color, or
-//               four-color mode.  Grayscale images are converted to
-//               full-color images with R, G, B set to the original
-//               gray level; color images are converted to grayscale
-//               according to the value of Bright().  The alpha
-//               channel, if added, is initialized to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Translates the image to or from grayscale, color, or four-color mode.
+ * Grayscale images are converted to full-color images with R, G, B set to the
+ * original gray level; color images are converted to grayscale according to
+ * the value of Bright().  The alpha channel, if added, is initialized to
+ * zero.
+ */
 void PNMImage::
 set_color_type(PNMImage::ColorType color_type) {
   nassertv((int)color_type >= 1 && (int)color_type <= 4);
@@ -558,25 +513,20 @@ set_color_type(PNMImage::ColorType color_type) {
   setup_rc();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_color_space
-//       Access: Published
-//  Description: Converts the colors in the image to the indicated
-//               color space.  This may be a lossy operation, in
-//               particular when going from sRGB to linear.
-//               The alpha channel remains untouched.
-//
-//               Note that, because functions like get_xel() and
-//               set_xel() work on linearized floating-point values,
-//               this conversion won't affect those values (aside
-//               from some minor discrepancies due to storage
-//               precision).  It does affect the values used by
-//               get_xel_val() and set_xel_val(), though, since
-//               those operate on encoded colors.
-//
-//               Some color spaces, particularly scRGB, may enforce
-//               the use of a particular maxval setting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the colors in the image to the indicated color space.  This may be
+ * a lossy operation, in particular when going from sRGB to linear.  The alpha
+ * channel remains untouched.
+ *
+ * Note that, because functions like get_xel() and set_xel() work on
+ * linearized floating-point values, this conversion won't affect those values
+ * (aside from some minor discrepancies due to storage precision).  It does
+ * affect the values used by get_xel_val() and set_xel_val(), though, since
+ * those operate on encoded colors.
+ *
+ * Some color spaces, particularly scRGB, may enforce the use of a particular
+ * maxval setting.
+ */
 void PNMImage::
 set_color_space(ColorSpace color_space) {
   nassertv(color_space != CS_unspecified);
@@ -653,15 +603,11 @@ set_color_space(ColorSpace color_space) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::make_grayscale
-//       Access: Published
-//  Description: Converts the image from RGB to grayscale.  Any alpha
-//               channel, if present, is left undisturbed.  The
-//               optional rc, gc, bc values represent the relative
-//               weights to apply to each channel to convert it to
-//               grayscale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the image from RGB to grayscale.  Any alpha channel, if present,
+ * is left undisturbed.  The optional rc, gc, bc values represent the relative
+ * weights to apply to each channel to convert it to grayscale.
+ */
 void PNMImage::
 make_grayscale(float rc, float gc, float bc) {
   if (is_grayscale()) {
@@ -679,16 +625,13 @@ make_grayscale(float rc, float gc, float bc) {
   setup_rc();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::premultiply_alpha
-//       Access: Published
-//  Description: Converts an image in-place to its "premultiplied"
-//               form, where, for every pixel in the image, the
-//               red, green, and blue components are multiplied by
-//               that pixel's alpha value.
-//
-//               This does not modify any alpha values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an image in-place to its "premultiplied" form, where, for every
+ * pixel in the image, the red, green, and blue components are multiplied by
+ * that pixel's alpha value.
+ *
+ * This does not modify any alpha values.
+ */
 void PNMImage::
 premultiply_alpha() {
   if (!has_alpha()) {
@@ -706,17 +649,13 @@ premultiply_alpha() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::unpremultiply_alpha
-//       Access: Published
-//  Description: Converts an image in-place to its "straight alpha"
-//               form (presumably from a "premultiplied" form),
-//               where, for every pixel in the image, the red,
-//               green, and blue components are divided by that
-//               pixel's alpha value.
-//
-//               This does not modify any alpha values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an image in-place to its "straight alpha" form (presumably from a
+ * "premultiplied" form), where, for every pixel in the image, the red, green,
+ * and blue components are divided by that pixel's alpha value.
+ *
+ * This does not modify any alpha values.
+ */
 void PNMImage::
 unpremultiply_alpha() {
   if (!has_alpha()) {
@@ -736,11 +675,9 @@ unpremultiply_alpha() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::reverse_rows
-//       Access: Published
-//  Description: Performs an in-place reversal of the row (y) data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs an in-place reversal of the row (y) data.
+ */
 void PNMImage::
 reverse_rows() {
   if (_array != NULL) {
@@ -764,17 +701,13 @@ reverse_rows() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::flip
-//       Access: Published
-//  Description: Reverses, transposes, and/or rotates the image
-//               in-place according to the specified parameters.  If
-//               flip_x is true, the x axis is reversed; if flip_y is
-//               true, the y axis is reversed.  Then, if transpose is
-//               true, the x and y axes are exchanged.  These
-//               parameters can be used to select any combination of
-//               90-degree or 180-degree rotations and flips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses, transposes, and/or rotates the image in-place according to the
+ * specified parameters.  If flip_x is true, the x axis is reversed; if flip_y
+ * is true, the y axis is reversed.  Then, if transpose is true, the x and y
+ * axes are exchanged.  These parameters can be used to select any combination
+ * of 90-degree or 180-degree rotations and flips.
+ */
 void PNMImage::
 flip(bool flip_x, bool flip_y, bool transpose) {
   if (transpose) {
@@ -851,11 +784,9 @@ flip(bool flip_x, bool flip_y, bool transpose) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_maxval
-//       Access: Published
-//  Description: Rescales the image to the indicated maxval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rescales the image to the indicated maxval.
+ */
 void PNMImage::
 set_maxval(xelval maxval) {
   nassertv(maxval > 0);
@@ -892,17 +823,13 @@ set_maxval(xelval maxval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::get_channel_val
-//       Access: Published
-//  Description: Returns the nth component color at the indicated
-//               pixel.  The channel index should be in the range
-//               0..(get_num_channels()-1).  The channels are ordered B,
-//               G, R, A.  This is slightly less optimal than
-//               accessing the component values directly by named
-//               methods.  The value returned is in the range
-//               0..maxval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth component color at the indicated pixel.  The channel index
+ * should be in the range 0..(get_num_channels()-1).  The channels are ordered
+ * B, G, R, A.  This is slightly less optimal than accessing the component
+ * values directly by named methods.  The value returned is in the range
+ * 0..maxval.
+ */
 xelval PNMImage::
 get_channel_val(int x, int y, int channel) const {
   switch (channel) {
@@ -927,17 +854,13 @@ get_channel_val(int x, int y, int channel) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_channel_val
-//       Access: Published
-//  Description: Sets the nth component color at the indicated
-//               pixel.  The channel index should be in the range
-//               0..(get_num_channels()-1).  The channels are ordered B,
-//               G, R, A.  This is slightly less optimal than
-//               setting the component values directly by named
-//               methods.  The value given should be in the range
-//               0..maxval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth component color at the indicated pixel.  The channel index
+ * should be in the range 0..(get_num_channels()-1).  The channels are ordered
+ * B, G, R, A.  This is slightly less optimal than setting the component
+ * values directly by named methods.  The value given should be in the range
+ * 0..maxval.
+ */
 void PNMImage::
 set_channel_val(int x, int y, int channel, xelval value) {
   switch (channel) {
@@ -966,17 +889,13 @@ set_channel_val(int x, int y, int channel, xelval value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::get_channel
-//       Access: Published
-//  Description: Returns the nth component color at the indicated
-//               pixel.  The channel index should be in the range
-//               0..(get_num_channels()-1).  The channels are ordered B,
-//               G, R, A.  This is slightly less optimal than
-//               accessing the component values directly by named
-//               methods.  The value returned is a float in the range
-//               0..1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth component color at the indicated pixel.  The channel index
+ * should be in the range 0..(get_num_channels()-1).  The channels are ordered
+ * B, G, R, A.  This is slightly less optimal than accessing the component
+ * values directly by named methods.  The value returned is a float in the
+ * range 0..1.
+ */
 float PNMImage::
 get_channel(int x, int y, int channel) const {
   switch (channel) {
@@ -1001,17 +920,13 @@ get_channel(int x, int y, int channel) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_channel
-//       Access: Published
-//  Description: Sets the nth component color at the indicated
-//               pixel.  The channel index should be in the range
-//               0..(get_num_channels()-1).  The channels are ordered B,
-//               G, R, A.  This is slightly less optimal than
-//               setting the component values directly by named
-//               methods.  The value given should be a float in the
-//               range 0..1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth component color at the indicated pixel.  The channel index
+ * should be in the range 0..(get_num_channels()-1).  The channels are ordered
+ * B, G, R, A.  This is slightly less optimal than setting the component
+ * values directly by named methods.  The value given should be a float in the
+ * range 0..1.
+ */
 void PNMImage::
 set_channel(int x, int y, int channel, float value) {
   switch (channel) {
@@ -1040,12 +955,10 @@ set_channel(int x, int y, int channel, float value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::get_pixel
-//       Access: Published
-//  Description: Returns the (r, g, b, a) pixel value at the indicated
-//               pixel, using a PixelSpec object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the (r, g, b, a) pixel value at the indicated pixel, using a
+ * PixelSpec object.
+ */
 PNMImage::PixelSpec PNMImage::
 get_pixel(int x, int y) const {
   switch (_num_channels) {
@@ -1062,12 +975,10 @@ get_pixel(int x, int y) const {
   return PixelSpec(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_pixel
-//       Access: Published
-//  Description: Sets the (r, g, b, a) pixel value at the indicated
-//               pixel, using a PixelSpec object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the (r, g, b, a) pixel value at the indicated pixel, using a PixelSpec
+ * object.
+ */
 void PNMImage::
 set_pixel(int x, int y, const PixelSpec &pixel) {
   xel p;
@@ -1078,15 +989,12 @@ set_pixel(int x, int y, const PixelSpec &pixel) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::blend
-//       Access: Published
-//  Description: Smoothly blends the indicated pixel value in with
-//               whatever was already in the image, based on the given
-//               alpha value.  An alpha of 1.0 is fully opaque and
-//               completely replaces whatever was there previously;
-//               alpha of 0.0 is fully transparent and does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Smoothly blends the indicated pixel value in with whatever was already in
+ * the image, based on the given alpha value.  An alpha of 1.0 is fully opaque
+ * and completely replaces whatever was there previously; alpha of 0.0 is
+ * fully transparent and does nothing.
+ */
 void PNMImage::
 blend(int x, int y, float r, float g, float b, float alpha) {
   if (alpha >= 1.0) {
@@ -1121,18 +1029,14 @@ blend(int x, int y, float r, float g, float b, float alpha) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_array
-//       Access: Public
-//  Description: Replaces the underlying PNMImage array with the
-//               indicated pointer.  Know what you are doing!  The new
-//               array must be the correct size and must have been
-//               allocated via PANDA_MALLOC_ARRAY().  The PNMImage
-//               object becomes the owner of this pointer and will
-//               eventually free it with PANDA_FREE_ARRAY().  The
-//               previous array, if any, will be freed with
-//               PANDA_FREE_ARRAY() when this call is made.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the underlying PNMImage array with the indicated pointer.  Know
+ * what you are doing!  The new array must be the correct size and must have
+ * been allocated via PANDA_MALLOC_ARRAY().  The PNMImage object becomes the
+ * owner of this pointer and will eventually free it with PANDA_FREE_ARRAY().
+ * The previous array, if any, will be freed with PANDA_FREE_ARRAY() when this
+ * call is made.
+ */
 void PNMImage::
 set_array(xel *array) {
   if (_array != (xel *)NULL) {
@@ -1141,18 +1045,14 @@ set_array(xel *array) {
   _array = array;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::set_alpha_array
-//       Access: Public
-//  Description: Replaces the underlying PNMImage alpha array with the
-//               indicated pointer.  Know what you are doing!  The new
-//               array must be the correct size and must have been
-//               allocated via PANDA_MALLOC_ARRAY().  The PNMImage
-//               object becomes the owner of this pointer and will
-//               eventually free it with PANDA_FREE_ARRAY().  The
-//               previous array, if any, will be freed with
-//               PANDA_FREE_ARRAY() when this call is made.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the underlying PNMImage alpha array with the indicated pointer.
+ * Know what you are doing!  The new array must be the correct size and must
+ * have been allocated via PANDA_MALLOC_ARRAY().  The PNMImage object becomes
+ * the owner of this pointer and will eventually free it with
+ * PANDA_FREE_ARRAY().  The previous array, if any, will be freed with
+ * PANDA_FREE_ARRAY() when this call is made.
+ */
 void PNMImage::
 set_alpha_array(xelval *alpha) {
   if (_alpha != (xelval *)NULL) {
@@ -1161,17 +1061,13 @@ set_alpha_array(xelval *alpha) {
   _alpha = alpha;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::copy_sub_image
-//       Access: Published
-//  Description: Copies a rectangular area of another image into a
-//               rectangular area of this image.  Both images must
-//               already have been initialized.  The upper-left corner
-//               of the region in both images is specified, and the
-//               size of the area; if the size is omitted, it defaults
-//               to the entire other image, or the largest piece that
-//               will fit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a rectangular area of another image into a rectangular area of this
+ * image.  Both images must already have been initialized.  The upper-left
+ * corner of the region in both images is specified, and the size of the area;
+ * if the size is omitted, it defaults to the entire other image, or the
+ * largest piece that will fit.
+ */
 void PNMImage::
 copy_sub_image(const PNMImage &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size) {
@@ -1216,21 +1112,17 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::blend_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), except the alpha
-//               channel of the copy is used to blend the copy into
-//               the destination image, instead of overwriting pixels
-//               unconditionally.
-//
-//               If pixel_scale is not 1.0, it specifies an amount to
-//               scale each *alpha* value of the source image before
-//               applying it to the target image.
-//
-//               If pixel_scale is 1.0 and the copy has no alpha
-//               channel, this degenerates into copy_sub_image().
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), except the alpha channel of the copy is used
+ * to blend the copy into the destination image, instead of overwriting pixels
+ * unconditionally.
+ *
+ * If pixel_scale is not 1.0, it specifies an amount to scale each *alpha*
+ * value of the source image before applying it to the target image.
+ *
+ * If pixel_scale is 1.0 and the copy has no alpha channel, this degenerates
+ * into copy_sub_image().
+ */
 void PNMImage::
 blend_sub_image(const PNMImage &copy, int xto, int yto,
                 int xfrom, int yfrom, int x_size, int y_size,
@@ -1262,15 +1154,11 @@ blend_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::add_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), except the copy pixels
-//               are added to the pixels of the destination, after
-//               scaling by the specified pixel_scale.  Unlike
-//               blend_sub_image(), the alpha channel is not treated
-//               specially.
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), except the copy pixels are added to the
+ * pixels of the destination, after scaling by the specified pixel_scale.
+ * Unlike blend_sub_image(), the alpha channel is not treated specially.
+ */
 void PNMImage::
 add_sub_image(const PNMImage &copy, int xto, int yto,
               int xfrom, int yfrom, int x_size, int y_size,
@@ -1300,15 +1188,11 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::mult_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), except the copy pixels
-//               are multiplied to the pixels of the destination, after
-//               scaling by the specified pixel_scale.  Unlike
-//               blend_sub_image(), the alpha channel is not treated
-//               specially.
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), except the copy pixels are multiplied to the
+ * pixels of the destination, after scaling by the specified pixel_scale.
+ * Unlike blend_sub_image(), the alpha channel is not treated specially.
+ */
 void PNMImage::
 mult_sub_image(const PNMImage &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size,
@@ -1338,20 +1222,16 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::darken_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), but the resulting
-//               color will be the darker of the source and
-//               destination colors at each pixel (and at each R, G,
-//               B, A component value).
-//
-//               If pixel_scale is not 1.0, it specifies an amount to
-//               scale each pixel value of the source image before
-//               applying it to the target image.  The scale is
-//               applied with the center at 1.0: scaling the pixel
-//               value smaller brings it closer to 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), but the resulting color will be the darker
+ * of the source and destination colors at each pixel (and at each R, G, B, A
+ * component value).
+ *
+ * If pixel_scale is not 1.0, it specifies an amount to scale each pixel value
+ * of the source image before applying it to the target image.  The scale is
+ * applied with the center at 1.0: scaling the pixel value smaller brings it
+ * closer to 1.0.
+ */
 void PNMImage::
 darken_sub_image(const PNMImage &copy, int xto, int yto,
                  int xfrom, int yfrom, int x_size, int y_size,
@@ -1411,18 +1291,14 @@ darken_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::lighten_sub_image
-//       Access: Published
-//  Description: Behaves like copy_sub_image(), but the resulting
-//               color will be the lighter of the source and
-//               destination colors at each pixel (and at each R, G,
-//               B, A component value).
-//
-//               If pixel_scale is not 1.0, it specifies an amount to
-//               scale each pixel value of the source image before
-//               applying it to the target image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Behaves like copy_sub_image(), but the resulting color will be the lighter
+ * of the source and destination colors at each pixel (and at each R, G, B, A
+ * component value).
+ *
+ * If pixel_scale is not 1.0, it specifies an amount to scale each pixel value
+ * of the source image before applying it to the target image.
+ */
 void PNMImage::
 lighten_sub_image(const PNMImage &copy, int xto, int yto,
                   int xfrom, int yfrom, int x_size, int y_size,
@@ -1482,28 +1358,23 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::threshold
-//       Access: Published
-//  Description: Selectively copies each pixel from either one source
-//               or another source, depending on the pixel value of
-//               the indicated channel of select_image.
-//
-//               For each pixel (x, y):
-//
-//               s = select_image.get_channel(x, y, channel). Set this
-//               image's (x, y) to:
-//
-//               lt.get_xel(x, y) if s < threshold, or
-//
-//               ge.get_xel(x, y) if s >= threshold
-//
-//               Any of select_image, lt, or ge may be the same
-//               PNMImge object as this image, or the same as each
-//               other; or they may all be different. All images must
-//               be the same size.  As a special case, lt and ge may
-//               both be 1x1 images instead of the source image size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selectively copies each pixel from either one source or another source,
+ * depending on the pixel value of the indicated channel of select_image.
+ *
+ * For each pixel (x, y):
+ *
+ * s = select_image.get_channel(x, y, channel). Set this image's (x, y) to:
+ *
+ * lt.get_xel(x, y) if s < threshold, or
+ *
+ * ge.get_xel(x, y) if s >= threshold
+ *
+ * Any of select_image, lt, or ge may be the same PNMImge object as this
+ * image, or the same as each other; or they may all be different.  All images
+ * must be the same size.  As a special case, lt and ge may both be 1x1 images
+ * instead of the source image size.
+ */
 void PNMImage::
 threshold(const PNMImage &select_image, int channel, float threshold,
           const PNMImage &lt, const PNMImage &ge) {
@@ -1514,8 +1385,8 @@ threshold(const PNMImage &select_image, int channel, float threshold,
 
   if (lt.get_x_size() == 1 && lt.get_y_size() == 1 &&
       ge.get_x_size() == 1 && ge.get_y_size() == 1) {
-    // FIXME: what if select_image has different color space?
-    // 1x1 source images.
+    // FIXME: what if select_image has different color space?  1x1 source
+    // images.
     xel lt_val = lt.get_xel_val(0, 0);
     xelval lt_alpha = 0;
     if (lt.has_alpha()) {
@@ -1674,7 +1545,8 @@ threshold(const PNMImage &select_image, int channel, float threshold,
       }
 
     } else {
-      // General case: the maxvals are different.  Copy by floating-point value.
+      // General case: the maxvals are different.  Copy by floating-point
+      // value.
       int x, y;
 
       if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
@@ -1704,29 +1576,23 @@ threshold(const PNMImage &select_image, int channel, float threshold,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::fill_distance_inside
-//       Access: Published
-//  Description: Replaces this image with a grayscale image whose gray
-//               channel represents the linear Manhattan distance from
-//               the nearest dark pixel in the given mask image, up to
-//               the specified radius value (which also becomes the
-//               new maxval).  radius may range from 0 to maxmaxval;
-//               smaller values will compute faster.  A dark pixel is
-//               defined as one whose pixel value is < threshold.
-//
-//               If shrink_from_border is true, then the mask image is
-//               considered to be surrounded by a border of dark
-//               pixels; otherwise, the border isn't considered.
-//
-//               This can be used, in conjunction with threshold, to
-//               shrink a mask image inwards by a certain number of
-//               pixels.
-//
-//               The mask image may be the same image as this one, in
-//               which case it is destructively modified by this
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces this image with a grayscale image whose gray channel represents
+ * the linear Manhattan distance from the nearest dark pixel in the given mask
+ * image, up to the specified radius value (which also becomes the new
+ * maxval).  radius may range from 0 to maxmaxval; smaller values will compute
+ * faster.  A dark pixel is defined as one whose pixel value is < threshold.
+ *
+ * If shrink_from_border is true, then the mask image is considered to be
+ * surrounded by a border of dark pixels; otherwise, the border isn't
+ * considered.
+ *
+ * This can be used, in conjunction with threshold, to shrink a mask image
+ * inwards by a certain number of pixels.
+ *
+ * The mask image may be the same image as this one, in which case it is
+ * destructively modified by this process.
+ */
 void PNMImage::
 fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shrink_from_border) {
   nassertv(radius <= PNM_MAXMAXVAL);
@@ -1758,25 +1624,19 @@ fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shr
   take_from(dist);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::fill_distance_outside
-//       Access: Published
-//  Description: Replaces this image with a grayscale image whose gray
-//               channel represents the linear Manhattan distance from
-//               the nearest white pixel in the given mask image, up to
-//               the specified radius value (which also becomes the
-//               new maxval).  radius may range from 0 to maxmaxval;
-//               smaller values will compute faster.  A white pixel is
-//               defined as one whose pixel value is >= threshold.
-//
-//               This can be used, in conjunction with threshold, to
-//               grow a mask image outwards by a certain number of
-//               pixels.
-//
-//               The mask image may be the same image as this one, in
-//               which case it is destructively modified by this
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces this image with a grayscale image whose gray channel represents
+ * the linear Manhattan distance from the nearest white pixel in the given
+ * mask image, up to the specified radius value (which also becomes the new
+ * maxval).  radius may range from 0 to maxmaxval; smaller values will compute
+ * faster.  A white pixel is defined as one whose pixel value is >= threshold.
+ *
+ * This can be used, in conjunction with threshold, to grow a mask image
+ * outwards by a certain number of pixels.
+ *
+ * The mask image may be the same image as this one, in which case it is
+ * destructively modified by this process.
+ */
 void PNMImage::
 fill_distance_outside(const PNMImage &mask, float threshold, int radius) {
   nassertv(radius <= PNM_MAXMAXVAL);
@@ -1796,25 +1656,20 @@ fill_distance_outside(const PNMImage &mask, float threshold, int radius) {
   take_from(dist);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::indirect_1d_lookup
-//       Access: Published
-//  Description: index_image is a WxH grayscale image, while
-//               pixel_values is an Nx1 color (or grayscale) image.
-//               Typically pixel_values will be a 256x1 image.
-//
-//               Fills the PNMImage with a new image the same width
-//               and height as index_image, with the same number of
-//               channels as pixel_values.
-//
-//               Each pixel of the new image is computed with the
-//               formula:
-//
-//               new_image(x, y) = pixel_values(index_image(x, y)[channel], 0)
-//
-//               No interpolation is performed; the nearest value in
-//               pixel_values is discovered.
-////////////////////////////////////////////////////////////////////
+/**
+ * index_image is a WxH grayscale image, while pixel_values is an Nx1 color
+ * (or grayscale) image.  Typically pixel_values will be a 256x1 image.
+ *
+ * Fills the PNMImage with a new image the same width and height as
+ * index_image, with the same number of channels as pixel_values.
+ *
+ * Each pixel of the new image is computed with the formula:
+ *
+ * new_image(x, y) = pixel_values(index_image(x, y)[channel], 0)
+ *
+ * At present, no interpolation is performed; the nearest value in
+ * pixel_values is discovered.  This may change in the future.
+ */
 void PNMImage::
 indirect_1d_lookup(const PNMImage &index_image, int channel,
                    const PNMImage &pixel_values) {
@@ -1833,15 +1688,12 @@ indirect_1d_lookup(const PNMImage &index_image, int channel,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::rescale
-//       Access: Published
-//  Description: Rescales the RGB channel values so that any values in
-//               the original image between min_val and max_val are
-//               expanded to the range 0 .. 1.  Values below min_val
-//               are set to 0, and values above max_val are set to 1.
-//               Does not affect the alpha channel, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rescales the RGB channel values so that any values in the original image
+ * between min_val and max_val are expanded to the range 0 .. 1.  Values below
+ * min_val are set to 0, and values above max_val are set to 1. Does not
+ * affect the alpha channel, if any.
+ */
 void PNMImage::
 rescale(float min_val, float max_val) {
   float scale = max_val - min_val;
@@ -1868,13 +1720,10 @@ rescale(float min_val, float max_val) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::copy_channel
-//       Access: Published
-//  Description: Copies just a single channel from the source image
-//               into a single channel of this image, leaving the
-//               remaining channels alone.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies just a single channel from the source image into a single channel of
+ * this image, leaving the remaining channels alone.
+ */
 void PNMImage::
 copy_channel(const PNMImage &copy, int xto, int yto, int cto,
              int xfrom, int yfrom, int cfrom,
@@ -1922,20 +1771,15 @@ copy_channel(const PNMImage &copy, int xto, int yto, int cto,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::render_spot
-//       Access: Published
-//  Description: Renders a solid-color circle, with a fuzzy edge, into
-//               the center of the PNMImage.  If the PNMImage is
-//               non-square, this actually renders an ellipse.
-//
-//               The min_radius and max_radius are in the scale 0..1,
-//               where 1.0 means the full width of the image.  If
-//               min_radius == max_radius, the edge is sharp (but
-//               still antialiased); otherwise, the pixels between
-//               min_radius and max_radius are smoothly blended
-//               between fg and bg colors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renders a solid-color circle, with a fuzzy edge, into the center of the
+ * PNMImage.  If the PNMImage is non-square, this actually renders an ellipse.
+ *
+ * The min_radius and max_radius are in the scale 0..1, where 1.0 means the
+ * full width of the image.  If min_radius == max_radius, the edge is sharp
+ * (but still antialiased); otherwise, the pixels between min_radius and
+ * max_radius are smoothly blended between fg and bg colors.
+ */
 void PNMImage::
 render_spot(const LColorf &fg, const LColorf &bg,
             float min_radius, float max_radius) {
@@ -1946,8 +1790,8 @@ render_spot(const LColorf &fg, const LColorf &bg,
   float x_scale = 2.0 / _x_size;
   float y_scale = 2.0 / _y_size;
 
-  // If the width is even, x_center1 == x_center0.  If the width is
-  // odd, x_center1 == x_center0 + 1.
+  // If the width is even, x_center1 == x_center0.  If the width is odd,
+  // x_center1 == x_center0 + 1.
   int x_center0 = _x_size / 2;
   int y_center0 = _y_size / 2;
   int x_center1 = (_x_size + 1) / 2;
@@ -2008,16 +1852,12 @@ render_spot(const LColorf &fg, const LColorf &bg,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::expand_border
-//       Access: Published
-//  Description: Expands the image by the indicated number of pixels
-//               on each edge.  The new pixels are set to the
-//               indicated color.
-//
-//               If any of the values is negative, this actually crops
-//               the image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expands the image by the indicated number of pixels on each edge.  The new
+ * pixels are set to the indicated color.
+ *
+ * If any of the values is negative, this actually crops the image.
+ */
 void PNMImage::
 expand_border(int left, int right, int bottom, int top,
               const LColorf &color) {
@@ -2034,12 +1874,10 @@ expand_border(int left, int right, int bottom, int top,
   take_from(new_image);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::unfiltered_stretch_from
-//       Access: Published
-//  Description: Resizes from the indicated image into this one by
-//               performing a nearest-point sample.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes from the indicated image into this one by performing a nearest-
+ * point sample.
+ */
 void PNMImage::
 unfiltered_stretch_from(const PNMImage &copy) {
   for (int yt = 0; yt < get_y_size(); yt++) {
@@ -2061,12 +1899,9 @@ unfiltered_stretch_from(const PNMImage &copy) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::make_histogram
-//       Access: Published
-//  Description: Computes a histogram of the colors used in the
-//               image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a histogram of the colors used in the image.
+ */
 void PNMImage::
 make_histogram(PNMImage::Histogram &histogram) {
   HistMap hist_map;
@@ -2088,16 +1923,12 @@ make_histogram(PNMImage::Histogram &histogram) {
   histogram.swap(pixels, hist_map);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::perlin_noise_fill
-//       Access: Published
-//  Description: Fills the image with a grayscale perlin noise
-//               pattern based on the indicated parameters.
-//               Uses set_xel to set the grayscale values.
-//               The sx and sy parameters are in multiples
-//               of the size of this image.
-//               See also the PerlinNoise2 class in mathutil.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the image with a grayscale perlin noise pattern based on the
+ * indicated parameters.  Uses set_xel to set the grayscale values.  The sx
+ * and sy parameters are in multiples of the size of this image.  See also the
+ * PerlinNoise2 class in mathutil.
+ */
 void PNMImage::
 perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed) {
   float x, y;
@@ -2111,12 +1942,10 @@ perlin_noise_fill(float sx, float sy, int table_size, unsigned long seed) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::perlin_noise_fill
-//       Access: Published
-//  Description: Variant of perlin_noise_fill that uses an
-//               existing StackedPerlinNoise2 object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Variant of perlin_noise_fill that uses an existing StackedPerlinNoise2
+ * object.
+ */
 void PNMImage::
 perlin_noise_fill(StackedPerlinNoise2 &perlin) {
   float x, y;
@@ -2129,13 +1958,10 @@ perlin_noise_fill(StackedPerlinNoise2 &perlin) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::remix_channels
-//       Access: Published
-//  Description: Transforms every pixel using the operation
-//               (Ro,Go,Bo) = conv.xform_point(Ri,Gi,Bi);
-//               Input must be a color image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms every pixel using the operation (Ro,Go,Bo) =
+ * conv.xform_point(Ri,Gi,Bi); Input must be a color image.
+ */
 void PNMImage::
 remix_channels(const LMatrix4 &conv) {
   int nchannels = get_num_channels();
@@ -2149,16 +1975,12 @@ remix_channels(const LMatrix4 &conv) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::apply_exponent
-//       Access: Published
-//  Description: Adjusts each channel of the image by raising the
-//               corresponding component value to the indicated
-//               exponent, such that L' = L ^ exponent.  For a
-//               grayscale image, the blue_exponent value is used for
-//               the grayscale value, and red_exponent and
-//               green_exponent are unused.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts each channel of the image by raising the corresponding component
+ * value to the indicated exponent, such that L' = L ^ exponent.  For a
+ * grayscale image, the blue_exponent value is used for the grayscale value,
+ * and red_exponent and green_exponent are unused.
+ */
 void PNMImage::
 apply_exponent(float red_exponent, float green_exponent, float blue_exponent,
                float alpha_exponent) {
@@ -2190,7 +2012,7 @@ apply_exponent(float red_exponent, float green_exponent, float blue_exponent,
     }
 
   } else {
-    // Apply to the color and/or alpha channels.
+    // Apply to the color andor alpha channels.
 
     switch (num_channels) {
     case 1:
@@ -2245,14 +2067,11 @@ apply_exponent(float red_exponent, float green_exponent, float blue_exponent,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::setup_rc
-//       Access: Private
-//  Description: Sets the _default_rc,bc,gc values appropriately
-//               according to the color type of the image, so that
-//               get_bright() will return a meaningful value for both
-//               color and grayscale images.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the _default_rc,bc,gc values appropriately according to the color type
+ * of the image, so that get_bright() will return a meaningful value for both
+ * color and grayscale images.
+ */
 void PNMImage::
 setup_rc() {
   if (is_grayscale()) {
@@ -2266,16 +2085,12 @@ setup_rc() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::setup_encoding
-//       Access: Private
-//  Description: Sets the _xel_encoding value apppropriately
-//               according to the color space, maxval and whether
-//               the image has an alpha channel, so that to_val and
-//               from_val will work correctly (and possibly more
-//               efficiently).
-//               Should be called after any call to set_maxval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the _xel_encoding value apppropriately according to the color space,
+ * maxval and whether the image has an alpha channel, so that to_val and
+ * from_val will work correctly (and possibly more efficiently). Should be
+ * called after any call to set_maxval.
+ */
 void PNMImage::
 setup_encoding() {
   if (_maxval == 0) {
@@ -2341,12 +2156,10 @@ setup_encoding() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::do_fill_distance
-//       Access: Private
-//  Description: Recursively fills in the minimum distance measured
-//               from a certain set of points into the gray channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively fills in the minimum distance measured from a certain set of
+ * points into the gray channel.
+ */
 void PNMImage::
 do_fill_distance(int xi, int yi, int d) {
   if (xi < 0 || xi >= get_x_size() ||
@@ -2364,12 +2177,9 @@ do_fill_distance(int xi, int yi, int d) {
   do_fill_distance(xi, yi - 1, d + 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::get_average_xel
-//       Access: Published
-//  Description: Returns the average color of all of the pixels
-//               in the image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the average color of all of the pixels in the image.
+ */
 LRGBColorf PNMImage::
 get_average_xel() const {
   LRGBColorf color (LRGBColorf::zero());
@@ -2389,12 +2199,10 @@ get_average_xel() const {
   return color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::get_average_xel_a
-//       Access: Published
-//  Description: Returns the average color of all of the pixels
-//               in the image, including the alpha channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the average color of all of the pixels in the image, including the
+ * alpha channel.
+ */
 LColorf PNMImage::
 get_average_xel_a() const {
   LColorf color (LColorf::zero());
@@ -2414,12 +2222,9 @@ get_average_xel_a() const {
   return color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::get_average_gray
-//       Access: Published
-//  Description: Returns the average grayscale component of all of
-//               the pixels in the image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the average grayscale component of all of the pixels in the image.
+ */
 float PNMImage::
 get_average_gray() const {
   float gray = 0.0;
@@ -2438,13 +2243,10 @@ get_average_gray() const {
   return gray;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator ~
-//       Access: Published
-//  Description: Returns a new PNMImage that is the complement of
-//               this PNMImage.  This operation is not color-space
-//               correct.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new PNMImage that is the complement of this PNMImage.  This
+ * operation is not color-space correct.
+ */
 PNMImage PNMImage::
 operator ~ () const {
   PNMImage target (*this);
@@ -2471,13 +2273,10 @@ operator ~ () const {
   return target;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator +=
-//       Access: Published
-//  Description: Sets each pixel value to the sum of the corresponding
-//               pixel values in the two given images.  Only valid
-//               when both images have the same size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets each pixel value to the sum of the corresponding pixel values in the
+ * two given images.  Only valid when both images have the same size.
+ */
 void PNMImage::
 operator += (const PNMImage &other) {
   nassertv(is_valid() && other.is_valid());
@@ -2514,11 +2313,9 @@ operator += (const PNMImage &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator +=
-//       Access: Published
-//  Description: Adds the provided color to each pixel in this image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the provided color to each pixel in this image.
+ */
 void PNMImage::
 operator += (const LColorf &other) {
   nassertv(is_valid());
@@ -2558,13 +2355,10 @@ operator += (const LColorf &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator -=
-//       Access: Published
-//  Description: Subtracts each pixel from the right image from each
-//               pixel value in this image.  Only valid when both
-//               images have the same size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Subtracts each pixel from the right image from each pixel value in this
+ * image.  Only valid when both images have the same size.
+ */
 void PNMImage::
 operator -= (const PNMImage &other) {
   nassertv(is_valid() && other.is_valid());
@@ -2601,26 +2395,20 @@ operator -= (const PNMImage &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator -=
-//       Access: Published
-//  Description: Subtracts the provided color from each pixel in this
-//               image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Subtracts the provided color from each pixel in this image.
+ */
 void PNMImage::
 operator -= (const LColorf &other) {
   (*this) += -other;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator *=
-//       Access: Published
-//  Description: Multiples each pixel in this image by each
-//               pixel value from the right image. Note that the
-//               floating-point values in the 0..1 range are
-//               multiplied, not in the 0..maxval range.
-//               Only valid when both images have the same size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Multiples each pixel in this image by each pixel value from the right
+ * image.  Note that the floating-point values in the 0..1 range are
+ * multiplied, not in the 0..maxval range.  Only valid when both images have
+ * the same size.
+ */
 void PNMImage::
 operator *= (const PNMImage &other) {
   nassertv(is_valid() && other.is_valid());
@@ -2634,13 +2422,10 @@ operator *= (const PNMImage &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator *=
-//       Access: Published
-//  Description: Multiplies every pixel value in the image by
-//               a constant floating-point multiplier value.  This
-//               affects all channels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Multiplies every pixel value in the image by a constant floating-point
+ * multiplier value.  This affects all channels.
+ */
 void PNMImage::
 operator *= (float multiplier) {
   nassertv(is_valid());
@@ -2674,12 +2459,10 @@ operator *= (float multiplier) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::operator *=
-//       Access: Published
-//  Description: Multiplies the provided color to each pixel in this
-//               image.  This is a component-wise multiplication.
-////////////////////////////////////////////////////////////////////
+/**
+ * Multiplies the provided color to each pixel in this image.  This is a
+ * component-wise multiplication.
+ */
 void PNMImage::
 operator *= (const LColorf &other) {
   nassertv(is_valid());

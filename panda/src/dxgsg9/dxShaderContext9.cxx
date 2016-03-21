@@ -1,16 +1,15 @@
-// Filename: dxShaderContext9.cxx
-// Created by: jyelon (01Sep05), conversion aignacio (Jan-Mar06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxShaderContext9.cxx
+ * @author jyelon
+ * @date 2005-09-01
+ */
 
 #include "dxGraphicsStateGuardian9.h"
 #include "dxShaderContext9.h"
@@ -31,11 +30,9 @@
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::Constructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(ShaderContext)::
 CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _vertex_element_array = NULL;
@@ -50,8 +47,8 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 
   if (s->get_language() == Shader::SL_Cg) {
 
-    // Ask the shader to compile itself for us and
-    // to give us the resulting Cg program objects.
+    // Ask the shader to compile itself for us and to give us the resulting Cg
+    // program objects.
     if (!s->cg_compile_for(gsg->_shader_caps, context,
                            _cg_program, _cg_parameter_map)) {
       return;
@@ -80,11 +77,9 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::Destructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
   release_resources();
@@ -100,60 +95,30 @@ CLP(ShaderContext)::
   }
 }
 
-// int save_file (int size, void *data, char *file_path)
-// {
-//   int state;
-//   int file_handle;
-//
-//   state = false;
-//   file_handle = _open (file_path, _O_CREAT | _O_RDWR | _O_TRUNC, _S_IREAD | _S_IWRITE);
-//   if (file_handle != -1) {
-//     if (_write (file_handle, data, size) == size) {
-//       state = true;
-//     }
-//     _close (file_handle);
-//   }
-//
-//   return state;
-// }
-//
-//   if (dxgsg9_cat.is_debug()) {
-//     // DEBUG: output the generated program
-//     const char *vertex_program;
-//     const char *pixel_program;
-//
-//     vertex_program = cgGetProgramString (_cg_program[0], CG_COMPILED_PROGRAM);
-//     pixel_program = cgGetProgramString (_cg_program[1], CG_COMPILED_PROGRAM);
-//
-//     dxgsg9_cat.debug() << vertex_program << "\n";
-//     dxgsg9_cat.debug() << pixel_program << "\n";
-//
-//     // save the generated program to a file
-//     int size;
-//     char file_path [512];
-//
-//     char drive[_MAX_DRIVE];
-//     char dir[_MAX_DIR];
-//     char fname[_MAX_FNAME];
-//     char ext[_MAX_EXT];
-//
-//     _splitpath (_name.c_str ( ), drive, dir, fname, ext);
-//
-//     size = strlen (vertex_program);
-//     sprintf (file_path, "%s.vasm", fname);
-//     save_file (size, (void *) vertex_program, file_path);
-//
-//     size = strlen (pixel_program);
-//     sprintf (file_path, "%s.pasm", fname);
-//     save_file (size, (void *) pixel_program, file_path);
-//   }
+/*
+ * int save_file (int size, void *data, char *file_path) { int state; int
+ * file_handle; state = false; file_handle = _open (file_path, _O_CREAT |
+ * _O_RDWR | _O_TRUNC, _S_IREAD | _S_IWRITE); if (file_handle != -1) { if
+ * (_write (file_handle, data, size) == size) { state = true; } _close
+ * (file_handle); } return state; } if (dxgsg9_cat.is_debug()) { DEBUG: output
+ * the generated program const char *vertex_program; const char
+ * *pixel_program; vertex_program = cgGetProgramString (_cg_program[0],
+ * CG_COMPILED_PROGRAM); pixel_program = cgGetProgramString (_cg_program[1],
+ * CG_COMPILED_PROGRAM); dxgsg9_cat.debug() << vertex_program << "\n";
+ * dxgsg9_cat.debug() << pixel_program << "\n"; save the generated program to
+ * a file int size; char file_path [512]; char drive[_MAX_DRIVE]; char
+ * dir[_MAX_DIR]; char fname[_MAX_FNAME]; char ext[_MAX_EXT]; _splitpath
+ * (_name.c_str ( ), drive, dir, fname, ext); size = strlen (vertex_program);
+ * sprintf (file_path, "%s.vasm", fname); save_file (size, (void *)
+ * vertex_program, file_path); size = strlen (pixel_program); sprintf
+ * (file_path, "%s.pasm", fname); save_file (size, (void *) pixel_program,
+ * file_path); }
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::release_resources
-//       Access: Public
-//  Description: Should deallocate all system resources (such as
-//               vertex program handles or Cg contexts).
-////////////////////////////////////////////////////////////////////
+/**
+ * Should deallocate all system resources (such as vertex program handles or
+ * Cg contexts).
+ */
 void CLP(ShaderContext)::
 release_resources() {
 #ifdef HAVE_CG
@@ -164,18 +129,16 @@ release_resources() {
   }
 #endif
 
-  // I think we need to call SetStreamSource for _num_bound_streams -- basically the logic from
-  // disable_shader_vertex_arrays -- but to do that we need to introduce logic like the GL code
-  // has to manage _last_gsg, so we can get at the device.  Sigh.
+  // I think we need to call SetStreamSource for _num_bound_streams --
+  // basically the logic from disable_shader_vertex_arrays -- but to do that
+  // we need to introduce logic like the GL code has to manage _last_gsg, so
+  // we can get at the device.  Sigh.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::bind
-//       Access: Public
-//  Description: This function is to be called to enable a new
-//               shader.  It also initializes all of the shader's
-//               input parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is to be called to enable a new shader.  It also initializes
+ * all of the shader's input parameters.
+ */
 bool CLP(ShaderContext)::
 bind(GSG *gsg) {
 
@@ -183,7 +146,8 @@ bind(GSG *gsg) {
 
 #ifdef HAVE_CG
   if (_cg_program) {
-    // clear the last cached FVF to make sure the next SetFVF call goes through
+    // clear the last cached FVF to make sure the next SetFVF call goes
+    // through
 
     gsg -> _last_fvf = 0;
 
@@ -211,11 +175,9 @@ bind(GSG *gsg) {
   return bind_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::unbind
-//       Access: Public
-//  Description: This function disables a currently-bound shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function disables a currently-bound shader.
+ */
 void CLP(ShaderContext)::
 unbind(GSG *gsg) {
 
@@ -231,21 +193,16 @@ unbind(GSG *gsg) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::issue_parameters
-//       Access: Public
-//  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the Shader
-//               itself has not changed.  It loads new values into the
-//               shader's parameters.
-//
-//               If "altered" is false, that means you promise that
-//               the parameters for this shader context have already
-//               been issued once, and that since the last time the
-//               parameters were issued, no part of the render
-//               state has changed except the external and internal
-//               transforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function gets called whenever the RenderState or TransformState has
+ * changed, but the Shader itself has not changed.  It loads new values into
+ * the shader's parameters.
+ *
+ * If "altered" is false, that means you promise that the parameters for this
+ * shader context have already been issued once, and that since the last time
+ * the parameters were issued, no part of the render state has changed except
+ * the external and internal transforms.
+ */
 
 #if DEBUG_SHADER
 PN_stdfloat *global_data = 0;
@@ -394,11 +351,9 @@ issue_parameters(GSG *gsg, int altered) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::disable_shader_vertex_arrays
-//       Access: Public
-//  Description: Disable all the vertex arrays used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the vertex arrays used by this shader.
+ */
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays(GSG *gsg) {
   LPDIRECT3DDEVICE9 device = gsg->_screen->_d3d_device;
@@ -410,17 +365,13 @@ disable_shader_vertex_arrays(GSG *gsg) {
   _num_bound_streams = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::update_shader_vertex_arrays
-//       Access: Public
-//  Description: Disables all vertex arrays used by the previous
-//               shader, then enables all the vertex arrays needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable arrays then immediately
-//               reenable them.  We may optimize this someday.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all vertex arrays used by the previous shader, then enables all
+ * the vertex arrays needed by this shader.  Extracts the relevant vertex
+ * array data from the gsg.  The current implementation is inefficient,
+ * because it may unnecessarily disable arrays then immediately reenable them.
+ * We may optimize this someday.
+ */
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
@@ -441,7 +392,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
     LPDIRECT3DDEVICE9 device = gsg->_screen->_d3d_device;
     HRESULT hr;
 
-    // Discard and recreate the VertexElementArray.  This thrashes pretty bad....
+    // Discard and recreate the VertexElementArray.  This thrashes pretty
+    // bad....
     if ( _vertex_element_array != NULL ) {
       delete _vertex_element_array;
     }
@@ -449,10 +401,11 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
     VertexElementArray* vertex_element_array = _vertex_element_array;
 
     // Experimentally determined that DX doesn't like us crossing the streams!
-    // It seems to be okay with out-of-order offsets in both source and destination,
-    // but it wants all stream X entries grouped together, then all stream Y entries, etc.
-    // To accomplish this out outer loop processes arrays ("streams"), and we repeatedly
-    // iterate the parameters to pull out only those for a single stream.
+    // It seems to be okay with out-of-order offsets in both source and
+    // destination, but it wants all stream X entries grouped together, then
+    // all stream Y entries, etc.  To accomplish this out outer loop processes
+    // arrays ("streams"), and we repeatedly iterate the parameters to pull
+    // out only those for a single stream.
 
     int number_of_arrays = gsg->_data_reader->get_num_arrays();
     for ( int array_index = 0; array_index < number_of_arrays; ++array_index ) {
@@ -474,8 +427,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
 
         InternalName *name = _shader->_var_spec[var_index]._name;
 
-        // This is copied from the GL version of this function, and I've yet to 100% convince
-        // myself that it works properly....
+        // This is copied from the GL version of this function, and I've yet
+        // to 100% convince myself that it works properly....
         int texslot = _shader->_var_spec[var_index]._append_uv;
         if (texslot >= 0 && texslot < gsg->_state_texture->get_num_on_stages()) {
           TextureStage *stage = gsg->_state_texture->get_on_stage(texslot);
@@ -495,11 +448,11 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
         if ( gsg->_data_reader->get_array_info( name,
                                                 param_array_reader, num_values, numeric_type,
                                                 start, stride ) == false ) {
-          // This is apparently not an error (actually I think it is, just not a fatal one).
-          //
-          // The GL implementation fails silently in this case, but the net result is that we
-          // end up not supplying input for a shader parameter, which can cause Bad Things to
-          // happen so I'd like to at least get a hint as to what's gone wrong.
+          // This is apparently not an error (actually I think it is, just not
+          // a fatal one). The GL implementation fails silently in this case,
+          // but the net result is that we end up not supplying input for a
+          // shader parameter, which can cause Bad Things to happen so I'd
+          // like to at least get a hint as to what's gone wrong.
           dxgsg9_cat.info() << "Geometry contains no data for shader parameter " << *name << "\n";
           continue;
         }
@@ -633,9 +586,10 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
     if (( _vertex_element_array != NULL ) &&
         ( _vertex_element_array->add_end_vertex_element() != false )) {
       if (dxgsg9_cat.is_debug()) {
-        // Note that the currently generated vertex declaration works but never validates.
-        // My theory is that this is due to the shader programs always using float4 whereas
-        // the vertex declaration correctly sets the number of inputs (float2, float3, etc.).
+        // Note that the currently generated vertex declaration works but
+        // never validates.  My theory is that this is due to the shader
+        // programs always using float4 whereas the vertex declaration
+        // correctly sets the number of inputs (float2, float3, etc.).
         if (cgD3D9ValidateVertexDeclaration(_cg_program,
                                             _vertex_element_array->_vertex_element_array) == CG_TRUE) {
           dxgsg9_cat.debug() << "cgD3D9ValidateVertexDeclaration succeeded\n";
@@ -669,11 +623,9 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::disable_shader_texture_bindings
-//       Access: Public
-//  Description: Disable all the texture bindings used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the texture bindings used by this shader.
+ */
 void CLP(ShaderContext)::
 disable_shader_texture_bindings(GSG *gsg)
 {
@@ -701,17 +653,13 @@ disable_shader_texture_bindings(GSG *gsg)
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::update_shader_texture_bindings
-//       Access: Public
-//  Description: Disables all texture bindings used by the previous
-//               shader, then enables all the texture bindings needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable textures then immediately
-//               reenable them.  We may optimize this someday.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all texture bindings used by the previous shader, then enables all
+ * the texture bindings needed by this shader.  Extracts the relevant vertex
+ * array data from the gsg.  The current implementation is inefficient,
+ * because it may unnecessarily disable textures then immediately reenable
+ * them.  We may optimize this someday.
+ */
 void CLP(ShaderContext)::
 update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 {
@@ -750,7 +698,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
         view += stage->get_tex_view_offset();
       }
       if (_shader->_tex_spec[i]._suffix != 0) {
-        // The suffix feature is inefficient. It is a temporary hack.
+        // The suffix feature is inefficient.  It is a temporary hack.
         if (tex == 0) {
           continue;
         }

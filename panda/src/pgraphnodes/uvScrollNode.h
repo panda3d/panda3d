@@ -1,16 +1,15 @@
-// Filename: uvScrollNode.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file uvScrollNode.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef UVSCROLLNODE_H
 #define UVSCROLLNODE_H
@@ -21,11 +20,9 @@
 #include "pandaNode.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : UvScrollNode
-// Description : This node is placed at key points within the scene
-//               graph to animate uvs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This node is placed at key points within the scene graph to animate uvs.
+ */
 class EXPCL_PANDA_PGRAPH UvScrollNode : public PandaNode {
 PUBLISHED:
   INLINE UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed);
@@ -93,5 +90,3 @@ private:
 #include "uvScrollNode.I"
 
 #endif
-
-

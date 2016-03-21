@@ -1,16 +1,15 @@
-// Filename: collisionSolid.h
-// Created by:  drose (24Apr00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionSolid.h
+ * @author drose
+ * @date 2000-04-24
+ */
 
 #ifndef COLLISIONSOLID_H
 #define COLLISIONSOLID_H
@@ -34,19 +33,15 @@ class GeomNode;
 class CollisionNode;
 class CullTraverserData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionSolid
-// Description : The abstract base class for all things that can
-//               collide with other things in the world, and all the
-//               things they can collide with (except geometry).
-//
-//               This class and its derivatives really work very
-//               similarly to the way BoundingVolume and all of its
-//               derivatives work.  There's a different subclass for
-//               each basic shape of solid, and double-dispatch
-//               function calls handle the subset of the N*N
-//               intersection tests that we care about.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for all things that can collide with other things
+ * in the world, and all the things they can collide with (except geometry).
+ *
+ * This class and its derivatives really work very similarly to the way
+ * BoundingVolume and all of its derivatives work.  There's a different
+ * subclass for each basic shape of solid, and double-dispatch function calls
+ * handle the subset of the N*N intersection tests that we care about.
+ */
 class EXPCL_PANDA_COLLIDE CollisionSolid : public CopyOnWriteObject {
 public:
   CollisionSolid();
@@ -138,8 +133,7 @@ private:
   LVector3 _effective_normal;
   PT(BoundingVolume) _internal_bounds;
 
-  // Be careful reordering these bits, since they are written to a bam
-  // file.
+  // Be careful reordering these bits, since they are written to a bam file.
   enum Flags {
     F_tangible                  = 0x01,
     F_effective_normal          = 0x02,
@@ -194,4 +188,3 @@ INLINE ostream &operator << (ostream &out, const CollisionSolid &cs) {
 #include "collisionSolid.I"
 
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: webGLGraphicsWindow.h
-// Created by:  rdb (31Mar15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webGLGraphicsWindow.h
+ * @author rdb
+ * @date 2015-03-31
+ */
 
 #ifndef WEBGLGRAPHICSWINDOW_H
 #define WEBGLGRAPHICSWINDOW_H
@@ -22,11 +21,10 @@
 
 #include <html5.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebGLGraphicsWindow
-// Description : An interface to Emscripten's WebGL interface that
-//               represents an HTML5 canvas.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to Emscripten's WebGL interface that represents an HTML5
+ * canvas.
+ */
 class WebGLGraphicsWindow : public GraphicsWindow {
 public:
   WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -52,10 +50,12 @@ protected:
 
 private:
   static EM_BOOL on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void *user_data);
-  static EM_BOOL on_keyboard_event(int type, const EmscriptenKeyboardEvent *event,
-                                   void *user_data);
-  static EM_BOOL on_mouse_event(int type, const EmscriptenMouseEvent *event,
-                                void *user_data);
+  static EM_BOOL on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data);
+  static EM_BOOL on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void *user_data);
+  static EM_BOOL on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data);
+  static EM_BOOL on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_data);
+  static EM_BOOL on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data);
+  static EM_BOOL on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data);
 
   string _canvas_id;
 

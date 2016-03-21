@@ -1,16 +1,16 @@
-// Filename: ode.h
-// Created by:  drose (27Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ode.h
+ * @author drose
+ * @date 2007-06-27
+ */
+
 /**
  * @file config.h
  * common internal api header.
@@ -20,7 +20,7 @@
 #define _ODE_CONFIG_H_
 
 #define dSINGLE 1
-#define ODE_PLATFORM_WINDOWS  
+#define ODE_PLATFORM_WINDOWS
 
 #if !defined(ODE_API)
   #define ODE_API

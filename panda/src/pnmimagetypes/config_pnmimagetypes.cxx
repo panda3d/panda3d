@@ -1,16 +1,15 @@
-// Filename: config_pnmimagetypes.cxx
-// Created by:  drose (17Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_pnmimagetypes.cxx
+ * @author drose
+ * @date 2000-06-17
+ */
 
 #include "config_pnmimagetypes.h"
 #include "pnmFileTypeSGI.h"
@@ -51,10 +50,10 @@ ConfigVariableString sgi_imagename
  PRC_DESC("This string is written to the header of an SGI (*.rgb) file.  "
           "It seems to have documentation purposes only."));
 
-// TGA supports RLE compression, as well as colormapping and/or
-// grayscale images.  Set these true to enable these features, if
-// possible, or false to disable them.  Some programs (like xv) have
-// difficulty reading these advanced TGA files.
+// TGA supports RLE compression, as well as colormapping andor grayscale
+// images.  Set these true to enable these features, if possible, or false to
+// disable them.  Some programs (like xv) have difficulty reading these
+// advanced TGA files.
 ConfigVariableBool tga_rle
 ("tga-rle", false,
  PRC_DESC("Set this true to enable RLE compression when writing TGA files."));
@@ -165,14 +164,12 @@ ConfigureFn(config_pnmimagetypes) {
   init_libpnmimagetypes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libpnmimagetypes
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libpnmimagetypes() {
   static bool initialized = false;

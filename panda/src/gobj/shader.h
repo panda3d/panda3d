@@ -1,16 +1,17 @@
-// Filename: shader.h
-// Created by: jyelon (01Sep05)
-// Updated by: fperazzi, PandaSE(29Apr10) (added SAT_sampler2dArray)
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shader.h
+ * @author jyelon
+ * @date 2005-09-01
+ * @author fperazzi, PandaSE
+ * @date 2010-04-29
+ */
 
 #ifndef SHADER_H
 #define SHADER_H
@@ -33,8 +34,8 @@
 #include "epvector.h"
 
 #ifdef HAVE_CG
-// I don't want to include the Cg header file into panda as a
-// whole.  Instead, I'll just excerpt some opaque declarations.
+// I don't want to include the Cg header file into panda as a whole.  Instead,
+// I'll just excerpt some opaque declarations.
 typedef struct _CGcontext   *CGcontext;
 typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
@@ -42,13 +43,9 @@ typedef struct _CGparameter *CGparameter;
 
 class BamCacheRecord;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Shader
-//      Summary: The Shader class is meant to select the Shader Language,
-//               select the available profile, compile the shader, and
-//               finally compile and store the shader parameters
-//               in the appropriate structure.
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount {
 PUBLISHED:
   enum ShaderLanguage {
@@ -201,6 +198,9 @@ public:
     // Additional properties for PBR materials
     SMO_attr_material2,
 
+    // Hack for text rendering.  Don't use in user shaders.
+    SMO_tex_is_alpha_i,
+
     SMO_INVALID
   };
 
@@ -297,6 +297,7 @@ public:
     SSD_tex_matrix    = 0x200,
     SSD_frame         = 0x400,
     SSD_projection    = 0x800,
+    SSD_texture      = 0x1000,
   };
 
   enum ShaderBug {
@@ -473,9 +474,9 @@ public:
   };
 
 public:
-  // These routines help split the shader into sections,
-  // for those shader implementations that need to do so.
-  // Don't use them when you use separate shader programs.
+  // These routines help split the shader into sections, for those shader
+  // implementations that need to do so.  Don't use them when you use separate
+  // shader programs.
   void parse_init();
   void parse_line(string &result, bool rt, bool lt);
   void parse_upto(string &result, string pattern, bool include);
@@ -530,8 +531,9 @@ private:
   void cg_release_resources();
   void cg_report_errors();
 
-  // Determines the appropriate cg profile settings and stores them in the active shader caps
-  // based on any profile settings stored in the shader's header
+  // Determines the appropriate cg profile settings and stores them in the
+  // active shader caps based on any profile settings stored in the shader's
+  // header
   void cg_get_profile_from_header(ShaderCaps &caps);
 
   ShaderCaps _cg_last_caps;
@@ -572,8 +574,8 @@ protected:
   typedef pvector<Filename> Filenames;
   Filenames _included_files;
 
-  // Stores full paths, and includes the fullpaths of the shaders
-  // themselves as well as the includes.
+  // Stores full paths, and includes the fullpaths of the shaders themselves
+  // as well as the includes.
   Filenames _source_files;
   time_t _last_modified;
 

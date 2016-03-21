@@ -1,23 +1,19 @@
-// Filename: eggMorph.I
-// Created by:  drose (29Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggMorph.I
+ * @author drose
+ * @date 1999-01-29
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Parameter>
 INLINE EggMorph<Parameter>::
 EggMorph(const string &name, const Parameter &offset)
@@ -26,11 +22,9 @@ EggMorph(const string &name, const Parameter &offset)
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::set_offset
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Parameter>
 INLINE void EggMorph<Parameter>::
 set_offset(const Parameter &offset) {
@@ -38,11 +32,9 @@ set_offset(const Parameter &offset) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::get_offset
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Parameter>
 INLINE const Parameter &EggMorph<Parameter>::
 get_offset() const {
@@ -50,11 +42,9 @@ get_offset() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::Ordering operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Parameter>
 INLINE bool EggMorph<Parameter>::
 operator < (const EggMorph<Parameter> &other) const {
@@ -62,35 +52,28 @@ operator < (const EggMorph<Parameter> &other) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::Equality operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Parameter>
 INLINE bool EggMorph<Parameter>::
 operator == (const EggMorph<Parameter> &other) const {
   return get_name() == other.get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::Inequality operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Parameter>
 INLINE bool EggMorph<Parameter>::
 operator != (const EggMorph<Parameter> &other) const {
   return !operator == (other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::compare_to
-//       Access: Public
-//  Description: compare_to() compares a different space than the
-//               operator methods, which only check the name.
-//               compare_to() compares the name and the value as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * compare_to() compares a different space than the operator methods, which
+ * only check the name.  compare_to() compares the name and the value as well.
+ */
 template<class Parameter>
 INLINE int EggMorph<Parameter>::
 compare_to(const EggMorph<Parameter> &other, double threshold) const {
@@ -101,11 +84,9 @@ compare_to(const EggMorph<Parameter> &other, double threshold) const {
   return _offset.compare_to(other._offset, threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMorph::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 template<class Parameter>
 INLINE void EggMorph<Parameter>::
 output(ostream &out, const string &tag, int num_dimensions) const {

@@ -1,16 +1,15 @@
-// Filename: colorWriteAttrib.h
-// Created by:  drose (04Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file colorWriteAttrib.h
+ * @author drose
+ * @date 2002-03-04
+ */
 
 #ifndef COLORWRITEATTRIB_H
 #define COLORWRITEATTRIB_H
@@ -21,13 +20,11 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorWriteAttrib
-// Description : Enables or disables writing to the color buffer.
-//               This is primarily useful for certain special effects
-//               in which it is important to write to the depth buffer
-//               without affecting the color buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables writing to the color buffer.  This is primarily useful
+ * for certain special effects in which it is important to write to the depth
+ * buffer without affecting the color buffer.
+ */
 class EXPCL_PANDA_PGRAPH ColorWriteAttrib : public RenderAttrib {
 PUBLISHED:
   enum Channels {
@@ -76,7 +73,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -100,4 +97,3 @@ private:
 #include "colorWriteAttrib.I"
 
 #endif
-

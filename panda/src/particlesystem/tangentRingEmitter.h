@@ -1,28 +1,25 @@
-// Filename: tangentRingEmitter.h
-// Created by:  charles (25Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tangentRingEmitter.h
+ * @author charles
+ * @date 2000-07-25
+ */
 
 #ifndef TANGENTRINGEMITTER_H
 #define TANGENTRINGEMITTER_H
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TangentRingEmitter
-// Description : Describes a planar ring region in which
-//               tangent particles are generated, and particles
-//               fly off tangential to the ring.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a planar ring region in which tangent particles are generated,
+ * and particles fly off tangential to the ring.
+ */
 class EXPCL_PANDAPHYSICS TangentRingEmitter : public BaseParticleEmitter {
 PUBLISHED:
   TangentRingEmitter();
@@ -44,8 +41,7 @@ private:
   PN_stdfloat _radius;
   PN_stdfloat _radius_spread;
 
-  // CUSTOM EMISSION PARAMETERS
-  // none
+  // CUSTOM EMISSION PARAMETERS none
 
   // scratch variables that carry over from position calc to velocity calc
   PN_stdfloat _x;

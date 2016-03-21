@@ -1,23 +1,19 @@
-// Filename: dxGeomMunger9.I
-// Created by:  drose (11Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxGeomMunger9.I
+ * @author drose
+ * @date 2005-03-11
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE DXGeomMunger9::
 DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 1, NT_packed_dabc, C_color),
@@ -33,9 +29,8 @@ DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
       _reffed_filtered_texture = true;
     }
   }
-  // Set a callback to unregister ourselves when either the Texture or
-  // the TexGen object gets deleted.
+  // Set a callback to unregister ourselves when either the Texture or the
+  // TexGen object gets deleted.
   _texture.set_callback(this);
   _tex_gen.set_callback(this);
 }
-

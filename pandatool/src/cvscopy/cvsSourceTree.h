@@ -1,16 +1,15 @@
-// Filename: cvsSourceTree.h
-// Created by:  drose (31Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cvsSourceTree.h
+ * @author drose
+ * @date 2000-10-31
+ */
 
 #ifndef CVSSOURCETREE_H
 #define CVSSOURCETREE_H
@@ -23,19 +22,15 @@
 
 class CVSSourceDirectory;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CVSSourceTree
-// Description : This represents the root of the tree of source
-//               directory files.
-//
-//               The tree is maintained in a case-insensitive manner,
-//               even on a non-Windows system, since you might want to
-//               eventually check out the CVS tree onto a Windows
-//               system--and if you do, you'll be sad if there are
-//               case conflicts within the tree.  So we make an effort
-//               to ensure this doesn't happen by treating two files
-//               with a different case as the same file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the root of the tree of source directory files.
+ *
+ * The tree is maintained in a case-insensitive manner, even on a non-Windows
+ * system, since you might want to eventually check out the CVS tree onto a
+ * Windows system--and if you do, you'll be sad if there are case conflicts
+ * within the tree.  So we make an effort to ensure this doesn't happen by
+ * treating two files with a different case as the same file.
+ */
 class CVSSourceTree {
 public:
   CVSSourceTree();
@@ -49,12 +44,11 @@ public:
   CVSSourceDirectory *find_relpath(const string &relpath);
   CVSSourceDirectory *find_dirname(const string &dirname);
 
-  // This nested class represents the selection of a particular
-  // directory in which to place a given file, given its basename.
-  // The basename of the file is returned as part of the answer,
-  // because it might have changed in case from the original basename
-  // (in order to match the case of an existing file in the selected
-  // directory).
+  // This nested class represents the selection of a particular directory in
+  // which to place a given file, given its basename.  The basename of the
+  // file is returned as part of the answer, because it might have changed in
+  // case from the original basename (in order to match the case of an
+  // existing file in the selected directory).
   class FilePath {
   public:
     FilePath();

@@ -1,16 +1,15 @@
-// Filename: wglGraphicsWindow.h
-// Created by:  drose (20Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wglGraphicsWindow.h
+ * @author drose
+ * @date 2002-12-20
+ */
 
 #ifndef WGLGRAPHICSWINDOW_H
 #define WGLGRAPHICSWINDOW_H
@@ -18,14 +17,12 @@
 #include "pandabase.h"
 #include "winGraphicsWindow.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsWindow
-// Description : A single graphics window for rendering OpenGL under
-//               Microsoft Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single graphics window for rendering OpenGL under Microsoft Windows.
+ */
 class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
 public:
-  wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

@@ -1,16 +1,15 @@
-// Filename: nurbsCurveInterface.h
-// Created by:  drose (02Mar01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsCurveInterface.h
+ * @author drose
+ * @date 2001-03-02
+ */
 
 #ifndef NURBSCURVEINTERFACE_H
 #define NURBSCURVEINTERFACE_H
@@ -22,15 +21,12 @@
 
 class ParametricCurve;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsCurveInterface
-// Description : This abstract class defines the interface only for a
-//               Nurbs-style curve, with knots and coordinates in
-//               homogeneous space.
-//
-//               The NurbsCurve class inherits both from this and from
-//               ParametricCurve.
-////////////////////////////////////////////////////////////////////
+/**
+ * This abstract class defines the interface only for a Nurbs-style curve,
+ * with knots and coordinates in homogeneous space.
+ *
+ * The NurbsCurve class inherits both from this and from ParametricCurve.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsCurveInterface {
 PUBLISHED:
   virtual ~NurbsCurveInterface();

@@ -1,16 +1,15 @@
-// Filename: occluderNode.h
-// Created by:  jenes (11Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file occluderNode.h
+ * @author jenes
+ * @date 2011-03-11
+ */
 
 #ifndef OCCLUDERNODE_H
 #define OCCLUDERNODE_H
@@ -23,15 +22,12 @@
 #include "geom.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OccluderNode 
-// Description : A node in the scene graph that can hold an 
-//               occluder polygon, which must be a rectangle.  When
-//               the occluder is activated with something like
-//               render.set_occluder(), then objects whose bouding
-//               volume lies entirely behind the occluder will not be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold an occluder polygon, which must be
+ * a rectangle.  When the occluder is activated with something like
+ * render.set_occluder(), then objects whose bouding volume lies entirely
+ * behind the occluder will not be rendered.
+ */
 class EXPCL_PANDA_PGRAPH OccluderNode : public PandaNode {
 PUBLISHED:
   OccluderNode(const string &name);

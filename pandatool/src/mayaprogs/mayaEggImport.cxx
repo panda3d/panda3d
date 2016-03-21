@@ -1,34 +1,31 @@
-// Filename: mayaEggImport.cxx
-// Created by:  jyelon (20Jul05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-//
-// This is the wrapper code for the maya importer plugin.
-// It includes:
-//
-//   - user interface dialogs and popups
-//   - plugin initialization/registration
-//
-// It does not include the actual code to traverse the EggData.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaEggImport.cxx
+ * @author jyelon
+ * @date 2005-07-20
+ *
+ * This is the wrapper code for the maya importer plugin.
+ * It includes:
+ *
+ *   - user interface dialogs and popups
+ *   - plugin initialization/registration
+ *
+ * It does not include the actual code to traverse the EggData.
+ */
 
 #include <string.h>
 #include <sys/types.h>
 
 #include "dtoolbase.h"
 
-// We must define this to prevent Maya from doubly-declaring its
-// MApiVersion string in this file as well as in libmayaegg.
+// We must define this to prevent Maya from doubly-declaring its MApiVersion
+// string in this file as well as in libmayaegg.
 #define _MApiVersion
 
 #include "pre_maya_include.h"
@@ -47,7 +44,6 @@
 #include "mayaEggLoader.h"
 #include "notifyCategoryProxy.h"
 
-////////////////////////////////////////////////////////////////////
 
 class MayaEggImporter : public MPxFileTranslator
 {
@@ -90,8 +86,7 @@ MStatus MayaEggImporter::reader ( const MFileObject& file,
     const MString flagModel("model");
     const MString flagAnim("anim");
 
-    //  Start parsing.
-    //
+    // Start parsing.
     MStringArray optionList;
     MStringArray theOption;
     options.split(';', optionList);

@@ -2018,7 +2018,8 @@ def SdkLocateVisualStudio(version=10):
         print("Using Visual Studio %s" % (version))
 
 def SdkLocateWindows(version = '7.1'):
-    if (GetHost() != "windows"): return
+    if GetTarget() != "windows" or GetHost() != "windows":
+        return
 
     version = version.upper()
 

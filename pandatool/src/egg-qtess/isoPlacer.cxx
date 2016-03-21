@@ -1,16 +1,15 @@
-// Filename: isoPlacer.cxx
-// Created by:  drose (13Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file isoPlacer.cxx
+ * @author drose
+ * @date 2003-10-13
+ */
 
 #include "isoPlacer.h"
 #include "qtessSurface.h"
@@ -19,11 +18,9 @@
 #include "pvector.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IsoPlacer::get_scores
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void IsoPlacer::
 get_scores(int subdiv, int across, double ratio,
            NurbsSurfaceResult *surf, bool s) {
@@ -35,8 +32,7 @@ get_scores(int subdiv, int across, double ratio,
   _cscore.reserve(_maxi);
   _sscore.reserve(_maxi);
 
-  // First, tally up the curvature and stretch scores across the
-  // surface.
+  // First, tally up the curvature and stretch scores across the surface.
   int i = 0;
   for (i = 0; i < _maxi; i++) {
     _cscore.push_back(0.0);
@@ -64,8 +60,8 @@ get_scores(int subdiv, int across, double ratio,
         surf->eval_point(v, u, pnext);
       }
 
-      // We'll ignore consecutive equal points.  They don't contribute
-      // to curvature or size.
+      // We'll ignore consecutive equal points.  They don't contribute to
+      // curvature or size.
       if (!pnext.almost_equal(p3)) {
         num_points++;
         p1 = p2;
@@ -82,8 +78,8 @@ get_scores(int subdiv, int across, double ratio,
         }
 
         if (num_points >= 3) {
-          // We only have a meaningful v1, v2 when we've read at least
-          // three non-equal points.
+          // We only have a meaningful v1, v2 when we've read at least three
+          // non-equal points.
           double d = v1.dot(v2);
 
           _cscore[i] += acos(max(min(d, 1.0), -1.0));
@@ -105,11 +101,9 @@ get_scores(int subdiv, int across, double ratio,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IsoPlacer::place
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void IsoPlacer::
 place(int count, pvector<double> &iso_points) {
   int i;
@@ -121,8 +115,7 @@ place(int count, pvector<double> &iso_points) {
   }
   avg_curve /= (double)_maxi;
 
-  // Find all the local maxima in the curvature table.  These are bend
-  // points.
+  // Find all the local maxima in the curvature table.  These are bend points.
   typedef pvector<int> BendPoints;
   BendPoints bpoints;
   BendPoints::iterator bi, bnext;
@@ -132,13 +125,13 @@ place(int count, pvector<double> &iso_points) {
   Segments::iterator si;
 
   /*
-  // Having problems with bend points right now.  Maybe this is just a
-  // bad idea.  It seems to work pretty well without them, anyway.
+  // Having problems with bend points right now.  Maybe this is just a bad
+  // idea.  It seems to work pretty well without them, anyway.
   for (i = 1; i < _maxi-1; i++) {
-    // A point must be measurably higher than both its neighbors, as
-    // well as at least 50% more curvy than the average curvature, to
-    // qualify as a bend point.
-    if (_cscore[i] > _cscore[i-1]+0.001 && 
+    // A point must be measurably higher than both its neighbors, as well as
+    // at least 50% more curvy than the average curvature, to qualify as a
+    // bend point.
+    if (_cscore[i] > _cscore[i-1]+0.001 &&
         _cscore[i] > _cscore[i+1]+0.001 &&
         _cscore[i] > 1.5 * avg_curve) {
       bpoints.push_back(i);
@@ -146,8 +139,8 @@ place(int count, pvector<double> &iso_points) {
   }
   */
 
-  // Now make sure there aren't any two bend points closer together
-  // than maxi/count.  If there are, remove the smaller of the two.
+  // Now make sure there aren't any two bend points closer together than
+  // maxicount.  If there are, remove the smaller of the two.
   bi = bpoints.begin();
   int min_separation = _maxi/count;
   while (bi != bpoints.end()) {
@@ -166,8 +159,8 @@ place(int count, pvector<double> &iso_points) {
     }
   }
 
-  // Now, if we have fewer total subdivisions than bend points, then
-  // remove the smallest bend points.
+  // Now, if we have fewer total subdivisions than bend points, then remove
+  // the smallest bend points.
   while (count - 1 < (int)bpoints.size()) {
     bi = bpoints.begin();
     BendPoints::iterator mi = bi;
@@ -190,10 +183,9 @@ place(int count, pvector<double> &iso_points) {
 
   int nr = count - segments.size();
 
-  // Now we have subdivided the curve into a number of smaller curves
-  // at the bend points.  We still have nr remaining cuts to make;
-  // distribute these cuts among the curves evenly according to
-  // score.
+  // Now we have subdivided the curve into a number of smaller curves at the
+  // bend points.  We still have nr remaining cuts to make; distribute these
+  // cuts among the curves evenly according to score.
 
   // Divvy out the extra cuts.  First, each segment gets an amount
   // proportional to its score.
@@ -234,5 +226,3 @@ place(int count, pvector<double> &iso_points) {
   // Oh, wait.  The last segment is actually drawn all the way to 1.
   iso_points.back() = 1.0;
 }
-    
-

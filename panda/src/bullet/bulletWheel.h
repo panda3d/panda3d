@@ -1,16 +1,15 @@
-// Filename: bulletWheel.h
-// Created by:  enn0x (17Feb10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletWheel.h
+ * @author enn0x
+ * @date 2010-02-17
+ */
 
 #ifndef __BULLET_WHEEL_H__
 #define __BULLET_WHEEL_H__
@@ -23,10 +22,9 @@
 #include "luse.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletWheelRaycastInfo
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDABULLET BulletWheelRaycastInfo {
 
 PUBLISHED:
@@ -48,12 +46,10 @@ private:
   btWheelInfo::RaycastInfo &_info;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletWheel
-// Description : One wheel of a BulletVehicle. Instances should not
-//               be created directly but using the factory method
-//               BulletVehicle::create_wheel().
-////////////////////////////////////////////////////////////////////
+/**
+ * One wheel of a BulletVehicle.  Instances should not be created directly but
+ * using the factory method BulletVehicle::create_wheel().
+ */
 class EXPCL_PANDABULLET BulletWheel {
 
 PUBLISHED:

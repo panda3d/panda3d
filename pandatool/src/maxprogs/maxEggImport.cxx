@@ -1,26 +1,23 @@
-// Filename: maxEggImport.cxx
-// Created by:  jyelon (15Jul05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-//
-// This is the wrapper code for the max importer plugin.
-// It includes:
-//
-//   - user interface dialogs and popups
-//   - plugin initialization/registration
-//
-// It does not include the actual code to traverse the EggData.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxEggImport.cxx
+ * @author jyelon
+ * @date 2005-07-15
+ *
+ * This is the wrapper code for the max importer plugin.
+ * It includes:
+ *
+ *   - user interface dialogs and popups
+ *   - plugin initialization/registration
+ *
+ * It does not include the actual code to traverse the EggData.
+ */
 
 // Include this before everything
 #include "pandatoolbase.h"
@@ -201,15 +198,9 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// Plugin Initialization
-//
-// The following code enables Max to load this DLL, get a list
-// of the classes defined in this DLL, and provides a means for
-// Max to create instances of those classes.
-//
-////////////////////////////////////////////////////////////////////
+// Plugin Initialization The following code enables Max to load this DLL, get
+// a list of the classes defined in this DLL, and provides a means for Max to
+// create instances of those classes.
 
 HINSTANCE hInstance;
 
@@ -219,9 +210,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)  {
 
   if (!controlsInit) {
     controlsInit = TRUE;
-    // It appears that InitCustomControls is deprecated in 2012.
-    // I'm not sure if we can just remove it like this, but
-    // I've heard that it seems to work, so let's do it like this.
+    // It appears that InitCustomControls is deprecated in 2012. I'm not sure
+    // if we can just remove it like this, but I've heard that it seems to
+    // work, so let's do it like this.
 #if MAX_VERSION_MAJOR < 14
     InitCustomControls(hInstance);
 #endif
@@ -268,4 +259,3 @@ __declspec( dllexport ) ULONG LibVersion()
 {
   return VERSION_3DSMAX;
 }
-

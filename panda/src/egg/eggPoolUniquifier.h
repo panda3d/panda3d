@@ -1,16 +1,15 @@
-// Filename: eggPoolUniquifier.h
-// Created by:  drose (09Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggPoolUniquifier.h
+ * @author drose
+ * @date 2000-11-09
+ */
 
 #ifndef EGGPOOLUNIQUIFIER_H
 #define EGGPOOLUNIQUIFIER_H
@@ -19,14 +18,11 @@
 
 #include "eggNameUniquifier.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPoolUniquifier
-// Description : This is a specialization of EggNameUniquifier to
-//               generate unique names for textures, materials, and
-//               vertex pools prior to writing out an egg file.  It's
-//               automatically called by EggData prior to writing out
-//               an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization of EggNameUniquifier to generate unique names for
+ * textures, materials, and vertex pools prior to writing out an egg file.
+ * It's automatically called by EggData prior to writing out an egg file.
+ */
 class EXPCL_PANDAEGG EggPoolUniquifier : public EggNameUniquifier {
 PUBLISHED:
   EggPoolUniquifier();
@@ -53,5 +49,3 @@ private:
 };
 
 #endif
-
-

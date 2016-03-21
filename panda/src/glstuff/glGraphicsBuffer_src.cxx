@@ -1,26 +1,23 @@
-// Filename: glGraphicsBuffer_src.cxx
-// Created by:  jyelon (15Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glGraphicsBuffer_src.cxx
+ * @author jyelon
+ * @date 2006-01-15
+ */
 
 #include "depthWriteAttrib.h"
 
 TypeHandle CLP(GraphicsBuffer)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(GraphicsBuffer)::
 CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
@@ -59,11 +56,9 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   _bound_tex_page = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLP(GraphicsBuffer)::
 ~CLP(GraphicsBuffer)() {
   // unshare shared depth buffer if any
@@ -87,16 +82,13 @@ CLP(GraphicsBuffer)::
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsBuffer::clear
-//       Access: Public, Virtual
-//  Description: Clears the entire framebuffer before rendering,
-//               according to the settings of get_color_clear_active()
-//               and get_depth_clear_active() (inherited from
-//               DrawableRegion).
-//
-//               This function is called only within the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the entire framebuffer before rendering, according to the settings
+ * of get_color_clear_active() and get_depth_clear_active() (inherited from
+ * DrawableRegion).
+ *
+ * This function is called only within the draw thread.
+ */
 void CLP(GraphicsBuffer)::
 clear(Thread *current_thread) {
   if (!is_any_clear_active()) {
@@ -107,8 +99,8 @@ clear(Thread *current_thread) {
   DCAST_INTO_V(glgsg, _gsg);
 
   if (glgsg->_glClearBufferfv == NULL) {
-    // We can't efficiently clear the buffer.  Fall back to the
-    // inefficient default implementation for now.
+    // We can't efficiently clear the buffer.  Fall back to the inefficient
+    // default implementation for now.
     GraphicsOutput::clear(current_thread);
     return;
   }
@@ -201,15 +193,12 @@ clear(Thread *current_thread) {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool CLP(GraphicsBuffer)::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
@@ -238,8 +227,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     clear_cube_map_selection();
 
     {
-      // If the set of render-to-textures has recently changed, we
-      // need to rebuild bitplanes.
+      // If the set of render-to-textures has recently changed, we need to
+      // rebuild bitplanes.
       CDReader cdata(_cycler);
       if (cdata->_textures_seq != _last_textures_seq) {
         _last_textures_seq = cdata->_textures_seq;
@@ -261,8 +250,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       return false;
     }
 
-    // In case of multisample rendering, we don't need to issue
-    // the barrier until we call glBlitFramebuffer.
+    // In case of multisample rendering, we don't need to issue the barrier
+    // until we call glBlitFramebuffer.
 #ifndef OPENGLES
     if (gl_enable_memory_barriers && _fbo_multisample == 0) {
       CLP(GraphicsStateGuardian) *glgsg;
@@ -287,13 +276,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::check_fbo
-//       Access: Private
-//  Description: Calls 'glCheckFramebufferStatus'.  On error,
-//               prints out an appropriate error message and unbinds
-//               the fbo.  Returns true for OK or false for error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls 'glCheckFramebufferStatus'.  On error, prints out an appropriate
+ * error message and unbinds the fbo.  Returns true for OK or false for error.
+ */
 bool CLP(GraphicsBuffer)::
 check_fbo() {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -340,13 +326,11 @@ check_fbo() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::rebuild_bitplanes
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               to allocate/reallocate the fbo and all the associated
-//               renderbuffers, just before rendering a frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread to allocate/reallocate
+ * the fbo and all the associated renderbuffers, just before rendering a
+ * frame.
+ */
 void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
   check_host_valid();
@@ -406,8 +390,8 @@ rebuild_bitplanes() {
   {
     CDReader cdata(_cycler);
 
-    // Determine whether this will be a layered or a regular FBO.
-    // If layered, the number of _rb_size_z will be higher than 1.
+    // Determine whether this will be a layered or a regular FBO. If layered,
+    // the number of _rb_size_z will be higher than 1.
     for (size_t i = 0; i != cdata->_textures.size(); ++i) {
       const RenderTexture &rt = cdata->_textures[i];
       RenderTextureMode rtm_mode = rt._rtm_mode;
@@ -456,9 +440,8 @@ rebuild_bitplanes() {
         continue;
       }
 
-      // If I can't find an appropriate slot, or if there's
-      // already a texture bound to this slot, then punt
-      // this texture.
+      // If I can't find an appropriate slot, or if there's already a texture
+      // bound to this slot, then punt this texture.
       if (attach[plane]) {
         ((CData *)cdata.p())->_textures[i]._rtm_mode = RTM_copy_texture;
         continue;
@@ -483,8 +466,8 @@ rebuild_bitplanes() {
       _use_depth_stencil = true;
 
     } else if (attach[RTP_depth]) {
-      // We won't use a depth stencil texture as the user
-      // explicitly bound something to RTP_depth.
+      // We won't use a depth stencil texture as the user explicitly bound
+      // something to RTP_depth.
       _use_depth_stencil = false;
 
     } else if (_fb_properties.get_stencil_bits() > 0) {
@@ -498,8 +481,8 @@ rebuild_bitplanes() {
       _use_depth_stencil = false;
 
     } else if (_fb_properties.get_depth_bits() > 0) {
-      // Let's use a depth stencil buffer by default, if a depth
-      // buffer was requested.
+      // Let's use a depth stencil buffer by default, if a depth buffer was
+      // requested.
       _use_depth_stencil = true;
     }
   } else if (attach[RTP_depth_stencil] != NULL && attach[RTP_depth] == NULL) {
@@ -516,9 +499,9 @@ rebuild_bitplanes() {
     _fb_properties.set_stencil_bits(0);
   }
 
-  // Having both a depth texture and a depth_stencil texture is
-  // invalid: depth_stencil implies depth, and we can't bind them
-  // both.  Detect that case, normalize it, and complain.
+  // Having both a depth texture and a depth_stencil texture is invalid:
+  // depth_stencil implies depth, and we can't bind them both.  Detect that
+  // case, normalize it, and complain.
   if (_use_depth_stencil && attach[RTP_depth] && attach[RTP_depth_stencil]) {
     attach[RTP_depth] = NULL;
     GLCAT.warning() << "Attempt to bind both RTP_depth and RTP_depth_stencil bitplanes.\n";
@@ -526,6 +509,7 @@ rebuild_bitplanes() {
 
   // Now create the FBO's.
   _have_any_color = false;
+  bool have_any_depth = false;
 
   if (num_fbos > _fbo.size()) {
     // Generate more FBO handles.
@@ -559,8 +543,10 @@ rebuild_bitplanes() {
     // For all slots, update the slot.
     if (_use_depth_stencil) {
       bind_slot(layer, rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+      have_any_depth = true;
     } else if (attach[RTP_depth] || _fb_properties.get_depth_bits() > 0) {
       bind_slot(layer, rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+      have_any_depth = true;
     }
 
     int next = GL_COLOR_ATTACHMENT0_EXT;
@@ -568,13 +554,15 @@ rebuild_bitplanes() {
       bind_slot(layer, rb_resize, attach, RTP_color, next++);
 
       if (_fb_properties.is_stereo()) {
-        // The second tex view has already been initialized, so bind it straight away.
+        // The second tex view has already been initialized, so bind it
+        // straight away.
         if (attach[RTP_color] != NULL) {
           attach_tex(layer, 1, attach[RTP_color], next++);
         } else {
-          //XXX hack: I needed a slot to use, and we don't currently use RTP_stencil
-          // and it's treated as a color attachment below, so this fits the bill.
-          // Eventually, we might want to add RTP_color_left and RTP_color_right.
+          // XXX hack: I needed a slot to use, and we don't currently use
+          // RTP_stencil and it's treated as a color attachment below, so this
+          // fits the bill.  Eventually, we might want to add RTP_color_left
+          // and RTP_color_right.
           bind_slot(layer, rb_resize, attach, RTP_stencil, next++);
         }
       }
@@ -596,15 +584,29 @@ rebuild_bitplanes() {
     }
 #endif  // OPENGLES
 
-    // Clear if the fbo was just created, regardless of the clear settings per frame.
-    if (_initial_clear) {
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    if (_have_any_color || have_any_depth) {
+      // Clear if the fbo was just created, regardless of the clear settings per
+      // frame.
+      if (_initial_clear) {
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      }
+#ifndef OPENGLES
+    } else if (glgsg->_supports_empty_framebuffer) {
+      // Set the "default" width and height, which is required to have an FBO
+      // without any attachments.
+      glgsg->_glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_WIDTH, _rb_size_x);
+      glgsg->_glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_HEIGHT, _rb_size_y);
+#endif
+    } else {
+      // If all else fails, just bind a "dummy" attachment.
+      bind_slot(layer, rb_resize, attach, RTP_color, next++);
     }
   }
 
 #ifndef OPENGLES
-  // Setup any required multisample buffers.  Does not work for layered buffers.
+  // Setup any required multisample buffers.  Does not work for layered
+  // buffers.
   if (_requested_multisamples && _rb_size_z == 1) {
     if (_fbo_multisample == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo_multisample);
@@ -619,7 +621,8 @@ rebuild_bitplanes() {
     if (attach[RTP_color] || _fb_properties.get_color_bits() > 0) {
       bind_slot_multisample(rb_resize, attach, RTP_color, next++);
       if (_fb_properties.is_stereo()) {
-        //TODO: figure out how multisample is supposed to work with stereo buffers.
+        // TODO: figure out how multisample is supposed to work with stereo
+        // buffers.
       }
     }
 
@@ -675,12 +678,9 @@ rebuild_bitplanes() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::bind_slot
-//       Access: Private
-//  Description: Attaches either a texture or a renderbuffer to the
-//               specified bitplane.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches either a texture or a renderbuffer to the specified bitplane.
+ */
 void CLP(GraphicsBuffer)::
 bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -689,19 +689,21 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
   Texture *tex = attach[slot];
 
   if (tex && layer >= tex->get_z_size()) {
-    // If the requested layer index exceeds the number of layers
-    // in the texture, we will not bind this layer.
+    // If the requested layer index exceeds the number of layers in the
+    // texture, we will not bind this layer.
     tex = NULL;
   }
 
   if (!tex && _rb_size_z > 1) {
-    // Since there is no such thing as a layered renderbuffer (to my knowledge),
-    // we have to create a dummy texture to render to if no texture was provided.
+    // Since there is no such thing as a layered renderbuffer (to my
+    // knowledge), we have to create a dummy texture to render to if no
+    // texture was provided.
     tex = new Texture();
 
     if (_rb_size_z > 1) {
-      // Apparently, it doesn't make a difference whether we use setup_cube_map
-      // or setup_2d_texture_array here, since it's the same internal storage.
+      // Apparently, it doesn't make a difference whether we use
+      // setup_cube_map or setup_2d_texture_array here, since it's the same
+      // internal storage.
       tex->setup_2d_texture_array(_rb_size_z);
     } else {
       tex->setup_2d_texture();
@@ -806,8 +808,8 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     report_my_gl_errors();
 
   } else {
-    // No texture to bind.  Instead, create a renderbuffer.
-    // Choose a suitable renderbuffer format based on the requirements.
+    // No texture to bind.  Instead, create a renderbuffer.  Choose a suitable
+    // renderbuffer format based on the requirements.
 #ifdef OPENGLES
     // OpenGL ES case.
     GLuint gl_format = GL_RGBA4;
@@ -824,10 +826,8 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         gl_format = GL_DEPTH_COMPONENT16;
       }
       break;
-    //NB: we currently use RTP_stencil to store the right eye for stereo.
-    //case RTP_stencil:
-    //  gl_format = GL_STENCIL_INDEX8;
-    //  break
+    // NB: we currently use RTP_stencil to store the right eye for stereo.
+    // case RTP_stencil: gl_format = GL_STENCIL_INDEX8; break
     default:
       if (_fb_properties.get_alpha_bits() == 0) {
         if (_fb_properties.get_color_bits() <= 16) {
@@ -1014,13 +1014,10 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::bind_slot_multisample
-//       Access: Private
-//  Description: Attaches incoming Texture or renderbuffer to the
-//               required bitplanes for the 2 FBOs comprising a
-//               multisample graphics buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches incoming Texture or renderbuffer to the required bitplanes for the
+ * 2 FBOs comprising a multisample graphics buffer.
+ */
 void CLP(GraphicsBuffer)::
 bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -1143,12 +1140,9 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
   glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::attach_tex
-//       Access: Private
-//  Description: This function attaches the given texture to the
-//               given attachment point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function attaches the given texture to the given attachment point.
+ */
 void CLP(GraphicsBuffer)::
 attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
@@ -1167,8 +1161,8 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   gtc->set_active(true);
   _texture_contexts.push_back(gtc);
 
-  // It seems that binding the texture is necessary before binding
-  // to a framebuffer attachment.
+  // It seems that binding the texture is necessary before binding to a
+  // framebuffer attachment.
   glgsg->apply_texture(gtc);
 
 #if !defined(OPENGLES) && defined(SUPPORT_FIXED_FUNCTION)
@@ -1210,15 +1204,12 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::generate_mipmaps
-//       Access: Private
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.
-//               If we've just rendered into level zero of a mipmapped
-//               texture, then all subsequent mipmap levels will now
-//               be calculated.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  If we've just rendered into level zero of a
+ * mipmapped texture, then all subsequent mipmap levels will now be
+ * calculated.
+ */
 void CLP(GraphicsBuffer)::
 generate_mipmaps() {
   if (gl_ignore_mipmaps && !gl_force_mipmaps) {
@@ -1228,7 +1219,7 @@ generate_mipmaps() {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
-  //PStatGPUTimer timer(glgsg, _generate_mipmap_pcollector);
+  // PStatGPUTimer timer(glgsg, _generate_mipmap_pcollector);
 
   pvector<CLP(TextureContext)*>::iterator it;
   for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
@@ -1242,13 +1233,11 @@ generate_mipmaps() {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void CLP(GraphicsBuffer)::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -1263,8 +1252,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
     copy_to_textures();
   }
 
-  // Unbind the FBO.  TODO: calling bind_fbo is slow, so we should
-  // probably move this to begin_frame to prevent unnecessary calls.
+  // Unbind the FBO.  TODO: calling bind_fbo is slow, so we should probably
+  // move this to begin_frame to prevent unnecessary calls.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
   glgsg->bind_fbo(0);
@@ -1283,11 +1272,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::set_size
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void CLP(GraphicsBuffer)::
 set_size(int x, int y) {
   if (_size.get_x() != x || _size.get_y() != y) {
@@ -1297,15 +1284,12 @@ set_size(int x, int y) {
   set_size_and_recalc(x, y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::select_target_tex_page
-//       Access: Public, Virtual
-//  Description: Called internally when the window is in
-//               render-to-a-texture mode and we are in the process of
-//               rendering the six faces of a cube map, or any other
-//               multi-page texture.  This should do whatever needs
-//               to be done to switch the buffer to the indicated page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the window is in render-to-a-texture mode and we are
+ * in the process of rendering the six faces of a cube map, or any other
+ * multi-page texture.  This should do whatever needs to be done to switch the
+ * buffer to the indicated page.
+ */
 void CLP(GraphicsBuffer)::
 select_target_tex_page(int page) {
   nassertv(page >= 0 && page < _fbo.size());
@@ -1334,13 +1318,10 @@ select_target_tex_page(int page) {
   report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool CLP(GraphicsBuffer)::
 open_buffer() {
   report_my_gl_errors();
@@ -1366,20 +1347,19 @@ open_buffer() {
     _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency));
   }
 
-  // Describe the framebuffer properties of the FBO.
-  //
-  // Unfortunately, we can't currently predict which formats
-  // the implementation will allow us to use at this point, so
-  // we'll just have to make some guesses and parrot the rest
-  // of the properties back to the user.
-  // When we actually attach the textures, we'll update the
-  // properties more appropriately.
+/*
+ * Describe the framebuffer properties of the FBO. Unfortunately, we can't
+ * currently predict which formats the implementation will allow us to use at
+ * this point, so we'll just have to make some guesses and parrot the rest of
+ * the properties back to the user.  When we actually attach the textures,
+ * we'll update the properties more appropriately.
+ */
 
-  // Rounding the depth bits is not spectacular, but at least we're
-  // telling the user *something* about what we're going to get.
+  // Rounding the depth bits is not spectacular, but at least we're telling
+  // the user *something* about what we're going to get.
 
-  // A lot of code seems to depend on being able to get a
-  // color buffer by just setting the rgb_color bit.
+  // A lot of code seems to depend on being able to get a color buffer by just
+  // setting the rgb_color bit.
   if (_fb_properties.get_color_bits() == 0 &&
       _fb_properties.get_rgb_color()) {
     _fb_properties.set_color_bits(1);
@@ -1388,8 +1368,8 @@ open_buffer() {
     _fb_properties.set_blue_bits(1);
   }
 
-  // Actually, let's always get a colour buffer for now until we
-  // figure out why Intel HD Graphics cards complain otherwise.
+  // Actually, let's always get a colour buffer for now until we figure out
+  // why Intel HD Graphics cards complain otherwise.
   if (gl_force_fbo_color && _fb_properties.get_color_bits() == 0) {
     _fb_properties.set_color_bits(1);
   }
@@ -1398,8 +1378,10 @@ open_buffer() {
     _fb_properties.set_depth_bits(32);
   } else if (_fb_properties.get_depth_bits() > 16) {
     _fb_properties.set_depth_bits(24);
-  } else {
+  } else if (_fb_properties.get_depth_bits() > 0) {
     _fb_properties.set_depth_bits(16);
+  } else {
+    _fb_properties.set_depth_bits(0);
   }
 
   // We're not going to get more than this, ever.  At least not until OpenGL
@@ -1461,7 +1443,8 @@ open_buffer() {
 #ifndef OPENGLES
   if (glgsg->get_supports_framebuffer_multisample_coverage_nv() && glgsg->get_supports_framebuffer_blit()) {
     _requested_coverage_samples = _fb_properties.get_coverage_samples();
-    // Note:  Only 4 and 8 actual samples are supported by the extension, with 8 or 16 coverage samples.
+    // Note:  Only 4 and 8 actual samples are supported by the extension, with
+    // 8 or 16 coverage samples.
     if ((_requested_coverage_samples <= 8) && (_requested_coverage_samples > 0)) {
       _requested_multisamples = 4;
       _requested_coverage_samples = 8;
@@ -1485,8 +1468,8 @@ open_buffer() {
   _fb_properties.set_multisamples(_requested_multisamples);
   _fb_properties.set_coverage_samples(_requested_coverage_samples);
 
-  // Update aux settings to reflect the GL_MAX_DRAW_BUFFERS limit,
-  // if we exceed it, that is.
+  // Update aux settings to reflect the GL_MAX_DRAW_BUFFERS limit, if we
+  // exceed it, that is.
   int availcolor = glgsg->_max_color_targets;
 
   if (totalcolor > availcolor) {
@@ -1529,12 +1512,9 @@ open_buffer() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void CLP(GraphicsBuffer)::
 close_buffer() {
   _rb_data_size_bytes = 0;
@@ -1588,13 +1568,10 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::share_depth_buffer
-//       Access: Published
-//  Description: Will attempt to use the depth buffer of the input
-//               graphics_output. The buffer sizes must be exactly
-//               the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Will attempt to use the depth buffer of the input graphics_output.  The
+ * buffer sizes must be exactly the same.
+ */
 bool CLP(GraphicsBuffer)::
 share_depth_buffer(GraphicsOutput *graphics_output) {
 
@@ -1637,8 +1614,8 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
     }
 
     if (state) {
-      // let the input GraphicsOutput know that there is an object
-      // sharing its depth buffer
+      // let the input GraphicsOutput know that there is an object sharing its
+      // depth buffer
       input_graphics_output->register_shared_depth_buffer(this);
       _shared_depth_buffer = input_graphics_output;
       state = true;
@@ -1649,41 +1626,34 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::unshare_depth_buffer
-//       Access: Published
-//  Description: Discontinue sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Discontinue sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 unshare_depth_buffer() {
   if (_shared_depth_buffer) {
-    // let the GraphicsOutput know that this object is no longer
-    // sharing its depth buffer
+    // let the GraphicsOutput know that this object is no longer sharing its
+    // depth buffer
     _shared_depth_buffer->unregister_shared_depth_buffer(this);
     _shared_depth_buffer = 0;
     _needs_rebuild = true;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::get_supports_render_texture
-//       Access: Published, Virtual
-//  Description: Returns true if this particular GraphicsOutput can
-//               render directly into a texture, or false if it must
-//               always copy-to-texture at the end of each frame to
-//               achieve this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GraphicsOutput can render directly into a
+ * texture, or false if it must always copy-to-texture at the end of each
+ * frame to achieve this effect.
+ */
 bool CLP(GraphicsBuffer)::
 get_supports_render_texture() const {
   // FBO-based buffers, by their nature, can always bind-to-texture.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::register_shared_depth_buffer
-//       Access: Public
-//  Description: Register/save who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Register/save who is sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   CLP(GraphicsBuffer) *input_graphics_output;
@@ -1695,11 +1665,9 @@ register_shared_depth_buffer(GraphicsOutput *graphics_output) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::unregister_shared_depth_buffer
-//       Access: Public
-//  Description: Unregister who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unregister who is sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   CLP(GraphicsBuffer) *input_graphics_output;
@@ -1711,11 +1679,9 @@ unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::unregister_shared_depth_buffer
-//       Access: Public
-//  Description: Unregister who is sharing the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unregister who is sharing the depth buffer.
+ */
 void CLP(GraphicsBuffer)::
 report_my_errors(int line, const char *file) {
   if (_gsg == 0) {
@@ -1730,20 +1696,16 @@ report_my_errors(int line, const char *file) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::check_host_valid
-//       Access: Public
-//  Description: If the host window has been closed, then
-//               this buffer is dead too.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the host window has been closed, then this buffer is dead too.
+ */
 void CLP(GraphicsBuffer)::
 check_host_valid() {
   if ((_host == 0)||(!_host->is_valid())) {
     _rb_data_size_bytes = 0;
     if (_rb_context != NULL) {
-      // We must delete this object first, because when the GSG
-      // destructs, so will the tracker that this context is
-      // attached to.
+      // We must delete this object first, because when the GSG destructs, so
+      // will the tracker that this context is attached to.
       _rb_context->update_data_size_bytes(0);
       delete _rb_context;
       _rb_context = NULL;
@@ -1754,13 +1716,10 @@ check_host_valid() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::resolve_multisamples
-//       Access: Private
-//  Description: After the frame has been rendered into the
-//               multisample buffer, filters it down into the final
-//               render buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * After the frame has been rendered into the multisample buffer, filters it
+ * down into the final render buffer.
+ */
 void CLP(GraphicsBuffer)::
 resolve_multisamples() {
   nassertv(_fbo.size() > 0);
@@ -1772,8 +1731,8 @@ resolve_multisamples() {
 
 #ifndef OPENGLES
   if (gl_enable_memory_barriers) {
-    // Issue memory barriers as necessary to make sure that the
-    // texture memory is synchronized before we blit to it.
+    // Issue memory barriers as necessary to make sure that the texture memory
+    // is synchronized before we blit to it.
     pvector<CLP(TextureContext)*>::iterator it;
     for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
       CLP(TextureContext) *gtc = *it;

@@ -1,14 +1,15 @@
-// Filename: indexedFaceSet.h
-// Created by:  drose (24Jun99)
-//
-////////////////////////////////////////////////////////////////////
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file indexedFaceSet.h
+ * @author drose
+ * @date 1999-06-24
+ */
 
 #ifndef INDEXEDFACESET_H
 #define INDEXEDFACESET_H
@@ -28,11 +29,10 @@ class EggVertexPool;
 class VRMLAppearance;
 class LMatrix4d;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IndexedFaceSet
-// Description : Decodes the vertices and faces in a VRML indexed face
-//               set, and creates the corresponding egg geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes the vertices and faces in a VRML indexed face set, and creates the
+ * corresponding egg geometry.
+ */
 class IndexedFaceSet {
 public:
   IndexedFaceSet(const VrmlNode *geometry, const VRMLAppearance &appearance);

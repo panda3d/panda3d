@@ -1,16 +1,15 @@
-// Filename: vrmlToEggConverter.cxx
-// Created by:  drose (01Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrmlToEggConverter.cxx
+ * @author drose
+ * @date 2004-10-01
+ */
 
 #include "vrmlToEggConverter.h"
 #include "vrmlAppearance.h"
@@ -23,87 +22,67 @@
 #include "eggData.h"
 #include "deg_2_rad.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 VRMLToEggConverter::
 VRMLToEggConverter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 VRMLToEggConverter::
 VRMLToEggConverter(const VRMLToEggConverter &copy) :
   SomethingToEggConverter(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 VRMLToEggConverter::
 ~VRMLToEggConverter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *VRMLToEggConverter::
 make_copy() {
   return new VRMLToEggConverter(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string VRMLToEggConverter::
 get_name() const {
   return "VRML";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string VRMLToEggConverter::
 get_extension() const {
   return "wrl";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files
+ * (with a .pz extension), false otherwise.
+ */
 bool VRMLToEggConverter::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns
+ * true if successful, false otherwise.
+ */
 bool VRMLToEggConverter::
 convert_file(const Filename &filename) {
   clear_error();
@@ -117,16 +96,16 @@ convert_file(const Filename &filename) {
     _egg_data->set_coordinate_system(CS_yup_right);
   }
 
-  // First, resolve all the DEF/USE references, and count the number
-  // of times each node is USEd.
+  // First, resolve all the DEFUSE references, and count the number of times
+  // each node is USEd.
   Nodes nodes;
   VrmlScene::iterator si;
   for (si = scene->begin(); si != scene->end(); ++si) {
     get_all_defs((*si)._node, nodes);
   }
 
-  // Now go through the hierarchy again, and this time actually
-  // build the egg structure.
+  // Now go through the hierarchy again, and this time actually build the egg
+  // structure.
   VrmlScene::const_iterator csi;
   for (csi = scene->begin(); csi != scene->end(); ++csi) {
     vrml_node((*csi)._node, get_egg_data(), LMatrix4d::ident_mat());
@@ -135,20 +114,16 @@ convert_file(const Filename &filename) {
   return !had_error();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::get_all_defs
-//       Access: Private
-//  Description: Makes a first pass through the VRML hierarchy,
-//               identifying all nodes marked with a DEF code, and
-//               also counting the times each one is referenced by
-//               USE.  Later, we'll need this information: if a node
-//               is referenced at least once, we need to define it as
-//               an instance node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a first pass through the VRML hierarchy, identifying all nodes marked
+ * with a DEF code, and also counting the times each one is referenced by USE.
+ * Later, we'll need this information: if a node is referenced at least once,
+ * we need to define it as an instance node.
+ */
 void VRMLToEggConverter::
 get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
   Nodes::iterator ni;
-  
+
   switch (vrml._type) {
   case SFNodeRef::T_def:
     // If this is a node definition, add it to the map.
@@ -158,7 +133,7 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
       This happens too often to bother yelling about it.
     ni = nodes.find(vrml._name);
     if (ni != nodes.end()) {
-      cerr << "Warning: node name " << vrml._name 
+      cerr << "Warning: node name " << vrml._name
            << " appears multiple times.\n";
     }
     */
@@ -175,8 +150,8 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
       // Increment the use count of the node.
       (*ni).second->_use_count++;
 
-      // Store the pointer itself in the reference, so we don't have
-      // to do this again later.
+      // Store the pointer itself in the reference, so we don't have to do
+      // this again later.
       vrml._p = (*ni).second;
     }
     return;
@@ -202,42 +177,35 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::vrml_node
-//       Access: Public
-//  Description: Processes a single VRML node, converting it to egg
-//               and adding it to the egg file, if appropriate, or
-//               doing whatever else should be done.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a single VRML node, converting it to egg and adding it to the egg
+ * file, if appropriate, or doing whatever else should be done.
+ */
 void VRMLToEggConverter::
-vrml_node(const SFNodeRef &vrml, EggGroupNode *egg, 
+vrml_node(const SFNodeRef &vrml, EggGroupNode *egg,
           const LMatrix4d &net_transform) {
   const VrmlNode *node = vrml._p;
   if (node != NULL) {
     // Now add it to the egg file at this point.
     if (strcmp(node->_type->getName(), "Group") == 0) {
-      vrml_grouping_node(vrml, egg, net_transform, 
+      vrml_grouping_node(vrml, egg, net_transform,
                          &VRMLToEggConverter::vrml_group);
     } else if (strcmp(node->_type->getName(), "Transform") == 0) {
-      vrml_grouping_node(vrml, egg, net_transform, 
+      vrml_grouping_node(vrml, egg, net_transform,
                          &VRMLToEggConverter::vrml_transform);
     } else if (strcmp(node->_type->getName(), "Shape") == 0) {
-      vrml_grouping_node(vrml, egg, net_transform, 
+      vrml_grouping_node(vrml, egg, net_transform,
                          &VRMLToEggConverter::vrml_shape);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::vrml_grouping_node
-//       Access: Public
-//  Description: Begins initial processing of a grouping-type node;
-//               that is, any node (like Group, Transform, or Shape)
-//               that maps to a <Group> or <Instance> in egg.  This
-//               create the group and does any instance-munging
-//               necessary, then calls the indicated method with the
-//               new parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins initial processing of a grouping-type node; that is, any node (like
+ * Group, Transform, or Shape) that maps to a <Group> or <Instance> in egg.
+ * This create the group and does any instance-munging necessary, then calls
+ * the indicated method with the new parameters.
+ */
 void VRMLToEggConverter::
 vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
                    const LMatrix4d &net_transform,
@@ -257,8 +225,8 @@ vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
     instance references, so we deal with VRML instances by copying.
 
   if (vrml._type == SFNodeRef::T_use) {
-    // If this is an instancing reference, just add the reference and
-    // return; no need for further processing on the node.
+    // If this is an instancing reference, just add the reference and return;
+    // no need for further processing on the node.
     Instances::const_iterator fi = _instances.find(node);
     assert(fi != _instances.end());
     EggInstance *inst = _data.CreateInstance(egg);
@@ -273,24 +241,22 @@ vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
   LMatrix4d next_transform = net_transform;
 
   if (node->_use_count > 0) {
-    // If this node is referenced one or more times later in the file,
-    // we must make it an instance node.
+    // If this node is referenced one or more times later in the file, we must
+    // make it an instance node.
     group->set_group_type(EggGroup::GT_instance);
     next_transform = LMatrix4d::ident_mat();
 
-    // And define the instance for future references.
-    //    _instances[node] = group;
+    // And define the instance for future references.  _instances[node] =
+    // group;
   }
 
   (this->*process_func)(node, group, next_transform);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::vrml_group
-//       Access: Public
-//  Description: Creates an Egg group corresponding to the VRML group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an Egg group corresponding to the VRML group.
+ */
 void VRMLToEggConverter::
 vrml_group(const VrmlNode *node, EggGroup *group,
            const LMatrix4d &net_transform) {
@@ -301,12 +267,9 @@ vrml_group(const VrmlNode *node, EggGroup *group,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::vrml_transform
-//       Access: Public
-//  Description: Creates an Egg group with a transform corresponding
-//               to the VRML group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an Egg group with a transform corresponding to the VRML group.
+ */
 void VRMLToEggConverter::
 vrml_transform(const VrmlNode *node, EggGroup *group,
                const LMatrix4d &net_transform) {
@@ -328,42 +291,42 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
         LMatrix4d::translate_mat(-center[0], -center[1], -center[2]);
 
       if (o[3] != 0.0) {
-        local_transform *= 
+        local_transform *=
           LMatrix4d::rotate_mat(rad_2_deg(-o[3]), LVector3d(o[0], o[1], o[2]));
         local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
-        local_transform *= 
+        local_transform *=
           LMatrix4d::rotate_mat(rad_2_deg(o[3]), LVector3d(o[0], o[1], o[2]));
 
       } else {
         local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
       }
-      local_transform *= 
+      local_transform *=
         LMatrix4d::translate_mat(center[0], center[1], center[2]);
 
     } else {
       if (o[3] != 0.0) {
-        local_transform *= 
+        local_transform *=
           LMatrix4d::rotate_mat(rad_2_deg(-o[3]), LVector3d(o[0], o[1], o[2]));
         local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
-        local_transform *= 
+        local_transform *=
           LMatrix4d::rotate_mat(rad_2_deg(o[3]), LVector3d(o[0], o[1], o[2]));
 
       } else {
         local_transform *=
           LMatrix4d::scale_mat(scale[0], scale[1], scale[2]);
       }
-    }      
+    }
   }
 
   if (rotation[3] != 0.0) {
     any_transform = true;
     if (center[0] != 0.0 || center[1] != 0.0 || center[2] != 0.0) {
-      local_transform *= 
+      local_transform *=
         LMatrix4d::translate_mat(-center[0], -center[1], -center[2]);
-      local_transform *= 
+      local_transform *=
         LMatrix4d::rotate_mat(rad_2_deg(rotation[3]),
                               LVector3d(rotation[0], rotation[1], rotation[2]));
       local_transform *=
@@ -397,13 +360,10 @@ vrml_transform(const VrmlNode *node, EggGroup *group,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEggConverter::vrml_shape
-//       Access: Public
-//  Description: Creates an Egg group corresponding a VRML shape.
-//               This will probably contain a vertex pool and a number
-//               of polygons.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an Egg group corresponding a VRML shape.  This will probably
+ * contain a vertex pool and a number of polygons.
+ */
 void VRMLToEggConverter::
 vrml_shape(const VrmlNode *node, EggGroup *group,
            const LMatrix4d &net_transform) {

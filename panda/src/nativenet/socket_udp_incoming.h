@@ -4,12 +4,12 @@
 #include "pandabase.h"
 #include "socket_ip.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_UDP_Incoming
-// Description : Base functionality for a UDP Reader
-//
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Base functionality for a UDP Reader
+ *
+
+ *
+ */
 class EXPCL_PANDA_NATIVENET Socket_UDP_Incoming : public Socket_IP
 {
 PUBLISHED:
@@ -40,12 +40,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Incoming::tToBroadCast
-//  Description: Flips the OS bits that allow for brodcast
-//      packets to com in on this port
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Flips the OS bits that allow for brodcast packets to com in on this port
+ *
+ */
 inline bool Socket_UDP_Incoming::SetToBroadCast()
 {
     int optval = 1;
@@ -54,10 +52,9 @@ inline bool Socket_UDP_Incoming::SetToBroadCast()
         return false;
     return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Incoming::InitNoAddress
-//  Description: Set this socket to work with out a bound external address..
-////////////////////////////////////////////////////////////////////
+/**
+ * Set this socket to work with out a bound external address..
+ */
 inline bool Socket_UDP_Incoming::InitNoAddress()
 {
     Close();
@@ -68,10 +65,9 @@ inline bool Socket_UDP_Incoming::InitNoAddress()
     return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Incoming::OpenForInput
-//  Description: Starts a UDP socket listening on a port
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts a UDP socket listening on a port
+ */
 inline bool Socket_UDP_Incoming::OpenForInput(const Socket_Address & address)
 {
     Close();
@@ -85,10 +81,9 @@ inline bool Socket_UDP_Incoming::OpenForInput(const Socket_Address & address)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Incoming::OpenForInput
-//  Description: Starts a UDP socket listening on a port
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts a UDP socket listening on a port
+ */
 inline bool Socket_UDP_Incoming::OpenForInputMCast(const Socket_Address & address)
 {
     Close();
@@ -113,12 +108,11 @@ inline bool Socket_UDP_Incoming::OpenForInputMCast(const Socket_Address & addres
     return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_UDP_Incoming::GetPacket
-//  Description: Grabs a dataset off the listening UDP socket
-//      and fills in the source address information
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Grabs a dataset off the listening UDP socket and fills in the source
+ * address information
+ *
+ */
 inline bool Socket_UDP_Incoming::GetPacket(char * data, int *max_len, Socket_Address & address)
 {
     int val = DO_RECV_FROM(_socket, data, *max_len, &address.GetAddressInfo());
@@ -134,10 +128,9 @@ inline bool Socket_UDP_Incoming::GetPacket(char * data, int *max_len, Socket_Add
     return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketUDP_Outgoing::SendTo
-//  Description: Send data to specified address
-////////////////////////////////////////////////////////////////////
+/**
+ * Send data to specified address
+ */
 inline bool Socket_UDP_Incoming::SendTo(const char * data, int len, const Socket_Address & address)
 {
     return (DO_SOCKET_WRITE_TO(_socket, data, len, &address.GetAddressInfo()) == len);

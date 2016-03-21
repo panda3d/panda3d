@@ -1,32 +1,30 @@
-// Filename: webGLGraphicsWindow.cxx
-// Created by:  rdb (31Mar15)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webGLGraphicsWindow.cxx
+ * @author rdb
+ * @date 2015-03-31
+ */
 
 #include "webGLGraphicsWindow.h"
 #include "webGLGraphicsStateGuardian.h"
 #include "config_webgldisplay.h"
 #include "mouseButton.h"
 #include "keyboardButton.h"
+#include "throw_event.h"
 
 #include <emscripten.h>
 
 TypeHandle WebGLGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WebGLGraphicsWindow::
 WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
@@ -42,39 +40,38 @@ WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 WebGLGraphicsWindow::
 ~WebGLGraphicsWindow() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::move_pointer
-//       Access: Published, Virtual
-//  Description: Forces the pointer to the indicated position within
-//               the window, if possible.
-//
-//               Returns true if successful, false on failure.  This
-//               may fail if the mouse is not currently within the
-//               window, or if the API doesn't support this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the pointer to the indicated position within the window, if
+ * possible.
+ *
+ * Returns true if successful, false on failure.  This may fail if the mouse
+ * is not currently within the window, or if the API doesn't support this
+ * operation.
+ */
 bool WebGLGraphicsWindow::
 move_pointer(int device, int x, int y) {
+  if (device == 0 && _properties.get_mouse_mode() == WindowProperties::M_relative) {
+    // The pointer position is meaningless in relative mode, so we silently
+    // pretend that this worked.
+    _input_devices[0].set_pointer_in_window(x, y);
+    return true;
+  }
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool WebGLGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -86,6 +83,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   WebGLGraphicsStateGuardian *webgl_gsg;
   DCAST_INTO_R(webgl_gsg, _gsg, false);
+
+  if (emscripten_is_webgl_context_lost(0)) {
+    // The context was lost, and any GL calls we make will fail.
+    return false;
+  }
 
   if (emscripten_webgl_make_context_current(webgl_gsg->_context) != EMSCRIPTEN_RESULT_SUCCESS) {
     webgldisplay_cat.error()
@@ -102,13 +104,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void WebGLGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -127,53 +127,42 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.
+ *
+ * This should cause the window to wait for the flip, if necessary.
+ */
 void WebGLGraphicsWindow::
 end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties()
+ *
+ * This function is called only within the window thread.
+ */
 void WebGLGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The return value is true if the properties are set,
-//               false if they are ignored.  This is mainly useful for
-//               derived classes to implement extensions to this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The return value is true if the properties are set, false if they are
+ * ignored.  This is mainly useful for derived classes to implement extensions
+ * to this function.
+ */
 void WebGLGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
@@ -182,6 +171,8 @@ set_properties_now(WindowProperties &properties) {
     emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
     _properties.set_size(properties.get_size());
     properties.clear_size();
+    set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
+    throw_event(get_window_event(), this);
   }
 
   if (properties.has_fullscreen() &&
@@ -207,14 +198,48 @@ set_properties_now(WindowProperties &properties) {
       }
     }
   }
+
+  if (properties.has_mouse_mode() &&
+      properties.get_mouse_mode() != _properties.get_mouse_mode()) {
+
+    if (properties.get_mouse_mode() == WindowProperties::M_relative) {
+      EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(NULL, true);
+
+      if (result == EMSCRIPTEN_RESULT_SUCCESS) {
+        // Great, we're in pointerlock mode.
+        _properties.set_mouse_mode(WindowProperties::M_absolute);
+        _properties.set_cursor_hidden(true);
+        properties.clear_mouse_mode();
+
+      } else if (result == EMSCRIPTEN_RESULT_DEFERRED) {
+        // We can't switch to pointerlock just yet - this action is deferred
+        // until we're in an event handler.  We can't know for sure yet that
+        // pointerlock will be supported, but we shouldn't report failure.
+        properties.clear_mouse_mode();
+        if (properties.has_cursor_hidden() && properties.get_cursor_hidden()) {
+          properties.clear_cursor_hidden();
+        }
+      }
+    } else {
+      if (emscripten_exit_pointerlock() == EMSCRIPTEN_RESULT_SUCCESS) {
+        _properties.set_mouse_mode(WindowProperties::M_absolute);
+        properties.clear_mouse_mode();
+        properties.clear_cursor_hidden();
+      }
+    }
+  }
+
+  if (properties.has_cursor_hidden() &&
+      properties.get_cursor_hidden() == (_properties.get_mouse_mode() == WindowProperties::M_relative)) {
+    // A hidden cursor comes for free with pointerlock.  Without pointerlock,
+    // though, we can't hdide the cursor.
+    properties.clear_cursor_hidden();
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void WebGLGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -225,6 +250,11 @@ close_window() {
   // Clear the assigned callbacks.
   const char *target = NULL;
   emscripten_set_fullscreenchange_callback(target, NULL, false, NULL);
+  emscripten_set_pointerlockchange_callback(target, NULL, false, NULL);
+  emscripten_set_visibilitychange_callback(NULL, false, NULL);
+
+  emscripten_set_focus_callback(target, NULL, false, NULL);
+  emscripten_set_blur_callback(target, NULL, false, NULL);
 
   emscripten_set_keypress_callback(target, NULL, false, NULL);
   emscripten_set_keydown_callback(target, NULL, false, NULL);
@@ -237,16 +267,15 @@ close_window() {
   emscripten_set_mouseenter_callback(target, NULL, false, NULL);
   emscripten_set_mouseleave_callback(target, NULL, false, NULL);
 
+  emscripten_set_wheel_callback(target, NULL, false, NULL);
+
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool WebGLGraphicsWindow::
 open_window() {
   //WebGLGraphicsPipe *webgl_pipe;
@@ -280,6 +309,8 @@ open_window() {
     _properties.set_fullscreen(fullscreen > 0);
   }
 
+  _properties.set_undecorated(true);
+
   if (emscripten_webgl_make_context_current(webgl_gsg->_context) != EMSCRIPTEN_RESULT_SUCCESS) {
     webgldisplay_cat.error()
       << "Failed to make context current.\n";
@@ -308,6 +339,11 @@ open_window() {
 
   // Set callbacks.
   emscripten_set_fullscreenchange_callback(target, (void *)this, false, &on_fullscreen_event);
+  emscripten_set_pointerlockchange_callback(target, (void *)this, false, &on_pointerlock_event);
+  emscripten_set_visibilitychange_callback((void *)this, false, &on_visibility_event);
+
+  emscripten_set_focus_callback(target, (void *)this, false, &on_focus_event);
+  emscripten_set_blur_callback(target, (void *)this, false, &on_focus_event);
 
   void *user_data = (void *)&_input_devices[0];
 
@@ -322,14 +358,14 @@ open_window() {
   emscripten_set_mouseenter_callback(target, user_data, false, &on_mouse_event);
   emscripten_set_mouseleave_callback(target, user_data, false, &on_mouse_event);
 
+  emscripten_set_wheel_callback(target, user_data, false, &on_wheel_event);
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_fullscreen_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
@@ -345,11 +381,76 @@ on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_keyboard_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
+EM_BOOL WebGLGraphicsWindow::
+on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data) {
+  WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
+  nassertr(window != NULL, false);
+
+  if (type == EMSCRIPTEN_EVENT_POINTERLOCKCHANGE) {
+    WindowProperties props;
+    if (event->isActive) {
+      cout << "pointerlock engaged\n";
+      props.set_mouse_mode(WindowProperties::M_relative);
+      props.set_cursor_hidden(true);
+    } else {
+      cout << "pointerlock disabled\n";
+      props.set_mouse_mode(WindowProperties::M_absolute);
+      props.set_cursor_hidden(false);
+    }
+    window->system_changed_properties(props);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ *
+ */
+EM_BOOL WebGLGraphicsWindow::
+on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void *user_data) {
+  WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
+  nassertr(window != NULL, false);
+
+  if (type == EMSCRIPTEN_EVENT_VISIBILITYCHANGE) {
+    WindowProperties props;
+    props.set_minimized(event->hidden != 0);
+    window->system_changed_properties(props);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ *
+ */
+EM_BOOL WebGLGraphicsWindow::
+on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data) {
+  WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
+  nassertr(window != NULL, false);
+
+  if (type == EMSCRIPTEN_EVENT_FOCUS) {
+    WindowProperties props;
+    props.set_foreground(true);
+    window->system_changed_properties(props);
+    return true;
+  } else if (type == EMSCRIPTEN_EVENT_BLUR) {
+    WindowProperties props;
+    props.set_foreground(false);
+    window->system_changed_properties(props);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;
@@ -402,7 +503,7 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
       break;
 
     case 188:
-      handle = KeyboardButton::ascii_key('.');
+      handle = KeyboardButton::ascii_key(',');
       break;
 
     case 189:
@@ -410,7 +511,7 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
       break;
 
     case 190:
-      handle = KeyboardButton::ascii_key(',');
+      handle = KeyboardButton::ascii_key('.');
       break;
 
     case 191:
@@ -452,11 +553,9 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebGLGraphicsWindow::on_mouse_event
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EM_BOOL WebGLGraphicsWindow::
 on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;
@@ -468,18 +567,33 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   switch (type) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
     // Don't register out-of-bounds mouse downs.
-    if (event->canvasX < 0 || event->canvasY < 0) {
-      return false;
+    if (event->canvasX >= 0 && event->canvasY >= 0) {
+      int w, h, f;
+      emscripten_get_canvas_size(&w, &h, &f);
+      if (event->canvasX < w && event->canvasY < h) {
+        device->button_down(MouseButton::button(event->button), time);
+        return true;
+      }
     }
-    device->button_down(MouseButton::button(event->button), time);
-    return true;
+    return false;
 
   case EMSCRIPTEN_EVENT_MOUSEUP:
     device->button_up(MouseButton::button(event->button), time);
     return true;
 
   case EMSCRIPTEN_EVENT_MOUSEMOVE:
-    device->set_pointer_in_window(event->canvasX, event->canvasY, time);
+    {
+      EmscriptenPointerlockChangeEvent ev;
+      emscripten_get_pointerlock_status(&ev);
+
+      if (ev.isActive) {
+        MouseData md = device->get_pointer();
+        device->set_pointer_in_window(md.get_x() + event->movementX,
+                                      md.get_y() + event->movementY, time);
+      } else {
+        device->set_pointer_in_window(event->canvasX, event->canvasY, time);
+      }
+    }
     return true;
 
   case EMSCRIPTEN_EVENT_MOUSEENTER:
@@ -491,6 +605,32 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
 
   default:
     break;
+  }
+
+  return false;
+}
+
+/**
+ *
+ */
+EM_BOOL WebGLGraphicsWindow::
+on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
+  GraphicsWindowInputDevice *device;
+  device = (GraphicsWindowInputDevice *)user_data;
+  nassertr(device != NULL, false);
+
+  double time = event->mouse.timestamp * 0.001;
+
+  if (type == EMSCRIPTEN_EVENT_WHEEL) {
+    if (event->deltaY < 0) {
+      device->button_down(MouseButton::wheel_up(), time);
+      device->button_up(MouseButton::wheel_up(), time);
+    }
+    if (event->deltaY > 0) {
+      device->button_down(MouseButton::wheel_down(), time);
+      device->button_up(MouseButton::wheel_down(), time);
+    }
+    return true;
   }
 
   return false;

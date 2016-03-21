@@ -1,16 +1,15 @@
-// Filename: weakPointerTo.h
-// Created by:  drose (27Sep04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file weakPointerTo.h
+ * @author drose
+ * @date 2004-09-27
+ */
 
 #ifndef WEAKPOINTERTO_H
 #define WEAKPOINTERTO_H
@@ -19,15 +18,13 @@
 #include "weakPointerToBase.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakPointerTo
-// Description : WeakPointerTo is similar to PointerTo, except that it
-//               does not actually prevent the referenced pointer from
-//               deleting.  Instead, the referenced pointer is allowed
-//               to delete, but if this happens then was_deleted()
-//               will return true, and it will be an assertion error to
-//               dereference the pointer thereafter.
-////////////////////////////////////////////////////////////////////
+/**
+ * WeakPointerTo is similar to PointerTo, except that it does not actually
+ * prevent the referenced pointer from deleting.  Instead, the referenced
+ * pointer is allowed to delete, but if this happens then was_deleted() will
+ * return true, and it will be an assertion error to dereference the pointer
+ * thereafter.
+ */
 template <class T>
 class WeakPointerTo : public WeakPointerToBase<T> {
 public:
@@ -51,20 +48,18 @@ PUBLISHED:
   INLINE WeakPointerTo<T> &operator = (const PointerTo<T> &copy);
   INLINE WeakPointerTo<T> &operator = (const WeakPointerTo<T> &copy);
 
-  // This function normally wouldn't need to be redefined here, but
-  // we do so anyway just to help out interrogate (which doesn't seem
-  // to want to automatically export the WeakPointerToBase class).  When
-  // this works again in interrogate, we can remove this.
+  // This function normally wouldn't need to be redefined here, but we do so
+  // anyway just to help out interrogate (which doesn't seem to want to
+  // automatically export the WeakPointerToBase class).  When this works again
+  // in interrogate, we can remove this.
   INLINE void clear() { WeakPointerToBase<T>::clear(); }
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakConstPointerTo
-// Description : A WeakConstPointerTo is similar to a WeakPointerTo,
-//               except it keeps a const pointer to the thing, that
-//               will be cleared to NULL when the thing deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * A WeakConstPointerTo is similar to a WeakPointerTo, except it keeps a const
+ * pointer to the thing, that will be cleared to NULL when the thing deleted.
+ */
 template <class T>
 class WeakConstPointerTo : public WeakPointerToBase<T> {
 public:
@@ -91,10 +86,10 @@ PUBLISHED:
   INLINE WeakConstPointerTo<T> &operator = (const WeakPointerTo<T> &copy);
   INLINE WeakConstPointerTo<T> &operator = (const WeakConstPointerTo<T> &copy);
 
-  // These functions normally wouldn't need to be redefined here, but
-  // we do so anyway just to help out interrogate (which doesn't seem
-  // to want to automatically export the WeakPointerToBase class).  When
-  // this works again in interrogate, we can remove these.
+  // These functions normally wouldn't need to be redefined here, but we do so
+  // anyway just to help out interrogate (which doesn't seem to want to
+  // automatically export the WeakPointerToBase class).  When this works again
+  // in interrogate, we can remove these.
   INLINE bool is_null() const { return WeakPointerToBase<T>::is_null(); }
   INLINE void clear() { WeakPointerToBase<T>::clear(); }
 };

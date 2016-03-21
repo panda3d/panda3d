@@ -1,16 +1,15 @@
-// Filename: withOutputFile.h
-// Created by:  drose (11Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file withOutputFile.h
+ * @author drose
+ * @date 2001-04-11
+ */
 
 #ifndef WITHOUTPUTFILE_H
 #define WITHOUTPUTFILE_H
@@ -20,16 +19,13 @@
 #include "programBase.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WithOutputFile
-// Description : This is the bare functionality (intended to be
-//               inherited from along with ProgramBase or some
-//               derivative) for a program that might generate an
-//               output file.
-//
-//               This provides the has_output_filename() and
-//               get_output_filename() methods.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the bare functionality (intended to be inherited from along with
+ * ProgramBase or some derivative) for a program that might generate an output
+ * file.
+ *
+ * This provides the has_output_filename() and get_output_filename() methods.
+ */
 class WithOutputFile {
 public:
   WithOutputFile(bool allow_last_param, bool allow_stdout,
@@ -64,5 +60,3 @@ private:
 #include "withOutputFile.I"
 
 #endif
-
-

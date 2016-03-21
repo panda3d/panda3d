@@ -1,17 +1,16 @@
-// Filename: milesAudioManager.h
-// Created by:  skyler (June 6, 2001)
-// Prior system by: cary
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file milesAudioManager.h
+ * @author skyler
+ * @date 2001-06-06
+ * Prior system by: cary
+ */
 
 #ifndef __MILES_AUDIO_MANAGER_H__ //[
 #define __MILES_AUDIO_MANAGER_H__
@@ -35,14 +34,14 @@ class MilesAudioSound;
 class EXPCL_MILES_AUDIO MilesAudioManager: public AudioManager {
 public:
   // See AudioManager.h for documentation.
-  
+
   MilesAudioManager();
   virtual ~MilesAudioManager();
-  
+
   virtual void shutdown();
 
   virtual bool is_valid();
-  
+
   virtual PT(AudioSound) get_sound(const string &file_name, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *sound, bool positional = false, int mode=SM_heuristic);
   virtual void uncache_sound(const string &file_name);
@@ -55,7 +54,7 @@ public:
 
   void set_play_rate(PN_stdfloat play_rate);
   PN_stdfloat get_play_rate() const;
-  
+
   virtual void set_active(bool active);
   virtual bool get_active() const;
 
@@ -71,10 +70,9 @@ public:
   void release_sound(MilesAudioSound *audioSound);
   void cleanup();
 
-  // 3D spatialized sound support.
-  // Spatialized sound was originally added for FMOD, so there are parts of the
-  // interface in the Miles implementation that are a little more awkward than
-  // they would be otherwise.
+  // 3D spatialized sound support.  Spatialized sound was originally added for
+  // FMOD, so there are parts of the interface in the Miles implementation
+  // that are a little more awkward than they would be otherwise.
   virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat xy, PN_stdfloat xz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
   virtual void audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
@@ -95,7 +93,7 @@ private:
 
   void start_service_stream(HSTREAM stream);
   void stop_service_stream(HSTREAM stream);
-  
+
   void most_recently_used(const string &path);
   void uncache_a_sound();
 
@@ -153,7 +151,7 @@ private:
   int _cache_limit;
   bool _cleanup_required;
   unsigned int _concurrent_sound_limit;
-  
+
   bool _is_valid;
   bool _hasMidiSounds;
 
@@ -196,5 +194,3 @@ EXPCL_MILES_AUDIO AudioManager *Create_MilesAudioManager();
 #endif //]
 
 #endif //]
-
-

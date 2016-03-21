@@ -1,17 +1,15 @@
-// Filename: error_utils.cxx
-// Created by:  mike (07Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file error_utils.cxx
+ * @author mike
+ * @date 2000-11-07
+ */
 
 #include "error_utils.h"
 #include "config_express.h"
@@ -23,10 +21,9 @@
   #include <winsock2.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: error_to_text
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string error_to_text(ErrorUtilCode err) {
   const char *errmsg = "Unknown error";
 
@@ -149,10 +146,9 @@ string error_to_text(ErrorUtilCode err) {
   return string(msgbuf);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_write_error
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int
 get_write_error() {
 #if !defined(WIN32) && !defined(WIN64)
@@ -187,10 +183,9 @@ get_write_error() {
 }
 
 #ifdef HAVE_NET
-////////////////////////////////////////////////////////////////////
-//     Function: handle_socket_error
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string handle_socket_error() {
 #if !defined(WIN32) && !defined(WIN64)
   return string(strerror(errno));
@@ -246,10 +241,9 @@ string handle_socket_error() {
 #endif
 
 #ifdef HAVE_NET
-////////////////////////////////////////////////////////////////////
-//     Function: get_network_error
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 int
 get_network_error() {
 #if !defined(WIN32) && !defined(WIN64)

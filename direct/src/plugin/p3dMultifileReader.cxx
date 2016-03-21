@@ -1,16 +1,15 @@
-// Filename: p3dMultifileReader.cxx
-// Created by:  drose (15Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dMultifileReader.cxx
+ * @author drose
+ * @date 2009-06-15
+ */
 
 #include "p3dMultifileReader.h"
 #include "p3dPackage.h"
@@ -24,37 +23,32 @@
 #include <io.h>
 #endif
 
-// This sequence of bytes begins each Multifile to identify it as a
-// Multifile.
+// This sequence of bytes begins each Multifile to identify it as a Multifile.
 const char P3DMultifileReader::_header[] = "pmf\0\n\r";
 const size_t P3DMultifileReader::_header_size = 6;
 
 const int P3DMultifileReader::_current_major_ver = 1;
 const int P3DMultifileReader::_current_minor_ver = 1;
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DMultifileReader::
 P3DMultifileReader() {
   _is_open = false;
   _read_offset = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::open_read
-//       Access: Public
-//  Description: Opens the indicated file for reading.  Returns true
-//               on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated file for reading.  Returns true on success, false on
+ * failure.
+ */
 bool P3DMultifileReader::
 open_read(const string &pathname, const int &offset) {
   if (_is_open) {
     close();
   }
- 
+
   _read_offset = offset;
   if (!read_header(pathname)) {
     return false;
@@ -64,38 +58,32 @@ open_read(const string &pathname, const int &offset) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::close
-//       Access: Public
-//  Description: Closes the previously-opened file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the previously-opened file.
+ */
 void P3DMultifileReader::
 close() {
   _in.close();
   _is_open = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::extract_all
-//       Access: Public
-//  Description: Reads the multifile, and extracts all the expected
-//               extractable components within it to the indicated
-//               directory.  Returns true on success, false on
-//               failure.
-//
-//               Upates the "step" object with the progress through
-//               this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the multifile, and extracts all the expected extractable components
+ * within it to the indicated directory.  Returns true on success, false on
+ * failure.
+ *
+ * Upates the "step" object with the progress through this operation.
+ */
 bool P3DMultifileReader::
-extract_all(const string &to_dir, P3DPackage *package, 
+extract_all(const string &to_dir, P3DPackage *package,
             P3DPackage::InstallStepThreaded *step) {
   assert(_is_open);
   if (_in.fail()) {
     return false;
   }
 
-  // Now walk through all of the files, and extract only the ones we
-  // expect to encounter.
+  // Now walk through all of the files, and extract only the ones we expect to
+  // encounter.
   Subfiles::iterator si;
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
@@ -128,15 +116,15 @@ extract_all(const string &to_dir, P3DPackage *package,
     }
     out.close();
 
-    // Check that the file was extracted correctly (and also set the
-    // correct timestamp).
+    // Check that the file was extracted correctly (and also set the correct
+    // timestamp).
     if (!file.full_verify(to_dir)) {
       nout << "After extracting, " << s._filename << " is still incorrect.\n";
       return false;
     }
 
-    // Be sure to set execute permissions on the file, in case it's a
-    // program or something.
+    // Be sure to set execute permissions on the file, in case it's a program
+    // or something.
     chmod(output_pathname.c_str(), 0555);
 
     if (step != NULL && package != NULL) {
@@ -147,13 +135,10 @@ extract_all(const string &to_dir, P3DPackage *package,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::extract_one
-//       Access: Public
-//  Description: Reads the multifile, and extracts only the named
-//               component to the indicated stream.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the multifile, and extracts only the named component to the indicated
+ * stream.  Returns true on success, false on failure.
+ */
 bool P3DMultifileReader::
 extract_one(ostream &out, const string &filename) {
   assert(_is_open);
@@ -174,22 +159,17 @@ extract_one(ostream &out, const string &filename) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::get_num_signatures
-//       Access: Published
-//  Description: Returns the number of matching signatures found on
-//               the Multifile.  These signatures may be iterated via
-//               get_signature() and related methods.
-//
-//               A signature on this list is guaranteed to match the
-//               Multifile contents, proving that the Multifile has
-//               been unmodified since the signature was applied.
-//               However, this does not guarantee that the certificate
-//               itself is actually from who it says it is from; only
-//               that it matches the Multifile contents.  See
-//               validate_signature_certificate() to authenticate a
-//               particular certificate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of matching signatures found on the Multifile.  These
+ * signatures may be iterated via get_signature() and related methods.
+ *
+ * A signature on this list is guaranteed to match the Multifile contents,
+ * proving that the Multifile has been unmodified since the signature was
+ * applied.  However, this does not guarantee that the certificate itself is
+ * actually from who it says it is from; only that it matches the Multifile
+ * contents.  See validate_signature_certificate() to authenticate a
+ * particular certificate.
+ */
 int P3DMultifileReader::
 get_num_signatures() const {
   if (_is_open) {
@@ -199,12 +179,10 @@ get_num_signatures() const {
   return _signatures.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::get_signature
-//       Access: Published
-//  Description: Returns the nth signature found on the Multifile.
-//               See the comments in get_num_signatures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth signature found on the Multifile.  See the comments in
+ * get_num_signatures().
+ */
 const P3DMultifileReader::CertChain &P3DMultifileReader::
 get_signature(int n) const {
   static CertChain error_chain;
@@ -212,13 +190,10 @@ get_signature(int n) const {
   return _signatures[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::read_header
-//       Access: Private
-//  Description: Opens the named multifile and reads the header
-//               information and index, returning true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the named multifile and reads the header information and index,
+ * returning true on success, false on failure.
+ */
 bool P3DMultifileReader::
 read_header(const string &pathname) {
   assert(!_is_open);
@@ -242,12 +217,11 @@ read_header(const string &pathname) {
   char this_header[_header_size];
   _in.seekg(_read_offset);
 
-  // Here's a special case: if the multifile begins with a hash
-  // character, then we continue reading and discarding lines of ASCII
-  // text, until we come across a nonempty line that does not begin
-  // with a hash character.  This allows a P3D application (which is a
-  // multifile) to be run directly on the command line on Unix-based
-  // systems.
+  // Here's a special case: if the multifile begins with a hash character,
+  // then we continue reading and discarding lines of ASCII text, until we
+  // come across a nonempty line that does not begin with a hash character.
+  // This allows a P3D application (which is a multifile) to be run directly
+  // on the command line on Unix-based systems.
   int ch = _in.get();
 
   if (ch == '#') {
@@ -300,13 +274,11 @@ read_header(const string &pathname) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::read_index
-//       Access: Private
-//  Description: Assuming the file stream is positioned at the first
-//               record, reads all of the records into the _subfiles
-//               list.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming the file stream is positioned at the first record, reads all of
+ * the records into the _subfiles list.  Returns true on success, false on
+ * failure.
+ */
 bool P3DMultifileReader::
 read_index() {
   _last_data_byte = 0;
@@ -325,7 +297,7 @@ read_index() {
       // Skip over the uncompressed length.
       read_uint32();
     }
-      
+
     s._timestamp = read_uint32();
     size_t name_length = read_uint16();
     char *buffer = new char[name_length];
@@ -364,20 +336,17 @@ read_index() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::extract_subfile
-//       Access: Private
-//  Description: Extracts the indicated subfile and writes it to the
-//               indicated stream.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the indicated subfile and writes it to the indicated stream.
+ * Returns true on success, false on failure.
+ */
 bool P3DMultifileReader::
 extract_subfile(ostream &out, const Subfile &s) {
   _in.seekg(s._data_start + _read_offset);
 
   static const streamsize buffer_size = 4096;
   char buffer[buffer_size];
-  
+
   streamsize remaining_data = s._data_length;
   _in.read(buffer, min(buffer_size, remaining_data));
   streamsize count = _in.gcount();
@@ -387,7 +356,7 @@ extract_subfile(ostream &out, const Subfile &s) {
     _in.read(buffer, min(buffer_size, remaining_data));
     count = _in.gcount();
   }
-  
+
   if (remaining_data != 0) {
     nout << "Unable to extract " << s._filename << "\n";
     return false;
@@ -397,18 +366,14 @@ extract_subfile(ostream &out, const Subfile &s) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::check_signatures
-//       Access: Private
-//  Description: Walks through the list of _cert_special entries in
-//               the Multifile, moving any valid signatures found to
-//               _signatures.  After this call, _cert_special will be
-//               empty.
-//
-//               This does not check the validity of the certificates
-//               themselves.  It only checks that they correctly sign
-//               the Multifile contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the list of _cert_special entries in the Multifile, moving
+ * any valid signatures found to _signatures.  After this call, _cert_special
+ * will be empty.
+ *
+ * This does not check the validity of the certificates themselves.  It only
+ * checks that they correctly sign the Multifile contents.
+ */
 void P3DMultifileReader::
 check_signatures() {
   Subfiles::iterator pi;
@@ -441,8 +406,8 @@ check_signatures() {
       return;
     }
 
-    // Now convert each of the certificates to an X509 object, and
-    // store it in our CertChain.
+    // Now convert each of the certificates to an X509 object, and store it in
+    // our CertChain.
     CertChain chain;
     EVP_PKEY *pkey = NULL;
     if (buffer_size > 0) {
@@ -467,11 +432,11 @@ check_signatures() {
     }
 
     delete[] buffer;
-    
+
     if (!chain.empty()) {
       pkey = X509_get_pubkey(chain[0]._cert);
     }
-    
+
     if (pkey != NULL) {
       EVP_MD_CTX *md_ctx;
 #if OPENSSL_VERSION_NUMBER >= 0x00907000L
@@ -497,10 +462,10 @@ check_signatures() {
         count = _in.gcount();
       }
       assert(bytes_remaining == (streampos)0);
-      
+
       // Now check that the signature matches the hash.
-      int verify_result = 
-        EVP_VerifyFinal(md_ctx, (unsigned char *)sig, 
+      int verify_result =
+        EVP_VerifyFinal(md_ctx, (unsigned char *)sig,
                         sig_size, pkey);
       if (verify_result == 1) {
         // The signature matches; save the certificate and its chain.

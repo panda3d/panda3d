@@ -1,16 +1,15 @@
-// Filename: convert_srgb.cxx
-// Created by:  rdb (13Nov14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file convert_srgb.cxx
+ * @author rdb
+ * @date 2014-11-13
+ */
 
 #include "convert_srgb.h"
 
@@ -101,7 +100,8 @@ const float to_linear_float_table[256] = { 0, 0.000304f, 0.000607f, 0.000911f,
 
 
 #if defined(__SSE2__) || (_M_IX86_FP >= 2) || defined(_M_X64) || defined(_M_AMD64)
-// SSE2 support enabled at compile time.  No runtime detection mechanism needed.
+// SSE2 support enabled at compile time.  No runtime detection mechanism
+// needed.
 bool
 has_sse2_sRGB_encode() {
   return true;

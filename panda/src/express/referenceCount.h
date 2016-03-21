@@ -1,16 +1,15 @@
-// Filename: referenceCount.h
-// Created by:  drose (23Oct98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file referenceCount.h
+ * @author drose
+ * @date 1998-10-23
+ */
 
 #ifndef REFERENCECOUNT_H
 #define REFERENCECOUNT_H
@@ -31,13 +30,11 @@
 #include <typeinfo>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : ReferenceCount
-// Description : A base class for all things that want to be
-//               reference-counted.  ReferenceCount works in
-//               conjunction with PointerTo to automatically delete
-//               objects when the last pointer to them goes away.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for all things that want to be reference-counted.
+ * ReferenceCount works in conjunction with PointerTo to automatically delete
+ * objects when the last pointer to them goes away.
+ */
 class EXPCL_PANDAEXPRESS ReferenceCount : public MemoryBase {
 protected:
   INLINE ReferenceCount();
@@ -75,18 +72,17 @@ private:
 
 private:
   enum {
-    // We use this value as a flag to indicate an object has been
-    // indicated as a local object, and should not be deleted except
-    // by its own destructor.  Really, any nonzero value would do, but
-    // having a large specific number makes the sanity checks easier.
+    // We use this value as a flag to indicate an object has been indicated as
+    // a local object, and should not be deleted except by its own destructor.
+    // Really, any nonzero value would do, but having a large specific number
+    // makes the sanity checks easier.
     local_ref_count = 10000000,
 
-    // This value is used as a flag to indicate that an object has
-    // just been deleted, and you're looking at deallocated memory.
-    // It's not guaranteed to stick around, of course (since the
-    // deleted memory might be repurposed for anything else, including
-    // a new object), but if you ever do encounter this value in a
-    // reference count field, you screwed up.
+    // This value is used as a flag to indicate that an object has just been
+    // deleted, and you're looking at deallocated memory.  It's not guaranteed
+    // to stick around, of course (since the deleted memory might be
+    // repurposed for anything else, including a new object), but if you ever
+    // do encounter this value in a reference count field, you screwed up.
     deleted_ref_count = -100,
   };
 
@@ -108,21 +104,16 @@ private:
 template<class RefCountType>
 INLINE void unref_delete(RefCountType *ptr);
 
-////////////////////////////////////////////////////////////////////
-//       Class : RefCountProxy
-// Description : A "proxy" to use to make a reference-countable object
-//               whenever the object cannot inherit from
-//               ReferenceCount for some reason.  RefCountPr<MyClass>
-//               can be treated as an instance of MyClass directly,
-//               for the most part, except that it can be reference
-//               counted.
-//
-//               If you want to declare a RefCountProxy to something
-//               that does not have get_class_type(), you will have to
-//               define a template specialization on
-//               _get_type_handle() and _do_init_type(), as in
-//               typedObject.h.
-////////////////////////////////////////////////////////////////////
+/**
+ * A "proxy" to use to make a reference-countable object whenever the object
+ * cannot inherit from ReferenceCount for some reason.  RefCountPr<MyClass>
+ * can be treated as an instance of MyClass directly, for the most part,
+ * except that it can be reference counted.
+ *
+ * If you want to declare a RefCountProxy to something that does not have
+ * get_class_type(), you will have to define a template specialization on
+ * _get_type_handle() and _do_init_type(), as in typedObject.h.
+ */
 template<class Base>
 class RefCountProxy : public ReferenceCount {
 public:
@@ -143,14 +134,12 @@ private:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : RefCountObj
-// Description : Another kind of proxy, similar to RefCountProxy.
-//               This one works by inheriting from the indicated base
-//               type, giving it an is-a relation instead of a has-a
-//               relation.  As such, it's a little more robust, but
-//               only works when the base type is, in fact, a class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another kind of proxy, similar to RefCountProxy.  This one works by
+ * inheriting from the indicated base type, giving it an is-a relation instead
+ * of a has-a relation.  As such, it's a little more robust, but only works
+ * when the base type is, in fact, a class.
+ */
 template<class Base>
 class RefCountObj : public ReferenceCount, public Base {
 public:

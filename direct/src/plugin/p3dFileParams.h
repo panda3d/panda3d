@@ -1,16 +1,15 @@
-// Filename: p3dFileParams.h
-// Created by:  drose (23Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dFileParams.h
+ * @author drose
+ * @date 2009-06-23
+ */
 
 #ifndef P3DFILEPARAMS_H
 #define P3DFILEPARAMS_H
@@ -19,11 +18,9 @@
 #include "get_tinyxml.h"
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DFileParams
-// Description : Encapsulates the file parameters: the p3d_filename,
-//               and extra tokens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the file parameters: the p3d_filename, and extra tokens.
+ */
 class P3DFileParams {
 public:
   P3DFileParams();

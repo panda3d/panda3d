@@ -1,16 +1,15 @@
-// Filename: odeGeom.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeGeom.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODEGEOM_H
 #define ODEGEOM_H
@@ -40,10 +39,9 @@ class OdeQuadTreeSpace;
 class OdeUtil;
 class OdeCollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeGeom : public TypedObject {
   friend class OdeContactGeom;
   friend class OdeSpace;
@@ -54,14 +52,13 @@ public:
   OdeGeom(dGeomID id);
 
 PUBLISHED:
-  enum GeomClass { GC_sphere = 0, 
+  enum GeomClass { GC_sphere = 0,
                    GC_box,
                    GC_capped_cylinder,
                    GC_cylinder,
                    GC_plane,
                    GC_ray,
-                   // GC_convex,
-                   // GC_geom_transform,
+                   // GC_convex, GC_geom_transform,
                    GC_tri_mesh = 8,
                    // GC_heightfield,
 
@@ -75,7 +72,7 @@ PUBLISHED:
   INLINE bool is_empty() const;
   INLINE dGeomID get_id() const;
 
-  //INLINE void set_data(void* data);
+  // INLINE void set_data(void* data);
   INLINE void set_body(OdeBody &body);
   INLINE bool has_body() const;
   INLINE OdeBody get_body() const;
@@ -111,12 +108,10 @@ PUBLISHED:
   INLINE LMatrix3f get_offset_rotation() const;
   INLINE LQuaternionf get_offset_quaternion() const;
 
-  //int get_surface_type() ;
-  //int get_collide_id() ;
-  //int set_collide_id( int collide_id);
-  //void set_surface_type( int surface_type);
+  // int get_surface_type() ; int get_collide_id() ; int set_collide_id( int
+  // collide_id); void set_surface_type( int surface_type);
 
-  //int test_collide_id( int collide_id);
+  // int test_collide_id( int collide_id);
 
   OdeSpace get_space() const;
   EXTENSION(INLINE PyObject *get_converted_space() const);

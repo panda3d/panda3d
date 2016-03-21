@@ -1,16 +1,15 @@
-// Filename: fltLocalVertexPool.cxx
-// Created by:  drose (28Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltLocalVertexPool.cxx
+ * @author drose
+ * @date 2001-02-28
+ */
 
 #include "fltLocalVertexPool.h"
 #include "fltRecordReader.h"
@@ -20,23 +19,18 @@
 
 TypeHandle FltLocalVertexPool::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltLocalVertexPool::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FltLocalVertexPool::
 FltLocalVertexPool(FltHeader *header) : FltRecord(header) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltLocalVertexPool::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltLocalVertexPool::
 extract_record(FltRecordReader &reader) {
   if (!FltRecord::extract_record(reader)) {
@@ -125,14 +119,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltLocalVertexPool::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this
+ * record, but does not advance the writer.  Returns true on success, false if
+ * there is some error.
+ */
 bool FltLocalVertexPool::
 build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {
@@ -171,8 +162,8 @@ build_record(FltRecordWriter &writer) const {
 
   if ((attributes & AM_has_packed_color) != 0 &&
       (attributes & AM_has_color_index) != 0) {
-    // We cannot have both a packed color and a color index.  If we
-    // want both, used packed color.
+    // We cannot have both a packed color and a color index.  If we want both,
+    // used packed color.
     attributes &= ~AM_has_color_index;
   }
 
@@ -191,18 +182,17 @@ build_record(FltRecordWriter &writer) const {
 
     if ((attributes & AM_has_color_index) != 0) {
       if ((vertex->_flags & (FltVertex::F_no_color | FltVertex::F_packed_color)) != 0) {
-        // This particular vertex does not have a color index.
-        // Make it white.
+        // This particular vertex does not have a color index.  Make it white.
         datagram.add_be_int32(_header->get_closest_rgb(LRGBColor(1.0, 1.0, 1.0)));
       } else {
         datagram.add_be_int32(vertex->_color_index);
       }
 
     } else if ((attributes & AM_has_packed_color) != 0) {
-      // We extract our own FltPackedColor instead of writing out the
-      // vertex's _packed_color directly, just in case the vertex is
-      // actually index colored.  This bit of code will work
-      // regardless of the kind of color the vertex has.
+      // We extract our own FltPackedColor instead of writing out the vertex's
+      // _packed_color directly, just in case the vertex is actually index
+      // colored.  This bit of code will work regardless of the kind of color
+      // the vertex has.
 
       FltPackedColor color;
       if (vertex->has_color()) {

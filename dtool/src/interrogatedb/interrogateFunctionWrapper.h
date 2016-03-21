@@ -1,16 +1,15 @@
-// Filename: interrogateFunctionWrapper.h
-// Created by:  drose (06Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogateFunctionWrapper.h
+ * @author drose
+ * @date 2000-08-06
+ */
 
 #ifndef INTERROGATEFUNCTIONWRAPPER_H
 #define INTERROGATEFUNCTIONWRAPPER_H
@@ -23,10 +22,9 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateFunctionWrapper
-// Description : An internal representation of a callable function.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a callable function.
+ */
 class EXPCL_INTERROGATEDB InterrogateFunctionWrapper : public InterrogateComponent {
 public:
   INLINE InterrogateFunctionWrapper(InterrogateModuleDef *def = NULL);
@@ -78,9 +76,9 @@ private:
   string _comment;
 
 public:
-  // This nested class must be declared public just so we can declare
-  // the external ostream and istream I/O operator functions, on the
-  // SGI compiler.  Arguably a compiler bug, but what can you do.
+  // This nested class must be declared public just so we can declare the
+  // external ostream and istream IO operator functions, on the SGI compiler.
+  // Arguably a compiler bug, but what can you do.
   class Parameter {
   public:
     void output(ostream &out) const;

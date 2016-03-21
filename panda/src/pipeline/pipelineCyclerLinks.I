@@ -1,24 +1,20 @@
-// Filename: pipelineCyclerLinks.I
-// Created by:  drose (16Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pipelineCyclerLinks.I
+ * @author drose
+ * @date 2006-02-16
+ */
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerLinks::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE PipelineCyclerLinks::
 PipelineCyclerLinks() {
 #ifndef NDEBUG
@@ -29,11 +25,9 @@ PipelineCyclerLinks() {
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerLinks::Destructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 INLINE PipelineCyclerLinks::
 ~PipelineCyclerLinks() {
   nassertv(_next == NULL && _prev == NULL);
@@ -41,12 +35,9 @@ INLINE PipelineCyclerLinks::
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerLinks::make_head
-//       Access: Protected
-//  Description: When called on an empty object, sets it up to be the
-//               head of a linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * When called on an empty object, sets it up to be the head of a linked list.
+ */
 INLINE void PipelineCyclerLinks::
 make_head() {
   nassertv(_next == NULL && _prev == NULL);
@@ -56,12 +47,10 @@ make_head() {
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerLinks::clear_head
-//       Access: Protected
-//  Description: When called on the head of an empty linked list,
-//               resets it to an empty object, for safe destruction.
-////////////////////////////////////////////////////////////////////
+/**
+ * When called on the head of an empty linked list, resets it to an empty
+ * object, for safe destruction.
+ */
 INLINE void PipelineCyclerLinks::
 clear_head() {
   nassertv(_next == this && _prev == this);
@@ -73,12 +62,9 @@ clear_head() {
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerLinks::remove_from_list
-//       Access: Protected
-//  Description: Removes a PipelineCyclerLinks record from the
-//               doubly-linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a PipelineCyclerLinks record from the doubly-linked list.
+ */
 INLINE void PipelineCyclerLinks::
 remove_from_list() {
   nassertv(_prev->_next == this && _next->_prev == this);
@@ -92,12 +78,10 @@ remove_from_list() {
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerLinks::insert_before
-//       Access: Protected
-//  Description: Adds a PipelineCyclerLinks record before the indicated
-//               node in the doubly-linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a PipelineCyclerLinks record before the indicated node in the doubly-
+ * linked list.
+ */
 INLINE void PipelineCyclerLinks::
 insert_before(PipelineCyclerLinks *node) {
   nassertv(node->_prev->_next == node && node->_next->_prev == node);
@@ -111,13 +95,10 @@ insert_before(PipelineCyclerLinks *node) {
 #endif  // THREADED_PIPELINE
 
 #ifdef THREADED_PIPELINE
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerLinks::take_list
-//       Access: Protected
-//  Description: When called on the head of an empty list, takes all
-//               of the leemnts from the indicated list and moves them
-//               to this list.
-////////////////////////////////////////////////////////////////////
+/**
+ * When called on the head of an empty list, takes all of the leemnts from the
+ * indicated list and moves them to this list.
+ */
 INLINE void PipelineCyclerLinks::
 take_list(PipelineCyclerLinks &other) {
   nassertv(_next == this && _prev == this);

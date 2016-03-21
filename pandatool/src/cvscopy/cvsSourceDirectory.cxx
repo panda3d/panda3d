@@ -1,16 +1,15 @@
-// Filename: cvsSourceDirectory.cxx
-// Created by:  drose (31Oct00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cvsSourceDirectory.cxx
+ * @author drose
+ * @date 2000-10-31
+ */
 
 #include "cvsSourceDirectory.h"
 #include "cvsSourceTree.h"
@@ -18,11 +17,9 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CVSSourceDirectory::
 CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
                    const string &dirname) :
@@ -37,11 +34,9 @@ CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CVSSourceDirectory::
 ~CVSSourceDirectory() {
   Children::iterator ci;
@@ -50,22 +45,17 @@ CVSSourceDirectory::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::get_dirname
-//       Access: Public
-//  Description: Returns the local name of this particular directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the local name of this particular directory.
+ */
 string CVSSourceDirectory::
 get_dirname() const {
   return _dirname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::get_fullpath
-//       Access: Public
-//  Description: Returns the full pathname to this particular
-//               directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the full pathname to this particular directory.
+ */
 Filename CVSSourceDirectory::
 get_fullpath() const {
   if (_parent == (CVSSourceDirectory *)NULL) {
@@ -74,12 +64,10 @@ get_fullpath() const {
   return Filename(_parent->get_fullpath(), _dirname);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::get_path
-//       Access: Public
-//  Description: Returns the relative pathname to this particular
-//               directory, as seen from the root of the tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the relative pathname to this particular directory, as seen from
+ * the root of the tree.
+ */
 Filename CVSSourceDirectory::
 get_path() const {
   if (_parent == (CVSSourceDirectory *)NULL) {
@@ -88,12 +76,10 @@ get_path() const {
   return Filename(_parent->get_path(), _dirname);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::get_rel_to
-//       Access: Public
-//  Description: Returns the relative path to the other directory from
-//               this one.  This does not include a trailing slash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the relative path to the other directory from this one.  This does
+ * not include a trailing slash.
+ */
 Filename CVSSourceDirectory::
 get_rel_to(const CVSSourceDirectory *other) const {
   const CVSSourceDirectory *a = this;
@@ -130,35 +116,27 @@ get_rel_to(const CVSSourceDirectory *other) const {
   return result.substr(0, result.length() - 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::get_num_children
-//       Access: Public
-//  Description: Returns the number of subdirectories below this
-//               directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of subdirectories below this directory.
+ */
 int CVSSourceDirectory::
 get_num_children() const {
   return _children.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::get_child
-//       Access: Public
-//  Description: Returns the nth subdirectory below this directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth subdirectory below this directory.
+ */
 CVSSourceDirectory *CVSSourceDirectory::
 get_child(int n) const {
   nassertr(n >= 0 && n < (int)_children.size(), NULL);
   return _children[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::find_relpath
-//       Access: Public
-//  Description: Returns the source directory that corresponds to the
-//               given relative path from this directory, or NULL if
-//               there is no match.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the source directory that corresponds to the given relative path
+ * from this directory, or NULL if there is no match.
+ */
 CVSSourceDirectory *CVSSourceDirectory::
 find_relpath(const string &relpath) {
   if (relpath.empty()) {
@@ -195,13 +173,10 @@ find_relpath(const string &relpath) {
   return (CVSSourceDirectory *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::find_dirname
-//       Access: Public
-//  Description: Returns the source directory that corresponds to the
-//               given local directory name, or NULL if there is no
-//               match.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the source directory that corresponds to the given local directory
+ * name, or NULL if there is no match.
+ */
 CVSSourceDirectory *CVSSourceDirectory::
 find_dirname(const string &dirname) {
   if (cmp_nocase(dirname, _dirname) == 0) {
@@ -219,16 +194,12 @@ find_dirname(const string &dirname) {
   return (CVSSourceDirectory *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceDirectory::scan
-//       Access: Public
-//  Description: Recursively scans the contents of the source
-//               directory.  Fullpath is the full path name to the
-//               directory; key_filename is the name of a file that
-//               must exist in each subdirectory for it to be
-//               considered part of the hierarchy.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively scans the contents of the source directory.  Fullpath is the
+ * full path name to the directory; key_filename is the name of a file that
+ * must exist in each subdirectory for it to be considered part of the
+ * hierarchy.  Returns true on success, false on failure.
+ */
 bool CVSSourceDirectory::
 scan(const Filename &directory, const string &key_filename) {
   vector_string contents;

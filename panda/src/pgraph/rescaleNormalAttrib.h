@@ -1,16 +1,15 @@
-// Filename: rescaleNormalAttrib.h
-// Created by:  drose (30Dec04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rescaleNormalAttrib.h
+ * @author drose
+ * @date 2004-12-30
+ */
 
 #ifndef RESCALENORMALATTRIB_H
 #define RESCALENORMALATTRIB_H
@@ -21,10 +20,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RescaleNormalAttrib
-// Description : Specifies how polygons are to be drawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how polygons are to be drawn.
+ */
 class EXPCL_PANDA_PGRAPH RescaleNormalAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -38,9 +36,8 @@ PUBLISHED:
     // Normals are scaled to unit length; potentially expensive.
     M_normalize,
 
-    // Normals are counterscaled in the presence of a uniform scale
-    // transform, or normalized in the presence of a non-uniform scale
-    // transform.
+    // Normals are counterscaled in the presence of a uniform scale transform,
+    // or normalized in the presence of a non-uniform scale transform.
     M_auto,
   };
 
@@ -64,8 +61,8 @@ protected:
 private:
   Mode _mode;
 
-  // There are so few possible combinations, and it's used fairly often, so
-  // we keep an array of the possible attributes.
+  // There are so few possible combinations, and it's used fairly often, so we
+  // keep an array of the possible attributes.
   static CPT(RenderAttrib) _attribs[M_auto + 1];
 
 PUBLISHED:
@@ -105,4 +102,3 @@ EXPCL_PANDA_PGRAPH istream &operator >> (istream &in, RescaleNormalAttrib::Mode 
 #include "rescaleNormalAttrib.I"
 
 #endif
-

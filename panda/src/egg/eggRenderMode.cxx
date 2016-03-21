@@ -1,16 +1,15 @@
-// Filename: eggRenderMode.cxx
-// Created by:  drose (20Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggRenderMode.cxx
+ * @author drose
+ * @date 1999-01-20
+ */
 
 #include "eggRenderMode.h"
 #include "indent.h"
@@ -19,11 +18,9 @@
 
 TypeHandle EggRenderMode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggRenderMode::
 EggRenderMode() {
   _alpha_mode = AM_unspecified;
@@ -36,11 +33,9 @@ EggRenderMode() {
   _has_draw_order = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggRenderMode &EggRenderMode::
 operator = (const EggRenderMode &copy) {
   _alpha_mode = copy._alpha_mode;
@@ -54,12 +49,9 @@ operator = (const EggRenderMode &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::write
-//       Access: Public
-//  Description: Writes the attributes to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the attributes to the indicated output stream in Egg format.
+ */
 void EggRenderMode::
 write(ostream &out, int indent_level) const {
   if (get_alpha_mode() != AM_unspecified) {
@@ -92,11 +84,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::Equality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool EggRenderMode::
 operator == (const EggRenderMode &other) const {
   if (_alpha_mode != other._alpha_mode ||
@@ -127,11 +117,9 @@ operator == (const EggRenderMode &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool EggRenderMode::
 operator < (const EggRenderMode &other) const {
   if (_alpha_mode != other._alpha_mode) {
@@ -172,13 +160,11 @@ operator < (const EggRenderMode &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::string_alpha_mode
-//       Access: Public
-//  Description: Returns the AlphaMode value associated with the given
-//               string representation, or AM_unspecified if the string
-//               does not match any known AlphaMode value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the AlphaMode value associated with the given string
+ * representation, or AM_unspecified if the string does not match any known
+ * AlphaMode value.
+ */
 EggRenderMode::AlphaMode EggRenderMode::
 string_alpha_mode(const string &string) {
   if (cmp_nocase_uh(string, "off") == 0) {
@@ -197,19 +183,18 @@ string_alpha_mode(const string &string) {
     return AM_binary;
   } else if (cmp_nocase_uh(string, "dual") == 0) {
     return AM_dual;
+  } else if (cmp_nocase_uh(string, "premultiplied") == 0) {
+    return AM_premultiplied;
   } else {
     return AM_unspecified;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::string_depth_write_mode
-//       Access: Public
-//  Description: Returns the DepthWriteMode value associated with the
-//               given string representation, or DWM_unspecified if
-//               the string does not match any known DepthWriteMode
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DepthWriteMode value associated with the given string
+ * representation, or DWM_unspecified if the string does not match any known
+ * DepthWriteMode value.
+ */
 EggRenderMode::DepthWriteMode EggRenderMode::
 string_depth_write_mode(const string &string) {
   if (cmp_nocase_uh(string, "off") == 0) {
@@ -221,14 +206,11 @@ string_depth_write_mode(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::string_depth_test_mode
-//       Access: Public
-//  Description: Returns the DepthTestMode value associated with the
-//               given string representation, or DTM_unspecified if
-//               the string does not match any known DepthTestMode
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DepthTestMode value associated with the given string
+ * representation, or DTM_unspecified if the string does not match any known
+ * DepthTestMode value.
+ */
 EggRenderMode::DepthTestMode EggRenderMode::
 string_depth_test_mode(const string &string) {
   if (cmp_nocase_uh(string, "off") == 0) {
@@ -240,14 +222,11 @@ string_depth_test_mode(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRenderMode::string_visibility_mode
-//       Access: Public
-//  Description: Returns the HiddenMode value associated with the
-//               given string representation, or VM_unspecified if
-//               the string does not match any known HiddenMode
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the HiddenMode value associated with the given string
+ * representation, or VM_unspecified if the string does not match any known
+ * HiddenMode value.
+ */
 EggRenderMode::VisibilityMode EggRenderMode::
 string_visibility_mode(const string &string) {
   if (cmp_nocase_uh(string, "hidden") == 0) {
@@ -260,10 +239,9 @@ string_visibility_mode(const string &string) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode) {
   switch (mode) {
   case EggRenderMode::AM_unspecified:
@@ -284,16 +262,17 @@ ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode) {
     return out << "binary";
   case EggRenderMode::AM_dual:
     return out << "dual";
+  case EggRenderMode::AM_premultiplied:
+    return out << "premultiplied";
   }
 
   nassertr(false, out);
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaMode input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 istream &operator >> (istream &in, EggRenderMode::AlphaMode &mode) {
   string word;
   in >> word;
@@ -301,10 +280,9 @@ istream &operator >> (istream &in, EggRenderMode::AlphaMode &mode) {
   return in;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DepthWriteMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggRenderMode::DepthWriteMode mode) {
   switch (mode) {
   case EggRenderMode::DWM_unspecified:
@@ -319,10 +297,9 @@ ostream &operator << (ostream &out, EggRenderMode::DepthWriteMode mode) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DepthTestMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggRenderMode::DepthTestMode mode) {
   switch (mode) {
   case EggRenderMode::DTM_unspecified:
@@ -339,10 +316,9 @@ ostream &operator << (ostream &out, EggRenderMode::DepthTestMode mode) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: VisibilityMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggRenderMode::VisibilityMode mode) {
   switch (mode) {
   case EggRenderMode::VM_unspecified:
@@ -356,5 +332,3 @@ ostream &operator << (ostream &out, EggRenderMode::VisibilityMode mode) {
   nassertr(false, out);
   return out << "(**invalid**)";
 }
-
-

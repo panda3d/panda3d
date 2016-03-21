@@ -1,16 +1,15 @@
-// Filename: projectionScreen.h
-// Created by:  drose (11Dec01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file projectionScreen.h
+ * @author drose
+ * @date 2001-12-11
+ */
 
 #ifndef PROJECTIONSCREEN_H
 #define PROJECTIONSCREEN_H
@@ -28,30 +27,24 @@
 class Geom;
 class WorkingNodePath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ProjectionScreen
-// Description : A ProjectionScreen implements a simple system for
-//               projective texturing.  The ProjectionScreen node is
-//               the parent of a hierarchy of geometry that is
-//               considered a "screen"; the ProjectionScreen will
-//               automatically recompute all the UV's (for a
-//               particular texture stage) on its subordinate geometry
-//               according to the relative position and lens
-//               parameters of the indicated LensNode.
-//
-//               All this does is recompute UV's; the caller is
-//               responsible for applying the appropriate texture(s)
-//               to the geometry.
-//
-//               This does not take advantage of any hardware-assisted
-//               projective texturing; all of the UV's are computed in
-//               the CPU.  (Use NodePath::project_texture() to enable
-//               hardware-assisted projective texturing.)  However,
-//               the ProjectionScreen interface does support any kind
-//               of lens, linear or nonlinear, that might be defined
-//               using the Lens interface, including fisheye and
-//               cylindrical lenses.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ProjectionScreen implements a simple system for projective texturing.
+ * The ProjectionScreen node is the parent of a hierarchy of geometry that is
+ * considered a "screen"; the ProjectionScreen will automatically recompute
+ * all the UV's (for a particular texture stage) on its subordinate geometry
+ * according to the relative position and lens parameters of the indicated
+ * LensNode.
+ *
+ * All this does is recompute UV's; the caller is responsible for applying the
+ * appropriate texture(s) to the geometry.
+ *
+ * This does not take advantage of any hardware-assisted projective texturing;
+ * all of the UV's are computed in the CPU.  (Use NodePath::project_texture()
+ * to enable hardware-assisted projective texturing.)  However, the
+ * ProjectionScreen interface does support any kind of lens, linear or
+ * nonlinear, that might be defined using the Lens interface, including
+ * fisheye and cylindrical lenses.
+ */
 class EXPCL_PANDAFX ProjectionScreen : public PandaNode {
 PUBLISHED:
   ProjectionScreen(const string &name = "");
@@ -121,7 +114,7 @@ private:
   void make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
                           const NodePath &camera,
                           LMatrix4 &rel_mat, bool &computed_rel_mat);
-  PT(GeomNode) make_mesh_geom_node(const WorkingNodePath &np, 
+  PT(GeomNode) make_mesh_geom_node(const WorkingNodePath &np,
                                    const NodePath &camera,
                                    LMatrix4 &rel_mat,
                                    bool &computed_rel_mat);

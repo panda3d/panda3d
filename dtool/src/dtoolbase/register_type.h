@@ -1,16 +1,15 @@
-// Filename: register_type.h
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file register_type.h
+ * @author drose
+ * @date 2001-08-06
+ */
 
 #ifndef REGISTER_TYPE_H
 #define REGISTER_TYPE_H
@@ -20,15 +19,13 @@
 #include "typeHandle.h"
 #include "typeRegistry.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: register_type
-//  Description: This inline function is just a convenient way to call
-//               TypeRegistry::register_type(), along with zero to four
-//               record_derivation()s.  If for some reason you have a
-//               class that has more than four base classes (you're
-//               insane!), then you will need to call Register() and
-//               record_derivation() yourself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This inline function is just a convenient way to call
+ * TypeRegistry::register_type(), along with zero to four
+ * record_derivation()s.  If for some reason you have a class that has more
+ * than four base classes (you're insane!), then you will need to call
+ * Register() and record_derivation() yourself.
+ */
 INLINE void
 register_type(TypeHandle &type_handle, const string &name);
 
@@ -51,14 +48,12 @@ register_type(TypeHandle &type_handle, const string &name,
               TypeHandle parent3, TypeHandle parent4);
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: register_dynamic_type
-//  Description: This is essentially similar to register_type(),
-//               except that it doesn't store a reference to any
-//               TypeHandle passed in and it therefore doesn't
-//               complain if the type is registered more than once to
-//               different TypeHandle reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is essentially similar to register_type(), except that it doesn't
+ * store a reference to any TypeHandle passed in and it therefore doesn't
+ * complain if the type is registered more than once to different TypeHandle
+ * reference.
+ */
 INLINE TypeHandle
 register_dynamic_type(const string &name);
 
@@ -112,9 +107,8 @@ extern TypeHandle EXPCL_DTOOL pset_type_handle;
 
 void EXPCL_DTOOL init_system_type_handles();
 
-// The following template function and its specializations will return
-// a TypeHandle for any type in the world, from a pointer to that
-// type.
+// The following template function and its specializations will return a
+// TypeHandle for any type in the world, from a pointer to that type.
 
 template<class T>
 INLINE TypeHandle _get_type_handle(const T *) {
@@ -222,14 +216,13 @@ INLINE TypeHandle _get_type_handle(const void * const *) {
 }
 
 
-// The macro get_type_handle(type) is defined to make getting the type
-// handle associated with a particular type a bit cleaner.
+// The macro get_type_handle(type) is defined to make getting the type handle
+// associated with a particular type a bit cleaner.
 #define get_type_handle(type) _get_type_handle((const type *)0)
 
 
-// The following template function and its specializations can be used
-// to call init() on any unknown type.  Handy for use within a
-// template class.
+// The following template function and its specializations can be used to call
+// init() on any unknown type.  Handy for use within a template class.
 
 template<class T>
 INLINE void _do_init_type(const T *) {

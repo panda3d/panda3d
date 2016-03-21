@@ -1,16 +1,15 @@
-// Filename: config_gobj.h
-// Created by:  drose (01Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_gobj.h
+ * @author drose
+ * @date 1999-10-01
+ */
 
 #ifndef CONFIG_GOBJ_H
 #define CONFIG_GOBJ_H
@@ -37,7 +36,6 @@ extern EXPCL_PANDA_GOBJ ConfigVariableList exclude_texture_scale;
 
 
 extern EXPCL_PANDA_GOBJ ConfigVariableBool keep_texture_ram;
-extern EXPCL_PANDA_GOBJ ConfigVariableBool compressed_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool driver_compress_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool driver_generate_mipmaps;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_buffers;

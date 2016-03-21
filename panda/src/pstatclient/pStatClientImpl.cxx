@@ -1,16 +1,15 @@
-// Filename: pStatClientImpl.cxx
-// Created by:  drose (23Dec04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatClientImpl.cxx
+ * @author drose
+ * @date 2004-12-23
+ */
 
 #include "pStatClientImpl.h"
 
@@ -33,11 +32,9 @@
 #include <windows.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatClientImpl::
 PStatClientImpl(PStatClient *client) :
   _clock(TrueClock::get_global_ptr()),
@@ -76,21 +73,17 @@ PStatClientImpl(PStatClient *client) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatClientImpl::
 ~PStatClientImpl() {
   nassertv(!_is_connected);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::client_connect
-//       Access: Public
-//  Description: Called only by PStatClient::client_connect().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only by PStatClient::client_connect().
+ */
 bool PStatClientImpl::
 client_connect(string hostname, int port) {
   nassertr(!_is_connected, true);
@@ -116,8 +109,8 @@ client_connect(string hostname, int port) {
       << port << "\n";
     return false;
   }
-  // Make sure we're not queuing up multiple TCP sockets--we expect
-  // immediate writes of our TCP datagrams.
+  // Make sure we're not queuing up multiple TCP sockets--we expect immediate
+  // writes of our TCP datagrams.
   _tcp_connection->set_collect_tcp(false);
 
   _reader.add_connection(_tcp_connection);
@@ -134,11 +127,9 @@ client_connect(string hostname, int port) {
   return _is_connected;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::client_disconnect
-//       Access: Public
-//  Description: Called only by PStatClient::client_disconnect().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only by PStatClient::client_disconnect().
+ */
 void PStatClientImpl::
 client_disconnect() {
   if (_is_connected) {
@@ -160,28 +151,25 @@ client_disconnect() {
   _threads_reported = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::new_frame
-//       Access: Public
-//  Description: Called by the PStatThread interface at the beginning
-//               of every frame, for each thread.  This resets the
-//               clocks for the new frame and transmits the data for
-//               the previous frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the PStatThread interface at the beginning of every frame, for
+ * each thread.  This resets the clocks for the new frame and transmits the
+ * data for the previous frame.
+ */
 void PStatClientImpl::
 new_frame(int thread_index) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
 
-  // If we're the main thread, we should exchange control packets with
-  // the server.
+  // If we're the main thread, we should exchange control packets with the
+  // server.
   if (thread_index == 0) {
     transmit_control_data();
   }
 
-  // If we've got the UDP port by the time the frame starts, it's
-  // time to become active and start actually tracking data.
+  // If we've got the UDP port by the time the frame starts, it's time to
+  // become active and start actually tracking data.
   if (_got_udp_port) {
     pthread->_is_active = true;
   }
@@ -198,8 +186,8 @@ new_frame(int thread_index) {
     // Collector 0 is the whole frame.
     _client->stop(0, thread_index, frame_start);
 
-    // Fill up the level data for all the collectors who have level
-    // data for this pthread.
+    // Fill up the level data for all the collectors who have level data for
+    // this pthread.
     int num_collectors = _client->_num_collectors;
     PStatClient::CollectorPointer *collectors =
       (PStatClient::CollectorPointer *)_client->_collectors;
@@ -229,26 +217,24 @@ new_frame(int thread_index) {
   _client->stop(pstats_index, current_thread_index, get_real_time());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::add_frame
-//       Access: Public
-//  Description: Slightly lower-level interface than new_frame that
-//               takes a set of frame data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Slightly lower-level interface than new_frame that takes a set of frame
+ * data.
+ */
 void PStatClientImpl::
 add_frame(int thread_index, const PStatFrameData &frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
 
-  // If we're the main thread, we should exchange control packets with
-  // the server.
+  // If we're the main thread, we should exchange control packets with the
+  // server.
   if (thread_index == 0) {
     transmit_control_data();
   }
 
-  // If we've got the UDP port by the time the frame starts, it's
-  // time to become active and start actually tracking data.
+  // If we've got the UDP port by the time the frame starts, it's time to
+  // become active and start actually tracking data.
   if (_got_udp_port) {
     pthread->_is_active = true;
   }
@@ -270,12 +256,10 @@ add_frame(int thread_index, const PStatFrameData &frame_data) {
   _client->stop(pstats_index, current_thread_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::transmit_frame_data
-//       Access: Private
-//  Description: Should be called once per frame per thread to
-//               transmit the latest data to the PStatServer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called once per frame per thread to transmit the latest data to
+ * the PStatServer.
+ */
 void PStatClientImpl::
 transmit_frame_data(int thread_index, int frame_number,
                     const PStatFrameData &frame_data) {
@@ -283,20 +267,20 @@ transmit_frame_data(int thread_index, int frame_number,
   PStatClient::InternalThread *thread = _client->get_thread_ptr(thread_index);
   if (_is_connected && thread->_is_active) {
 
-    // We don't want to send too many packets in a hurry and flood the
-    // server.  Check that enough time has elapsed for us to send a
-    // new packet.  If not, we'll drop this packet on the floor and
-    // send a new one next time around.
+    // We don't want to send too many packets in a hurry and flood the server.
+    // Check that enough time has elapsed for us to send a new packet.  If
+    // not, we'll drop this packet on the floor and send a new one next time
+    // around.
     double now = get_real_time();
     if (now >= thread->_next_packet) {
-      // We don't want to send more than _max_rate UDP-size packets
-      // per second, per thread.
+      // We don't want to send more than _max_rate UDP-size packets per
+      // second, per thread.
       double packet_delay = 1.0 / _max_rate;
 
       // Send new data.
       NetDatagram datagram;
-      // We always start with a zero byte, to differentiate it from a
-      // control message.
+      // We always start with a zero byte, to differentiate it from a control
+      // message.
       datagram.add_uint8(0);
 
       datagram.add_uint16(thread_index);
@@ -305,8 +289,8 @@ transmit_frame_data(int thread_index, int frame_number,
       bool sent;
 
       if (!frame_data.write_datagram(datagram, _client)) {
-        // Too many events to fit in a single datagram.  Maybe it was
-        // a long frame load or something.  Just drop the datagram.
+        // Too many events to fit in a single datagram.  Maybe it was a long
+        // frame load or something.  Just drop the datagram.
         sent = false;
 
       } else if (_writer.is_valid_for_udp(datagram)) {
@@ -336,8 +320,8 @@ transmit_frame_data(int thread_index, int frame_number,
 
       } else {
         sent = _writer.send(datagram, _tcp_connection);
-        // If our packets are so large that we must ship them via TCP,
-        // then artificially slow down the packet rate even further.
+        // If our packets are so large that we must ship them via TCP, then
+        // artificially slow down the packet rate even further.
         int packet_ratio =
           (datagram.get_length() + maximum_udp_datagram - 1) /
           maximum_udp_datagram;
@@ -356,12 +340,10 @@ transmit_frame_data(int thread_index, int frame_number,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::transmit_control_data
-//       Access: Private
-//  Description: Should be called once a frame to exchange control
-//               information with the server.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called once a frame to exchange control information with the
+ * server.
+ */
 void PStatClientImpl::
 transmit_control_data() {
   // Check for new messages from the server.
@@ -387,11 +369,9 @@ transmit_control_data() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::get_hostname
-//       Access: Private
-//  Description: Returns the current machine's hostname.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current machine's hostname.
+ */
 string PStatClientImpl::
 get_hostname() {
   if (_hostname.empty()) {
@@ -405,11 +385,9 @@ get_hostname() {
   return _hostname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::send_hello
-//       Access: Private
-//  Description: Sends the initial greeting message to the server.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the initial greeting message to the server.
+ */
 void PStatClientImpl::
 send_hello() {
   nassertv(_is_connected);
@@ -426,18 +404,15 @@ send_hello() {
   _writer.send(datagram, _tcp_connection, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::report_new_collectors
-//       Access: Private
-//  Description: Sends over any information about new Collectors that
-//               the user code might have recently created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends over any information about new Collectors that the user code might
+ * have recently created.
+ */
 void PStatClientImpl::
 report_new_collectors() {
-  // Empirically, we determined that you can't send more than about
-  // 1400 collectors at once without exceeding the 64K limit on a
-  // single datagram.  So we limit ourselves here to sending only
-  // half that many.
+  // Empirically, we determined that you can't send more than about 1400
+  // collectors at once without exceeding the 64K limit on a single datagram.
+  // So we limit ourselves here to sending only half that many.
   static const int max_collectors_at_once = 700;
 
   while (_is_connected && _collectors_reported < _client->_num_collectors) {
@@ -457,12 +432,10 @@ report_new_collectors() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::report_new_threads
-//       Access: Private
-//  Description: Sends over any information about new Threads that
-//               the user code might have recently created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends over any information about new Threads that the user code might have
+ * recently created.
+ */
 void PStatClientImpl::
 report_new_threads() {
   while (_is_connected && _threads_reported < _client->_num_threads) {
@@ -482,12 +455,10 @@ report_new_threads() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::handle_server_control_message
-//       Access: Private
-//  Description: Called when a control message has been received by
-//               the server over the TCP connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a control message has been received by the server over the TCP
+ * connection.
+ */
 void PStatClientImpl::
 handle_server_control_message(const PStatServerControlMessage &message) {
   switch (message._type) {
@@ -506,12 +477,9 @@ handle_server_control_message(const PStatServerControlMessage &message) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientImpl::connection_reset
-//       Access: Private, Virtual
-//  Description: Called by the internal net code when the connection
-//               has been lost.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the internal net code when the connection has been lost.
+ */
 void PStatClientImpl::
 connection_reset(const PT(Connection) &connection, bool) {
   if (connection == _tcp_connection) {

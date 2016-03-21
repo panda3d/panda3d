@@ -1,16 +1,15 @@
-// Filename: fltLOD.h
-// Created by:  drose (25Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltLOD.h
+ * @author drose
+ * @date 2000-08-25
+ */
 
 #ifndef FLTLOD_H
 #define FLTLOD_H
@@ -19,10 +18,9 @@
 
 #include "fltBeadID.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltLOD
-// Description : A Level-of-Detail record.
-////////////////////////////////////////////////////////////////////
+/**
+ * A Level-of-Detail record.
+ */
 class FltLOD : public FltBeadID {
 public:
   FltLOD(FltHeader *header);
@@ -64,5 +62,3 @@ private:
 };
 
 #endif
-
-

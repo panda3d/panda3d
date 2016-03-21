@@ -1,16 +1,15 @@
-// Filename: x11GraphicsPipe.cxx
-// Created by:  rdb (07Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file x11GraphicsPipe.cxx
+ * @author rdb
+ * @date 2009-07-07
+ */
 
 #include "x11GraphicsPipe.h"
 #include "x11GraphicsWindow.h"
@@ -28,11 +27,9 @@ int x11GraphicsPipe::_x_error_count = 0;
 
 LightReMutex x11GraphicsPipe::_x_mutex;
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 x11GraphicsPipe::
 x11GraphicsPipe(const string &display) {
   string display_spec = display;
@@ -46,13 +43,13 @@ x11GraphicsPipe(const string &display) {
     display_spec = ":0.0";
   }
 
-  // The X docs say we should do this to get international character
-  // support from the keyboard.
+  // The X docs say we should do this to get international character support
+  // from the keyboard.
   setlocale(LC_ALL, "");
 
-  // But it's important that we use the "C" locale for numeric
-  // formatting, since all of the internal Panda code assumes this--we
-  // need a decimal point to mean a decimal point.
+  // But it's important that we use the "C" locale for numeric formatting,
+  // since all of the internal Panda code assumes this--we need a decimal
+  // point to mean a decimal point.
   setlocale(LC_NUMERIC, "C");
 
   _is_valid = false;
@@ -99,7 +96,7 @@ x11GraphicsPipe(const string &display) {
     XRRRates(_display, 0, i, &num_rates);
     _display_information->_total_display_modes += num_rates;
   }
-  
+
   short *rates;
   short counter = 0;
   _display_information->_display_mode_array = new DisplayMode[_display_information->_total_display_modes];
@@ -118,8 +115,7 @@ x11GraphicsPipe(const string &display) {
   }
 #endif
 
-  // Connect to an input method for supporting international text
-  // entry.
+  // Connect to an input method for supporting international text entry.
   _im = XOpenIM(_display, NULL, NULL, NULL);
   if (_im == (XIM)NULL) {
     x11display_cat.warning()
@@ -153,11 +149,9 @@ x11GraphicsPipe(const string &display) {
   _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 x11GraphicsPipe::
 ~x11GraphicsPipe() {
   release_hidden_cursor();
@@ -169,36 +163,30 @@ x11GraphicsPipe::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::get_preferred_window_thread
-//       Access: Public, Virtual
-//  Description: Returns an indication of the thread in which this
-//               GraphicsPipe requires its window processing to be
-//               performed: typically either the app thread (e.g. X)
-//               or the draw thread (Windows).
-////////////////////////////////////////////////////////////////////
-GraphicsPipe::PreferredWindowThread 
+/**
+ * Returns an indication of the thread in which this GraphicsPipe requires its
+ * window processing to be performed: typically either the app thread (e.g.
+ * X) or the draw thread (Windows).
+ */
+GraphicsPipe::PreferredWindowThread
 x11GraphicsPipe::get_preferred_window_thread() const {
-  // Actually, since we're creating the graphics context in
-  // open_window() now, it appears we need to ensure the open_window()
-  // call is performed in the draw thread for now, even though X wants
-  // all of its calls to be single-threaded.
+  // Actually, since we're creating the graphics context in open_window() now,
+  // it appears we need to ensure the open_window() call is performed in the
+  // draw thread for now, even though X wants all of its calls to be single-
+  // threaded.
 
-  // This means that all X windows may have to be handled by the same
-  // draw thread, which we didn't intend (though the global _x_mutex
-  // may allow them to be technically served by different threads,
-  // even though the actual X calls will be serialized).  There might
-  // be a better way.
+  // This means that all X windows may have to be handled by the same draw
+  // thread, which we didn't intend (though the global _x_mutex may allow them
+  // to be technically served by different threads, even though the actual X
+  // calls will be serialized).  There might be a better way.
 
   return PWT_draw;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::make_hidden_cursor
-//       Access: Private
-//  Description: Called once to make an invisible Cursor for return
-//               from get_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to make an invisible Cursor for return from
+ * get_hidden_cursor().
+ */
 void x11GraphicsPipe::
 make_hidden_cursor() {
   nassertv(_hidden_cursor == None);
@@ -211,17 +199,15 @@ make_hidden_cursor() {
   XColor black;
   memset(&black, 0, sizeof(black));
 
-  _hidden_cursor = XCreatePixmapCursor(_display, empty, empty, 
+  _hidden_cursor = XCreatePixmapCursor(_display, empty, empty,
                                        &black, &black, x_size, y_size);
   XFreePixmap(_display, empty);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::release_hidden_cursor
-//       Access: Private
-//  Description: Called once to release the invisible cursor created
-//               by make_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to release the invisible cursor created by
+ * make_hidden_cursor().
+ */
 void x11GraphicsPipe::
 release_hidden_cursor() {
   if (_hidden_cursor != None) {
@@ -230,17 +216,13 @@ release_hidden_cursor() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::install_error_handlers
-//       Access: Private, Static
-//  Description: Installs new Xlib error handler functions if this is
-//               the first time this function has been called.  These
-//               error handler functions will attempt to reduce Xlib's
-//               annoying tendency to shut down the client at the
-//               first error.  Unfortunately, it is difficult to play
-//               nice with the client if it has already installed its
-//               own error handlers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Installs new Xlib error handler functions if this is the first time this
+ * function has been called.  These error handler functions will attempt to
+ * reduce Xlib's annoying tendency to shut down the client at the first error.
+ * Unfortunately, it is difficult to play nice with the client if it has
+ * already installed its own error handlers.
+ */
 void x11GraphicsPipe::
 install_error_handlers() {
   if (_error_handlers_installed) {
@@ -252,12 +234,9 @@ install_error_handlers() {
   _error_handlers_installed = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               non-fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a non-fatal Xlib error.
+ */
 int x11GraphicsPipe::
 error_handler(X11_Display *display, XErrorEvent *error) {
   ++_x_error_count;
@@ -281,25 +260,22 @@ error_handler(X11_Display *display, XErrorEvent *error) {
     abort();
   }
 
-  // We return to allow the application to continue running, unlike
-  // the default X error handler which exits.
+  // We return to allow the application to continue running, unlike the
+  // default X error handler which exits.
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::io_error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a fatal Xlib error.
+ */
 int x11GraphicsPipe::
 io_error_handler(X11_Display *display) {
   x11display_cat.fatal()
     << "X fatal error on display " << (void *)display << "\n";
 
-  // Unfortunately, we can't continue from this function, even if we
-  // promise never to use X again.  We're supposed to terminate
-  // without returning, and if we do return, the caller will exit
-  // anyway.  Sigh.  Very poor design on X's part.
+  // Unfortunately, we can't continue from this function, even if we promise
+  // never to use X again.  We're supposed to terminate without returning, and
+  // if we do return, the caller will exit anyway.  Sigh.  Very poor design on
+  // X's part.
   return 0;
 }

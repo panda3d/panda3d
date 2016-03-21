@@ -1,16 +1,15 @@
-// Filename: vrpnAnalogDevice.h
-// Created by:  drose (26Jan01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrpnAnalogDevice.h
+ * @author drose
+ * @date 2001-01-26
+ */
 
 #ifndef VRPNANALOGDEVICE_H
 #define VRPNANALOGDEVICE_H
@@ -22,14 +21,12 @@
 class VrpnClient;
 class VrpnAnalog;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnAnalogDevice
-// Description : The Panda interface to a VRPN analog device.  This
-//               object will be returned by VrpnClient::make_device(),
-//               for attaching to a AnalogNode.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda interface to a VRPN analog device.  This object will be returned
+ * by VrpnClient::make_device(), for attaching to a AnalogNode.
+ *
+ * This class does not need to be exported from the DLL.
+ */
 class VrpnAnalogDevice : public ClientAnalogDevice {
 public:
   VrpnAnalogDevice(VrpnClient *client, const string &device_name,

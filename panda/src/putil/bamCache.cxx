@@ -1,16 +1,15 @@
-// Filename: bamCache.cxx
-// Created by:  drose (09Jun06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bamCache.cxx
+ * @author drose
+ * @date 2006-06-09
+ */
 
 #include "bamCache.h"
 #include "bamCacheIndex.h"
@@ -30,11 +29,9 @@
 
 BamCache *BamCache::_global_ptr = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BamCache::
 BamCache() :
   _active(true),
@@ -97,11 +94,9 @@ BamCache() :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 BamCache::
 ~BamCache() {
   flush_index();
@@ -109,18 +104,15 @@ BamCache::
   _index = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::set_root
-//       Access: Published
-//  Description: Changes the current root pathname of the cache.  This
-//               specifies where the cache files are stored on disk.
-//               This should name a directory that is on a disk local
-//               to the machine (not on a network-mounted disk), for
-//               instance, /tmp/panda-cache or /c/panda-cache.
-//
-//               If the directory does not already exist, it will be
-//               created as a result of this call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the current root pathname of the cache.  This specifies where the
+ * cache files are stored on disk.  This should name a directory that is on a
+ * disk local to the machine (not on a network-mounted disk), for instance,
+ * /tmp/panda-cache or /c/panda-cache.
+ *
+ * If the directory does not already exist, it will be created as a result of
+ * this call.
+ */
 void BamCache::
 set_root(const Filename &root) {
   ReMutexHolder holder(_lock);
@@ -142,28 +134,22 @@ set_root(const Filename &root) {
   nassertv(vfs->is_directory(_root));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::lookup
-//       Access: Published
-//  Description: Looks up a file in the cache.
-//
-//               If the file is cacheable, then regardless of whether
-//               the file is found in the cache or not, this returns a
-//               BamCacheRecord.  On the other hand, if the file
-//               cannot be cached, returns NULL.
-//
-//               If record->has_data() returns true, then the file was
-//               found in the cache, and you may call
-//               record->extract_data() to get the object.  If
-//               record->has_data() returns false, then the file was
-//               not found in the cache or the cache was stale; and
-//               you should reload the source file (calling
-//               record->add_dependent_file() for each file loaded,
-//               including the original source file), and then call
-//               record->set_data() to record the resulting loaded
-//               object; and finally, you should call store() to write
-//               the cached record to disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up a file in the cache.
+ *
+ * If the file is cacheable, then regardless of whether the file is found in
+ * the cache or not, this returns a BamCacheRecord.  On the other hand, if the
+ * file cannot be cached, returns NULL.
+ *
+ * If record->has_data() returns true, then the file was found in the cache,
+ * and you may call record->extract_data() to get the object.  If
+ * record->has_data() returns false, then the file was not found in the cache
+ * or the cache was stale; and you should reload the source file (calling
+ * record->add_dependent_file() for each file loaded, including the original
+ * source file), and then call record->set_data() to record the resulting
+ * loaded object; and finally, you should call store() to write the cached
+ * record to disk.
+ */
 PT(BamCacheRecord) BamCache::
 lookup(const Filename &source_filename, const string &cache_extension) {
   ReMutexHolder holder(_lock);
@@ -177,8 +163,8 @@ lookup(const Filename &source_filename, const string &cache_extension) {
   Filename rel_pathname(source_pathname);
   rel_pathname.make_relative_to(_root, false);
   if (rel_pathname.is_local()) {
-    // If the source pathname is already within the cache directory,
-    // don't cache it further.
+    // If the source pathname is already within the cache directory, don't
+    // cache it further.
     return NULL;
   }
 
@@ -188,15 +174,11 @@ lookup(const Filename &source_filename, const string &cache_extension) {
   return find_and_read_record(source_pathname, cache_filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::store
-//       Access: Published
-//  Description: Flushes a cache entry to disk.  You must have
-//               retrieved the cache record via a prior call to
-//               lookup(), and then stored the data via
-//               record->set_data().  Returns true on success, false
-//               on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flushes a cache entry to disk.  You must have retrieved the cache record
+ * via a prior call to lookup(), and then stored the data via
+ * record->set_data().  Returns true on success, false on failure.
+ */
 bool BamCache::
 store(BamCacheRecord *record) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -221,9 +203,9 @@ store(BamCacheRecord *record) {
 
   Filename cache_pathname = Filename::binary_filename(record->_cache_pathname);
 
-  // We actually do the write to a temporary filename first, and then
-  // move it into place, so that no one attempts to read the file
-  // while it is in the process of being written.
+  // We actually do the write to a temporary filename first, and then move it
+  // into place, so that no one attempts to read the file while it is in the
+  // process of being written.
   Thread *current_thread = Thread::get_current_thread();
   string extension = current_thread->get_unique_id() + string(".tmp");
   Filename temp_pathname = cache_pathname;
@@ -285,9 +267,9 @@ store(BamCacheRecord *record) {
       return false;
     }
 
-    // Now that we are done with the BamWriter, it's important to let
-    // it destruct now and clean itself up, or it might get mad if we
-    // delete any TypedWritables below that haven't been written yet.
+    // Now that we are done with the BamWriter, it's important to let it
+    // destruct now and clean itself up, or it might get mad if we delete any
+    // TypedWritables below that haven't been written yet.
   }
 
   record->_record_size = dout.get_file_pos();
@@ -298,7 +280,7 @@ store(BamCacheRecord *record) {
     vfs->delete_file(cache_pathname);
     if (!vfs->rename_file(temp_pathname, cache_pathname)) {
       util_cat.error()
-        << "Unable to rename " << temp_pathname << " to " 
+        << "Unable to rename " << temp_pathname << " to "
         << cache_pathname << "\n";
       vfs->delete_file(temp_pathname);
       return false;
@@ -310,15 +292,11 @@ store(BamCacheRecord *record) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::emergency_read_only
-//       Access: Private
-//  Description: Called when an attempt to write to the cache dir
-//               has failed, usually for lack of disk space or 
-//               because of incorrect file permissions.  Outputs
-//               an error and puts the BamCache into read-only
-//               mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when an attempt to write to the cache dir has failed, usually for
+ * lack of disk space or because of incorrect file permissions.  Outputs an
+ * error and puts the BamCache into read-only mode.
+ */
 void BamCache::
 emergency_read_only() {
   util_cat.error() <<
@@ -326,12 +304,10 @@ emergency_read_only() {
   _read_only = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::consider_flush_index
-//       Access: Published
-//  Description: Flushes the index if enough time has elapsed since
-//               the index was last flushed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flushes the index if enough time has elapsed since the index was last
+ * flushed.
+ */
 void BamCache::
 consider_flush_index() {
   ReMutexHolder holder(_lock);
@@ -343,11 +319,9 @@ consider_flush_index() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::flush_index
-//       Access: Published
-//  Description: Ensures the index is written to disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures the index is written to disk.
+ */
 void BamCache::
 flush_index() {
   ReMutexHolder holder(_lock);
@@ -368,8 +342,8 @@ flush_index() {
       return;
     }
 
-    // Now atomically write the name of this index file to the index
-    // reference file.
+    // Now atomically write the name of this index file to the index reference
+    // file.
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     Filename index_ref_pathname(_root, Filename("index_name.txt"));
     string old_index = _index_ref_contents;
@@ -377,9 +351,9 @@ flush_index() {
     string orig_index;
 
     if (vfs->atomic_compare_and_exchange_contents(index_ref_pathname, orig_index, old_index, new_index)) {
-      // We successfully wrote our version of the index, and no other
-      // process beat us to it.  Our index is now the official one.
-      // Remove the old index.
+      // We successfully wrote our version of the index, and no other process
+      // beat us to it.  Our index is now the official one.  Remove the old
+      // index.
       vfs->delete_file(_index_pathname);
       _index_pathname = temp_pathname;
       _index_ref_contents = new_index;
@@ -387,9 +361,8 @@ flush_index() {
       return;
     }
 
-    // Shoot, some other process updated the index while we were
-    // trying to update it, and they beat us to it.  We have to merge,
-    // and try again.
+    // Shoot, some other process updated the index while we were trying to
+    // update it, and they beat us to it.  We have to merge, and try again.
     vfs->delete_file(temp_pathname);
     _index_pathname = Filename(_root, Filename(trim(orig_index)));
     _index_ref_contents = orig_index;
@@ -398,23 +371,18 @@ flush_index() {
   check_cache_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::list_index
-//       Access: Published
-//  Description: Writes the contents of the index to standard output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of the index to standard output.
+ */
 void BamCache::
 list_index(ostream &out, int indent_level) const {
   _index->write(out, indent_level);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::read_index
-//       Access: Private
-//  Description: Reads, or re-reads the index file from disk.  If
-//               _index_stale_since is nonzero, the index file is read
-//               and then merged with our current index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads, or re-reads the index file from disk.  If _index_stale_since is
+ * nonzero, the index file is read and then merged with our current index.
+ */
 void BamCache::
 read_index() {
   if (!read_index_pathname(_index_pathname, _index_ref_contents)) {
@@ -430,8 +398,8 @@ read_index() {
       return;
     }
 
-    // We couldn't read the index.  Maybe it's been removed already.
-    // See if the index_pathname has changed.
+    // We couldn't read the index.  Maybe it's been removed already.  See if
+    // the index_pathname has changed.
     Filename old_index_pathname = _index_pathname;
     if (!read_index_pathname(_index_pathname, _index_ref_contents)) {
       // Couldn't read the index ref; rebuild the index.
@@ -440,8 +408,7 @@ read_index() {
     }
 
     if (old_index_pathname == _index_pathname) {
-      // Nope, we just couldn't read it.  Delete it and build a new
-      // one.
+      // Nope, we just couldn't read it.  Delete it and build a new one.
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
       vfs->delete_file(_index_pathname);
       rebuild_index();
@@ -451,13 +418,10 @@ read_index() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::read_index_pathname
-//       Access: Private
-//  Description: Atomically reads the current index filename from the
-//               index reference file.  The index filename moves
-//               around as different processes update the index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically reads the current index filename from the index reference file.
+ * The index filename moves around as different processes update the index.
+ */
 bool BamCache::
 read_index_pathname(Filename &index_pathname, string &index_ref_contents) const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -476,16 +440,13 @@ read_index_pathname(Filename &index_pathname, string &index_ref_contents) const 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::merge_index
-//       Access: Private
-//  Description: The supplied index file has been updated by some other
-//               process.  Merge it with our current index.
-//
-//               Ownership of the pointer is transferred with this
-//               call.  The caller should assume that new_index will
-//               be deleted by this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * The supplied index file has been updated by some other process.  Merge it
+ * with our current index.
+ *
+ * Ownership of the pointer is transferred with this call.  The caller should
+ * assume that new_index will be deleted by this method.
+ */
 void BamCache::
 merge_index(BamCacheIndex *new_index) {
   if (_index_stale_since == 0) {
@@ -502,12 +463,11 @@ merge_index(BamCacheIndex *new_index) {
 
   BamCacheIndex::Records::const_iterator ai = old_index->_records.begin();
   BamCacheIndex::Records::const_iterator bi = new_index->_records.begin();
-  
-  while (ai != old_index->_records.end() && 
+
+  while (ai != old_index->_records.end() &&
          bi != new_index->_records.end()) {
     if ((*ai).first < (*bi).first) {
-      // Here is an entry we have in our index, not present in the new
-      // index.
+      // Here is an entry we have in our index, not present in the new index.
       PT(BamCacheRecord) record = (*ai).second;
       Filename cache_pathname(_root, record->get_cache_filename());
       if (cache_pathname.exists()) {
@@ -531,13 +491,13 @@ merge_index(BamCacheIndex *new_index) {
       PT(BamCacheRecord) a_record = (*ai).second;
       PT(BamCacheRecord) b_record = (*bi).second;
       if (*a_record == *b_record) {
-        // They're the same entry.  It doesn't really matter which one
-        // we keep.
+        // They're the same entry.  It doesn't really matter which one we
+        // keep.
         _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(a_record->get_source_pathname(), a_record));
 
       } else {
-        // They're different.  Just throw them both away, and re-read
-        // the current data from the cache file.
+        // They're different.  Just throw them both away, and re-read the
+        // current data from the cache file.
 
         Filename cache_pathname(_root, a_record->get_cache_filename());
 
@@ -555,8 +515,7 @@ merge_index(BamCacheIndex *new_index) {
   }
 
   while (ai != old_index->_records.end()) {
-    // Here is an entry we have in our index, not present in the new
-    // index.
+    // Here is an entry we have in our index, not present in the new index.
     PT(BamCacheRecord) record = (*ai).second;
     Filename cache_pathname(_root, record->get_cache_filename());
     if (cache_pathname.exists()) {
@@ -565,7 +524,7 @@ merge_index(BamCacheIndex *new_index) {
     }
     ++ai;
   }
-   
+
   while (bi != new_index->_records.end()) {
     // Here is an entry in the new index, not present in our index.
     PT(BamCacheRecord) record = (*bi).second;
@@ -580,12 +539,9 @@ merge_index(BamCacheIndex *new_index) {
   _index->process_new_records();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::rebuild_index
-//       Access: Private
-//  Description: Regenerates the index from scratch by scanning the
-//               directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Regenerates the index from scratch by scanning the directory.
+ */
 void BamCache::
 rebuild_index() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -637,12 +593,10 @@ rebuild_index() {
   flush_index();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::add_to_index
-//       Access: Private
-//  Description: Updates the index entry for the indicated record.
-//               Note that a copy of the record is made first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the index entry for the indicated record.  Note that a copy of the
+ * record is made first.
+ */
 void BamCache::
 add_to_index(const BamCacheRecord *record) {
   PT(BamCacheRecord) new_record = record->make_copy();
@@ -653,12 +607,9 @@ add_to_index(const BamCacheRecord *record) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::remove_from_index
-//       Access: Private
-//  Description: Removes the index entry for the indicated record, if
-//               there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the index entry for the indicated record, if there is one.
+ */
 void BamCache::
 remove_from_index(const Filename &source_pathname) {
   if (_index->remove_record(source_pathname)) {
@@ -666,12 +617,10 @@ remove_from_index(const Filename &source_pathname) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::check_cache_size
-//       Access: Private
-//  Description: If the cache size has exceeded its specified size
-//               limit, removes an old file.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the cache size has exceeded its specified size limit, removes an old
+ * file.
+ */
 void BamCache::
 check_cache_size() {
   if (_index->_cache_size == 0) {
@@ -699,13 +648,10 @@ check_cache_size() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::do_read_index
-//       Access: Private, Static
-//  Description: Reads the index data from the specified filename.
-//               Returns a newly-allocated BamCacheIndex object on
-//               success, or NULL on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the index data from the specified filename.  Returns a newly-
+ * allocated BamCacheIndex object on success, or NULL on failure.
+ */
 BamCacheIndex *BamCache::
 do_read_index(const Filename &index_pathname) {
   if (index_pathname.empty()) {
@@ -718,20 +664,20 @@ do_read_index(const Filename &index_pathname) {
       << "Could not read index file: " << index_pathname << "\n";
     return NULL;
   }
-  
+
   string head;
   if (!din.read_header(head, _bam_header.size())) {
     util_cat.debug()
       << index_pathname << " is not an index file.\n";
     return NULL;
   }
-  
+
   if (head != _bam_header) {
     util_cat.debug()
       << index_pathname << " is not an index file.\n";
     return NULL;
   }
-  
+
   BamReader reader(&din);
   if (!reader.init()) {
     return NULL;
@@ -761,11 +707,9 @@ do_read_index(const Filename &index_pathname) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::do_write_index
-//       Access: Private, Static
-//  Description: Writes the given index data to the specified filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the given index data to the specified filename.
+ */
 bool BamCache::
 do_write_index(const Filename &index_pathname, const BamCacheIndex *index) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -790,7 +734,7 @@ do_write_index(const Filename &index_pathname, const BamCacheIndex *index) {
       vfs->delete_file(index_pathname);
       return false;
     }
-    
+
     if (!writer.write_object(index)) {
       vfs->delete_file(index_pathname);
       return false;
@@ -800,21 +744,17 @@ do_write_index(const Filename &index_pathname, const BamCacheIndex *index) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::find_and_read_record
-//       Access: Private
-//  Description: Looks for the existing cache file that corresponds
-//               to the indicated filename.  Normally, this is the
-//               specified cache filename exactly; but in the case of
-//               a hash collision, it may be a variant of the cache
-//               filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for the existing cache file that corresponds to the indicated
+ * filename.  Normally, this is the specified cache filename exactly; but in
+ * the case of a hash collision, it may be a variant of the cache filename.
+ */
 PT(BamCacheRecord) BamCache::
-find_and_read_record(const Filename &source_pathname, 
+find_and_read_record(const Filename &source_pathname,
                      const Filename &cache_filename) {
   int pass = 0;
   while (true) {
-    PT(BamCacheRecord) record = 
+    PT(BamCacheRecord) record =
       read_record(source_pathname, cache_filename, pass);
     if (record != (BamCacheRecord *)NULL) {
       add_to_index(record);
@@ -824,15 +764,12 @@ find_and_read_record(const Filename &source_pathname,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::read_record
-//       Access: Private
-//  Description: Reads the indicated cache file and returns its
-//               associated record if it can be read and it matches
-//               the source filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated cache file and returns its associated record if it can
+ * be read and it matches the source filename.
+ */
 PT(BamCacheRecord) BamCache::
-read_record(const Filename &source_pathname, 
+read_record(const Filename &source_pathname,
             const Filename &cache_filename,
             int pass) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -842,7 +779,7 @@ read_record(const Filename &source_pathname,
     strm << cache_pathname.get_basename_wo_extension() << "_" << pass;
     cache_pathname.set_basename_wo_extension(strm.str());
   }
-  
+
   if (!cache_pathname.exists()) {
     // There is no such cache file already.  Declare it.
     if (util_cat.is_debug()) {
@@ -896,11 +833,9 @@ read_record(const Filename &source_pathname,
   return record;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::do_read_record
-//       Access: Private, Static
-//  Description: Actually reads a record from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually reads a record from the file.
+ */
 PT(BamCacheRecord) BamCache::
 do_read_record(const Filename &cache_pathname, bool read_data) {
   DatagramInputFile din;
@@ -911,7 +846,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
     }
     return NULL;
   }
-  
+
   string head;
   if (!din.read_header(head, _bam_header.size())) {
     if (util_cat.is_debug()) {
@@ -920,7 +855,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
     }
     return NULL;
   }
-  
+
   if (head != _bam_header) {
     if (util_cat.is_debug()) {
       util_cat.debug()
@@ -928,12 +863,12 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
     }
     return NULL;
   }
-  
+
   BamReader reader(&din);
   if (!reader.init()) {
     return NULL;
   }
-  
+
   TypedWritable *object = reader.read_object();
   if (object == (TypedWritable *)NULL) {
     if (util_cat.is_debug()) {
@@ -941,7 +876,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
         << cache_pathname << " is empty.\n";
     }
     return NULL;
-    
+
   } else if (!object->is_of_type(BamCacheRecord::get_class_type())) {
     if (util_cat.is_debug()) {
       util_cat.debug()
@@ -950,7 +885,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
     }
     return NULL;
   }
-  
+
   PT(BamCacheRecord) record = DCAST(BamCacheRecord, object);
   if (!reader.resolve()) {
     if (util_cat.is_debug()) {
@@ -960,14 +895,13 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
     return NULL;
   }
 
-  // From this point below, we have validated that the selected
-  // filename is indeed a cache record for the indicated source file,
-  // and therefore the cache record will be returned.
+  // From this point below, we have validated that the selected filename is
+  // indeed a cache record for the indicated source file, and therefore the
+  // cache record will be returned.
 
   // We still need to decide whether the cache record is stale.
   if (read_data && record->dependents_unchanged()) {
-    // The cache record doesn't appear to be stale.  Load the cached
-    // object.
+    // The cache record doesn't appear to be stale.  Load the cached object.
     TypedWritable *ptr;
     ReferenceCount *ref_ptr;
 
@@ -984,7 +918,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
       }
     }
   }
-  
+
   // Also get the total file size.
   PT(VirtualFile) vfile = din.get_vfile();
   istream &in = din.get_stream();
@@ -997,13 +931,10 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
   return record;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::hash_filename
-//       Access: Private, Static
-//  Description: Returns the appropriate filename to use for a cache
-//               file, given the fullpath string to the source
-//               filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the appropriate filename to use for a cache file, given the
+ * fullpath string to the source filename.
+ */
 string BamCache::
 hash_filename(const string &filename) {
 #ifdef HAVE_OPENSSL
@@ -1017,8 +948,8 @@ hash_filename(const string &filename) {
 #else  // HAVE_OPENSSL
   // Without OpenSSL, don't get fancy; just build a simple hash.
   unsigned int hash = 0;
-  for (string::const_iterator si = filename.begin(); 
-       si != filename.end(); 
+  for (string::const_iterator si = filename.begin();
+       si != filename.end();
        ++si) {
     hash = (hash * 9109) + (unsigned int)(*si);
   }
@@ -1030,11 +961,9 @@ hash_filename(const string &filename) {
 #endif  // HAVE_OPENSSL
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCache::make_global
-//       Access: Private, Static
-//  Description: Constructs the global BamCache object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs the global BamCache object.
+ */
 void BamCache::
 make_global() {
   _global_ptr = new BamCache;

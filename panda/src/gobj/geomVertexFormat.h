@@ -1,16 +1,15 @@
-// Filename: geomVertexFormat.h
-// Created by:  drose (07Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomVertexFormat.h
+ * @author drose
+ * @date 2005-03-07
+ */
 
 #ifndef GEOMVERTEXFORMAT_H
 #define GEOMVERTEXFORMAT_H
@@ -33,31 +32,26 @@ class FactoryParams;
 class GeomVertexData;
 class GeomMunger;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexFormat
-// Description : This class defines the physical layout of the vertex
-//               data stored within a Geom.  The layout consists of a
-//               list of named columns, each of which has a numeric
-//               type and a size.
-//
-//               The columns are typically interleaved within a single
-//               array, but they may also be distributed among
-//               multiple different arrays; at the extreme, each
-//               column may be alone within its own array (which
-//               amounts to a parallel-array definition).
-//
-//               Thus, a GeomVertexFormat is really a list of
-//               GeomVertexArrayFormats, each of which contains a list
-//               of columns.  However, a particular column name should
-//               not appear more than once in the format, even between
-//               different arrays.
-//
-//               There are a handful of standard pre-defined
-//               GeomVertexFormat objects, or you may define your own
-//               as needed.  You may record any combination of
-//               standard and/or user-defined columns in your custom
-//               GeomVertexFormat constructions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the physical layout of the vertex data stored within a
+ * Geom.  The layout consists of a list of named columns, each of which has a
+ * numeric type and a size.
+ *
+ * The columns are typically interleaved within a single array, but they may
+ * also be distributed among multiple different arrays; at the extreme, each
+ * column may be alone within its own array (which amounts to a parallel-array
+ * definition).
+ *
+ * Thus, a GeomVertexFormat is really a list of GeomVertexArrayFormats, each
+ * of which contains a list of columns.  However, a particular column name
+ * should not appear more than once in the format, even between different
+ * arrays.
+ *
+ * There are a handful of standard pre-defined GeomVertexFormat objects, or
+ * you may define your own as needed.  You may record any combination of
+ * standard and/or user-defined columns in your custom GeomVertexFormat
+ * constructions.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();
@@ -131,30 +125,28 @@ PUBLISHED:
   void write_with_data(ostream &out, int indent_level,
                        const GeomVertexData *data) const;
 
-  // Some standard vertex formats.  No particular requirement to use
-  // one of these, but the DirectX renderers can use these formats
-  // directly, whereas any other format will have to be converted
-  // first.
+  // Some standard vertex formats.  No particular requirement to use one of
+  // these, but the DirectX renderers can use these formats directly, whereas
+  // any other format will have to be converted first.
   INLINE static const GeomVertexFormat *get_v3();
   INLINE static const GeomVertexFormat *get_v3n3();
   INLINE static const GeomVertexFormat *get_v3t2();
   INLINE static const GeomVertexFormat *get_v3n3t2();
 
-  // These formats, with the DirectX-style packed color, may not be
-  // supported directly by OpenGL.  If you use them and the driver
-  // does not support them, the GLGraphicsStateGuardian will
-  // automatically convert to native OpenGL form (with a small
-  // runtime overhead).
+  // These formats, with the DirectX-style packed color, may not be supported
+  // directly by OpenGL.  If you use them and the driver does not support
+  // them, the GLGraphicsStateGuardian will automatically convert to native
+  // OpenGL form (with a small runtime overhead).
   INLINE static const GeomVertexFormat *get_v3cp();
   INLINE static const GeomVertexFormat *get_v3cpt2();
   INLINE static const GeomVertexFormat *get_v3n3cp();
   INLINE static const GeomVertexFormat *get_v3n3cpt2();
 
-  // These formats, with an OpenGL-style four-byte color, are not
-  // supported directly by DirectX.  If you use them, the
-  // DXGraphicsStateGuardian will automatically convert to DirectX
-  // form (with a larger runtime overhead, since DirectX8, and old
-  // DirectX9 drivers, require everything to be interleaved together).
+  // These formats, with an OpenGL-style four-byte color, are not supported
+  // directly by DirectX.  If you use them, the DXGraphicsStateGuardian will
+  // automatically convert to DirectX form (with a larger runtime overhead,
+  // since DirectX8, and old DirectX9 drivers, require everything to be
+  // interleaved together).
   INLINE static const GeomVertexFormat *get_v3c4();
   INLINE static const GeomVertexFormat *get_v3c4t2();
   INLINE static const GeomVertexFormat *get_v3n3c4();

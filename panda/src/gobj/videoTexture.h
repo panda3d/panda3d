@@ -1,16 +1,15 @@
-// Filename: videoTexture.h
-// Created by:  drose (21Sep05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file videoTexture.h
+ * @author drose
+ * @date 2005-09-21
+ */
 
 #ifndef VIDEOTEXTURE_H
 #define VIDEOTEXTURE_H
@@ -20,14 +19,12 @@
 #include "animInterface.h"
 #include "clockObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VideoTexture
-// Description : The base class for a family of animated Textures that
-//               take their input from a video source, such as a movie
-//               file.  These Textures may be stopped, started,
-//               etc. using the AnimInterface controls, similar to an
-//               animated character.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for a family of animated Textures that take their input from
+ * a video source, such as a movie file.  These Textures may be stopped,
+ * started, etc.  using the AnimInterface controls, similar to an animated
+ * character.
+ */
 class EXPCL_PANDA_GOBJ VideoTexture : public Texture, public AnimInterface {
 protected:
   VideoTexture(const string &name);
@@ -55,8 +52,8 @@ protected:
   virtual void do_reload_ram_image(Texture::CData *cdata, bool allow_compression);
   virtual bool do_can_reload(const Texture::CData *cdata) const;
 
-  virtual bool do_adjust_this_size(const Texture::CData *cdata, 
-                                   int &x_size, int &y_size, const string &name, 
+  virtual bool do_adjust_this_size(const Texture::CData *cdata,
+                                   int &x_size, int &y_size, const string &name,
                                    bool for_padding) const;
 
   virtual void consider_update();

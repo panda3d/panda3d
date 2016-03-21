@@ -1,16 +1,15 @@
-// Filename: asyncTaskManager.cxx
-// Created by:  drose (23Aug06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file asyncTaskManager.cxx
+ * @author drose
+ * @date 2006-08-23
+ */
 
 #include "asyncTaskManager.h"
 #include "event.h"
@@ -27,11 +26,9 @@ AsyncTaskManager *AsyncTaskManager::_global_ptr = NULL;
 
 TypeHandle AsyncTaskManager::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AsyncTaskManager::
 AsyncTaskManager(const string &name) :
   Namable(name),
@@ -44,22 +41,18 @@ AsyncTaskManager(const string &name) :
   do_make_task_chain("default");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AsyncTaskManager::
 ~AsyncTaskManager() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::cleanup
-//       Access: Published
-//  Description: Stops all threads and messily empties the task list.
-//               This is intended to be called on destruction only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops all threads and messily empties the task list.  This is intended to
+ * be called on destruction only.
+ */
 void AsyncTaskManager::
 cleanup() {
   MutexHolder holder(_lock);
@@ -78,19 +71,18 @@ cleanup() {
     chain->do_cleanup();
   }
 
-  // There might be one remaining task, the current task.  Especially
-  // if it wasn't running on a thread.
+  // There might be one remaining task, the current task.  Especially if it
+  // wasn't running on a thread.
   if (_num_tasks == 1) {
     nassertv(_tasks_by_name.size() == 1);
     TasksByName::const_iterator tbni = _tasks_by_name.begin();
     AsyncTask *task = (*tbni);
-    nassertv(task->_state == AsyncTask::S_servicing || 
+    nassertv(task->_state == AsyncTask::S_servicing ||
              task->_state == AsyncTask::S_servicing_removed);
     task->_state = AsyncTask::S_servicing_removed;
 
   } else {
-    // If there isn't exactly one remaining task, there should be
-    // none.
+    // If there isn't exactly one remaining task, there should be none.
 #ifndef NDEBUG
     nassertd(_num_tasks == 0 && _tasks_by_name.empty()) {
       task_cat.error()
@@ -107,22 +99,18 @@ cleanup() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::get_num_task_chains
-//       Access: Published
-//  Description: Returns the number of different task chains.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of different task chains.
+ */
 int AsyncTaskManager::
 get_num_task_chains() const {
   MutexHolder holder(_lock);
   return _task_chains.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::get_task_chain
-//       Access: Published
-//  Description: Returns the nth task chain.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth task chain.
+ */
 AsyncTaskChain *AsyncTaskManager::
 get_task_chain(int n) const {
   MutexHolder holder(_lock);
@@ -130,42 +118,33 @@ get_task_chain(int n) const {
   return _task_chains[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::make_task_chain
-//       Access: Published
-//  Description: Creates a new AsyncTaskChain of the indicated name
-//               and stores it within the AsyncTaskManager.  If a task
-//               chain with this name already exists, returns it
-//               instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new AsyncTaskChain of the indicated name and stores it within the
+ * AsyncTaskManager.  If a task chain with this name already exists, returns
+ * it instead.
+ */
 AsyncTaskChain *AsyncTaskManager::
 make_task_chain(const string &name) {
   MutexHolder holder(_lock);
   return do_make_task_chain(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::find_task_chain
-//       Access: Protected
-//  Description: Searches a new AsyncTaskChain of the indicated name
-//               and returns it if it exists, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches a new AsyncTaskChain of the indicated name and returns it if it
+ * exists, or NULL otherwise.
+ */
 AsyncTaskChain *AsyncTaskManager::
 find_task_chain(const string &name) {
   MutexHolder holder(_lock);
   return do_find_task_chain(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::remove_task_chain
-//       Access: Protected
-//  Description: Removes the AsyncTaskChain of the indicated name.
-//               If the chain still has tasks, this will block until
-//               all tasks are finished.
-//
-//               Returns true if successful, or false if the chain did
-//               not exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the AsyncTaskChain of the indicated name.  If the chain still has
+ * tasks, this will block until all tasks are finished.
+ *
+ * Returns true if successful, or false if the chain did not exist.
+ */
 bool AsyncTaskManager::
 remove_task_chain(const string &name) {
   MutexHolder holder(_lock);
@@ -192,34 +171,31 @@ remove_task_chain(const string &name) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::add
-//       Access: Published
-//  Description: Adds the indicated task to the active queue.  It is
-//               an error if the task is already added to this or any
-//               other active queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated task to the active queue.  It is an error if the task is
+ * already added to this or any other active queue.
+ */
 void AsyncTaskManager::
 add(AsyncTask *task) {
   nassertv(task->is_runnable());
 
   {
     MutexHolder holder(_lock);
-    
+
     if (task_cat.is_debug()) {
       task_cat.debug()
         << "Adding " << *task << "\n";
     }
-    
+
     if (task->_state == AsyncTask::S_servicing_removed) {
       if (task->_manager == this) {
-        // Re-adding a self-removed task; this just means clearing the
-        // removed flag.
+        // Re-adding a self-removed task; this just means clearing the removed
+        // flag.
         task->_state = AsyncTask::S_servicing;
         return;
       }
     }
-    
+
     nassertv(task->_manager == NULL &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
@@ -230,7 +206,7 @@ add(AsyncTask *task) {
     nassertv(task->_manager == NULL &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
-    
+
     AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
     if (chain == (AsyncTaskChain *)NULL) {
       task_cat.warning()
@@ -242,12 +218,10 @@ add(AsyncTask *task) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::has_task
-//       Access: Published
-//  Description: Returns true if the indicated task has been added to
-//               this AsyncTaskManager, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated task has been added to this AsyncTaskManager,
+ * false otherwise.
+ */
 bool AsyncTaskManager::
 has_task(AsyncTask *task) const {
   MutexHolder holder(_lock);
@@ -261,20 +235,18 @@ has_task(AsyncTask *task) const {
     return false;
   }
 
-  // The task might not actually be in the active queue, since it
-  // might be being serviced right now.  That's OK.
+  // The task might not actually be in the active queue, since it might be
+  // being serviced right now.  That's OK.
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::find_task
-//       Access: Published
-//  Description: Returns the first task found with the indicated name,
-//               or NULL if there is no task with the indicated name.
-//
-//               If there are multiple tasks with the same name,
-//               returns one of them arbitrarily.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first task found with the indicated name, or NULL if there is
+ * no task with the indicated name.
+ *
+ * If there are multiple tasks with the same name, returns one of them
+ * arbitrarily.
+ */
 AsyncTask *AsyncTaskManager::
 find_task(const string &name) const {
   AsyncTask sample_task(name);
@@ -288,12 +260,9 @@ find_task(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::find_tasks
-//       Access: Published
-//  Description: Returns the list of tasks found with the indicated
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the list of tasks found with the indicated name.
+ */
 AsyncTaskCollection AsyncTaskManager::
 find_tasks(const string &name) const {
   AsyncTask sample_task(name);
@@ -309,12 +278,10 @@ find_tasks(const string &name) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::find_tasks_matching
-//       Access: Published
-//  Description: Returns the list of tasks found whose name matches
-//               the indicated glob pattern, e.g. "my_task_*".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the list of tasks found whose name matches the indicated glob
+ * pattern, e.g.  "my_task_*".
+ */
 AsyncTaskCollection AsyncTaskManager::
 find_tasks_matching(const GlobPattern &pattern) const {
   string prefix = pattern.get_const_prefix();
@@ -334,29 +301,23 @@ find_tasks_matching(const GlobPattern &pattern) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::remove
-//       Access: Published
-//  Description: Removes the indicated task from the active queue.
-//               Returns true if the task is successfully removed, or
-//               false if it wasn't there.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated task from the active queue.  Returns true if the task
+ * is successfully removed, or false if it wasn't there.
+ */
 bool AsyncTaskManager::
 remove(AsyncTask *task) {
-  // We pass this up to the multi-task remove() flavor.  Do we care
-  // about the tiny cost of creating an AsyncTaskCollection here?
-  // Probably not.
+  // We pass this up to the multi-task remove() flavor.  Do we care about the
+  // tiny cost of creating an AsyncTaskCollection here?  Probably not.
   AsyncTaskCollection tasks;
   tasks.add_task(task);
   return remove(tasks) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::remove
-//       Access: Published
-//  Description: Removes all of the tasks in the AsyncTaskCollection.
-//               Returns the number of tasks removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the tasks in the AsyncTaskCollection.  Returns the number of
+ * tasks removed.
+ */
 int AsyncTaskManager::
 remove(const AsyncTaskCollection &tasks) {
   MutexHolder holder(_lock);
@@ -366,7 +327,7 @@ remove(const AsyncTaskCollection &tasks) {
   int i;
   for (i = 0; i < num_tasks; ++i) {
     PT(AsyncTask) task = tasks.get_task(i);
-    
+
     if (task->_manager != this) {
       // Not a member of this manager, or already removed.
       nassertr(!do_has_task(task), num_removed);
@@ -393,20 +354,18 @@ remove(const AsyncTaskCollection &tasks) {
   return num_removed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::wait_for_tasks
-//       Access: Published
-//  Description: Blocks until the task list is empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks until the task list is empty.
+ */
 void AsyncTaskManager::
 wait_for_tasks() {
   MutexHolder holder(_lock);
 
   // Wait for each of our task chains to finish.
   while (_num_tasks > 0) {
-    // We iterate through with an index, rather than with an iterator,
-    // because it's possible for a task to adjust the task_chain list
-    // during its execution.
+    // We iterate through with an index, rather than with an iterator, because
+    // it's possible for a task to adjust the task_chain list during its
+    // execution.
     for (unsigned int i = 0; i < _task_chains.size(); ++i) {
       AsyncTaskChain *chain = _task_chains[i];
       chain->do_wait_for_tasks();
@@ -414,41 +373,36 @@ wait_for_tasks() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::stop_threads
-//       Access: Published
-//  Description: Stops any threads that are currently running.  If any
-//               tasks are still pending and have not yet been picked
-//               up by a thread, they will not be serviced unless
-//               poll() or start_threads() is later called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops any threads that are currently running.  If any tasks are still
+ * pending and have not yet been picked up by a thread, they will not be
+ * serviced unless poll() or start_threads() is later called.
+ */
 void AsyncTaskManager::
 stop_threads() {
   MutexHolder holder(_lock);
 
-  // We iterate through with an index, rather than with an iterator,
-  // because it's possible for a task to adjust the task_chain list
-  // during its execution.
+  // We iterate through with an index, rather than with an iterator, because
+  // it's possible for a task to adjust the task_chain list during its
+  // execution.
   for (unsigned int i = 0; i < _task_chains.size(); ++i) {
     AsyncTaskChain *chain = _task_chains[i];
     chain->do_stop_threads();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::start_threads
-//       Access: Published
-//  Description: Starts any requested threads to service the tasks on
-//               the queue.  This is normally not necessary, since
-//               adding a task will start the threads automatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts any requested threads to service the tasks on the queue.  This is
+ * normally not necessary, since adding a task will start the threads
+ * automatically.
+ */
 void AsyncTaskManager::
 start_threads() {
   MutexHolder holder(_lock);
 
-  // We iterate through with an index, rather than with an iterator,
-  // because it's possible for a task to adjust the task_chain list
-  // during its execution.
+  // We iterate through with an index, rather than with an iterator, because
+  // it's possible for a task to adjust the task_chain list during its
+  // execution.
   for (unsigned int i = 0; i < _task_chains.size(); ++i) {
     AsyncTaskChain *chain = _task_chains[i];
 
@@ -456,12 +410,10 @@ start_threads() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::get_tasks
-//       Access: Published
-//  Description: Returns the set of tasks that are active or sleeping
-//               on the task manager, at the time of the call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are active or sleeping on the task manager,
+ * at the time of the call.
+ */
 AsyncTaskCollection AsyncTaskManager::
 get_tasks() const {
   MutexHolder holder(_lock);
@@ -479,13 +431,10 @@ get_tasks() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::get_active_tasks
-//       Access: Published
-//  Description: Returns the set of tasks that are active (and not
-//               sleeping) on the task manager, at the time of the
-//               call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are active (and not sleeping) on the task
+ * manager, at the time of the call.
+ */
 AsyncTaskCollection AsyncTaskManager::
 get_active_tasks() const {
   MutexHolder holder(_lock);
@@ -502,13 +451,10 @@ get_active_tasks() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::get_sleeping_tasks
-//       Access: Published
-//  Description: Returns the set of tasks that are sleeping (and not
-//               active) on the task manager, at the time of the
-//               call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of tasks that are sleeping (and not active) on the task
+ * manager, at the time of the call.
+ */
 AsyncTaskCollection AsyncTaskManager::
 get_sleeping_tasks() const {
   MutexHolder holder(_lock);
@@ -525,39 +471,33 @@ get_sleeping_tasks() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::poll
-//       Access: Published
-//  Description: Runs through all the tasks in the task list, once, if
-//               the task manager is running in single-threaded mode
-//               (no threads available).  This method does nothing in
-//               threaded mode, so it may safely be called in either
-//               case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Runs through all the tasks in the task list, once, if the task manager is
+ * running in single-threaded mode (no threads available).  This method does
+ * nothing in threaded mode, so it may safely be called in either case.
+ */
 void AsyncTaskManager::
 poll() {
   MutexHolder holder(_lock);
 
-  // We iterate through with an index, rather than with an iterator,
-  // because it's possible for a task to adjust the task_chain list
-  // during its execution.
+  // We iterate through with an index, rather than with an iterator, because
+  // it's possible for a task to adjust the task_chain list during its
+  // execution.
   for (unsigned int i = 0; i < _task_chains.size(); ++i) {
     AsyncTaskChain *chain = _task_chains[i];
     chain->do_poll();
   }
 
-  // Just in case the clock was ticked explicitly by one of our
-  // polling chains.
+  // Just in case the clock was ticked explicitly by one of our polling
+  // chains.
   _frame_cvar.notify_all();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::get_next_wake_time
-//       Access: Published
-//  Description: Returns the scheduled time (on the manager's clock)
-//               of the next sleeping task, on any task chain, to
-//               awaken.  Returns -1 if there are no sleeping tasks.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scheduled time (on the manager's clock) of the next sleeping
+ * task, on any task chain, to awaken.  Returns -1 if there are no sleeping
+ * tasks.
+ */
 double AsyncTaskManager::
 get_next_wake_time() const {
   MutexHolder holder(_lock);
@@ -584,22 +524,18 @@ get_next_wake_time() const {
   return next_wake_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AsyncTaskManager::
 output(ostream &out) const {
   MutexHolder holder(_lock);
   do_output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AsyncTaskManager::
 write(ostream &out, int indent_level) const {
   MutexHolder holder(_lock);
@@ -618,16 +554,13 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::do_make_task_chain
-//       Access: Protected
-//  Description: Creates a new AsyncTaskChain of the indicated name
-//               and stores it within the AsyncTaskManager.  If a task
-//               chain with this name already exists, returns it
-//               instead.
-//
-//               Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new AsyncTaskChain of the indicated name and stores it within the
+ * AsyncTaskManager.  If a task chain with this name already exists, returns
+ * it instead.
+ *
+ * Assumes the lock is held.
+ */
 AsyncTaskChain *AsyncTaskManager::
 do_make_task_chain(const string &name) {
   PT(AsyncTaskChain) chain = new AsyncTaskChain(this, name);
@@ -636,14 +569,12 @@ do_make_task_chain(const string &name) {
   return (*tci);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::do_find_task_chain
-//       Access: Protected
-//  Description: Searches a new AsyncTaskChain of the indicated name
-//               and returns it if it exists, or NULL otherwise.
-//
-//               Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches a new AsyncTaskChain of the indicated name and returns it if it
+ * exists, or NULL otherwise.
+ *
+ * Assumes the lock is held.
+ */
 AsyncTaskChain *AsyncTaskManager::
 do_find_task_chain(const string &name) {
   PT(AsyncTaskChain) chain = new AsyncTaskChain(this, name);
@@ -656,17 +587,13 @@ do_find_task_chain(const string &name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::remove_task_by_name
-//       Access: Protected
-//  Description: Removes the task from the _tasks_by_name index, if it
-//               has a nonempty name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the task from the _tasks_by_name index, if it has a nonempty name.
+ */
 void AsyncTaskManager::
 remove_task_by_name(AsyncTask *task) {
   if (!task->get_name().empty()) {
-    // We have to scan linearly through all of the tasks with the same
-    // name.
+    // We have to scan linearly through all of the tasks with the same name.
     TasksByName::iterator tbni = _tasks_by_name.lower_bound(task);
     while (tbni != _tasks_by_name.end()) {
       if ((*tbni) == task) {
@@ -677,7 +604,7 @@ remove_task_by_name(AsyncTask *task) {
         // Too far.
         break;
       }
-      
+
       ++tbni;
     }
 
@@ -686,14 +613,11 @@ remove_task_by_name(AsyncTask *task) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::do_has_task
-//       Access: Protected
-//  Description: Returns true if the task is on one of the task lists,
-//               false if it is not (false may mean that the task is
-//               currently being serviced).  Assumes the lock is
-//               currently held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the task is on one of the task lists, false if it is not
+ * (false may mean that the task is currently being serviced).  Assumes the
+ * lock is currently held.
+ */
 bool AsyncTaskManager::
 do_has_task(AsyncTask *task) const {
   TaskChains::const_iterator tci;
@@ -709,23 +633,18 @@ do_has_task(AsyncTask *task) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::do_output
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void AsyncTaskManager::
 do_output(ostream &out) const {
   out << get_type() << " " << get_name()
       << "; " << _num_tasks << " tasks";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::make_global_ptr
-//       Access: Private, Static
-//  Description: Called once per application to create the global
-//               task manager object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per application to create the global task manager object.
+ */
 void AsyncTaskManager::
 make_global_ptr() {
   nassertv(_global_ptr == (AsyncTaskManager *)NULL);

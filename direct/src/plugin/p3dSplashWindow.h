@@ -1,16 +1,15 @@
-// Filename: p3dSplashWindow.h
-// Created by:  drose (17Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dSplashWindow.h
+ * @author drose
+ * @date 2009-06-17
+ */
 
 #ifndef P3DSPLASHWINDOW_H
 #define P3DSPLASHWINDOW_H
@@ -21,16 +20,14 @@
 
 class P3DInstance;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DSplashWindow
-// Description : This window is displayed temporarily, in place of an
-//               instance's actual window, during the initial launch
-//               of an applet, and also during the initial download of
-//               Panda3D code if necessary.
-//
-//               This is the base implementation; it contains no
-//               specific code to open a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This window is displayed temporarily, in place of an instance's actual
+ * window, during the initial launch of an applet, and also during the initial
+ * download of Panda3D code if necessary.
+ *
+ * This is the base implementation; it contains no specific code to open a
+ * window.
+ */
 class P3DSplashWindow {
 public:
   P3DSplashWindow(P3DInstance *inst, bool make_visible);
@@ -87,9 +84,9 @@ public:
   virtual void request_keyboard_focus();
 
 protected:
-  // This ImageData base class provides minimal functionality for
-  // storing a loaded image.  Most of the real meat of this class is
-  // provided by the various subclasses.
+  // This ImageData base class provides minimal functionality for storing a
+  // loaded image.  Most of the real meat of this class is provided by the
+  // various subclasses.
   class ImageData {
   public:
     inline ImageData();

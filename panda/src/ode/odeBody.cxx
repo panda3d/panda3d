@@ -1,16 +1,15 @@
-// Filename: odeBody.cxx
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeBody.cxx
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #include "config_ode.h"
 #include "odeBody.h"
@@ -65,7 +64,7 @@ get_data() const {
 OdeJoint OdeBody::
 get_joint(int index) const {
   nassertr(_id != 0, OdeJoint(0));
-  nassertr(index < get_num_joints(), OdeJoint(0)); 
+  nassertr(index < get_num_joints(), OdeJoint(0));
   return OdeJoint(dBodyGetJoint(_id, index));
 }
 

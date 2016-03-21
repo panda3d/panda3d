@@ -1,16 +1,15 @@
-// Filename: fltGeometry.h
-// Created by:  drose (28Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltGeometry.h
+ * @author drose
+ * @date 2001-02-28
+ */
 
 #ifndef FLTGEOMETRY_H
 #define FLTGEOMETRY_H
@@ -26,13 +25,11 @@
 class FltTexture;
 class FltMaterial;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltGeometry
-// Description : This is a base class for both FltFace and FltMesh,
-//               which are two different kinds of geometric primitives
-//               that might be encountered in a MultiGen file.  They
-//               have similar properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for both FltFace and FltMesh, which are two different
+ * kinds of geometric primitives that might be encountered in a MultiGen file.
+ * They have similar properties.
+ */
 class FltGeometry : public FltBeadID {
 public:
   FltGeometry(FltHeader *header);
@@ -140,5 +137,3 @@ private:
 #include "fltGeometry.I"
 
 #endif
-
-

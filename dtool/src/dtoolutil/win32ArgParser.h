@@ -1,16 +1,15 @@
-// Filename: win32ArgParser.h
-// Created by:  drose (08Nov11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file win32ArgParser.h
+ * @author drose
+ * @date 2011-11-08
+ */
 
 #ifndef WIN32ARGPARSER_H
 #define WIN32ARGPARSER_H
@@ -24,16 +23,13 @@
 
 #include <assert.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : Win32ArgParser
-// Description : This class is used to parse the single command-line
-//               string provided by Windows into the standard argc,
-//               argv array of strings.  In this way it duplicates the
-//               functionality of Windows' own CommandLineToArgv()
-//               function, but it is also supports automatic expansion
-//               of glob filenames, e.g. *.egg is turned into an
-//               explicit list of egg files in the directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to parse the single command-line string provided by
+ * Windows into the standard argc, argv array of strings.  In this way it
+ * duplicates the functionality of Windows' own CommandLineToArgv() function,
+ * but it is also supports automatic expansion of glob filenames, e.g.  *.egg
+ * is turned into an explicit list of egg files in the directory.
+ */
 class EXPCL_DTOOL Win32ArgParser {
 public:
   Win32ArgParser();

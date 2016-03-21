@@ -1,16 +1,15 @@
-// Filename: eggSAnimData.h
-// Created by:  drose (19Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggSAnimData.h
+ * @author drose
+ * @date 1999-02-19
+ */
 
 #ifndef EGGSANIMDATA_H
 #define EGGSANIMDATA_H
@@ -19,12 +18,10 @@
 
 #include "eggAnimData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSAnimData
-// Description : Corresponding to an <S$Anim> entry, this stores a
-//               single column of numbers, for instance for a morph
-//               target, or as one column in an EggXfmSAnim.
-////////////////////////////////////////////////////////////////////
+/**
+ * Corresponding to an <S$Anim> entry, this stores a single column of numbers,
+ * for instance for a morph target, or as one column in an EggXfmSAnim.
+ */
 class EXPCL_PANDAEGG EggSAnimData : public EggAnimData {
 PUBLISHED:
   INLINE EggSAnimData(const string &name = "");
@@ -61,4 +58,3 @@ private:
 #include "eggSAnimData.I"
 
 #endif
-

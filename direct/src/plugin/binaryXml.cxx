@@ -1,16 +1,15 @@
-// Filename: binaryXml.cxx
-// Created by:  drose (13Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file binaryXml.cxx
+ * @author drose
+ * @date 2009-07-13
+ */
 
 #include "binaryXml.h"
 #include "p3d_lock.h"
@@ -30,20 +29,19 @@ enum NodeType {
   NT_text,
 };
 
-// This typedef defines a 32-bit unsigned integer.  It's used for
-// passing values through the binary XML stream.
+// This typedef defines a 32-bit unsigned integer.  It's used for passing
+// values through the binary XML stream.
 typedef unsigned int xml_uint32;
 
-// These are both prime numbers, though I don't know if that really
-// matters.  Mainly, they're big random numbers.
+// These are both prime numbers, though I don't know if that really matters.
+// Mainly, they're big random numbers.
 static const xml_uint32 length_nonce1 = 812311453;
 static const xml_uint32 length_nonce2 = 612811373;
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_xml
-//  Description: Should be called before spawning any threads to
-//               ensure the lock is initialized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called before spawning any threads to ensure the lock is
+ * initialized.
+ */
 void
 init_xml() {
   if (!xml_lock_initialized) {
@@ -52,22 +50,19 @@ init_xml() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_xml_node
-//  Description: Recursively writes a node and all of its children to
-//               the given stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively writes a node and all of its children to the given stream.
+ */
 static void
 write_xml_node(ostream &out, TiXmlNode *xnode) {
   const string &value = xnode->ValueStr();
   xml_uint32 value_length = value.length();
   xml_uint32 value_proof = (value_length + length_nonce1) * length_nonce2;
 
-  // We write out not only value_length, but the same value again
-  // hashed by length_nonce1 and 2 (and truncated back to xml_uint32),
-  // just to prove to the reader that we're still on the same page.
-  // We do this only on the top node; we don't bother for the nested
-  // nodes.
+  // We write out not only value_length, but the same value again hashed by
+  // length_nonce1 and 2 (and truncated back to xml_uint32), just to prove to
+  // the reader that we're still on the same page.  We do this only on the top
+  // node; we don't bother for the nested nodes.
   out.write((char *)&value_length, sizeof(value_length));
   out.write((char *)&value_proof, sizeof(value_proof));
   out.write(value.data(), value_length);
@@ -99,17 +94,17 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
     while (xattrib != NULL) {
       // We have an attribute.
       out.put((char)true);
-      
+
       string name = xattrib->Name();
       xml_uint32 name_length = name.length();
       out.write((char *)&name_length, sizeof(name_length));
       out.write(name.data(), name_length);
-      
+
       const string &value = xattrib->ValueStr();
       xml_uint32 value_length = value.length();
       out.write((char *)&value_length, sizeof(value_length));
       out.write(value.data(), value_length);
-      
+
       xattrib = xattrib->Next();
     }
 
@@ -125,18 +120,16 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
     write_xml_node(out, xchild);
     xchild = xchild->NextSibling();
   }
-  
+
   // The end of the children list.
   out.put((char)false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: read_xml_node
-//  Description: Recursively reads a node and all of its children to
-//               the given stream.  Returns the newly-allocated node.
-//               The caller is responsible for eventually deleting the
-//               return value.  Returns NULL on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively reads a node and all of its children to the given stream.
+ * Returns the newly-allocated node.  The caller is responsible for eventually
+ * deleting the return value.  Returns NULL on error.
+ */
 static TiXmlNode *
 read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
               ostream &logfile) {
@@ -152,12 +145,12 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
     return NULL;
   }
   if (value_proof != value_proof_expect) {
-    // Hey, we ran into garbage: the proof value didn't match our
-    // expected proof value.
+    // Hey, we ran into garbage: the proof value didn't match our expected
+    // proof value.
     logfile << "Garbage on XML stream!\n";
 
-    // Print out the garbage; maybe it will help the developer figure
-    // out where it came from.
+    // Print out the garbage; maybe it will help the developer figure out
+    // where it came from.
     logfile << "Begin garbage:\n";
     ostringstream strm;
     strm.write((char *)&value_length, sizeof(value_length));
@@ -248,7 +241,7 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
 
   // Now read all of the children.
   bool got_child = (bool)(in.get() != 0);
-  
+
   while (got_child && in && !in.eof()) {
     // We have a child.
     TiXmlNode *xchild = read_xml_node(in, buffer, buffer_length, logfile);
@@ -264,11 +257,9 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_xml
-//  Description: Writes the indicated TinyXml document to the given
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated TinyXml document to the given stream.
+ */
 void
 write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
   assert(xml_lock_initialized);
@@ -291,8 +282,8 @@ write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
   out << flush;
 
   if (debug_xml_output) {
-    // Write via ostringstream, so it all goes in one operation, to
-    // help out the interleaving from multiple threads.
+    // Write via ostringstream, so it all goes in one operation, to help out
+    // the interleaving from multiple threads.
     ostringstream logout;
     logout << "sent: " << *doc << "\n";
     logfile << logout.str() << flush;
@@ -301,27 +292,24 @@ write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
   RELEASE_LOCK(xml_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: read_xml
-//  Description: Reads a TinyXml document from the given stream, and
-//               returns it.  If the document is not yet available,
-//               blocks until it is, or until there is an error
-//               condition on the input.
-//
-//               The return value is NULL if there is an error, or the
-//               newly-allocated document if it is successfully read.
-//               If not NULL, the document has been allocated with
-//               new, and should be eventually freed by the caller
-//               with delete.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a TinyXml document from the given stream, and returns it.  If the
+ * document is not yet available, blocks until it is, or until there is an
+ * error condition on the input.
+ *
+ * The return value is NULL if there is an error, or the newly-allocated
+ * document if it is successfully read.  If not NULL, the document has been
+ * allocated with new, and should be eventually freed by the caller with
+ * delete.
+ */
 TiXmlDocument *
 read_xml(istream &in, ostream &logfile) {
-  // We don't acquire xml_lock while reading.  We can't, because our
-  // XML readers are all designed to block until data is available,
-  // and they can't block while holding the lock.
+  // We don't acquire xml_lock while reading.  We can't, because our XML
+  // readers are all designed to block until data is available, and they can't
+  // block while holding the lock.
 
-  // Fortunately, there should be only one reader at a time, so a lock
-  // isn't really needed here.
+  // Fortunately, there should be only one reader at a time, so a lock isn't
+  // really needed here.
 
 #if DO_BINARY_XML
   // binary read.
@@ -347,8 +335,8 @@ read_xml(istream &in, ostream &logfile) {
 #endif
 
   if (debug_xml_output) {
-    // Write via ostringstream, so it all goes in one operation, to
-    // help out the interleaving from multiple threads.
+    // Write via ostringstream, so it all goes in one operation, to help out
+    // the interleaving from multiple threads.
     ostringstream logout;
     logout << "received: " << *doc << "\n";
     logfile << logout.str() << flush;

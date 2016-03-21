@@ -1,27 +1,24 @@
-// Filename: eggCharacterFilter.cxx
-// Created by:  drose (23Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggCharacterFilter.cxx
+ * @author drose
+ * @date 2001-02-23
+ */
 
 #include "eggCharacterFilter.h"
 #include "eggCharacterCollection.h"
 #include "eggCharacterData.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterFilter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggCharacterFilter::
 EggCharacterFilter() : EggMultiFilter(false) {
   _collection = (EggCharacterCollection *)NULL;
@@ -29,11 +26,9 @@ EggCharacterFilter() : EggMultiFilter(false) {
   _force_initial_rest_frame = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterFilter::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggCharacterFilter::
 ~EggCharacterFilter() {
   if (_collection != (EggCharacterCollection *)NULL) {
@@ -41,11 +36,9 @@ EggCharacterFilter::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterFilter::add_fixrest_option
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggCharacterFilter::
 add_fixrest_option() {
   add_option
@@ -59,11 +52,9 @@ add_fixrest_option() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterFilter::post_command_line
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool EggCharacterFilter::
 post_command_line() {
   if (_collection == (EggCharacterCollection *)NULL) {
@@ -90,17 +81,15 @@ post_command_line() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterFilter::write_eggs
-//       Access: Protected, Virtual
-//  Description: Writes out all of the egg files in the _eggs vector,
-//               to the output directory if one is specified, or over
-//               the input files if -inplace was specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out all of the egg files in the _eggs vector, to the output
+ * directory if one is specified, or over the input files if -inplace was
+ * specified.
+ */
 void EggCharacterFilter::
 write_eggs() {
-  // Optimize (that is, collapse redudant nodes) in all of the
-  // characters' joint tables before writing them out.
+  // Optimize (that is, collapse redudant nodes) in all of the characters'
+  // joint tables before writing them out.
   int num_characters = _collection->get_num_characters();
   for (int i = 0; i < num_characters; i++) {
     EggCharacterData *char_data = _collection->get_character(i);
@@ -110,15 +99,11 @@ write_eggs() {
   EggMultiFilter::write_eggs();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterFilter::make_collection
-//       Access: Protected, Virtual
-//  Description: Allocates and returns a new EggCharacterCollection
-//               structure.  This is primarily intended as a hook so
-//               derived classes can customize the type of
-//               EggCharacterCollection object used to represent the
-//               character information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new EggCharacterCollection structure.  This is
+ * primarily intended as a hook so derived classes can customize the type of
+ * EggCharacterCollection object used to represent the character information.
+ */
 EggCharacterCollection *EggCharacterFilter::
 make_collection() {
   return new EggCharacterCollection;

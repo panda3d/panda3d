@@ -1,27 +1,22 @@
-// Filename: inkblotVideoCursor.cxx
-// Created by: jyelon (02Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file inkblotVideoCursor.cxx
+ * @author jyelon
+ * @date 2007-07-02
+ */
 
 #include "inkblotVideoCursor.h"
 #include "config_movies.h"
 
 TypeHandle InkblotVideoCursor::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//
 // The Color-Map
-//
-////////////////////////////////////////////////////////////////////
 struct color {
   int r,g,b;
 };
@@ -44,13 +39,11 @@ static color colormap[17] = {
   { 0,255,0 },
   { 0,255,255 },
   { 0,0,255 },
-};  
+};
 
-////////////////////////////////////////////////////////////////////
-//     Function: InkblotVideoCursor::Constructor
-//       Access: Public
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 InkblotVideoCursor::
 InkblotVideoCursor(InkblotVideo *src) :
   MovieVideoCursor(src)
@@ -71,22 +64,18 @@ InkblotVideoCursor(InkblotVideo *src) :
   _last_frame = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InkblotVideoCursor::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 InkblotVideoCursor::
 ~InkblotVideoCursor() {
   delete[] _cells;
   delete[] _cells2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InkblotVideoCursor::set_time
-//       Access: Published, Virtual
-//  Description: See MovieVideoCursor::set_time().
-////////////////////////////////////////////////////////////////////
+/**
+ * See MovieVideoCursor::set_time().
+ */
 bool InkblotVideoCursor::
 set_time(double time, int loop_count) {
   int frame = (int)(time / _fps);
@@ -98,25 +87,23 @@ set_time(double time, int loop_count) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InkblotVideoCursor::fetch_buffer
-//       Access: Published, Virtual
-//  Description: See MovieVideoCursor::fetch_buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * See MovieVideoCursor::fetch_buffer.
+ */
 PT(MovieVideoCursor::Buffer) InkblotVideoCursor::
 fetch_buffer() {
   PT(Buffer) buffer = get_standard_buffer();
 
   int padx = size_x() + 2;
   int pady = size_y() + 2;
-  
+
   if (_current_frame < _last_frame) {
     // Rewind to beginning.
     memset(_cells, 255, padx * pady);
     memset(_cells2, 255, padx * pady);
     _last_frame = 0;
   }
-  
+
   while (_last_frame <= _current_frame) {
     ++_last_frame;
     for (int y=1; y<pady-1; y++) {
@@ -155,4 +142,3 @@ fetch_buffer() {
 
   return buffer;
 }
-

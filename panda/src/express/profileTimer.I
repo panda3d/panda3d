@@ -1,16 +1,13 @@
-// Filename: profileTimer.I
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file profileTimer.I
+ */
 
 INLINE void ProfileTimer::
 on() {
@@ -62,9 +59,9 @@ off(const char* tag) {
 
 INLINE ProfileTimer::AutoTimer::
 ~AutoTimer() {
-  // If the AutoTimer is the first auto ctor, then it will
-  // be the last auto dtor, for that block.  Therefore, now
-  // is the time to mark the time for the block/function:
+  // If the AutoTimer is the first auto ctor, then it will be the last auto
+  // dtor, for that block.  Therefore, now is the time to mark the time for
+  // the blockfunction:
   _profile.mark(_tag);
   --_profile._autoTimerCount;
 }

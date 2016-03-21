@@ -1,19 +1,18 @@
-// Filename: cocoaGraphicsPipe.mm
-// Created by:  rdb (14May12)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cocoaGraphicsPipe.mm
+ * @author rdb
+ * @date 2012-05-14
+ */
 
 #include "cocoaGraphicsPipe.h"
-//#include "cocoaGraphicsBuffer.h"
+// #include "cocoaGraphicsBuffer.h"
 #include "cocoaGraphicsWindow.h"
 #include "cocoaGraphicsStateGuardian.h"
 #include "cocoaPandaApp.h"
@@ -41,21 +40,19 @@ static void init_app() {
 #endif
     [NSApp finishLaunching];
     [NSApp activateIgnoringOtherApps:YES];
-    
-    // Put Cocoa into thread-safe mode
-    // by spawning a thread which immediately exits.
+
+    // Put Cocoa into thread-safe mode by spawning a thread which immediately
+    // exits.
     NSThread* thread = [[NSThread alloc] init];
     [thread start];
-    [thread autorelease]; 
+    [thread autorelease];
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::Constructor
-//       Access: Public
-//  Description: Uses the main screen (the one the user is most
-//               likely to be working in at the moment).
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the main screen (the one the user is most likely to be working in at
+ * the moment).
+ */
 CocoaGraphicsPipe::
 CocoaGraphicsPipe() {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
@@ -76,11 +73,9 @@ CocoaGraphicsPipe() {
     << _screen << " with display ID " << _display << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::Constructor
-//       Access: Public
-//  Description: Takes a CoreGraphics display ID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes a CoreGraphics display ID.
+ */
 CocoaGraphicsPipe::
 CocoaGraphicsPipe(CGDirectDisplayID display) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
@@ -108,11 +103,9 @@ CocoaGraphicsPipe(CGDirectDisplayID display) {
     << _screen << " with display ID " << _display << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::Constructor
-//       Access: Public
-//  Description: Takes an NSScreen pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes an NSScreen pointer.
+ */
 CocoaGraphicsPipe::
 CocoaGraphicsPipe(NSScreen *screen) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
@@ -137,16 +130,14 @@ CocoaGraphicsPipe(NSScreen *screen) {
     << _screen << " with display ID " << _display << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::load_display_information
-//       Access: Private
-//  Description: Fills in _display_information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in _display_information.
+ */
 void CocoaGraphicsPipe::
 load_display_information() {
   _display_information->_vendor_id = CGDisplayVendorNumber(_display);
-  //_display_information->_device_id = CGDisplayUnitNumber(_display);
-  //_display_information->_device_id = CGDisplaySerialNumber(_display);
+  // _display_information->_device_id = CGDisplayUnitNumber(_display);
+  // _display_information->_device_id = CGDisplaySerialNumber(_display);
 
   // Display modes
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
@@ -183,9 +174,9 @@ load_display_information() {
                               kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
       _display_information->_display_mode_array[i].bits_per_pixel = 8;
     } else {
-      // The other possible pixel formats in IOKit/IOGraphicsTypes.h
-      // have strings like "PPPP" or "-RRRRRGGGGGBBBBB", so the number
-      // of bits per pixel can be deduced from the string length.  Nifty!
+      // The other possible pixel formats in IOKitIOGraphicsTypes.h have
+      // strings like "PPPP" or "-RRRRRGGGGGBBBBB", so the number of bits per
+      // pixel can be deduced from the string length.  Nifty!
       _display_information->_display_mode_array[i].bits_per_pixel = CFStringGetLength(encoding);
     }
     CFRelease(encoding);
@@ -231,62 +222,48 @@ load_display_information() {
   _display_information->_os_version_build = bugfix;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CocoaGraphicsPipe::
 ~CocoaGraphicsPipe() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to
+ * choose between several possible GraphicsPipes available on a particular
+ * platform, so the name should be meaningful and unique for a given platform.
+ */
 string CocoaGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               CocoaGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the
+ * user to make a default CocoaGraphicsPipe.
+ */
 PT(GraphicsPipe) CocoaGraphicsPipe::
 pipe_constructor() {
   return new CocoaGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::get_preferred_window_thread
-//       Access: Public, Virtual
-//  Description: Returns an indication of the thread in which this
-//               GraphicsPipe requires its window processing to be
-//               performed: typically either the app thread (e.g. X)
-//               or the draw thread (Windows).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an indication of the thread in which this GraphicsPipe requires its
+ * window processing to be performed: typically either the app thread (e.g.
+ * X) or the draw thread (Windows).
+ */
 GraphicsPipe::PreferredWindowThread
 CocoaGraphicsPipe::get_preferred_window_thread() const {
-  // The NSView and NSWindow classes are not completely thread-safe,
-  // they can only be called from the main thread!
+  // The NSView and NSWindow classes are not completely thread-safe, they can
+  // only be called from the main thread!
   return PWT_app;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) CocoaGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -331,8 +308,8 @@ make_output(const string &name,
         (flags & (BF_require_parasite | BF_require_window)) != 0) {
       return NULL;
     }
-    // Early failure - if we are sure that this buffer WONT
-    // meet specs, we can bail out early.
+    // Early failure - if we are sure that this buffer WONT meet specs, we can
+    // bail out early.
     if ((flags & BF_fb_props_optional) == 0) {
       if (fb_prop.get_indexed_color() ||
           fb_prop.get_back_buffers() > 0 ||
@@ -345,8 +322,8 @@ make_output(const string &name,
           cocoagsg->_glDrawBuffers == NULL) {
         return NULL;
       } else if (fb_prop.is_basic()) {
-        // Early success - if we are sure that this buffer WILL
-        // meet specs, we can precertify it.
+        // Early success - if we are sure that this buffer WILL meet specs, we
+        // can precertify it.
         precertify = true;
       }
     }
@@ -367,8 +344,8 @@ make_output(const string &name,
     if (!support_rtt) {
       if (((flags&BF_rtt_cumulative)!=0)||
           ((flags&BF_can_bind_every)!=0)) {
-        // If we require Render-to-Texture, but can't be sure we
-        // support it, bail.
+        // If we require Render-to-Texture, but can't be sure we support it,
+        // bail.
         return NULL;
       }
     }
@@ -382,15 +359,12 @@ make_output(const string &name,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::make_callback_gsg
-//       Access: Protected, Virtual
-//  Description: This is called when make_output() is used to create a
-//               CallbackGraphicsWindow.  If the GraphicsPipe can
-//               construct a GSG that's not associated with any
-//               particular window object, do so now, assuming the
-//               correct graphics context has been set up externally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called when make_output() is used to create a
+ * CallbackGraphicsWindow.  If the GraphicsPipe can construct a GSG that's not
+ * associated with any particular window object, do so now, assuming the
+ * correct graphics context has been set up externally.
+ */
 PT(GraphicsStateGuardian) CocoaGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
   return new CocoaGraphicsStateGuardian(engine, this, NULL);

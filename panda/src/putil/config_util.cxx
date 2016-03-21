@@ -1,16 +1,15 @@
-// Filename: config_util.cxx
-// Created by:  cary (04Jan00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_util.cxx
+ * @author cary
+ * @date 2000-01-04
+ */
 
 #include "config_util.h"
 #include "animInterface.h"
@@ -83,22 +82,21 @@ ConfigureFn(config_util) {
   init_libputil();
 }
 
-// Set this true to enable tracking of ReferenceCount pointer
-// allocation/deallcation via the MemoryUsage object.  This is
-// primarily useful for detecting memory leaks.  It has no effect when
-// compiling in NDEBUG mode.
-//
-// This variable is no longer defined here; instead, it's a member of
-// MemoryUsage.
-//
-// ConfigVariableBool track_memory_usage("track-memory-usage", false);
+/*
+ * Set this true to enable tracking of ReferenceCount pointer
+ * allocationdeallcation via the MemoryUsage object.  This is primarily useful
+ * for detecting memory leaks.  It has no effect when compiling in NDEBUG
+ * mode.  This variable is no longer defined here; instead, it's a member of
+ * MemoryUsage.  ConfigVariableBool track_memory_usage("track-memory-usage",
+ * false);
+ */
 
 ConfigVariableSearchPath &
 get_model_path() {
   static ConfigVariableSearchPath *model_path = NULL;
   if (model_path == NULL) {
     model_path = new ConfigVariableSearchPath
-      ("model-path", 
+      ("model-path",
        PRC_DESC("The default directories to search for all models and general "
                 "files loaded into Panda."));
   }
@@ -145,6 +143,13 @@ ConfigVariableBool preload_simple_textures
           "in a sub-thread.  It's not generally necessary if you are "
           "loading bam files that were generated via egg2bam."));
 
+ConfigVariableBool compressed_textures
+("compressed-textures", false,
+ PRC_DESC("Set this to true to compress textures as they are loaded into "
+          "texture memory, if the driver supports this.  Specifically, this "
+          "changes the meaning of set_compression(Texture::CM_default) to "
+          "Texture::CM_on."));
+
 ConfigVariableBool cache_check_timestamps
 ("cache-check-timestamps", true,
  PRC_DESC("Set this true to check the timestamps on disk (when possible) "
@@ -159,14 +164,12 @@ ConfigVariableBool cache_check_timestamps
           "to on-disk caching via model-cache-dir, which always checks the "
           "timestamps."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libputil
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libputil() {
   static bool initialized = false;
