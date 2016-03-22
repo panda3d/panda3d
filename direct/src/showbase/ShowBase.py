@@ -2904,7 +2904,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Use importlib to prevent this import from being picked up
         # by modulefinder when packaging an application.
-        tkinter = importlib.import_module('Tkinter').tkinter
+        tkinter = importlib.import_module('_tkinter')
         Pmw = importlib.import_module('Pmw')
 
         # Create a new Tk root.
@@ -2938,7 +2938,7 @@ class ShowBase(DirectObject.DirectObject):
                 # dooneevent will return 0 if there are no more events
                 # waiting or 1 if there are still more.
                 # DONT_WAIT tells tkinter not to block waiting for events
-                while tkinter.dooneevent(tkinter.ALL_EVENTS | tkinter.DONT_WAIT):
+                while self.tkRoot.dooneevent(tkinter.ALL_EVENTS | tkinter.DONT_WAIT):
                     pass
 
                 return task.again
