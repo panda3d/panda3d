@@ -41,7 +41,7 @@ check_crc(Filename name) {
   unsigned long crc = crc32(0L, Z_NULL, 0);
   crc = crc32(crc, (unsigned char *)buffer, buffer_length);
 
-  delete buffer;
+  delete[] buffer;
 
   return crc;
 }
@@ -67,7 +67,7 @@ check_adler(Filename name) {
   unsigned long adler = adler32(0L, Z_NULL, 0);
   adler = adler32(adler, (unsigned char *)buffer, buffer_length);
 
-  delete buffer;
+  delete[] buffer;
 
   return adler;
 }
