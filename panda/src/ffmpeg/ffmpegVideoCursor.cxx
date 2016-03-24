@@ -82,9 +82,13 @@ init_from(FfmpegVideo *source) {
 
 #ifdef HAVE_SWSCALE
   nassertv(_convert_ctx == NULL);
-  _convert_ctx = sws_getContext(_size_x, _size_y,
-                                _video_ctx->pix_fmt, _size_x, _size_y,
-                                PIX_FMT_BGR24, SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
+  _convert_ctx = sws_getContext(_size_x, _size_y, _video_ctx->pix_fmt,
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(51, 74, 100)
+                                _size_x, _size_y, AV_PIX_FMT_BGR24,
+#else
+                                _size_x, _size_y, PIX_FMT_BGR24,
+#endif
+                                SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
 #endif  // HAVE_SWSCALE
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 59, 100)
@@ -568,7 +572,11 @@ cleanup() {
 
   if (_packet) {
     if (_packet->data) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+      av_packet_unref(_packet);
+#else
       av_free_packet(_packet);
+#endif
     }
     delete _packet;
     _packet = NULL;
@@ -737,14 +745,22 @@ fetch_packet(int default_frame) {
 bool FfmpegVideoCursor::
 do_fetch_packet(int default_frame) {
   if (_packet->data) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    av_packet_unref(_packet);
+#else
     av_free_packet(_packet);
+#endif
   }
   while (av_read_frame(_format_ctx, _packet) >= 0) {
     if (_packet->stream_index == _video_index) {
       _packet_frame = _packet->dts;
       return false;
     }
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    av_packet_unref(_packet);
+#else
     av_free_packet(_packet);
+#endif
   }
   _packet->data = 0;
 
