@@ -83,7 +83,7 @@ init_from(FfmpegVideo *source) {
 #ifdef HAVE_SWSCALE
   nassertv(_convert_ctx == NULL);
   _convert_ctx = sws_getContext(_size_x, _size_y, _video_ctx->pix_fmt,
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(51, 74, 100)
+#if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(51, 74, 100)
                                 _size_x, _size_y, AV_PIX_FMT_BGR24,
 #else
                                 _size_x, _size_y, PIX_FMT_BGR24,
