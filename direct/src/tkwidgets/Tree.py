@@ -27,7 +27,7 @@ from panda3d.core import *
 # Initialize icon directory
 ICONDIR = ConfigVariableSearchPath('model-path').findFile(Filename('icons')).toOsSpecific()
 if not os.path.isdir(ICONDIR):
-    raise RuntimeError, "can't find DIRECT icon directory (%s)" % repr(ICONDIR)
+    raise RuntimeError("can't find DIRECT icon directory (%s)" % repr(ICONDIR))
 
 class TreeNode:
 

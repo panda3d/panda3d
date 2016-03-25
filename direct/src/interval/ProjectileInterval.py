@@ -221,7 +221,7 @@ class ProjectileInterval(Interval):
     def testTrajectory(self):
         try:
             self.__calcTrajectory(*self.trajectoryArgs)
-        except StandardError:
+        except Exception:
             assert self.notify.error('invalid projectile parameters')
             return False
         return True

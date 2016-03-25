@@ -192,7 +192,7 @@ class ServerRepository:
                     dcImports[symbolName] = getattr(module, symbolName)
 
                 else:
-                    raise StandardError, 'Symbol %s not defined in module %s.' % (symbolName, moduleName)
+                    raise Exception('Symbol %s not defined in module %s.' % (symbolName, moduleName))
 
         else:
             # "import moduleName"

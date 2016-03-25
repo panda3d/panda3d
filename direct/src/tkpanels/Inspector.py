@@ -166,7 +166,7 @@ class FunctionInspector(Inspector):
 
 class InstanceMethodInspector(Inspector):
     def title(self):
-        return str(self.object.im_class) + "." + self.object.__name__ + "()"
+        return str(self.object.__self__.__class__) + "." + self.object.__name__ + "()"
 
 class CodeInspector(Inspector):
     def title(self):
@@ -391,10 +391,10 @@ class InspectorWindow:
 
     #Private
     def selectedIndex(self):
-        indicies = map(int, self.listWidget.curselection())
-        if len(indicies) == 0:
+        indices = list(map(int, self.listWidget.curselection()))
+        if len(indices) == 0:
             return None
-        partNumber = indicies[0]
+        partNumber = indices[0]
         return partNumber
 
     def inspectorForSelectedPart(self):

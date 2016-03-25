@@ -132,7 +132,7 @@ class Messenger:
 
         # Make sure extraArgs is a list or tuple
         if not (isinstance(extraArgs, list) or isinstance(extraArgs, tuple) or isinstance(extraArgs, set)):
-            raise TypeError, "A list is required as extraArgs argument"
+            raise TypeError("A list is required as extraArgs argument")
 
         self.lock.acquire()
         try:
@@ -442,7 +442,7 @@ class Messenger:
                 object, params = objectEntry
                 method = params[0]
                 if (type(method) == types.MethodType):
-                    function = method.im_func
+                    function = method.__func__
                 else:
                     function = method
                 #print ('function: ' + repr(function) + '\n' +
@@ -451,7 +451,7 @@ class Messenger:
                 #       'newFunction: ' + repr(newFunction) + '\n')
                 if (function == oldMethod):
                     newMethod = types.MethodType(
-                        newFunction, method.im_self, method.im_class)
+                        newFunction, method.__self__, method.__self__.__class__)
                     params[0] = newMethod
                     # Found it retrun true
                     retFlag += 1
@@ -560,8 +560,8 @@ class Messenger:
         return string version of class.method or method.
         """
         if (type(method) == types.MethodType):
-            functionName = method.im_class.__name__ + '.' + \
-                method.im_func.__name__
+            functionName = method.__self__.__class__.__name__ + '.' + \
+                method.__func__.__name__
         else:
             if hasattr(method, "__name__"):
                 functionName = method.__name__
@@ -629,7 +629,7 @@ class Messenger:
                 if (type(function) == types.MethodType):
                     str = (str + '\t' +
                            'Method:       ' + repr(function) + '\n\t' +
-                           'Function:     ' + repr(function.im_func) + '\n')
+                           'Function:     ' + repr(function.__func__) + '\n')
                 else:
                     str = (str + '\t' +
                            'Function:     ' + repr(function) + '\n')

@@ -46,7 +46,7 @@ def parseSysArgs():
             sys.exit(1)
 
     if not args or not args[0]:
-        raise ArgumentError, "No Panda app specified.  Use:\nrunp3d.py app.p3d"
+        raise ArgumentError("No Panda app specified.  Use:\nrunp3d.py app.p3d")
 
     arg0 = args[0]
     p3dFilename = Filename.fromOsSpecific(arg0)

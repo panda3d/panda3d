@@ -108,7 +108,7 @@ def findFiles(dirlist, ext, ign, list):
     for dir in dirlist:
         for file in os.listdir(dir):
             full = dir + "/" + file
-            if (ign.has_key(full)==0) and (ign.has_key(file)==0):
+            if full not in ign and file not in ign:
                 if (os.path.isfile(full)):
                     if (file.endswith(ext)):
                         list.append(full)
@@ -145,7 +145,7 @@ def textToHTML(comment, sep, delsection=None):
             sec = sec.replace("  "," ")
             if (delsection != None) and (delsection.match(sec)):
                 included[sec] = 1
-            if (included.has_key(sec)==0):
+            if sec not in included:
                 included[sec] = 1
                 total = total + sec + "<br>\n"
     return total
@@ -341,14 +341,14 @@ class InterrogateDatabase:
 def printTree(tree, indent):
     spacing = "                                                        "[:indent]
     if isinstance(tree, types.TupleType) and isinstance(tree[0], types.IntType):
-        if symbol.sym_name.has_key(tree[0]):
+        if tree[0] in symbol.sym_name:
             for i in range(len(tree)):
                 if (i==0):
                     print spacing + "(symbol." + symbol.sym_name[tree[0]] + ","
                 else:
                     printTree(tree[i], indent+1)
             print spacing + "),"
-        elif token.tok_name.has_key(tree[0]):
+        elif tree[0] in token.tok_name:
             print spacing + "(token." + token.tok_name[tree[0]] + ", '" + tree[1] + "'),"
         else:
             print spacing + str(tree)
@@ -535,10 +535,10 @@ class ParseTreeInfo:
 
     def extract_tokens(self, str, tree):
         if (isinstance(tree, types.TupleType)):
-            if (token.tok_name.has_key(tree[0])):
+            if tree[0] in token.tok_name:
                 str = str + tree[1]
                 if (tree[1]==","): str=str+" "
-            elif (symbol.sym_name.has_key(tree[0])):
+            elif tree[0] in symbol.sym_name:
                 for sub in tree[1:]:
                     str = self.extract_tokens(str, sub)
         return str
@@ -569,7 +569,7 @@ class CodeDatabase:
             tokzr = InterrogateTokenizer(cxx)
             idb = InterrogateDatabase(tokzr)
             for type in idb.types.values():
-                if (type.flags & 8192) or (self.types.has_key(type.scopedname)==0):
+                if (type.flags & 8192) or type.scopedname not in self.types:
                     self.types[type.scopedname] = type
                 if (type.flags & 8192) and (type.atomictype == 0) and (type.scopedname.count(" ")==0) and (type.scopedname.count(":")==0):
                     self.goodtypes[type.scopedname] = type
@@ -706,7 +706,7 @@ class CodeDatabase:
     def getFunctionPrototype(self, fn, urlprefix, urlsuffix):
         func = self.funcs.get(fn)
         if (isinstance(func, InterrogateFunction)):
-            if self.formattedprotos.has_key(fn):
+            if fn in self.formattedprotos:
                 proto = self.formattedprotos[fn]
             else:
                 proto = func.prototype
@@ -864,7 +864,7 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
                 body = body + generateFunctionDocs(code, method, urlprefix, urlsuffix)
         body = header + body + footer
         writeFile(docdir + "/" + type + ".html", body)
-        if (CLASS_RENAME_DICT.has_key(type)):
+        if type in CLASS_RENAME_DICT:
             modtype = CLASS_RENAME_DICT[type]
             writeFile(docdir + "/" + modtype + ".html", body)
             xclasses.append(modtype)
@@ -892,8 +892,10 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
         for method in code.getClassMethods(type)[:]:
             name = code.getFunctionName(method)
             prefix = name[0].upper()
-            if (table.has_key(prefix)==0): table[prefix] = {}
-            if (table[prefix].has_key(name)==0): table[prefix][name] = []
+            if prefix not in table:
+                table[prefix] = {}
+            if name not in table[prefix]:
+                table[prefix][name] = []
             table[prefix][name].append(type)
 
     index = "<h1>List of Methods - Panda " + pversion + "</h1>\n"
@@ -971,13 +973,13 @@ def expandImports(indirlist, directdirlist, fixdirlist):
                     print fixfile+" : "+module+" : repairing"
                     for x in funcExports:
                         fn = code.getFunctionName(x)
-                        if (used.has_key(fn)):
+                        if fn in used:
                             result.append("from "+module+" import "+fn)
                     for x in typeExports:
-                        if (used.has_key(x)):
+                        if x in used:
                             result.append("from "+module+" import "+x)
                     for x in varExports:
-                        if (used.has_key(x)):
+                        if x in used:
                             result.append("from "+module+" import "+x)
             else:
                 result.append(line)

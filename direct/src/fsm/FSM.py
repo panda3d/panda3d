@@ -190,7 +190,7 @@ class FSM(DirectObject):
     def getCurrentFilter(self):
         if not self.state:
             error = "FSM cannot determine current filter while in transition (%s -> %s)." % (self.oldState, self.newState)
-            raise AlreadyInTransition, error
+            raise AlreadyInTransition(error)
 
         filter = getattr(self, "filter" + self.state, None)
         if not filter:
@@ -276,7 +276,7 @@ class FSM(DirectObject):
                 return
 
             if not self.request(request, *args):
-                raise RequestDenied, "%s (from state: %s)" % (request, self.state)
+                raise RequestDenied("%s (from state: %s)" % (request, self.state))
         finally:
             self.fsmLock.release()
 
@@ -310,7 +310,7 @@ class FSM(DirectObject):
                 self.name, request, str(args)[1:]))
 
             filter = self.getCurrentFilter()
-            result = filter(request, args)
+            result = list(filter(request, args))
             if result:
                 if isinstance(result, types.StringTypes):
                     # If the return value is a string, it's just the name
@@ -381,7 +381,7 @@ class FSM(DirectObject):
             # request) not listed in defaultTransitions and not
             # handled by an earlier filter.
             if request[0].isupper():
-                raise RequestDenied, "%s (from state: %s)" % (request, self.state)
+                raise RequestDenied("%s (from state: %s)" % (request, self.state))
 
         # In either case, we quietly ignore unhandled command
         # (lowercase) requests.

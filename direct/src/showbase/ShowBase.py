@@ -338,7 +338,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Make sure we're not making more than one ShowBase.
         if hasattr(builtins, 'base'):
-            raise StandardError, "Attempt to spawn multiple ShowBase instances!"
+            raise Exception("Attempt to spawn multiple ShowBase instances!")
 
         # DO NOT ADD TO THIS LIST.  We're trying to phase out the use of
         # built-in variables by ShowBase.  Use a Global module if necessary.
@@ -695,7 +695,7 @@ class ShowBase(DirectObject.DirectObject):
             if requireWindow:
                 # Unless require-window is set to false, it is an
                 # error not to open a window.
-                raise StandardError, 'Could not open window.'
+                raise Exception('Could not open window.')
         else:
             self.notify.info("Successfully opened window of type %s (%s)" % (
                 win.getType(), win.getPipe().getInterfaceName()))
@@ -2519,7 +2519,7 @@ class ShowBase(DirectObject.DirectObject):
         rig = NodePath(namePrefix)
         buffer = source.makeCubeMap(namePrefix, size, rig, cameraMask, 1)
         if buffer == None:
-            raise StandardError, "Could not make cube map."
+            raise Exception("Could not make cube map.")
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()
@@ -2589,7 +2589,7 @@ class ShowBase(DirectObject.DirectObject):
         buffer = toSphere.makeCubeMap(namePrefix, size, rig, cameraMask, 0)
         if buffer == None:
             self.graphicsEngine.removeWindow(toSphere)
-            raise StandardError, "Could not make cube map."
+            raise Exception("Could not make cube map.")
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()

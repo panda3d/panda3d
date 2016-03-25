@@ -239,7 +239,7 @@ class PackageInstaller(DirectObject):
         downloaded.  Call donePackages() to finish the list. """
 
         if self.state != self.S_initial:
-            raise ValueError, 'addPackage called after donePackages'
+            raise ValueError('addPackage called after donePackages')
 
         host = self.appRunner.getHostWithAlt(hostUrl)
         pp = self.PendingPackage(packageName, version, host)
