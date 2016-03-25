@@ -45,7 +45,7 @@ if __debug__:
 import AppRunnerGlobal
 
 def legacyRun():
-    builtins.base.notify.warning("run() is deprecated, use base.run() instead")
+    assert builtins.base.notify.warning("run() is deprecated, use base.run() instead")
     builtins.base.run()
 
 @atexit.register
@@ -1793,14 +1793,14 @@ class ShowBase(DirectObject.DirectObject):
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadSfx(self, name):
-        self.notify.warning("base.loadSfx is deprecated, use base.loader.loadSfx instead.")
+        assert self.notify.warning("base.loadSfx is deprecated, use base.loader.loadSfx instead.")
         return self.loader.loadSfx(name)
 
     # This function should only be in the loader but is here for
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadMusic(self, name):
-        self.notify.warning("base.loadMusic is deprecated, use base.loader.loadMusic instead.")
+        assert self.notify.warning("base.loadMusic is deprecated, use base.loader.loadMusic instead.")
         return self.loader.loadMusic(name)
 
     def playSfx(
