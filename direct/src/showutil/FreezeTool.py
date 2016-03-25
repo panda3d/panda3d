@@ -832,6 +832,7 @@ class Freezer:
         # bring in Python's startup modules.
         if addStartupModules:
             self.modules['_frozen_importlib'] = self.ModuleDef('importlib._bootstrap', implicit = True)
+            self.modules['_frozen_importlib_external'] = self.ModuleDef('importlib._bootstrap_external', implicit = True)
 
             for moduleName in startupModules:
                 if moduleName not in self.modules:
