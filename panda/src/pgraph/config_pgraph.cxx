@@ -50,6 +50,7 @@
 #include "loaderFileType.h"
 #include "loaderFileTypeBam.h"
 #include "loaderFileTypeRegistry.h"
+#include "logicOpAttrib.h"
 #include "materialAttrib.h"
 #include "modelFlattenRequest.h"
 #include "modelLoadRequest.h"
@@ -419,6 +420,7 @@ init_libpgraph() {
   Loader::init_type();
   LoaderFileType::init_type();
   LoaderFileTypeBam::init_type();
+  LogicOpAttrib::init_type();
   MaterialAttrib::init_type();
   ModelFlattenRequest::init_type();
   ModelLoadRequest::init_type();
@@ -483,6 +485,7 @@ init_libpgraph() {
   LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
   LightRampAttrib::register_with_read_factory();
+  LogicOpAttrib::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();
   ModelNode::register_with_read_factory();
   ModelRoot::register_with_read_factory();
