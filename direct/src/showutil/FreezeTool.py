@@ -227,6 +227,10 @@ frozenMainCode = """
 
 #include "Python.h"
 
+#if PY_MAJOR_VERSION >= 3
+#include <locale.h>
+#endif
+
 #ifdef MS_WINDOWS
 extern void PyWinFreeze_ExeInit(void);
 extern void PyWinFreeze_ExeTerm(void);
@@ -239,9 +243,26 @@ int
 Py_FrozenMain(int argc, char **argv)
 {
     char *p;
-    int n, sts;
+    int n, sts = 1;
     int inspect = 0;
     int unbuffered = 0;
+
+#if PY_MAJOR_VERSION >= 3
+    int i;
+    char *oldloc = NULL;
+    wchar_t **argv_copy = NULL;
+    /* We need a second copies, as Python might modify the first one. */
+    wchar_t **argv_copy2 = NULL;
+
+    if (argc > 0) {
+        argv_copy = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
+        argv_copy2 = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
+        if (!argv_copy || !argv_copy2) {
+            fprintf(stderr, \"out of memory\\n\");
+            goto error;
+        }
+    }
+#endif
 
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
 
@@ -256,10 +277,41 @@ Py_FrozenMain(int argc, char **argv)
         setbuf(stderr, (char *)NULL);
     }
 
+#if PY_MAJOR_VERSION >= 3
+    oldloc = _PyMem_RawStrdup(setlocale(LC_ALL, NULL));
+    if (!oldloc) {
+        fprintf(stderr, \"out of memory\\n\");
+        goto error;
+    }
+
+    setlocale(LC_ALL, \"\");
+    for (i = 0; i < argc; i++) {
+        argv_copy[i] = Py_DecodeLocale(argv[i], NULL);
+        argv_copy2[i] = argv_copy[i];
+        if (!argv_copy[i]) {
+            fprintf(stderr, \"Unable to decode the command line argument #%i\\n\",
+                            i + 1);
+            argc = i;
+            goto error;
+        }
+    }
+    setlocale(LC_ALL, oldloc);
+    PyMem_RawFree(oldloc);
+    oldloc = NULL;
+#endif
+
 #ifdef MS_WINDOWS
     PyInitFrozenExtensions();
 #endif /* MS_WINDOWS */
-    Py_SetProgramName(argv[0]);
+
+    if (argc >= 1) {
+#if PY_MAJOR_VERSION >= 3
+        Py_SetProgramName(argv_copy[0]);
+#else
+        Py_SetProgramName(argv[0]);
+#endif
+    }
+
     Py_Initialize();
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeInit();
@@ -269,7 +321,11 @@ Py_FrozenMain(int argc, char **argv)
         fprintf(stderr, "Python %s\\n%s\\n",
             Py_GetVersion(), Py_GetCopyright());
 
+#if PY_MAJOR_VERSION >= 3
+    PySys_SetArgv(argc, argv_copy);
+#else
     PySys_SetArgv(argc, argv);
+#endif
 
     n = PyImport_ImportFrozenModule("__main__");
     if (n == 0)
@@ -288,6 +344,17 @@ Py_FrozenMain(int argc, char **argv)
     PyWinFreeze_ExeTerm();
 #endif
     Py_Finalize();
+
+error:
+#if PY_MAJOR_VERSION >= 3
+    PyMem_RawFree(argv_copy);
+    if (argv_copy2) {
+        for (i = 0; i < argc; i++)
+            PyMem_RawFree(argv_copy2[i]);
+        PyMem_RawFree(argv_copy2);
+    }
+    PyMem_RawFree(oldloc);
+#endif
     return sts;
 }
 """
