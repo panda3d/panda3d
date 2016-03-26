@@ -40,6 +40,8 @@ SYS_INC_DIRS = []
 DEBUG_DEPENDENCIES = False
 DEFAULT_CC = "gcc"
 DEFAULT_CXX = "g++"
+DEFAULT_AR = "ar"
+DEFAULT_RANLIB = "ranlib"
 
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
@@ -357,9 +359,11 @@ def SetTarget(target, arch=None):
             exit('Should specify an architecture when building for Linux')
 
     elif target == 'emscripten':
-        global DEFAULT_CC, DEFAULT_CXX
+        global DEFAULT_CC, DEFAULT_CXX, DEFAULT_AR, DEFAULT_RANLIB
         DEFAULT_CC = "emcc"
         DEFAULT_CXX = "em++"
+        DEFAULT_AR = "emar"
+        DEFAULT_RANLIB = "emranlib"
 
     elif target == host:
         if arch is None or arch == host_arch:
@@ -417,16 +421,16 @@ def GetStrip():
 def GetAR():
     # Hack
     if TARGET == 'android':
-        return TOOLCHAIN_PREFIX + 'ar'
+        return TOOLCHAIN_PREFIX + DEFAULT_AR
     else:
-        return 'ar'
+        return DEFAULT_AR
 
 def GetRanlib():
     # Hack
     if TARGET == 'android':
-        return TOOLCHAIN_PREFIX + 'ranlib'
+        return TOOLCHAIN_PREFIX + DEFAULT_RANLIB
     else:
-        return 'ranlib'
+        return DEFAULT_RANLIB
 
 BISON = None
 def GetBison():
