@@ -232,7 +232,7 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_cursor_hidden() &&
       properties.get_cursor_hidden() == (_properties.get_mouse_mode() == WindowProperties::M_relative)) {
     // A hidden cursor comes for free with pointerlock.  Without pointerlock,
-    // though, we can't hdide the cursor.
+    // though, we can't hide the cursor.
     properties.clear_cursor_hidden();
   }
 }
@@ -449,7 +449,7 @@ on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data) {
 }
 
 /**
- *
+ * Handles HTML5 keypress, keydown and keyup events.
  */
 EM_BOOL WebGLGraphicsWindow::
 on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_data) {
@@ -458,82 +458,45 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
   nassertr(device != NULL, false);
 
   if (type == EMSCRIPTEN_EVENT_KEYPRESS) {
-    // Chrome doesn't actually send this.  Weird.
-    return false;
+    // We have to use String.fromCharCode to turn this into a text character.
+    // When called from a key event, it does some special magic to ensure that
+    // it does the right thing.  We grab the first unicode code point.
+    // Unfortunately, this doesn't seem to handle dead keys on Firefox.
+    int keycode = 0;
+    EM_ASM_({
+      stringToUTF32(String.fromCharCode($0), $1, 4);
+      console.log(String.fromCharCode($0));
+    }, event->charCode, &keycode);
+
+    if (keycode != 0) {
+      device->keystroke(keycode);
+      return true;
+    }
 
   } else if (type == EMSCRIPTEN_EVENT_KEYDOWN ||
              type == EMSCRIPTEN_EVENT_KEYUP) {
 
-    ButtonHandle handle;
-    switch (event->which) {
-    case 16:
-      handle = KeyboardButton::shift();
-      break;
+    ButtonHandle handle = map_key(event->which);
 
-    case 17:
-      handle = KeyboardButton::control();
-      break;
-
-    case 18:
-      handle = KeyboardButton::alt();
-      break;
-
-    case 20:
-      handle = KeyboardButton::caps_lock();
-      break;
-
-    case 37:
-      handle = KeyboardButton::left();
-      break;
-
-    case 38:
-      handle = KeyboardButton::up();
-      break;
-
-    case 39:
-      handle = KeyboardButton::right();
-      break;
-
-    case 40:
-      handle = KeyboardButton::down();
-      break;
-
-    case 186:
-      handle = KeyboardButton::ascii_key(';');
-      break;
-
-    case 188:
-      handle = KeyboardButton::ascii_key(',');
-      break;
-
-    case 189:
-      handle = KeyboardButton::ascii_key('-');
-      break;
-
-    case 190:
-      handle = KeyboardButton::ascii_key('.');
-      break;
-
-    case 191:
-      handle = KeyboardButton::ascii_key('?');
-      break;
-
-    case 192:
-      handle = KeyboardButton::ascii_key('`');
-      break;
-
-    case 220:
-      handle = KeyboardButton::ascii_key('\\');
-      break;
-
-    case 222:
-      handle = KeyboardButton::ascii_key('\'');
-      break;
-
-    default:
-      handle = KeyboardButton::ascii_key(tolower(event->which));
+    // Send a raw event too, if the browser supports providing it.
+    ButtonHandle raw_handle;
+    if (event->code[0]) {
+      raw_handle = map_raw_key(event->code);
+    } else {
+      // This browser doesn't send raw events.  Let's just pretend the user is
+      // using QWERTY.  Better than nothing?
+      raw_handle = handle;
     }
 
+    if (raw_handle != ButtonHandle::none()) {
+      if (type == EMSCRIPTEN_EVENT_KEYUP) {
+        device->raw_button_up(raw_handle);
+      } else if (!event->repeat) {
+        device->raw_button_down(raw_handle);
+      }
+    }
+
+    // Send a regular event for the 'virtual' key mapping.
     if (handle != ButtonHandle::none()) {
       if (type == EMSCRIPTEN_EVENT_KEYUP) {
         //webgldisplay_cat.info() << "button up " << handle << "\n";
@@ -544,9 +507,19 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
         //webgldisplay_cat.info() << "button down " << handle << "\n";
         device->button_down(handle);
       }
-      return true;
-    } else {
-      webgldisplay_cat.info() << "button event code " << event->which << "\n";
+
+      // If we preventDefault a keydown event, its keypress event won't fire,
+      // which would prevent text input from working.  However, we must still
+      // prevent the default action from working in backspace and tab events.
+      if (type == EMSCRIPTEN_EVENT_KEYDOWN &&
+          event->keyCode != 8 && event->keyCode != 9) {
+        return false;
+      } else {
+        return true;
+      }
+    } else if (event->which != 0) {
+      webgldisplay_cat.info()
+        << "unhandled event code " << event->which << "\n";
     }
   }
 
@@ -554,7 +527,7 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
 }
 
 /**
- *
+ * Handles mousedown, mouseup, mousemove, mouseenter and mouseleave events.
  */
 EM_BOOL WebGLGraphicsWindow::
 on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
@@ -634,4 +607,357 @@ on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
   }
 
   return false;
+}
+
+
+/**
+ * Maps a JavaScript event keycode to a ButtonHandle.
+ */
+ButtonHandle WebGLGraphicsWindow::
+map_key(int which) {
+  switch (which) {
+  case 8:
+    return KeyboardButton::backspace();
+  case 9:
+    return KeyboardButton::tab();
+  case 13:
+    return KeyboardButton::enter();
+  case 16:
+    return KeyboardButton::shift();
+  case 17:
+    return KeyboardButton::control();
+  case 18:
+    return KeyboardButton::alt();
+  case 19:
+    return KeyboardButton::pause();
+  case 20:
+    return KeyboardButton::caps_lock();
+  case 27:
+    return KeyboardButton::escape();
+  case 33:
+    return KeyboardButton::page_up();
+  case 34:
+    return KeyboardButton::page_down();
+  case 35:
+    return KeyboardButton::end();
+  case 36:
+    return KeyboardButton::home();
+  case 37:
+    return KeyboardButton::left();
+  case 38:
+    return KeyboardButton::up();
+  case 39:
+    return KeyboardButton::right();
+  case 40:
+    return KeyboardButton::down();
+  case 42:
+    return KeyboardButton::print_screen();
+  case 45:
+    return KeyboardButton::insert();
+  case 46:
+    return KeyboardButton::del();
+  case 48:
+  case 49:
+  case 50:
+  case 51:
+  case 52:
+  case 53:
+  case 54:
+  case 55:
+  case 56:
+  case 57:
+    return KeyboardButton::ascii_key('0' + (which - 48));
+  case 59:
+    return KeyboardButton::ascii_key(';');
+  case 61:
+    return KeyboardButton::ascii_key('=');
+  case 65:
+  case 66:
+  case 67:
+  case 68:
+  case 69:
+  case 70:
+  case 71:
+  case 72:
+  case 73:
+  case 74:
+  case 75:
+  case 76:
+  case 77:
+  case 78:
+  case 79:
+  case 80:
+  case 81:
+  case 82:
+  case 83:
+  case 84:
+  case 85:
+  case 86:
+  case 87:
+  case 88:
+  case 89:
+  case 90:
+    return KeyboardButton::ascii_key('a' + (which - 65));
+  case 91:
+    return KeyboardButton::lmeta();
+  case 92:
+    return KeyboardButton::rmeta();
+  case 93:
+    return KeyboardButton::menu();
+  case 96:
+  case 97:
+  case 98:
+  case 99:
+  case 100:
+  case 101:
+  case 102:
+  case 103:
+  case 104:
+  case 105:
+    return KeyboardButton::ascii_key('0' + (which - 96));
+  case 106:
+    return KeyboardButton::ascii_key('*');
+  case 107:
+    return KeyboardButton::ascii_key('+');
+  case 109:
+    return KeyboardButton::ascii_key('-');
+  case 110:
+    return KeyboardButton::ascii_key('.');
+  case 111:
+    return KeyboardButton::ascii_key('/');
+  case 112:
+    return KeyboardButton::f1();
+  case 113:
+    return KeyboardButton::f2();
+  case 114:
+    return KeyboardButton::f3();
+  case 115:
+    return KeyboardButton::f4();
+  case 116:
+    return KeyboardButton::f5();
+  case 117:
+    return KeyboardButton::f6();
+  case 118:
+    return KeyboardButton::f7();
+  case 119:
+    return KeyboardButton::f8();
+  case 120:
+    return KeyboardButton::f9();
+  case 121:
+    return KeyboardButton::f10();
+  case 122:
+    return KeyboardButton::f11();
+  case 123:
+    return KeyboardButton::f12();
+  case 144:
+    return KeyboardButton::num_lock();
+  case 145:
+    return KeyboardButton::scroll_lock();
+  case 173:
+    return KeyboardButton::ascii_key('-');
+  case 186:
+    return KeyboardButton::ascii_key(';');
+  case 187:
+    return KeyboardButton::ascii_key('=');
+  case 188:
+    return KeyboardButton::ascii_key(',');
+  case 189:
+    return KeyboardButton::ascii_key('-');
+  case 190:
+    return KeyboardButton::ascii_key('.');
+  case 191:
+    return KeyboardButton::ascii_key('?');
+  case 192:
+    return KeyboardButton::ascii_key('`');
+  case 219:
+    return KeyboardButton::ascii_key('[');
+  case 220:
+    return KeyboardButton::ascii_key('\\');
+  case 221:
+    return KeyboardButton::ascii_key(']');
+  case 222:
+    return KeyboardButton::ascii_key('\'');
+  default:
+    return ButtonHandle::none();
+  }
+}
+
+/**
+ * Maps a HTML5 KeyboardEvent.code string to a ButtonHandle.
+ */
+ButtonHandle WebGLGraphicsWindow::
+map_raw_key(const char *code) {
+  static struct {
+    const char *code;
+    ButtonHandle handle;
+  } mappings[] = {
+    //{"Again", KeyboardButton::()},
+    {"AltLeft", KeyboardButton::lalt()},
+    {"AltRight", KeyboardButton::ralt()},
+    {"ArrowDown", KeyboardButton::down()},
+    {"ArrowLeft", KeyboardButton::left()},
+    {"ArrowRight", KeyboardButton::right()},
+    {"ArrowUp", KeyboardButton::up()},
+    {"Backquote", KeyboardButton::ascii_key('`')},
+    {"Backslash", KeyboardButton::ascii_key('\\')},
+    {"Backspace", KeyboardButton::backspace()},
+    {"BracketLeft", KeyboardButton::ascii_key('[')},
+    {"BracketRight", KeyboardButton::ascii_key(']')},
+    //{"BrowserBack", KeyboardButton::()},
+    //{"BrowserFavorites", KeyboardButton::()},
+    //{"BrowserForward", KeyboardButton::()},
+    //{"BrowserRefresh", KeyboardButton::()},
+    //{"BrowserSearch", KeyboardButton::()},
+    //{"BrowserStop", KeyboardButton::()},
+    {"CapsLock", KeyboardButton::caps_lock()},
+    {"Comma", KeyboardButton::ascii_key(',')},
+    {"ContextMenu", KeyboardButton::menu()},
+    {"ControlLeft", KeyboardButton::lcontrol()},
+    {"ControlRight", KeyboardButton::rcontrol()},
+    //{"Convert", KeyboardButton::()},
+    //{"Copy", KeyboardButton::()},
+    //{"Cut", KeyboardButton::()},
+    {"Delete", KeyboardButton::del()},
+    {"Digit0", KeyboardButton::ascii_key('0')},
+    {"Digit1", KeyboardButton::ascii_key('1')},
+    {"Digit2", KeyboardButton::ascii_key('2')},
+    {"Digit3", KeyboardButton::ascii_key('3')},
+    {"Digit4", KeyboardButton::ascii_key('4')},
+    {"Digit5", KeyboardButton::ascii_key('5')},
+    {"Digit6", KeyboardButton::ascii_key('6')},
+    {"Digit7", KeyboardButton::ascii_key('7')},
+    {"Digit8", KeyboardButton::ascii_key('8')},
+    {"Digit9", KeyboardButton::ascii_key('9')},
+    //{"Eject", KeyboardButton::()},
+    {"End", KeyboardButton::end()},
+    {"Enter", KeyboardButton::enter()},
+    {"Equal", KeyboardButton::ascii_key('=')},
+    {"Escape", KeyboardButton::escape()},
+    {"F1", KeyboardButton::f1()},
+    {"F10", KeyboardButton::f10()},
+    {"F11", KeyboardButton::f11()},
+    {"F12", KeyboardButton::f12()},
+    {"F13", KeyboardButton::f13()},
+    {"F14", KeyboardButton::f14()},
+    {"F15", KeyboardButton::f15()},
+    {"F16", KeyboardButton::f16()},
+    //{"F17", KeyboardButton::f17()},
+    //{"F18", KeyboardButton::f18()},
+    //{"F19", KeyboardButton::f19()},
+    {"F2", KeyboardButton::f2()},
+    //{"F20", KeyboardButton::f20()},
+    //{"F21", KeyboardButton::f21()},
+    //{"F22", KeyboardButton::f22()},
+    //{"F23", KeyboardButton::f23()},
+    //{"F24", KeyboardButton::f24()},
+    {"F3", KeyboardButton::f3()},
+    {"F4", KeyboardButton::f4()},
+    {"F5", KeyboardButton::f5()},
+    {"F6", KeyboardButton::f6()},
+    {"F7", KeyboardButton::f7()},
+    {"F8", KeyboardButton::f8()},
+    {"F9", KeyboardButton::f9()},
+    //{"Find", KeyboardButton::()},
+    //{"Fn", KeyboardButton::()},
+    {"Help", KeyboardButton::help()},
+    {"Home", KeyboardButton::home()},
+    {"Insert", KeyboardButton::insert()},
+    //{"IntlBackslash", KeyboardButton::()},
+    //{"IntlRo", KeyboardButton::()},
+    //{"IntlYen", KeyboardButton::()},
+    //{"KanaMode", KeyboardButton::()},
+    {"KeyA", KeyboardButton::ascii_key('a')},
+    {"KeyB", KeyboardButton::ascii_key('b')},
+    {"KeyC", KeyboardButton::ascii_key('c')},
+    {"KeyD", KeyboardButton::ascii_key('d')},
+    {"KeyE", KeyboardButton::ascii_key('e')},
+    {"KeyF", KeyboardButton::ascii_key('f')},
+    {"KeyG", KeyboardButton::ascii_key('g')},
+    {"KeyH", KeyboardButton::ascii_key('h')},
+    {"KeyI", KeyboardButton::ascii_key('i')},
+    {"KeyJ", KeyboardButton::ascii_key('j')},
+    {"KeyK", KeyboardButton::ascii_key('k')},
+    {"KeyL", KeyboardButton::ascii_key('l')},
+    {"KeyM", KeyboardButton::ascii_key('m')},
+    {"KeyN", KeyboardButton::ascii_key('n')},
+    {"KeyO", KeyboardButton::ascii_key('o')},
+    {"KeyP", KeyboardButton::ascii_key('p')},
+    {"KeyQ", KeyboardButton::ascii_key('q')},
+    {"KeyR", KeyboardButton::ascii_key('r')},
+    {"KeyS", KeyboardButton::ascii_key('s')},
+    {"KeyT", KeyboardButton::ascii_key('t')},
+    {"KeyU", KeyboardButton::ascii_key('u')},
+    {"KeyV", KeyboardButton::ascii_key('v')},
+    {"KeyW", KeyboardButton::ascii_key('w')},
+    {"KeyX", KeyboardButton::ascii_key('x')},
+    {"KeyY", KeyboardButton::ascii_key('y')},
+    {"KeyZ", KeyboardButton::ascii_key('z')},
+    //{"Lang1", KeyboardButton::()},
+    //{"Lang2", KeyboardButton::()},
+    //{"LaunchApp1", KeyboardButton::()},
+    //{"MediaPlayPause", KeyboardButton::()},
+    //{"MediaStop", KeyboardButton::()},
+    //{"MediaTrackNext", KeyboardButton::()},
+    //{"MediaTrackPrevious", KeyboardButton::()},
+    {"Minus", KeyboardButton::ascii_key('-')},
+    //{"NonConvert", KeyboardButton::()},
+    {"NumLock", KeyboardButton::num_lock()},
+    {"Numpad0", KeyboardButton::ascii_key('0')},
+    {"Numpad1", KeyboardButton::ascii_key('1')},
+    {"Numpad2", KeyboardButton::ascii_key('2')},
+    {"Numpad3", KeyboardButton::ascii_key('3')},
+    {"Numpad4", KeyboardButton::ascii_key('4')},
+    {"Numpad5", KeyboardButton::ascii_key('5')},
+    {"Numpad6", KeyboardButton::ascii_key('6')},
+    {"Numpad7", KeyboardButton::ascii_key('7')},
+    {"Numpad8", KeyboardButton::ascii_key('8')},
+    {"Numpad9", KeyboardButton::ascii_key('9')},
+    {"NumpadAdd", KeyboardButton::ascii_key('+')},
+    {"NumpadComma", KeyboardButton::ascii_key(',')},
+    {"NumpadDecimal", KeyboardButton::ascii_key('.')},
+    {"NumpadDivide", KeyboardButton::ascii_key('/')},
+    {"NumpadEnter", KeyboardButton::enter()},
+    {"NumpadEqual", KeyboardButton::ascii_key('=')},
+    {"NumpadMultiply", KeyboardButton::ascii_key('*')},
+    {"NumpadSubtract", KeyboardButton::ascii_key('-')},
+    //{"Open", KeyboardButton::()},
+    {"OSLeft", KeyboardButton::lmeta()},
+    {"OSRight", KeyboardButton::rmeta()},
+    {"PageDown", KeyboardButton::page_down()},
+    {"PageUp", KeyboardButton::page_up()},
+    //{"Paste", KeyboardButton::()},
+    {"Pause", KeyboardButton::pause()},
+    {"Period", KeyboardButton::ascii_key('.')},
+    //{"Power", KeyboardButton::()},
+    {"PrintScreen", KeyboardButton::print_screen()},
+    //{"Props", KeyboardButton::()},
+    {"Quote", KeyboardButton::ascii_key('\'')},
+    {"ScrollLock", KeyboardButton::scroll_lock()},
+    //{"Select", KeyboardButton::()},
+    {"Semicolon", KeyboardButton::ascii_key(';')},
+    {"ShiftLeft", KeyboardButton::lshift()},
+    {"ShiftRight", KeyboardButton::rshift()},
+    {"Slash", KeyboardButton::ascii_key('/')},
+    //{"Sleep", KeyboardButton::()},
+    {"Space", KeyboardButton::ascii_key(' ')},
+    {"Tab", KeyboardButton::tab()},
+    //{"Undo", KeyboardButton::()},
+    //{"VolumeDown", KeyboardButton::()},
+    //{"VolumeMute", KeyboardButton::()},
+    //{"VolumeUp", KeyboardButton::()},
+    //{"WakeUp", KeyboardButton::()},
+    {NULL, ButtonHandle::none()}
+  };
+
+  for (int i = 0; mappings[i].code; ++i) {
+    int cmp = strcmp(mappings[i].code, code);
+    if (cmp == 0) {
+      return mappings[i].handle;
+    } else if (cmp > 0) {
+      // They're in alphabetical order, and we've passed it by, so bail early.
+      return ButtonHandle::none();
+    }
+  }
+
+  return ButtonHandle::none();
 }

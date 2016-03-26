@@ -57,6 +57,9 @@ private:
   static EM_BOOL on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data);
   static EM_BOOL on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data);
 
+  static ButtonHandle map_key(int which);
+  static ButtonHandle map_raw_key(const char *code);
+
   string _canvas_id;
 
 public:
