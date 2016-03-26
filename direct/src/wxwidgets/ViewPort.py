@@ -171,7 +171,7 @@ class Viewport(WxPandaWindow, DirectObject):
     if vpType == VPFRONT: return Viewport.makeFront(parent)
     if vpType == VPTOP:   return Viewport.makeTop(parent)
     if vpType == VPPERSPECTIVE:  return Viewport.makePerspective(parent)
-    raise TypeError, "Unknown viewport type: %s" % vpType
+    raise TypeError("Unknown viewport type: %s" % vpType)
 
   @staticmethod
   def makeOrthographic(parent, name, campos):

@@ -139,10 +139,9 @@ class _RLock(_Verbose):
 
     # Internal methods used by condition variables
 
-    def _acquire_restore(self, (count, owner)):
+    def _acquire_restore(self, state):
         self.__block.acquire()
-        self.__count = count
-        self.__owner = owner
+        self.__count, self.__owner = state
         if __debug__:
             self._note("%s._acquire_restore()", self)
 
@@ -334,7 +333,7 @@ class _BoundedSemaphore(_Semaphore):
 
     def release(self):
         if self._Semaphore__value >= self._initial_value:
-            raise ValueError, "Semaphore released too many times"
+            raise ValueError("Semaphore released too many times")
         return _Semaphore.release(self)
 
 

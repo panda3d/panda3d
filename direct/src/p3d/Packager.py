@@ -26,7 +26,7 @@ from direct.directnotify.DirectNotifyGlobal import *
 
 vfs = VirtualFileSystem.getGlobalPtr()
 
-class PackagerError(StandardError):
+class PackagerError(Exception):
     pass
 
 class OutsideOfPackageError(PackagerError):
@@ -390,7 +390,7 @@ class Packager:
 
             if not self.p3dApplication and not self.packager.allowPackages:
                 message = 'Cannot generate packages without an installDir; use -i'
-                raise PackagerError, message
+                raise PackagerError(message)
 
             if self.ignoredDirFiles:
                 exts = sorted(self.ignoredDirFiles.keys())
@@ -429,11 +429,11 @@ class Packager:
 
                 if self.version != PandaSystem.getPackageVersionString():
                     message = 'mismatched Panda3D version: requested %s, but Panda3D is built as %s' % (self.version, PandaSystem.getPackageVersionString())
-                    raise PackagerError, message
+                    raise PackagerError(message)
 
                 if self.host != PandaSystem.getPackageHostUrl():
                     message = 'mismatched Panda3D host: requested %s, but Panda3D is built as %s' % (self.host, PandaSystem.getPackageHostUrl())
-                    raise PackagerError, message
+                    raise PackagerError(message)
 
             if self.p3dApplication:
                 # Default compression level for an app.
@@ -554,7 +554,7 @@ class Packager:
             # Add the main module, if any.
             if not self.mainModule and self.p3dApplication:
                 message = 'No main_module specified for application %s' % (self.packageName)
-                raise PackagerError, message
+                raise PackagerError(message)
             if self.mainModule:
                 moduleName, newName = self.mainModule
                 if newName not in self.freezer.modules:
@@ -790,7 +790,7 @@ class Packager:
 
             if not self.packager.allowPackages:
                 message = 'Cannot generate packages without an installDir; use -i'
-                raise PackagerError, message
+                raise PackagerError(message)
 
             installPath = Filename(self.packager.installDir, packageDir)
             # Remove any files already in the installPath.
@@ -811,7 +811,7 @@ class Packager:
                 return
 
             if len(files) != 1:
-                raise PackagerError, 'Multiple files in "solo" package %s' % (self.packageName)
+                raise PackagerError('Multiple files in "solo" package %s' % (self.packageName))
 
             Filename(installPath, '').makeDir()
 
@@ -1535,7 +1535,7 @@ class Packager:
             compressedPath = Filename(self.packager.installDir, newCompressedFilename)
             if not compressFile(self.packageFullpath, compressedPath, 6):
                 message = 'Unable to write %s' % (compressedPath)
-                raise PackagerError, message
+                raise PackagerError(message)
 
         def readDescFile(self):
             """ Reads the existing package.xml file before rewriting
@@ -1838,7 +1838,7 @@ class Packager:
                 if parentName not in self.freezer.modules:
                     message = 'Cannot add Python file %s; not in package' % (file.newName)
                     if file.required or file.explicit:
-                        raise StandardError, message
+                        raise Exception(message)
                     else:
                         self.notify.warning(message)
                     return
@@ -1852,7 +1852,7 @@ class Packager:
             # Precompile egg files to bam's.
             np = self.packager.loader.loadModel(file.filename)
             if not np:
-                raise StandardError, 'Could not read egg file %s' % (file.filename)
+                raise Exception('Could not read egg file %s' % (file.filename))
 
             bamName = Filename(file.newName)
             bamName.setExtension('bam')
@@ -1862,14 +1862,14 @@ class Packager:
             # Load the bam file so we can massage its textures.
             bamFile = BamFile()
             if not bamFile.openRead(file.filename):
-                raise StandardError, 'Could not read bam file %s' % (file.filename)
+                raise Exception('Could not read bam file %s' % (file.filename))
 
             if not bamFile.resolve():
-                raise StandardError, 'Could not resolve bam file %s' % (file.filename)
+                raise Exception('Could not resolve bam file %s' % (file.filename))
 
             node = bamFile.readNode()
             if not node:
-                raise StandardError, 'Not a model file: %s' % (file.filename)
+                raise Exception('Not a model file: %s' % (file.filename))
 
             self.addNode(node, file.filename, file.newName)
 
@@ -2703,7 +2703,7 @@ class Packager:
             self.allowPackages = False
 
         if not PandaSystem.getPackageVersionString() or not PandaSystem.getPackageHostUrl():
-            raise PackagerError, 'This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.\nIf you are running this script for development purposes, you may also\nset the Config variable panda-package-host-url to the URL you expect\nto download these contents from (for instance, a file:// URL).'
+            raise PackagerError('This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.\nIf you are running this script for development purposes, you may also\nset the Config variable panda-package-host-url to the URL you expect\nto download these contents from (for instance, a file:// URL).')
 
         self.readContentsFile()
 
@@ -2804,7 +2804,7 @@ class Packager:
                             self.notify.info("No files added to %s" % (name))
                         for (lineno, stype, sname, args, kw) in statements:
                             if stype == 'class':
-                                raise PackagerError, 'Nested classes not allowed'
+                                raise PackagerError('Nested classes not allowed')
                             self.__evalFunc(sname, args, kw)
                         package = self.endPackage()
                         if package is not None:
@@ -2812,7 +2812,7 @@ class Packager:
                         elif packageNames is not None:
                             # If the name is explicitly specified, this means
                             # we should abort if the package faild to construct.
-                            raise PackagerError, 'Failed to construct %s' % name
+                            raise PackagerError('Failed to construct %s' % name)
                 else:
                     self.__evalFunc(name, args, kw)
         except PackagerError:
@@ -2838,7 +2838,7 @@ class Packager:
             func(*args, **kw)
         except OutsideOfPackageError:
             message = '%s encountered outside of package definition' % (name)
-            raise OutsideOfPackageError, message
+            raise OutsideOfPackageError(message)
 
     def __expandTabs(self, line, tabWidth = 8):
         """ Expands tab characters in the line to 8 spaces. """
@@ -2883,10 +2883,10 @@ class Packager:
             value = value.strip()
             if parameter not in argList:
                 message = 'Unknown parameter %s' % (parameter)
-                raise PackagerError, message
+                raise PackagerError(message)
             if parameter in args:
                 message = 'Duplicate parameter %s' % (parameter)
-                raise PackagerError, message
+                raise PackagerError(message)
 
             args[parameter] = value
 
@@ -2900,7 +2900,7 @@ class Packager:
         to file() etc., and close the package with endPackage(). """
 
         if self.currentPackage:
-            raise PackagerError, 'unclosed endPackage %s' % (self.currentPackage.packageName)
+            raise PackagerError('unclosed endPackage %s' % (self.currentPackage.packageName))
 
         package = self.Package(packageName, self)
         self.currentPackage = package
@@ -2910,7 +2910,7 @@ class Packager:
 
         if not package.p3dApplication and not self.allowPackages:
             message = 'Cannot generate packages without an installDir; use -i'
-            raise PackagerError, message
+            raise PackagerError(message)
 
 
     def endPackage(self):
@@ -2919,7 +2919,7 @@ class Packager:
         or None if the package failed to close (e.g. missing files). """
 
         if not self.currentPackage:
-            raise PackagerError, 'unmatched endPackage'
+            raise PackagerError('unmatched endPackage')
 
         package = self.currentPackage
         package.signParams += self.signParams[:]
@@ -3310,7 +3310,7 @@ class Packager:
             raise OutsideOfPackageError
 
         if (newName or filename) and len(moduleNames) != 1:
-            raise PackagerError, 'Cannot specify newName with multiple modules'
+            raise PackagerError('Cannot specify newName with multiple modules')
 
         if required:
             self.currentPackage.requiredModules += moduleNames
@@ -3469,7 +3469,7 @@ class Packager:
             package.mainModule = None
         if not package.mainModule and compileToExe:
             message = "No main_module specified for exe %s" % (filename)
-            raise PackagerError, message
+            raise PackagerError(message)
 
         if package.mainModule:
             moduleName, newName = package.mainModule
@@ -3641,12 +3641,12 @@ class Packager:
         if newName:
             if len(files) != 1:
                 message = 'Cannot install multiple files on target filename %s' % (newName)
-                raise PackagerError, message
+                raise PackagerError(message)
 
         if text:
             if len(files) != 1:
                 message = 'Cannot install text to multiple files'
-                raise PackagerError, message
+                raise PackagerError(message)
             if not newName:
                 newName = str(filenames[0])
 

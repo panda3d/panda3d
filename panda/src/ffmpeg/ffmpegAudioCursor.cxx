@@ -203,7 +203,11 @@ cleanup() {
 
   if (_packet) {
     if (_packet->data) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+      av_packet_unref(_packet);
+#else
       av_free_packet(_packet);
+#endif
     }
     delete _packet;
     _packet = NULL;
@@ -242,7 +246,11 @@ cleanup() {
 void FfmpegAudioCursor::
 fetch_packet() {
   if (_packet->data) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    av_packet_unref(_packet);
+#else
     av_free_packet(_packet);
+#endif
   }
   while (av_read_frame(_format_ctx, _packet) >= 0) {
     if (_packet->stream_index == _audio_index) {
@@ -250,7 +258,11 @@ fetch_packet() {
       _packet_data = _packet->data;
       return;
     }
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+    av_packet_unref(_packet);
+#else
     av_free_packet(_packet);
+#endif
   }
   _packet->data = 0;
   _packet_size = 0;
@@ -300,7 +312,11 @@ reload_buffer() {
       pkt.size = _packet_size;
       int len = avcodec_decode_audio4(_audio_ctx, _frame, &got_frame, &pkt);
       movies_debug("avcodec_decode_audio4 returned " << len);
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 12, 100)
+      av_packet_unref(&pkt);
+#else
       av_free_packet(&pkt);
+#endif
 
       bufsize = 0;
       if (got_frame) {

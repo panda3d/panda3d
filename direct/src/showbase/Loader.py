@@ -324,7 +324,7 @@ class Loader(DirectObject):
                 nodeList[i] = nodeList[i].node()
 
         # From here on, we deal with a list of (filename, node) pairs.
-        modelList = zip(modelList, nodeList)
+        modelList = list(zip(modelList, nodeList))
 
         if callback is None:
             # We got no callback, so it's a synchronous save.

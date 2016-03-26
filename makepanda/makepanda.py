@@ -2668,7 +2668,26 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("DIRECT")==0):
-    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=['all'])
+    fixers = [
+        'apply',
+        'callable',
+        'dict',
+        'except',
+        'execfile',
+        'import',
+        'imports',
+        'long',
+        'metaclass',
+        'next',
+        'numliterals',
+        'print',
+        'types',
+        'unicode',
+        'xrange',
+        'xreadlines',
+    ]
+
+    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=fixers, threads=THREADCOUNT)
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
 
     # This file used to be copied, but would nowadays cause conflicts.
@@ -2718,7 +2737,8 @@ if not PkgSkip("PYTHON"):
 
     # Also add this file, for backward compatibility.
     ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """
-print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
+if __debug__:
+    print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
 from .interrogatedb import *
 """)
 
@@ -2749,7 +2769,8 @@ if not PkgSkip("VRPN"):
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
 
-print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
+if __debug__:
+    print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
 """
 
 for module in panda_modules:

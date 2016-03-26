@@ -765,7 +765,7 @@ class PatchMaker:
             filename = Filename(package.currentFile.filename + '.%s.patch' % (package.patchVersion))
             assert filename not in self.patchFilenames
             if not self.buildPatch(topPv, currentPv, package, filename):
-                raise StandardError, "Couldn't build patch."
+                raise Exception("Couldn't build patch.")
 
     def buildPatch(self, v1, v2, package, patchFilename):
         """ Builds a patch from PackageVersion v1 to PackageVersion
@@ -780,7 +780,7 @@ class PatchMaker:
         compressedPathname = Filename(pathname + '.pz')
         compressedPathname.unlink()
         if not compressFile(pathname, compressedPathname, 9):
-            raise StandardError, "Couldn't compress patch."
+            raise Exception("Couldn't compress patch.")
         pathname.unlink()
 
         patchfile = self.Patchfile(package)

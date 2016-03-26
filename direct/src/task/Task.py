@@ -571,13 +571,13 @@ class TaskManager:
 
         method = task.getFunction()
         if (type(method) == types.MethodType):
-            function = method.im_func
+            function = method.__func__
         else:
             function = method
         if (function == oldMethod):
             newMethod = types.MethodType(newFunction,
-                                         method.im_self,
-                                         method.im_class)
+                                         method.__self__,
+                                         method.__self__.__class__)
             task.setFunction(newMethod)
             # Found a match
             return 1
