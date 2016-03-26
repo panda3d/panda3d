@@ -465,7 +465,6 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
     int keycode = 0;
     EM_ASM_({
       stringToUTF32(String.fromCharCode($0), $1, 4);
-      console.log(String.fromCharCode($0));
     }, event->charCode, &keycode);
 
     if (keycode != 0) {
