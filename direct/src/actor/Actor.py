@@ -2058,7 +2058,7 @@ class Actor(DirectObject, NodePath):
                 if otherPartName != partName and otherPartDef.truePartName == parent:
                     joints = self.getOverlappingJoints(partName, otherPartName)
                     if joints:
-                        raise StandardError, 'Overlapping joints: %s and %s' % (partName, otherPartName)
+                        raise Exception('Overlapping joints: %s and %s' % (partName, otherPartName))
 
     def setSubpartsComplete(self, flag):
 

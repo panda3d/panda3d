@@ -26,7 +26,7 @@ class SeqValue:
         elif isinstance(value, types.StringTypes):
             self.setFromString(value)
         else:
-            raise TypeError, 'Invalid sequence type: %s' % (value,)
+            raise TypeError('Invalid sequence type: %s' % (value,))
 
     def setFromTuple(self, value):
         """ Sets the seq from the indicated tuple of integers. """

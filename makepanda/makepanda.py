@@ -754,7 +754,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample", "libswresample/swresample.h"), target_pkg = "FFMPEG")
         SmartPkgEnable("FFTW",      "",          ("rfftw", "fftw"), ("fftw.h", "rfftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-        SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
         SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
         SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
@@ -762,16 +761,18 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
         SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
-        SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
-        SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
         SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-        SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
 
         if GetTarget() != 'emscripten':
-            SmartPkgEnable("EIGEN", "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
-            SmartPkgEnable("OPENAL","openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-            SmartPkgEnable("GLES2", "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
-            SmartPkgEnable("EGL",   "egl",       ("EGL"), ("EGL/egl.h"))
+            # Most of these are provided by emscripten or via emscripten-ports.
+            SmartPkgEnable("EIGEN",    "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
+            SmartPkgEnable("OPENAL",   "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+            SmartPkgEnable("VORBIS",   "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
+            SmartPkgEnable("BULLET",   "bullet",    ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
+            SmartPkgEnable("FREETYPE", "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
+            SmartPkgEnable("PNG",      "libpng",    ("png"), "png.h", tool = "libpng-config")
+            SmartPkgEnable("GLES2",    "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
+            SmartPkgEnable("EGL",      "egl",       ("EGL"), ("EGL/egl.h"))
         else:
             PkgDisable("EIGEN")
 
@@ -802,8 +803,9 @@ if (COMPILER=="GCC"):
                 SmartPkgEnable("PYTHON", "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
+    if GetTarget() != 'emscripten':
+       SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
 
     if (RTDIST):
         SmartPkgEnable("WX", tool = "wx-config")
@@ -1238,6 +1240,17 @@ def CompileCxx(obj,src,opts):
 
         elif GetTarget() == 'emscripten':
             cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -s NO_FILESYSTEM=1"
+
+            if 'VORBIS' in opts:
+                cmd += " -s USE_VORBIS=1"
+            if 'BULLET' in opts:
+                cmd += " -s USE_BULLET=1"
+            if 'ZLIB' in opts:
+                cmd += " -s USE_ZLIB=1"
+            if 'FREETYPE' in opts:
+                cmd += " -s USE_FREETYPE=1"
+            if 'PNG' in opts:
+                cmd += " -s USE_LIBPNG=1"
 
         else:
             cmd += " -pthread"
@@ -2668,7 +2681,26 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("DIRECT")==0):
-    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=['all'])
+    fixers = [
+        'apply',
+        'callable',
+        'dict',
+        'except',
+        'execfile',
+        'import',
+        'imports',
+        'long',
+        'metaclass',
+        'next',
+        'numliterals',
+        'print',
+        'types',
+        'unicode',
+        'xrange',
+        'xreadlines',
+    ]
+
+    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=fixers, threads=THREADCOUNT)
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
 
     # This file used to be copied, but would nowadays cause conflicts.
@@ -2718,7 +2750,8 @@ if not PkgSkip("PYTHON"):
 
     # Also add this file, for backward compatibility.
     ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """
-print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
+if __debug__:
+    print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
 from .interrogatedb import *
 """)
 
@@ -2749,7 +2782,8 @@ if not PkgSkip("VRPN"):
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
 
-print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
+if __debug__:
+    print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
 """
 
 for module in panda_modules:

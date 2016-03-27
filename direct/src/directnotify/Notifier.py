@@ -116,7 +116,7 @@ class Notifier:
             return NSError
 
     # error funcs
-    def error(self, errorString, exception=StandardError):
+    def error(self, errorString, exception=Exception):
         """
         Raise an exception with given string and optional type:
         Exception: error

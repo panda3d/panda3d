@@ -33,7 +33,7 @@ def makeBundle(startDir):
         path.appendPath(os.environ['DYLD_LIBRARY_PATH'])
     nppanda3d = path.findFile('nppanda3d')
     if not nppanda3d:
-        raise StandardError, "Couldn't find nppanda3d on path."
+        raise Exception("Couldn't find nppanda3d on path.")
 
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir, 'bundle')
@@ -54,7 +54,7 @@ def makeBundle(startDir):
         resourceFilename.toOsSpecific(), Filename(fstartDir, "nppanda3d.r").toOsSpecific()))
 
     if not resourceFilename.exists():
-        raise IOError, 'Unable to run Rez'
+        raise IOError('Unable to run Rez')
 
     # Copy in Info.plist and the compiled executable.
     shutil.copyfile(Filename(fstartDir, "nppanda3d.plist").toOsSpecific(), plistFilename.toOsSpecific())

@@ -660,7 +660,7 @@ if __debug__:
 
         def profileDecorator(f):
             def _profiled(*args, **kArgs):
-                name = '(%s) %s from %s' % (category, f.func_name, f.__module__)
+                name = '(%s) %s from %s' % (category, f.__name__, f.__module__)
 
                 # showbase might not be loaded yet, so don't use
                 # base.config.  Instead, query the ConfigVariableBool.
@@ -1265,12 +1265,12 @@ class Enum:
             invalidChars = invalidChars.replace('_','')
             invalidFirstChars = invalidChars+string.digits
             if item[0] in invalidFirstChars:
-                raise SyntaxError, ("Enum '%s' contains invalid first char" %
+                raise SyntaxError("Enum '%s' contains invalid first char" %
                                     item)
             if not disjoint(item, invalidChars):
                 for char in item:
                     if char in invalidChars:
-                        raise SyntaxError, (
+                        raise SyntaxError(
                             "Enum\n'%s'\ncontains illegal char '%s'" %
                             (item, char))
             return 1
@@ -2070,7 +2070,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
 
 
-            outStr = '%s%s' % (f.func_name, rArgs)
+            outStr = '%s%s' % (f.__name__, rArgs)
 
             # Insert prefix place holder, if needed
             if prefixes:
@@ -2127,9 +2127,9 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 pass
             return rVal
 
-        wrap.func_name = f.func_name
-        wrap.func_dict = f.func_dict
-        wrap.func_doc = f.func_doc
+        wrap.__name__ = f.__name__
+        wrap.__dict__ = f.__dict__
+        wrap.__doc__ = f.__doc__
         wrap.__module__ = f.__module__
         return wrap
     return decorator
@@ -2179,7 +2179,7 @@ if __debug__:
                     return f(*args, **kArgs)
                 except Exception, e:
                     try:
-                        s = '%s(' % f.func_name
+                        s = '%s(' % f.__name__
                         for arg in args:
                             s += '%s, ' % arg
                         for key, value in kArgs.items():
@@ -2193,7 +2193,7 @@ if __debug__:
                             exceptionLoggedNotify.info(s)
                     except:
                         exceptionLoggedNotify.info(
-                            '%s: ERROR IN PRINTING' % f.func_name)
+                            '%s: ERROR IN PRINTING' % f.__name__)
                     raise
             _exceptionLogged.__doc__ = f.__doc__
             return _exceptionLogged

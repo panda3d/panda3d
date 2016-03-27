@@ -151,7 +151,7 @@ class FSMInspector(AppShell):
                       toCenter,
                       self.computePoint(toState.radius,
                                          angle - DELTA))
-        return newFromPt + newToPt
+        return list(newFromPt) + list(newToPt)
 
     def computePoint(self, radius, angle):
         x = radius * math.cos(angle)

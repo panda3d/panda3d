@@ -171,7 +171,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, compile
         if os.system(compile) != 0:
-            raise StandardError, 'failed to compile %s.' % basename
+            raise Exception('failed to compile %s.' % basename)
 
         link = self.linkExe % {
             'python' : self.Python,
@@ -186,7 +186,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, link
         if os.system(link) != 0:
-            raise StandardError, 'failed to link %s.' % basename
+            raise Exception('failed to link %s.' % basename)
 
     def compileDll(self, filename, basename):
         compile = self.compileObj % {
@@ -203,7 +203,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, compile
         if os.system(compile) != 0:
-            raise StandardError, 'failed to compile %s.' % basename
+            raise Exception('failed to compile %s.' % basename)
 
         link = self.linkDll % {
             'python' : self.Python,
@@ -219,7 +219,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, link
         if os.system(link) != 0:
-            raise StandardError, 'failed to link %s.' % basename
+            raise Exception('failed to link %s.' % basename)
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
@@ -832,6 +832,7 @@ class Freezer:
         # bring in Python's startup modules.
         if addStartupModules:
             self.modules['_frozen_importlib'] = self.ModuleDef('importlib._bootstrap', implicit = True)
+            self.modules['_frozen_importlib_external'] = self.ModuleDef('importlib._bootstrap_external', implicit = True)
 
             for moduleName in startupModules:
                 if moduleName not in self.modules:
@@ -1206,7 +1207,7 @@ class Freezer:
         Filename(mfname).unlink()
         multifile = Multifile()
         if not multifile.openReadWrite(mfname):
-            raise StandardError
+            raise Exception
 
         self.addToMultifile(multifile)
 
@@ -1283,7 +1284,7 @@ class Freezer:
             # We must have a __main__ module to make an exe file.
             if not self.__writingModule('__main__'):
                 message = "Can't generate an executable without a __main__ module."
-                raise StandardError, message
+                raise Exception(message)
 
         filename = basename + self.sourceExtension
 
@@ -1406,9 +1407,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 return (None, name, ('', '', imp.PY_FROZEN))
 
         message = "DLL loader cannot find %s." % (name)
-        raise ImportError, message
+        raise ImportError(message)
 
-    def load_module(self, fqname, fp, pathname, (suffix, mode, type)):
+    def load_module(self, fqname, fp, pathname, file_info):
+        suffix, mode, type = file_info
+
         if type == imp.PY_FROZEN:
             # It's a frozen module.
             co, isPackage = p3extend_frozen.get_frozen_module_code(pathname)
