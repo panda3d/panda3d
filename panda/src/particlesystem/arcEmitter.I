@@ -1,44 +1,37 @@
-// Filename: arcEmitter.I
-// Created by:  charles (26Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file arcEmitter.I
+ * @author charles
+ * @date 2000-06-26
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_start_angle
-//       Access: Public
-//  Description: start angle set
-////////////////////////////////////////////////////////////////////
+/**
+ * start angle set
+ */
 
 INLINE void ArcEmitter::
 set_start_angle(PN_stdfloat angle) {
   _start_theta = deg_2_rad(angle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_end_angle
-//       Access: Public
-//  Description: end angle set
-////////////////////////////////////////////////////////////////////
+/**
+ * end angle set
+ */
 
 INLINE void ArcEmitter::
 set_end_angle(PN_stdfloat angle) {
   _end_theta = deg_2_rad(angle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_arc
-//       Access: Public
-//  Description: arc sweep set
-////////////////////////////////////////////////////////////////////
+/**
+ * arc sweep set
+ */
 
 INLINE void ArcEmitter::
 set_arc(PN_stdfloat startAngle, PN_stdfloat endAngle) {
@@ -46,25 +39,20 @@ set_arc(PN_stdfloat startAngle, PN_stdfloat endAngle) {
   _end_theta = deg_2_rad(endAngle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_start_angle
-//       Access: Public
-//  Description: get start angle
-////////////////////////////////////////////////////////////////////
+/**
+ * get start angle
+ */
 
 INLINE PN_stdfloat ArcEmitter::
 get_start_angle() {
   return rad_2_deg(_start_theta);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_end_angle
-//       Access: Public
-//  Description: get end angle
-////////////////////////////////////////////////////////////////////
+/**
+ * get end angle
+ */
 
 INLINE PN_stdfloat ArcEmitter::
 get_end_angle() {
   return rad_2_deg(_end_theta);
 }
-

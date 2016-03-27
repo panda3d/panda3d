@@ -1,16 +1,15 @@
-// Filename: pStatCollector.h
-// Created by:  drose (10Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatCollector.h
+ * @author drose
+ * @date 2000-07-10
+ */
 
 #ifndef PSTATCOLLECTOR_H
 #define PSTATCOLLECTOR_H
@@ -22,30 +21,25 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatCollector
-// Description : A lightweight class that represents a single element
-//               that may be timed and/or counted via stats.
-//
-//               Collectors can be used to measure two different kinds
-//               of values: elapsed time, and "other".
-//
-//               To measure elapsed time, call start() and stop() as
-//               appropriate to bracket the section of code you want
-//               to time (or use a PStatTimer to do this
-//               automatically).
-//
-//               To measure anything else, call set_level() and/or
-//               add_level() to set the "level" value associated with
-//               this collector.  The meaning of the value set for the
-//               "level" is entirely up to the user; it may represent
-//               the number of triangles rendered or the kilobytes of
-//               texture memory consumed, for instance.  The level set
-//               will remain fixed across multiple frames until it is
-//               reset via another set_level() or adjusted via a call
-//               to add_level().  It may also be completely removed
-//               via clear_level().
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight class that represents a single element that may be timed
+ * and/or counted via stats.
+ *
+ * Collectors can be used to measure two different kinds of values: elapsed
+ * time, and "other".
+ *
+ * To measure elapsed time, call start() and stop() as appropriate to bracket
+ * the section of code you want to time (or use a PStatTimer to do this
+ * automatically).
+ *
+ * To measure anything else, call set_level() and/or add_level() to set the
+ * "level" value associated with this collector.  The meaning of the value set
+ * for the "level" is entirely up to the user; it may represent the number of
+ * triangles rendered or the kilobytes of texture memory consumed, for
+ * instance.  The level set will remain fixed across multiple frames until it
+ * is reset via another set_level() or adjusted via a call to add_level().  It
+ * may also be completely removed via clear_level().
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatCollector {
 #ifdef DO_PSTATS
 
@@ -162,4 +156,3 @@ inline ostream &operator << (ostream &out, const PStatCollector &pcol) {
 }
 
 #endif
-

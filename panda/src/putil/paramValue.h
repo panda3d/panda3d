@@ -1,16 +1,15 @@
-// Filename: paramValue.h
-// Created by:  drose (08Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file paramValue.h
+ * @author drose
+ * @date 1999-02-08
+ */
 
 #ifndef PARAMVALUE_H
 #define PARAMVALUE_H
@@ -25,12 +24,10 @@
 #include "bamWriter.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParamValueBase
-// Description : A non-template base class of ParamValue (below),
-//               which serves mainly to define the placeholder for the
-//               virtual output function.
-////////////////////////////////////////////////////////////////////
+/**
+ * A non-template base class of ParamValue (below), which serves mainly to
+ * define the placeholder for the virtual output function.
+ */
 class EXPCL_PANDA_PUTIL ParamValueBase : public TypedWritableReferenceCount {
 public:
   INLINE ParamValueBase();
@@ -58,12 +55,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParamTypedRefCount
-// Description : A class object for storing specifically objects of
-//               type TypedReferenceCount, which is different than
-//               TypedWritableReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class object for storing specifically objects of type
+ * TypedReferenceCount, which is different than TypedWritableReferenceCount.
+ */
 class EXPCL_PANDA_PUTIL ParamTypedRefCount : public ParamValueBase {
 PUBLISHED:
   INLINE ParamTypedRefCount(const TypedReferenceCount *value);
@@ -97,16 +92,13 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParamValue
-// Description : A handy class object for storing simple values (like
-//               integers or strings) passed along with an Event
-//               or to be used as a shader input.
-//               This is essentially just a wrapper around whatever
-//               data type you like, to make it a
-//               TypedWritableReferenceCount object which can be
-//               passed along inside an EventParameter or ShaderInput.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy class object for storing simple values (like integers or strings)
+ * passed along with an Event or to be used as a shader input.  This is
+ * essentially just a wrapper around whatever data type you like, to make it a
+ * TypedWritableReferenceCount object which can be passed along inside an
+ * EventParameter or ShaderInput.
+ */
 template<class Type>
 class ParamValue : public ParamValueBase {
 protected:
@@ -148,8 +140,8 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {
-    // In this case, we can't do anything, since we don't have the
-    // class' type_name.
+    // In this case, we can't do anything, since we don't have the class'
+    // type_name.
     return get_class_type();
   }
 

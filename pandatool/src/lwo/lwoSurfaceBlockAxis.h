@@ -1,16 +1,15 @@
-// Filename: lwoSurfaceBlockAxis.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoSurfaceBlockAxis.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOSURFACEBLOCKAXIS_H
 #define LWOSURFACEBLOCKAXIS_H
@@ -19,13 +18,11 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockAxis
-// Description : Indicates the axis for this particular shader's
-//               projection.  This works in conjunction with
-//               LwoSurfaceBlockProjection.  This is a subchunk of
-//               LwoSurfaceBlock.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the axis for this particular shader's projection.  This works in
+ * conjunction with LwoSurfaceBlockProjection.  This is a subchunk of
+ * LwoSurfaceBlock.
+ */
 class LwoSurfaceBlockAxis : public LwoChunk {
 public:
   enum Axis {
@@ -58,5 +55,3 @@ private:
 };
 
 #endif
-
-

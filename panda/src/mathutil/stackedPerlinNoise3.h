@@ -1,16 +1,15 @@
-// Filename: stackedPerlinNoise3.h
-// Created by:  drose (05Oct05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file stackedPerlinNoise3.h
+ * @author drose
+ * @date 2005-10-05
+ */
 
 #ifndef STACKEDPERLINNOISE3_H
 #define STACKEDPERLINNOISE3_H
@@ -19,12 +18,10 @@
 #include "perlinNoise3.h"
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StackedPerlinNoise3
-// Description : Implements a multi-layer PerlinNoise, with one or
-//               more high-frequency noise functions added to a
-//               lower-frequency base noise function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a multi-layer PerlinNoise, with one or more high-frequency noise
+ * functions added to a lower-frequency base noise function.
+ */
 class EXPCL_PANDA_MATHUTIL StackedPerlinNoise3 {
 PUBLISHED:
   INLINE StackedPerlinNoise3();
@@ -59,4 +56,3 @@ private:
 #include "stackedPerlinNoise3.I"
 
 #endif
-

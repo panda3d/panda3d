@@ -1,16 +1,15 @@
-// Filename: lwoHeader.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoHeader.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOHEADER_H
 #define LWOHEADER_H
@@ -19,10 +18,9 @@
 
 #include "lwoGroupChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoHeader
-// Description : The first chunk in a Lightwave Object file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The first chunk in a Lightwave Object file.
+ */
 class LwoHeader : public LwoGroupChunk {
 public:
   LwoHeader();
@@ -61,5 +59,3 @@ private:
 #include "lwoHeader.I"
 
 #endif
-
-

@@ -1,21 +1,20 @@
-// Filename: interrogate_module.cxx
-// Created by:  drose (08Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file interrogate_module.cxx
+ * @author drose
+ * @date 2000-08-08
+ */
 
-// This program generates a module-level file for interrogate.  This
-// is a higher level than library, and groups several libraries
-// together.  Presently, the only thing that goes into the module file
-// is a python table, but who knows what the future holds.
+// This program generates a module-level file for interrogate.  This is a
+// higher level than library, and groups several libraries together.
+// Presently, the only thing that goes into the module file is a python table,
+// but who knows what the future holds.
 
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
@@ -86,7 +85,7 @@ int write_python_table_native(ostream &out) {
 
   vector_string libraries;
 
-//  out << "extern \"C\" {\n";
+// out << "extern \"C\" {\n";
 
   // Walk through all of the Python functions.
   int num_functions = interrogate_number_of_functions();
@@ -94,17 +93,17 @@ int write_python_table_native(ostream &out) {
   for (fi = 0; fi < num_functions; fi++) {
     FunctionIndex function_index = interrogate_get_function(fi);
 
-    // Consider only those that belong in the module we asked for.
-    //if (interrogate_function_has_module_name(function_index) &&
-    //  module_name == interrogate_function_module_name(function_index)) {
-      // if it has a library name add it to set of libraries
+    // Consider only those that belong in the module we asked for.  if
+    // (interrogate_function_has_module_name(function_index) && module_name ==
+    // interrogate_function_module_name(function_index)) { if it has a library
+    // name add it to set of libraries
       if (interrogate_function_has_library_name(function_index)) {
         string library_name = interrogate_function_library_name(function_index);
         if (std::find(libraries.begin(), libraries.end(), library_name) == libraries.end()) {
           libraries.push_back(library_name);
         }
       }
-    //}
+    // }
   }
 
   for (int ti = 0; ti < interrogate_number_of_types(); ti++) {
@@ -267,8 +266,8 @@ int write_python_table(ostream &out) {
 
   int count = 0;
 
-  // First, we have to declare extern C prototypes for each of the
-  // function names.
+  // First, we have to declare extern C prototypes for each of the function
+  // names.
 
   out << "extern \"C\" {\n";
 
@@ -447,8 +446,8 @@ int main(int argc, char *argv[]) {
 
 
     if (param.length() > 3 && param.substr(param.length() - 3) == ".in") {
-      // If the filename ends in ".in", it's an interrogate database
-      // file, not a shared library--read it directly.
+      // If the filename ends in ".in", it's an interrogate database file, not
+      // a shared library--read it directly.
       interrogate_request_database(param.c_str());
 
     } else {

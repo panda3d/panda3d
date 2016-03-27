@@ -1,16 +1,15 @@
-// Filename: lsimpleMatrix.h
-// Created by:  drose (15Dec11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lsimpleMatrix.h
+ * @author drose
+ * @date 2011-12-15
+ */
 
 #ifndef LSIMPLEMATRIX_H
 #define LSIMPLEMATRIX_H
@@ -21,13 +20,11 @@
 #include <Eigen/Dense>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : LSimpleMatrix
-// Description : This class provides an underlying storage of the
-//               various linear-algebra classes (e.g. LVecBase3,
-//               LMatrix4) in the absence of the Eigen linear algebra
-//               library.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides an underlying storage of the various linear-algebra
+ * classes (e.g.  LVecBase3, LMatrix4) in the absence of the Eigen linear
+ * algebra library.
+ */
 template <class FloatType, int NumRows, int NumCols>
 class LSimpleMatrix {
 public:
@@ -52,21 +49,19 @@ private:
 #ifdef LINMATH_ALIGN
 #define LINMATH_MATRIX(FloatType, NumRows, NumCols) Eigen::Matrix<FloatType, NumRows, NumCols, Eigen::RowMajor>
 #else  // LINMATH_ALIGN
-#define LINMATH_MATRIX(FloatType, NumRows, NumCols) UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols) 
+#define LINMATH_MATRIX(FloatType, NumRows, NumCols) UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols)
 #endif  // LINMATH_ALIGN
 
 #else  // HAVE_EIGEN
 #define UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols) LSimpleMatrix<FloatType, NumRows, NumCols>
-#define LINMATH_MATRIX(FloatType, NumRows, NumCols) UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols) 
+#define LINMATH_MATRIX(FloatType, NumRows, NumCols) UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols)
 #endif  // HAVE_EIGEN
 
 // This is as good a place as any to define this alignment macro.
 #ifdef LINMATH_ALIGN
 #define ALIGN_LINMATH ALIGN_16BYTE
 #else
-#define ALIGN_LINMATH 
+#define ALIGN_LINMATH
 #endif  // LINMATH_ALIGN
 
 #endif
-
-  

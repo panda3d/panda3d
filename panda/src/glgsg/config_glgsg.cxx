@@ -1,16 +1,15 @@
-// Filename: config_glgsg.cxx
-// Created by:  drose (06Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_glgsg.cxx
+ * @author drose
+ * @date 1999-10-06
+ */
 
 #include "config_glgsg.h"
 #include "glgsg.h"
@@ -24,14 +23,12 @@ ConfigureFn(config_glgsg) {
   init_libglgsg();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libglgsg
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libglgsg() {
   static bool initialized = false;

@@ -1,28 +1,25 @@
-// Filename: distanceUnit.h
-// Created by:  drose (17Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file distanceUnit.h
+ * @author drose
+ * @date 2001-04-17
+ */
 
 #ifndef DISTANCEUNIT_H
 #define DISTANCEUNIT_H
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//        Enum : DistanceUnit
-// Description : This enumerated type lists all the kinds of units
-//               we're likely to come across in model conversion
-//               programs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This enumerated type lists all the kinds of units we're likely to come
+ * across in model conversion programs.
+ */
 enum DistanceUnit {
   DU_millimeters,
   DU_centimeters,

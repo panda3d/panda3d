@@ -1,3 +1,15 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pathFind.cxx
+ * @author Deepak, John, Navin
+ * @date 2009-10-12
+ */
 
 #include "pathFind.h"
 
@@ -18,10 +30,9 @@ PathFind::PathFind(AICharacter *ai_ch) {
 PathFind::~PathFind() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: create_nav_mesh
-//  Description: This function recreates the navigation mesh from the .csv file
-////////////////////////////////////////////////////////////////////
+/**
+ * This function recreates the navigation mesh from the .csv file
+ */
 void PathFind::create_nav_mesh(const char* navmesh_filename) {
   // Stage variables.
   int grid_x, grid_y;
@@ -59,8 +70,9 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
       getline(nav_mesh_file, line);
       stringstream linestream (line);
 
-      // Stores all the data members in the line to the array.
-      // Data structure: NULL,NodeType,GridX,GridY,Length,Width,Height,PosX,PosY,PosZ
+      // Stores all the data members in the line to the array.  Data
+      // structure:
+      // NULL,NodeType,GridX,GridY,Length,Width,Height,PosX,PosY,PosZ
       for(int i = 0; i < 10; ++i) {
         getline(linestream, fields[i], ',');
       }
@@ -83,7 +95,8 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
         // End of file reached at this point.
         nav_mesh_file.close();
 
-        // Assign the neighbor nodes for each of the main nodes that just got populated into the stage mesh.
+        // Assign the neighbor nodes for each of the main nodes that just got
+        // populated into the stage mesh.
         assign_neighbor_nodes(navmesh_filename);
       }
     }
@@ -93,11 +106,10 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: assign_neighbor_nodes
-//  Description: This function assigns the neighbor nodes for each
-//               main node present in _nav_mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function assigns the neighbor nodes for each main node present in
+ * _nav_mesh.
+ */
 void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
   ifstream nav_mesh_file (navmesh_filename);
 
@@ -131,8 +143,9 @@ void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
           gd_yn = atoi(fields_n[3].c_str());
 
           if(fields_n[0] == "0" && fields_n[1] == "1") {
-            // Usable neighbor for main node.
-            // TODO: The indices of the vector are inverted when compared to the values of the nodes on actual grid. Fix this!
+            // Usable neighbor for main node.  TODO: The indices of the vector
+            // are inverted when compared to the values of the nodes on actual
+            // grid.  Fix this!
             _nav_mesh[gd_y][gd_x]->_neighbours[i] = _nav_mesh[gd_yn][gd_xn];
           }
           else if(fields_n[0] == "1" && fields_n[1] == "1") {
@@ -155,11 +168,10 @@ void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_path_find
-//  Description: This function starts the path finding process after reading the given
-//               navigation mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function starts the path finding process after reading the given
+ * navigation mesh.
+ */
 void PathFind::set_path_find(const char* navmesh_filename) {
   create_nav_mesh(navmesh_filename);
 
@@ -177,12 +189,11 @@ void PathFind::set_path_find(const char* navmesh_filename) {
   _path_finder_obj = new PathFinder(_nav_mesh);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: path_find (for pathfinding towards a  static position)
-//  Description: This function checks for the source and target in the navigation mesh
-//               for its availability and then finds the best path via the A* algorithm
-//               Then it calls the path follower to make the object follow the path.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function checks for the source and target in the navigation mesh for
+ * its availability and then finds the best path via the A* algorithm Then it
+ * calls the path follower to make the object follow the path.
+ */
 void PathFind::path_find(LVecBase3 pos, string type) {
   if(type == "addPath") {
     if(_ai_char->_steering->_path_follow_obj) {
@@ -216,12 +227,11 @@ void PathFind::path_find(LVecBase3 pos, string type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: path_find (for pathfinding towards a moving target (a NodePath))
-//  Description: This function checks for the source and target in the navigation mesh
-//               for its availability and then finds the best path via the A* algorithm
-//               Then it calls the path follower to make the object follow the path.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function checks for the source and target in the navigation mesh for
+ * its availability and then finds the best path via the A* algorithm Then it
+ * calls the path follower to make the object follow the path.
+ */
 void PathFind::path_find(NodePath target, string type) {
   if(type == "addPath") {
     if(_ai_char->_steering->_path_follow_obj) {
@@ -260,10 +270,9 @@ void PathFind::path_find(NodePath target, string type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: clear_path
-//  Description: Helper function to restore the path and mesh to its initial state
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper function to restore the path and mesh to its initial state
+ */
 void PathFind::clear_path() {
   // Initialize to zero
   for(int i = 0; i < _grid_size; ++i) {
@@ -284,12 +293,11 @@ void PathFind::clear_path() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: trace_path
-//  Description: This function is the function which sends the path information one by
-//               one to the path follower so that it can store the path needed to be
-//               traversed by the pathfinding object
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is the function which sends the path information one by one
+ * to the path follower so that it can store the path needed to be traversed
+ * by the pathfinding object
+ */
 void PathFind::trace_path(Node* src) {
     if(_ai_char->_pf_guide) {
       _parent->remove_all_children();
@@ -313,13 +321,12 @@ void PathFind::trace_path(Node* src) {
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_obstacle_to_mesh
-//  Description: This function allows the user to dynamically add obstacles to the
-//               game environment. The function will update the nodes within the
-//               bounding volume of the obstacle as non-traversable. Hence will not be
-//               considered by the pathfinding algorithm.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function allows the user to dynamically add obstacles to the game
+ * environment.  The function will update the nodes within the bounding volume
+ * of the obstacle as non-traversable.  Hence will not be considered by the
+ * pathfinding algorithm.
+ */
 void PathFind::add_obstacle_to_mesh(NodePath obstacle) {
   PT(BoundingVolume) np_bounds = obstacle.get_bounds();
   CPT(BoundingSphere) np_sphere = np_bounds->as_bounding_sphere();
@@ -347,11 +354,10 @@ void PathFind::add_obstacle_to_mesh(NodePath obstacle) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: do_dynamic_avoid()
-//  Description: This function does the updation of the collisions to the mesh based
-//               on the new positions of the obstacles.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function does the updation of the collisions to the mesh based on the
+ * new positions of the obstacles.
+ */
 void PathFind::do_dynamic_avoid() {
   clear_previous_obstacles();
   _previous_obstacles.clear();
@@ -360,22 +366,20 @@ void PathFind::do_dynamic_avoid() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: clear_previous_obstacles()
-//  Description: Helper function to reset the collisions if the obstacle is not on the
-//               node anymore
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper function to reset the collisions if the obstacle is not on the node
+ * anymore
+ */
 void PathFind::clear_previous_obstacles(){
   for(unsigned int i = 0; i < _previous_obstacles.size(); i = i + 2) {
       _nav_mesh[_previous_obstacles[i]][_previous_obstacles[i + 1]]->_type = true;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: dynamic_avoid
-//  Description: This function starts the pathfinding obstacle navigation for the
-//               passed in obstacle.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function starts the pathfinding obstacle navigation for the passed in
+ * obstacle.
+ */
 void PathFind::dynamic_avoid(NodePath obstacle) {
   _dynamic_avoid = true;
   _dynamic_obstacle.insert(_dynamic_obstacle.end(), obstacle);

@@ -1,16 +1,15 @@
-// Filename: fltTransformRecord.h
-// Created by:  drose (24Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fltTransformRecord.h
+ * @author drose
+ * @date 2000-08-24
+ */
 
 #ifndef FLTTRANSFORMRECORD_H
 #define FLTTRANSFORMRECORD_H
@@ -21,13 +20,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformRecord
-// Description : A base class for a number of types of ancillary
-//               records that follow beads and indicate some kind of a
-//               transformation.  Pointers of this type are collected
-//               in the FltTransformation class.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for a number of types of ancillary records that follow beads
+ * and indicate some kind of a transformation.  Pointers of this type are
+ * collected in the FltTransformation class.
+ */
 class FltTransformRecord : public FltRecord {
 public:
   FltTransformRecord(FltHeader *header);
@@ -58,5 +55,3 @@ private:
 };
 
 #endif
-
-

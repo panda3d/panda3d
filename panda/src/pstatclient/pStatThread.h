@@ -1,16 +1,15 @@
-// Filename: pStatThread.h
-// Created by:  drose (11Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatThread.h
+ * @author drose
+ * @date 2000-07-11
+ */
 
 #ifndef PSTATTHREAD_H
 #define PSTATTHREAD_H
@@ -22,12 +21,10 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatThread
-// Description : A lightweight class that represents a single thread
-//               of execution to PStats.  It corresponds one-to-one
-//               with Panda's Thread instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight class that represents a single thread of execution to PStats.
+ * It corresponds one-to-one with Panda's Thread instance.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatThread {
 public:
   INLINE PStatThread();
@@ -59,4 +56,3 @@ friend class PStatCollector;
 #include "pStatThread.I"
 
 #endif
-

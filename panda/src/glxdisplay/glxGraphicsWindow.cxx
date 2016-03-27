@@ -1,16 +1,15 @@
-// Filename: glxGraphicsWindow.cxx
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glxGraphicsWindow.cxx
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #include "glxGraphicsWindow.h"
 #include "glxGraphicsStateGuardian.h"
@@ -32,13 +31,11 @@
 
 TypeHandle glxGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 glxGraphicsWindow::
-glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -49,15 +46,12 @@ glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool glxGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -67,8 +61,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
   if (_awaiting_configure) {
-    // Don't attempt to draw while we have just reconfigured the
-    // window and we haven't got the notification back yet.
+    // Don't attempt to draw while we have just reconfigured the window and we
+    // haven't got the notification back yet.
     return false;
   }
 
@@ -80,48 +74,45 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     if (glXGetCurrentDisplay() == _display &&
         glXGetCurrentDrawable() == _xwindow &&
         glXGetCurrentContext() == glxgsg->_context) {
-      // No need to make the context current again.  Short-circuit
-      // this possibly-expensive call.
+      // No need to make the context current again.  Short-circuit this
+      // possibly-expensive call.
     } else {
       // Need to set the context.
       glXMakeCurrent(_display, _xwindow, glxgsg->_context);
     }
   }
-  
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
+
+  // Now that we have made the context current to a window, we can reset the
+  // GSG state if this is the first time it has been used.  (We can't just
+  // call reset() when we construct the GSG, because reset() requires having a
+  // current context.)
   glxgsg->reset_if_new();
-  
+
   if (mode == FM_render) {
     // begin_render_texture();
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.
+ *
+ * This should cause the window to wait for the flip, if necessary.
+ */
 void glxGraphicsWindow::
 end_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
 
-    // It doesn't appear to be necessary to ensure the graphics
-    // context is current before flipping the windows, and insisting
-    // on doing so can be a significant performance hit.
+    // It doesn't appear to be necessary to ensure the graphics context is
+    // current before flipping the windows, and insisting on doing so can be a
+    // significant performance hit.
 
-    //make_current();
+    // make_current();
 
     LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
     glXSwapBuffers(_display, _xwindow);
@@ -129,35 +120,29 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void glxGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     glXMakeCurrent(_display, None, NULL);
     _gsg.clear();
   }
-  
+
   x11GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool glxGraphicsWindow::
 open_window() {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_R(glx_pipe, _pipe, false);
 
-  // GSG Creation/Initialization
+  // GSG CreationInitialization
   glxGraphicsStateGuardian *glxgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
@@ -165,8 +150,8 @@ open_window() {
     glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), false, false);
     _gsg = glxgsg;
   } else {
-    // If the old gsg has the wrong pixel format, create a
-    // new one that shares with the old gsg.
+    // If the old gsg has the wrong pixel format, create a new one that shares
+    // with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
     if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
@@ -174,14 +159,14 @@ open_window() {
       _gsg = glxgsg;
     }
   }
-  
+
   if (glxgsg->_context == NULL) {
     // We're supposed to have a context at this point.
     glxdisplay_cat.error()
       << "No GLX context: cannot open window.\n";
     return false;
   }
-  
+
   _visual_info = glxgsg->_visual;
   if (_visual_info == NULL) {
     // No X visual for this fbconfig; how can we open the window?
@@ -190,7 +175,7 @@ open_window() {
     return false;
   }
   Visual *visual = _visual_info->visual;
-  
+
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);
   } else {
@@ -217,12 +202,10 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::setup_colormap
-//       Access: Private
-//  Description: Allocates a colormap appropriate to the fbconfig and
-//               stores in in the _colormap method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a colormap appropriate to the fbconfig and stores in in the
+ * _colormap method.
+ */
 void glxGraphicsWindow::
 setup_colormap(GLXFBConfig fbconfig) {
   glxGraphicsStateGuardian *glxgsg;
@@ -277,12 +260,10 @@ setup_colormap(GLXFBConfig fbconfig) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::setup_colormap
-//       Access: Private, Virtual
-//  Description: Allocates a colormap appropriate to the visual and
-//               stores in in the _colormap method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a colormap appropriate to the visual and stores in in the
+ * _colormap method.
+ */
 void glxGraphicsWindow::
 setup_colormap(XVisualInfo *visual) {
   glxGraphicsPipe *glx_pipe;

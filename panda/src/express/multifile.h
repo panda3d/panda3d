@@ -1,16 +1,15 @@
-// Filename: multifile.h
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file multifile.h
+ * @author mike
+ * @date 1997-01-09
+ */
 
 #ifndef MULTIFILE_H
 #define MULTIFILE_H
@@ -27,10 +26,9 @@
 #include "pvector.h"
 #include "openSSLWrapper.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Multifile
-// Description : A file that contains a set of files.
-////////////////////////////////////////////////////////////////////
+/**
+ * A file that contains a set of files.
+ */
 class EXPCL_PANDAEXPRESS Multifile : public ReferenceCount {
 PUBLISHED:
   Multifile();

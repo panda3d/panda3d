@@ -1,16 +1,15 @@
-// Filename: odeTriMeshGeom.h
-// Created by:  joswilso (27Dec06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file odeTriMeshGeom.h
+ * @author joswilso
+ * @date 2006-12-27
+ */
 
 #ifndef ODETRIMESHGEOM_H
 #define ODETRIMESHGEOM_H
@@ -22,10 +21,9 @@
 #include "odeGeom.h"
 #include "odeTriMeshData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeTriMeshGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAODE OdeTriMeshGeom : public OdeGeom {
   friend class OdeGeom;
 
@@ -38,7 +36,7 @@ PUBLISHED:
   OdeTriMeshGeom(OdeSpace &space, OdeTriMeshData &data);
   OdeTriMeshGeom(const OdeTriMeshGeom &copy);
   virtual ~OdeTriMeshGeom();
-  
+
   void destroy();
   INLINE void set_tri_mesh_data(OdeTriMeshData &data);
   INLINE PT(OdeTriMeshData) get_tri_mesh_data() const;

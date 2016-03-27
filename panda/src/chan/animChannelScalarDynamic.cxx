@@ -1,16 +1,15 @@
-// Filename: animChannelScalarDynamic.cxx
-// Created by:  drose (20Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file animChannelScalarDynamic.cxx
+ * @author drose
+ * @date 2003-10-20
+ */
 
 #include "animChannelScalarDynamic.h"
 #include "animBundle.h"
@@ -25,25 +24,20 @@
 
 TypeHandle AnimChannelScalarDynamic::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::Constructor
-//       Access: Protected
-//  Description: For use only with the bam reader.
-////////////////////////////////////////////////////////////////////
+/**
+ * For use only with the bam reader.
+ */
 AnimChannelScalarDynamic::
 AnimChannelScalarDynamic() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::Copy Constructor
-//       Access: Protected
-//  Description: Creates a new AnimChannelScalarDynamic, just like
-//               this one, without copying any children.  The new copy
-//               is added to the indicated parent.  Intended to be
-//               called by make_copy() only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new AnimChannelScalarDynamic, just like this one, without copying
+ * any children.  The new copy is added to the indicated parent.  Intended to
+ * be called by make_copy() only.
+ */
 AnimChannelScalarDynamic::
-AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy) : 
+AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy) :
   AnimChannelScalar(parent, copy),
   _value_node(copy._value_node),
   _value(copy._value),
@@ -53,28 +47,23 @@ AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnimChannelScalarDynamic::
 AnimChannelScalarDynamic(const string &name)
-  : AnimChannelScalar(name) 
+  : AnimChannelScalar(name)
 {
   _last_value = _value = TransformState::make_identity();
   _value_changed = true;
   _float_value = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::has_changed
-//       Access: Public, Virtual
-//  Description: Returns true if the value has changed since the last
-//               call to has_changed().  last_frame is the frame
-//               number of the last call; this_frame is the current
-//               frame number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the value has changed since the last call to has_changed().
+ * last_frame is the frame number of the last call; this_frame is the current
+ * frame number.
+ */
 bool AnimChannelScalarDynamic::
 has_changed(int, double, int, double) {
   if (_value_node != (PandaNode *)NULL) {
@@ -90,11 +79,9 @@ has_changed(int, double, int, double) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::get_value
-//       Access: Public, Virtual
-//  Description: Gets the value of the channel at the indicated frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the value of the channel at the indicated frame.
+ */
 void AnimChannelScalarDynamic::
 get_value(int, PN_stdfloat &value) {
   if (_value_node != (PandaNode *)NULL) {
@@ -105,11 +92,9 @@ get_value(int, PN_stdfloat &value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::set_value
-//       Access: Published
-//  Description: Explicitly sets the value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly sets the value.
+ */
 void AnimChannelScalarDynamic::
 set_value(PN_stdfloat value) {
   _float_value = value;
@@ -117,13 +102,10 @@ set_value(PN_stdfloat value) {
   _value_changed = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::set_value_node
-//       Access: Published
-//  Description: Specifies a node whose transform will be queried each
-//               frame to implicitly specify the transform of this
-//               joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a node whose transform will be queried each frame to implicitly
+ * specify the transform of this joint.
+ */
 void AnimChannelScalarDynamic::
 set_value_node(PandaNode *value_node) {
   if (_value_node == (PandaNode *)NULL) {
@@ -137,26 +119,21 @@ set_value_node(PandaNode *value_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::make_copy
-//       Access: Protected, Virtual
-//  Description: Returns a copy of this object, and attaches it to the
-//               indicated parent (which may be NULL only if this is
-//               an AnimBundle).  Intended to be called by
-//               copy_subtree() only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a copy of this object, and attaches it to the indicated parent
+ * (which may be NULL only if this is an AnimBundle).  Intended to be called
+ * by copy_subtree() only.
+ */
 AnimGroup *AnimChannelScalarDynamic::
 make_copy(AnimGroup *parent) const {
   return new AnimChannelScalarDynamic(parent, *this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void AnimChannelScalarDynamic::
 write_datagram(BamWriter *manager, Datagram &dg) {
   AnimChannelScalar::write_datagram(manager, dg);
@@ -165,13 +142,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(_float_value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int AnimChannelScalarDynamic::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = AnimChannelScalar::complete_pointers(p_list, manager);
@@ -183,14 +157,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::fillin
-//       Access: Public
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of
+ * the data that is needed to re-create this object and stores it in the
+ * appropiate place
+ */
 void AnimChannelScalarDynamic::
 fillin(DatagramIterator &scan, BamReader *manager) {
   AnimChannelScalar::fillin(scan, manager);
@@ -202,11 +173,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _float_value = scan.get_stdfloat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::make_AnimChannelScalarDynamic
-//       Access: Public
-//  Description: Factory method to generate a AnimChannelScalarDynamic object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a AnimChannelScalarDynamic object
+ */
 TypedWritable *AnimChannelScalarDynamic::
 make_AnimChannelScalarDynamic(const FactoryParams &params) {
   AnimChannelScalarDynamic *me = new AnimChannelScalarDynamic;
@@ -218,16 +187,10 @@ make_AnimChannelScalarDynamic(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarDynamic::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a AnimChannelScalarDynamic object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a AnimChannelScalarDynamic object
+ */
 void AnimChannelScalarDynamic::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelScalarDynamic);
 }
-
-
-
-

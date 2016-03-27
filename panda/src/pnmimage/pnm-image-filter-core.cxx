@@ -1,20 +1,17 @@
-// Filename: pnm-image-filter-core.cxx
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnm-image-filter-core.cxx
+ */
 
-// We map X and Y to A and B, because we might change our minds about which
-// is dominant, and we map get/set functions for the channel in question to
-// GETVAL/SETVAL.
+// We map X and Y to A and B, because we might change our minds about which is
+// dominant, and we map getset functions for the channel in question to
+// GETVALSETVAL.
 
 
 static void
@@ -96,4 +93,3 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   }
   PANDA_FREE_ARRAY(matrix);
 }
-

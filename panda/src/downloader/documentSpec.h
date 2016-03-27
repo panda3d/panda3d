@@ -1,16 +1,15 @@
-// Filename: documentSpec.h
-// Created by:  drose (28Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file documentSpec.h
+ * @author drose
+ * @date 2003-01-28
+ */
 
 #ifndef DOCUMENTSPEC_H
 #define DOCUMENTSPEC_H
@@ -20,16 +19,14 @@
 #include "httpEntityTag.h"
 #include "httpDate.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DocumentSpec
-// Description : A descriptor that refers to a particular version of a
-//               document.  This includes the URL of the document and
-//               its identity tag and last-modified dates.
-//
-//               The DocumentSpec may also be used to request a newer
-//               document than a particular one if available, for
-//               instance to refresh a cached document.
-////////////////////////////////////////////////////////////////////
+/**
+ * A descriptor that refers to a particular version of a document.  This
+ * includes the URL of the document and its identity tag and last-modified
+ * dates.
+ *
+ * The DocumentSpec may also be used to request a newer document than a
+ * particular one if available, for instance to refresh a cached document.
+ */
 class EXPCL_PANDAEXPRESS DocumentSpec {
 PUBLISHED:
   INLINE DocumentSpec();

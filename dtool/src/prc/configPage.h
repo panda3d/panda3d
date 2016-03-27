@@ -1,16 +1,15 @@
-// Filename: configPage.h
-// Created by:  drose (15Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file configPage.h
+ * @author drose
+ * @date 2004-10-15
+ */
 
 #ifndef CONFIGPAGE_H
 #define CONFIGPAGE_H
@@ -22,14 +21,12 @@
 class ConfigDeclaration;
 class ConfigVariableCore;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigPage
-// Description : A page of ConfigDeclarations that may be loaded or
-//               unloaded.  Typically this represents a single .prc
-//               file that is read from disk at runtime, but it may
-//               also represent a list of declarations built up
-//               by application code and explicitly loaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * A page of ConfigDeclarations that may be loaded or unloaded.  Typically
+ * this represents a single .prc file that is read from disk at runtime, but
+ * it may also represent a list of declarations built up by application code
+ * and explicitly loaded.
+ */
 class EXPCL_DTOOLCONFIG ConfigPage {
 private:
   ConfigPage(const string &name, bool implicit_load, int page_seq);
@@ -97,8 +94,8 @@ private:
   string _signature;
 
 #ifdef HAVE_OPENSSL
-  // This maintains the hash of the prc file as we are scanning it, so
-  // we can compare its signature which we discover at the end.
+  // This maintains the hash of the prc file as we are scanning it, so we can
+  // compare its signature which we discover at the end.
   void *_md_ctx;
 #endif  // HAVE_OPENSSL
 

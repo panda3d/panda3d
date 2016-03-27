@@ -1,16 +1,15 @@
-// Filename: renderModeAttrib.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file renderModeAttrib.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef RENDERMODEATTRIB_H
 #define RENDERMODEATTRIB_H
@@ -22,10 +21,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderModeAttrib
-// Description : Specifies how polygons are to be drawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how polygons are to be drawn.
+ */
 class EXPCL_PANDA_PGRAPH RenderModeAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -37,17 +35,17 @@ PUBLISHED:
     // Wireframe polygons, possibly with thickness.
     M_wireframe,
 
-    // Points at vertices only, possibly with thickness and/or
-    // perspective sizing.
+    // Points at vertices only, possibly with thickness andor perspective
+    // sizing.
     M_point,
 
     // Filled polygons, without any particular emphasis on perspective
-    // correctness (a particularly useful designation for software
-    // rendering sprites).
+    // correctness (a particularly useful designation for software rendering
+    // sprites).
     M_filled_flat,
 
-    // Filled polygons with wireframe rendered in front.
-    // The wireframe is given a solid color.
+    // Filled polygons with wireframe rendered in front.  The wireframe is
+    // given a solid color.
     M_filled_wireframe
   };
 
@@ -122,4 +120,3 @@ private:
 #include "renderModeAttrib.I"
 
 #endif
-

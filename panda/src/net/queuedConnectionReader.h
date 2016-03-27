@@ -1,16 +1,15 @@
-// Filename: queuedConnectionReader.h
-// Created by:  drose (08Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file queuedConnectionReader.h
+ * @author drose
+ * @date 2000-02-08
+ */
 
 #ifndef QUEUEDCONNECTIONREADER_H
 #define QUEUEDCONNECTIONREADER_H
@@ -25,15 +24,12 @@
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<NetDatagram>);
 
-////////////////////////////////////////////////////////////////////
-//       Class : QueuedConnectionReader
-// Description : This flavor of ConnectionReader will read from its
-//               sockets and queue up all of the datagrams read for
-//               later receipt by the client code.  This class is
-//               useful for client code that doesn't want to deal with
-//               threading and is willing to poll for datagrams at its
-//               convenience.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of ConnectionReader will read from its sockets and queue up all
+ * of the datagrams read for later receipt by the client code.  This class is
+ * useful for client code that doesn't want to deal with threading and is
+ * willing to poll for datagrams at its convenience.
+ */
 class EXPCL_PANDA_NET QueuedConnectionReader : public ConnectionReader,
                                public QueuedReturn<NetDatagram> {
 PUBLISHED:
@@ -61,7 +57,7 @@ private:
     double _reveal_time;
     NetDatagram _datagram;
   };
-    
+
   LightMutex _dd_mutex;
   typedef pdeque<DelayedDatagram> Delayed;
   Delayed _delayed;
@@ -72,4 +68,3 @@ private:
 };
 
 #endif
-

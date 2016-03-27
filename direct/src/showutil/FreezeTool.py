@@ -30,8 +30,8 @@ isDebugBuild = (python.lower().endswith('_d'))
 # These are modules that Python always tries to import up-front.  They
 # must be frozen in any main.exe.
 startupModules = [
-    'site', 'sitecustomize', 'os', 'encodings.cp1252',
-    'encodings.latin_1', 'encodings.utf_8', 'io', 'org',
+    'os', 'encodings.cp1252',
+    'encodings.latin_1', 'encodings.utf_8', 'io',
     ]
 
 # These are missing modules that we've reported already this session.
@@ -171,7 +171,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, compile
         if os.system(compile) != 0:
-            raise StandardError, 'failed to compile %s.' % basename
+            raise Exception('failed to compile %s.' % basename)
 
         link = self.linkExe % {
             'python' : self.Python,
@@ -186,7 +186,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, link
         if os.system(link) != 0:
-            raise StandardError, 'failed to link %s.' % basename
+            raise Exception('failed to link %s.' % basename)
 
     def compileDll(self, filename, basename):
         compile = self.compileObj % {
@@ -203,7 +203,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, compile
         if os.system(compile) != 0:
-            raise StandardError, 'failed to compile %s.' % basename
+            raise Exception('failed to compile %s.' % basename)
 
         link = self.linkDll % {
             'python' : self.Python,
@@ -219,13 +219,17 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, link
         if os.system(link) != 0:
-            raise StandardError, 'failed to link %s.' % basename
+            raise Exception('failed to link %s.' % basename)
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
 /* Python interpreter main program for frozen scripts */
 
 #include "Python.h"
+
+#if PY_MAJOR_VERSION >= 3
+#include <locale.h>
+#endif
 
 #ifdef MS_WINDOWS
 extern void PyWinFreeze_ExeInit(void);
@@ -239,9 +243,26 @@ int
 Py_FrozenMain(int argc, char **argv)
 {
     char *p;
-    int n, sts;
+    int n, sts = 1;
     int inspect = 0;
     int unbuffered = 0;
+
+#if PY_MAJOR_VERSION >= 3
+    int i;
+    char *oldloc = NULL;
+    wchar_t **argv_copy = NULL;
+    /* We need a second copies, as Python might modify the first one. */
+    wchar_t **argv_copy2 = NULL;
+
+    if (argc > 0) {
+        argv_copy = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
+        argv_copy2 = PyMem_RawMalloc(sizeof(wchar_t*) * argc);
+        if (!argv_copy || !argv_copy2) {
+            fprintf(stderr, \"out of memory\\n\");
+            goto error;
+        }
+    }
+#endif
 
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
 
@@ -256,10 +277,41 @@ Py_FrozenMain(int argc, char **argv)
         setbuf(stderr, (char *)NULL);
     }
 
+#if PY_MAJOR_VERSION >= 3
+    oldloc = _PyMem_RawStrdup(setlocale(LC_ALL, NULL));
+    if (!oldloc) {
+        fprintf(stderr, \"out of memory\\n\");
+        goto error;
+    }
+
+    setlocale(LC_ALL, \"\");
+    for (i = 0; i < argc; i++) {
+        argv_copy[i] = Py_DecodeLocale(argv[i], NULL);
+        argv_copy2[i] = argv_copy[i];
+        if (!argv_copy[i]) {
+            fprintf(stderr, \"Unable to decode the command line argument #%i\\n\",
+                            i + 1);
+            argc = i;
+            goto error;
+        }
+    }
+    setlocale(LC_ALL, oldloc);
+    PyMem_RawFree(oldloc);
+    oldloc = NULL;
+#endif
+
 #ifdef MS_WINDOWS
     PyInitFrozenExtensions();
 #endif /* MS_WINDOWS */
-    Py_SetProgramName(argv[0]);
+
+    if (argc >= 1) {
+#if PY_MAJOR_VERSION >= 3
+        Py_SetProgramName(argv_copy[0]);
+#else
+        Py_SetProgramName(argv[0]);
+#endif
+    }
+
     Py_Initialize();
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeInit();
@@ -269,7 +321,11 @@ Py_FrozenMain(int argc, char **argv)
         fprintf(stderr, "Python %s\\n%s\\n",
             Py_GetVersion(), Py_GetCopyright());
 
+#if PY_MAJOR_VERSION >= 3
+    PySys_SetArgv(argc, argv_copy);
+#else
     PySys_SetArgv(argc, argv);
+#endif
 
     n = PyImport_ImportFrozenModule("__main__");
     if (n == 0)
@@ -288,6 +344,17 @@ Py_FrozenMain(int argc, char **argv)
     PyWinFreeze_ExeTerm();
 #endif
     Py_Finalize();
+
+error:
+#if PY_MAJOR_VERSION >= 3
+    PyMem_RawFree(argv_copy);
+    if (argv_copy2) {
+        for (i = 0; i < argc; i++)
+            PyMem_RawFree(argv_copy2[i]);
+        PyMem_RawFree(argv_copy2);
+    }
+    PyMem_RawFree(oldloc);
+#endif
     return sts;
 }
 """
@@ -832,6 +899,7 @@ class Freezer:
         # bring in Python's startup modules.
         if addStartupModules:
             self.modules['_frozen_importlib'] = self.ModuleDef('importlib._bootstrap', implicit = True)
+            self.modules['_frozen_importlib_external'] = self.ModuleDef('importlib._bootstrap_external', implicit = True)
 
             for moduleName in startupModules:
                 if moduleName not in self.modules:
@@ -1206,7 +1274,7 @@ class Freezer:
         Filename(mfname).unlink()
         multifile = Multifile()
         if not multifile.openReadWrite(mfname):
-            raise StandardError
+            raise Exception
 
         self.addToMultifile(multifile)
 
@@ -1283,7 +1351,7 @@ class Freezer:
             # We must have a __main__ module to make an exe file.
             if not self.__writingModule('__main__'):
                 message = "Can't generate an executable without a __main__ module."
-                raise StandardError, message
+                raise Exception(message)
 
         filename = basename + self.sourceExtension
 
@@ -1406,9 +1474,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 return (None, name, ('', '', imp.PY_FROZEN))
 
         message = "DLL loader cannot find %s." % (name)
-        raise ImportError, message
+        raise ImportError(message)
 
-    def load_module(self, fqname, fp, pathname, (suffix, mode, type)):
+    def load_module(self, fqname, fp, pathname, file_info):
+        suffix, mode, type = file_info
+
         if type == imp.PY_FROZEN:
             # It's a frozen module.
             co, isPackage = p3extend_frozen.get_frozen_module_code(pathname)

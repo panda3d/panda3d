@@ -1,16 +1,15 @@
-// Filename: rocketInputHandler.cxx
-// Created by:  rdb (20Dec11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rocketInputHandler.cxx
+ * @author rdb
+ * @date 2011-12-20
+ */
 
 #include "rocketInputHandler.h"
 #include "buttonEventList.h"
@@ -28,11 +27,9 @@ using namespace Rocket::Core::Input;
 
 TypeHandle RocketInputHandler::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketInputHandler::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 RocketInputHandler::
 RocketInputHandler(const string &name) :
   DataNode(name),
@@ -45,21 +42,17 @@ RocketInputHandler(const string &name) :
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketInputHandler::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 RocketInputHandler::
 ~RocketInputHandler() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketInputHandler::get_rocket_key
-//       Access: Published
-//  Description: Returns the libRocket KeyIdentifier for the given
-//               ButtonHandle, or KI_UNKNOWN (0) if it wasn't known.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the libRocket KeyIdentifier for the given ButtonHandle, or
+ * KI_UNKNOWN (0) if it wasn't known.
+ */
 int RocketInputHandler::
 get_rocket_key(const ButtonHandle handle) {
   static pmap<int, int> keymap;
@@ -129,8 +122,9 @@ get_rocket_key(const ButtonHandle handle) {
   keymap[KeyboardButton::ascii_key('\\').get_index()] = KI_OEM_5;
   keymap[KeyboardButton::ascii_key(']').get_index()]  = KI_OEM_6;
 
-  // comment says this may either be "<>" or "\|", but "\" (unshifted) is handled already,
-  // and "<" is only available "shifted" on 101-keyboards, so assume it's this one...
+  // comment says this may either be "<>" or "\|", but "\" (unshifted) is
+  // handled already, and "<" is only available "shifted" on 101-keyboards, so
+  // assume it's this one...
   keymap[KeyboardButton::ascii_key('<').get_index()]  = KI_OEM_102;
 
   for (char c = 'a'; c <= 'z'; ++c) {
@@ -147,19 +141,14 @@ get_rocket_key(const ButtonHandle handle) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketInputHandler::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output
+ * parameters.  The input parameters may be accessed with the index numbers
+ * returned by the define_input() calls that were made earlier (presumably in
+ * the constructor); likewise, the output parameters should be set with the
+ * index numbers returned by the define_output() calls.
+ */
 void RocketInputHandler::
 do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
@@ -268,7 +257,8 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
 
       case ButtonEvent::T_keystroke:
-        // Ignore control characters; otherwise, they actually get added to strings in the UI.
+        // Ignore control characters; otherwise, they actually get added to
+        // strings in the UI.
         if (be._keycode > 0x1F && (be._keycode < 0x7F || be._keycode > 0x9F)) {
           _text_input.push_back(be._keycode);
         }
@@ -293,13 +283,10 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketInputHandler::update_context
-//       Access: Public
-//  Description: Updates the libRocket context with the changes
-//               that we have gathered in do_transmit_data.
-//               Also calls Update() on the context.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the libRocket context with the changes that we have gathered in
+ * do_transmit_data.  Also calls Update() on the context.
+ */
 void RocketInputHandler::
 update_context(Rocket::Core::Context *context, int xoffs, int yoffs) {
   MutexHolder holder(_lock);

@@ -1,16 +1,15 @@
-// Filename: textureCollection.h
-// Created by:  drose (16Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureCollection.h
+ * @author drose
+ * @date 2002-03-16
+ */
 
 #ifndef TEXTURECOLLECTION_H
 #define TEXTURECOLLECTION_H
@@ -19,11 +18,10 @@
 #include "pointerToArray.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureCollection
-// Description : Manages a list of Texture objects, as returned by
-//               TexturePool::find_all_textures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Manages a list of Texture objects, as returned by
+ * TexturePool::find_all_textures().
+ */
 class EXPCL_PANDA_GOBJ TextureCollection {
 PUBLISHED:
   TextureCollection();

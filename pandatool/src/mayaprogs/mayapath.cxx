@@ -1,39 +1,38 @@
-// Filename: mayapath.cxx
-// Created by:  drose (07Apr08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayapath.cxx
+ * @author drose
+ * @date 2008-04-07
+ */
 
-// This program works as a stub to launch maya2egg, egg2maya, and
-// similar programs that invoke OpenMaya and require certain
-// environment variables to be set first.
+// This program works as a stub to launch maya2egg, egg2maya, and similar
+// programs that invoke OpenMaya and require certain environment variables to
+// be set first.
 
-// It used to duplicate code in mayaWrapper.cxx, but now the
-// functionality for these two separate programs are unified here.
+// It used to duplicate code in mayaWrapper.cxx, but now the functionality for
+// these two separate programs are unified here.
 
 // If MAYAVERSION is defined at the time this is compiled, then that
-// particular version of Maya is insisted upon, and the desired Maya
-// location is found in the Registry; otherwise, we require that
-// $MAYA_LOCATION be set at runtime and points to the desired Maya
-// installation.
+// particular version of Maya is insisted upon, and the desired Maya location
+// is found in the Registry; otherwise, we require that $MAYA_LOCATION be set
+// at runtime and points to the desired Maya installation.
 
-// If MAYAVERSION is defined and $MAYA_LOCATION is also set, then we
-// check that definition of $MAYA_LOCATION is reasonable, which we
-// define as pointing to the same version of OpenMaya.dll.  If so,
-// then we use the runtime $MAYA_LOCATION, allowing the user to
-// (slightly) override the runtime Maya directory.  If $MAYA_LOCATION
-// is set but points to a different version of OpenMaya.dll, we ignore
-// it altogether and replace it with our registry data, which allows
-// the user to have MAYA_LOCATION pointing to a different version of
-// Maya without interfering with this program.
+/*
+ * If MAYAVERSION is defined and $MAYA_LOCATION is also set, then we check
+ * that definition of $MAYA_LOCATION is reasonable, which we define as
+ * pointing to the same version of OpenMaya.dll.  If so, then we use the
+ * runtime $MAYA_LOCATION, allowing the user to (slightly) override the
+ * runtime Maya directory.  If $MAYA_LOCATION is set but points to a different
+ * version of OpenMaya.dll, we ignore it altogether and replace it with our
+ * registry data, which allows the user to have MAYA_LOCATION pointing to a
+ * different version of Maya without interfering with this program.
+ */
 
 #include "dtoolbase.h"
 #include "filename.h"
@@ -69,8 +68,8 @@ static const Filename openmaya_filename = "lib/libOpenMaya.so";
 // Searches for python26.zip or whatever version it is.
 static Filename
 find_pyzip(const Filename &maya_location) {
-  // This is where python26.zip appears on Windows.  Should it be in
-  // other locations on other platforms?
+  // This is where python26.zip appears on Windows.  Should it be in other
+  // locations on other platforms?
   Filename dirname(maya_location, "bin");
 
   vector_string results;
@@ -192,8 +191,8 @@ main(int argc, char *argv[]) {
   pystub();
 #endif
 
-  // First, get the command line and append _bin, so we will actually
-  // run maya2egg_bin.exe, egg2maya_bin.exe, etc.
+  // First, get the command line and append _bin, so we will actually run
+  // maya2egg_bin.exe, egg2maya_bin.exe, etc.
   Filename command = Filename::from_os_specific(argv[0]);
   if (!command.is_fully_qualified()) {
     DSearchPath path;
@@ -216,18 +215,17 @@ main(int argc, char *argv[]) {
 #endif
   string os_command = command.to_os_specific();
 
-  // First start with $PANDA_MAYA_LOCATION.  If it is set, it
-  // overrides everything else.
+  // First start with $PANDA_MAYA_LOCATION.  If it is set, it overrides
+  // everything else.
   Filename maya_location = Filename::expand_from("$PANDA_MAYA_LOCATION");
   if (!maya_location.empty()) {
-    // Reset maya_location to its full long name, because Maya
-    // requires this.
+    // Reset maya_location to its full long name, because Maya requires this.
     maya_location.make_canonical();
     maya_location = Filename::from_os_specific(maya_location.to_os_long_name());
 
   } else {
-    // $PANDA_MAYA_LOCATION wasn't set, so check the normal locations.
-    // First, we get the standard location, as a point of reference.
+    // $PANDA_MAYA_LOCATION wasn't set, so check the normal locations.  First,
+    // we get the standard location, as a point of reference.
     Filename standard_maya_location;
 #ifdef MAYAVERSION
     const char *key = get_version_number(TOSTRING(MAYAVERSION));
@@ -243,20 +241,20 @@ main(int argc, char *argv[]) {
       }
     }
     if (!standard_maya_location.empty()) {
-      // Reset standard_maya_location to its full long name, so we can
-      // compare reliably to the given version.
+      // Reset standard_maya_location to its full long name, so we can compare
+      // reliably to the given version.
       standard_maya_location.make_canonical();
       standard_maya_location = Filename::from_os_specific(standard_maya_location.to_os_long_name());
     }
 #endif  // MAYAVERSION
 
-    // Now check if $MAYA_LOCATION is set.  If it is, and it's
-    // consistent with the standard location, we respect it.
+    // Now check if $MAYA_LOCATION is set.  If it is, and it's consistent with
+    // the standard location, we respect it.
     maya_location = Filename::expand_from("$MAYA_LOCATION");
     if (!maya_location.empty()) {
-      // Reset maya_location to its full long name, so we can compare
-      // it reliably to the standard location; and also because Maya
-      // requires this.
+      // Reset maya_location to its full long name, so we can compare it
+      // reliably to the standard location; and also because Maya requires
+      // this.
       maya_location.make_canonical();
       maya_location = Filename::from_os_specific(maya_location.to_os_long_name());
     }
@@ -266,15 +264,15 @@ main(int argc, char *argv[]) {
       maya_location = standard_maya_location;
 
     } else if (maya_location != standard_maya_location) {
-      // If it *is* set, we verify that OpenMaya.dll matches the
-      // standard version.
+      // If it *is* set, we verify that OpenMaya.dll matches the standard
+      // version.
       Filename openmaya_given = Filename::dso_filename(Filename(maya_location, openmaya_filename));
       Filename openmaya_standard = Filename::dso_filename(Filename(standard_maya_location, openmaya_filename));
 
       if (openmaya_given != openmaya_standard) {
 #ifdef HAVE_OPENSSL
-        // If we have OpenSSL, we can use it to check the md5 hashes of
-        // the DLL.
+        // If we have OpenSSL, we can use it to check the md5 hashes of the
+        // DLL.
         HashVal hash_given, hash_standard;
         if (!hash_standard.hash_file(openmaya_standard)) {
           // Couldn't read the standard file, so use the given one.
@@ -357,9 +355,9 @@ main(int argc, char *argv[]) {
   string sep = ":";
 #endif
 
-  // Now set PYTHONHOME & PYTHONPATH.  Maya2008 requires this to be
-  // set and pointing within $MAYA_LOCATION, or it might get itself
-  // confused with another Python installation (e.g. Panda's).
+  // Now set PYTHONHOME & PYTHONPATH.  Maya2008 requires this to be set and
+  // pointing within $MAYA_LOCATION, or it might get itself confused with
+  // another Python installation (e.g.  Panda's).
   Filename python = Filename(maya_location, "Python");
   if (python.is_directory()) {
     {
@@ -445,12 +443,12 @@ main(int argc, char *argv[]) {
 #endif // IS_OSX
 
   // When this is set, Panda3D will try not to use any functions from the
-  // CPython API.  This is necessary because Maya links with its own copy
-  // of Python, which may be incompatible with ours.
+  // CPython API.  This is necessary because Maya links with its own copy of
+  // Python, which may be incompatible with ours.
   putenv((char *)"PANDA_INCOMPATIBLE_PYTHON=1");
 
-  // Now that we have set up the environment variables properly, chain
-  // to the actual maya2egg_bin (or whichever) executable.
+  // Now that we have set up the environment variables properly, chain to the
+  // actual maya2egg_bin (or whichever) executable.
 
 #ifdef _WIN32
   // Windows case.

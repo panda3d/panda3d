@@ -1,16 +1,15 @@
-// Filename: memoryHook.cxx
-// Created by:  drose (28Jun07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memoryHook.cxx
+ * @author drose
+ * @date 2007-06-28
+ */
 
 #include "memoryHook.h"
 #include "deletedBufferChain.h"
@@ -40,14 +39,9 @@
 
 #if defined(USE_MEMORY_DLMALLOC)
 
-////////////////////////////////////////////////////////////////////
-//
-// Memory manager: DLMALLOC
-//
-// This is Doug Lea's memory manager.  It is very fast, but it is not
-// thread-safe.  However, we provide thread locking within MemoryHook.
-//
-////////////////////////////////////////////////////////////////////
+// Memory manager: DLMALLOC This is Doug Lea's memory manager.  It is very
+// fast, but it is not thread-safe.  However, we provide thread locking within
+// MemoryHook.
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
@@ -67,21 +61,16 @@
 #define MEMORY_HOOK_MALLOC_LOCK 1
 
 #elif defined(USE_MEMORY_PTMALLOC2)
-// This doesn't appear to work in Linux; perhaps it is clashing with
-// the system library.  It also doesn't appear to be thread-safe on
-// OSX.
+// This doesn't appear to work in Linux; perhaps it is clashing with the
+// system library.  It also doesn't appear to be thread-safe on OSX.
 
-////////////////////////////////////////////////////////////////////
-//
-// Memory manager: PTMALLOC2
-//
-// Ptmalloc2 is a derivative of Doug Lea's memory manager that was
-// made thread-safe by Wolfram Gloger, then was ported to windows by
-// Niall Douglas.  It is not quite as fast as dlmalloc (because the
-// thread-safety constructs take a certain amount of CPU time), but
-// it's still much faster than the windows allocator.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Memory manager: PTMALLOC2 Ptmalloc2 is a derivative of Doug Lea's memory
+ * manager that was made thread-safe by Wolfram Gloger, then was ported to
+ * windows by Niall Douglas.  It is not quite as fast as dlmalloc (because the
+ * thread-safety constructs take a certain amount of CPU time), but it's still
+ * much faster than the windows allocator.
+ */
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
@@ -97,14 +86,8 @@
 
 #else
 
-////////////////////////////////////////////////////////////////////
-//
-// Memory manager: MALLOC
-//
-// This option uses the built-in system allocator.  This is a good
-// choice on linux, but it's a terrible choice on windows.
-//
-////////////////////////////////////////////////////////////////////
+// Memory manager: MALLOC This option uses the built-in system allocator.
+// This is a good choice on linux, but it's a terrible choice on windows.
 
 #define call_malloc malloc
 #define call_realloc realloc
@@ -113,11 +96,9 @@
 
 #endif  // USE_MEMORY_*
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MemoryHook::
 MemoryHook() {
 #ifdef WIN32
@@ -144,11 +125,9 @@ MemoryHook() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MemoryHook::
 MemoryHook(const MemoryHook &copy) :
   _page_size(copy._page_size)
@@ -166,28 +145,22 @@ MemoryHook(const MemoryHook &copy) :
   ((MutexImpl &)copy._lock).release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MemoryHook::
 ~MemoryHook() {
-  // Really, we only have this destructor to shut up gcc about the
-  // virtual functions warning.
+  // Really, we only have this destructor to shut up gcc about the virtual
+  // functions warning.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_alloc_single
-//       Access: Public, Virtual
-//  Description: Allocates a block of memory from the heap, similar to
-//               malloc().  This will never return NULL; it will abort
-//               instead if memory is not available.
-//
-//               This particular function should be used to allocate
-//               memory for a single object, as opposed to an array.
-//               The only difference is in the bookkeeping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a block of memory from the heap, similar to malloc().  This will
+ * never return NULL; it will abort instead if memory is not available.
+ *
+ * This particular function should be used to allocate memory for a single
+ * object, as opposed to an array.  The only difference is in the bookkeeping.
+ */
 void *MemoryHook::
 heap_alloc_single(size_t size) {
   size_t inflated_size = inflate_size(size);
@@ -212,8 +185,8 @@ heap_alloc_single(size_t size) {
   }
 
 #ifdef DO_MEMORY_USAGE
-  // In the DO_MEMORY_USAGE case, we want to track the total size of
-  // allocated bytes on the heap.
+  // In the DO_MEMORY_USAGE case, we want to track the total size of allocated
+  // bytes on the heap.
   AtomicAdjust::add(_total_heap_single_size, (AtomicAdjust::Integer)size);
   if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
@@ -227,12 +200,9 @@ heap_alloc_single(size_t size) {
   return ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_free_single
-//       Access: Public, Virtual
-//  Description: Releases a block of memory previously allocated via
-//               heap_alloc_single.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases a block of memory previously allocated via heap_alloc_single.
+ */
 void MemoryHook::
 heap_free_single(void *ptr) {
   size_t size;
@@ -252,18 +222,14 @@ heap_free_single(void *ptr) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_alloc_array
-//       Access: Public, Virtual
-//  Description: Allocates a block of memory from the heap, similar to
-//               malloc().  This will never return NULL; it will abort
-//               instead if memory is not available.
-//
-//               This particular function should be used to allocate
-//               memory for an array of objects, as opposed to a
-//               single object.  The only difference is in the
-//               bookkeeping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a block of memory from the heap, similar to malloc().  This will
+ * never return NULL; it will abort instead if memory is not available.
+ *
+ * This particular function should be used to allocate memory for an array of
+ * objects, as opposed to a single object.  The only difference is in the
+ * bookkeeping.
+ */
 void *MemoryHook::
 heap_alloc_array(size_t size) {
   size_t inflated_size = inflate_size(size);
@@ -288,8 +254,8 @@ heap_alloc_array(size_t size) {
   }
 
 #ifdef DO_MEMORY_USAGE
-  // In the DO_MEMORY_USAGE case, we want to track the total size of
-  // allocated bytes on the heap.
+  // In the DO_MEMORY_USAGE case, we want to track the total size of allocated
+  // bytes on the heap.
   AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size);
   if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
@@ -303,12 +269,9 @@ heap_alloc_array(size_t size) {
   return ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_realloc_array
-//       Access: Public, Virtual
-//  Description: Resizes a block of memory previously returned from
-//               heap_alloc_array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resizes a block of memory previously returned from heap_alloc_array.
+ */
 void *MemoryHook::
 heap_realloc_array(void *ptr, size_t size) {
   size_t orig_size;
@@ -348,8 +311,8 @@ heap_realloc_array(void *ptr, size_t size) {
   void *ptr1 = alloc_to_ptr(alloc1, size);
   assert(ptr1 >= alloc1 && (char *)ptr1 + size <= (char *)alloc1 + inflated_size);
 #if defined(MEMORY_HOOK_DO_ALIGN)
-  // We might have to shift the memory to account for the new offset
-  // due to the alignment.
+  // We might have to shift the memory to account for the new offset due to
+  // the alignment.
   size_t orig_delta = (char *)ptr - (char *)alloc;
   size_t new_delta = (char *)ptr1 - (char *)alloc1;
   if (orig_delta != new_delta) {
@@ -359,12 +322,9 @@ heap_realloc_array(void *ptr, size_t size) {
   return ptr1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_free_array
-//       Access: Public, Virtual
-//  Description: Releases a block of memory previously allocated via
-//               heap_alloc_array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases a block of memory previously allocated via heap_alloc_array.
+ */
 void MemoryHook::
 heap_free_array(void *ptr) {
   size_t size;
@@ -384,28 +344,23 @@ heap_free_array(void *ptr) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_trim
-//       Access: Public
-//  Description: Attempts to release memory back to the system, if
-//               possible.  The pad argument is the minimum amount of
-//               unused memory to keep in the heap (against future
-//               allocations).  Any memory above that may be released
-//               to the system, reducing the memory size of this
-//               process.  There is no guarantee that any memory may
-//               be released.
-//
-//               Returns true if any memory was actually released,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to release memory back to the system, if possible.  The pad
+ * argument is the minimum amount of unused memory to keep in the heap
+ * (against future allocations).  Any memory above that may be released to the
+ * system, reducing the memory size of this process.  There is no guarantee
+ * that any memory may be released.
+ *
+ * Returns true if any memory was actually released, false otherwise.
+ */
 bool MemoryHook::
 heap_trim(size_t pad) {
   bool trimmed = false;
 
 #if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
-  // Since malloc_trim() isn't standard C, we can't be sure it exists
-  // on a given platform.  But if we're using dlmalloc, we know we
-  // have dlmalloc_trim.
+  // Since malloc_trim() isn't standard C, we can't be sure it exists on a
+  // given platform.  But if we're using dlmalloc, we know we have
+  // dlmalloc_trim.
   _lock.acquire();
   if (dlmalloc_trim(pad)) {
     trimmed = true;
@@ -423,22 +378,17 @@ heap_trim(size_t pad) {
   return trimmed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::mmap_alloc
-//       Access: Public, Virtual
-//  Description: Allocates a raw page or pages of memory directly from
-//               the OS.  This will be in a different address space
-//               from the memory allocated by heap_alloc(), and so it
-//               won't contribute to fragmentation of that memory.
-//
-//               The allocation size must be an integer multiple of
-//               the page size.  Use round_to_page_size() if there is
-//               any doubt.
-//
-//               If allow_exec is true, the memory will be flagged so
-//               that it is legal to execute code that has been
-//               written to this memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a raw page or pages of memory directly from the OS.  This will be
+ * in a different address space from the memory allocated by heap_alloc(), and
+ * so it won't contribute to fragmentation of that memory.
+ *
+ * The allocation size must be an integer multiple of the page size.  Use
+ * round_to_page_size() if there is any doubt.
+ *
+ * If allow_exec is true, the memory will be flagged so that it is legal to
+ * execute code that has been written to this memory.
+ */
 void *MemoryHook::
 mmap_alloc(size_t size, bool allow_exec) {
   assert((size % _page_size) == 0);
@@ -489,12 +439,10 @@ mmap_alloc(size_t size, bool allow_exec) {
 #endif  // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::mmap_free
-//       Access: Public, Virtual
-//  Description: Frees a block of memory previously allocated via
-//               mmap_alloc().  You must know how large the block was.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees a block of memory previously allocated via mmap_alloc().  You must
+ * know how large the block was.
+ */
 void MemoryHook::
 mmap_free(void *ptr, size_t size) {
   assert((size % _page_size) == 0);
@@ -511,29 +459,22 @@ mmap_free(void *ptr, size_t size) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::mark_pointer
-//       Access: Public, Virtual
-//  Description: This special method exists only to provide a callback
-//               hook into MemoryUsage.  It indicates that the
-//               indicated pointer, allocated from somewhere other
-//               than a call to heap_alloc(), now contains a pointer
-//               to the indicated ReferenceCount object.  If orig_size
-//               is 0, it indicates that the ReferenceCount object has
-//               been destroyed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special method exists only to provide a callback hook into
+ * MemoryUsage.  It indicates that the indicated pointer, allocated from
+ * somewhere other than a call to heap_alloc(), now contains a pointer to the
+ * indicated ReferenceCount object.  If orig_size is 0, it indicates that the
+ * ReferenceCount object has been destroyed.
+ */
 void MemoryHook::
 mark_pointer(void *, size_t, ReferenceCount *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::get_deleted_chain
-//       Access: Public
-//  Description: Returns a pointer to a global DeletedBufferChain
-//               object suitable for allocating arrays of the
-//               indicated size.  There is one unique
-//               DeletedBufferChain object for every different size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a global DeletedBufferChain object suitable for
+ * allocating arrays of the indicated size.  There is one unique
+ * DeletedBufferChain object for every different size.
+ */
 DeletedBufferChain *MemoryHook::
 get_deleted_chain(size_t buffer_size) {
   DeletedBufferChain *chain;
@@ -552,23 +493,18 @@ get_deleted_chain(size_t buffer_size) {
   return chain;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::alloc_fail
-//       Access: Protected, Virtual
-//  Description: This callback method is called whenever a low-level
-//               call to call_malloc() has returned NULL, indicating
-//               failure.
-//
-//               Since this method is called very low-level, and may
-//               be in the middle of any number of critical sections,
-//               it will be difficult for this callback initiate any
-//               emergency high-level operation to make more memory
-//               available.  However, this module is set up to assume
-//               that that's what this method does, and will make
-//               another alloc attempt after it returns.  Probably the
-//               only sensible thing this method can do, however, is
-//               just to display a message and abort.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback method is called whenever a low-level call to call_malloc()
+ * has returned NULL, indicating failure.
+ *
+ * Since this method is called very low-level, and may be in the middle of any
+ * number of critical sections, it will be difficult for this callback
+ * initiate any emergency high-level operation to make more memory available.
+ * However, this module is set up to assume that that's what this method does,
+ * and will make another alloc attempt after it returns.  Probably the only
+ * sensible thing this method can do, however, is just to display a message
+ * and abort.
+ */
 void MemoryHook::
 alloc_fail(size_t attempted_size) {
   cerr << "Out of memory allocating " << attempted_size << " bytes\n";
@@ -576,17 +512,14 @@ alloc_fail(size_t attempted_size) {
 }
 
 #ifdef DO_MEMORY_USAGE
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::overflow_heap_size
-//       Access: Protected, Virtual
-//  Description: This callback method is called whenever the total
-//               allocated heap size exceeds _max_heap_size.  It's
-//               mainly intended for reporting memory leaks, on the
-//               assumption that once we cross some specified
-//               threshold, we're just leaking memory.
-//
-//               The implementation for this method is in MemoryUsage.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback method is called whenever the total allocated heap size
+ * exceeds _max_heap_size.  It's mainly intended for reporting memory leaks,
+ * on the assumption that once we cross some specified threshold, we're just
+ * leaking memory.
+ *
+ * The implementation for this method is in MemoryUsage.
+ */
 void MemoryHook::
 overflow_heap_size() {
   _max_heap_size = ~(size_t)0;

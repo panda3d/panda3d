@@ -1,16 +1,15 @@
-// Filename: p3dSession.h
-// Created by:  drose (03Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dSession.h
+ * @author drose
+ * @date 2009-06-03
+ */
 
 #ifndef P3DSESSION_H
 #define P3DSESSION_H
@@ -28,13 +27,11 @@
 class P3DInstance;
 class P3DProgressWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DSession
-// Description : Corresponds to a single session: a subprocess with a
-//               unique instance of Python running within it, which
-//               might include one or more P3DInstance objects running
-//               in the same memory space with each other.
-////////////////////////////////////////////////////////////////////
+/**
+ * Corresponds to a single session: a subprocess with a unique instance of
+ * Python running within it, which might include one or more P3DInstance
+ * objects running in the same memory space with each other.
+ */
 class P3DSession : public P3DReferenceCount {
 public:
   P3DSession(P3DInstance *inst);
@@ -55,7 +52,7 @@ public:
   TiXmlDocument *command_and_response(TiXmlDocument *command);
   P3D_object *xml_to_p3dobj(const TiXmlElement *xvalue);
   TiXmlElement *p3dobj_to_xml(P3D_object *obj);
-  void send_windows_message(P3DInstance *inst, unsigned int msg, 
+  void send_windows_message(P3DInstance *inst, unsigned int msg,
                             int wparam, int lparam);
 
   void signal_request_ready(P3DInstance *inst);
@@ -85,8 +82,8 @@ private:
   int posix_create_process();
 #endif
 
-  // In case we can't get a separate process, we'll run p3dpython in a
-  // sub-thread.
+  // In case we can't get a separate process, we'll run p3dpython in a sub-
+  // thread.
   THREAD_CALLBACK_DECLARATION(P3DSession, p3dpython_thread_run);
   void p3dpython_thread_run();
 
@@ -116,29 +113,29 @@ private:
   Instances _instances;
   LOCK _instances_lock;
 
-  // Commands that are queued up to send down the pipe.  Normally
-  // these only accumulate before the python process has been started;
-  // after that, commands are written to the pipe directly.
+  // Commands that are queued up to send down the pipe.  Normally these only
+  // accumulate before the python process has been started; after that,
+  // commands are written to the pipe directly.
   typedef vector<TiXmlDocument *> Commands;
   Commands _commands;
 
-  // This map keeps track of the P3D_object pointers we have delivered
-  // to the child process.  We have to keep each of these until the
-  // child process tells us it's safe to delete them.
+  // This map keeps track of the P3D_object pointers we have delivered to the
+  // child process.  We have to keep each of these until the child process
+  // tells us it's safe to delete them.
   typedef map<int, P3D_object *> SentObjects;
   SentObjects _sent_objects;
 
   P3DPackage *_panda3d;
 
   // If this is true, then CreateProcess() or fork() failed (or we had
-  // one_process set true in the tokens), and we're forced to run
-  // p3dpython in a sub-thread within the same process, rather than in
-  // a separate process.  This means we can't have multiple sessions
-  // running simultaneously, because Python don't play that way.
+  // one_process set true in the tokens), and we're forced to run p3dpython in
+  // a sub-thread within the same process, rather than in a separate process.
+  // This means we can't have multiple sessions running simultaneously,
+  // because Python don't play that way.
   bool _p3dpython_one_process;
 
-  // Members for communicating with the p3dpython child process (or
-  // thread, as the case may be).
+  // Members for communicating with the p3dpython child process (or thread, as
+  // the case may be).
 #ifdef _WIN32
   HANDLE _p3dpython_handle;
 #else

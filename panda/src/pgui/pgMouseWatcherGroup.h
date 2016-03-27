@@ -1,16 +1,15 @@
-// Filename: pgMouseWatcherGroup.h
-// Created by:  drose (09Jul01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgMouseWatcherGroup.h
+ * @author drose
+ * @date 2001-07-09
+ */
 
 #ifndef PGMOUSEWATCHERGROUP_H
 #define PGMOUSEWATCHERGROUP_H
@@ -22,14 +21,11 @@
 
 class PGTop;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGMouseWatcherGroup
-// Description : This is a specialization on MouseWatcherGroup, to
-//               associate it with a PGTop.  Originally we had PGTop
-//               multiply inheriting from NamedNode and
-//               MouseWatcherGroup, but this causes problems with
-//               circular reference counts.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on MouseWatcherGroup, to associate it with a
+ * PGTop.  Originally we had PGTop multiply inheriting from NamedNode and
+ * MouseWatcherGroup, but this causes problems with circular reference counts.
+ */
 class EXPCL_PANDA_PGUI PGMouseWatcherGroup : public MouseWatcherGroup {
 public:
   INLINE PGMouseWatcherGroup(PGTop *top);

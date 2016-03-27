@@ -1,16 +1,15 @@
-// Filename: handleStreamBuf.h
-// Created by:  drose (05Jun09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file handleStreamBuf.h
+ * @author drose
+ * @date 2009-06-05
+ */
 
 #ifndef HANDLESTREAMBUF_H
 #define HANDLESTREAMBUF_H
@@ -21,10 +20,9 @@
 
 using namespace std;
 
-////////////////////////////////////////////////////////////////////
-//       Class : HandleStreamBuf
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class HandleStreamBuf : public streambuf {
 public:
   HandleStreamBuf();

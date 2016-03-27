@@ -1,16 +1,15 @@
-// Filename: eggTexture.cxx
-// Created by:  drose (18Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggTexture.cxx
+ * @author drose
+ * @date 1999-01-18
+ */
 
 #include "eggTexture.h"
 #include "eggMiscFuncs.h"
@@ -22,11 +21,9 @@
 TypeHandle EggTexture::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggTexture::
 EggTexture(const string &tref_name, const Filename &filename)
   : EggFilenameNode(tref_name, filename)
@@ -56,21 +53,17 @@ EggTexture(const string &tref_name, const Filename &filename)
   _multitexture_sort = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::Copy constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggTexture::
 EggTexture(const EggTexture &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::Copy assignment operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggTexture &EggTexture::
 operator = (const EggTexture &copy) {
   clear_multitexture();
@@ -114,22 +107,17 @@ operator = (const EggTexture &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggTexture::
 ~EggTexture() {
   clear_multitexture();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::write
-//       Access: Public, Virtual
-//  Description: Writes the texture definition to the indicated output
-//               stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the texture definition to the indicated output stream in Egg format.
+ */
 void EggTexture::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Texture>");
@@ -144,7 +132,7 @@ write(ostream &out, int indent_level) const {
 
   if (has_alpha_file_channel()) {
     indent(out, indent_level + 2)
-      << "<Scalar> alpha-file-channel { " 
+      << "<Scalar> alpha-file-channel { "
       << get_alpha_file_channel() << " }\n";
   }
 
@@ -212,7 +200,7 @@ write(ostream &out, int indent_level) const {
     CombineChannel channel = (CombineChannel)ci;
     if (get_combine_mode(channel) != CM_unspecified) {
       indent(out, indent_level + 2)
-        << "<Scalar> combine-" << channel 
+        << "<Scalar> combine-" << channel
         << " { " << get_combine_mode(channel) << " }\n";
     }
     for (int i = 0; i < (int)CI_num_indices; i++) {
@@ -310,50 +298,39 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::is_equivalent_to
-//       Access: Published
-//  Description: Returns true if the two textures are equivalent in
-//               all relevant properties (according to eq), false
-//               otherwise.
-//
-//               The Equivalence parameter, eq, should be set to the
-//               bitwise OR of the following properties, according to
-//               what you consider relevant:
-//
-//               EggTexture::E_basename:
-//                 The basename part of the texture filename, without
-//                 the directory prefix *or* the filename extension.
-//
-//               EggTexture::E_extension:
-//                 The extension part of the texture filename.
-//
-//               EggTexture::E_dirname:
-//                 The directory prefix of the texture filename.
-//
-//               EggTexture::E_complete_filename:
-//                 The union of the above three; that is, the complete
-//                 filename, with directory, basename, and extension.
-//
-//               EggTexture::E_transform:
-//                 The texture matrix.
-//
-//               EggTexture::E_attributes:
-//                 All remaining texture attributes (mode, mipmap,
-//                 etc.) except TRef name.
-//
-//               EggTexture::E_tref_name:
-//                 The TRef name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the two textures are equivalent in all relevant properties
+ * (according to eq), false otherwise.
+ *
+ * The Equivalence parameter, eq, should be set to the bitwise OR of the
+ * following properties, according to what you consider relevant:
+ *
+ * EggTexture::E_basename: The basename part of the texture filename, without
+ * the directory prefix *or* the filename extension.
+ *
+ * EggTexture::E_extension: The extension part of the texture filename.
+ *
+ * EggTexture::E_dirname: The directory prefix of the texture filename.
+ *
+ * EggTexture::E_complete_filename: The union of the above three; that is, the
+ * complete filename, with directory, basename, and extension.
+ *
+ * EggTexture::E_transform: The texture matrix.
+ *
+ * EggTexture::E_attributes: All remaining texture attributes (mode, mipmap,
+ * etc.) except TRef name.
+ *
+ * EggTexture::E_tref_name: The TRef name.
+ */
 bool EggTexture::
 is_equivalent_to(const EggTexture &other, int eq) const {
   if ((eq & E_complete_filename) == E_complete_filename) {
-    //cout << "compared by filename" << endl;
+    // cout << "compared by filename" << endl;
     if (get_filename() != other.get_filename()) {
       return false;
     }
   } else {
-    //cout << "compared by not complete filename" << endl;
+    // cout << "compared by not complete filename" << endl;
     const Filename &a = get_filename();
     const Filename &b = other.get_filename();
 
@@ -375,7 +352,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   }
 
   if (eq & E_transform) {
-    //cout << "compared by transform" << endl;
+    // cout << "compared by transform" << endl;
     if (transform_is_identity() != other.transform_is_identity()) {
       return false;
     }
@@ -388,7 +365,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   }
 
   if (eq & E_attributes) {
-    //cout << "compared by attributes" << endl;
+    // cout << "compared by attributes" << endl;
     if (_texture_type != other._texture_type ||
         _format != other._format ||
         _compression_mode != other._compression_mode ||
@@ -407,7 +384,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   }
 
   if (eq & E_tref_name) {
-    //cout << "compared by tref_name" << endl;
+    // cout << "compared by tref_name" << endl;
     if (get_name() != other.get_name()) {
       return false;
     }
@@ -416,15 +393,11 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::sorts_less_than
-//       Access: Published
-//  Description: An ordering operator to compare two textures for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique textures, according to the
-//               indicated Equivalence factor.  See
-//               is_equivalent_to().
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordering operator to compare two textures for sorting order.  This
+ * imposes an arbitrary ordering useful to identify unique textures, according
+ * to the indicated Equivalence factor.  See is_equivalent_to().
+ */
 bool EggTexture::
 sorts_less_than(const EggTexture &other, int eq) const {
   if ((eq & E_complete_filename) == E_complete_filename) {
@@ -515,15 +488,12 @@ sorts_less_than(const EggTexture &other, int eq) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::has_alpha_channel
-//       Access: Published
-//  Description: Given the number of color components (channels) in
-//               the image file as actually read from the disk, return
-//               true if this texture seems to have an alpha channel
-//               or not.  This depends on the EggTexture's format as
-//               well as the number of channels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given the number of color components (channels) in the image file as
+ * actually read from the disk, return true if this texture seems to have an
+ * alpha channel or not.  This depends on the EggTexture's format as well as
+ * the number of channels.
+ */
 bool EggTexture::
 has_alpha_channel(int num_components) const {
   switch (_format) {
@@ -536,8 +506,8 @@ has_alpha_channel(int num_components) const {
   case F_rgb8:
   case F_rgb5:
   case F_rgb332:
-    // These formats never use alpha, regardless of the number of
-    // components we have.
+    // These formats never use alpha, regardless of the number of components
+    // we have.
     return false;
 
   case F_alpha:
@@ -560,13 +530,10 @@ has_alpha_channel(int num_components) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::affects_polygon_alpha
-//       Access: Published
-//  Description: Returns true if this texture's environment type or
-//               combine mode allows the texture to have an effect on
-//               the polygon's alpha values, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this texture's environment type or combine mode allows the
+ * texture to have an effect on the polygon's alpha values, false otherwise.
+ */
 bool EggTexture::
 affects_polygon_alpha() const {
   switch (_env_type) {
@@ -612,62 +579,54 @@ affects_polygon_alpha() const {
     break;
   }
 
-  // A completely unspecified texture environment implies "modulate",
-  // which does affect alpha.
+  // A completely unspecified texture environment implies "modulate", which
+  // does affect alpha.
   return true;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::clear_multitexture
-//       Access: Published
-//  Description: Resets the multitexture flags set by
-//               multitexture_over().  After this call,
-//               get_multitexture() will return false, and
-//               get_multitexture_sort() will return 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the multitexture flags set by multitexture_over().  After this call,
+ * get_multitexture() will return false, and get_multitexture_sort() will
+ * return 0.
+ */
 void EggTexture::
 clear_multitexture() {
   _multitexture_sort = 0;
 
-  // Now empty out the _over_textures and _under_textures sets.  This
-  // requires a bit of care so we don't end up in mutual recursion or
-  // iterating through self-modifying structures.  To avoid this, we
-  // empty the sets first, and then walk through their original
-  // contents.
+  // Now empty out the _over_textures and _under_textures sets.  This requires
+  // a bit of care so we don't end up in mutual recursion or iterating through
+  // self-modifying structures.  To avoid this, we empty the sets first, and
+  // then walk through their original contents.
   MultiTextures orig_over_textures, orig_under_textures;
   orig_over_textures.swap(_over_textures);
   orig_under_textures.swap(_under_textures);
 
   MultiTextures::iterator mti;
-  for (mti = orig_over_textures.begin(); 
-       mti != orig_over_textures.end(); 
+  for (mti = orig_over_textures.begin();
+       mti != orig_over_textures.end();
        ++mti) {
     EggTexture *other = (*mti);
     other->_under_textures.erase(this);
   }
-  for (mti = orig_under_textures.begin(); 
-       mti != orig_under_textures.end(); 
+  for (mti = orig_under_textures.begin();
+       mti != orig_under_textures.end();
        ++mti) {
     EggTexture *other = (*mti);
     other->_over_textures.erase(this);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::multitexture_over
-//       Access: Published
-//  Description: Indicates that this texture should be layered on top
-//               of the other texture.  This will guarantee that
-//               this->get_multitexture_sort() >
-//               other->get_multitexture_sort(), at least until
-//               clear_multitexture() is called on either one.
-//
-//               The return value is true if successful, or false if
-//               there is a failure because the other texture was
-//               already layered on top of this one (or there is a
-//               three- or more-way cycle).
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that this texture should be layered on top of the other texture.
+ * This will guarantee that this->get_multitexture_sort() >
+ * other->get_multitexture_sort(), at least until clear_multitexture() is
+ * called on either one.
+ *
+ * The return value is true if successful, or false if there is a failure
+ * because the other texture was already layered on top of this one (or there
+ * is a three- or more-way cycle).
+ */
 bool EggTexture::
 multitexture_over(EggTexture *other) {
   if (get_multitexture_sort() <= other->get_multitexture_sort()) {
@@ -688,13 +647,11 @@ multitexture_over(EggTexture *other) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_texture_type
-//       Access: Published, Static
-//  Description: Returns the Texture_ype value associated with the given
-//               string representation, or TT_unspecified if the string
-//               does not match any known TextureType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Texture_ype value associated with the given string
+ * representation, or TT_unspecified if the string does not match any known
+ * TextureType value.
+ */
 EggTexture::TextureType EggTexture::
 string_texture_type(const string &string) {
   if (cmp_nocase_uh(string, "1d") == 0 ||
@@ -722,13 +679,10 @@ string_texture_type(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_format
-//       Access: Published, Static
-//  Description: Returns the Format value associated with the given
-//               string representation, or F_unspecified if the string
-//               does not match any known Format value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Format value associated with the given string representation,
+ * or F_unspecified if the string does not match any known Format value.
+ */
 EggTexture::Format EggTexture::
 string_format(const string &string) {
   if (cmp_nocase_uh(string, "rgba") == 0) {
@@ -773,13 +727,11 @@ string_format(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_compression_mode
-//       Access: Published, Static
-//  Description: Returns the CompressionMode value associated with the given
-//               string representation, or CM_default if the string
-//               does not match any known CompressionMode value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CompressionMode value associated with the given string
+ * representation, or CM_default if the string does not match any known
+ * CompressionMode value.
+ */
 EggTexture::CompressionMode EggTexture::
 string_compression_mode(const string &string) {
   if (cmp_nocase_uh(string, "off") == 0) {
@@ -803,13 +755,10 @@ string_compression_mode(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_wrap_mode
-//       Access: Published, Static
-//  Description: Returns the WrapMode value associated with the given
-//               string representation, or WM_unspecified if the string
-//               does not match any known WrapMode value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the WrapMode value associated with the given string representation,
+ * or WM_unspecified if the string does not match any known WrapMode value.
+ */
 EggTexture::WrapMode EggTexture::
 string_wrap_mode(const string &string) {
   if (cmp_nocase_uh(string, "repeat") == 0) {
@@ -827,13 +776,11 @@ string_wrap_mode(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_filter_type
-//       Access: Published, Static
-//  Description: Returns the FilterType value associated with the given
-//               string representation, or FT_unspecified if the string
-//               does not match any known FilterType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the FilterType value associated with the given string
+ * representation, or FT_unspecified if the string does not match any known
+ * FilterType value.
+ */
 EggTexture::FilterType EggTexture::
 string_filter_type(const string &string) {
   // Old egg filter types.
@@ -875,13 +822,10 @@ string_filter_type(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_env_type
-//       Access: Published, Static
-//  Description: Returns the EnvType value associated with the given
-//               string representation, or ET_unspecified if the string
-//               does not match any known EnvType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EnvType value associated with the given string representation,
+ * or ET_unspecified if the string does not match any known EnvType value.
+ */
 EggTexture::EnvType EggTexture::
 string_env_type(const string &string) {
   if (cmp_nocase_uh(string, "modulate") == 0) {
@@ -934,13 +878,11 @@ string_env_type(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_combine_mode
-//       Access: Published, Static
-//  Description: Returns the CombineMode value associated with the given
-//               string representation, or CM_unspecified if the string
-//               does not match any known CombineMode value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CombineMode value associated with the given string
+ * representation, or CM_unspecified if the string does not match any known
+ * CombineMode value.
+ */
 EggTexture::CombineMode EggTexture::
 string_combine_mode(const string &string) {
   if (cmp_nocase_uh(string, "replace") == 0) {
@@ -972,13 +914,11 @@ string_combine_mode(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_combine_source
-//       Access: Published, Static
-//  Description: Returns the CombineSource value associated with the given
-//               string representation, or CS_unspecified if the string
-//               does not match any known CombineSource value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CombineSource value associated with the given string
+ * representation, or CS_unspecified if the string does not match any known
+ * CombineSource value.
+ */
 EggTexture::CombineSource EggTexture::
 string_combine_source(const string &string) {
   if (cmp_nocase_uh(string, "texture") == 0) {
@@ -1004,13 +944,11 @@ string_combine_source(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_combine_operand
-//       Access: Published, Static
-//  Description: Returns the CombineOperand value associated with the given
-//               string representation, or CO_unspecified if the string
-//               does not match any known CombineOperand value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CombineOperand value associated with the given string
+ * representation, or CO_unspecified if the string does not match any known
+ * CombineOperand value.
+ */
 EggTexture::CombineOperand EggTexture::
 string_combine_operand(const string &string) {
   if (cmp_nocase_uh(string, "src_color") == 0) {
@@ -1030,13 +968,10 @@ string_combine_operand(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_tex_gen
-//       Access: Published, Static
-//  Description: Returns the TexGen value associated with the given
-//               string representation, or ET_unspecified if the string
-//               does not match any known TexGen value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TexGen value associated with the given string representation,
+ * or ET_unspecified if the string does not match any known TexGen value.
+ */
 EggTexture::TexGen EggTexture::
 string_tex_gen(const string &string) {
   if (cmp_nocase_uh(string, "unspecified") == 0) {
@@ -1073,13 +1008,10 @@ string_tex_gen(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::string_quality_level
-//       Access: Published, Static
-//  Description: Returns the TexGen value associated with the given
-//               string representation, or ET_unspecified if the string
-//               does not match any known TexGen value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TexGen value associated with the given string representation,
+ * or ET_unspecified if the string does not match any known TexGen value.
+ */
 EggTexture::QualityLevel EggTexture::
 string_quality_level(const string &string) {
   if (cmp_nocase_uh(string, "unspecified") == 0) {
@@ -1102,39 +1034,30 @@ string_quality_level(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::as_transform
-//       Access: Public, Virtual
-//  Description: Returns this object cross-cast to an EggTransform
-//               pointer, if it inherits from EggTransform, or NULL if
-//               it does not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object cross-cast to an EggTransform pointer, if it inherits
+ * from EggTransform, or NULL if it does not.
+ */
 EggTransform *EggTexture::
 as_transform() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::egg_start_parse_body
-//       Access: Protected, Virtual
-//  Description: This function is called within parse_egg().  It
-//               should call the appropriate function on the lexer to
-//               initialize the parser into the state associated with
-//               this object.  If the object cannot be parsed into
-//               directly, it should return false.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called within parse_egg().  It should call the appropriate
+ * function on the lexer to initialize the parser into the state associated
+ * with this object.  If the object cannot be parsed into directly, it should
+ * return false.
+ */
 bool EggTexture::
 egg_start_parse_body() {
   egg_start_texture_body();
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::r_min_multitexture_sort
-//       Access: Private
-//  Description: Ensures that our multitexture_sort is at least the
-//               indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that our multitexture_sort is at least the indicated value.
+ */
 bool EggTexture::
 r_min_multitexture_sort(int sort, EggTexture::MultiTextures &cycle_detector) {
   if (_multitexture_sort >= sort) {
@@ -1149,8 +1072,7 @@ r_min_multitexture_sort(int sort, EggTexture::MultiTextures &cycle_detector) {
 
   _multitexture_sort = sort;
 
-  // Now we also have to increment all of the textures that we are
-  // under.
+  // Now we also have to increment all of the textures that we are under.
   bool no_cycles = true;
 
   MultiTextures::iterator mti;
@@ -1168,10 +1090,9 @@ r_min_multitexture_sort(int sort, EggTexture::MultiTextures &cycle_detector) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggTexture::TextureType texture_type) {
   switch (texture_type) {
   case EggTexture::TT_unspecified:
@@ -1195,10 +1116,9 @@ ostream &operator << (ostream &out, EggTexture::TextureType texture_type) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Format output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggTexture::Format format) {
   switch (format) {
   case EggTexture::F_unspecified:
@@ -1248,10 +1168,9 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CompressionMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggTexture::CompressionMode mode) {
   switch (mode) {
   case EggTexture::CM_default:
@@ -1278,10 +1197,9 @@ ostream &operator << (ostream &out, EggTexture::CompressionMode mode) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WrapMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggTexture::WrapMode mode) {
   switch (mode) {
   case EggTexture::WM_unspecified:
@@ -1302,10 +1220,9 @@ ostream &operator << (ostream &out, EggTexture::WrapMode mode) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilterType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggTexture::FilterType type) {
   switch (type) {
   case EggTexture::FT_unspecified:
@@ -1330,10 +1247,9 @@ ostream &operator << (ostream &out, EggTexture::FilterType type) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EnvType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ostream &operator << (ostream &out, EggTexture::EnvType type) {
   switch (type) {
   case EggTexture::ET_unspecified:
@@ -1371,13 +1287,13 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
 
   case EggTexture::ET_glow:
     return out << "glow";
-    
+
   case EggTexture::ET_gloss:
     return out << "gloss";
-    
+
   case EggTexture::ET_height:
     return out << "height";
-    
+
   case EggTexture::ET_selector:
     return out << "selector";
 
@@ -1433,8 +1349,8 @@ operator << (ostream &out, EggTexture::CombineChannel cm) {
     return out << "alpha";
 
   case EggTexture::CC_num_channels:
-    // This case is here just to prevent a compiler warning.  Fall out
-    // of the switch and return the error message.
+    // This case is here just to prevent a compiler warning.  Fall out of the
+    // switch and return the error message.
     break;
   }
 

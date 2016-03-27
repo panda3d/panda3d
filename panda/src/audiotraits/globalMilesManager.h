@@ -1,16 +1,15 @@
-// Filename: globalMilesManager.h
-// Created by:  drose (26Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file globalMilesManager.h
+ * @author drose
+ * @date 2007-07-26
+ */
 
 #ifndef GLOBALMILESMANAGER_H
 #define GLOBALMILESMANAGER_H
@@ -34,12 +33,11 @@
 class MilesAudioSample;
 class MilesAudioSequence;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GlobalMilesManager
-// Description : This is a wrapper around the parts of the Miles API
-//               that should only be created once.  This represents
-//               the global data common to all MilesAudioManagers.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a wrapper around the parts of the Miles API that should only be
+ * created once.  This represents the global data common to all
+ * MilesAudioManagers.
+ */
 class EXPCL_MILES_AUDIO GlobalMilesManager {
 private:
   GlobalMilesManager();
@@ -107,7 +105,7 @@ private:
   typedef pvector<SequenceData> Sequences;
   Sequences _sequences;
   LightMutex _sequences_lock;
-  
+
   static GlobalMilesManager *_global_ptr;
 };
 
@@ -116,6 +114,3 @@ private:
 #endif //]
 
 #endif
-
-
-  

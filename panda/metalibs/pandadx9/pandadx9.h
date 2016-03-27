@@ -1,7 +1,8 @@
-// Filename: pandadx9.h
-// Created by:  masad (15Jan04)
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * @file pandadx9.h
+ * @author masad
+ * @date 2004-01-15
+ */
 
 #ifndef PANDADX9_H
 #define PANDADX9_H

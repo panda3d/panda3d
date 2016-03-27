@@ -1,27 +1,24 @@
-// Filename: daeToEgg.cxx
-// Created by:  pro-rsoft (08May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file daeToEgg.cxx
+ * @author rdb
+ * @date 2008-05-08
+ */
 
 #include "daeToEgg.h"
 
 #include "daeToEggConverter.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DAEToEgg::
 DAEToEgg():
   SomethingToEgg("COLLADA", ".dae")
@@ -46,11 +43,9 @@ DAEToEgg():
   _animation_convert = AC_both;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void DAEToEgg::
 run() {
   if (_animation_convert != AC_both && _animation_convert != AC_none &&

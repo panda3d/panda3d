@@ -1,16 +1,15 @@
-// Filename: p3dCert.cxx
-// Created by:  rdb (08Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dCert.cxx
+ * @author rdb
+ * @date 2011-03-08
+ */
 
 #include "p3dCert.h"
 #include "p3dCert_strings.h"
@@ -51,8 +50,8 @@ static LanguageIndex li = LI_default;
 
 #if defined(_WIN32)
 static LanguageIndex detect_language() {
-  // This function was introduced in Windows Vista; it may not be available
-  // on older systems.
+  // This function was introduced in Windows Vista; it may not be available on
+  // older systems.
   typedef BOOL (*GUPL)(DWORD, PULONG, PZZWSTR, PULONG);
   GUPL pGetUserPreferredUILanguages = (GUPL)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
                                                            TEXT("GetUserPreferredUILanguages"));
@@ -231,11 +230,9 @@ int main(int argc, char **argv) {
 }
 #endif // _WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 #ifdef _WIN32
 AuthDialog::
 AuthDialog(const wstring &cert_filename, const wstring &cert_dir) :
@@ -262,11 +259,9 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
   layout();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AuthDialog::
 ~AuthDialog() {
   if (_view_cert_dialog != NULL) {
@@ -283,22 +278,18 @@ AuthDialog::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::run_clicked
-//       Access: Public
-//  Description: The user clicks the "Run" button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user clicks the "Run" button.
+ */
 void AuthDialog::
 run_clicked(Fl_Widget *w, void *data) {
   AuthDialog *dlg = (AuthDialog *) data;
   dlg->approve_cert();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::run_clicked
-//       Access: Public
-//  Description: The user clicks the "View Certificate" button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user clicks the "View Certificate" button.
+ */
 void AuthDialog::
 view_cert_clicked(Fl_Widget *w, void *data) {
   AuthDialog *dlg = (AuthDialog *) data;
@@ -311,24 +302,19 @@ view_cert_clicked(Fl_Widget *w, void *data) {
   dlg->_view_cert_dialog->show();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::run_clicked
-//       Access: Public
-//  Description: The user clicks the "Cancel" button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user clicks the "Cancel" button.
+ */
 void AuthDialog::
 cancel_clicked(Fl_Widget *w, void *data) {
   AuthDialog *dlg = (AuthDialog *) data;
   dlg->hide();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::approve_cert
-//       Access: Public
-//  Description: Writes the certificate into the _cert_dir, so
-//               that it will be found by the P3DInstanceManager and
-//               known to be approved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the certificate into the _cert_dir, so that it will be found by the
+ * P3DInstanceManager and known to be approved.
+ */
 void AuthDialog::
 approve_cert() {
   assert(_cert != NULL);
@@ -344,8 +330,8 @@ approve_cert() {
   int i = 1;
   size_t buf_length = _cert_dir.length() + 100;
 
-  // Sure, there's a slight race condition right now: another process
-  // might attempt to create the same filename.  So what.
+  // Sure, there's a slight race condition right now: another process might
+  // attempt to create the same filename.  So what.
   FILE *fp = NULL;
 
 #ifdef _WIN32
@@ -388,12 +374,10 @@ approve_cert() {
   hide();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::read_cert_file
-//       Access: Private
-//  Description: Reads the list of certificates in the pem filename
-//               passed on the command line into _cert and _stack.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the list of certificates in the pem filename passed on the command
+ * line into _cert and _stack.
+ */
 #ifdef _WIN32
 void AuthDialog::
 read_cert_file(const wstring &cert_filename) {
@@ -439,12 +423,10 @@ read_cert_file(const string &cert_filename) {
   fclose(fp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::get_friendly_name
-//       Access: Private
-//  Description: Extracts the "friendly name" from the certificate:
-//               the common name or email name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the "friendly name" from the certificate: the common name or email
+ * name.
+ */
 void AuthDialog::
 get_friendly_name() {
   if (_cert == NULL) {
@@ -468,15 +450,15 @@ get_friendly_name() {
     if (xname != NULL) {
       int pos = X509_NAME_get_index_by_NID(xname, nid, -1);
       if (pos != -1) {
-        // We just get the first common name.  I guess it's possible to
-        // have more than one; not sure what that means in this context.
+        // We just get the first common name.  I guess it's possible to have
+        // more than one; not sure what that means in this context.
         X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
         if (xentry != NULL) {
           ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
           if (data != NULL) {
-            // We use "print" to dump the output to a memory BIO.  Is
-            // there an easier way to decode the ASN1_STRING?  Curse
-            // these incomplete docs.
+            // We use "print" to dump the output to a memory BIO.  Is there an
+            // easier way to decode the ASN1_STRING?  Curse these incomplete
+            // docs.
             BIO *mbio = BIO_new(BIO_s_mem());
             ASN1_STRING_print_ex(mbio, data, ASN1_STRFLGS_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
 
@@ -492,12 +474,10 @@ get_friendly_name() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::verify_cert
-//       Access: Private
-//  Description: Checks whether the certificate is valid by the chain
-//               and initializes _verify_status accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the certificate is valid by the chain and initializes
+ * _verify_status accordingly.
+ */
 void AuthDialog::
 verify_cert() {
   if (_cert == NULL) {
@@ -531,19 +511,15 @@ verify_cert() {
        << ", verify_result = " << _verify_result << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::load_certificates_from_der_ram
-//       Access: Public
-//  Description: Reads a chain of trusted certificates from the
-//               indicated data buffer and adds them to the X509_STORE
-//               object.  The data buffer should be DER-formatted.
-//               Returns the number of certificates read on success,
-//               or 0 on failure.
-//
-//               You should call this only with trusted,
-//               locally-stored certificates; not with certificates
-//               received from an untrusted source.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a chain of trusted certificates from the indicated data buffer and
+ * adds them to the X509_STORE object.  The data buffer should be DER-
+ * formatted.  Returns the number of certificates read on success, or 0 on
+ * failure.
+ *
+ * You should call this only with trusted, locally-stored certificates; not
+ * with certificates received from an untrusted source.
+ */
 int AuthDialog::
 load_certificates_from_der_ram(X509_STORE *store,
                                const char *data, size_t data_size) {
@@ -569,11 +545,9 @@ load_certificates_from_der_ram(X509_STORE *store,
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::layout
-//       Access: Private
-//  Description: Arranges the text and controls within the dialog.
-////////////////////////////////////////////////////////////////////
+/**
+ * Arranges the text and controls within the dialog.
+ */
 void AuthDialog::
 layout() {
   get_text(_header, sizeof _header, _text, sizeof _text);
@@ -635,12 +609,10 @@ layout() {
   set_modal();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuthDialog::get_text
-//       Access: Private
-//  Description: Fills in the text appropriate to display in the
-//               dialog box, based on the certificate read so far.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the text appropriate to display in the dialog box, based on the
+ * certificate read so far.
+ */
 void AuthDialog::
 get_text(char *header, size_t hlen, char *text, size_t tlen) {
   switch (_verify_result) {
@@ -679,11 +651,9 @@ get_text(char *header, size_t hlen, char *text, size_t tlen) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ViewCertDialog::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ViewCertDialog::
 ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
   Fl_Window(600, 400, show_cert_title[li]),
@@ -697,11 +667,9 @@ ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
   layout();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ViewCertDialog::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ViewCertDialog::
 ~ViewCertDialog() {
   if (_auth_dialog != NULL) {
@@ -709,11 +677,9 @@ ViewCertDialog::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ViewCertDialog::run_clicked
-//       Access: Public
-//  Description: The user clicks the "Run" button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user clicks the "Run" button.
+ */
 void ViewCertDialog::
 run_clicked(Fl_Widget *w, void *data) {
   ViewCertDialog *dlg = (ViewCertDialog *) data;
@@ -723,11 +689,9 @@ run_clicked(Fl_Widget *w, void *data) {
   dlg->hide();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ViewCertDialog::run_clicked
-//       Access: Public
-//  Description: The user clicks the "Cancel" button.
-////////////////////////////////////////////////////////////////////
+/**
+ * The user clicks the "Cancel" button.
+ */
 void ViewCertDialog::
 cancel_clicked(Fl_Widget *w, void *data) {
   ViewCertDialog *dlg = (ViewCertDialog *) data;
@@ -737,11 +701,9 @@ cancel_clicked(Fl_Widget *w, void *data) {
   dlg->hide();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ViewCertDialog::layout
-//       Access: Private
-//  Description: Arranges the text and controls within the dialog.
-////////////////////////////////////////////////////////////////////
+/**
+ * Arranges the text and controls within the dialog.
+ */
 void ViewCertDialog::
 layout() {
   // Format the certificate text for display in the dialog.

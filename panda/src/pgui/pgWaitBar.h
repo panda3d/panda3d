@@ -1,16 +1,15 @@
-// Filename: pgWaitBar.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgWaitBar.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef PGWAITBAR_H
 #define PGWAITBAR_H
@@ -19,13 +18,11 @@
 
 #include "pgItem.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGWaitBar
-// Description : This is a particular kind of PGItem that draws a
-//               little bar that fills from left to right to indicate
-//               a slow process gradually completing, like a
-//               traditional "wait, loading" bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of PGItem that draws a little bar that fills from
+ * left to right to indicate a slow process gradually completing, like a
+ * traditional "wait, loading" bar.
+ */
 class EXPCL_PANDA_PGUI PGWaitBar : public PGItem {
 PUBLISHED:
   PGWaitBar(const string &name = "");

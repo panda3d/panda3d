@@ -1,16 +1,15 @@
-// Filename: datagramQueue.h
-// Created by:  drose (07Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file datagramQueue.h
+ * @author drose
+ * @date 2000-02-07
+ */
 
 #ifndef DATAGRAMQUEUE_H
 #define DATAGRAMQUEUE_H
@@ -22,12 +21,11 @@
 #include "conditionVarFull.h"
 #include "pdeque.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramQueue
-// Description : A thread-safe, FIFO queue of NetDatagrams.  This is used
-//               by ConnectionWriter for queuing up datagrams for
-//               its various threads to write to sockets.
-////////////////////////////////////////////////////////////////////
+/**
+ * A thread-safe, FIFO queue of NetDatagrams.  This is used by
+ * ConnectionWriter for queuing up datagrams for its various threads to write
+ * to sockets.
+ */
 class EXPCL_PANDA_NET DatagramQueue {
 public:
   DatagramQueue();
@@ -52,4 +50,3 @@ private:
 };
 
 #endif
-

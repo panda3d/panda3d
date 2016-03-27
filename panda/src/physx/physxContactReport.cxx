@@ -1,16 +1,15 @@
-// Filename: physxContactReport.cxx
-// Created by:  enn0x (19Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxContactReport.cxx
+ * @author enn0x
+ * @date 2009-09-19
+ */
 
 #include "physxContactReport.h"
 #include "physxContactPair.h"
@@ -22,44 +21,36 @@
 
 PStatCollector PhysxContactReport::_pcollector("App:PhysX:Contact Reporting");
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::enable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxContactReport::
 enable() {
 
   _enabled = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::disable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxContactReport::
 disable() {
 
   _enabled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::is_enabled
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool PhysxContactReport::
 is_enabled() const {
 
   return _enabled;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::onContactNotify
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxContactReport::
 onContactNotify(NxContactPair &pair, NxU32 flags) {
 
@@ -98,4 +89,3 @@ onContactNotify(NxContactPair &pair, NxU32 flags) {
 
   _pcollector.stop();
 }
-

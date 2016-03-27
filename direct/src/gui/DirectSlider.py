@@ -111,7 +111,7 @@ class DirectSlider(DirectFrame):
         elif self['orientation'] == DGG.VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, 1))
         else:
-            raise ValueError, 'Invalid value for orientation: %s' % (self['orientation'])
+            raise ValueError('Invalid value for orientation: %s' % (self['orientation']))
 
     def destroy(self):
         if (hasattr(self, 'thumb')):

@@ -21,7 +21,7 @@ from panda3d import core
 forceYield = core.Thread.forceYield
 considerYield = core.Thread.considerYield
 
-class error(StandardError):
+class error(Exception):
     pass
 
 class LockType:
@@ -54,7 +54,7 @@ class LockType:
         self.__lock.acquire()
         try:
             if not self.__locked:
-                raise error, 'Releasing unheld lock.'
+                raise error('Releasing unheld lock.')
 
             self.__locked = False
             self.__cvar.notify()
@@ -69,6 +69,13 @@ class LockType:
 
     def __exit__(self, t, v, tb):
         self.release()
+
+# Helper to generate new thread names
+_counter = 0
+def _newname(template="Thread-%d"):
+    global _counter
+    _counter = _counter + 1
+    return template % _counter
 
 _threads = {}
 _nextThreadId = 0

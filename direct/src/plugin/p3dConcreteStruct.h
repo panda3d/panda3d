@@ -1,16 +1,15 @@
-// Filename: p3dConcreteStruct.h
-// Created by:  drose (14Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dConcreteStruct.h
+ * @author drose
+ * @date 2009-07-14
+ */
 
 #ifndef P3DCONCRETESTRUCT_H
 #define P3DCONCRETESTRUCT_H
@@ -18,16 +17,13 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DConcreteStruct
-// Description : A simple object that contains a standard mapping of
-//               string -> element.  It is passed by value between
-//               Python and Javascript, so it may be more optimal for
-//               relatively small objects.
-//
-//               Methods are not supported, other than built-in
-//               methods like toString().
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple object that contains a standard mapping of string -> element.  It
+ * is passed by value between Python and Javascript, so it may be more optimal
+ * for relatively small objects.
+ *
+ * Methods are not supported, other than built-in methods like toString().
+ */
 class P3DConcreteStruct : public P3DObject {
 public:
   P3DConcreteStruct();
@@ -53,4 +49,3 @@ private:
 };
 
 #endif
-

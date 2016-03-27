@@ -7,7 +7,7 @@ from panda3d.core import *
 import shutil
 import os
 
-class PackageMergerError(StandardError):
+class PackageMergerError(Exception):
     pass
 
 class PackageMerger:
@@ -102,12 +102,12 @@ class PackageMerger:
             doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             if not doc.LoadFile():
                 message = "Could not read XML file: %s" % (self.descFile.filename)
-                raise OSError, message
+                raise OSError(message)
 
             xpackage = doc.FirstChildElement('package')
             if not xpackage:
                 message = "No package definition: %s" % (self.descFile.filename)
-                raise OSError, message
+                raise OSError(message)
 
             xcompressed = xpackage.FirstChildElement('compressed_archive')
             if xcompressed:
@@ -286,7 +286,7 @@ class PackageMerger:
 
         if not self.__readContentsFile(sourceDir, packageNames):
             message = "Couldn't read %s" % (sourceDir)
-            raise PackageMergerError, message
+            raise PackageMergerError(message)
 
     def close(self):
         """ Finalizes the results of all of the previous calls to

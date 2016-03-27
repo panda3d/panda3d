@@ -1,16 +1,15 @@
-// Filename: pandaIOSystem.h
-// Created by:  rdb (29Mar11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pandaIOSystem.h
+ * @author rdb
+ * @date 2011-03-29
+ */
 
 #ifndef PANDAIOSYSTEM_H
 #define PANDAIOSYSTEM_H
@@ -20,10 +19,9 @@
 
 #include "assimp/IOSystem.hpp"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaIOSystem
-// Description : Custom implementation of Assimp::IOSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Custom implementation of Assimp::IOSystem.
+ */
 class PandaIOSystem : public Assimp::IOSystem {
 public:
   PandaIOSystem(VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr());
@@ -40,4 +38,3 @@ private:
 };
 
 #endif
-

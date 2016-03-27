@@ -1,16 +1,15 @@
-// Filename: portalNode.h
-// Created by: masad (13May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file portalNode.h
+ * @author masad
+ * @date 2004-05-13
+ */
 
 #ifndef PORTALNODE_H
 #define PORTALNODE_H
@@ -23,14 +22,11 @@
 #include "nodePath.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PortalNode
-// Description : A node in the scene graph that can hold a
-//                     Portal Polygon, which is a rectangle. Other
-//                     types of polygons are not supported for
-//                     now. It also holds a PT(PandaNode) Cell that
-//                     this portal is connected to
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold a Portal Polygon, which is a
+ * rectangle.  Other types of polygons are not supported for now.  It also
+ * holds a PT(PandaNode) Cell that this portal is connected to
+ */
 class EXPCL_PANDA_PGRAPH PortalNode : public PandaNode {
 PUBLISHED:
   PortalNode(const string &name);
@@ -88,7 +84,7 @@ PUBLISHED:
   INLINE void set_open(bool value);
   INLINE bool is_open();
 
-  //  void draw () const;
+  // void draw () const;
 
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
@@ -99,9 +95,8 @@ protected:
 private:
   CPT(RenderState) get_last_pos_state();
 
-  // This data is not cycled, for now.  We assume the collision
-  // traversal will take place in App only.  Perhaps we will revisit
-  // this later.
+  // This data is not cycled, for now.  We assume the collision traversal will
+  // take place in App only.  Perhaps we will revisit this later.
   PortalMask _from_portal_mask;
   PortalMask _into_portal_mask;
 

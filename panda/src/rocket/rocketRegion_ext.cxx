@@ -1,16 +1,15 @@
-// Filename: rocketRegion_ext.cxx
-// Created by:  rdb (06Dec11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rocketRegion_ext.cxx
+ * @author rdb
+ * @date 2011-12-06
+ */
 
 #include "rocketRegion_ext.h"
 #include "extension.h"
@@ -23,16 +22,12 @@
 #include <Rocket/Core/Python/Utilities.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::get_context
-//       Access: Published
-//  Description: Returns a pointer to the Rocket context associated
-//               with this region.  Will only be valid as long as this
-//               region still exists, so be sure to toss it when you
-//               toss the region itself.
-//               It's best to call this method just once and store
-//               the context in a Python variable, to avoid overhead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the Rocket context associated with this region.  Will
+ * only be valid as long as this region still exists, so be sure to toss it
+ * when you toss the region itself.  It's best to call this method just once
+ * and store the context in a Python variable, to avoid overhead.
+ */
 PyObject* Extension<RocketRegion>::
 get_context() const {
   try {

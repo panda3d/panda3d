@@ -1,16 +1,15 @@
-// Filename: eglGraphicsStateGuardian.cxx
-// Created by:  pro-rsoft (21May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eglGraphicsStateGuardian.cxx
+ * @author rdb
+ * @date 2009-05-21
+ */
 
 #include "eglGraphicsStateGuardian.h"
 #include "config_egldisplay.h"
@@ -20,11 +19,9 @@
 
 TypeHandle eglGraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 eglGraphicsStateGuardian::
 eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
        eglGraphicsStateGuardian *share_with) :
@@ -49,11 +46,9 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 eglGraphicsStateGuardian::
 ~eglGraphicsStateGuardian() {
   if (_visuals != (XVisualInfo *)NULL) {
@@ -68,12 +63,9 @@ eglGraphicsStateGuardian::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::get_properties
-//       Access: Private
-//  Description: Gets the FrameBufferProperties to match the
-//               indicated config.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties to match the indicated config.
+ */
 void eglGraphicsStateGuardian::
 get_properties(FrameBufferProperties &properties,
       bool &pbuffer_supported, bool &pixmap_supported,
@@ -133,13 +125,10 @@ get_properties(FrameBufferProperties &properties,
   properties.set_force_hardware(1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::choose_pixel_format
-//       Access: Private
-//  Description: Selects a visual or fbconfig for all the windows
-//               and buffers that use this gsg.  Also creates the GL
-//               context and obtains the visual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects a visual or fbconfig for all the windows and buffers that use this
+ * gsg.  Also creates the GL context and obtains the visual.
+ */
 void eglGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
         X11_Display *display,
@@ -165,7 +154,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
     EGL_NONE
   };
 
-  // First get the number of matching configurations, so we know how much memory to allocate.
+  // First get the number of matching configurations, so we know how much
+  // memory to allocate.
   int num_configs = 0, returned_configs;
   if (!eglChooseConfig(_egl_display, attrib_list, NULL, num_configs, &returned_configs) || returned_configs <= 0) {
     egldisplay_cat.error() << "eglChooseConfig failed: "
@@ -192,8 +182,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
     bool pbuffer_supported, pixmap_supported, slow;
     get_properties(fbprops, pbuffer_supported, pixmap_supported,
                    slow, configs[i]);
-    // We're not protecting this code by an is_debug() check, because if we do,
-    // some weird compiler bug appears and somehow makes the quality always 0.
+    // We're not protecting this code by an is_debug() check, because if we
+    // do, some weird compiler bug appears and somehow makes the quality
+    // always 0.
     const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
     const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
     const char *slowtext = slow ? " (slow)" : "";
@@ -253,12 +244,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
   delete[] configs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
 void eglGraphicsStateGuardian::
 reset() {
 #ifdef OPENGLES_2
@@ -267,11 +255,11 @@ reset() {
   GLESGraphicsStateGuardian::reset();
 #endif
 
-  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is
-  // found, it's actually a Mesa-based OpenGL layer running over a
-  // hardware driver.
-  if (_gl_renderer.find("Mesa") != string::npos &&
-      _gl_renderer.find("Mesa DRI") == string::npos) {
+  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is found,
+  // it's actually a Mesa-based OpenGL layer running over a hardware driver.
+  if (_gl_renderer == "Software Rasterizer" ||
+      (_gl_renderer.find("Mesa") != string::npos &&
+       _gl_renderer.find("Mesa DRI") == string::npos)) {
     // It's Mesa, therefore probably a software context.
     _fbprops.set_force_software(1);
     _fbprops.set_force_hardware(0);
@@ -281,12 +269,10 @@ reset() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::egl_is_at_least_version
-//       Access: Public
-//  Description: Returns true if the runtime GLX version number is at
-//               least the indicated value, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the runtime GLX version number is at least the indicated
+ * value, false otherwise.
+ */
 bool eglGraphicsStateGuardian::
 egl_is_at_least_version(int major_version, int minor_version) const {
   if (_egl_version_major < major_version) {
@@ -298,11 +284,9 @@ egl_is_at_least_version(int major_version, int minor_version) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::gl_flush
-//       Access: Protected, Virtual
-//  Description: Calls glFlush().
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls glFlush().
+ */
 void eglGraphicsStateGuardian::
 gl_flush() const {
   // This call requires synchronization with X.
@@ -314,11 +298,9 @@ gl_flush() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::gl_get_error
-//       Access: Protected, Virtual
-//  Description: Returns the result of glGetError().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the result of glGetError().
+ */
 GLenum eglGraphicsStateGuardian::
 gl_get_error() const {
   // This call requires synchronization with X.
@@ -330,11 +312,9 @@ gl_get_error() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::query_gl_version
-//       Access: Protected, Virtual
-//  Description: Queries the runtime version of OpenGL in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the runtime version of OpenGL in use.
+ */
 void eglGraphicsStateGuardian::
 query_gl_version() {
 #ifdef OPENGLES_2
@@ -343,16 +323,16 @@ query_gl_version() {
   GLESGraphicsStateGuardian::query_gl_version();
 #endif
 
-  // Calling eglInitialize on an already-initialized display will
-  // just provide us the version numbers.
+  // Calling eglInitialize on an already-initialized display will just provide
+  // us the version numbers.
   if (!eglInitialize(_egl_display, &_egl_version_major, &_egl_version_minor)) {
     egldisplay_cat.error() << "Failed to get EGL version number: "
       << get_egl_error_string(eglGetError()) << "\n";
   }
 
-  // We output to glesgsg_cat instead of egldisplay_cat, since this is
-  // where the GL version has been output, and it's nice to see the
-  // two of these together.
+  // We output to glesgsg_cat instead of egldisplay_cat, since this is where
+  // the GL version has been output, and it's nice to see the two of these
+  // together.
 #ifdef OPENGLES_2
   if (gles2gsg_cat.is_debug()) {
     gles2gsg_cat.debug()
@@ -365,29 +345,22 @@ query_gl_version() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::get_extra_extensions
-//       Access: Protected, Virtual
-//  Description: This may be redefined by a derived class (e.g. glx or
-//               wgl) to get whatever further extensions strings may
-//               be appropriate to that interface, in addition to the
-//               GL extension strings return by glGetString().
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be redefined by a derived class (e.g.  glx or wgl) to get whatever
+ * further extensions strings may be appropriate to that interface, in
+ * addition to the GL extension strings return by glGetString().
+ */
 void eglGraphicsStateGuardian::
 get_extra_extensions() {
   save_extensions(eglQueryString(_egl_display, EGL_EXTENSIONS));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name.
+ * It is the responsibility of the caller to ensure that the required
+ * extension is defined in the OpenGL runtime prior to calling this; it is an
+ * error to call this for a function that is not defined.
+ */
 void *eglGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   return (void *)eglGetProcAddress(name);

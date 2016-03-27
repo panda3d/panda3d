@@ -1,16 +1,15 @@
-// Filename: mayaSavePview.cxx
-// Created by:  drose (27Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaSavePview.cxx
+ * @author drose
+ * @date 2003-10-27
+ */
 
 #include "mayaSavePview.h"
 
@@ -27,20 +26,16 @@
 #include <process.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaSavePview::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaSavePview::
 MayaSavePview() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaSavePview::doIt
-//       Access: Public, Virtual
-//  Description: Called when the plugin command is invoked.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the plugin command is invoked.
+ */
 MStatus MayaSavePview::
 doIt(const MArgList &args) {
   MStatus result;
@@ -60,7 +55,7 @@ doIt(const MArgList &args) {
     result.perror("isFlagSet");
     return result;
   }
-  
+
   // Now make sure the current buffer is saved.
   result = MFileIO::save(false);
   if (result != MS::kSuccess) {
@@ -75,19 +70,17 @@ doIt(const MArgList &args) {
   }
 
 #ifdef WIN32_VC
-  // On Windows, we use the spawn function to run pview
-  // asynchronously.
+  // On Windows, we use the spawn function to run pview asynchronously.
   MString quoted = MString("\"") + filename + MString("\"");
-  int retval = _spawnlp(_P_DETACH, "pview", 
+  int retval = _spawnlp(_P_DETACH, "pview",
                         "pview", pview_args.asChar(), quoted.asChar(), NULL);
   if (retval == -1) {
     return MS::kFailure;
   }
 
 #else  // WIN32_VC
-  // On non-Windows (e.g. Unix), we just use the system function,
-  // which runs synchronously.  We could fork a process, but no one's
-  // asked for this yet.
+  // On non-Windows (e.g.  Unix), we just use the system function, which runs
+  // synchronously.  We could fork a process, but no one's asked for this yet.
   MString command = MString("pview " + pview_args + MString(" \"") + filename + MString("\""));
 
   int command_result = system(command.asChar());
@@ -99,11 +92,9 @@ doIt(const MArgList &args) {
   return MS::kSuccess;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaSavePview::creator
-//       Access: Public, Static
-//  Description: This is used to create a new instance of the plugin.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to create a new instance of the plugin.
+ */
 void *MayaSavePview::
 creator() {
   return new MayaSavePview;
@@ -111,11 +102,10 @@ creator() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: initializePlugin
-//  Description: Called by Maya when the plugin is loaded.
-////////////////////////////////////////////////////////////////////
-EXPCL_MISC MStatus 
+/**
+ * Called by Maya when the plugin is loaded.
+ */
+EXPCL_MISC MStatus
 initializePlugin(MObject obj) {
   MFnPlugin plugin(obj, "VR Studio", "1.0");
   MStatus status;
@@ -127,10 +117,9 @@ initializePlugin(MObject obj) {
   return status;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: uninitializePlugin
-//  Description: Called by Maya when the plugin is unloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Maya when the plugin is unloaded.
+ */
 EXPCL_MISC MStatus
 uninitializePlugin(MObject obj) {
   MFnPlugin plugin(obj);

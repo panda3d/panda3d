@@ -1,22 +1,20 @@
-// Filename: showBase.cxx
-// Created by:  shochet (02Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-         
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file showBase.cxx
+ * @author shochet
+ * @date 2000-02-02
+ */
+
 #ifdef __APPLE__
-// We have to include this before we include any Panda libraries,
-// because one of the things we pick up in Panda defines a macro for
-// TCP_NODELAY and friends, causing heartaches for the header files
-// picked up here.
+// We have to include this before we include any Panda libraries, because one
+// of the things we pick up in Panda defines a macro for TCP_NODELAY and
+// friends, causing heartaches for the header files picked up here.
 #include <Carbon/Carbon.h>
 extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
 #endif
@@ -33,7 +31,7 @@ extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
 #include <windows.h>  // For SystemParametersInfo()
 STICKYKEYS g_StartupStickyKeys = {sizeof(STICKYKEYS), 0};
 TOGGLEKEYS g_StartupToggleKeys = {sizeof(TOGGLEKEYS), 0};
-FILTERKEYS g_StartupFilterKeys = {sizeof(FILTERKEYS), 0};  
+FILTERKEYS g_StartupFilterKeys = {sizeof(FILTERKEYS), 0};
 #endif
 
 ConfigureDef(config_showbase);
@@ -41,7 +39,7 @@ ConfigureFn(config_showbase) {
 }
 
 ConfigVariableSearchPath particle_path
-("particle-path", 
+("particle-path",
  PRC_DESC("The directories to search for particle files to be loaded."));
 
 ConfigVariableSearchPath &
@@ -49,9 +47,9 @@ get_particle_path() {
   return particle_path;
 }
 
-// Throw the "NewFrame" event in the C++ world.  Some of the lerp code
-// depends on receiving this.
-void 
+// Throw the "NewFrame" event in the C++ world.  Some of the lerp code depends
+// on receiving this.
+void
 throw_new_frame() {
   throw_event("NewFrame");
 }
@@ -64,28 +62,28 @@ get_config_showbase() {
   return config_showbase;
 }
 
-// Initialize the application for making a Gui-based app, such as wx.
-// At the moment, this is a no-op except on Mac.
+// Initialize the application for making a Gui-based app, such as wx.  At the
+// moment, this is a no-op except on Mac.
 void
 init_app_for_gui() {
 #ifdef IS_OSX
-  // Rudely bring the application to the foreground.  This is
-  // particularly important when running wx via the plugin, since the
-  // plugin app is seen as separate from the browser app, even though
-  // the user sees them as the same thing.  We need to bring the
-  // plugin app to the foreground to make its wx windows visible.
+  // Rudely bring the application to the foreground.  This is particularly
+  // important when running wx via the plugin, since the plugin app is seen as
+  // separate from the browser app, even though the user sees them as the same
+  // thing.  We need to bring the plugin app to the foreground to make its wx
+  // windows visible.
   activate_osx_application();
 #endif
 
-  // We don't appear need to do the following, however, if we launch
-  // the plugin correctly from its own bundle.
+  // We don't appear need to do the following, however, if we launch the
+  // plugin correctly from its own bundle.
   /*
   static bool initted_for_gui = false;
   if (!initted_for_gui) {
     initted_for_gui = true;
 #ifdef IS_OSX
     ProcessSerialNumber psn;
-    
+
     GetCurrentProcess(&psn);
     CPSEnableForegroundOperation(&psn);
     SetFrontProcess(&psn);
@@ -94,7 +92,8 @@ init_app_for_gui() {
   */
 }
 
-// klunky interface since we cant pass array from python->C++ to use verify_window_sizes directly
+// klunky interface since we cant pass array from python->C++ to use
+// verify_window_sizes directly
 static int num_fullscreen_testsizes = 0;
 #define MAX_FULLSCREEN_TESTS 10
 static int fullscreen_testsizes[MAX_FULLSCREEN_TESTS * 2];
@@ -145,83 +144,82 @@ allow_accessibility_shortcut_keys(bool allowKeys) {
 #ifdef WIN32
   if( allowKeys )
   {
-    // Restore StickyKeys/etc to original state and enable Windows key      
+    // Restore StickyKeysetc to original state and enable Windows key
     SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &g_StartupStickyKeys, 0);
     SystemParametersInfo(SPI_SETTOGGLEKEYS, sizeof(TOGGLEKEYS), &g_StartupToggleKeys, 0);
     SystemParametersInfo(SPI_SETFILTERKEYS, sizeof(FILTERKEYS), &g_StartupFilterKeys, 0);
   } else {
-    // Disable StickyKeys/etc shortcuts but if the accessibility feature is on, 
+    // Disable StickyKeysetc shortcuts but if the accessibility feature is on,
     // then leave the settings alone as its probably being usefully used
- 
+
     STICKYKEYS skOff = g_StartupStickyKeys;
     if( (skOff.dwFlags & SKF_STICKYKEYSON) == 0 )
     {
       // Disable the hotkey and the confirmation
       skOff.dwFlags &= ~SKF_HOTKEYACTIVE;
       skOff.dwFlags &= ~SKF_CONFIRMHOTKEY;
- 
+
       SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &skOff, 0);
     }
- 
+
     TOGGLEKEYS tkOff = g_StartupToggleKeys;
     if( (tkOff.dwFlags & TKF_TOGGLEKEYSON) == 0 )
     {
       // Disable the hotkey and the confirmation
       tkOff.dwFlags &= ~TKF_HOTKEYACTIVE;
       tkOff.dwFlags &= ~TKF_CONFIRMHOTKEY;
- 
+
       SystemParametersInfo(SPI_SETTOGGLEKEYS, sizeof(TOGGLEKEYS), &tkOff, 0);
     }
- 
+
     FILTERKEYS fkOff = g_StartupFilterKeys;
     if( (fkOff.dwFlags & FKF_FILTERKEYSON) == 0 )
     {
       // Disable the hotkey and the confirmation
       fkOff.dwFlags &= ~FKF_HOTKEYACTIVE;
       fkOff.dwFlags &= ~FKF_CONFIRMHOTKEY;
- 
+
       SystemParametersInfo(SPI_SETFILTERKEYS, sizeof(FILTERKEYS), &fkOff, 0);
     }
-  }  
-#endif  
+  }
+#endif
 }
 
 #if 0
 int TempGridZoneManager::
-add_grid_zone(unsigned int x, 
-              unsigned int y, 
-              unsigned int width, 
-              unsigned int height, 
-              unsigned int zoneBase, 
+add_grid_zone(unsigned int x,
+              unsigned int y,
+              unsigned int width,
+              unsigned int height,
+              unsigned int zoneBase,
               unsigned int xZoneResolution,
               unsigned int yZoneResolution) {
-  // zoneBase is the first zone in the grid (e.g. the upper left)
-  // zoneResolution is the number of cells on each axsis.
-  // returns the next available zoneBase (i.e. zoneBase+xZoneResolution*yZoneResolution)
+  // zoneBase is the first zone in the grid (e.g.  the upper left)
+  // zoneResolution is the number of cells on each axsis.  returns the next
+  // available zoneBase (i.e.  zoneBase+xZoneResolution*yZoneResolution)
   cerr<<"adding grid zone with a zoneBase of "<<zoneBase<<" and a zoneResolution of "<<zoneResolution;
   _grids.append(TempGridZoneManager::GridZone(x, y, width, height, zoneBase, xZoneResolution, yZoneResolution));
   return zoneBase+xZoneResolution*yZoneResolution;
 }
 
 void TempGridZoneManager::GridZone
-GridZone(unsigned int x, 
-         unsigned int y, 
-         unsigned int width, 
-         unsigned int height, 
-         unsigned int zoneBase, 
+GridZone(unsigned int x,
+         unsigned int y,
+         unsigned int width,
+         unsigned int height,
+         unsigned int zoneBase,
          unsigned int xZoneResolution,
          unsigned int yZoneResolution) {
   _x=x;
   _y=y;
   _width=width;
-  _height=heigth; 
+  _height=heigth;
   _zoneBase=zoneBase;
   _xZoneResolution=xZoneResolution;
   _yZoneResolution=yZoneResolution;
-  
-  // The cellVis is the number of cells radius that can
-  // be seen, including the center cell.  So, for a 5 x 5
-  // visible area, the cellVis is 3.
+
+  // The cellVis is the number of cells radius that can be seen, including the
+  // center cell.  So, for a 5 x 5 visible area, the cellVis is 3.
   const float cellVis=3.0;
   unsigned int xMargine=(unsigned int)((float)width/(float)xZoneResolution*cellVis+0.5);
   unsigned int yMargine=(unsigned int)((float)height/(float)yZoneResolution*cellVis+0.5);
@@ -243,7 +241,7 @@ get_grids(int x, int y) {
 }
 
 void TempGridZoneManager::
-add_to_zone_list(const TempGridZoneManager::GridZone &gridZone, 
+add_to_zone_list(const TempGridZoneManager::GridZone &gridZone,
     unsigned int x,
     unsigned int y,
     TempGridZoneManager::ZoneSet &zoneSet) {
@@ -272,13 +270,10 @@ add_to_zone_list(const TempGridZoneManager::GridZone &gridZone,
 
 int TempGridZoneManager::
 get_zone_list(int x, int y, int resolution) {
-  // x is a float in the range 0.0 to 1.0
-  // y is a float in the range 0.0 to 1.0
-  // resolution is the number of cells on each axsis.
-  // returns a list of zone ids.
-  // 
-  // Create a box of cell numbers, while clipping
-  // to the edges of the set of cells.
+  // x is a float in the range 0.0 to 1.0 y is a float in the range 0.0 to 1.0
+  // resolution is the number of cells on each axsis.  returns a list of zone
+  // ids.  Create a box of cell numbers, while clipping to the edges of the
+  // set of cells.
   if (x < 0.0 || x > 1.0 || y < 0.0 || y > 1.0) {
     return 0;
   }
@@ -312,4 +307,3 @@ get_zone_list(int x, int y, int resolution) {
   return 5;
 }
 #endif
-

@@ -1,16 +1,15 @@
-// Filename: eggTextureCards.h
-// Created by:  drose (21Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggTextureCards.h
+ * @author drose
+ * @date 2001-02-21
+ */
 
 #ifndef EGGTEXTURECARDS_H
 #define EGGTEXTURECARDS_H
@@ -25,12 +24,11 @@
 class EggVertexPool;
 class EggVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTextureCards
-// Description : Generates an egg file featuring a number of polygons,
-//               one for each named texture.  This is a support
-//               program for getting textures through egg-palettize.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates an egg file featuring a number of polygons, one for each named
+ * texture.  This is a support program for getting textures through egg-
+ * palettize.
+ */
 class EggTextureCards : public EggWriter {
 public:
   EggTextureCards();
@@ -74,4 +72,3 @@ public:
 };
 
 #endif
-

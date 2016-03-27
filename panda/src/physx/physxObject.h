@@ -1,16 +1,15 @@
-// Filename: physxObject.h
-// Created by:  enn0x (11Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxObject.h
+ * @author enn0x
+ * @date 2009-09-11
+ */
 
 #ifndef PHYSXOBJECT_H
 #define PHYSXOBJECT_H
@@ -23,10 +22,9 @@
 #include <Python.h>
 #endif // HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxObject
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDAPHYSX PhysxObject : public TypedReferenceCount {
 
 #ifdef HAVE_PYTHON
@@ -61,14 +59,13 @@ private:
   PythonTagData _python_tag_data;
 #endif // HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "PhysxObject", 
+    register_type(_type_handle, "PhysxObject",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

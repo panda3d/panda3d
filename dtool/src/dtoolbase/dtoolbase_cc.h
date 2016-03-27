@@ -1,22 +1,21 @@
-// Filename: dtoolbase_cc.h
-// Created by:  drose (13Sep00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dtoolbase_cc.h
+ * @author drose
+ * @date 2000-09-13
+ */
 
 #ifndef DTOOLBASE_CC_H
 #define DTOOLBASE_CC_H
 
-// This file should never be included directly; it's intended to be
-// included only from dtoolbase.h.  Include that file instead.
+// This file should never be included directly; it's intended to be included
+// only from dtoolbase.h.  Include that file instead.
 
 #ifdef __cplusplus
 
@@ -36,17 +35,16 @@ using namespace std;
 #define TYPENAME typename
 #define CONSTEXPR constexpr
 #define NOEXCEPT noexcept
-#define FINAL
-#define OVERRIDE
+#define FINAL final
+#define OVERRIDE override
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
-// We define the macro PUBLISHED to mark C++ methods that are to be
-// published via interrogate to scripting languages.  However, if
-// we're not running the interrogate pass (CPPPARSER isn't defined),
-// this maps to public.
+// We define the macro PUBLISHED to mark C++ methods that are to be published
+// via interrogate to scripting languages.  However, if we're not running the
+// interrogate pass (CPPPARSER isn't defined), this maps to public.
 #define PUBLISHED __published
 
 typedef int ios_openmode;
@@ -125,9 +123,9 @@ typedef ios::seekdir ios_seekdir;
 #endif
 
 #ifdef FORCE_INLINING
-// If FORCE_INLINING is defined, we use the keyword __forceinline,
-// which tells MS VC++ to override its internal benefit heuristic
-// and inline the fn if it is technically possible to do so.
+// If FORCE_INLINING is defined, we use the keyword __forceinline, which tells
+// MS VC++ to override its internal benefit heuristic and inline the fn if it
+// is technically possible to do so.
 #define INLINE ALWAYS_INLINE
 #else
 #define INLINE inline
@@ -154,8 +152,8 @@ typedef ios::seekdir ios_seekdir;
 #  endif
 #elif defined(__GNUC__) && (__cplusplus >= 201103L) // GCC
 
-// GCC defines several macros which we can query.
-// List of all supported builtin macros: https://gcc.gnu.org/projects/cxx0x.html
+// GCC defines several macros which we can query.  List of all supported
+// builtin macros: https:gcc.gnu.orgprojectscxx0x.html
 #  if __cpp_constexpr >= 200704
 #    define CONSTEXPR constexpr
 #  endif
@@ -216,38 +214,34 @@ typedef ios::seekdir ios_seekdir;
 
 
 #if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
-// This macro must be used to export an instantiated template class
-// from a DLL.  If the template class name itself contains commas, it
-// may be necessary to first define a macro for the class name, to
-// allow proper macro parameter passing.
+// This macro must be used to export an instantiated template class from a
+// DLL.  If the template class name itself contains commas, it may be
+// necessary to first define a macro for the class name, to allow proper macro
+// parameter passing.
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname) \
   exptp template class expcl classname;
 #else
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 #endif
 
-// We define the macro PUBLISHED to mark C++ methods that are to be
-// published via interrogate to scripting languages.  However, if
-// we're not running the interrogate pass (CPPPARSER isn't defined),
-// this maps to public.
+// We define the macro PUBLISHED to mark C++ methods that are to be published
+// via interrogate to scripting languages.  However, if we're not running the
+// interrogate pass (CPPPARSER isn't defined), this maps to public.
 #define PUBLISHED public
 
 #endif  // CPPPARSER
 
-// The ReferenceCount class is defined later, within Panda, but we
-// need to pass around forward references to it here at the very low
-// level.
+// The ReferenceCount class is defined later, within Panda, but we need to
+// pass around forward references to it here at the very low level.
 class ReferenceCount;
 
-// We need a pointer to a global MemoryHook object, to manage all
-// malloc and free requests from Panda.  See the comments in
-// MemoryHook itself.
+// We need a pointer to a global MemoryHook object, to manage all malloc and
+// free requests from Panda.  See the comments in MemoryHook itself.
 class MemoryHook;
 EXPCL_DTOOL extern MemoryHook *memory_hook;
 EXPCL_DTOOL void init_memory_hook();
 
-// Now redefine some handy macros to hook into the above MemoryHook
-// object.
+// Now redefine some handy macros to hook into the above MemoryHook object.
 #ifndef USE_MEMORY_NOWRAPPERS
 #define PANDA_MALLOC_SINGLE(size) (memory_hook->heap_alloc_single(size))
 #define PANDA_FREE_SINGLE(ptr) memory_hook->heap_free_single(ptr)
@@ -263,8 +257,8 @@ EXPCL_DTOOL void init_memory_hook();
 #endif  // USE_MEMORY_NOWRAPPERS
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-// We need another forward-reference function to allow low-level code
-// to cooperatively yield the timeslice, in SIMPLE_THREADS mode.
+// We need another forward-reference function to allow low-level code to
+// cooperatively yield the timeslice, in SIMPLE_THREADS mode.
 extern EXPCL_DTOOL void (*global_thread_yield)();
 extern EXPCL_DTOOL void (*global_thread_consider_yield)();
 

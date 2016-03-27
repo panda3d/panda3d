@@ -1,21 +1,19 @@
-// Filename: lvector4_src.h
-// Created by:  drose (08Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lvector4_src.h
+ * @author drose
+ * @date 2000-03-08
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVector4
-// Description : This is a four-component vector distance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a four-component vector distance.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4)() DEFAULT_CTOR;
@@ -32,6 +30,12 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LVector4) &unit_y();
   INLINE_LINMATH static const FLOATNAME(LVector4) &unit_z();
   INLINE_LINMATH static const FLOATNAME(LVector4) &unit_w();
+
+  INLINE_LINMATH FLOATNAME(LVector3) get_xyz() const;
+  INLINE_LINMATH FLOATNAME(LVector2) get_xy() const;
+
+  MAKE_PROPERTY(xyz, get_xyz);
+  MAKE_PROPERTY(xy, get_xy);
 
   INLINE_LINMATH FLOATNAME(LVector4) operator - () const;
 

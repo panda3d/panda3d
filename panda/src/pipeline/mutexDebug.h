@@ -1,16 +1,15 @@
-// Filename: mutexDebug.h
-// Created by:  drose (13Feb06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mutexDebug.h
+ * @author drose
+ * @date 2006-02-13
+ */
 
 #ifndef MUTEXDEBUG_H
 #define MUTEXDEBUG_H
@@ -24,12 +23,10 @@
 
 #ifdef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexDebug
-// Description : This class implements a standard mutex the hard way,
-//               by doing everything by hand.  This does allow fancy
-//               things like deadlock detection, however.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements a standard mutex the hard way, by doing everything by
+ * hand.  This does allow fancy things like deadlock detection, however.
+ */
 class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
   MutexDebug(const string &name, bool allow_recursion, bool lightweight);

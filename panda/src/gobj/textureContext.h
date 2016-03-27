@@ -1,16 +1,15 @@
-// Filename: textureContext.h
-// Created by:  drose (07Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureContext.h
+ * @author drose
+ * @date 1999-10-07
+ */
 
 #ifndef TEXTURECONTEXT_H
 #define TEXTURECONTEXT_H
@@ -22,19 +21,15 @@
 #include "preparedGraphicsObjects.h"
 #include "adaptiveLru.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureContext
-// Description : This is a special class object that holds all the
-//               information returned by a particular GSG to indicate
-//               the texture's internal context identifier.
-//
-//               Textures typically have an immediate-mode and a
-//               retained-mode operation.  When using textures in
-//               retained-mode (in response to Texture::prepare()),
-//               the GSG will create some internal handle for the
-//               texture and store it here.  The texture stores all of
-//               these handles internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special class object that holds all the information returned by a
+ * particular GSG to indicate the texture's internal context identifier.
+ *
+ * Textures typically have an immediate-mode and a retained-mode operation.
+ * When using textures in retained-mode (in response to Texture::prepare()),
+ * the GSG will create some internal handle for the texture and store it here.
+ * The texture stores all of these handles internally.
+ */
 class EXPCL_PANDA_GOBJ TextureContext : public BufferContext, public AdaptiveLruPage {
 public:
   INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);
@@ -63,15 +58,14 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
 private:
-  // This cannot be a PT(Texture), because the texture and the GSG
-  // both own their TextureContexts!  That would create a circular
-  // reference count.
+  // This cannot be a PT(Texture), because the texture and the GSG both own
+  // their TextureContexts!  That would create a circular reference count.
   Texture *_texture;
   int _view;
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
   UpdateSeq _simple_image_modified;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -100,4 +94,3 @@ inline ostream &operator << (ostream &out, const TextureContext &context) {
 #include "textureContext.I"
 
 #endif
-

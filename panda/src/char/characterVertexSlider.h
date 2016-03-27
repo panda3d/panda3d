@@ -1,16 +1,15 @@
-// Filename: characterVertexSlider.h
-// Created by:  drose (28Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file characterVertexSlider.h
+ * @author drose
+ * @date 2005-03-28
+ */
 
 #ifndef CHARACTERVERTEXSLIDER_H
 #define CHARACTERVERTEXSLIDER_H
@@ -20,12 +19,10 @@
 #include "vertexSlider.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CharacterVertexSlider
-// Description : This is a specialization on VertexSlider that
-//               returns the slider value associated with a particular
-//               CharacterSlider object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on VertexSlider that returns the slider value
+ * associated with a particular CharacterSlider object.
+ */
 class EXPCL_PANDA_CHAR CharacterVertexSlider : public VertexSlider {
 private:
   CharacterVertexSlider();

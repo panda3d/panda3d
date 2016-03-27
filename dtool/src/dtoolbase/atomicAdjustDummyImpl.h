@@ -1,16 +1,15 @@
-// Filename: atomicAdjustDummyImpl.h
-// Created by:  drose (09Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file atomicAdjustDummyImpl.h
+ * @author drose
+ * @date 2002-08-09
+ */
 
 #ifndef ATOMICADJUSTDUMMYIMPL_H
 #define ATOMICADJUSTDUMMYIMPL_H
@@ -20,12 +19,11 @@
 
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustDummyImpl
-// Description : A trivial implementation for atomic adjustments for
-//               systems that don't require multiprogramming, and
-//               therefore don't require special atomic operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * A trivial implementation for atomic adjustments for systems that don't
+ * require multiprogramming, and therefore don't require special atomic
+ * operations.
+ */
 class EXPCL_DTOOL AtomicAdjustDummyImpl {
 public:
   typedef long Integer;

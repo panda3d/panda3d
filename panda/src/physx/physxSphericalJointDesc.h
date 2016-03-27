@@ -1,16 +1,15 @@
-// Filename: physxSphericalJointDesc.h
-// Created by:  enn0x (28Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxSphericalJointDesc.h
+ * @author enn0x
+ * @date 2009-09-28
+ */
 
 #ifndef PHYSXSPHERICALJOINTDESC_H
 #define PHYSXSPHERICALJOINTDESC_H
@@ -23,11 +22,9 @@
 class PhysxSpringDesc;
 class PhysxJointLimitDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphericalJointDesc
-// Description : Descriptor class for distance joint. See
-//               PhysxSphericalJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for distance joint.  See PhysxSphericalJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxSphericalJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

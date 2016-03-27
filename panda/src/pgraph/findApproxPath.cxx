@@ -1,16 +1,15 @@
-// Filename: findApproxPath.cxx
-// Created by:  drose (13Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file findApproxPath.cxx
+ * @author drose
+ * @date 2002-03-13
+ */
 
 #include "findApproxPath.h"
 #include "config_pgraph.h"
@@ -19,12 +18,9 @@
 #include "pandaNode.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::Component::matches
-//       Access: Public
-//  Description: Returns true if the indicated node matches this
-//               component, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated node matches this component, false otherwise.
+ */
 bool FindApproxPath::Component::
 matches(PandaNode *node) const {
   string node_name;
@@ -47,8 +43,8 @@ matches(PandaNode *node) const {
     return (node->is_exact_type(_type_handle));
 
   case CT_match_inexact_type:
-    // Match the node's type inexactly: it's a match if the node
-    // is the type, or is derived from the type.
+    // Match the node's type inexactly: it's a match if the node is the type,
+    // or is derived from the type.
     return (node->is_of_type(_type_handle));
 
   case CT_match_tag:
@@ -77,11 +73,9 @@ matches(PandaNode *node) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::Component::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FindApproxPath::Component::
 output(ostream &out) const {
   out << _type;
@@ -111,14 +105,11 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_string
-//       Access: Public
-//  Description: Adds a sequence of components separated by slashes,
-//               followed optionally by a semicolon and a sequence of
-//               control flags, to the path sequence.  Returns true if
-//               successful, false if the string contained an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a sequence of components separated by slashes, followed optionally by
+ * a semicolon and a sequence of control flags, to the path sequence.  Returns
+ * true if successful, false if the string contained an error.
+ */
 bool FindApproxPath::
 add_string(const string &str_path) {
   // First, chop the string up by slashes into its components.
@@ -134,10 +125,10 @@ add_string(const string &str_path) {
 
   size_t semicolon = str_path.rfind(';');
 
-  // We want to find the *last* semicolon at start or later, if there
-  // happens to be more than one.  rfind will find the rightmost
-  // semicolon in the entire string; if this is less than start, there
-  // is no semicolon right of start.
+  // We want to find the *last* semicolon at start or later, if there happens
+  // to be more than one.  rfind will find the rightmost semicolon in the
+  // entire string; if this is less than start, there is no semicolon right of
+  // start.
   if (semicolon < start) {
     semicolon = string::npos;
   }
@@ -161,14 +152,11 @@ add_string(const string &str_path) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_flags
-//       Access: Public
-//  Description: Adds a sequence of control flags.  This will be a
-//               sequence of letters preceded by either '+' or '-',
-//               with no intervening punctuation.  Returns true if
-//               successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a sequence of control flags.  This will be a sequence of letters
+ * preceded by either '+' or '-', with no intervening punctuation.  Returns
+ * true if successful, false otherwise.
+ */
 bool FindApproxPath::
 add_flags(const string &str_flags) {
   string::const_iterator pi = str_flags.begin();
@@ -220,14 +208,11 @@ add_flags(const string &str_flags) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_component
-//       Access: Public
-//  Description: Adds a single component to the path sequence, defined
-//               by a string as might appear between slashes in the
-//               path string.  Returns true if successful, false if
-//               the string component was in some way invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single component to the path sequence, defined by a string as might
+ * appear between slashes in the path string.  Returns true if successful,
+ * false if the string component was in some way invalid.
+ */
 bool FindApproxPath::
 add_component(string str_component) {
   int flags = 0;
@@ -293,12 +278,9 @@ add_component(string str_component) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_name
-//       Access: Public
-//  Description: Adds a component that must match the name of a node
-//               exactly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that must match the name of a node exactly.
+ */
 void FindApproxPath::
 add_match_name(const string &name, int flags) {
   Component comp;
@@ -308,13 +290,10 @@ add_match_name(const string &name, int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_name_glob
-//       Access: Public
-//  Description: Adds a component that must match the name of a node
-//               using standard shell globbing rules, with wildcard
-//               characters accepted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that must match the name of a node using standard shell
+ * globbing rules, with wildcard characters accepted.
+ */
 void FindApproxPath::
 add_match_name_glob(const string &name, int flags) {
   Component comp;
@@ -324,20 +303,18 @@ add_match_name_glob(const string &name, int flags) {
   comp._glob.set_case_sensitive(!_case_insensitive);
   comp._flags = flags;
   if (!comp._glob.has_glob_characters()) {
-    // The glob pattern contains no special characters; make it a
-    // literal match for efficiency.
+    // The glob pattern contains no special characters; make it a literal
+    // match for efficiency.
     add_match_name(name, flags);
   } else {
     _path.push_back(comp);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_exact_type
-//       Access: Public
-//  Description: Adds a component that must match the type of a node
-//               exactly, with no derived types matching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that must match the type of a node exactly, with no
+ * derived types matching.
+ */
 void FindApproxPath::
 add_match_exact_type(TypeHandle type, int flags) {
   Component comp;
@@ -347,12 +324,10 @@ add_match_exact_type(TypeHandle type, int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_inexact_type
-//       Access: Public
-//  Description: Adds a component that must match the type of a node
-//               or be a base class of the node's type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that must match the type of a node or be a base class of
+ * the node's type.
+ */
 void FindApproxPath::
 add_match_inexact_type(TypeHandle type, int flags) {
   Component comp;
@@ -362,13 +337,10 @@ add_match_inexact_type(TypeHandle type, int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_tag
-//       Access: Public
-//  Description: Adds a component that will match a node that has a
-//               tag with the indicated key, no matter what the value
-//               is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that will match a node that has a tag with the indicated
+ * key, no matter what the value is.
+ */
 void FindApproxPath::
 add_match_tag(const string &name, int flags) {
   Component comp;
@@ -378,14 +350,11 @@ add_match_tag(const string &name, int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_tag_value
-//       Access: Public
-//  Description: Adds a component that will match a node that has a
-//               tag with the indicated key.  The value may be "*" to
-//               match any value, or a particular glob pattern to
-//               match only those nodes with the indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that will match a node that has a tag with the indicated
+ * key.  The value may be "*" to match any value, or a particular glob pattern
+ * to match only those nodes with the indicated value.
+ */
 void FindApproxPath::
 add_match_tag_value(const string &name, const string &value, int flags) {
   Component comp;
@@ -396,12 +365,9 @@ add_match_tag_value(const string &name, const string &value, int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_one
-//       Access: Public
-//  Description: Adds a component that will match any node (but not a
-//               chain of many nodes).
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that will match any node (but not a chain of many nodes).
+ */
 void FindApproxPath::
 add_match_one(int flags) {
   Component comp;
@@ -410,12 +376,9 @@ add_match_one(int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_many
-//       Access: Public
-//  Description: Adds a component that will match a chain of zero or
-//               more consecutive nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that will match a chain of zero or more consecutive nodes.
+ */
 void FindApproxPath::
 add_match_many(int flags) {
   Component comp;
@@ -424,12 +387,9 @@ add_match_many(int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::add_match_pointer
-//       Access: Public
-//  Description: Adds a component that must match a particular node
-//               exactly, by pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a component that must match a particular node exactly, by pointer.
+ */
 void FindApproxPath::
 add_match_pointer(PandaNode *pointer, int flags) {
   Component comp;
@@ -439,11 +399,9 @@ add_match_pointer(PandaNode *pointer, int flags) {
   _path.push_back(comp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindApproxPath::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FindApproxPath::
 output(ostream &out) const {
   out << "(";
@@ -495,4 +453,3 @@ operator << (ostream &out, FindApproxPath::ComponentType type) {
 
   return out << "**invalid**";
 };
-

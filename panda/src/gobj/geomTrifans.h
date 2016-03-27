@@ -1,16 +1,15 @@
-// Filename: geomTrifans.h
-// Created by:  drose (08Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomTrifans.h
+ * @author drose
+ * @date 2005-03-08
+ */
 
 #ifndef GEOMTRIFANS_H
 #define GEOMTRIFANS_H
@@ -18,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTrifans
-// Description : Defines a series of triangle fans.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of triangle fans.
+ */
 class EXPCL_PANDA_GOBJ GeomTrifans : public GeomPrimitive {
 PUBLISHED:
   GeomTrifans(UsageHint usage_hint);

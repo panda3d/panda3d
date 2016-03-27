@@ -1,24 +1,20 @@
-// Filename: bulletClosestHitSweepResult.I
-// Created by:  enn0x (01Dec10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletClosestHitSweepResult.I
+ * @author enn0x
+ * @date 2010-12-01
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletClosestSweepRayResult::empty
-//       Access: Public
-//  Description: Named constructor intended to be used for asserts
-//               with have to return a concrete value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Named constructor intended to be used for asserts with have to return a
+ * concrete value.
+ */
 INLINE BulletClosestHitSweepResult BulletClosestHitSweepResult::
 empty() {
 
@@ -27,4 +23,3 @@ empty() {
 
   return BulletClosestHitSweepResult(from, to, CollideMask::all_on());
 }
-

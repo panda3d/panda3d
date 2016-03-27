@@ -1,16 +1,15 @@
-// Filename: p3dX11SplashWindow.cxx
-// Created by:  pro-rsoft (08Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file p3dX11SplashWindow.cxx
+ * @author rdb
+ * @date 2009-07-08
+ */
 
 #include "p3dX11SplashWindow.h"
 
@@ -25,11 +24,9 @@
 #include <signal.h>
 #include <stdint.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DX11SplashWindow::
 P3DX11SplashWindow(P3DInstance *inst, bool make_visible) :
   P3DSplashWindow(inst, make_visible)
@@ -61,23 +58,18 @@ P3DX11SplashWindow(P3DInstance *inst, bool make_visible) :
   _received_data = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 P3DX11SplashWindow::
 ~P3DX11SplashWindow() {
   stop_subprocess();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::set_wparams
-//       Access: Public, Virtual
-//  Description: Changes the window parameters, e.g. to resize or
-//               reposition the window; or sets the parameters for the
-//               first time, creating the initial window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the window parameters, e.g.  to resize or reposition the window; or
+ * sets the parameters for the first time, creating the initial window.
+ */
 void P3DX11SplashWindow::
 set_wparams(const P3DWindowParams &wparams) {
   P3DSplashWindow::set_wparams(wparams);
@@ -87,13 +79,10 @@ set_wparams(const P3DWindowParams &wparams) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::set_visible
-//       Access: Public, Virtual
-//  Description: Makes the splash window visible or invisible, so as
-//               not to compete with the embedded Panda window in the
-//               same space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the splash window visible or invisible, so as not to compete with the
+ * embedded Panda window in the same space.
+ */
 void P3DX11SplashWindow::
 set_visible(bool visible) {
   P3DSplashWindow::set_visible(visible);
@@ -106,12 +95,10 @@ set_visible(bool visible) {
   write_xml(_pipe_write, &doc, nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::set_image_filename
-//       Access: Public, Virtual
-//  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of a JPEG image file that is displayed in the center of
+ * the splash window.
+ */
 void P3DX11SplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
   nout << "image_filename = " << image_filename << "\n";
@@ -130,12 +117,9 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
   check_stopped();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::set_install_label
-//       Access: Public, Virtual
-//  Description: Specifies the text that is displayed above the
-//               install progress bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the text that is displayed above the install progress bar.
+ */
 void P3DX11SplashWindow::
 set_install_label(const string &install_label) {
   if (_subprocess_pid == -1) {
@@ -152,11 +136,9 @@ set_install_label(const string &install_label) {
   check_stopped();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::set_install_progress
-//       Access: Public, Virtual
-//  Description: Moves the install progress bar from 0.0 to 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the install progress bar from 0.0 to 1.0.
+ */
 void P3DX11SplashWindow::
 set_install_progress(double install_progress,
                      bool is_progress_known, size_t received_data) {
@@ -176,15 +158,12 @@ set_install_progress(double install_progress,
   check_stopped();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::set_button_active
-//       Access: Public, Virtual
-//  Description: Sets whether the button should be visible and active
-//               (true) or invisible and inactive (false).  If active,
-//               the button image will be displayed in the window, and
-//               a click event will be generated when the user clicks
-//               the button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the button should be visible and active (true) or invisible
+ * and inactive (false).  If active, the button image will be displayed in the
+ * window, and a click event will be generated when the user clicks the
+ * button.
+ */
 void P3DX11SplashWindow::
 set_button_active(bool flag) {
   if (_subprocess_pid == -1) {
@@ -201,48 +180,38 @@ set_button_active(bool flag) {
   check_stopped();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::button_click_detected
-//       Access: Protected, Virtual
-//  Description: Called when a button click by the user is detected in
-//               set_mouse_data(), this method simply turns around and
-//               notifies the instance.  It's a virtual method to give
-//               subclasses a chance to redirect this message to the
-//               main thread or process, as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a button click by the user is detected in set_mouse_data(),
+ * this method simply turns around and notifies the instance.  It's a virtual
+ * method to give subclasses a chance to redirect this message to the main
+ * thread or process, as necessary.
+ */
 void P3DX11SplashWindow::
 button_click_detected() {
-  // This method is called in the child process, and must relay
-  // the information to the parent process.
+  // This method is called in the child process, and must relay the
+  // information to the parent process.
   TiXmlDocument doc;
   TiXmlElement *xcommand = new TiXmlElement("click");
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::set_bstate
-//       Access: Protected, Virtual
-//  Description: Changes the button state as the mouse interacts with
-//               it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the button state as the mouse interacts with it.
+ */
 void P3DX11SplashWindow::
 set_bstate(ButtonState bstate) {
   if (_bstate != bstate) {
-    // When the button state changes, we need to remake the composite
-    // image.
+    // When the button state changes, we need to remake the composite image.
     _needs_new_composite = true;
     P3DSplashWindow::set_bstate(bstate);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::start_subprocess
-//       Access: Private
-//  Description: Spawns the subprocess that runs the window.  We have
-//               to use a subprocess instead of just a sub-thread, to
-//               protect X11 against mutual access.
-////////////////////////////////////////////////////////////////////
+/**
+ * Spawns the subprocess that runs the window.  We have to use a subprocess
+ * instead of just a sub-thread, to protect X11 against mutual access.
+ */
 void P3DX11SplashWindow::
 start_subprocess() {
   assert(_subprocess_pid == -1);
@@ -292,11 +261,9 @@ start_subprocess() {
   spawn_read_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::stop_subprocess
-//       Access: Private
-//  Description: Terminates the subprocess.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates the subprocess.
+ */
 void P3DX11SplashWindow::
 stop_subprocess() {
   if (_subprocess_pid == -1) {
@@ -316,8 +283,7 @@ stop_subprocess() {
 
   static const int max_wait_ms = 2000;
 
-  // Wait for a certain amount of time for the process to stop by
-  // itself.
+  // Wait for a certain amount of time for the process to stop by itself.
   struct timeval start;
   gettimeofday(&start, NULL);
   int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
@@ -365,12 +331,10 @@ stop_subprocess() {
   join_read_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::check_stopped
-//       Access: Private
-//  Description: Shuts down the instance if the window is closed
-//               prematurely (for instance, due to user action).
-////////////////////////////////////////////////////////////////////
+/**
+ * Shuts down the instance if the window is closed prematurely (for instance,
+ * due to user action).
+ */
 void P3DX11SplashWindow::
 check_stopped() {
   if (_subprocess_pid == -1) {
@@ -411,25 +375,20 @@ check_stopped() {
   _inst->request_stop_main_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::spawn_read_thread
-//       Access: Private
-//  Description: Starts the read thread.  We need this thread to
-//               listen for feedback from the subprocess.  (At the
-//               moment, the only kind of feedback we might receive is
-//               whether the button has been clicked.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the read thread.  We need this thread to listen for feedback from
+ * the subprocess.  (At the moment, the only kind of feedback we might receive
+ * is whether the button has been clicked.)
+ */
 void P3DX11SplashWindow::
 spawn_read_thread() {
   SPAWN_THREAD(_read_thread, rt_thread_run, this);
   _started_read_thread = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::join_read_thread
-//       Access: Private
-//  Description: Waits for the read thread to stop.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for the read thread to stop.
+ */
 void P3DX11SplashWindow::
 join_read_thread() {
   if (!_started_read_thread) {
@@ -440,19 +399,16 @@ join_read_thread() {
   _started_read_thread = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::rt_thread_run
-//       Access: Private
-//  Description: The main function for the read thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main function for the read thread.
+ */
 void P3DX11SplashWindow::
 rt_thread_run() {
   while (true) {
     TiXmlDocument *doc = read_xml(_pipe_read, nout);
     if (doc == NULL) {
-      // Some error on reading.  The splash window must have gone
-      // away, e.g. because the user explicitly closed it; tell the
-      // instance to exit.
+      // Some error on reading.  The splash window must have gone away, e.g.
+      // because the user explicitly closed it; tell the instance to exit.
       _inst->request_stop_sub_thread();
       return;
     }
@@ -462,31 +418,25 @@ rt_thread_run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::rt_handle_request
-//       Access: Private
-//  Description: Processes a single request or notification received
-//               from an instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes a single request or notification received from an instance.
+ */
 void P3DX11SplashWindow::
 rt_handle_request(TiXmlDocument *doc) {
-  // Eh, don't even bother decoding the XML.  We know it can only be a
-  // click notification.
+  // Eh, don't even bother decoding the XML.  We know it can only be a click
+  // notification.
   delete doc;
 
   P3DSplashWindow::button_click_detected();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::subprocess_run
-//       Access: Private
-//  Description: The subprocess's main run method.
-////////////////////////////////////////////////////////////////////
+/**
+ * The subprocess's main run method.
+ */
 void P3DX11SplashWindow::
 subprocess_run() {
-  // Since we're now isolated in a subprocess, we can safely make all
-  // the X calls we like, and run independently of the browser
-  // process.
+  // Since we're now isolated in a subprocess, we can safely make all the X
+  // calls we like, and run independently of the browser process.
 
   make_window();
   setup_gc();
@@ -526,8 +476,8 @@ subprocess_run() {
 
           set_button_range(_button_ready_image);
 
-          // If the window changes size, we need to recompute the
-          // composed image.
+          // If the window changes size, we need to recompute the composed
+          // image.
           _needs_new_composite = true;
         }
         needs_redraw = true;
@@ -590,8 +540,8 @@ subprocess_run() {
       prev_received_data = _received_data;
 
       if (_progress_known && _install_progress == 0.0) {
-        // If the progress bar drops to zero, repaint the screen to
-        // take the progress bar away.
+        // If the progress bar drops to zero, repaint the screen to take the
+        // progress bar away.
         needs_redraw = true;
       }
     }
@@ -605,8 +555,8 @@ subprocess_run() {
       needs_redraw_progress = true;
     }
 
-    // Don't draw an install label or a progress bar unless we have
-    // some nonzero progress.
+    // Don't draw an install label or a progress bar unless we have some
+    // nonzero progress.
     if (!_progress_known || _install_progress != 0.0) {
       int bar_x, bar_y, bar_width, bar_height;
       get_bar_placement(bar_x, bar_y, bar_width, bar_height);
@@ -724,11 +674,9 @@ subprocess_run() {
   close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::receive_command
-//       Access: Private
-//  Description: Receives a command from the parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives a command from the parent.
+ */
 void P3DX11SplashWindow::
 receive_command() {
   TiXmlDocument *doc = read_xml(_pipe_read, nout);
@@ -822,11 +770,9 @@ receive_command() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::redraw
-//       Access: Private
-//  Description: Redraws the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Redraws the window.
+ */
 void P3DX11SplashWindow::
 redraw() {
   if (_composite_image == NULL) {
@@ -857,12 +803,9 @@ redraw() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::make_window
-//       Access: Private
-//  Description: Creates the window for displaying progress.  Runs
-//               within the sub-process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the window for displaying progress.  Runs within the sub-process.
+ */
 void P3DX11SplashWindow::
 make_window() {
   _win_width = 320;
@@ -874,17 +817,15 @@ make_window() {
 
   X11_Window parent = 0;
 
-  // Hum, if we use the display provided by the browser,
-  // it causes a crash in some browsers when you make an Xlib
-  // call with the plugin window minimized.
-  // So I kept XOpenDisplay until we have a better workaround.
+  // Hum, if we use the display provided by the browser, it causes a crash in
+  // some browsers when you make an Xlib call with the plugin window
+  // minimized.  So I kept XOpenDisplay until we have a better workaround.
 
-  //_display = (X11_Display*) _wparams.get_parent_window()._xdisplay;
-  //_own_display = false;
-  //if (_display == 0) {
+  // _display = (X11_Display*) _wparams.get_parent_window()._xdisplay;
+  // _own_display = false; if (_display == 0) {
     _display = XOpenDisplay(NULL);
     _own_display = true;
-  //}
+  // }
   assert(_display != NULL);
   _screen = DefaultScreen(_display);
 
@@ -952,13 +893,13 @@ make_window() {
     (_display, parent, x, y, _win_width, _win_height,
      0, depth, InputOutput, dvisual, attrib_mask, &wa);
 
-  // Now hint the window manager about the window origin and size.
-  // This is necessary because window managers are free to ignore
-  // the window origin specified in the XCreateWindow call.
+  // Now hint the window manager about the window origin and size.  This is
+  // necessary because window managers are free to ignore the window origin
+  // specified in the XCreateWindow call.
   XSizeHints *size_hints_p = XAllocSizeHints();
   if (_wparams.get_win_x() != -1 || _wparams.get_win_y() != -1) {
-    // If the user requested (-1, -1), the default position, we let
-    // the window manager choose a position by omitting the pos hint.
+    // If the user requested (-1, -1), the default position, we let the window
+    // manager choose a position by omitting the pos hint.
     size_hints_p->x = x;
     size_hints_p->y = y;
     size_hints_p->flags |= USPosition;
@@ -974,11 +915,9 @@ make_window() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::setup_gc
-//       Access: Private
-//  Description: Sets up the graphics context for drawing the text.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the graphics context for drawing the text.
+ */
 void P3DX11SplashWindow::
 setup_gc() {
   if (_graphics_context != None) {
@@ -993,7 +932,7 @@ setup_gc() {
   }
 
   // Determine the order at which to try the various weights.  From:
-  // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
+  // https:developer.mozilla.orgen-USdocsWebCSSfont-weight
   const char *const *try_weights;
   const int num_weights = 7;
 
@@ -1074,8 +1013,8 @@ setup_gc() {
   _graphics_context = XCreateGC(_display, _window,
     GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval);
 
-  // Also create a gc for filling in the interior of the progress bar
-  // in a pleasant blue color (or whatever color the user requested).
+  // Also create a gc for filling in the interior of the progress bar in a
+  // pleasant blue color (or whatever color the user requested).
   XColor bar;
   bar.red = _barcolor_r * 0x101;
   bar.green = _barcolor_g * 0x101;
@@ -1110,11 +1049,9 @@ setup_gc() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::close_window
-//       Access: Private
-//  Description: Closes the window created above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window created above.
+ */
 void P3DX11SplashWindow::
 close_window() {
   if (_composite_image != NULL) {
@@ -1170,15 +1107,12 @@ close_window() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::update_image
-//       Access: Private
-//  Description: Loads the splash image, converts to to an XImage,
-//               and stores it in _image.  Runs only in the
-//               child process.
-//
-//               If the image is changed, sets needs_redraw to true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the splash image, converts to to an XImage, and stores it in _image.
+ * Runs only in the child process.
+ *
+ * If the image is changed, sets needs_redraw to true.
+ */
 void P3DX11SplashWindow::
 update_image(X11ImageData &image) {
   if (!image._filename_changed) {
@@ -1196,13 +1130,10 @@ update_image(X11ImageData &image) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::compose_image
-//       Access: Private
-//  Description: Constructs the XImage to display onscreen.  It's a
-//               composition of the background image and/or one of the
-//               button images, scaled to fit the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs the XImage to display onscreen.  It's a composition of the
+ * background image and/or one of the button images, scaled to fit the window.
+ */
 void P3DX11SplashWindow::
 compose_image() {
   if (_composite_image != NULL) {
@@ -1245,13 +1176,12 @@ compose_image() {
     // We have no button image; image1 will serve as the result.
 
   } else {
-    // We do have a button image.  Compose the button image on top of
-    // the background image (or on top of a white image if we have no
-    // background).
+    // We do have a button image.  Compose the button image on top of the
+    // background image (or on top of a white image if we have no background).
 
-    // We compose them here on the client, because X11 doesn't
-    // natively provide an alpha-blending mechanism (at least, not
-    // without the XRender extension).
+    // We compose them here on the client, because X11 doesn't natively
+    // provide an alpha-blending mechanism (at least, not without the XRender
+    // extension).
     vector<unsigned char> image0;
     int image0_width, image0_height;
     compose_two_images(image0, image0_width, image0_height,
@@ -1289,13 +1219,10 @@ compose_image() {
   _composite_height = image1_height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::scale_image
-//       Access: Private
-//  Description: Scales the image into the window size, and expands it
-//               to four channels.  Returns true if the image is
-//               valid, false if it is empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Scales the image into the window size, and expands it to four channels.
+ * Returns true if the image is valid, false if it is empty.
+ */
 bool P3DX11SplashWindow::
 scale_image(vector<unsigned char> &image0, int &image0_width, int &image0_height,
             X11ImageData &image) {
@@ -1400,12 +1327,9 @@ scale_image(vector<unsigned char> &image0, int &image0_width, int &image0_height
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::compose_two_images
-//       Access: Private
-//  Description: Constructs into image0 the alpha-composite of image1
-//               beneath image2.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs into image0 the alpha-composite of image1 beneath image2.
+ */
 void P3DX11SplashWindow::
 compose_two_images(vector<unsigned char> &image0, int &image0_width, int &image0_height,
                    const vector<unsigned char> &image1, int image1_width, int image1_height,
@@ -1417,14 +1341,14 @@ compose_two_images(vector<unsigned char> &image0, int &image0_width, int &image0
   int new_row_stride = image0_width * 4;
   int new_data_length = image0_height * new_row_stride;
 
-  // Now copy in the first image.  If the first image exactly fills
-  // the output image, this is easy.
+  // Now copy in the first image.  If the first image exactly fills the output
+  // image, this is easy.
   if (image1_width == image0_width && image1_height == image0_height) {
     image0 = image1;
 
   } else {
-    // If the first image doesn't fill it, it's only a little bit more
-    // work.  Start by finding the top-left pixel.
+    // If the first image doesn't fill it, it's only a little bit more work.
+    // Start by finding the top-left pixel.
     int xo = (image0_width - image1_width) / 2;
     int yo = (image0_height - image1_height) / 2;
 

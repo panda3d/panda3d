@@ -1,16 +1,15 @@
-// Filename: webcamVideoV4L.cxx
-// Created by: rdb (11Jun2010)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file webcamVideoV4L.cxx
+ * @author rdb
+ * @date 2010-06-11
+ */
 
 #include "webcamVideoV4L.h"
 
@@ -25,11 +24,9 @@
 
 TypeHandle WebcamVideoV4L::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_options_for_size
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void WebcamVideoV4L::
 add_options_for_size(int fd, const string &dev, const char *name, unsigned width, unsigned height, unsigned pixelformat) {
   struct v4l2_frmivalenum frmivalenum;
@@ -75,12 +72,10 @@ add_options_for_size(int fd, const string &dev, const char *name, unsigned width
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_all_webcams_v4l
-//       Access: Public, Static
-//  Description: Finds all Video4Linux webcams and adds them to
-//               the global list _all_webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds all Video4Linux webcams and adds them to the global list
+ * _all_webcams.
+ */
 void find_all_webcams_v4l() {
   struct v4l2_capability cap2;
 
@@ -140,8 +135,8 @@ void find_all_webcams_v4l() {
 
               case V4L2_FRMSIZE_TYPE_CONTINUOUS:
                 {
-                  // Okay, er, we don't have a proper handling of this,
-                  // so let's add all powers of two in this range.
+                  // Okay, er, we don't have a proper handling of this, so
+                  // let's add all powers of two in this range.
 
                   __u32 width = Texture::up_to_power_2(frmsizeenum.stepwise.min_width);
                   for (; width <= frmsizeenum.stepwise.max_width; width *= 2) {
@@ -180,11 +175,9 @@ void find_all_webcams_v4l() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoV4L::open
-//       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this video, returning a MovieVideoCursor.
+ */
 PT(MovieVideoCursor) WebcamVideoV4L::
 open() {
   return new WebcamVideoCursorV4L(this);

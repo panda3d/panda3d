@@ -12,6 +12,7 @@ from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import messenger
 import types
 import random
+import importlib
 
 try:
     import signal
@@ -483,6 +484,9 @@ class TaskManager:
         """Starts the task manager running.  Does not return until an
         exception is encountered (including KeyboardInterrupt). """
 
+        if PandaSystem.getPlatform() == 'emscripten':
+            return
+
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         t = self.globalClock.getFrameTime()
@@ -567,13 +571,13 @@ class TaskManager:
 
         method = task.getFunction()
         if (type(method) == types.MethodType):
-            function = method.im_func
+            function = method.__func__
         else:
             function = method
         if (function == oldMethod):
             newMethod = types.MethodType(newFunction,
-                                         method.im_self,
-                                         method.im_class)
+                                         method.__self__,
+                                         method.__self__.__class__)
             task.setFunction(newMethod)
             # Found a match
             return 1
@@ -588,7 +592,6 @@ class TaskManager:
     def popupControls(self):
         # Don't use a regular import, to prevent ModuleFinder from picking
         # it up as a dependency when building a .p3d package.
-        import importlib
         TaskManagerPanel = importlib.import_module('direct.tkpanels.TaskManagerPanel')
         return TaskManagerPanel.TaskManagerPanel(self)
 
@@ -599,8 +602,8 @@ class TaskManager:
 
         # Defer this import until we need it: some Python
         # distributions don't provide the profile and pstats modules.
-        from direct.showbase.ProfileSession import ProfileSession
-        return ProfileSession(name)
+        PS = importlib.import_module('direct.showbase.ProfileSession')
+        return PS.ProfileSession(name)
 
     def profileFrames(self, num=None, session=None, callback=None):
         if num is None:
@@ -626,8 +629,8 @@ class TaskManager:
         self._profileFrames.set(profileFrames)
         if (not self._frameProfiler) and profileFrames:
             # import here due to import dependencies
-            from direct.task.FrameProfiler import FrameProfiler
-            self._frameProfiler = FrameProfiler()
+            FP = importlib.import_module('direct.task.FrameProfiler')
+            self._frameProfiler = FP.FrameProfiler()
 
     def getProfileTasks(self):
         return self._profileTasks.get()
@@ -639,8 +642,8 @@ class TaskManager:
         self._profileTasks.set(profileTasks)
         if (not self._taskProfiler) and profileTasks:
             # import here due to import dependencies
-            from direct.task.TaskProfiler import TaskProfiler
-            self._taskProfiler = TaskProfiler()
+            TP = importlib.import_module('direct.task.TaskProfiler')
+            self._taskProfiler = TP.TaskProfiler()
 
     def logTaskProfiles(self, name=None):
         if self._taskProfiler:
@@ -686,9 +689,9 @@ class TaskManager:
 
         # Defer this import until we need it: some Python
         # distributions don't provide the profile and pstats modules.
-        from direct.showbase.ProfileSession import ProfileSession
-        profileSession = ProfileSession('profiled-task-%s' % task.getName(),
-                                        Functor(profileInfo.taskFunc, *profileInfo.taskArgs))
+        PS = importlib.import_module('direct.showbase.ProfileSession')
+        profileSession = PS.ProfileSession('profiled-task-%s' % task.getName(),
+                                           Functor(profileInfo.taskFunc, *profileInfo.taskArgs))
         ret = profileSession.run()
 
         # set these values *after* profiling in case we're profiling the TaskProfiler

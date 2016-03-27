@@ -1,16 +1,15 @@
-// Filename: subStreamBuf.cxx
-// Created by:  drose (02Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file subStreamBuf.cxx
+ * @author drose
+ * @date 2002-08-02
+ */
 
 #include "subStreamBuf.h"
 #include "pnotify.h"
@@ -23,18 +22,16 @@ typedef int streamsize;
 
 static const size_t substream_buffer_size = 4096;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SubStreamBuf::
 SubStreamBuf() {
   _source = (IStreamWrapper *)NULL;
   _dest = (OStreamWrapper *)NULL;
 
-  // _start is the streampos of the first byte of the SubStream within
-  // its parent stream.
+  // _start is the streampos of the first byte of the SubStream within its
+  // parent stream.
   _start = 0;
 
   // _end is the streampos of the byte following the last byte of the
@@ -42,10 +39,10 @@ SubStreamBuf() {
   // continues to the end of the parent stream, wherever that is.
   _end = 0;
 
-  // _gpos is the streampos of the end of the read buffer (that is,
-  // egptr()) within the parent stream.  By comparing _gpos to gpos(),
-  // we can determine the actual current file position.  _ppos is the
-  // similar pos, for the write pointer.
+  // _gpos is the streampos of the end of the read buffer (that is, egptr())
+  // within the parent stream.  By comparing _gpos to gpos(), we can determine
+  // the actual current file position.  _ppos is the similar pos, for the
+  // write pointer.
   _gpos = 0;
   _ppos = 0;
 
@@ -58,8 +55,8 @@ SubStreamBuf() {
 
 #else
   allocate();
-  // Chop the buffer in half.  The bottom half goes to the get buffer;
-  // the top half goes to the put buffer.
+  // Chop the buffer in half.  The bottom half goes to the get buffer; the top
+  // half goes to the put buffer.
   char *b = base();
   char *t = ebuf();
   char *m = b + (t - b) / 2;
@@ -68,11 +65,9 @@ SubStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SubStreamBuf::
 ~SubStreamBuf() {
   close();
@@ -81,11 +76,9 @@ SubStreamBuf::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::open
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SubStreamBuf::
 open(IStreamWrapper *source, OStreamWrapper *dest, streampos start, streampos end, bool append) {
   _source = source;
@@ -97,11 +90,9 @@ open(IStreamWrapper *source, OStreamWrapper *dest, streampos start, streampos en
   _ppos = _start;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::close
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void SubStreamBuf::
 close() {
   // Make sure the write buffer is flushed.
@@ -119,11 +110,9 @@ close() {
   gbump(egptr() - gptr());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::seekoff
-//       Access: Public, Virtual
-//  Description: Implements seeking within the stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements seeking within the stream.
+ */
 streampos SubStreamBuf::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   streampos result = -1;
@@ -139,28 +128,27 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     nassertr(_gpos >= 0, EOF);
     streampos cur_pos = _gpos;
     streampos new_pos = cur_pos;
-    
+
     // Now adjust the data pointer appropriately.
     switch (dir) {
     case ios::beg:
       new_pos = (streampos)off + _start;
       break;
-      
+
     case ios::cur:
       new_pos = (streampos)((streamoff)cur_pos + off);
       break;
-      
+
     case ios::end:
       if (_end == (streampos)0) {
-        // If the end of the file is unspecified, we have to seek to
-        // find it.
+        // If the end of the file is unspecified, we have to seek to find it.
         new_pos = _source->seek_gpos_eof() + off;
-        
+
       } else {
         new_pos = _end + off;
       }
       break;
-      
+
     default:
       // Shouldn't get here.
       break;
@@ -186,23 +174,22 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     size_t n = pptr() - pbase();
     streampos cur_pos = _ppos + (streamoff)n;
     streampos new_pos = cur_pos;
-    
+
     // Now adjust the data pointer appropriately.
     switch (dir) {
     case ios::beg:
       new_pos = (streampos)off + _start;
       break;
-      
+
     case ios::cur:
       new_pos = (streampos)((streamoff)cur_pos + off);
       break;
-      
+
     case ios::end:
       if (_end == (streampos)0) {
-        // If the end of the file is unspecified, we have to seek to
-        // find it.
+        // If the end of the file is unspecified, we have to seek to find it.
         new_pos = _dest->seek_ppos_eof() + off;
-        
+
       } else {
         new_pos = _end + off;
       }
@@ -231,31 +218,24 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::seekpos
-//       Access: Public, Virtual
-//  Description: A variant on seekoff() to implement seeking within a
-//               stream.
-//
-//               The MSDN Library claims that it is only necessary to
-//               redefine seekoff(), and not seekpos() as well, as the
-//               default implementation of seekpos() is supposed to
-//               map to seekoff() exactly as I am doing here; but in
-//               fact it must do something else, because seeking
-//               didn't work on Windows until I redefined this
-//               function as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * A variant on seekoff() to implement seeking within a stream.
+ *
+ * The MSDN Library claims that it is only necessary to redefine seekoff(),
+ * and not seekpos() as well, as the default implementation of seekpos() is
+ * supposed to map to seekoff() exactly as I am doing here; but in fact it
+ * must do something else, because seeking didn't work on Windows until I
+ * redefined this function as well.
+ */
 streampos SubStreamBuf::
 seekpos(streampos pos, ios_openmode which) {
   return seekoff(pos, ios::beg, which);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::overflow
-//       Access: Protected, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int SubStreamBuf::
 overflow(int ch) {
   bool okflag = true;
@@ -271,9 +251,9 @@ overflow(int ch) {
       }
     }
 
-    nassertr(_dest != NULL, EOF); 
+    nassertr(_dest != NULL, EOF);
     bool fail = false;
-    if (_append) { 
+    if (_append) {
       _dest->seek_eof_write(pbase(), n, fail);
     } else {
       _dest->seek_write(_ppos, pbase(), n, fail);
@@ -302,27 +282,25 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::sync
-//       Access: Protected, Virtual
-//  Description: Called by the system iostream implementation to
-//               implement a flush operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system iostream implementation to implement a flush
+ * operation.
+ */
 int SubStreamBuf::
 sync() {
   size_t n = pptr() - pbase();
 
   if (n != 0) {
-    nassertr(_dest != NULL, EOF); 
+    nassertr(_dest != NULL, EOF);
     bool fail = false;
-    if (_append) { 
+    if (_append) {
       _dest->seek_eof_write(pbase(), n, fail);
     } else {
       _dest->seek_write(_ppos, pbase(), n, fail);
     }
     _ppos += n;
     pbump(-(int)n);
-    
+
     if (fail) {
       return EOF;
     }
@@ -331,12 +309,10 @@ sync() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int SubStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -356,14 +332,14 @@ underflow() {
         return EOF;
       }
 
-      // We won't be filling the entire buffer.  Fill in only at the
-      // end of the buffer.
+      // We won't be filling the entire buffer.  Fill in only at the end of
+      // the buffer.
       size_t delta = num_bytes - new_num_bytes;
       gbump(delta);
       num_bytes = new_num_bytes;
       nassertr(egptr() - gptr() == num_bytes, EOF);
     }
-      
+
     nassertr(_source != NULL, EOF);
     streamsize read_count;
     bool eof;

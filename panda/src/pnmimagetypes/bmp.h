@@ -1,8 +1,4 @@
-/* Filename: bmp.h
- * Created by:  
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,8 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file bmp.h
+ */
 
 #ifndef _BMP_H_
 #define _BMP_H_
@@ -32,6 +29,10 @@ static unsigned long BMPoffbits(int classv, unsigned long bitcount);
 
 #define C_WIN   1
 #define C_OS2   2
+#define C_WINV2 3
+#define C_WINV3 4
+#define C_WINV4 5
+#define C_WINV5 6
 
 static char     er_internal[] = "%s: internal error!";
 
@@ -41,8 +42,12 @@ BMPlenfileheader(int classv)
         switch (classv)
         {
         case C_WIN:
-                return 14;
         case C_OS2:
+        case C_WINV2:
+        case C_WINV3:
+        case C_WINV4:
+        case C_WINV5:
+                return 14;
                 return 14;
         default:
                 pm_error(er_internal, "BMPlenfileheader");
@@ -59,6 +64,14 @@ BMPleninfoheader(int classv)
                 return 40;
         case C_OS2:
                 return 12;
+        case C_WINV2:
+                return 52;
+        case C_WINV3:
+                return 56;
+        case C_WINV4:
+                return 108;
+        case C_WINV5:
+                return 124;
         default:
                 pm_error(er_internal, "BMPleninfoheader");
                 return 0;
@@ -106,17 +119,6 @@ static unsigned long
 BMPlenline(int classv, unsigned long bitcount, unsigned long x)
 {
         unsigned long   bitsperline;
-
-        switch (classv)
-        {
-        case C_WIN:
-                break;
-        case C_OS2:
-                break;
-        default:
-                pm_error(er_internal, "BMPlenline");
-                return 0;
-        }
 
         bitsperline = x * bitcount;
 
@@ -174,4 +176,3 @@ BMPlenfile(
 }
 
 #endif /* _BMP_H_ */
-

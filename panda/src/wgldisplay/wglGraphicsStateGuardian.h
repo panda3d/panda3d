@@ -1,16 +1,15 @@
-// Filename: wglGraphicsStateGuardian.h
-// Created by:  drose (27Jan03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wglGraphicsStateGuardian.h
+ * @author drose
+ * @date 2003-01-27
+ */
 
 #ifndef WGLGRAPHICSSTATEGUARDIAN_H
 #define WGLGRAPHICSSTATEGUARDIAN_H
@@ -19,15 +18,13 @@
 
 #include "glgsg.h"
 
-// This must be included after we have included glgsg.h (which
-// includes gl.h).
+// This must be included after we have included glgsg.h (which includes gl.h).
 #include "wglext.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian to
-//               add some wgl-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLGraphicsStateGuardian to add some wgl-specific
+ * information.
+ */
 class wglGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -64,16 +61,15 @@ private:
   void make_context(HDC hdc);
   HGLRC get_share_context() const;
   void redirect_share_pool(wglGraphicsStateGuardian *share_with);
-  
+
 
   bool make_twindow();
   void release_twindow();
 
   static void register_twindow_class();
 
-  // We have to save a pointer to the GSG we intend to share texture
-  // context with, since we don't create our own context in the
-  // constructor.
+  // We have to save a pointer to the GSG we intend to share texture context
+  // with, since we don't create our own context in the constructor.
   PT(wglGraphicsStateGuardian) _share_with;
 
   // These properties are for all wglGraphicsWindow that use this gsg.
@@ -81,8 +77,8 @@ private:
   bool _pfnum_supports_pbuffer;
   int _pfnum;
 
-  // This pfnum is the pfnum chosen via DescribePixelFormat.  It is
-  // used in case the one returned by wglChoosePixelFormatARB() fails.
+  // This pfnum is the pfnum chosen via DescribePixelFormat.  It is used in
+  // case the one returned by wglChoosePixelFormatARB() fails.
   FrameBufferProperties _pre_pfnum_properties;
   int _pre_pfnum;
 

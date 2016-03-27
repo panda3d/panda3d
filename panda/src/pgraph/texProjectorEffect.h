@@ -1,16 +1,15 @@
-// Filename: texProjectorEffect.h
-// Created by:  drose (25Jul04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texProjectorEffect.h
+ * @author drose
+ * @date 2004-07-25
+ */
 
 #ifndef TEXPROJECTOREFFECT_H
 #define TEXPROJECTOREFFECT_H
@@ -23,39 +22,30 @@
 
 class LensNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TexProjectorEffect
-// Description : This effect automatically applies a computed texture
-//               matrix to the specified texture stage, according to
-//               the relative position of two specified nodes.
-//
-//               The relative transform from the "from" node to the
-//               "to" node is applied directly to the texture matrix
-//               each frame.  If the "to" node happens to be a
-//               LensNode, its lens projection matrix is applied as
-//               well.
-//
-//               This can be used to apply a number of special
-//               effects.  Fundamentally, it may simply be used to
-//               provide a separate PandaNode that may be adjusted
-//               (e.g. via a LerpInterval) in order to easily apply a
-//               linear transformation to an object's texture
-//               coordinates (rather than having to explicitly call
-//               NodePath.set_tex_transform() each frame).
-//
-//               In a more sophisticated case, the TexProjectorEffect
-//               is particularly useful in conjunction with a
-//               TexGenAttrib that specifies a mode of
-//               M_world_position (which copies the world position of
-//               each vertex to the texture coordinates).  Then the
-//               TexProjector can be used to convert these world
-//               coordinates to the relative coordinates of a
-//               particular node, causing (for instance) a texture to
-//               appear to follow a node around as it moves through
-//               the world.  With a LensNode, you can project a
-//               texture onto the walls, for instance to apply a
-//               flashlight effect or an image-based shadow.
-////////////////////////////////////////////////////////////////////
+/**
+ * This effect automatically applies a computed texture matrix to the
+ * specified texture stage, according to the relative position of two
+ * specified nodes.
+ *
+ * The relative transform from the "from" node to the "to" node is applied
+ * directly to the texture matrix each frame.  If the "to" node happens to be
+ * a LensNode, its lens projection matrix is applied as well.
+ *
+ * This can be used to apply a number of special effects.  Fundamentally, it
+ * may simply be used to provide a separate PandaNode that may be adjusted
+ * (e.g.  via a LerpInterval) in order to easily apply a linear transformation
+ * to an object's texture coordinates (rather than having to explicitly call
+ * NodePath.set_tex_transform() each frame).
+ *
+ * In a more sophisticated case, the TexProjectorEffect is particularly useful
+ * in conjunction with a TexGenAttrib that specifies a mode of
+ * M_world_position (which copies the world position of each vertex to the
+ * texture coordinates).  Then the TexProjector can be used to convert these
+ * world coordinates to the relative coordinates of a particular node, causing
+ * (for instance) a texture to appear to follow a node around as it moves
+ * through the world.  With a LensNode, you can project a texture onto the
+ * walls, for instance to apply a flashlight effect or an image-based shadow.
+ */
 class EXPCL_PANDA_PGRAPH TexProjectorEffect : public RenderEffect {
 protected:
   INLINE TexProjectorEffect();
@@ -117,7 +107,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -139,4 +129,3 @@ private:
 #include "texProjectorEffect.I"
 
 #endif
-

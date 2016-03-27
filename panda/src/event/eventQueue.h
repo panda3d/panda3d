@@ -1,16 +1,15 @@
-// Filename: eventQueue.h
-// Created by:  drose (08Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eventQueue.h
+ * @author drose
+ * @date 1999-02-08
+ */
 
 #ifndef EVENTQUEUE_H
 #define EVENTQUEUE_H
@@ -22,13 +21,11 @@
 #include "lightMutex.h"
 #include "pdeque.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EventQueue
-// Description : A queue of pending events.  As events are thrown,
-//               they are added to this queue; eventually, they will
-//               be extracted out again by an EventHandler and
-//               processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A queue of pending events.  As events are thrown, they are added to this
+ * queue; eventually, they will be extracted out again by an EventHandler and
+ * processed.
+ */
 class EXPCL_PANDA_EVENT EventQueue {
 PUBLISHED:
   EventQueue();

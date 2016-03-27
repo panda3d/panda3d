@@ -1,26 +1,23 @@
-// Filename: rocketFileInterface.cxx
-// Created by:  rdb (03Nov11)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file rocketFileInterface.cxx
+ * @author rdb
+ * @date 2011-11-03
+ */
 
 #include "rocketFileInterface.h"
 #include "virtualFileSystem.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketFileInterface::Constructor
-//       Access: Public
-//  Description: Constructs a RocketFileInterface for the given
-//               VFS, or the default if NULL is given.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a RocketFileInterface for the given VFS, or the default if NULL
+ * is given.
+ */
 RocketFileInterface::
 RocketFileInterface(VirtualFileSystem *vfs) : _vfs(vfs) {
   if (_vfs == NULL) {
@@ -28,11 +25,9 @@ RocketFileInterface(VirtualFileSystem *vfs) : _vfs(vfs) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketFileInterface::Open
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Rocket::Core::FileHandle RocketFileInterface::
 Open(const Rocket::Core::String& path) {
   rocket_cat.debug() << "Opening " << path.CString() << "\n";
@@ -69,11 +64,9 @@ Open(const Rocket::Core::String& path) {
   return (Rocket::Core::FileHandle) handle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketFileInterface::Close
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void RocketFileInterface::
 Close(Rocket::Core::FileHandle file) {
   VirtualFileHandle *handle = (VirtualFileHandle*) file;
@@ -85,11 +78,9 @@ Close(Rocket::Core::FileHandle file) {
   delete handle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketFileInterface::Read
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 size_t RocketFileInterface::
 Read(void* buffer, size_t size, Rocket::Core::FileHandle file) {
   VirtualFileHandle *handle = (VirtualFileHandle*) file;
@@ -101,11 +92,9 @@ Read(void* buffer, size_t size, Rocket::Core::FileHandle file) {
   return handle->_stream->gcount();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketFileInterface::Seek
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool RocketFileInterface::
 Seek(Rocket::Core::FileHandle file, long offset, int origin) {
   VirtualFileHandle *handle = (VirtualFileHandle*) file;
@@ -127,11 +116,9 @@ Seek(Rocket::Core::FileHandle file, long offset, int origin) {
   return !handle->_stream->fail();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketFileInterface::Tell
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 size_t RocketFileInterface::
 Tell(Rocket::Core::FileHandle file) {
   VirtualFileHandle *handle = (VirtualFileHandle*) file;
@@ -142,11 +129,9 @@ Tell(Rocket::Core::FileHandle file) {
   return handle->_stream->tellg();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketFileInterface::Length
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 size_t RocketFileInterface::
 Length(Rocket::Core::FileHandle file) {
   VirtualFileHandle *handle = (VirtualFileHandle*) file;

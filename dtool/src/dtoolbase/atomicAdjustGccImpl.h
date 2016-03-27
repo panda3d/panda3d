@@ -1,16 +1,15 @@
-// Filename: atomicAdjustGccImpl.h
-// Created by:  rdb (04Jul14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file atomicAdjustGccImpl.h
+ * @author rdb
+ * @date 2014-07-04
+ */
 
 #ifndef ATOMICADJUSTGCCIMPL_H
 #define ATOMICADJUSTGCCIMPL_H
@@ -20,10 +19,9 @@
 
 #if (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (defined(__clang__) && (__clang_major__ >= 3))
 
-////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustGccImpl
-// Description : Uses GCC built-ins to implement atomic adjustments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses GCC built-ins to implement atomic adjustments.
+ */
 class EXPCL_DTOOL AtomicAdjustGccImpl {
 public:
 #if __GCC_ATOMIC_LONG_LOCK_FREE >= __GCC_ATOMIC_INT_LOCK_FREE

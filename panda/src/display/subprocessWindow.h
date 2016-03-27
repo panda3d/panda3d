@@ -1,25 +1,24 @@
-// Filename: subprocessWindow.h
-// Created by:  drose (11Jul09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file subprocessWindow.h
+ * @author drose
+ * @date 2009-07-11
+ */
 
 #ifndef SUBPROCESSWINDOW_H
 #define SUBPROCESSWINDOW_H
 
 #include "pandabase.h"
 
-// For now, a simple trigger whether to enable the subprocess window
-// support.  We only build it on OSX, because this is (presently) the
-// only case where it's useful.
+// For now, a simple trigger whether to enable the subprocess window support.
+// We only build it on OSX, because this is (presently) the only case where
+// it's useful.
 #ifdef IS_OSX
 #define SUPPORT_SUBPROCESS_WINDOW 1
 #else
@@ -34,22 +33,18 @@
 #include "subprocessWindowBuffer.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SubprocessWindow
-// Description : This is a special "window" that actually renders to
-//               an offscreen buffer, copies the pixels to RAM, and
-//               then ships them to a parent process via shared memory
-//               for rendering to the window.
-//
-//               This whole nonsense is necessary because OSX doesn't
-//               allow child processes to draw to, or attach windows
-//               to, windows created in the parent process.  There's a
-//               rumor that 10.6 fixes this nonsense; this will remain
-//               to be seen.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special "window" that actually renders to an offscreen buffer,
+ * copies the pixels to RAM, and then ships them to a parent process via
+ * shared memory for rendering to the window.
+ *
+ * This whole nonsense is necessary because OSX doesn't allow child processes
+ * to draw to, or attach windows to, windows created in the parent process.
+ * There's a rumor that 10.6 fixes this nonsense; this will remain to be seen.
+ */
 class SubprocessWindow : public GraphicsWindow {
 public:
-  SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                    const string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
@@ -111,4 +106,3 @@ private:
 #endif  // SUPPORT_SUBPROCESS_WINDOW
 
 #endif
-

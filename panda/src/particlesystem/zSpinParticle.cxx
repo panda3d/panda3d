@@ -1,25 +1,22 @@
-// Filename: zSpinParticle.cxx
-// Created by:  charles (16Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file zSpinParticle.cxx
+ * @author charles
+ * @date 2000-08-16
+ */
 
 #include "zSpinParticle.h"
 #include "cmath.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZSpinParticle
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 ZSpinParticle::
 ZSpinParticle() :
   BaseParticle() {
@@ -30,11 +27,9 @@ ZSpinParticle() :
   _bUseAngularVelocity = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ZSpinParticle
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 ZSpinParticle::
 ZSpinParticle(const ZSpinParticle &copy) :
   BaseParticle(copy) {
@@ -45,43 +40,36 @@ ZSpinParticle(const ZSpinParticle &copy) :
   _bUseAngularVelocity = copy._bUseAngularVelocity;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~ZSpinParticle
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 ZSpinParticle::
 ~ZSpinParticle() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public, Virtual
-//  Description: dynamic copier
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic copier
+ */
 PhysicsObject *ZSpinParticle::
 make_copy() const {
   return new ZSpinParticle(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ZSpinParticle::
 init() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ZSpinParticle::
 update() {
-  // if using final_angle, want age to range from [0,1] over lifespan, so use parameterized_age
-  // for angular velocity, should be allowed to range freely upward, use regular age
+  // if using final_angle, want age to range from [0,1] over lifespan, so use
+  // parameterized_age for angular velocity, should be allowed to range freely
+  // upward, use regular age
 
   if(_bUseAngularVelocity) {
    // interpolate the current orientation
@@ -93,39 +81,32 @@ update() {
   // normalize the result to [0..360)
   _cur_angle = cmod(_cur_angle, (PN_stdfloat)360.0);
 
-  // if _cur_angle was negative, it is still negative after cmod,
-  // wrap it around by adding 360
+  // if _cur_angle was negative, it is still negative after cmod, wrap it
+  // around by adding 360
 
-  // is this really necessary?  should be in range of sin/cos
+  // is this really necessary?  should be in range of sincos
   if(_cur_angle < 0.0f)
     _cur_angle += 360.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: die
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void ZSpinParticle::
 die() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_theta
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PN_stdfloat ZSpinParticle::
 get_theta() const {
   return _cur_angle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ZSpinParticle::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -133,12 +114,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ZSpinParticle::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

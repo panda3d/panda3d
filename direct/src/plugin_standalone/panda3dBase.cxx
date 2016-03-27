@@ -1,16 +1,15 @@
-// Filename: panda3dBase.cxx
-// Created by:  pro-rsoft (07Dec09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file panda3dBase.cxx
+ * @author rdb
+ * @date 2009-12-07
+ */
 
 #include "dtoolbase.h"
 #ifdef _WIN32
@@ -27,8 +26,8 @@
 #include "multifile.h"
 #include "tinyxml.h"
 
-// We can include this header file to get the DTOOL_PLATFORM
-// definition, even though we don't link with dtool.
+// We can include this header file to get the DTOOL_PLATFORM definition, even
+// though we don't link with dtool.
 #include "dtool_platform.h"
 #include "pandaVersion.h"
 
@@ -39,21 +38,18 @@
 // The amount of time in seconds to wait for new messages.
 static const double wait_cycle = 0.2;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Panda3DBase::
 Panda3DBase(bool console_environment) {
   _console_environment = console_environment;
 
-  // We can't assign _root_dir immediately, because it requires a
-  // low-level Mac call that will balk if we're not logged in to the
-  // console, which will prevent scripts from using "panda3d -P" to
-  // find the platform and whatnot.  Instead, we'll assign it after
-  // we've processed the command line.
-  //_root_dir = find_root_dir();
+  // We can't assign _root_dir immediately, because it requires a low-level
+  // Mac call that will balk if we're not logged in to the console, which will
+  // prevent scripts from using "panda3d -P" to find the platform and whatnot.
+  // Instead, we'll assign it after we've processed the command line.
+  // _root_dir = find_root_dir();
 
   _reporting_download = false;
   _enable_security = false;
@@ -68,34 +64,30 @@ Panda3DBase(bool console_environment) {
 
   _exit_with_last_instance = true;
   _host_url = PANDA_PACKAGE_HOST_URL;
-  // Better to leave _this_platform set to the empty string until the
-  // user specifies otherwise; this allows the plugin to select a
-  // suitable platform at runtime.
+  // Better to leave _this_platform set to the empty string until the user
+  // specifies otherwise; this allows the plugin to select a suitable platform
+  // at runtime.
   _this_platform = "";
   _coreapi_platform = DTOOL_PLATFORM;
   _verify_contents = P3D_VC_none;
   _contents_expiration = 0;
 
-  // Seed the lame random number generator in rand(); we use it to
-  // select a mirror for downloading.
+  // Seed the lame random number generator in rand(); we use it to select a
+  // mirror for downloading.
   srand((unsigned int)time(NULL));
-  
+
   _prepend_filename_to_args = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::run_main_loop
-//       Access: Public
-//  Description: Gets lost in the application main loop, waiting for
-//               system events and notifications from the open
-//               instance(s).
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets lost in the application main loop, waiting for system events and
+ * notifications from the open instance(s).
+ */
 void Panda3DBase::
 run_main_loop() {
 #ifdef _WIN32
   if (_window_type == P3D_WT_embedded) {
-    // Wait for new messages from Windows, and new requests from the
-    // plugin.
+    // Wait for new messages from Windows, and new requests from the plugin.
     MSG msg;
     int retval;
     retval = GetMessage(&msg, NULL, 0, 0);
@@ -117,24 +109,23 @@ run_main_loop() {
         inst = P3D_check_request_ptr(wait_cycle);
       }
 
-      while (!_url_getters.empty() && 
+      while (!_url_getters.empty() &&
              !PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
         // If there are no Windows messages, check the download tasks.
         run_getters();
       }
       retval = GetMessage(&msg, NULL, 0, 0);
     }
-    
-    // WM_QUIT has been received.  Terminate all instances, and fall
-    // through.
+
+    // WM_QUIT has been received.  Terminate all instances, and fall through.
     while (!_instances.empty()) {
       P3D_instance *inst = *(_instances.begin());
       delete_instance(inst);
     }
 
   } else {
-    // Not an embedded window, so we don't have our own window to
-    // generate Windows events.  Instead, just wait for requests.
+    // Not an embedded window, so we don't have our own window to generate
+    // Windows events.  Instead, just wait for requests.
     while (!time_to_exit()) {
       P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
       if (inst != (P3D_instance *)NULL) {
@@ -148,9 +139,9 @@ run_main_loop() {
   }
 
 #elif defined(__APPLE__) && !__LP64__
-  // OSX really prefers to own the main loop, so we install a timer to
-  // call out to our instances and getters, rather than polling within
-  // the event loop as we do in the Windows case, above.
+  // OSX really prefers to own the main loop, so we install a timer to call
+  // out to our instances and getters, rather than polling within the event
+  // loop as we do in the Windows case, above.
   EventLoopRef main_loop = GetMainEventLoop();
   EventLoopTimerUPP timer_upp = NewEventLoopTimerUPP(st_timer_callback);
   EventLoopTimerRef timer;
@@ -159,13 +150,13 @@ run_main_loop() {
                         timer_upp, this, &timer);
   RunApplicationEventLoop();
   RemoveEventLoopTimer(timer);
-  
+
   // Terminate all instances, and fall through.
   while (!_instances.empty()) {
     P3D_instance *inst = *(_instances.begin());
     delete_instance(inst);
   }
-    
+
 #else  // _WIN32, __APPLE__
 
   // Now wait while we process pending requests.
@@ -183,11 +174,9 @@ run_main_loop() {
 #endif  // _WIN32, __APPLE__
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::run_getters
-//       Access: Protected
-//  Description: Polls all of the active URL requests.
-////////////////////////////////////////////////////////////////////
+/**
+ * Polls all of the active URL requests.
+ */
 void Panda3DBase::
 run_getters() {
   URLGetters::iterator gi;
@@ -207,12 +196,9 @@ run_getters() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::handle_request
-//       Access: Protected
-//  Description: Handles a single request received via the plugin API
-//               from a p3d instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles a single request received via the plugin API from a p3d instance.
+ */
 void Panda3DBase::
 handle_request(P3D_request *request) {
   bool handled = false;
@@ -239,7 +225,7 @@ handle_request(P3D_request *request) {
 
   case P3D_RT_notify:
     {
-      //cerr << "Notify: " << request->_request._notify._message << "\n";
+      // cerr << "Notify: " << request->_request._notify._message << "\n";
       if (strcmp(request->_request._notify._message, "ondownloadnext") == 0) {
         // Tell the user we're downloading a package.
         report_downloading_package(request->_instance);
@@ -273,12 +259,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::make_parent_window
-//       Access: Protected
-//  Description: Creates a toplevel window to contain the embedded
-//               instances.  Windows implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a toplevel window to contain the embedded instances.  Windows
+ * implementation.
+ */
 void Panda3DBase::
 make_parent_window() {
   WNDCLASS wc;
@@ -295,12 +279,12 @@ make_parent_window() {
     exit(1);
   }
 
-  DWORD window_style = 
+  DWORD window_style =
     WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
     WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX |
     WS_SIZEBOX | WS_MAXIMIZEBOX;
 
-  HWND toplevel_window = 
+  HWND toplevel_window =
     CreateWindow("panda3d", "Panda3D", window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, _win_width, _win_height,
                  NULL, NULL, application, 0);
@@ -318,12 +302,9 @@ make_parent_window() {
 
 #else
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::make_parent_window
-//       Access: Protected
-//  Description: Creates a toplevel window to contain the embedded
-//               instances.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a toplevel window to contain the embedded instances.
+ */
 void Panda3DBase::
 make_parent_window() {
   // TODO.
@@ -332,19 +313,15 @@ make_parent_window() {
 
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::create_instance
-//       Access: Protected
-//  Description: Uses the plugin API to create a new P3D instance to
-//               play a particular .p3d file.  This instance is also
-//               started if start_instance is true (which requires
-//               that the named p3d file exists).
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the plugin API to create a new P3D instance to play a particular .p3d
+ * file.  This instance is also started if start_instance is true (which
+ * requires that the named p3d file exists).
+ */
 P3D_instance *Panda3DBase::
 create_instance(const string &p3d, bool start_instance,
                 char **args, int num_args, int p3d_offset) {
-  // Check to see if the p3d filename we were given is a URL, or a
-  // local file.
+  // Check to see if the p3d filename we were given is a URL, or a local file.
   Filename p3d_filename = Filename::from_os_specific(p3d);
   string os_p3d_filename = p3d;
   bool is_local = !is_url(p3d);
@@ -407,9 +384,8 @@ create_instance(const string &p3d, bool start_instance,
 
   if (inst != NULL) {
     if (start_instance) {
-      // We call start() first, to give the core API a chance to
-      // notice the "hidden" attrib before we set the window
-      // parameters.
+      // We call start() first, to give the core API a chance to notice the
+      // "hidden" attrib before we set the window parameters.
       P3D_instance_start_ptr(inst, is_local, os_p3d_filename.c_str(), p3d_offset);
     }
 
@@ -420,19 +396,16 @@ create_instance(const string &p3d, bool start_instance,
   return inst;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::delete_instance
-//       Access: Protected
-//  Description: Deletes the indicated instance and removes it from
-//               the internal structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes the indicated instance and removes it from the internal structures.
+ */
 void Panda3DBase::
 delete_instance(P3D_instance *inst) {
   P3D_instance_finish_ptr(inst);
   _instances.erase(inst);
 
-  // Make sure we also terminate any pending URLGetters associated
-  // with this instance.
+  // Make sure we also terminate any pending URLGetters associated with this
+  // instance.
   URLGetters::iterator gi;
   gi = _url_getters.begin();
   while (gi != _url_getters.end()) {
@@ -446,13 +419,10 @@ delete_instance(P3D_instance *inst) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::read_p3d_info
-//       Access: Protected
-//  Description: Opens the p3d file to read the p3d_info.xml file
-//               within it, looking for any locally-relevant
-//               parameters (like width and height).
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the p3d file to read the p3d_info.xml file within it, looking for any
+ * locally-relevant parameters (like width and height).
+ */
 bool Panda3DBase::
 read_p3d_info(const Filename &p3d_filename, int p3d_offset) {
   PT(Multifile) mf = new Multifile;
@@ -483,8 +453,8 @@ read_p3d_info(const Filename &p3d_filename, int p3d_offset) {
 
   // Successfully read the p3d_info.xml file.
   if (!_got_win_size) {
-    // If the user didn't override the size on the command line, allow
-    // the p3d file to request a preferred size.
+    // If the user didn't override the size on the command line, allow the p3d
+    // file to request a preferred size.
     if (xconfig->Attribute("width", &_win_width)) {
       _got_win_size = true;
     }
@@ -496,13 +466,10 @@ read_p3d_info(const Filename &p3d_filename, int p3d_offset) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::parse_token
-//       Access: Protected
-//  Description: Parses a web token of the form token=value, and
-//               stores it in _tokens.  Returns true on success, false
-//               on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a web token of the form token=value, and stores it in _tokens.
+ * Returns true on success, false on failure.
+ */
 bool Panda3DBase::
 parse_token(const char *arg) {
   const char *equals = strchr(arg, '=');
@@ -525,12 +492,10 @@ parse_token(const char *arg) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::parse_int_pair
-//       Access: Protected
-//  Description: Parses a string into an x,y pair of integers.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a string into an x,y pair of integers.  Returns true on success,
+ * false on failure.
+ */
 bool Panda3DBase::
 parse_int_pair(const char *arg, int &x, int &y) {
   char *endptr;
@@ -546,13 +511,10 @@ parse_int_pair(const char *arg, int &x, int &y) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::lookup_token
-//       Access: Protected
-//  Description: Returns the value associated with the first
-//               appearance of the named token, or empty string if the
-//               token does not appear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value associated with the first appearance of the named token,
+ * or empty string if the token does not appear.
+ */
 string Panda3DBase::
 lookup_token(const string &keyword) const {
   Tokens::const_iterator ti;
@@ -565,13 +527,10 @@ lookup_token(const string &keyword) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::compare_seq
-//       Access: Protected, Static
-//  Description: Compares the two dotted-integer sequence values
-//               numerically.  Returns -1 if seq_a sorts first, 1 if
-//               seq_b sorts first, 0 if they are equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the two dotted-integer sequence values numerically.  Returns -1 if
+ * seq_a sorts first, 1 if seq_b sorts first, 0 if they are equivalent.
+ */
 int Panda3DBase::
 compare_seq(const string &seq_a, const string &seq_b) {
   const char *num_a = seq_a.c_str();
@@ -599,13 +558,11 @@ compare_seq(const string &seq_a, const string &seq_b) {
   return comp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::compare_seq_int
-//       Access: Protected, Static
-//  Description: Numerically compares the formatted integer value at
-//               num_a with num_b.  Increments both num_a and num_b to
-//               the next character following the valid integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Numerically compares the formatted integer value at num_a with num_b.
+ * Increments both num_a and num_b to the next character following the valid
+ * integer.
+ */
 int Panda3DBase::
 compare_seq_int(const char *&num_a, const char *&num_b) {
   long int a;
@@ -628,17 +585,15 @@ compare_seq_int(const char *&num_a, const char *&num_b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::is_url
-//       Access: Protected, Static
-//  Description: Returns true if the indicated string appears to be a
-//               URL, with a leading http:// or file:// or whatever,
-//               or false if it must be a local filename instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated string appears to be a URL, with a leading
+ * http:// or file:// or whatever, or false if it must be a local filename
+ * instead.
+ */
 bool Panda3DBase::
 is_url(const string &param) {
-  // We define a URL prefix as a sequence of at least two letters,
-  // followed by a colon, followed by at least one slash.
+  // We define a URL prefix as a sequence of at least two letters, followed by
+  // a colon, followed by at least one slash.
   size_t p = 0;
   while (p < param.size() && isalpha(param[p])) {
     ++p;
@@ -661,15 +616,13 @@ is_url(const string &param) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::report_downloading_package
-//       Access: Protected
-//  Description: Tells the user we have to download a package.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the user we have to download a package.
+ */
 void Panda3DBase::
 report_downloading_package(P3D_instance *instance) {
   P3D_object *obj = P3D_instance_get_panda_script_object_ptr(instance);
-  
+
   P3D_object *display_name = P3D_object_get_property_ptr(obj, "downloadPackageDisplayName");
   if (display_name == NULL) {
     cerr << "Installing package.\n";
@@ -686,12 +639,10 @@ report_downloading_package(P3D_instance *instance) {
   P3D_object_decref_ptr(display_name);
   _reporting_download = true;
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::report_download_complete
-//       Access: Protected
-//  Description: Tells the user we're done downloading packages
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Tells the user we're done downloading packages
+ */
 void Panda3DBase::
 report_download_complete(P3D_instance *instance) {
   if (_reporting_download) {
@@ -700,12 +651,10 @@ report_download_complete(P3D_instance *instance) {
 }
 
 #if defined(__APPLE__) && !__LP64__
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::st_timer_callback
-//       Access: Protected, Static
-//  Description: Installed as a timer on the event loop, so we can
-//               process local events, in the Apple implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Installed as a timer on the event loop, so we can process local events, in
+ * the Apple implementation.
+ */
 pascal void Panda3DBase::
 st_timer_callback(EventLoopTimerRef timer, void *user_data) {
   ((Panda3DBase *)user_data)->timer_callback(timer);
@@ -713,12 +662,10 @@ st_timer_callback(EventLoopTimerRef timer, void *user_data) {
 #endif  // __APPLE__
 
 #if defined(__APPLE__) && !__LP64__
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::timer_callback
-//       Access: Protected
-//  Description: Installed as a timer on the event loop, so we can
-//               process local events, in the Apple implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Installed as a timer on the event loop, so we can process local events, in
+ * the Apple implementation.
+ */
 void Panda3DBase::
 timer_callback(EventLoopTimerRef timer) {
   // Check for new requests from the Panda3D plugin.
@@ -730,7 +677,7 @@ timer_callback(EventLoopTimerRef timer) {
     }
     inst = P3D_check_request_ptr(0.0);
   }
-  
+
   // Check the download tasks.
   run_getters();
 
@@ -741,11 +688,9 @@ timer_callback(EventLoopTimerRef timer) {
 }
 #endif  // __APPLE__
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::URLGetter::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 Panda3DBase::URLGetter::
 URLGetter(P3D_instance *instance, int unique_id,
           const URLSpec &url, const string &post_data) :
@@ -757,7 +702,7 @@ URLGetter(P3D_instance *instance, int unique_id,
   HTTPClient *http = HTTPClient::get_global_ptr();
 
   _channel = http->make_channel(false);
-  //  _channel->set_download_throttle(true);
+  // _channel->set_download_throttle(true);
   if (_post_data.empty()) {
     _channel->begin_get_document(_url);
   } else {
@@ -768,15 +713,11 @@ URLGetter(P3D_instance *instance, int unique_id,
   _bytes_sent = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3DBase::URLGetter::run
-//       Access: Public
-//  Description: Polls the URLGetter for new results.  Returns true if
-//               the URL request is still in progress and run() should
-//               be called again later, or false if the URL request
-//               has been completed and run() should not be called
-//               again.
-////////////////////////////////////////////////////////////////////
+/**
+ * Polls the URLGetter for new results.  Returns true if the URL request is
+ * still in progress and run() should be called again later, or false if the
+ * URL request has been completed and run() should not be called again.
+ */
 bool Panda3DBase::URLGetter::
 run() {
   if (_channel->run() || _rf.get_data_size() != 0) {
@@ -792,7 +733,7 @@ run() {
 
       if (!download_ok) {
         // The plugin doesn't care any more.  Interrupt the download.
-        cerr << "Download interrupted: " << _url 
+        cerr << "Download interrupted: " << _url
              << ", after " << _bytes_sent << " of " << _channel->get_file_size()
              << " bytes.\n";
         return false;

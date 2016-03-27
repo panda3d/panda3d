@@ -1,16 +1,15 @@
-// Filename: socketStream.cxx
-// Created by:  drose (19Oct02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file socketStream.cxx
+ * @author drose
+ * @date 2002-10-19
+ */
 
 #include "socketStream.h"
 #include "datagram.h"
@@ -20,11 +19,9 @@
 
 #ifdef HAVE_OPENSSL
 
-////////////////////////////////////////////////////////////////////
-//     Function: SSReader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SSReader::
 SSReader(istream *stream) : _istream(stream) {
   _data_expected = 0;
@@ -37,24 +34,19 @@ SSReader(istream *stream) : _istream(stream) {
 #endif  // SIMULATE_NETWORK_DELAY
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SSReader::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SSReader::
 ~SSReader() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SSReader::do_receive_datagram
-//       Access: Private
-//  Description: Receives a datagram over the socket by expecting a
-//               little-endian 16-bit byte count as a prefix.  If the
-//               socket stream is non-blocking, may return false if
-//               the data is not available; otherwise, returns false
-//               only if the socket closes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives a datagram over the socket by expecting a little-endian 16-bit
+ * byte count as a prefix.  If the socket stream is non-blocking, may return
+ * false if the data is not available; otherwise, returns false only if the
+ * socket closes.
+ */
 bool SSReader::
 do_receive_datagram(Datagram &dg) {
   if (_tcp_header_size == 0) {
@@ -98,7 +90,7 @@ do_receive_datagram(Datagram &dg) {
   size_t count = _istream->gcount();
   while (count != 0) {
     _data_so_far.append(buffer, count);
-    
+
     read_count = min(_data_expected - _data_so_far.length(),
                      buffer_size);
     _istream->read(buffer, read_count);
@@ -122,20 +114,16 @@ do_receive_datagram(Datagram &dg) {
 }
 
 #ifdef SIMULATE_NETWORK_DELAY
-////////////////////////////////////////////////////////////////////
-//     Function: SSReader::start_delay
-//       Access: Published
-//  Description: Enables a simulated network latency.  All datagrams
-//               received from this point on will be held for a random
-//               interval of least min_delay seconds, and no more than
-//               max_delay seconds, before being visible.  It is as if
-//               datagrams suddenly took much longer to arrive.
-//
-//               This should *only* be called if the underlying socket
-//               is non-blocking.  If you call this on a blocking
-//               socket, it will force all datagrams to be held up
-//               until the socket closes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables a simulated network latency.  All datagrams received from this
+ * point on will be held for a random interval of least min_delay seconds, and
+ * no more than max_delay seconds, before being visible.  It is as if
+ * datagrams suddenly took much longer to arrive.
+ *
+ * This should *only* be called if the underlying socket is non-blocking.  If
+ * you call this on a blocking socket, it will force all datagrams to be held
+ * up until the socket closes.
+ */
 void SSReader::
 start_delay(double min_delay, double max_delay) {
   _min_delay = min_delay;
@@ -145,13 +133,11 @@ start_delay(double min_delay, double max_delay) {
 #endif  // SIMULATE_NETWORK_DELAY
 
 #ifdef SIMULATE_NETWORK_DELAY
-////////////////////////////////////////////////////////////////////
-//     Function: SSReader::stop_delay
-//       Access: Published
-//  Description: Disables the simulated network latency started by a
-//               previous call to start_delay().  Datagrams will once
-//               again be visible as soon as they are received.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables the simulated network latency started by a previous call to
+ * start_delay().  Datagrams will once again be visible as soon as they are
+ * received.
+ */
 void SSReader::
 stop_delay() {
   _delay_active = false;
@@ -159,19 +145,16 @@ stop_delay() {
 #endif  // SIMULATE_NETWORK_DELAY
 
 #ifdef SIMULATE_NETWORK_DELAY
-////////////////////////////////////////////////////////////////////
-//     Function: SSReader::delay_datagram
-//       Access: Private
-//  Description: Adds the datagram to the delay queue for a random
-//               time interval.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the datagram to the delay queue for a random time interval.
+ */
 void SSReader::
 delay_datagram(const Datagram &datagram) {
   nassertv(_delay_active);
 
   double now = TrueClock::get_global_ptr()->get_short_time();
   double reveal_time = now + _min_delay;
-  
+
   if (_delay_variance > 0.0) {
     reveal_time += _delay_variance * ((double)rand() / (double)RAND_MAX);
   }
@@ -183,13 +166,10 @@ delay_datagram(const Datagram &datagram) {
 #endif  // SIMULATE_NETWORK_DELAY
 
 #ifdef SIMULATE_NETWORK_DELAY
-////////////////////////////////////////////////////////////////////
-//     Function: SSReader::get_delayed
-//       Access: Private
-//  Description: Checks the delayed queue for any now available
-//               datagrams.  If any are available, returns true and
-//               fills datagram with its value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the delayed queue for any now available datagrams.  If any are
+ * available, returns true and fills datagram with its value.
+ */
 bool SSReader::
 get_delayed(Datagram &datagram) {
   if (_delayed.empty()) {
@@ -211,11 +191,9 @@ get_delayed(Datagram &datagram) {
 }
 #endif  // SIMULATE_NETWORK_DELAY
 
-////////////////////////////////////////////////////////////////////
-//     Function: SSWriter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SSWriter::
 SSWriter(ostream *stream) : _ostream(stream) {
   _collect_tcp = collect_tcp;
@@ -224,24 +202,18 @@ SSWriter(ostream *stream) : _ostream(stream) {
   _tcp_header_size = tcp_header_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SSWriter::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SSWriter::
 ~SSWriter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SSWriter::send_datagram
-//       Access: Public
-//  Description: Transmits the indicated datagram over the socket by
-//               prepending it with a little-endian 16-bit byte count.
-//               Does not return until the data is sent or the
-//               connection is closed, even if the socket stream is
-//               non-blocking.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transmits the indicated datagram over the socket by prepending it with a
+ * little-endian 16-bit byte count.  Does not return until the data is sent or
+ * the connection is closed, even if the socket stream is non-blocking.
+ */
 bool SSWriter::
 send_datagram(const Datagram &dg) {
   Datagram header;
@@ -253,29 +225,27 @@ send_datagram(const Datagram &dg) {
       nassert_raise("Datagram too long");
       return false;
     }
-    
+
     header.add_uint16(dg.get_length());
   } else if (_tcp_header_size == 4) {
     header.add_uint32(dg.get_length());
   }
 
-  // These two writes don't generate two socket calls, because the
-  // socket stream is always buffered.
+  // These two writes don't generate two socket calls, because the socket
+  // stream is always buffered.
   _ostream->write((const char *)header.get_data(), header.get_length());
   _ostream->write((const char *)dg.get_data(), dg.get_length());
 
-  // Now flush the buffer immediately, forcing the data to be sent
-  // (unless collect-tcp mode is in effect).
+  // Now flush the buffer immediately, forcing the data to be sent (unless
+  // collect-tcp mode is in effect).
   flush();
 
   return !is_closed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ISocketStream::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ISocketStream::
 ~ISocketStream() {
   // This should already have been cleared by the subclass destructor.

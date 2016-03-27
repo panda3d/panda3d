@@ -1,16 +1,15 @@
-// Filename: shaderPool.h
-// Created by:  aignacio (Mar06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderPool.h
+ * @author aignacio
+ * @date 2006-03
+ */
 
 #ifndef SHADERPOOL_H
 #define SHADERPOOL_H
@@ -21,13 +20,11 @@
 #include "lightMutex.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderPool
-// Description : This is the preferred interface for loading shaders for
-//               the TextNode system.  It is similar to ModelPool and
-//               TexturePool in that it unifies references to the same
-//               filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the preferred interface for loading shaders for the TextNode
+ * system.  It is similar to ModelPool and TexturePool in that it unifies
+ * references to the same filename.
+ */
 class EXPCL_PANDA_PGRAPH ShaderPool {
 PUBLISHED:
   INLINE static bool has_shader(const Filename &filename);

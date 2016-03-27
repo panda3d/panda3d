@@ -1,27 +1,24 @@
-// Filename: physxConvexMesh.cxx
-// Created by:  enn0x (13Oct09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxConvexMesh.cxx
+ * @author enn0x
+ * @date 2009-10-13
+ */
 
 #include "physxConvexMesh.h"
 #include "physxMeshPool.h"
 
 TypeHandle PhysxConvexMesh::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxConvexMesh::
 link(NxConvexMesh *meshPtr) {
 
@@ -31,11 +28,9 @@ link(NxConvexMesh *meshPtr) {
   _error_type = ET_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxConvexMesh::
 unlink() {
 
@@ -44,11 +39,9 @@ unlink() {
   PhysxManager::get_global_ptr()->_convex_meshes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxConvexMesh::
 release() {
 
@@ -61,11 +54,9 @@ release() {
   PhysxMeshPool::release_convex_mesh(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::get_reference_count
-//       Access: Published
-//  Description: Returns the reference count for shared meshes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reference count for shared meshes.
+ */
 unsigned int PhysxConvexMesh::
 get_reference_count() const {
 
@@ -73,4 +64,3 @@ get_reference_count() const {
 
   return _ptr->getReferenceCount();
 }
-

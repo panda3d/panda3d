@@ -1,16 +1,15 @@
-// Filename: geomTransformer.h
-// Created by:  drose (14Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file geomTransformer.h
+ * @author drose
+ * @date 2002-03-14
+ */
 
 #ifndef GEOMTRANSFORMER_H
 #define GEOMTRANSFORMER_H
@@ -28,22 +27,18 @@ class InternalName;
 class GeomMunger;
 class Texture;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTransformer
-// Description : An object specifically designed to transform the
-//               vertices of a Geom without disturbing indexing or
-//               affecting any other Geoms that may share the same
-//               vertex arrays, and without needlessly wasting memory
-//               when different Geoms sharing the same vertex arrays
-//               are transformed by the same amount.
-//
-//               If you create a single GeomTransformer and use it to
-//               transform a number of different Geoms by various
-//               transformations, then those Geoms which happen to
-//               share the same arrays and are transformed by the same
-//               amounts will still share the same arrays as each
-//               other (but different from the original arrays).
-////////////////////////////////////////////////////////////////////
+/**
+ * An object specifically designed to transform the vertices of a Geom without
+ * disturbing indexing or affecting any other Geoms that may share the same
+ * vertex arrays, and without needlessly wasting memory when different Geoms
+ * sharing the same vertex arrays are transformed by the same amount.
+ *
+ * If you create a single GeomTransformer and use it to transform a number of
+ * different Geoms by various transformations, then those Geoms which happen
+ * to share the same arrays and are transformed by the same amounts will still
+ * share the same arrays as each other (but different from the original
+ * arrays).
+ */
 class EXPCL_PANDA_PGRAPH GeomTransformer {
 public:
   GeomTransformer();
@@ -70,7 +65,7 @@ public:
   bool transform_colors(Geom *geom, const LVecBase4 &scale);
   bool transform_colors(GeomNode *node, const LVecBase4 &scale);
 
-  bool apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex, 
+  bool apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
                             const TexMatrixAttrib *tma,
                             const LColor &base_color, bool keep_vertex_color);
   bool apply_texture_colors(GeomNode *node, const RenderState *state);
@@ -101,8 +96,8 @@ private:
   typedef pvector<PT(Geom) > GeomList;
 
   // Keeps track of the Geoms that are associated with a particular
-  // GeomVertexData.  Also tracks whether the vertex data might have
-  // unused vertices because of our actions.
+  // GeomVertexData.  Also tracks whether the vertex data might have unused
+  // vertices because of our actions.
   class VertexDataAssoc {
   public:
     INLINE VertexDataAssoc();
@@ -113,15 +108,15 @@ private:
   typedef pmap<CPT(GeomVertexData), VertexDataAssoc> VertexDataAssocMap;
   VertexDataAssocMap _vdata_assoc;
 
-  // Corresponds to a new GeomVertexData created as needed during an
-  // apply operation.
+  // Corresponds to a new GeomVertexData created as needed during an apply
+  // operation.
   class NewVertexData {
   public:
     CPT(GeomVertexData) _vdata;
   };
 
-  // The table of GeomVertexData objects that have been transformed by
-  // a particular matrix.
+  // The table of GeomVertexData objects that have been transformed by a
+  // particular matrix.
   class SourceVertices {
   public:
     INLINE bool operator < (const SourceVertices &other) const;
@@ -132,8 +127,8 @@ private:
   typedef pmap<SourceVertices, NewVertexData> NewVertices;
   NewVertices _vertices;
 
-  // The table of GeomVertexData objects whose texture coordinates
-  // have been transformed by a particular matrix.
+  // The table of GeomVertexData objects whose texture coordinates have been
+  // transformed by a particular matrix.
   class SourceTexCoords {
   public:
     INLINE bool operator < (const SourceTexCoords &other) const;
@@ -146,8 +141,7 @@ private:
   typedef pmap<SourceTexCoords, NewVertexData> NewTexCoords;
   NewTexCoords _texcoords;
 
-  // The table of GeomVertexData objects whose colors have been
-  // modified.
+  // The table of GeomVertexData objects whose colors have been modified.
   class SourceColors {
   public:
     INLINE bool operator < (const SourceColors &other) const;
@@ -157,14 +151,14 @@ private:
   };
   typedef pmap<SourceColors, NewVertexData> NewColors;
 
-  // We have two concepts of colors: the "fixed" colors, which are
-  // slapped in as a complete replacement of the original colors
-  // (e.g. via a ColorAttrib), and the "transformed" colors, which are
-  // modified from the original colors (e.g. via a ColorScaleAttrib).
+  // We have two concepts of colors: the "fixed" colors, which are slapped in
+  // as a complete replacement of the original colors (e.g.  via a
+  // ColorAttrib), and the "transformed" colors, which are modified from the
+  // original colors (e.g.  via a ColorScaleAttrib).
   NewColors _fcolors, _tcolors;
 
-  // The table of GeomVertexData objects whose texture colors have
-  // been applied.
+  // The table of GeomVertexData objects whose texture colors have been
+  // applied.
   class SourceTextureColors {
   public:
     INLINE bool operator < (const SourceTextureColors &other) const;
@@ -179,8 +173,8 @@ private:
   typedef pmap<SourceTextureColors, NewVertexData> NewTextureColors;
   NewTextureColors _tex_colors;
 
-  // The table of GeomVertexData objects whose vertex formats have
-  // been modified. For set_format(): record (format + vertex_data) ->
+  // The table of GeomVertexData objects whose vertex formats have been
+  // modified.  For set_format(): record (format + vertex_data) ->
   // vertex_data.
   class SourceFormat {
   public:
@@ -192,8 +186,7 @@ private:
   typedef pmap<SourceFormat, NewVertexData> NewFormat;
   NewFormat _format;
 
-  // The table of GeomVertexData objects whose normals have been
-  // reversed.
+  // The table of GeomVertexData objects whose normals have been reversed.
   typedef pmap<CPT(GeomVertexData), NewVertexData> ReversedNormals;
   ReversedNormals _reversed_normals;
 
@@ -254,7 +247,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "GeomTransformer::NewCollectedData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -277,7 +270,7 @@ private:
   static PStatCollector _apply_scale_color_collector;
   static PStatCollector _apply_texture_color_collector;
   static PStatCollector _apply_set_format_collector;
-    
+
 public:
   static void init_type() {
     NewCollectedData::init_type();
@@ -287,4 +280,3 @@ public:
 #include "geomTransformer.I"
 
 #endif
-

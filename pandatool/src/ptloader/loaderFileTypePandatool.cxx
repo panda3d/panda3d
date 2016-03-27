@@ -1,16 +1,15 @@
-// Filename: loaderFileTypePandatool.cxx
-// Created by:  drose (26Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file loaderFileTypePandatool.cxx
+ * @author drose
+ * @date 2001-04-26
+ */
 
 #include "loaderFileTypePandatool.h"
 #include "config_ptloader.h"
@@ -25,11 +24,9 @@
 
 TypeHandle LoaderFileTypePandatool::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LoaderFileTypePandatool::
 LoaderFileTypePandatool(SomethingToEggConverter *loader,
                         EggToSomethingConverter *saver) :
@@ -40,20 +37,16 @@ LoaderFileTypePandatool(SomethingToEggConverter *loader,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 LoaderFileTypePandatool::
 ~LoaderFileTypePandatool() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::get_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string LoaderFileTypePandatool::
 get_name() const {
   if (_loader != (SomethingToEggConverter *)NULL) {
@@ -62,11 +55,9 @@ get_name() const {
   return _saver->get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::get_extension
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 string LoaderFileTypePandatool::
 get_extension() const {
   if (_loader != (SomethingToEggConverter *)NULL) {
@@ -75,13 +66,10 @@ get_extension() const {
   return _saver->get_extension();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::get_additional_extensions
-//       Access: Public, Virtual
-//  Description: Returns a space-separated list of extension, in
-//               addition to the one returned by get_extension(), that
-//               are recognized by this converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a space-separated list of extension, in addition to the one
+ * returned by get_extension(), that are recognized by this converter.
+ */
 string LoaderFileTypePandatool::
 get_additional_extensions() const {
   if (_loader != (SomethingToEggConverter *)NULL) {
@@ -90,13 +78,10 @@ get_additional_extensions() const {
   return _saver->get_additional_extensions();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files
+ * (with a .pz extension), false otherwise.
+ */
 bool LoaderFileTypePandatool::
 supports_compressed() const {
   if (_loader != (SomethingToEggConverter *)NULL) {
@@ -105,47 +90,38 @@ supports_compressed() const {
   return _saver->supports_compressed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::supports_load
-//       Access: Published, Virtual
-//  Description: Returns true if the file type can be used to load
-//               files, and load_file() is supported.  Returns false
-//               if load_file() is unimplemented and will always fail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file type can be used to load files, and load_file() is
+ * supported.  Returns false if load_file() is unimplemented and will always
+ * fail.
+ */
 bool LoaderFileTypePandatool::
 supports_load() const {
   return (_loader != NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::supports_save
-//       Access: Published, Virtual
-//  Description: Returns true if the file type can be used to save
-//               files, and save_file() is supported.  Returns false
-//               if save_file() is unimplemented and will always fail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file type can be used to save files, and save_file() is
+ * supported.  Returns false if save_file() is unimplemented and will always
+ * fail.
+ */
 bool LoaderFileTypePandatool::
 supports_save() const {
   return (_saver != NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::resolve_filename
-//       Access: Public, Virtual
-//  Description: Searches for the indicated filename on whatever paths
-//               are appropriate to this file type, and updates it if
-//               it is found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the indicated filename on whatever paths are appropriate to
+ * this file type, and updates it if it is found.
+ */
 void LoaderFileTypePandatool::
 resolve_filename(Filename &path) const {
   path.resolve_filename(get_model_path(), get_extension());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::load_file
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PT(PandaNode) LoaderFileTypePandatool::
 load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
@@ -170,11 +146,11 @@ load_file(const Filename &path, const LoaderOptions &options,
   case LoaderOptions::LF_convert_anim:
     loader->set_animation_convert(AC_both);
     break;
-    
+
   case LoaderOptions::LF_convert_skeleton:
     loader->set_animation_convert(AC_model);
     break;
-    
+
   case LoaderOptions::LF_convert_channels:
     loader->set_animation_convert(AC_chan);
     break;
@@ -192,14 +168,14 @@ load_file(const Filename &path, const LoaderOptions &options,
     }
   }
 
-  // If the converter type doesn't support the direct PandaNode
-  // conversion, take the slower route through egg instead.
+  // If the converter type doesn't support the direct PandaNode conversion,
+  // take the slower route through egg instead.
   PT(EggData) egg_data = new EggData;
   loader->set_egg_data(egg_data);
 
   if (loader->convert_file(path)) {
     DistanceUnit input_units = loader->get_input_units();
-    if (input_units != DU_invalid && ptloader_units != DU_invalid && 
+    if (input_units != DU_invalid && ptloader_units != DU_invalid &&
         input_units != ptloader_units) {
       // Convert the file to the units specified by the ptloader-units
       // Configrc variable.
@@ -223,11 +199,9 @@ load_file(const Filename &path, const LoaderOptions &options,
   return result.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypePandatool::save_file
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 bool LoaderFileTypePandatool::
 save_file(const Filename &path, const LoaderOptions &options,
           PandaNode *node) const {

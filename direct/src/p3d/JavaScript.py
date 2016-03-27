@@ -13,8 +13,10 @@ class UndefinedObject:
     attributes, similar to None, but it is a slightly different
     concept in JavaScript. """
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
+
+    __nonzero__ = __bool__ # Python 2
 
     def __str__(self):
         return "Undefined"
@@ -83,8 +85,10 @@ class BrowserObject:
     def __str__(self):
         return self.toString()
 
-    def __nonzero__(self):
+    def __bool__(self):
         return True
+
+    __nonzero__ = __bool__ # Python 2
 
     def __call__(self, *args, **kw):
         needsResponse = True
@@ -92,7 +96,7 @@ class BrowserObject:
             needsResponse = kw['needsResponse']
             del kw['needsResponse']
         if kw:
-            raise ArgumentError, 'Keyword arguments not supported'
+            raise ArgumentError('Keyword arguments not supported')
 
         try:
             parentObj, attribName = self.__childObject
@@ -242,8 +246,10 @@ class MethodWrapper:
         parentObj, attribName = self.__childObject
         return "%s.%s" % (parentObj, attribName)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return True
+
+    __nonzero__ = __bool__ # Python 2
 
     def __call__(self, *args, **kw):
         needsResponse = True
@@ -251,7 +257,7 @@ class MethodWrapper:
             needsResponse = kw['needsResponse']
             del kw['needsResponse']
         if kw:
-            raise ArgumentError, 'Keyword arguments not supported'
+            raise ArgumentError('Keyword arguments not supported')
 
         try:
             parentObj, attribName = self.__childObject

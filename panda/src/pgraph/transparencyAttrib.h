@@ -1,16 +1,15 @@
-// Filename: transparencyAttrib.h
-// Created by:  drose (28Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transparencyAttrib.h
+ * @author drose
+ * @date 2002-02-28
+ */
 
 #ifndef TRANSPARENCYATTRIB_H
 #define TRANSPARENCYATTRIB_H
@@ -21,27 +20,23 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TransparencyAttrib
-// Description : This controls the enabling of transparency.  Simply
-//               setting an alpha component to non-1 does not in
-//               itself make an object transparent; you must also
-//               enable transparency mode with a suitable
-//               TransparencyAttrib.  Similarly, it is wasteful to
-//               render an object with a TransparencyAttrib in
-//               effect unless you actually want it to be at least
-//               partially transparent (and it has alpha components
-//               less than 1).
-////////////////////////////////////////////////////////////////////
+/**
+ * This controls the enabling of transparency.  Simply setting an alpha
+ * component to non-1 does not in itself make an object transparent; you must
+ * also enable transparency mode with a suitable TransparencyAttrib.
+ * Similarly, it is wasteful to render an object with a TransparencyAttrib in
+ * effect unless you actually want it to be at least partially transparent
+ * (and it has alpha components less than 1).
+ */
 class EXPCL_PANDA_PGRAPH TransparencyAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
-    // The first two should be specifically 0 and 1, for historical
-    // reasons (NodePath::set_transparency() used to accept a boolean
-    // value, which corresponded to M_none or M_alpha).
+    // The first two should be specifically 0 and 1, for historical reasons
+    // (NodePath::set_transparency() used to accept a boolean value, which
+    // corresponded to M_none or M_alpha).
     M_none = 0,         // No transparency.
     M_alpha = 1,        // Normal transparency, panda will sort back-to-front.
-    M_notused,          // Unused placeholder.  Do not use this.
+    M_premultiplied_alpha, // Assume textures use premultiplied alpha.
     M_multisample,      // Uses ms buffer, alpha values modified to 1.0.
     M_multisample_mask, // Uses ms buffer, alpha values not modified.
     M_binary,           // Only writes pixels with alpha >= 0.5.
@@ -83,7 +78,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -107,4 +102,3 @@ private:
 #include "transparencyAttrib.I"
 
 #endif
-

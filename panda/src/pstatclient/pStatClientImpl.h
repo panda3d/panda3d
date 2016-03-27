@@ -1,16 +1,15 @@
-// Filename: pStatClientImpl.h
-// Created by:  drose (23Dec04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatClientImpl.h
+ * @author drose
+ * @date 2004-12-23
+ */
 
 #ifndef PSTATCLIENTIMPL_H
 #define PSTATCLIENTIMPL_H
@@ -35,23 +34,18 @@ class PStatCollector;
 class PStatCollectorDef;
 class PStatThread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatClientImpl
-// Description : This class is the implementation of the actual
-//               PStatClient class (which is just for interface).  All
-//               of the stuff to manage sending stats up to the server
-//               is handled by this class.
-//
-//               This separation between PStatClient and
-//               PStatClientImpl allows the global PStatClient to be
-//               constructed at static init time, without having to
-//               consult any config variables at that time.  We don't
-//               actually do any real work until someone explicitly
-//               calls PStatClient::connect().
-//
-//               This class doesn't exist at all unless DO_PSTATS is
-//               defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is the implementation of the actual PStatClient class (which is
+ * just for interface).  All of the stuff to manage sending stats up to the
+ * server is handled by this class.
+ *
+ * This separation between PStatClient and PStatClientImpl allows the global
+ * PStatClient to be constructed at static init time, without having to
+ * consult any config variables at that time.  We don't actually do any real
+ * work until someone explicitly calls PStatClient::connect().
+ *
+ * This class doesn't exist at all unless DO_PSTATS is defined.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatClientImpl : public ConnectionManager {
 public:
   PStatClientImpl(PStatClient *client);
@@ -124,4 +118,3 @@ private:
 #endif  // DO_PSTATS
 
 #endif
-

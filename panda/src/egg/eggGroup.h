@@ -1,16 +1,15 @@
-// Filename: eggGroup.h
-// Created by:  drose (16Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggGroup.h
+ * @author drose
+ * @date 1999-01-16
+ */
 
 #ifndef EGGGROUP_H
 #define EGGGROUP_H
@@ -28,11 +27,10 @@
 #include "collideMask.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroup
-// Description : The main glue of the egg hierarchy, this corresponds
-//               to the <Group>, <Instance>, and <Joint> type nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main glue of the egg hierarchy, this corresponds to the <Group>,
+ * <Instance>, and <Joint> type nodes.
+ */
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
@@ -63,8 +61,8 @@ PUBLISHED:
     BT_point_world_relative  = 0x00000080,
   };
   enum CollisionSolidType {
-    // The bits here must correspond to those in Flags, below, and
-    // they must fit within F_cs_type.
+    // The bits here must correspond to those in Flags, below, and they must
+    // fit within F_cs_type.
     CST_none                 = 0x00000000,
     CST_plane                = 0x00010000,
     CST_polygon              = 0x00020000,
@@ -76,8 +74,8 @@ PUBLISHED:
     CST_floor_mesh           = 0x00080000,
   };
   enum CollideFlags {
-    // The bits here must correspond to those in Flags, below, and
-    // they must fit within F_collide_flags.
+    // The bits here must correspond to those in Flags, below, and they must
+    // fit within F_collide_flags.
     CF_none                  = 0x00000000,
     CF_descend               = 0x00100000,
     CF_event                 = 0x00200000,
@@ -390,9 +388,9 @@ private:
   double _w_speed;
   double _r_speed;
 
-  // This is the <DefaultPose> entry for a <Joint>.  It is not the
-  // <Transform> entry (that is stored via inheritance, in the
-  // EggTransform class we inherit from).
+  // This is the <DefaultPose> entry for a <Joint>.  It is not the <Transform>
+  // entry (that is stored via inheritance, in the EggTransform class we
+  // inherit from).
   EggTransform _default_pose;
 
   VertexRef _vref;
@@ -435,4 +433,3 @@ ostream &operator << (ostream &out, EggGroup::BlendOperand t);
 #include "eggGroup.I"
 
 #endif
-

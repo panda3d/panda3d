@@ -1,30 +1,27 @@
-// Filename: glIndexBufferContext_src.h
-// Created by:  drose (17Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file glIndexBufferContext_src.h
+ * @author drose
+ * @date 2005-03-17
+ */
 
 #include "pandabase.h"
 #include "indexBufferContext.h"
 #include "deletedChain.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLIndexBufferContext
-// Description : Caches a GeomPrimitive on the GL as a buffer
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Caches a GeomPrimitive on the GL as a buffer object.
+ */
 class EXPCL_GL CLP(IndexBufferContext) : public IndexBufferContext {
 public:
   INLINE CLP(IndexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
-                                 PreparedGraphicsObjects *pgo, 
+                                 PreparedGraphicsObjects *pgo,
                                  GeomPrimitive *data);
   ALLOC_DELETED_CHAIN(CLP(IndexBufferContext));
 
@@ -54,4 +51,3 @@ private:
 };
 
 #include "glIndexBufferContext_src.I"
-

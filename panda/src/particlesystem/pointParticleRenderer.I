@@ -1,103 +1,92 @@
-// Filename: pointParticleRenderer.I
-// Created by:  charles (20Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pointParticleRenderer.I
+ * @author charles
+ * @date 2000-06-20
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_point_size
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PointParticleRenderer::
 set_point_size(PN_stdfloat point_size) {
   _point_size = point_size;
   _thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _point_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_start_color
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PointParticleRenderer::
 set_start_color(const LColor& sc) {
   _start_color = sc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_end_color
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PointParticleRenderer::
 set_end_color(const LColor& ec) {
   _end_color = ec;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_blend_type
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PointParticleRenderer::
 set_blend_type(PointParticleRenderer::PointParticleBlendType bt) {
   _blend_type = bt;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_blend_method
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PointParticleRenderer::
 set_blend_method(BaseParticleRenderer::ParticleRendererBlendMethod bm) {
   _blend_method = bm;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_point_size
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat PointParticleRenderer::
 get_point_size() const {
   return _point_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_start_color
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const LColor& PointParticleRenderer::
 get_start_color() const {
   return _start_color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_end_color
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const LColor& PointParticleRenderer::
 get_end_color() const {
   return _end_color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_blend_type
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PointParticleRenderer::PointParticleBlendType PointParticleRenderer::
 get_blend_type() const {
   return _blend_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_blend_method
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BaseParticleRenderer::ParticleRendererBlendMethod PointParticleRenderer::
 get_blend_method() const {
   return _blend_method;

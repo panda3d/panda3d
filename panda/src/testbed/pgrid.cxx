@@ -1,16 +1,15 @@
-// Filename: pgrid.cxx
-// Created by:  drose (03Apr02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pgrid.cxx
+ * @author drose
+ * @date 2002-04-03
+ */
 
 #include "pandaFramework.h"
 #include "pystub.h"
@@ -81,7 +80,8 @@ move_gridded_stuff(GriddedMotionType gridmotiontype,
     {if(VAL > MAXVAL) {int idivresult = (int)(VAL / (PN_stdfloat)MAXVAL);  VAL=VAL-idivresult*MAXVAL;} else  \
     if(VAL < -MAXVAL) {int idivresult = (int)(VAL / (PN_stdfloat)MAXVAL);  VAL=VAL+idivresult*MAXVAL;}}
 
-    // probably should use panda lerps for this stuff, but I don't understand how
+    // probably should use panda lerps for this stuff, but I don't understand
+    // how
 
     if(gridmotiontype==Rotation) {
 
@@ -145,8 +145,8 @@ move_gridded_stuff(GriddedMotionType gridmotiontype,
 
 bool
 get_command_line_opts(int &argc, char **&argv) {
-  // Use getopt() to decode the optional command-line parameters.
-  //  extern char *optarg;
+  // Use getopt() to decode the optional command-line parameters.  extern char
+  // *optarg;
   extern int optind;
   const char *options = "rm";
   int flag = getopt(argc, argv, options);
@@ -186,9 +186,9 @@ get_command_line_filenames(int argc, char *argv[],
       static_filenames.push_back(Filename::from_os_specific(arg));
 
     } else {
-      // A comma in the filename indicates a gridded file.  The syntax
-      // is filename,count where count represents the number of times
-      // the file is repeated.
+      // A comma in the filename indicates a gridded file.  The syntax is
+      // filename,count where count represents the number of times the file is
+      // repeated.
       string name = arg.substr(0, comma);
       string count_str = arg.substr(comma + 1);
       int count;
@@ -209,19 +209,19 @@ get_command_line_filenames(int argc, char *argv[],
 }
 
 void
-load_gridded_models(WindowFramework *window, 
+load_gridded_models(WindowFramework *window,
                     GriddedFilenames &filenames,
                     GriddedInfoArray &info_arr) {
-  // Load up all the files indicated in the list of gridded filenames
-  // and store them in the given vector.
+  // Load up all the files indicated in the list of gridded filenames and
+  // store them in the given vector.
 
   Loader loader;
   LoaderOptions options;
-  //  options.set_flags(options.get_flags() | LoaderOptions::LF_no_ram_cache);
+  // options.set_flags(options.get_flags() | LoaderOptions::LF_no_ram_cache);
 
-  // First, load up each model from disk once, and store them all
-  // separate from the scene graph.  Also count up the total number of
-  // models we'll be putting in the grid.
+  // First, load up each model from disk once, and store them all separate
+  // from the scene graph.  Also count up the total number of models we'll be
+  // putting in the grid.
   int grid_count = 0;
   GriddedFilenames::iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
@@ -236,8 +236,8 @@ load_gridded_models(WindowFramework *window,
   info_arr.clear();
   info_arr.reserve(grid_count);
 
-  // Compute the integer square root of grid_count, so that we put our
-  // models in a nice square grid.
+  // Compute the integer square root of grid_count, so that we put our models
+  // in a nice square grid.
 
   gridwidth=1;
   while(gridwidth*gridwidth < grid_count) {
@@ -247,8 +247,8 @@ load_gridded_models(WindowFramework *window,
   grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
   wander_area_pos_offset = -max((PN_stdfloat)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
 
-  // Now walk through the list again, copying models into the scene
-  // graph as we go.
+  // Now walk through the list again, copying models into the scene graph as
+  // we go.
 
   PN_stdfloat xpos = grid_pos_offset;
   PN_stdfloat ypos = grid_pos_offset;
@@ -268,8 +268,8 @@ load_gridded_models(WindowFramework *window,
       const GriddedFilename &gf = (*fi);
       if (!gf._model.is_empty() && gf._count > passnum) {
         loaded_any = true;
-        // Copy this model into the scene graph, and assign it a
-        // position on the grid.
+        // Copy this model into the scene graph, and assign it a position on
+        // the grid.
 
         ++model_count;
         PT(PandaNode) node = loader.load_sync(gf._filename, options);
@@ -397,8 +397,8 @@ main(int argc, char **argv) {
     return (1);
   }
 
-  // Extract the remaining arguments into two lists of files: those
-  // with a grid parameter, and those without.
+  // Extract the remaining arguments into two lists of files: those with a
+  // grid parameter, and those without.
   pvector<Filename> static_filenames;
   GriddedFilenames gridded_filenames;
   get_command_line_filenames(argc, argv, static_filenames, gridded_filenames);

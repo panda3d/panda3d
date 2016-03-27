@@ -1,16 +1,15 @@
-// Filename: physxSoftBody.cxx
-// Created by:  enn0x (13Sep10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxSoftBody.cxx
+ * @author enn0x
+ * @date 2010-09-13
+ */
 
 #include "physxSoftBody.h"
 #include "physxSoftBodyDesc.h"
@@ -22,11 +21,9 @@
 
 TypeHandle PhysxSoftBody::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSoftBody::
 link(NxSoftBody *softbodyPtr) {
 
@@ -41,11 +38,9 @@ link(NxSoftBody *softbodyPtr) {
   scene->_softbodies.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSoftBody::
 unlink() {
 
@@ -59,11 +54,9 @@ unlink() {
   _node = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSoftBody::
 release() {
 
@@ -74,11 +67,9 @@ release() {
   _ptr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::update
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void PhysxSoftBody::
 update() {
 
@@ -97,11 +88,9 @@ update() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_scene
-//       Access: Published
-//  Description: Returns the scene which this soft body belongs to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scene which this soft body belongs to.
+ */
 PhysxScene *PhysxSoftBody::
 get_scene() const {
 
@@ -109,11 +98,9 @@ get_scene() const {
   return (PhysxScene *)_ptr->getScene().userData;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_soft_body_node
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxSoftBodyNode *PhysxSoftBody::
 get_soft_body_node() const {
 
@@ -121,11 +108,9 @@ get_soft_body_node() const {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::create_soft_body_node
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PhysxSoftBodyNode *PhysxSoftBody::
 create_soft_body_node(const char *name) {
 
@@ -137,14 +122,10 @@ create_soft_body_node(const char *name) {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_name
-//       Access: Published
-//  Description: Sets a name string for the object that can be
-//               retrieved with get_name(). 
-//               This is for debugging and is not used by the
-//               engine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets a name string for the object that can be retrieved with get_name().
+ * This is for debugging and is not used by the engine.
+ */
 void PhysxSoftBody::
 set_name(const char *name) {
 
@@ -154,11 +135,9 @@ set_name(const char *name) {
   _ptr->setName(_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_name
-//       Access: Published
-//  Description: Retrieves the name string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the name string.
+ */
 const char *PhysxSoftBody::
 get_name() const {
 
@@ -166,12 +145,10 @@ get_name() const {
   return _ptr->getName();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_group
-//       Access: Published
-//  Description: Sets which collision group this soft body is part
-//               of. Collision group must be between 0 and 31.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets which collision group this soft body is part of.  Collision group must
+ * be between 0 and 31.
+ */
 void PhysxSoftBody::
 set_group(unsigned int group) {
 
@@ -180,12 +157,9 @@ set_group(unsigned int group) {
   _ptr->setGroup(group);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_group
-//       Access: Published
-//  Description: Retrieves the collision group this soft body is
-//               part of.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the collision group this soft body is part of.
+ */
 unsigned int PhysxSoftBody::
 get_group() const {
 
@@ -193,11 +167,9 @@ get_group() const {
   return _ptr->getGroup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_groups_mask
-//       Access: Published
-//  Description: Sets 128-bit mask used for collision filtering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets 128-bit mask used for collision filtering.
+ */
 void PhysxSoftBody::
 set_groups_mask(const PhysxGroupsMask &mask) {
 
@@ -207,12 +179,9 @@ set_groups_mask(const PhysxGroupsMask &mask) {
   _ptr->setGroupsMask(_mask);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_groups_mask
-//       Access: Published
-//  Description: Gets the 128-bit groups mask used for collision
-//               filtering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the 128-bit groups mask used for collision filtering.
+ */
 PhysxGroupsMask PhysxSoftBody::
 get_groups_mask() const {
 
@@ -226,11 +195,9 @@ get_groups_mask() const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_num_particles
-//       Access: Published
-//  Description: Gets the number of cloth particles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the number of cloth particles.
+ */
 unsigned int PhysxSoftBody::
 get_num_particles() {
 
@@ -238,12 +205,9 @@ get_num_particles() {
   return _ptr->getNumberOfParticles();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_particle_radius
-//       Access: Published
-//  Description: Sets the soft body particle radius (must be 
-//               positive).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body particle radius (must be positive).
+ */
 void PhysxSoftBody::
 set_particle_radius(float radius) {
 
@@ -251,11 +215,9 @@ set_particle_radius(float radius) {
   _ptr->setParticleRadius(radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_particle_radius
-//       Access: Published
-//  Description: Gets the soft body particle radius.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the soft body particle radius.
+ */
 float PhysxSoftBody::
 get_particle_radius() const {
 
@@ -263,11 +225,9 @@ get_particle_radius() const {
   return _ptr->getParticleRadius();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_flag
-//       Access: Published
-//  Description: Sets the value of a single flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the value of a single flag.
+ */
 void PhysxSoftBody::
 set_flag(PhysxSoftBodyFlag flag, bool value) {
 
@@ -277,7 +237,7 @@ set_flag(PhysxSoftBodyFlag flag, bool value) {
 
   if (value == true) {
     flags |= flag;
-  } 
+  }
   else {
     flags &= ~(flag);
   }
@@ -285,11 +245,9 @@ set_flag(PhysxSoftBodyFlag flag, bool value) {
   _ptr->setFlags(flags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_flag
-//       Access: Published
-//  Description: Retrieves the value of a single flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the value of a single flag.
+ */
 bool PhysxSoftBody::
 get_flag(PhysxSoftBodyFlag flag) const {
 
@@ -298,11 +256,9 @@ get_flag(PhysxSoftBodyFlag flag) const {
   return (_ptr->getFlags() & flag) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_density
-//       Access: Published
-//  Description: Gets the soft body density.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the soft body density.
+ */
 float PhysxSoftBody::
 get_density() const {
 
@@ -310,16 +266,12 @@ get_density() const {
   return _ptr->getDensity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_relative_grid_spacing
-//       Access: Published
-//  Description: Gets the relative grid spacing for the broad
-//               phase. The cloth is represented by a set of
-//               world aligned cubical cells in broad phase. The
-//               size of these cells is determined by multiplying
-//               the length of the diagonal of the AABB of the
-//               initial soft body size with this constant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the relative grid spacing for the broad phase.  The cloth is
+ * represented by a set of world aligned cubical cells in broad phase.  The
+ * size of these cells is determined by multiplying the length of the diagonal
+ * of the AABB of the initial soft body size with this constant.
+ */
 float PhysxSoftBody::
 get_relative_grid_spacing() const {
 
@@ -327,12 +279,9 @@ get_relative_grid_spacing() const {
   return _ptr->getRelativeGridSpacing();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_volume_stiffness
-//       Access: Published
-//  Description: Sets the soft body volume stiffness in the range
-//               from 0 to 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body volume stiffness in the range from 0 to 1.
+ */
 void PhysxSoftBody::
 set_volume_stiffness(float stiffness) {
 
@@ -340,11 +289,9 @@ set_volume_stiffness(float stiffness) {
   ptr()->setVolumeStiffness(stiffness);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_volume_stiffness
-//       Access: Published
-//  Description: Retrieves the soft body volume stiffness.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the soft body volume stiffness.
+ */
 float PhysxSoftBody::
 get_volume_stiffness() const {
 
@@ -352,12 +299,9 @@ get_volume_stiffness() const {
   return ptr()->getVolumeStiffness();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_stretching_stiffness
-//       Access: Published
-//  Description: Sets the soft body stretching stiffness in the
-//               range from 0 to 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body stretching stiffness in the range from 0 to 1.
+ */
 void PhysxSoftBody::
 set_stretching_stiffness(float stiffness) {
 
@@ -365,11 +309,9 @@ set_stretching_stiffness(float stiffness) {
   ptr()->setStretchingStiffness(stiffness);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_stretching_stiffness
-//       Access: Published
-//  Description: Retrieves the soft body stretching stiffness.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the soft body stretching stiffness.
+ */
 float PhysxSoftBody::
 get_stretching_stiffness() const {
 
@@ -377,12 +319,9 @@ get_stretching_stiffness() const {
   return ptr()->getStretchingStiffness();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_damping_coefficient
-//       Access: Published
-//  Description: Sets the damping coefficient in the range from 0
-//               to 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the damping coefficient in the range from 0 to 1.
+ */
 void PhysxSoftBody::
 set_damping_coefficient(float coef) {
 
@@ -390,11 +329,9 @@ set_damping_coefficient(float coef) {
   ptr()->setDampingCoefficient(coef);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_damping_coefficient
-//       Access: Published
-//  Description: Retrieves the damping coefficient.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the damping coefficient.
+ */
 float PhysxSoftBody::
 get_damping_coefficient() const {
 
@@ -402,12 +339,9 @@ get_damping_coefficient() const {
   return ptr()->getDampingCoefficient();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_friction
-//       Access: Published
-//  Description: Sets the soft body friction coefficient in the
-//               range from 0 to 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body friction coefficient in the range from 0 to 1.
+ */
 void PhysxSoftBody::
 set_friction(float friction) {
 
@@ -415,11 +349,9 @@ set_friction(float friction) {
   ptr()->setFriction(friction);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_friction
-//       Access: Published
-//  Description: Retrieves the soft body friction coefficient.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the soft body friction coefficient.
+ */
 float PhysxSoftBody::
 get_friction() const {
 
@@ -427,12 +359,9 @@ get_friction() const {
   return ptr()->getFriction();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_tear_factor
-//       Access: Published
-//  Description: Sets the soft body tear factor (must be larger
-//               than one).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body tear factor (must be larger than one).
+ */
 void PhysxSoftBody::
 set_tear_factor(float factor) {
 
@@ -441,11 +370,9 @@ set_tear_factor(float factor) {
   ptr()->setTearFactor(factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_tear_factor
-//       Access: Published
-//  Description: Retrieves the soft body tear factor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the soft body tear factor.
+ */
 float PhysxSoftBody::
 get_tear_factor() const {
 
@@ -453,12 +380,9 @@ get_tear_factor() const {
   return ptr()->getTearFactor();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_attachment_tear_factor
-//       Access: Published
-//  Description: Sets the soft body attachment tear factor (must be
-//               larger than one).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body attachment tear factor (must be larger than one).
+ */
 void PhysxSoftBody::
 set_attachment_tear_factor(float factor) {
 
@@ -467,11 +391,9 @@ set_attachment_tear_factor(float factor) {
   ptr()->setAttachmentTearFactor(factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_attachment_tear_factor
-//       Access: Published
-//  Description: Retrieves the attachment soft body tear factor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the attachment soft body tear factor.
+ */
 float PhysxSoftBody::
 get_attachment_tear_factor() const {
 
@@ -479,11 +401,9 @@ get_attachment_tear_factor() const {
   return ptr()->getAttachmentTearFactor();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_solver_iterations
-//       Access: Published
-//  Description: Sets the soft body solver iterations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body solver iterations.
+ */
 void PhysxSoftBody::
 set_solver_iterations(unsigned int iterations) {
 
@@ -491,11 +411,9 @@ set_solver_iterations(unsigned int iterations) {
   ptr()->setSolverIterations(iterations);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_solver_iterations
-//       Access: Published
-//  Description: Retrieves the soft body solver iterations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the soft body solver iterations.
+ */
 unsigned int PhysxSoftBody::
 get_solver_iterations() const {
 
@@ -503,19 +421,15 @@ get_solver_iterations() const {
   return ptr()->getSolverIterations();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::is_sleeping
-//       Access: Published
-//  Description: Returns true if this soft body is sleeping. 
-//
-//               When a soft body does not move for a period of
-//               time, it is no longer simulated in order to save
-//               time. This state is called sleeping. However,
-//               because the object automatically wakes up when it
-//               is either touched by an awake object, or one of its
-//               properties is changed by the user, the entire sleep
-//               mechanism should be transparent to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this soft body is sleeping.
+ *
+ * When a soft body does not move for a period of time, it is no longer
+ * simulated in order to save time.  This state is called sleeping.  However,
+ * because the object automatically wakes up when it is either touched by an
+ * awake object, or one of its properties is changed by the user, the entire
+ * sleep mechanism should be transparent to the user.
+ */
 bool PhysxSoftBody::
 is_sleeping() const {
 
@@ -523,16 +437,13 @@ is_sleeping() const {
   return _ptr->isSleeping();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::wake_up
-//       Access: Published
-//  Description: Wakes up the soft body if it is sleeping. 
-//
-//               The wakeCounterValue determines how long until the
-//               body is put to sleep, a value of zero means that
-//               the body is sleeping. wake_up(0) is equivalent to
-//               PhysxSoftBody::put_to_sleep().
-////////////////////////////////////////////////////////////////////
+/**
+ * Wakes up the soft body if it is sleeping.
+ *
+ * The wakeCounterValue determines how long until the body is put to sleep, a
+ * value of zero means that the body is sleeping.  wake_up(0) is equivalent to
+ * PhysxSoftBody::put_to_sleep().
+ */
 void PhysxSoftBody::
 wake_up(float wakeCounterValue) {
 
@@ -540,17 +451,13 @@ wake_up(float wakeCounterValue) {
   _ptr->wakeUp(wakeCounterValue);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::put_to_sleep
-//       Access: Published
-//  Description: Forces the soft body to sleep. 
-//
-//               The soft body  will stay asleep until the next
-//               call to simulate, and will not wake up until then
-//               even when otherwise it would (for example a force
-//               is applied to it). It can however wake up during
-//               the next do_physics call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the soft body to sleep.
+ *
+ * The soft body  will stay asleep until the next call to simulate, and will
+ * not wake up until then even when otherwise it would (for example a force is
+ * applied to it). It can however wake up during the next do_physics call.
+ */
 void PhysxSoftBody::
 put_to_sleep() {
 
@@ -558,17 +465,14 @@ put_to_sleep() {
   _ptr->putToSleep();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_sleep_linear_velocity
-//       Access: Published
-//  Description: Sets the linear velocity below which an soft body
-//               may go to sleep. SoftBodys whose linear velocity is
-//               above this threshold will not be put to sleep.
-//
-//               Setting the sleep angular/linear velocity only
-//               makes sense when the BF_energy_sleep_test is not
-//               set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the linear velocity below which an soft body may go to sleep.
+ * SoftBodys whose linear velocity is above this threshold will not be put to
+ * sleep.
+ *
+ * Setting the sleep angular/linear velocity only makes sense when the
+ * BF_energy_sleep_test is not set.
+ */
 void PhysxSoftBody::
 set_sleep_linear_velocity(float threshold) {
 
@@ -576,14 +480,11 @@ set_sleep_linear_velocity(float threshold) {
   _ptr->setSleepLinearVelocity(threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_sleep_linear_velocity
-//       Access: Published
-//  Description: Returns the linear velocity below which an soft
-//               body may go to sleep. Soft bodies whose linear
-//               velocity is above this threshold will not be put
-//               to sleep.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear velocity below which an soft body may go to sleep.  Soft
+ * bodies whose linear velocity is above this threshold will not be put to
+ * sleep.
+ */
 float PhysxSoftBody::
 get_sleep_linear_velocity() const {
 
@@ -592,12 +493,9 @@ get_sleep_linear_velocity() const {
 }
 
 #if NX_SDK_VERSION_NUMBER > 281
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_self_collision_thickness
-//       Access: Published
-//  Description: Sets the soft body self collision thickness (must
-//               be positive).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body self collision thickness (must be positive).
+ */
 void PhysxSoftBody::
 set_self_collision_thickness(float thickness) {
 
@@ -605,11 +503,9 @@ set_self_collision_thickness(float thickness) {
   _ptr->setSelfCollisionThickness(thickness);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_self_collision_thickness
-//       Access: Published
-//  Description: Gets the soft body self collision thickness.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the soft body self collision thickness.
+ */
 float PhysxSoftBody::
 get_self_collision_thickness() const {
 
@@ -617,11 +513,9 @@ get_self_collision_thickness() const {
   return _ptr->getSelfCollisionThickness();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_hard_stretch_limitation_factor
-//       Access: Published
-//  Description: Sets the soft body hard stretch elongation limit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the soft body hard stretch elongation limit.
+ */
 void PhysxSoftBody::
 set_hard_stretch_limitation_factor(float factor) {
 
@@ -629,12 +523,9 @@ set_hard_stretch_limitation_factor(float factor) {
   ptr()->setHardStretchLimitationFactor(factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_hard_stretch_limitation_factor
-//       Access: Published
-//  Description: Retrieves the soft body hard stretch elongation
-//               limit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the soft body hard stretch elongation limit.
+ */
 float PhysxSoftBody::
 get_hard_stretch_limitation_factor() const {
 
@@ -644,19 +535,10 @@ get_hard_stretch_limitation_factor() const {
 #endif // NX_SDK_VERSION_NUMBER > 281
 
 
-
-
-
-
-
-
+/**
+ * Attaches a cloth vertex to a position in world space.
+ */
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::attach_vertex_to_global_pos
-//       Access: Published
-//  Description: Attaches a cloth vertex to a position in world
-//               space.
-////////////////////////////////////////////////////////////////////
 void PhysxSoftBody::
 attach_vertex_to_global_pos(unsigned int vertexId, LPoint3f const &pos) {
 
@@ -665,17 +547,16 @@ attach_vertex_to_global_pos(unsigned int vertexId, LPoint3f const &pos) {
 
   _ptr->attachVertexToGlobalPosition(vertexId, PhysxManager::point3_to_nxVec3(pos));
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::attach_to_shape
-//       Access: Published
-//  Description: Attaches the cloth to a shape. All cloth points
-//               currently inside the shape are attached.
-//
-//               This method only works with primitive and convex
-//               shapes. Since the inside of a general triangle mesh
-//               is not clearly defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches the cloth to a shape.  All cloth points currently inside the shape
+ * are attached.
+ *
+ * This method only works with primitive and convex shapes.  Since the inside
+ * of a general triangle mesh is not clearly defined.
+ */
+/*
 void PhysxSoftBody::
 attach_to_shape(PhysxShape *shape) {
 
@@ -685,17 +566,15 @@ attach_to_shape(PhysxShape *shape) {
   NxU32 attachmentFlags = 0; // --TODO--
   _ptr->attachToShape(shape->ptr(), attachmentFlags);
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::attach_to_colliding_shapes
-//       Access: Published
-//  Description: Attaches the cloth to all shapes, currently
-//               colliding. 
-//
-//               This method only works with primitive and convex
-//               shapes. Since the inside of a general triangle mesh
-//               is not clearly defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches the cloth to all shapes, currently colliding.
+ *
+ * This method only works with primitive and convex shapes.  Since the inside
+ * of a general triangle mesh is not clearly defined.
+ */
+/*
 void PhysxSoftBody::
 attach_to_colliding_shapes() {
 
@@ -704,16 +583,15 @@ attach_to_colliding_shapes() {
   NxU32 attachmentFlags = 0; // --TODO--
   _ptr->attachToCollidingShapes(attachmentFlags);
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::detach_from_shape
-//       Access: Published
-//  Description: Detaches the cloth from a shape it has been
-//               attached to before. 
-//
-//               If the cloth has not been attached to the shape
-//               before, the call has no effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detaches the cloth from a shape it has been attached to before.
+ *
+ * If the cloth has not been attached to the shape before, the call has no
+ * effect.
+ */
+/*
 void PhysxSoftBody::
 detach_from_shape(PhysxShape *shape) {
 
@@ -722,25 +600,24 @@ detach_from_shape(PhysxShape *shape) {
 
   _ptr->detachFromShape(shape->ptr());
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::free_vertex
-//       Access: Published
-//  Description: Frees a previously attached cloth point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees a previously attached cloth point.
+ */
+/*
 void PhysxSoftBody::
 free_vertex(unsigned int vertexId) {
 
   nassertv(_error_type == ET_ok);
   _ptr->freeVertex(vertexId);
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::attach_vertex_to_shape
-//       Access: Published
-//  Description: Attaches a cloth vertex to a local position within
-//               a shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches a cloth vertex to a local position within a shape.
+ */
+/*
 void PhysxSoftBody::
 attach_vertex_to_shape(unsigned int vertexId, PhysxShape *shape, LPoint3f const &localPos) {
 
@@ -753,12 +630,12 @@ attach_vertex_to_shape(unsigned int vertexId, PhysxShape *shape, LPoint3f const 
                             PhysxManager::point3_to_nxVec3(localPos),
                             attachmentFlags);
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_vertex_attachment_status
-//       Access: Published
-//  Description: Return the attachment status of the given vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the attachment status of the given vertex.
+ */
+/*
 PhysxEnums::PhysxVertexAttachmentStatus PhysxSoftBody::
 get_vertex_attachment_status(unsigned int vertexId) const {
 
@@ -767,14 +644,14 @@ get_vertex_attachment_status(unsigned int vertexId) const {
 
   return (PhysxVertexAttachmentStatus) _ptr->getVertexAttachmentStatus(vertexId);
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_vertex_attachment_shape
-//       Access: Published
-//  Description: Returns the pointer to an attached shape pointer
-//               of the given vertex. If the vertex is not attached
-//               or attached to a global position, NULL is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to an attached shape pointer of the given vertex.  If
+ * the vertex is not attached or attached to a global position, NULL is
+ * returned.
+ */
+/*
 PhysxShape *PhysxSoftBody::
 get_vertex_attachment_shape(unsigned int vertexId) const {
 
@@ -786,31 +663,30 @@ get_vertex_attachment_shape(unsigned int vertexId) const {
 
   return shape;
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_vertex_attachment_pos
-//       Access: Published
-//  Description: Returns the attachment position of the given
-//               vertex. If the vertex is attached to shape, the
-//               position local to the shape's pose is returned. If
-//               the vertex is not attached, the return value is
-//               undefined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the attachment position of the given vertex.  If the vertex is
+ * attached to shape, the position local to the shape's pose is returned.  If
+ * the vertex is not attached, the return value is undefined.
+ */
+/*
 LPoint3f PhysxSoftBody::
 get_vertex_attachment_pos(unsigned int vertexId) const {
 
   nassertr(_error_type == ET_ok, LPoint3f::zero());
-  // --TODO-- nassertr(vertexId < _ptr->getNumberOfParticles(), LPoint3f::zero());
+  // --TODO-- nassertr(vertexId < _ptr->getNumberOfParticles(),
+  // LPoint3f::zero());
 
   return PhysxManager::nxVec3_to_point3(_ptr->getVertexAttachmentPosition(vertexId));
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_external_acceleration
-//       Access: Published
-//  Description: Sets an external acceleration which affects all non
-//               attached particles of the cloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets an external acceleration which affects all non attached particles of
+ * the cloth.
+ */
+/*
 void PhysxSoftBody::
 set_external_acceleration(LVector3f const &acceleration) {
 
@@ -819,13 +695,12 @@ set_external_acceleration(LVector3f const &acceleration) {
 
   _ptr->setExternalAcceleration(PhysxManager::vec3_to_nxVec3(acceleration));
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::set_wind_acceleration
-//       Access: Published
-//  Description: Sets an acceleration acting normal to the cloth
-//               surface at each vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets an acceleration acting normal to the cloth surface at each vertex.
+ */
+/*
 void PhysxSoftBody::
 set_wind_acceleration(LVector3f const &acceleration) {
 
@@ -834,40 +709,39 @@ set_wind_acceleration(LVector3f const &acceleration) {
 
   _ptr->setWindAcceleration(PhysxManager::vec3_to_nxVec3(acceleration));
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_external_acceleration
-//       Access: Published
-//  Description: Retrieves the external acceleration which affects
-//               all non attached particles of the cloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the external acceleration which affects all non attached
+ * particles of the cloth.
+ */
+/*
 LVector3f PhysxSoftBody::
 get_external_acceleration() const {
 
   nassertr(_error_type == ET_ok, LVector3f::zero());
   return PhysxManager::nxVec3_to_vec3(_ptr->getExternalAcceleration());
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::get_wind_acceleration
-//       Access: Published
-//  Description: Retrieves the acceleration acting normal to the
-//               cloth surface at each vertex
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the acceleration acting normal to the cloth surface at each
+ * vertex
+ */
+/*
 LVector3f PhysxSoftBody::
 get_wind_acceleration() const {
 
   nassertr(_error_type == ET_ok, LVector3f::zero());
   return PhysxManager::nxVec3_to_vec3(_ptr->getWindAcceleration());
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::add_force_at_vertex
-//       Access: Published
-//  Description: Applies a force (or impulse) defined in the 
-//               global coordinate frame, to a particular vertex
-//               of the cloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a force (or impulse) defined in the global coordinate frame, to a
+ * particular vertex of the cloth.
+ */
+/*
 void PhysxSoftBody::
 add_force_at_vertex(LVector3f const &force, int vertexId, PhysxForceMode mode) {
 
@@ -876,14 +750,13 @@ add_force_at_vertex(LVector3f const &force, int vertexId, PhysxForceMode mode) {
                          vertexId,
                          (NxForceMode) mode);
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::add_force_at_pos
-//       Access: Published
-//  Description: Applies a radial force (or impulse) at a
-//               particular position. All vertices within radius
-//               will be affected with a quadratic drop-off. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a radial force (or impulse) at a particular position.  All vertices
+ * within radius will be affected with a quadratic drop-off.
+ */
+/*
 void PhysxSoftBody::
 add_force_at_pos(LPoint3f const &pos, float magnitude, float radius, PhysxForceMode mode) {
 
@@ -893,14 +766,13 @@ add_force_at_pos(LPoint3f const &pos, float magnitude, float radius, PhysxForceM
                       radius,
                       (NxForceMode) mode);
 }
+*/
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBody::add_directed_force_at_pos
-//       Access: Published
-//  Description: Applies a directed force (or impulse) at a
-//               particular position. All vertices within radius
-//               will be affected with a quadratic drop-off.  
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a directed force (or impulse) at a particular position.  All
+ * vertices within radius will be affected with a quadratic drop-off.
+ */
+/*
 void PhysxSoftBody::
 add_directed_force_at_pos(LPoint3f const &pos, LVector3f const &force, float radius, PhysxForceMode mode) {
 
@@ -911,4 +783,3 @@ add_directed_force_at_pos(LPoint3f const &pos, LVector3f const &force, float rad
                               (NxForceMode) mode);
 }
 */
-

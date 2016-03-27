@@ -94,7 +94,7 @@ get_slider(MString slider_name) {
       cerr << "selected element is not a blend shape\n";
     }
   }
-  
+
   cerr << "Couldn't find slider " << slider_name << "\n";
   exit(1);
 }
@@ -160,7 +160,7 @@ get_mesh(MString mesh_name) {
       cerr << "selected element is not a mesh\n";
     }
   }
-  
+
   cerr << "Couldn't find mesh " << mesh_name << "\n";
   exit(1);
 }
@@ -170,7 +170,7 @@ output_vertices(const char *filename, MFnMesh &mesh) {
   MStatus status;
 
   MPointArray verts;
-  //  status = mesh.getPoints(verts, MSpace::kObject);
+  // status = mesh.getPoints(verts, MSpace::kObject);
   status = mesh.getPoints(verts, MSpace::kWorld);
   if (!status) {
     status.perror("mesh.getPoints");

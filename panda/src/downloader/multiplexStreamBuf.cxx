@@ -1,16 +1,15 @@
-// Filename: multiplexStreamBuf.cxx
-// Created by:  drose (27Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file multiplexStreamBuf.cxx
+ * @author drose
+ * @date 2000-11-27
+ */
 
 #include "multiplexStreamBuf.h"
 
@@ -20,9 +19,9 @@
 #undef WINDOWS_LEAN_AND_MEAN
 #endif
 
-// We use real assert() instead of nassert(), because we're likely
-// to be invoked directly by pnotify.here, and we don't want to
-// risk infinite recursion.
+// We use real assert() instead of nassert(), because we're likely to be
+// invoked directly by pnotify.here, and we don't want to risk infinite
+// recursion.
 #include <assert.h>
 
 #ifndef HAVE_STREAMSIZE
@@ -30,12 +29,9 @@
 typedef int streamsize;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Output::close
-//       Access: Public
-//  Description: Closes or deletes the relevant pointers, if _owns_obj
-//               is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes or deletes the relevant pointers, if _owns_obj is true.
+ */
 void MultiplexStreamBuf::Output::
 close() {
   if (_owns_obj) {
@@ -56,11 +52,9 @@ close() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Output::write_string
-//       Access: Public
-//  Description: Dumps the indicated string to the appropriate place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dumps the indicated string to the appropriate place.
+ */
 void MultiplexStreamBuf::Output::
 write_string(const string &str) {
   switch (_output_type) {
@@ -84,11 +78,9 @@ write_string(const string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MultiplexStreamBuf::
 MultiplexStreamBuf() {
 #ifndef PHAVE_IOSTREAM
@@ -98,11 +90,9 @@ MultiplexStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MultiplexStreamBuf::
 ~MultiplexStreamBuf() {
   sync();
@@ -115,20 +105,16 @@ MultiplexStreamBuf::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::add_output
-//       Access: Public
-//  Description: Adds the indicated output destinition to the set of
-//               things that will be written to when characters are
-//               output to the MultiplexStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated output destinition to the set of things that will be
+ * written to when characters are output to the MultiplexStream.
+ */
 void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
            MultiplexStreamBuf::OutputType output_type,
            ostream *out, FILE *fout, bool owns_obj) {
 #ifdef OLD_HAVE_IPC
-  // Ensure that we have the mutex while we fiddle with the list of
-  // outputs.
+  // Ensure that we have the mutex while we fiddle with the list of outputs.
   mutex_lock m(_lock);
 #endif
 
@@ -142,11 +128,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::flush
-//       Access: Public
-//  Description: Forces out all output that hasn't yet been written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces out all output that hasn't yet been written.
+ */
 void MultiplexStreamBuf::
 flush() {
 #ifdef OLD_HAVE_IPC
@@ -156,12 +140,10 @@ flush() {
   write_chars("", 0, true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::overflow
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int MultiplexStreamBuf::
 overflow(int ch) {
 #ifdef OLD_HAVE_IPC
@@ -184,13 +166,10 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::sync
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when the
-//               buffer should be flushed to output (for instance, on
-//               destruction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when the buffer should be
+ * flushed to output (for instance, on destruction).
+ */
 int MultiplexStreamBuf::
 sync() {
 #ifdef OLD_HAVE_IPC
@@ -199,28 +178,25 @@ sync() {
 
   streamsize n = pptr() - pbase();
 
-  // We pass in false for the flush value, even though our
-  // transmitting ostream said to sync.  This allows us to get better
-  // line buffering, since our transmitting ostream is often set
-  // unitbuf, and might call sync multiple times in one line.  We
-  // still have an explicit flush() call to force the issue.
+  // We pass in false for the flush value, even though our transmitting
+  // ostream said to sync.  This allows us to get better line buffering, since
+  // our transmitting ostream is often set unitbuf, and might call sync
+  // multiple times in one line.  We still have an explicit flush() call to
+  // force the issue.
   write_chars(pbase(), n, false);
   pbump(-n);
 
   return 0;  // Return 0 for success, EOF to indicate write full.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::write_chars
-//       Access: Private
-//  Description: An internal function called by sync() and overflow()
-//               to store one or more characters written to the stream
-//               into the memory buffer.
-//
-//               It is assumed that there is only one thread at a time
-//               running this code; it is the responsibility of the
-//               caller to grab the _lock mutex before calling this.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by sync() and overflow() to store one or more
+ * characters written to the stream into the memory buffer.
+ *
+ * It is assumed that there is only one thread at a time running this code; it
+ * is the responsibility of the caller to grab the _lock mutex before calling
+ * this.
+ */
 void MultiplexStreamBuf::
 write_chars(const char *start, int length, bool flush) {
   size_t orig = _line_buffer.length();
@@ -231,14 +207,14 @@ write_chars(const char *start, int length, bool flush) {
   string line;
 
   if (flush) {
-    // If we're to flush the stream now, we dump the whole thing
-    // regardless of whether we have reached end-of-line.
+    // If we're to flush the stream now, we dump the whole thing regardless of
+    // whether we have reached end-of-line.
     line = _line_buffer + latest;
     _line_buffer = "";
 
   } else {
-    // Otherwise, we check for the end-of-line character, for our
-    // ostreams that only want a complete line at a time.
+    // Otherwise, we check for the end-of-line character, for our ostreams
+    // that only want a complete line at a time.
     _line_buffer += latest;
     size_t eol = _line_buffer.rfind('\n', orig);
     if (eol != string::npos) {
@@ -259,8 +235,7 @@ write_chars(const char *start, int length, bool flush) {
       break;
 
     case BT_line:
-      // Line buffering: send only when a complete line has been
-      // received.
+      // Line buffering: send only when a complete line has been received.
       if (!line.empty()) {
         out.write_string(line);
       }

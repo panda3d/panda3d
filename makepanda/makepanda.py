@@ -457,7 +457,6 @@ SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(RTDIST)
-SdkLocateVisualStudio(MSVC_VERSION)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
@@ -496,6 +495,7 @@ if RUNTIME and not HOST_URL:
 
 if GetHost() == 'windows' and GetTarget() == 'windows':
     COMPILER = "MSVC"
+    SdkLocateVisualStudio(MSVC_VERSION)
 else:
     COMPILER = "GCC"
 
@@ -736,6 +736,9 @@ if (COMPILER=="GCC"):
         if (os.path.isdir("/usr/PCBSD")):
             IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
             LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
+
+    if GetTarget() != "windows":
+        PkgDisable("DIRECTCAM")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -1168,7 +1171,7 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
 
-        if not GetLinkAllStatic():
+        if not GetLinkAllStatic() and 'NOHIDDEN' not in opts:
             cmd += ' -fvisibility=hidden'
 
         # Mac-specific flags.
@@ -1624,7 +1627,8 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
             else:
                 cmd = cxx + ' -shared'
-                if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
+                if "MODULE" not in opts or GetTarget() == 'android':
+                    cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
         for x in obj:
@@ -2617,7 +2621,26 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("DIRECT")==0):
-    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=['all'])
+    fixers = [
+        'apply',
+        'callable',
+        'dict',
+        'except',
+        'execfile',
+        'import',
+        'imports',
+        'long',
+        'metaclass',
+        'next',
+        'numliterals',
+        'print',
+        'types',
+        'unicode',
+        'xrange',
+        'xreadlines',
+    ]
+
+    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=fixers, threads=THREADCOUNT)
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
 
     # This file used to be copied, but would nowadays cause conflicts.
@@ -2667,7 +2690,8 @@ if not PkgSkip("PYTHON"):
 
     # Also add this file, for backward compatibility.
     ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """
-print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
+if __debug__:
+    print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
 from .interrogatedb import *
 """)
 
@@ -2698,7 +2722,8 @@ if not PkgSkip("VRPN"):
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
 
-print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
+if __debug__:
+    print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
 """
 
 for module in panda_modules:
@@ -4323,7 +4348,7 @@ if (GetTarget() == 'windows' and not RUNTIME):
 # DIRECTORY: panda/metalibs/pandadx9/
 #
 
-if PkgSkip("DX9")==0 and not RUNTIME:
+if GetTarget() == 'windows' and PkgSkip("DX9")==0 and not RUNTIME:
   OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
   TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
   TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
@@ -4535,8 +4560,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles.dll', input='pandagles_pandagles.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_config_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
@@ -4554,8 +4578,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
   TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
@@ -4803,7 +4826,7 @@ if (not RUNTIME and GetTarget() == 'android'):
   TargetAdd('libp3android.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3android.dll', opts=['JNIGRAPHICS'])
 
-  TargetAdd('android_native_app_glue.obj', opts=OPTS, input='android_native_app_glue.c')
+  TargetAdd('android_native_app_glue.obj', opts=OPTS + ['NOHIDDEN'], input='android_native_app_glue.c')
   TargetAdd('android_main.obj', opts=OPTS, input='android_main.cxx')
 
   if (not RTDIST and PkgSkip("PVIEW")==0):

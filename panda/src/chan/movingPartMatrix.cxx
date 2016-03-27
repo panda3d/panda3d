@@ -1,17 +1,15 @@
-// Filename: movingPartMatrix.cxx
-// Created by:  drose (23Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movingPartMatrix.cxx
+ * @author drose
+ * @date 1999-02-23
+ */
 
 #include "movingPartMatrix.h"
 #include "animChannelMatrixDynamic.h"
@@ -32,23 +30,18 @@ template class MovingPart<ACMatrixSwitchType>;
 
 TypeHandle MovingPartMatrix::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MovingPartMatrix::
 ~MovingPartMatrix() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::make_default_channel
-//       Access: Public, Virtual
-//  Description: Creates and returns a new AnimChannel that is not
-//               part of any hierarchy, but that returns the default
-//               value associated with this part.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates and returns a new AnimChannel that is not part of any hierarchy,
+ * but that returns the default value associated with this part.
+ */
 AnimChannelBase *MovingPartMatrix::
 make_default_channel() const {
   LVecBase3 pos, hpr, scale, shear;
@@ -56,18 +49,15 @@ make_default_channel() const {
   return new AnimChannelMatrixFixed(get_name(), pos, hpr, scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::get_blend_value
-//       Access: Public
-//  Description: Attempts to blend the various matrix values
-//               indicated, and sets the _value member to the
-//               resulting matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to blend the various matrix values indicated, and sets the _value
+ * member to the resulting matrix.
+ */
 void MovingPartMatrix::
 get_blend_value(const PartBundle *root) {
-  // If a forced channel is set on this particular joint, we always
-  // return that value instead of performing the blend.  Furthermore,
-  // the frame number is always 0 for the forced channel.
+  // If a forced channel is set on this particular joint, we always return
+  // that value instead of performing the blend.  Furthermore, the frame
+  // number is always 0 for the forced channel.
   if (_forced_channel != (AnimChannelBase *)NULL) {
     ChannelType *channel = DCAST(ChannelType, _forced_channel);
     channel->get_value(0, _value);
@@ -82,29 +72,29 @@ get_blend_value(const PartBundle *root) {
       _value = _default_value;
     }
 
-  } else if (_effective_control != (AnimControl *)NULL && 
+  } else if (_effective_control != (AnimControl *)NULL &&
              !cdata->_frame_blend_flag) {
     // A single value, the normal case.
     ChannelType *channel = DCAST(ChannelType, _effective_channel);
     channel->get_value(_effective_control->get_frame(), _value);
 
   } else {
-    // A blend of two or more values, either between multiple
-    // different animations, or between consecutive frames of the same
-    // animation (or both).
+    // A blend of two or more values, either between multiple different
+    // animations, or between consecutive frames of the same animation (or
+    // both).
     switch (cdata->_blend_type) {
     case PartBundle::BT_linear:
       {
         // An ordinary, linear blend.
         LMatrix4 net_value = LMatrix4::zeros_mat();
         PN_stdfloat net_effect = 0.0f;
-        
+
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
           PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
-          
+
           int channel_index = control->get_channel_index();
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
@@ -126,7 +116,7 @@ get_blend_value(const PartBundle *root) {
             net_effect += effect;
           }
         }
-        
+
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _default_value;
@@ -139,23 +129,22 @@ get_blend_value(const PartBundle *root) {
 
     case PartBundle::BT_normalized_linear:
       {
-        // A normalized linear blend.  This means we do a linear blend
-        // without scales or shears, normalize the scale and shear
-        // components of the resulting matrix to eliminate
-        // artificially-introduced scales, and then reapply the
-        // scales and shears.
-        
+        // A normalized linear blend.  This means we do a linear blend without
+        // scales or shears, normalize the scale and shear components of the
+        // resulting matrix to eliminate artificially-introduced scales, and
+        // then reapply the scales and shears.
+
         LMatrix4 net_value = LMatrix4::zeros_mat();
         LVecBase3 scale(0.0f, 0.0f, 0.0f);
         LVecBase3 shear(0.0f, 0.0f, 0.0f);
         PN_stdfloat net_effect = 0.0f;
-        
+
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
           PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
-          
+
           ChannelType *channel = NULL;
           int channel_index = control->get_channel_index();
           if (channel_index >= 0 && channel_index < (int)_channels.size()) {
@@ -168,7 +157,7 @@ get_blend_value(const PartBundle *root) {
             channel->get_value_no_scale_shear(frame, v);
             channel->get_scale(frame, iscale);
             channel->get_shear(frame, ishear);
-            
+
             if (!cdata->_frame_blend_flag) {
               // Hold the current frame until the next one is ready.
               net_value += v * effect;
@@ -194,7 +183,7 @@ get_blend_value(const PartBundle *root) {
             net_effect += effect;
           }
         }
-        
+
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _default_value;
@@ -204,9 +193,9 @@ get_blend_value(const PartBundle *root) {
           net_value /= net_effect;
           scale /= net_effect;
           shear /= net_effect;
-          
+
           // Now rebuild the matrix with the correct scale values.
-          
+
           LVector3 false_scale, false_shear, hpr, translate;
           decompose_matrix(net_value, false_scale, false_shear, hpr, translate);
           compose_matrix(_value, scale, shear, hpr, translate);
@@ -222,13 +211,13 @@ get_blend_value(const PartBundle *root) {
         LVecBase3 pos(0.0f, 0.0f, 0.0f);
         LVecBase3 shear(0.0f, 0.0f, 0.0f);
         PN_stdfloat net_effect = 0.0f;
-        
+
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
           PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
-          
+
           ChannelType *channel = NULL;
           int channel_index = control->get_channel_index();
           if (channel_index >= 0 && channel_index < (int)_channels.size()) {
@@ -241,7 +230,7 @@ get_blend_value(const PartBundle *root) {
             channel->get_hpr(frame, ihpr);
             channel->get_pos(frame, ipos);
             channel->get_shear(frame, ishear);
-            
+
             if (!cdata->_frame_blend_flag) {
               // Hold the current frame until the next one is ready.
               scale += iscale * effect;
@@ -273,7 +262,7 @@ get_blend_value(const PartBundle *root) {
             net_effect += effect;
           }
         }
-        
+
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _default_value;
@@ -284,7 +273,7 @@ get_blend_value(const PartBundle *root) {
           hpr /= net_effect;
           pos /= net_effect;
           shear /= net_effect;
-          
+
           compose_matrix(_value, scale, shear, hpr, pos);
         }
       }
@@ -292,20 +281,19 @@ get_blend_value(const PartBundle *root) {
 
     case PartBundle::BT_componentwise_quat:
       {
-        // Componentwise linear, except for rotation, which is a
-        // quaternion.
+        // Componentwise linear, except for rotation, which is a quaternion.
         LVecBase3 scale(0.0f, 0.0f, 0.0f);
         LQuaternion quat(0.0f, 0.0f, 0.0f, 0.0f);
         LVecBase3 pos(0.0f, 0.0f, 0.0f);
         LVecBase3 shear(0.0f, 0.0f, 0.0f);
         PN_stdfloat net_effect = 0.0f;
-        
+
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
           PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
-          
+
           ChannelType *channel = NULL;
           int channel_index = control->get_channel_index();
           if (channel_index >= 0 && channel_index < (int)_channels.size()) {
@@ -319,7 +307,7 @@ get_blend_value(const PartBundle *root) {
             channel->get_quat(frame, iquat);
             channel->get_pos(frame, ipos);
             channel->get_shear(frame, ishear);
-            
+
             if (!cdata->_frame_blend_flag) {
               // Hold the current frame until the next one is ready.
               scale += iscale * effect;
@@ -352,7 +340,7 @@ get_blend_value(const PartBundle *root) {
             net_effect += effect;
           }
         }
-        
+
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _default_value;
@@ -363,11 +351,10 @@ get_blend_value(const PartBundle *root) {
           quat /= net_effect;
           pos /= net_effect;
           shear /= net_effect;
-          
-          // There should be no need to normalize the quaternion,
-          // assuming all of the input quaternions were already
-          // normalized.
-          
+
+          // There should be no need to normalize the quaternion, assuming all
+          // of the input quaternions were already normalized.
+
           _value = LMatrix4::scale_shear_mat(scale, shear) * quat;
           _value.set_row(3, pos);
         }
@@ -377,30 +364,23 @@ get_blend_value(const PartBundle *root) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::apply_freeze_matrix
-//       Access: Public, Virtual
-//  Description: Freezes this particular joint so that it will always
-//               hold the specified transform.  Returns true if this
-//               is a joint that can be so frozen, false otherwise.
-//               This is called internally by
-//               PartBundle::freeze_joint().
-////////////////////////////////////////////////////////////////////
+/**
+ * Freezes this particular joint so that it will always hold the specified
+ * transform.  Returns true if this is a joint that can be so frozen, false
+ * otherwise.  This is called internally by PartBundle::freeze_joint().
+ */
 bool MovingPartMatrix::
 apply_freeze_matrix(const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   _forced_channel = new AnimChannelMatrixFixed(get_name(), pos, hpr, scale);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::apply_control
-//       Access: Public, Virtual
-//  Description: Specifies a node to influence this particular joint
-//               so that it will always hold the node's transform.
-//               Returns true if this is a joint that can be so
-//               controlled, false otherwise.  This is called
-//               internally by PartBundle::control_joint().
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a node to influence this particular joint so that it will always
+ * hold the node's transform.  Returns true if this is a joint that can be so
+ * controlled, false otherwise.  This is called internally by
+ * PartBundle::control_joint().
+ */
 bool MovingPartMatrix::
 apply_control(PandaNode *node) {
   AnimChannelMatrixDynamic *chan = new AnimChannelMatrixDynamic(get_name());
@@ -409,11 +389,9 @@ apply_control(PandaNode *node) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::make_MovingPartMatrix
-//       Access: Protected
-//  Description: Factory method to generate a MovingPartMatrix object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a MovingPartMatrix object
+ */
 TypedWritable* MovingPartMatrix::
 make_MovingPartMatrix(const FactoryParams &params) {
   MovingPartMatrix *me = new MovingPartMatrix;
@@ -425,11 +403,9 @@ make_MovingPartMatrix(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a MovingPartMatrix object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a MovingPartMatrix object
+ */
 void MovingPartMatrix::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_MovingPartMatrix);

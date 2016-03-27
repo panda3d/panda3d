@@ -1,16 +1,15 @@
-// Filename: textEncoder.h
-// Created by:  drose (26Mar03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textEncoder.h
+ * @author drose
+ * @date 2003-03-26
+ */
 
 #ifndef TEXTENCODER_H
 #define TEXTENCODER_H
@@ -22,18 +21,15 @@
 
 class StringDecoder;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextEncoder
-// Description : This class can be used to convert text between
-//               multiple representations, e.g. utf-8 to Unicode.  You
-//               may use it as a static class object, passing the
-//               encoding each time, or you may create an instance and
-//               use that object, which will record the current
-//               encoding and retain the current string.
-//
-//               This class is also a base class of TextNode, which
-//               inherits this functionality.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can be used to convert text between multiple representations,
+ * e.g.  utf-8 to Unicode.  You may use it as a static class object, passing
+ * the encoding each time, or you may create an instance and use that object,
+ * which will record the current encoding and retain the current string.
+ *
+ * This class is also a base class of TextNode, which inherits this
+ * functionality.
+ */
 class EXPCL_DTOOL TextEncoder {
 PUBLISHED:
   enum Encoding {
@@ -86,8 +82,8 @@ PUBLISHED:
   INLINE static string lower(const string &source);
   INLINE static string lower(const string &source, Encoding encoding);
 
-  // Direct support for wide-character strings.  Now publishable with
-  // the new wstring support in interrogate.
+  // Direct support for wide-character strings.  Now publishable with the new
+  // wstring support in interrogate.
   INLINE void set_wtext(const wstring &wtext);
   INLINE const wstring &get_wtext() const;
   INLINE void append_wtext(const wstring &text);
@@ -120,12 +116,11 @@ operator << (ostream &out, TextEncoder::Encoding encoding);
 EXPCL_DTOOL istream &
 operator >> (istream &in, TextEncoder::Encoding &encoding);
 
-// We'll define the output operator for wstring here, too.  Presumably
-// this will not be automatically defined by any system libraries.
+// We'll define the output operator for wstring here, too.  Presumably this
+// will not be automatically defined by any system libraries.
 
-// This function is declared inline to minimize the risk of link
-// conflicts should another third-party module also define the same
-// output operator.
+// This function is declared inline to minimize the risk of link conflicts
+// should another third-party module also define the same output operator.
 INLINE EXPCL_DTOOL ostream &
 operator << (ostream &out, const wstring &str);
 

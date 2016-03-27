@@ -1,16 +1,13 @@
-// Filename: profileTimer.cxx
-// Created by:  
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file profileTimer.cxx
+ */
 
 #include "profileTimer.h"
 
@@ -168,8 +165,8 @@ ProfileTimer::AutoTimer::AutoTimer(ProfileTimer& profile, const char* tag) :
     _profile(profile) {
   _tag=tag;
   if (_profile._autoTimerCount) {
-    // ...this is a nested call to another AutoTimer.
-    // Assign the time to the prior AutoTimer:
+    // ...this is a nested call to another AutoTimer.  Assign the time to the
+    // prior AutoTimer:
     _profile.mark(_profile._entries[_profile._entryCount-1]._tag);
   } else {
     // ...this is not a nested call.
@@ -179,6 +176,3 @@ ProfileTimer::AutoTimer::AutoTimer(ProfileTimer& profile, const char* tag) :
   ++_profile._autoTimerCount;
   _profile.mark(_tag);
 }
-
-
-

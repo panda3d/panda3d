@@ -1,16 +1,15 @@
-// Filename: httpClient.cxx
-// Created by:  drose (24Sep02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file httpClient.cxx
+ * @author drose
+ * @date 2002-09-24
+ */
 
 #include "httpClient.h"
 #include "httpChannel.h"
@@ -27,10 +26,9 @@
 
 PT(HTTPClient) HTTPClient::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: trim_blanks
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 static string
 trim_blanks(const string &str) {
   size_t start = 0;
@@ -46,18 +44,15 @@ trim_blanks(const string &str) {
   return str.substr(start, end - start);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: tokenize
-//  Description: Chops the source string up into pieces delimited by
-//               any of the characters specified in delimiters.
-//               Repeated delimiter characters represent zero-length
-//               tokens.
-//
-//               It is the user's responsibility to ensure the output
-//               vector is cleared before calling this function; the
-//               results will simply be appended to the end of the
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chops the source string up into pieces delimited by any of the characters
+ * specified in delimiters.  Repeated delimiter characters represent zero-
+ * length tokens.
+ *
+ * It is the user's responsibility to ensure the output vector is cleared
+ * before calling this function; the results will simply be appended to the
+ * end of the vector.
+ */
 static void
 tokenize(const string &str, vector_string &words, const string &delimiters) {
   size_t p = 0;
@@ -73,11 +68,9 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
   words.push_back(string());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 HTTPClient::
 HTTPClient() {
   ConfigVariableBool verify_ssl
@@ -110,7 +103,7 @@ HTTPClient() {
      PRC_DESC("This specifies the default value for HTTPClient::set_try_all_direct().  "
               "If this is true, a direct connection will always be attempted after an "
               "attempt to connect through a proxy fails."));
-  
+
   ConfigVariableString http_proxy_username
     ("http-proxy-username", "",
      PRC_DESC("This specifies a default username:password to pass to the proxy."));
@@ -132,7 +125,7 @@ HTTPClient() {
               "connection-specific certificate may also be specified at runtime on "
               "the HTTPClient object, but this will require having a different "
               "HTTPClient object for each differently-certificated connection."));
-  
+
   ConfigVariableString http_client_certificate_passphrase
     ("http-client-certificate-passphrase", "",
      PRC_DESC("This specifies the passphrase to use to decode the certificate named "
@@ -156,7 +149,7 @@ HTTPClient() {
               "it does, we will accept the cert, but only if it also matches "
               "a known certificate authority.  This option may appear "
               "multiple times."));
-  
+
   _http_version = HTTPEnum::HV_11;
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
   _ssl_ctx = (SSL_CTX *)NULL;
@@ -204,16 +197,14 @@ HTTPClient() {
     add_preapproved_server_certificate_name(URLSpec(a, true), b);
   }
 
-  // The first time we create an HTTPClient, we must initialize the
-  // OpenSSL library.  The OpenSSLWrapper object does that.
+  // The first time we create an HTTPClient, we must initialize the OpenSSL
+  // library.  The OpenSSLWrapper object does that.
   OpenSSLWrapper::get_global_ptr();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 HTTPClient::
 HTTPClient(const HTTPClient &copy) {
   _ssl_ctx = (SSL_CTX *)NULL;
@@ -221,11 +212,9 @@ HTTPClient(const HTTPClient &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void HTTPClient::
 operator = (const HTTPClient &copy) {
   _proxies_by_scheme = copy._proxies_by_scheme;
@@ -237,16 +226,14 @@ operator = (const HTTPClient &copy) {
   _cookies = copy._cookies;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 HTTPClient::
 ~HTTPClient() {
-  // Before we can free the context, we must remove the X509_STORE
-  // pointer from it, so it won't be destroyed along with it (this
-  // object is shared among all contexts).
+  // Before we can free the context, we must remove the X509_STORE pointer
+  // from it, so it won't be destroyed along with it (this object is shared
+  // among all contexts).
   if (_ssl_ctx != (SSL_CTX *)NULL) {
     _ssl_ctx->cert_store = NULL;
     SSL_CTX_free(_ssl_ctx);
@@ -255,43 +242,33 @@ HTTPClient::
   unload_client_certificate();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::init_random_seed
-//       Access: Published, Static
-//  Description: This may be called once, presumably at the beginning
-//               of an application, to initialize OpenSSL's random
-//               seed.  On Windows, it is particularly important to
-//               call this at startup if you are going to be performing
-//               any https operations or otherwise use encryption,
-//               since the Windows algorithm for getting a random seed
-//               takes 2-3 seconds at startup, but can take 30 seconds
-//               or more after you have opened a 3-D graphics window
-//               and started rendering.
-//
-//               There is no harm in calling this method multiple
-//               times, or in not calling it at all.
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be called once, presumably at the beginning of an application, to
+ * initialize OpenSSL's random seed.  On Windows, it is particularly important
+ * to call this at startup if you are going to be performing any https
+ * operations or otherwise use encryption, since the Windows algorithm for
+ * getting a random seed takes 2-3 seconds at startup, but can take 30 seconds
+ * or more after you have opened a 3-D graphics window and started rendering.
+ *
+ * There is no harm in calling this method multiple times, or in not calling
+ * it at all.
+ */
 void HTTPClient::
 init_random_seed() {
-  // Creating the global OpenSSLWrapper object is nowadays sufficient
-  // to ensure that OpenSSL and its random seed have been initialized.
+  // Creating the global OpenSSLWrapper object is nowadays sufficient to
+  // ensure that OpenSSL and its random seed have been initialized.
   OpenSSLWrapper::get_global_ptr();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::set_proxy_spec
-//       Access: Published
-//  Description: Specifies the complete set of proxies to use for all
-//               schemes.  This is either a semicolon-delimited set of
-//               hostname:ports, or a semicolon-delimited set of pairs
-//               of the form "scheme=hostname:port", or a combination.
-//               Use the keyword DIRECT, or an empty string, to
-//               represent a direct connection.  A particular scheme
-//               and/or proxy host may be listed more than once.  This
-//               is a convenience function that can be used in place
-//               of explicit calls to add_proxy() for each
-//               scheme/proxy pair.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the complete set of proxies to use for all schemes.  This is
+ * either a semicolon-delimited set of hostname:ports, or a semicolon-
+ * delimited set of pairs of the form "scheme=hostname:port", or a
+ * combination.  Use the keyword DIRECT, or an empty string, to represent a
+ * direct connection.  A particular scheme and/or proxy host may be listed
+ * more than once.  This is a convenience function that can be used in place
+ * of explicit calls to add_proxy() for each scheme/proxy pair.
+ */
 void HTTPClient::
 set_proxy_spec(const string &proxy_spec) {
   clear_proxy();
@@ -307,7 +284,7 @@ set_proxy_spec(const string &proxy_spec) {
          pi != proxies.end();
          ++pi) {
       const string &spec = (*pi);
-      
+
       // Divide out the scheme and the hostname.
       string scheme;
       string proxy;
@@ -319,7 +296,7 @@ set_proxy_spec(const string &proxy_spec) {
         scheme = trim_blanks(spec.substr(0, equals));
         proxy = trim_blanks(spec.substr(equals + 1));
       }
-      
+
       if (proxy == "DIRECT" || proxy.empty()) {
         add_proxy(scheme, URLSpec());
       } else {
@@ -329,17 +306,13 @@ set_proxy_spec(const string &proxy_spec) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_proxy_spec
-//       Access: Published
-//  Description: Returns the complete set of proxies to use for all
-//               schemes.  This is a string of the form specified by
-//               set_proxy_spec(), above.  Note that the string
-//               returned by this function may not be exactly the same
-//               as the string passed into set_proxy_spec(), since the
-//               string is regenerated from the internal storage
-//               structures and may therefore be reordered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the complete set of proxies to use for all schemes.  This is a
+ * string of the form specified by set_proxy_spec(), above.  Note that the
+ * string returned by this function may not be exactly the same as the string
+ * passed into set_proxy_spec(), since the string is regenerated from the
+ * internal storage structures and may therefore be reordered.
+ */
 string HTTPClient::
 get_proxy_spec() const {
   string result;
@@ -369,14 +342,11 @@ get_proxy_spec() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::set_direct_host_spec
-//       Access: Published
-//  Description: Specifies the set of hosts that should be connected
-//               to directly, without using a proxy.  This is a
-//               semicolon-separated list of hostnames that may
-//               contain wildcard characters ("*").
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the set of hosts that should be connected to directly, without
+ * using a proxy.  This is a semicolon-separated list of hostnames that may
+ * contain wildcard characters ("*").
+ */
 void HTTPClient::
 set_direct_host_spec(const string &direct_host_spec) {
   clear_direct_host();
@@ -384,29 +354,26 @@ set_direct_host_spec(const string &direct_host_spec) {
   // Tokenize the string based on the semicolons.
   vector_string hosts;
   tokenize(direct_host_spec, hosts, ";");
-  
+
   for (vector_string::const_iterator hi = hosts.begin();
        hi != hosts.end();
        ++hi) {
     string spec = trim_blanks(*hi);
 
-    // We should be careful to avoid adding any empty hostnames to the
-    // list.  In particular, we will get one empty hostname if the
-    // direct_host_spec is empty.
+    // We should be careful to avoid adding any empty hostnames to the list.
+    // In particular, we will get one empty hostname if the direct_host_spec
+    // is empty.
     if (!spec.empty()) {
       add_direct_host(spec);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_direct_host_spec
-//       Access: Published
-//  Description: Returns the set of hosts that should be connected
-//               to directly, without using a proxy, as a
-//               semicolon-separated list of hostnames that may
-//               contain wildcard characters ("*").
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of hosts that should be connected to directly, without
+ * using a proxy, as a semicolon-separated list of hostnames that may contain
+ * wildcard characters ("*").
+ */
 string HTTPClient::
 get_direct_host_spec() const {
   string result;
@@ -424,31 +391,25 @@ get_direct_host_spec() const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::clear_proxy
-//       Access: Published
-//  Description: Resets the proxy spec to empty.  Subsequent calls to
-//               add_proxy() may be made to build up the set of proxy
-//               servers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the proxy spec to empty.  Subsequent calls to add_proxy() may be
+ * made to build up the set of proxy servers.
+ */
 void HTTPClient::
 clear_proxy() {
   _proxies_by_scheme.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::add_proxy
-//       Access: Published
-//  Description: Adds the indicated proxy host as a proxy for
-//               communications on the given scheme.  Usually the
-//               scheme is "http" or "https".  It may be the empty
-//               string to indicate a general proxy.  The proxy string
-//               may be the empty URL to indicate a direct connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated proxy host as a proxy for communications on the given
+ * scheme.  Usually the scheme is "http" or "https".  It may be the empty
+ * string to indicate a general proxy.  The proxy string may be the empty URL
+ * to indicate a direct connection.
+ */
 void HTTPClient::
 add_proxy(const string &scheme, const URLSpec &proxy) {
   URLSpec proxy_url(proxy);
-  
+
   // The scheme is always converted to lowercase.
   string lc_scheme;
   lc_scheme.reserve(scheme.length());
@@ -456,61 +417,55 @@ add_proxy(const string &scheme, const URLSpec &proxy) {
   for (si = scheme.begin(); si != scheme.end(); ++si) {
     lc_scheme += tolower(*si);
   }
-  
+
   // Remove the trailing colon, if there is one.
   if (!lc_scheme.empty() && lc_scheme[lc_scheme.length() - 1] == ':') {
     lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
   }
 
   if (!proxy_url.empty()) {
-    // Enforce the scheme that we use to communicate to the proxy
-    // itself.  This is not the same as lc_scheme, which is the scheme
-    // of the requested connection.  Generally, all proxies speak
-    // HTTP, except for Socks proxies.
+    // Enforce the scheme that we use to communicate to the proxy itself.
+    // This is not the same as lc_scheme, which is the scheme of the requested
+    // connection.  Generally, all proxies speak HTTP, except for Socks
+    // proxies.
 
     if (lc_scheme == "socks") {
-      // Scheme "socks" implies we talk to the proxy via the "socks"
-      // scheme, no matter what scheme the user actually specified.
+      // Scheme "socks" implies we talk to the proxy via the "socks" scheme,
+      // no matter what scheme the user actually specified.
       proxy_url.set_scheme("socks");
-      
+
     } else if (!proxy_url.has_scheme()) {
-      // Otherwise, if the user didn't specify a scheme to talk to the
-      // proxy, the default is "http".
+      // Otherwise, if the user didn't specify a scheme to talk to the proxy,
+      // the default is "http".
       proxy_url.set_scheme("http");
     }
   }
-  
+
   _proxies_by_scheme[lc_scheme].push_back(proxy_url);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::clear_direct_host
-//       Access: Published
-//  Description: Resets the set of direct hosts to empty.  Subsequent
-//               calls to add_direct_host() may be made to build up
-//               the list of hosts that do not require a proxy
-//               connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the set of direct hosts to empty.  Subsequent calls to
+ * add_direct_host() may be made to build up the list of hosts that do not
+ * require a proxy connection.
+ */
 void HTTPClient::
 clear_direct_host() {
   _direct_hosts.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::add_direct_host
-//       Access: Published
-//  Description: Adds the indicated name to the set of hostnames that
-//               are connected to directly, without using a proxy.
-//               This name may be either a DNS name or an IP address,
-//               and it may include the * as a wildcard character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated name to the set of hostnames that are connected to
+ * directly, without using a proxy.  This name may be either a DNS name or an
+ * IP address, and it may include the * as a wildcard character.
+ */
 void HTTPClient::
 add_direct_host(const string &hostname) {
   // The hostname is always converted to lowercase.
   string lc_hostname;
   lc_hostname.reserve(hostname.length());
-  for (string::const_iterator si = hostname.begin(); 
-       si != hostname.end(); 
+  for (string::const_iterator si = hostname.begin();
+       si != hostname.end();
        ++si) {
     lc_hostname += tolower(*si);
   }
@@ -518,26 +473,22 @@ add_direct_host(const string &hostname) {
   _direct_hosts.push_back(GlobPattern(lc_hostname));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_proxies_for_url
-//       Access: Published
-//  Description: Fills up the indicated vector with the list of
-//               URLSpec objects, in the order in which they should be
-//               tried, that are appropriate proxies to try for the
-//               indicated URL.  The empty URL is returned for a
-//               direct connection.
-//
-//               It is the user's responsibility to empty this vector
-//               before calling this method; otherwise, the proxy
-//               URL's will simply be appended to the existing list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the indicated vector with the list of URLSpec objects, in the
+ * order in which they should be tried, that are appropriate proxies to try
+ * for the indicated URL.  The empty URL is returned for a direct connection.
+ *
+ * It is the user's responsibility to empty this vector before calling this
+ * method; otherwise, the proxy URL's will simply be appended to the existing
+ * list.
+ */
 void HTTPClient::
 get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
   // First, check if the hostname matches any listed in direct_hosts.
   string hostname = url.get_server();
 
-  // If the hostname is empty, treat it as a special case: we don't
-  // match any of the hostnames listed in direct_hosts (even "*").
+  // If the hostname is empty, treat it as a special case: we don't match any
+  // of the hostnames listed in direct_hosts (even "*").
   if (!hostname.empty()) {
     DirectHosts::const_iterator si;
     for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
@@ -549,8 +500,8 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
     }
   }
 
-  // Build our list of proxies into a temporary vector, so we can pull
-  // out duplicates later.
+  // Build our list of proxies into a temporary vector, so we can pull out
+  // duplicates later.
   pvector<URLSpec> temp_list;
 
   // Now choose the appropriate proxy based on the scheme.
@@ -565,9 +516,9 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
   }
 
   if (!got_any && (scheme.empty() || url.is_ssl())) {
-    // An empty scheme (or an ssl-style scheme) implies we will need
-    // to make a direct connection, so fallback to a socks-style
-    // and/or https-style scheme.
+    // An empty scheme (or an ssl-style scheme) implies we will need to make a
+    // direct connection, so fallback to a socks-style andor https-style
+    // scheme.
 
     if (get_proxies_for_scheme("socks", temp_list)) {
       got_any = true;
@@ -578,8 +529,8 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
   }
 
   if (!got_any) {
-    // If we didn't find our scheme of choice, fall back to the default
-    // proxy type, if we've got one.
+    // If we didn't find our scheme of choice, fall back to the default proxy
+    // type, if we've got one.
     if (get_proxies_for_scheme("", temp_list)) {
       got_any = true;
     }
@@ -606,14 +557,11 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_proxies_for_url
-//       Access: Published
-//  Description: Returns a semicolon-delimited list of proxies, in the
-//               order in which they should be tried, that are
-//               appropriate for the indicated URL.  The keyword
-//               DIRECT indicates a direct connection should be tried.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a semicolon-delimited list of proxies, in the order in which they
+ * should be tried, that are appropriate for the indicated URL.  The keyword
+ * DIRECT indicates a direct connection should be tried.
+ */
 string HTTPClient::
 get_proxies_for_url(const URLSpec &url) const {
   pvector<URLSpec> proxies;
@@ -643,20 +591,15 @@ get_proxies_for_url(const URLSpec &url) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::set_username
-//       Access: Published
-//  Description: Specifies the username:password string corresponding
-//               to a particular server and/or realm, when demanded by
-//               the server.  Either or both of the server or realm
-//               may be empty; if so, they match anything.  Also, the
-//               server may be set to the special string "*proxy",
-//               which will match any proxy server.
-//
-//               If the username is set to the empty string, this
-//               clears the password for the particular server/realm
-//               pair.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the username:password string corresponding to a particular server
+ * and/or realm, when demanded by the server.  Either or both of the server or
+ * realm may be empty; if so, they match anything.  Also, the server may be
+ * set to the special string "*proxy", which will match any proxy server.
+ *
+ * If the username is set to the empty string, this clears the password for
+ * the particular server/realm pair.
+ */
 void HTTPClient::
 set_username(const string &server, const string &realm, const string &username) {
   string key = server + ":" + realm;
@@ -667,13 +610,10 @@ set_username(const string &server, const string &realm, const string &username) 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_username
-//       Access: Published
-//  Description: Returns the username:password string set for this
-//               server/realm pair, or empty string if nothing has
-//               been set.  See set_username().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the username:password string set for this server/realm pair, or
+ * empty string if nothing has been set.  See set_username().
+ */
 string HTTPClient::
 get_username(const string &server, const string &realm) const {
   string key = server + ":" + realm;
@@ -685,12 +625,10 @@ get_username(const string &server, const string &realm) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::set_cookie
-//       Access: Published
-//  Description: Stores the indicated cookie in the client's list of
-//               cookies, as if it had been received from a server.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated cookie in the client's list of cookies, as if it had
+ * been received from a server.
+ */
 void HTTPClient::
 set_cookie(const HTTPCookie &cookie) {
   if (cookie.is_expired()) {
@@ -699,21 +637,19 @@ set_cookie(const HTTPCookie &cookie) {
   } else {
     pair<Cookies::iterator, bool> result = _cookies.insert(cookie);
     if (!result.second) {
-      // We already had a cookie matching the supplied domain/path/name,
-      // so replace it.
+      // We already had a cookie matching the supplied domainpathname, so
+      // replace it.
       const HTTPCookie &orig_cookie = *result.first;
       ((HTTPCookie &)orig_cookie).update_from(cookie);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::clear_cookie
-//       Access: Published
-//  Description: Removes the cookie with the matching domain/path/name
-//               from the client's list of cookies.  Returns true if
-//               it was removed, false if the cookie was not matched.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the cookie with the matching domain/path/name from the client's
+ * list of cookies.  Returns true if it was removed, false if the cookie was
+ * not matched.
+ */
 bool HTTPClient::
 clear_cookie(const HTTPCookie &cookie) {
   Cookies::iterator ci = _cookies.find(cookie);
@@ -725,36 +661,28 @@ clear_cookie(const HTTPCookie &cookie) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::clear_all_cookies
-//       Access: Published
-//  Description: Removes the all stored cookies from the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the all stored cookies from the client.
+ */
 void HTTPClient::
 clear_all_cookies() {
   _cookies.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::has_cookie
-//       Access: Published
-//  Description: Returns true if there is a cookie in the client
-//               matching the given cookie's domain/path/name, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a cookie in the client matching the given cookie's
+ * domain/path/name, false otherwise.
+ */
 bool HTTPClient::
 has_cookie(const HTTPCookie &cookie) const {
   Cookies::const_iterator ci = _cookies.find(cookie);
   return (ci != _cookies.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_cookie
-//       Access: Published
-//  Description: Looks up and returns the cookie in the client
-//               matching the given cookie's domain/path/name.  If
-//               there is no matching cookie, returns an empty cookie.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up and returns the cookie in the client matching the given cookie's
+ * domain/path/name.  If there is no matching cookie, returns an empty cookie.
+ */
 HTTPCookie HTTPClient::
 get_cookie(const HTTPCookie &cookie) const {
   Cookies::const_iterator ci = _cookies.find(cookie);
@@ -765,14 +693,11 @@ get_cookie(const HTTPCookie &cookie) const {
   return HTTPCookie();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::copy_cookies_from
-//       Access: Published
-//  Description: Copies all the cookies from the indicated HTTPClient
-//               into this one.  Existing cookies in this client are
-//               not affected, unless they are shadowed by the new
-//               cookies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies all the cookies from the indicated HTTPClient into this one.
+ * Existing cookies in this client are not affected, unless they are shadowed
+ * by the new cookies.
+ */
 void HTTPClient::
 copy_cookies_from(const HTTPClient &other) {
   Cookies::const_iterator ci;
@@ -781,14 +706,11 @@ copy_cookies_from(const HTTPClient &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::write_cookies
-//       Access: Published
-//  Description: Outputs the complete list of cookies stored on the
-//               client, for all domains, including the expired
-//               cookies (which will normally not be sent back to a
-//               host).
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the complete list of cookies stored on the client, for all domains,
+ * including the expired cookies (which will normally not be sent back to a
+ * host).
+ */
 void HTTPClient::
 write_cookies(ostream &out) const {
   Cookies::const_iterator ci;
@@ -797,14 +719,11 @@ write_cookies(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::send_cookies
-//       Access: Published
-//  Description: Writes to the indicated ostream a "Cookie" header
-//               line for sending the cookies appropriate to the
-//               indicated URL along with an HTTP request.  This also
-//               removes expired cookies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes to the indicated ostream a "Cookie" header line for sending the
+ * cookies appropriate to the indicated URL along with an HTTP request.  This
+ * also removes expired cookies.
+ */
 void HTTPClient::
 send_cookies(ostream &out, const URLSpec &url) {
   HTTPDate now = HTTPDate::now();
@@ -845,18 +764,14 @@ send_cookies(ostream &out, const URLSpec &url) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::load_client_certificate
-//       Access: Published
-//  Description: Attempts to load the certificate named by
-//               set_client_certificate_filename() immediately, and
-//               returns true if successful, false otherwise.
-//
-//               Normally this need not be explicitly called, since it
-//               will be called automatically if the server requests a
-//               certificate, but it may be useful to determine ahead
-//               of time if the certificate can be loaded correctly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to load the certificate named by set_client_certificate_filename()
+ * immediately, and returns true if successful, false otherwise.
+ *
+ * Normally this need not be explicitly called, since it will be called
+ * automatically if the server requests a certificate, but it may be useful to
+ * determine ahead of time if the certificate can be loaded correctly.
+ */
 bool HTTPClient::
 load_client_certificate() {
   if (!_client_certificate_loaded) {
@@ -868,7 +783,7 @@ load_client_certificate() {
       // First, read the complete file into memory.
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-      if (!vfs->read_file(_client_certificate_filename, 
+      if (!vfs->read_file(_client_certificate_filename,
                           _client_certificate_pem, true)) {
         // Could not find or read file.
         downloader_cat.warning()
@@ -878,35 +793,33 @@ load_client_certificate() {
     }
 
     if (!_client_certificate_pem.empty()) {
-      // Create an in-memory BIO to read the "file" from the memory
-      // buffer, and call the low-level routines to read the
-      // keys from the BIO.
-      BIO *mbio = BIO_new_mem_buf((void *)_client_certificate_pem.data(), 
+      // Create an in-memory BIO to read the "file" from the memory buffer,
+      // and call the low-level routines to read the keys from the BIO.
+      BIO *mbio = BIO_new_mem_buf((void *)_client_certificate_pem.data(),
                                   _client_certificate_pem.length());
-      
+
       ERR_clear_error();
-      _client_certificate_priv = 
-        PEM_read_bio_PrivateKey(mbio, NULL, NULL, 
+      _client_certificate_priv =
+        PEM_read_bio_PrivateKey(mbio, NULL, NULL,
                                 (char *)_client_certificate_passphrase.c_str());
-      
-      // Rewind the "file" to the beginning in order to read the public
-      // key (which might appear first in the file).
+
+      // Rewind the "file" to the beginning in order to read the public key
+      // (which might appear first in the file).
       BIO_reset(mbio);
-      
+
       ERR_clear_error();
-      _client_certificate_pub = 
+      _client_certificate_pub =
         PEM_read_bio_X509(mbio, NULL, NULL, NULL);
-      
+
       BIO_free(mbio);
-      
-      
+
+
       NotifySeverity sev = NS_debug;
       string source = "memory";
       if (!_client_certificate_filename.empty()) {
         // Only report status to "info" severity if we have read the
-        // certificate from a file.  If it came from an in-memory image,
-        // a failure will presumably be handled by whoever set the
-        // image.
+        // certificate from a file.  If it came from an in-memory image, a
+        // failure will presumably be handled by whoever set the image.
         sev = NS_info;
         source = _client_certificate_filename;
       }
@@ -914,15 +827,15 @@ load_client_certificate() {
       if (downloader_cat.is_on(sev)) {
         if (_client_certificate_priv != (EVP_PKEY *)NULL &&
             _client_certificate_pub != (X509 *)NULL) {
-          downloader_cat.out(sev) 
+          downloader_cat.out(sev)
             << "Read client certificate from " << source << "\n";
-          
+
         } else {
           if (_client_certificate_priv == (EVP_PKEY *)NULL) {
             downloader_cat.out(sev)
               << "Could not read private key from " << source << "\n";
           }
-          
+
           if (_client_certificate_pub == (X509 *)NULL) {
             downloader_cat.out(sev)
               << "Could not read public key from " << source << "\n";
@@ -936,24 +849,18 @@ load_client_certificate() {
           _client_certificate_pub != (X509 *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::add_preapproved_server_certificate_filename
-//       Access: Published
-//  Description: Adds the certificate defined in the indicated PEM
-//               filename as a "pre-approved" certificate for the
-//               indicated server, defined by the hostname and port
-//               (only) from the given URL.
-//
-//               If the server offers this particular certificate on a
-//               secure connection, it will be accepted without
-//               question.  This is particularly useful for
-//               communicating with a server using a known self-signed
-//               certificate.
-//
-//               See also the similar
-//               add_preapproved_server_certificate_pem(), and the
-//               weaker add_preapproved_server_certificate_name().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the certificate defined in the indicated PEM filename as a "pre-
+ * approved" certificate for the indicated server, defined by the hostname and
+ * port (only) from the given URL.
+ *
+ * If the server offers this particular certificate on a secure connection, it
+ * will be accepted without question.  This is particularly useful for
+ * communicating with a server using a known self-signed certificate.
+ *
+ * See also the similar add_preapproved_server_certificate_pem(), and the
+ * weaker add_preapproved_server_certificate_name().
+ */
 bool HTTPClient::
 add_preapproved_server_certificate_filename(const URLSpec &url, const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -969,31 +876,24 @@ add_preapproved_server_certificate_filename(const URLSpec &url, const Filename &
   return add_preapproved_server_certificate_pem(url, pem);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::add_preapproved_server_certificate_pem
-//       Access: Published
-//  Description: Adds the certificate defined in the indicated data
-//               string, formatted as a PEM block, as a "pre-approved"
-//               certificate for the indicated server, defined by the
-//               hostname and port (only) from the given URL.
-//
-//               If the server offers this particular certificate on a
-//               secure connection, it will be accepted without
-//               question.  This is particularly useful for
-//               communicating with a server using a known self-signed
-//               certificate.
-//
-//               See also the similar
-//               add_preapproved_server_certificate_filename(), and
-//               the weaker add_preapproved_server_certificate_name().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the certificate defined in the indicated data string, formatted as a
+ * PEM block, as a "pre-approved" certificate for the indicated server,
+ * defined by the hostname and port (only) from the given URL.
+ *
+ * If the server offers this particular certificate on a secure connection, it
+ * will be accepted without question.  This is particularly useful for
+ * communicating with a server using a known self-signed certificate.
+ *
+ * See also the similar add_preapproved_server_certificate_filename(), and the
+ * weaker add_preapproved_server_certificate_name().
+ */
 bool HTTPClient::
 add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
-  // Create an in-memory BIO to read the "file" from the memory
-  // buffer, and call the low-level routine to read the
-  // cert from the BIO.
+  // Create an in-memory BIO to read the "file" from the memory buffer, and
+  // call the low-level routine to read the cert from the BIO.
   BIO *mbio = BIO_new_mem_buf((void *)pem.data(), pem.length());
-      
+
   ERR_clear_error();
   X509 *cert = PEM_read_bio_X509(mbio, NULL, NULL, NULL);
   BIO_free(mbio);
@@ -1005,7 +905,7 @@ add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
   }
 
   string server_and_port = url.get_server_and_port();
-  PreapprovedServerCerts::iterator psci = 
+  PreapprovedServerCerts::iterator psci =
     _preapproved_server_certs.insert(PreapprovedServerCerts::value_type(server_and_port, PreapprovedServerCert())).first;
 
   PreapprovedServerCert &psc = (*psci).second;
@@ -1014,30 +914,26 @@ add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::add_preapproved_server_certificate_name
-//       Access: Published
-//  Description: Adds the certificate *name* only, as a "pre-approved"
-//               certificate name for the indicated server, defined by
-//               the hostname and port (only) from the given URL.
-//
-//               This is a weaker function than
-//               add_preapproved_server_certificate_filename().  This
-//               checks only the subject name of the certificate,
-//               without checking for a particular certificate by key.
-//               This means that a variety of server certificates may
-//               match the indicated name.
-//
-//               Because this is a weaker verification, it only
-//               applies to server certificates that are signed by a
-//               recognized certificate authority.  Thus, it cannot be
-//               used to pre-approve self-signed certificates, but it
-//               can be used to accept a server certificate offered by
-//               a different hostname than the one in the cert itself.
-//
-//               The certificate name should be formatted in the form
-//               /type0=value0/type1=value1/type2=...
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the certificate *name* only, as a "pre-approved" certificate name for
+ * the indicated server, defined by the hostname and port (only) from the
+ * given URL.
+ *
+ * This is a weaker function than
+ * add_preapproved_server_certificate_filename().  This checks only the
+ * subject name of the certificate, without checking for a particular
+ * certificate by key.  This means that a variety of server certificates may
+ * match the indicated name.
+ *
+ * Because this is a weaker verification, it only applies to server
+ * certificates that are signed by a recognized certificate authority.  Thus,
+ * it cannot be used to pre-approve self-signed certificates, but it can be
+ * used to accept a server certificate offered by a different hostname than
+ * the one in the cert itself.
+ *
+ * The certificate name should be formatted in the form
+ * type0=value0/type1=value1/type2=...
+ */
 bool HTTPClient::
 add_preapproved_server_certificate_name(const URLSpec &url, const string &name) {
   X509_NAME *cert_name = parse_x509_name(name);
@@ -1048,7 +944,7 @@ add_preapproved_server_certificate_name(const URLSpec &url, const string &name) 
   }
 
   string server_and_port = url.get_server_and_port();
-  PreapprovedServerCerts::iterator psci = 
+  PreapprovedServerCerts::iterator psci =
     _preapproved_server_certs.insert(PreapprovedServerCerts::value_type(server_and_port, PreapprovedServerCert())).first;
 
   PreapprovedServerCert &psc = (*psci).second;
@@ -1057,35 +953,28 @@ add_preapproved_server_certificate_name(const URLSpec &url, const string &name) 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::clear_preapproved_server_certificates
-//       Access: Published
-//  Description: Removes all preapproved server certificates for the
-//               indicated server and port.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all preapproved server certificates for the indicated server and
+ * port.
+ */
 void HTTPClient::
 clear_preapproved_server_certificates(const URLSpec &url) {
   string server_and_port = url.get_server_and_port();
   _preapproved_server_certs.erase(server_and_port);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::clear_all_preapproved_server_certificates
-//       Access: Published
-//  Description: Removes all preapproved server certificates for all
-//               servers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all preapproved server certificates for all servers.
+ */
 void HTTPClient::
 clear_all_preapproved_server_certificates() {
   _preapproved_server_certs.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_http_version_string
-//       Access: Published
-//  Description: Returns the current HTTP version setting as a string,
-//               e.g. "HTTP/1.0" or "HTTP/1.1".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current HTTP version setting as a string, e.g.  "HTTP/1.0" or
+ * "HTTP/1.1".
+ */
 string HTTPClient::
 get_http_version_string() const {
   switch (_http_version) {
@@ -1106,14 +995,11 @@ get_http_version_string() const {
   return "unknown";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::parse_http_version_string
-//       Access: Published
-//  Description: Matches the string representing a particular HTTP
-//               version against any of the known versions and returns
-//               the appropriate enumerated value, or HV_other if the
-//               version is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Matches the string representing a particular HTTP version against any of
+ * the known versions and returns the appropriate enumerated value, or
+ * HV_other if the version is unknown.
+ */
 HTTPEnum::HTTPVersion HTTPClient::
 parse_http_version_string(const string &version) {
   if (version == "HTTP/1.0") {
@@ -1127,42 +1013,33 @@ parse_http_version_string(const string &version) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::load_certificates
-//       Access: Published
-//  Description: Reads the certificate(s) (delimited by -----BEGIN
-//               CERTIFICATE----- and -----END CERTIFICATE-----) from
-//               the indicated file and makes them known as trusted
-//               public keys for validating future connections.
-//               Returns true on success, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the certificate(s) (delimited by -----BEGIN CERTIFICATE----- and
+ * -----END CERTIFICATE-----) from the indicated file and makes them known as
+ * trusted public keys for validating future connections.  Returns true on
+ * success, false otherwise.
+ */
 bool HTTPClient::
 load_certificates(const Filename &filename) {
   OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
   return (sslw->load_certificates(filename) != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::make_channel
-//       Access: Published
-//  Description: Returns a new HTTPChannel object that may be used
-//               for reading multiple documents using the same
-//               connection, for greater network efficiency than
-//               calling HTTPClient::get_document() repeatedly (which
-//               would force a new connection for each document).
-//
-//               Also, HTTPChannel has some additional, less common
-//               interface methods than the basic interface methods
-//               that exist on HTTPClient; if you wish to call any of
-//               these methods you must first obtain an HTTPChannel.
-//
-//               Pass true for persistent_connection to gain this
-//               network efficiency.  If, on the other hand, your
-//               intention is to use the channel to retrieve only one
-//               document, then pass false to inform the server that
-//               we will be dropping the connection after the first
-//               document.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new HTTPChannel object that may be used for reading multiple
+ * documents using the same connection, for greater network efficiency than
+ * calling HTTPClient::get_document() repeatedly (which would force a new
+ * connection for each document).
+ *
+ * Also, HTTPChannel has some additional, less common interface methods than
+ * the basic interface methods that exist on HTTPClient; if you wish to call
+ * any of these methods you must first obtain an HTTPChannel.
+ *
+ * Pass true for persistent_connection to gain this network efficiency.  If,
+ * on the other hand, your intention is to use the channel to retrieve only
+ * one document, then pass false to inform the server that we will be dropping
+ * the connection after the first document.
+ */
 PT(HTTPChannel) HTTPClient::
 make_channel(bool persistent_connection) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
@@ -1170,15 +1047,12 @@ make_channel(bool persistent_connection) {
   return doc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::post_form
-//       Access: Published
-//  Description: Posts form data to a particular URL and retrieves the
-//               response.  Returns a new HTTPChannel object whether
-//               the document is successfully read or not; you can
-//               test is_valid() and get_return_code() to determine
-//               whether the document was retrieved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Posts form data to a particular URL and retrieves the response.  Returns a
+ * new HTTPChannel object whether the document is successfully read or not;
+ * you can test is_valid() and get_return_code() to determine whether the
+ * document was retrieved.
+ */
 PT(HTTPChannel) HTTPClient::
 post_form(const URLSpec &url, const string &body) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
@@ -1186,15 +1060,11 @@ post_form(const URLSpec &url, const string &body) {
   return doc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_document
-//       Access: Published
-//  Description: Opens the named document for reading.  Returns a new
-//               HTTPChannel object whether the document is
-//               successfully read or not; you can test is_valid() and
-//               get_return_code() to determine whether the document
-//               was retrieved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the named document for reading.  Returns a new HTTPChannel object
+ * whether the document is successfully read or not; you can test is_valid()
+ * and get_return_code() to determine whether the document was retrieved.
+ */
 PT(HTTPChannel) HTTPClient::
 get_document(const URLSpec &url) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
@@ -1202,15 +1072,12 @@ get_document(const URLSpec &url) {
   return doc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_header
-//       Access: Published
-//  Description: Like get_document(), except only the header
-//               associated with the document is retrieved.  This may
-//               be used to test for existence of the document; it
-//               might also return the size of the document (if the
-//               server gives us this information).
-////////////////////////////////////////////////////////////////////
+/**
+ * Like get_document(), except only the header associated with the document is
+ * retrieved.  This may be used to test for existence of the document; it
+ * might also return the size of the document (if the server gives us this
+ * information).
+ */
 PT(HTTPChannel) HTTPClient::
 get_header(const URLSpec &url) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
@@ -1218,11 +1085,9 @@ get_header(const URLSpec &url) {
   return doc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns the default global HTTPClient.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default global HTTPClient.
+ */
 HTTPClient *HTTPClient::
 get_global_ptr() {
   if (_global_ptr == NULL) {
@@ -1232,12 +1097,9 @@ get_global_ptr() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_ssl_ctx
-//       Access: Public
-//  Description: Returns the OpenSSL context object, creating it first
-//               if needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the OpenSSL context object, creating it first if needed.
+ */
 SSL_CTX *HTTPClient::
 get_ssl_ctx() {
   if (_ssl_ctx != (SSL_CTX *)NULL) {
@@ -1249,8 +1111,8 @@ get_ssl_ctx() {
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
 #if defined(SSL_097) && !defined(NDEBUG)
-  // If we have debugging enabled, set a callback that allows us to
-  // report the SSL messages as they are sent and received.
+  // If we have debugging enabled, set a callback that allows us to report the
+  // SSL messages as they are sent and received.
   if (downloader_cat.is_debug()) {
     SSL_CTX_set_msg_callback(_ssl_ctx, ssl_msg_callback);
   }
@@ -1265,26 +1127,21 @@ get_ssl_ctx() {
   return _ssl_ctx;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::check_preapproved_server_certificate
-//       Access: Private
-//  Description: Checks to see if the indicated certificate is on the
-//               pre-approved list for the indicated server's URL.
-//
-//               If the full cert itself (including its key) is on the
-//               pre-approved list, sets both cert_preapproved and
-//               cert_name_preapproved to true.
-//
-//               If the full cert is not on the pre-approved list, but
-//               its name matches a name on the pre-approved list,
-//               sets cert_name_preapproved to true, and
-//               cert_preapproved to false.
-//
-//               Otherwise, sets both values to false.  This doesn't
-//               mean the cert is necessarily invalid, just that it
-//               wasn't on the pre-approved list (which is usually
-//               empty anyway).
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks to see if the indicated certificate is on the pre-approved list for
+ * the indicated server's URL.
+ *
+ * If the full cert itself (including its key) is on the pre-approved list,
+ * sets both cert_preapproved and cert_name_preapproved to true.
+ *
+ * If the full cert is not on the pre-approved list, but its name matches a
+ * name on the pre-approved list, sets cert_name_preapproved to true, and
+ * cert_preapproved to false.
+ *
+ * Otherwise, sets both values to false.  This doesn't mean the cert is
+ * necessarily invalid, just that it wasn't on the pre-approved list (which is
+ * usually empty anyway).
+ */
 void HTTPClient::
 check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
                                      bool &cert_preapproved, bool &cert_name_preapproved) const {
@@ -1292,7 +1149,7 @@ check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
   cert_name_preapproved = false;
 
   string server_and_port = url.get_server_and_port();
-  PreapprovedServerCerts::const_iterator psci = 
+  PreapprovedServerCerts::const_iterator psci =
     _preapproved_server_certs.find(server_and_port);
 
   if (psci == _preapproved_server_certs.end()) {
@@ -1331,13 +1188,10 @@ check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_proxies_for_scheme
-//       Access: Private
-//  Description: Adds the proxy servers associated with the indicated
-//               scheme, if any, to the list.  Returns true if any
-//               were added, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the proxy servers associated with the indicated scheme, if any, to the
+ * list.  Returns true if any were added, false otherwise.
+ */
 bool HTTPClient::
 get_proxies_for_scheme(const string &scheme, pvector<URLSpec> &proxies) const {
   ProxiesByScheme::const_iterator si = _proxies_by_scheme.find(scheme);
@@ -1357,14 +1211,11 @@ get_proxies_for_scheme(const string &scheme, pvector<URLSpec> &proxies) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::add_http_username
-//       Access: Private
-//  Description: Handles a Config definition for http-username as
-//               server:realm:username:password, where either or both
-//               of server and realm may be empty, or just
-//               server:username:password or username:password.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles a Config definition for http-username as
+ * server:realm:username:password, where either or both of server and realm
+ * may be empty, or just server:username:password or username:password.
+ */
 void HTTPClient::
 add_http_username(const string &http_username) {
   size_t c1 = http_username.find(':');
@@ -1403,41 +1254,38 @@ add_http_username(const string &http_username) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::select_username
-//       Access: Private
-//  Description: Chooses a suitable username:password string for the
-//               given URL and realm.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses a suitable username:password string for the given URL and realm.
+ */
 string HTTPClient::
 select_username(const URLSpec &url, bool is_proxy, const string &realm) const {
   string username;
 
   // Look in several places in order to find the matching username.
 
-  // Fist, if there's a username on the URL, that always wins (except
-  // when we are looking for a proxy username).
+  // Fist, if there's a username on the URL, that always wins (except when we
+  // are looking for a proxy username).
   if (url.has_username() && !is_proxy) {
     username = url.get_username();
   }
 
-  // Otherwise, start looking on the HTTPClient.  
+  // Otherwise, start looking on the HTTPClient.
   if (is_proxy) {
     if (username.empty()) {
-      // Try the *proxy/realm.
+      // Try the *proxyrealm.
       username = get_username("*proxy", realm);
     }
     if (username.empty()) {
-      // Then, try *proxy/any realm.
+      // Then, try *proxyany realm.
       username = get_username("*proxy", string());
     }
   }
   if (username.empty()) {
-    // Try the specific server/realm.
+    // Try the specific serverrealm.
     username = get_username(url.get_server(), realm);
   }
   if (username.empty()) {
-    // Then, try the specific server/any realm.
+    // Then, try the specific serverany realm.
     username = get_username(url.get_server(), string());
   }
   if (username.empty()) {
@@ -1452,20 +1300,17 @@ select_username(const URLSpec &url, bool is_proxy, const string &realm) const {
   return username;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::select_auth
-//       Access: Private
-//  Description: Chooses a suitable pre-computed authorization for the
-//               indicated URL.  Returns NULL if no authorization
-//               matches.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses a suitable pre-computed authorization for the indicated URL.
+ * Returns NULL if no authorization matches.
+ */
 HTTPAuthorization *HTTPClient::
 select_auth(const URLSpec &url, bool is_proxy, const string &last_realm) {
   Domains &domains = is_proxy ? _proxy_domains : _www_domains;
   string canon = HTTPAuthorization::get_canonical_url(url).get_url();
 
-  // Look for the longest domain string that is a prefix of our
-  // canonical URL.  We have to make a linear scan through the list.
+  // Look for the longest domain string that is a prefix of our canonical URL.
+  // We have to make a linear scan through the list.
   Domains::const_iterator best_di = domains.end();
   size_t longest_length = 0;
   Domains::const_iterator di;
@@ -1505,16 +1350,12 @@ select_auth(const URLSpec &url, bool is_proxy, const string &last_realm) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::generate_auth
-//       Access: Private
-//  Description: Generates a new authorization entry in response to a
-//               401 or 407 challenge from the server or proxy.  The
-//               new authorization entry is stored for future
-//               connections to the same server (or, more precisely,
-//               the same domain, which may be a subset of the server,
-//               or it may include multiple servers).
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a new authorization entry in response to a 401 or 407 challenge
+ * from the server or proxy.  The new authorization entry is stored for future
+ * connections to the same server (or, more precisely, the same domain, which
+ * may be a subset of the server, or it may include multiple servers).
+ */
 PT(HTTPAuthorization) HTTPClient::
 generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
   HTTPAuthorization::AuthenticationSchemes schemes;
@@ -1536,15 +1377,15 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
   }
 
   if (auth == (HTTPAuthorization *)NULL || !auth->is_valid()) {
-    downloader_cat.warning() 
+    downloader_cat.warning()
       << "Don't know how to use any of the server's available authorization schemes:\n";
     for (si = schemes.begin(); si != schemes.end(); ++si) {
       downloader_cat.warning() << (*si).first << "\n";
     }
 
   } else {
-    // Now that we've got an authorization, store it under under each
-    // of its suggested domains for future use.
+    // Now that we've got an authorization, store it under under each of its
+    // suggested domains for future use.
     Domains &domains = is_proxy ? _proxy_domains : _www_domains;
     const vector_string &domain = auth->get_domain();
     vector_string::const_iterator si;
@@ -1556,13 +1397,10 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
   return auth;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::unload_client_certificate
-//       Access: Private
-//  Description: Frees the resources allocated by a previous call to
-//               load_client_certificate(), and marks the certificate
-//               unloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the resources allocated by a previous call to
+ * load_client_certificate(), and marks the certificate unloaded.
+ */
 void HTTPClient::
 unload_client_certificate() {
   if (_client_certificate_priv != (EVP_PKEY *)NULL) {
@@ -1578,14 +1416,10 @@ unload_client_certificate() {
   _client_certificate_loaded = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::parse_x509_name
-//       Access: Private, Static
-//  Description: Parses a string of the form
-//               /type0=value0/type1=value1/type2=... into a newly
-//               allocated X509_NAME object.  Returns NULL if the
-//               string is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a string of the form type0=value0/type1=value1/type2=... into a
+ * newly allocated X509_NAME object.  Returns NULL if the string is invalid.
+ */
 X509_NAME *HTTPClient::
 parse_x509_name(const string &source) {
   X509_NAME *result = NULL;
@@ -1624,7 +1458,7 @@ parse_x509_name(const string &source) {
       }
 
       string value;
-      
+
       if (si != source.end() && (*si) == '=') {
         ++si;
         while (si != source.end() && (*si) != '/') {
@@ -1643,7 +1477,7 @@ parse_x509_name(const string &source) {
 
       if (!value.empty()) {
         int add_result =
-          X509_NAME_add_entry_by_NID(result, nid, V_ASN1_APP_CHOOSE, 
+          X509_NAME_add_entry_by_NID(result, nid, V_ASN1_APP_CHOOSE,
                                      (unsigned char *)value.c_str(), -1, -1, 0);
         if (!add_result) {
           downloader_cat.info()
@@ -1667,13 +1501,10 @@ parse_x509_name(const string &source) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::x509_name_subset
-//       Access: Private, Static
-//  Description: Returns true if name_a is a subset of name_b: each
-//               property of name_a is defined in name_b, and the
-//               defined value is equivalent to that of name_a.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if name_a is a subset of name_b: each property of name_a is
+ * defined in name_b, and the defined value is equivalent to that of name_a.
+ */
 bool HTTPClient::
 x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
   int count_a = X509_NAME_entry_count(name_a);
@@ -1696,12 +1527,9 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::split_whitespace
-//       Access: Private, Static
-//  Description: Puts the first word of c into a, and the remainder
-//               into b.
-////////////////////////////////////////////////////////////////////
+/**
+ * Puts the first word of c into a, and the remainder into b.
+ */
 void HTTPClient::
 split_whitespace(string &a, string &b, const string &c) {
   size_t p = 0;
@@ -1727,12 +1555,10 @@ split_whitespace(string &a, string &b, const string &c) {
 }
 
 #if defined(SSL_097) && !defined(NDEBUG)
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::ssl_msg_callback
-//       Access: Private, Static
-//  Description: This method is attached as a callback for SSL
-//               messages only when debug output is enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is attached as a callback for SSL messages only when debug
+ * output is enabled.
+ */
 void HTTPClient::
 ssl_msg_callback(int write_p, int version, int content_type,
                  const void *, size_t len, SSL *, void *) {
@@ -1751,7 +1577,7 @@ ssl_msg_callback(int write_p, int version, int content_type,
     describe << "SSL 3.0 ";
     break;
 
-  case TLS1_VERSION: 
+  case TLS1_VERSION:
     describe << "TLS 1.0 ";
     break;
 
@@ -1766,19 +1592,19 @@ ssl_msg_callback(int write_p, int version, int content_type,
     case 20:
       describe << "change cipher spec, ";
       break;
-      
+
     case 21:
       describe << "alert, ";
       break;
-      
+
     case 22:
       describe << "handshake, ";
       break;
-      
+
     case 23:
       describe << "application data, ";
       break;
-      
+
     default:
       describe << "unknown content type, ";
     }
@@ -1790,11 +1616,9 @@ ssl_msg_callback(int write_p, int version, int content_type,
 }
 #endif  // defined(SSL_097) && !defined(NDEBUG)
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::PreapprovedServerCert::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 HTTPClient::PreapprovedServerCert::
 ~PreapprovedServerCert() {
   ServerCerts::const_iterator sci;

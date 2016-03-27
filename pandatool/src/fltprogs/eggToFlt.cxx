@@ -1,16 +1,15 @@
-// Filename: eggToFlt.cxx
-// Created by:  drose (01Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToFlt.cxx
+ * @author drose
+ * @date 2003-10-01
+ */
 
 #include "eggToFlt.h"
 #include "fltHeader.h"
@@ -37,11 +36,9 @@
 #include "vector_string.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 EggToFlt::
 EggToFlt() :
   EggToSomething("MultiGen", ".flt", true, false)
@@ -67,19 +64,17 @@ EggToFlt() :
      "Specifying \"all\" causes these to be rewritten every time.",
      &EggToFlt::dispatch_attr, NULL, &_auto_attr_update);
 
-  // Flt files are always in the z-up coordinate system.  Don't
-  // confuse the user with this meaningless option.
+  // Flt files are always in the z-up coordinate system.  Don't confuse the
+  // user with this meaningless option.
   remove_option("cs");
   _coordinate_system = CS_zup_right;
   _got_coordinate_system = true;
   _auto_attr_update = FltHeader::AU_if_missing;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggToFlt::
 run() {
   _flt_header = new FltHeader(_path_replace);
@@ -95,11 +90,9 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::dispatch_attr
-//       Access: Protected, Static
-//  Description: Dispatch function for the -attr parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatch function for the -attr parameter.
+ */
 bool EggToFlt::
 dispatch_attr(const string &opt, const string &arg, void *var) {
   FltHeader::AttrUpdate *ip = (FltHeader::AttrUpdate *)var;
@@ -122,11 +115,9 @@ dispatch_attr(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::traverse
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggToFlt::
 traverse(EggNode *egg_node, FltBead *flt_node,
          FltGeometry::BillboardType billboard) {
@@ -160,13 +151,10 @@ traverse(EggNode *egg_node, FltBead *flt_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::convert_primitive
-//       Access: Private
-//  Description: Converts an egg polygon or series of light points to
-//               the corresponding Flt geometry, and adds it to the
-//               indicated flt_node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an egg polygon or series of light points to the corresponding Flt
+ * geometry, and adds it to the indicated flt_node.
+ */
 void EggToFlt::
 convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
                   FltGeometry::BillboardType billboard) {
@@ -198,9 +186,9 @@ convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
     flt_face->set_texture(flt_texture);
   }
 
-  // Create a vertex list representing the vertices in the
-  // primitive, and add it as a child of the face bead.  This is how
-  // Flt files associate vertices with faces.
+  // Create a vertex list representing the vertices in the primitive, and add
+  // it as a child of the face bead.  This is how Flt files associate vertices
+  // with faces.
   FltVertexList *flt_vertices = new FltVertexList(_flt_header);
   flt_face->add_child(flt_vertices);
 
@@ -220,8 +208,8 @@ convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
     }
   }
   if (all_verts_have_color) {
-    // If all the vertices of the face have a color specification,
-    // then we specify per-vertex color on the face.
+    // If all the vertices of the face have a color specification, then we
+    // specify per-vertex color on the face.
     if (all_verts_have_normal) {
       // And similarly with the normals.
       flt_face->_light_mode = FltFace::LM_vertex_with_normal;
@@ -237,13 +225,10 @@ convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::convert_group
-//       Access: Private
-//  Description: Converts an egg group to the corresponding flt group,
-//               and adds it to the indicated parent node.  Also
-//               recurses on the children of the egg group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an egg group to the corresponding flt group, and adds it to the
+ * indicated parent node.  Also recurses on the children of the egg group.
+ */
 void EggToFlt::
 convert_group(EggGroup *egg_group, FltBead *flt_node,
               FltGeometry::BillboardType billboard) {
@@ -255,8 +240,8 @@ convert_group(EggGroup *egg_group, FltBead *flt_node,
   flt_group->set_id(egg_group->get_name());
 
   switch (egg_group->get_billboard_type()) {
-    // MultiGen represents billboarding at the polygon level, so we
-    // have to remember this flag for later.
+    // MultiGen represents billboarding at the polygon level, so we have to
+    // remember this flag for later.
   case EggGroup::BT_axis:
     billboard = FltGeometry::BT_axial;
     break;
@@ -290,9 +275,8 @@ convert_group(EggGroup *egg_group, FltBead *flt_node,
     }
   }
 
-  // Pick up any additional egg attributes that MultiGen doesn't
-  // support; these will get written to the comment field where
-  // flt2egg will find it.
+  // Pick up any additional egg attributes that MultiGen doesn't support;
+  // these will get written to the comment field where flt2egg will find it.
   egg_group->write_collide_flags(egg_syntax, 2);
   egg_group->write_model_flags(egg_syntax, 2);
   egg_group->write_object_types(egg_syntax, 2);
@@ -308,12 +292,9 @@ convert_group(EggGroup *egg_group, FltBead *flt_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::apply_transform
-//       Access: Private
-//  Description: Applies the indicated egg transform to the indicated
-//               flt bead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated egg transform to the indicated flt bead.
+ */
 void EggToFlt::
 apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
   flt_node->clear_transform();
@@ -464,15 +445,11 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::apply_egg_syntax
-//       Access: Private
-//  Description: Adds the indicated sequence of egg syntax lines
-//               (presumably representing egg features not directly
-//               supported by MultiGen) to the flt record as a
-//               comment, so that flt2egg will reapply it to the egg
-//               groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated sequence of egg syntax lines (presumably representing
+ * egg features not directly supported by MultiGen) to the flt record as a
+ * comment, so that flt2egg will reapply it to the egg groups.
+ */
 void EggToFlt::
 apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record) {
   if (!egg_syntax.empty()) {
@@ -484,13 +461,11 @@ apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::get_flt_vertex
-//       Access: Private
-//  Description: Returns a FltVertex corresponding to the indicated
-//               EggVertex.  If the vertex has not been seen before
-//               (in this particular vertex frame), creates a new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FltVertex corresponding to the indicated EggVertex.  If the
+ * vertex has not been seen before (in this particular vertex frame), creates
+ * a new one.
+ */
 FltVertex *EggToFlt::
 get_flt_vertex(EggVertex *egg_vertex, EggNode *context) {
   const LMatrix4d *frame = context->get_vertex_to_node_ptr();
@@ -526,18 +501,15 @@ get_flt_vertex(EggVertex *egg_vertex, EggNode *context) {
   return flt_vertex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::get_flt_texture
-//       Access: Private
-//  Description: Returns a FltTexture corresponding to the indicated
-//               EggTexture.  If the texture has not been seen before,
-//               creates a new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FltTexture corresponding to the indicated EggTexture.  If the
+ * texture has not been seen before, creates a new one.
+ */
 FltTexture *EggToFlt::
 get_flt_texture(EggTexture *egg_texture) {
-  // We have to maintain this map based on the filename, not the egg
-  // pointer, because there may be multiple EggTextures with the same
-  // filename, and we have to collapse them together.
+  // We have to maintain this map based on the filename, not the egg pointer,
+  // because there may be multiple EggTextures with the same filename, and we
+  // have to collapse them together.
   Filename filename = egg_texture->get_filename();
   TextureMap::iterator vi = _texture_map.find(filename);
   if (vi != _texture_map.end()) {

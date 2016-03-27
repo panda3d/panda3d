@@ -1,16 +1,15 @@
-// Filename: textureImage.cxx
-// Created by:  drose (29Nov00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file textureImage.cxx
+ * @author drose
+ * @date 2000-11-29
+ */
 
 #include "textureImage.h"
 #include "sourceTextureImage.h"
@@ -34,11 +33,9 @@
 
 TypeHandle TextureImage::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 TextureImage::
 TextureImage() {
   _preferred_source = (SourceTextureImage *)NULL;
@@ -57,33 +54,27 @@ TextureImage() {
   _got_txa_file = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::note_egg_file
-//       Access: Public
-//  Description: Records that a particular egg file references this
-//               texture.  This is essential to know when deciding how
-//               to assign the TextureImage to the various
-//               PaletteGroups.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that a particular egg file references this texture.  This is
+ * essential to know when deciding how to assign the TextureImage to the
+ * various PaletteGroups.
+ */
 void TextureImage::
 note_egg_file(EggFile *egg_file) {
   nassertv(!egg_file->get_complete_groups().empty());
   _egg_files.insert(egg_file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::assign_groups
-//       Access: Public
-//  Description: Assigns the texture to all of the PaletteGroups the
-//               various egg files that use it need.  Attempts to
-//               choose the minimum set of PaletteGroups that
-//               satisfies all of the egg files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the texture to all of the PaletteGroups the various egg files that
+ * use it need.  Attempts to choose the minimum set of PaletteGroups that
+ * satisfies all of the egg files.
+ */
 void TextureImage::
 assign_groups() {
   if (_egg_files.empty()) {
-    // If we're not referenced by any egg files any more, assign us to
-    // no groups.
+    // If we're not referenced by any egg files any more, assign us to no
+    // groups.
     PaletteGroups empty;
     assign_to_groups(empty);
     return;
@@ -91,19 +82,19 @@ assign_groups() {
 
   PaletteGroups definitely_in;
 
-  // First, we need to eliminate from consideration all the egg files
-  // that are already taken care of by the user's explicit group
-  // assignments for this texture.
+  // First, we need to eliminate from consideration all the egg files that are
+  // already taken care of by the user's explicit group assignments for this
+  // texture.
   WorkingEggs needed_eggs;
 
   if (_explicitly_assigned_groups.empty()) {
-    // If we have no explicit group assignments, we must consider all
-    // the egg files.
+    // If we have no explicit group assignments, we must consider all the egg
+    // files.
     copy(_egg_files.begin(), _egg_files.end(), back_inserter(needed_eggs));
 
   } else {
-    // Otherwise, we only need to consider the egg files that don't
-    // have any groups in common with our explicit assignments.
+    // Otherwise, we only need to consider the egg files that don't have any
+    // groups in common with our explicit assignments.
 
     EggFiles::const_iterator ei;
     for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
@@ -113,25 +104,25 @@ assign_groups() {
         // This egg file is satisfied by one of the texture's explicit
         // assignments.
 
-        // We must use at least one of the explicitly-assigned groups
-        // that satisfied the egg file.  We don't need to use all of
-        // them, however, and we choose the first one arbitrarily.
+        // We must use at least one of the explicitly-assigned groups that
+        // satisfied the egg file.  We don't need to use all of them, however,
+        // and we choose the first one arbitrarily.
         definitely_in.insert(*intersect.begin());
 
       } else {
-        // This egg file was not satisfied by any of the texture's
-        // explicit assignments.  Therefore, we'll need to choose some
-        // additional group to assign the texture to, to make the egg
-        // file happy.  Defer this a bit.
+        // This egg file was not satisfied by any of the texture's explicit
+        // assignments.  Therefore, we'll need to choose some additional group
+        // to assign the texture to, to make the egg file happy.  Defer this a
+        // bit.
         needed_eggs.push_back(*ei);
       }
     }
   }
 
   while (!needed_eggs.empty()) {
-    // We need to know the complete set of groups that we need to
-    // consider adding the texture to.  This is the union of all the egg
-    // files' requested groups.
+    // We need to know the complete set of groups that we need to consider
+    // adding the texture to.  This is the union of all the egg files'
+    // requested groups.
     PaletteGroups total;
     WorkingEggs::const_iterator ei;
     for (ei = needed_eggs.begin(); ei != needed_eggs.end(); ++ei) {
@@ -144,11 +135,11 @@ assign_groups() {
       break;
     }
 
-    // Now, find the group that will satisfy the most egg files.  If
-    // two groups satisfy the same number of egg files, choose (a) the
-    // most specific one, i.e. with the lowest dirname_level, or the
-    // lowest dependency_level if the dirname_levels are equal, and
-    // (b) the one that has the fewest egg files sharing it.
+    // Now, find the group that will satisfy the most egg files.  If two
+    // groups satisfy the same number of egg files, choose (a) the most
+    // specific one, i.e.  with the lowest dirname_level, or the lowest
+    // dependency_level if the dirname_levels are equal, and (b) the one that
+    // has the fewest egg files sharing it.
     PaletteGroups::iterator gi = total.begin();
     PaletteGroup *best = (*gi);
     int best_egg_count = compute_egg_count(best, needed_eggs);
@@ -173,8 +164,8 @@ assign_groups() {
       ++gi;
     }
 
-    // Okay, now we've picked the best group.  Eliminate all the eggs
-    // from consideration that are satisfied by this group, and repeat.
+    // Okay, now we've picked the best group.  Eliminate all the eggs from
+    // consideration that are satisfied by this group, and repeat.
     definitely_in.insert(best);
 
     WorkingEggs next_needed_eggs;
@@ -187,32 +178,26 @@ assign_groups() {
     needed_eggs.swap(next_needed_eggs);
   }
 
-  // Finally, now that we've computed the set of groups we need to
-  // assign the texture to, we need to reconcile this with the set of
-  // groups we've assigned the texture to previously.
+  // Finally, now that we've computed the set of groups we need to assign the
+  // texture to, we need to reconcile this with the set of groups we've
+  // assigned the texture to previously.
   assign_to_groups(definitely_in);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_groups
-//       Access: Public
-//  Description: Once assign_groups() has been called, this returns
-//               the actual set of groups the TextureImage has been
-//               assigned to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once assign_groups() has been called, this returns the actual set of groups
+ * the TextureImage has been assigned to.
+ */
 const PaletteGroups &TextureImage::
 get_groups() const {
   return _actual_assigned_groups;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_placement
-//       Access: Public
-//  Description: Gets the TexturePlacement object which represents the
-//               assignment of this texture to the indicated group.
-//               If the texture has not been assigned to the indicated
-//               group, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the TexturePlacement object which represents the assignment of this
+ * texture to the indicated group.  If the texture has not been assigned to
+ * the indicated group, returns NULL.
+ */
 TexturePlacement *TextureImage::
 get_placement(PaletteGroup *group) const {
   Placement::const_iterator pi;
@@ -224,14 +209,11 @@ get_placement(PaletteGroup *group) const {
   return (*pi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::force_replace
-//       Access: Public
-//  Description: Removes the texture from any PaletteImages it is
-//               assigned to, but does not remove it from the groups.
-//               It will be re-placed within each group when
-//               PaletteGroup::place_all() is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the texture from any PaletteImages it is assigned to, but does not
+ * remove it from the groups.  It will be re-placed within each group when
+ * PaletteGroup::place_all() is called.
+ */
 void TextureImage::
 force_replace() {
   Placement::iterator pi;
@@ -240,15 +222,12 @@ force_replace() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::mark_eggs_stale
-//       Access: Public
-//  Description: Marks all the egg files that reference this texture
-//               stale.  Should be called only when the texture
-//               properties change in some catastrophic way that will
-//               require every egg file referencing it to be
-//               regenerated, even if it is not palettized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks all the egg files that reference this texture stale.  Should be
+ * called only when the texture properties change in some catastrophic way
+ * that will require every egg file referencing it to be regenerated, even if
+ * it is not palettized.
+ */
 void TextureImage::
 mark_eggs_stale() {
   Placement::iterator pi;
@@ -257,45 +236,36 @@ mark_eggs_stale() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::mark_texture_named
-//       Access: Public
-//  Description: Indicates that this particular texture has been named
-//               by the user for processing this session, normally by
-//               listing an egg file on the command line that
-//               references it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that this particular texture has been named by the user for
+ * processing this session, normally by listing an egg file on the command
+ * line that references it.
+ */
 void TextureImage::
 mark_texture_named() {
   _texture_named = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::is_texture_named
-//       Access: Public
-//  Description: Returns true if this particular texture has been
-//               named by the user for procession this session, for
-//               instance by listing an egg file on the command line
-//               that references it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular texture has been named by the user for
+ * procession this session, for instance by listing an egg file on the command
+ * line that references it.
+ */
 bool TextureImage::
 is_texture_named() const {
   return _texture_named;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::pre_txa_file
-//       Access: Public
-//  Description: Updates any internal state prior to reading the .txa
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates any internal state prior to reading the .txa file.
+ */
 void TextureImage::
 pre_txa_file() {
   // Save our current properties, so we can note if they change.
   _pre_txa_properties = _properties;
 
-  // Get our properties from the actual image for this texture.  It's
-  // possible the .txa file will update them further.
+  // Get our properties from the actual image for this texture.  It's possible
+  // the .txa file will update them further.
   SourceTextureImage *source = get_preferred_source();
   if (source != (SourceTextureImage *)NULL) {
     _properties = source->get_properties();
@@ -308,15 +278,11 @@ pre_txa_file() {
   _is_surprise = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::post_txa_file
-//       Access: Public
-//  Description: Once the .txa file has been read and the TextureImage
-//               matched against it, considers applying the requested
-//               size change.  Updates the TextureImage's size with
-//               the size the texture ought to be, if this can be
-//               determined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the .txa file has been read and the TextureImage matched against it,
+ * considers applying the requested size change.  Updates the TextureImage's
+ * size with the size the texture ought to be, if this can be determined.
+ */
 void TextureImage::
 post_txa_file() {
   _got_txa_file = true;
@@ -344,8 +310,8 @@ post_txa_file() {
     _txa_wrap_u = _request._wrap_u;
     _txa_wrap_v = _request._wrap_v;
 
-    // If the explicit wrap mode changes, we may need to regenerate
-    // the egg files, and/or refill the palettes.
+    // If the explicit wrap mode changes, we may need to regenerate the egg
+    // files, andor refill the palettes.
     mark_eggs_stale();
 
     Placement::iterator pi;
@@ -357,14 +323,14 @@ post_txa_file() {
 
   if (_properties.has_num_channels() && !_request._keep_format) {
     int num_channels = _properties.get_num_channels();
-    // Examine the image to determine if we can downgrade the number
-    // of channels, for instance from color to grayscale.
+    // Examine the image to determine if we can downgrade the number of
+    // channels, for instance from color to grayscale.
     if (num_channels == 3 || num_channels == 4) {
       consider_grayscale();
     }
-    
-    // Also consider the alpha properties, and whether we should
-    // downgrade from alpha to non-alpha.
+
+    // Also consider the alpha properties, and whether we should downgrade
+    // from alpha to non-alpha.
     if (num_channels == 2 || num_channels == 4) {
       consider_alpha();
     }
@@ -405,24 +371,24 @@ post_txa_file() {
   if (_properties != _pre_txa_properties) {
     force_replace();
 
-    // The above will mark the egg files stale when the texture is
-    // palettized (since the UV's will certainly need to be
-    // recomputed), but sometimes we need to mark the egg files stale
-    // even when the texture is not palettized (if a critical property
-    // has changed).  The following accomplishes this:
+    // The above will mark the egg files stale when the texture is palettized
+    // (since the UV's will certainly need to be recomputed), but sometimes we
+    // need to mark the egg files stale even when the texture is not
+    // palettized (if a critical property has changed).  The following
+    // accomplishes this:
     if (!_properties.egg_properties_match(_pre_txa_properties)) {
       mark_eggs_stale();
     }
   }
 
-  // The alpha mode isn't stored in the properties, because it doesn't
-  // affect which textures may be associated into a common palette.
+  // The alpha mode isn't stored in the properties, because it doesn't affect
+  // which textures may be associated into a common palette.
   if (_request._alpha_mode != EggRenderMode::AM_unspecified) {
     _alpha_mode = _request._alpha_mode;
   }
 
-  // On the other hand, if we don't have an alpha channel, we
-  // shouldn't have an alpha mode.
+  // On the other hand, if we don't have an alpha channel, we shouldn't have
+  // an alpha mode.
   if (_properties.has_num_channels()) {
     int num_channels = _properties.get_num_channels();
     if (num_channels == 1 || num_channels == 3) {
@@ -430,32 +396,26 @@ post_txa_file() {
     }
   }
 
-  // If we've changed the alpha mode, we should also mark the eggs
-  // stale.
+  // If we've changed the alpha mode, we should also mark the eggs stale.
   if (_pre_txa_alpha_mode != _alpha_mode) {
     mark_eggs_stale();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::got_txa_file
-//       Access: Public
-//  Description: Returns true if this TextureImage has been looked up
-//               in the .txa file this session, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this TextureImage has been looked up in the .txa file this
+ * session, false otherwise.
+ */
 bool TextureImage::
 got_txa_file() const {
   return _got_txa_file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::determine_placement_size
-//       Access: Public
-//  Description: Calls determine_size() on each TexturePlacement for
-//               the texture, to ensure that each TexturePlacement is
-//               still requesting the best possible size for the
-//               texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls determine_size() on each TexturePlacement for the texture, to ensure
+ * that each TexturePlacement is still requesting the best possible size for
+ * the texture.
+ */
 void TextureImage::
 determine_placement_size() {
   Placement::iterator pi;
@@ -465,121 +425,94 @@ determine_placement_size() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_omit
-//       Access: Public
-//  Description: Returns true if the user specifically requested to
-//               omit this texture via the "omit" keyword in the .txa
-//               file, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the user specifically requested to omit this texture via
+ * the "omit" keyword in the .txa file, or false otherwise.
+ */
 bool TextureImage::
 get_omit() const {
   return _request._omit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_coverage_threshold
-//       Access: Public
-//  Description: Returns the appropriate coverage threshold for this
-//               texture.  This is either the
-//               Palettizer::_coverage_threshold parameter, given
-//               globally via -r, or a particular value for this
-//               texture as supplied by the "coverage" keyword in the
-//               .txa file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the appropriate coverage threshold for this texture.  This is
+ * either the Palettizer::_coverage_threshold parameter, given globally via
+ * -r, or a particular value for this texture as supplied by the "coverage"
+ * keyword in the .txa file.
+ */
 double TextureImage::
 get_coverage_threshold() const {
   return _request._coverage_threshold;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_margin
-//       Access: Public
-//  Description: Returns the appropriate margin for this texture.
-//               This is either the Palettizer::_margin parameter, or
-//               a particular value for this texture as supplied by
-//               the "margin" keyword in the .txa file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the appropriate margin for this texture.  This is either the
+ * Palettizer::_margin parameter, or a particular value for this texture as
+ * supplied by the "margin" keyword in the .txa file.
+ */
 int TextureImage::
 get_margin() const {
   return _request._margin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::is_surprise
-//       Access: Public
-//  Description: Returns true if this particular texture is a
-//               'surprise', i.e. it wasn't matched by a line in the
-//               .txa file that didn't include the keyword 'cont'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular texture is a 'surprise', i.e.  it wasn't
+ * matched by a line in the .txa file that didn't include the keyword 'cont'.
+ */
 bool TextureImage::
 is_surprise() const {
   if (_placement.empty()) {
-    // A texture that is not actually placed anywhere is not
-    // considered a surprise.
+    // A texture that is not actually placed anywhere is not considered a
+    // surprise.
     return false;
   }
 
   return _is_surprise;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::is_used
-//       Access: Public
-//  Description: Returns true if this particular texture has been
-//               placed somewhere, anywhere, or false if it is not
-//               used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular texture has been placed somewhere,
+ * anywhere, or false if it is not used.
+ */
 bool TextureImage::
 is_used() const {
   return !_placement.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_alpha_mode
-//       Access: Public
-//  Description: Returns the alpha mode that should be used to render
-//               objects with this texture, as specified by the user
-//               or as determined from examining the texture's alpha
-//               channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the alpha mode that should be used to render objects with this
+ * texture, as specified by the user or as determined from examining the
+ * texture's alpha channel.
+ */
 EggRenderMode::AlphaMode TextureImage::
 get_alpha_mode() const {
   return _alpha_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_txa_wrap_u
-//       Access: Public
-//  Description: Returns the wrap mode specified in the u direction in
-//               the txa file, or WM_unspecified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the wrap mode specified in the u direction in the txa file, or
+ * WM_unspecified.
+ */
 EggTexture::WrapMode TextureImage::
 get_txa_wrap_u() const {
   return _txa_wrap_u;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_txa_wrap_v
-//       Access: Public
-//  Description: Returns the wrap mode specified in the v direction in
-//               the txa file, or WM_unspecified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the wrap mode specified in the v direction in the txa file, or
+ * WM_unspecified.
+ */
 EggTexture::WrapMode TextureImage::
 get_txa_wrap_v() const {
   return _txa_wrap_v;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_source
-//       Access: Public
-//  Description: Returns the SourceTextureImage corresponding to the
-//               given filename(s).  If the given filename has never
-//               been used as a SourceTexture for this particular
-//               texture, creates a new SourceTextureImage and returns
-//               that.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the SourceTextureImage corresponding to the given filename(s).  If
+ * the given filename has never been used as a SourceTexture for this
+ * particular texture, creates a new SourceTextureImage and returns that.
+ */
 SourceTextureImage *TextureImage::
 get_source(const Filename &filename, const Filename &alpha_filename,
            int alpha_file_channel) {
@@ -595,37 +528,35 @@ get_source(const Filename &filename, const Filename &alpha_filename,
     new SourceTextureImage(this, filename, alpha_filename, alpha_file_channel);
   _sources.insert(Sources::value_type(key, source));
 
-  // Clear out the preferred source image to force us to rederive this
-  // next time someone asks.
+  // Clear out the preferred source image to force us to rederive this next
+  // time someone asks.
   _preferred_source = (SourceTextureImage *)NULL;
   _read_source_image = false;
 
   return source;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_preferred_source
-//       Access: Public
-//  Description: Determines the preferred source image for examining
-//               size and reading pixels, etc.  This is the largest
-//               and most recent of all the available source images.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the preferred source image for examining size and reading
+ * pixels, etc.  This is the largest and most recent of all the available
+ * source images.
+ */
 SourceTextureImage *TextureImage::
 get_preferred_source() {
   if (_preferred_source != (SourceTextureImage *)NULL) {
     return _preferred_source;
   }
 
-  // Now examine all of the various source images available to us and
-  // pick the most suitable.  We base this on the following criteria:
+  // Now examine all of the various source images available to us and pick the
+  // most suitable.  We base this on the following criteria:
 
-  // (1) A suitable source image must be referenced by at least one
-  // egg file, unless no source images are referenced by any egg file.
+  // (1) A suitable source image must be referenced by at least one egg file,
+  // unless no source images are referenced by any egg file.
 
   // (2) A larger source image is preferable to a smaller one.
 
-  // (3) Given two source images of the same size, the more recent one
-  // is preferable.
+  // (3) Given two source images of the same size, the more recent one is
+  // preferable.
 
   // Are any source images referenced by an egg file?
 
@@ -669,10 +600,10 @@ get_preferred_source() {
   }
 
   if (best == (SourceTextureImage *)NULL && !_sources.empty()) {
-    // If we didn't pick any that pass, it must be that all of them
-    // are unreadable.  In this case, it really doesn't matter which
-    // one we pick, but we should at least pick one that has an egg
-    // reference, if any of them do.
+    // If we didn't pick any that pass, it must be that all of them are
+    // unreadable.  In this case, it really doesn't matter which one we pick,
+    // but we should at least pick one that has an egg reference, if any of
+    // them do.
     if (any_referenced) {
       for (si = _sources.begin();
            si != _sources.end() && best == (SourceTextureImage *)NULL;
@@ -691,14 +622,11 @@ get_preferred_source() {
   return _preferred_source;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::clear_source_basic_properties
-//       Access: Public
-//  Description: Calls clear_basic_properties() on each source texture
-//               image used by this texture, to reset the properties
-//               in preparation for re-applying them from the set of
-//               all known egg files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls clear_basic_properties() on each source texture image used by this
+ * texture, to reset the properties in preparation for re-applying them from
+ * the set of all known egg files.
+ */
 void TextureImage::
 clear_source_basic_properties() {
   Sources::iterator si;
@@ -708,28 +636,22 @@ clear_source_basic_properties() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::copy_unplaced
-//       Access: Public
-//  Description: Copies the texture to whichever destination
-//               directories are appropriate for the groups in which
-//               it has been unplaced.  Also removes the old filenames
-//               for previous sessions where it was unplaced, but is
-//               no longer.
-//
-//               If redo_all is true, this recopies the texture
-//               whether it needed to or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the texture to whichever destination directories are appropriate for
+ * the groups in which it has been unplaced.  Also removes the old filenames
+ * for previous sessions where it was unplaced, but is no longer.
+ *
+ * If redo_all is true, this recopies the texture whether it needed to or not.
+ */
 void TextureImage::
 copy_unplaced(bool redo_all) {
-  // First, we need to build up the set of DestTextureImages that
-  // represents the files we need to generate.
+  // First, we need to build up the set of DestTextureImages that represents
+  // the files we need to generate.
   Dests generate;
 
-  // Go through all the TexturePlacements and note the ones for which
-  // we're unplaced.  We check get_omit_reason() and not is_placed(),
-  // because we want to consider solitary images to be unplaced in
-  // this case.
+  // Go through all the TexturePlacements and note the ones for which we're
+  // unplaced.  We check get_omit_reason() and not is_placed(), because we
+  // want to consider solitary images to be unplaced in this case.
   Placement::iterator pi;
   for (pi = _placement.begin(); pi != _placement.end(); ++pi) {
     TexturePlacement *placement = (*pi).second;
@@ -742,8 +664,7 @@ copy_unplaced(bool redo_all) {
       pair<Dests::iterator, bool> insert_result = generate.insert
         (Dests::value_type(filename, dest));
       if (!insert_result.second) {
-        // At least two DestTextureImages map to the same filename, no
-        // sweat.
+        // At least two DestTextureImages map to the same filename, no sweat.
         delete dest;
         dest = (*insert_result.first).second;
       }
@@ -756,15 +677,15 @@ copy_unplaced(bool redo_all) {
   }
 
   if (redo_all) {
-    // If we're redoing everything, we remove everything first and
-    // then recopy it again.
+    // If we're redoing everything, we remove everything first and then recopy
+    // it again.
     Dests empty;
     remove_old_dests(empty, _dests);
     copy_new_dests(generate, empty);
 
   } else {
-    // Otherwise, we only remove and recopy the things that changed
-    // between this time and last time.
+    // Otherwise, we only remove and recopy the things that changed between
+    // this time and last time.
     remove_old_dests(generate, _dests);
     copy_new_dests(generate, _dests);
   }
@@ -778,12 +699,10 @@ copy_unplaced(bool redo_all) {
   _dests.swap(generate);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::read_source_image
-//       Access: Public
-//  Description: Reads in the original image, if it has not already
-//               been read, and returns it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in the original image, if it has not already been read, and returns
+ * it.
+ */
 const PNMImage &TextureImage::
 read_source_image() {
   if (!_read_source_image) {
@@ -799,14 +718,11 @@ read_source_image() {
   return _source_image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::release_source_image
-//       Access: Public
-//  Description: Frees the memory that was allocated by a previous
-//               call to read_source_image().  The next time
-//               read_source_image() is called, it will have to read
-//               the disk again.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the memory that was allocated by a previous call to
+ * read_source_image().  The next time read_source_image() is called, it will
+ * have to read the disk again.
+ */
 void TextureImage::
 release_source_image() {
   if (_read_source_image && _allow_release_source_image) {
@@ -815,14 +731,11 @@ release_source_image() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::set_source_image
-//       Access: Public
-//  Description: Accepts the indicated source image as if it had been
-//               read from disk.  This image is copied into the
-//               structure, and will be returned by future calls to
-//               read_source_image().
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts the indicated source image as if it had been read from disk.  This
+ * image is copied into the structure, and will be returned by future calls to
+ * read_source_image().
+ */
 void TextureImage::
 set_source_image(const PNMImage &image) {
   _source_image = image;
@@ -831,13 +744,10 @@ set_source_image(const PNMImage &image) {
   _ever_read_image = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::read_header
-//       Access: Public
-//  Description: Causes the header part of the image to be reread,
-//               usually to confirm that its image properties (size,
-//               number of channels, etc.) haven't changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Causes the header part of the image to be reread, usually to confirm that
+ * its image properties (size, number of channels, etc.) haven't changed.
+ */
 void TextureImage::
 read_header() {
   if (!_read_source_image) {
@@ -848,13 +758,10 @@ read_header() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::is_newer_than
-//       Access: Public
-//  Description: Returns true if the source image is newer than the
-//               indicated file, false otherwise.  If the image has
-//               already been read, this always returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the source image is newer than the indicated file, false
+ * otherwise.  If the image has already been read, this always returns false.
+ */
 bool TextureImage::
 is_newer_than(const Filename &reference_filename) {
   if (!_read_source_image) {
@@ -868,13 +775,10 @@ is_newer_than(const Filename &reference_filename) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::write_source_pathnames
-//       Access: Public
-//  Description: Writes the list of source pathnames that might
-//               contribute to this texture to the indicated output
-//               stream, one per line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the list of source pathnames that might contribute to this texture
+ * to the indicated output stream, one per line.
+ */
 void TextureImage::
 write_source_pathnames(ostream &out, int indent_level) const {
   Sources::const_iterator si;
@@ -945,12 +849,9 @@ write_source_pathnames(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::write_scale_info
-//       Access: Public
-//  Description: Writes the information about the texture's size and
-//               placement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the information about the texture's size and placement.
+ */
 void TextureImage::
 write_scale_info(ostream &out, int indent_level) {
   SourceTextureImage *source = get_preferred_source();
@@ -1035,13 +936,10 @@ write_scale_info(ostream &out, int indent_level) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::compute_egg_count
-//       Access: Private
-//  Description: Counts the number of egg files in the indicated set
-//               that will be satisfied if a texture is assigned to
-//               the indicated group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Counts the number of egg files in the indicated set that will be satisfied
+ * if a texture is assigned to the indicated group.
+ */
 int TextureImage::
 compute_egg_count(PaletteGroup *group,
                   const TextureImage::WorkingEggs &egg_files) {
@@ -1057,16 +955,12 @@ compute_egg_count(PaletteGroup *group,
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::assign_to_groups
-//       Access: Private
-//  Description: Assigns the texture to the indicated set of groups.
-//               If the texture was previously assigned to any of
-//               these groups, keeps the same TexturePlacement object
-//               for the assignment; at the same time, deletes any
-//               TexturePlacement objects that represent groups we are
-//               no longer assigned to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the texture to the indicated set of groups.  If the texture was
+ * previously assigned to any of these groups, keeps the same TexturePlacement
+ * object for the assignment; at the same time, deletes any TexturePlacement
+ * objects that represent groups we are no longer assigned to.
+ */
 void TextureImage::
 assign_to_groups(const PaletteGroups &groups) {
   PaletteGroups::const_iterator gi;
@@ -1082,8 +976,8 @@ assign_to_groups(const PaletteGroups &groups) {
     PaletteGroup *b = (*pi).first;
 
     if (a < b) {
-      // Here's a group we're now assigned to that we weren't assigned
-      // to previously.
+      // Here's a group we're now assigned to that we weren't assigned to
+      // previously.
       TexturePlacement *place = a->prepare(this);
       new_placement.insert
         (new_placement.end(), Placement::value_type(a, place));
@@ -1106,8 +1000,8 @@ assign_to_groups(const PaletteGroups &groups) {
   }
 
   while (gi != groups.end()) {
-    // Here's a group we're now assigned to that we weren't assigned
-    // to previously.
+    // Here's a group we're now assigned to that we weren't assigned to
+    // previously.
     PaletteGroup *a = (*gi);
     TexturePlacement *place = a->prepare(this);
     new_placement.insert
@@ -1126,22 +1020,18 @@ assign_to_groups(const PaletteGroups &groups) {
   _actual_assigned_groups = groups;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::consider_grayscale
-//       Access: Private
-//  Description: Examines the actual contents of the image to
-//               determine if it should maybe be considered a
-//               grayscale image (even though it has separate rgb
-//               components).
-////////////////////////////////////////////////////////////////////
+/**
+ * Examines the actual contents of the image to determine if it should maybe
+ * be considered a grayscale image (even though it has separate rgb
+ * components).
+ */
 void TextureImage::
 consider_grayscale() {
-  // Since this isn't likely to change for a particular texture after
-  // its creation, we save a bit of time by not performing this check
-  // unless this is the first time we've ever seen this texture.  This
-  // will save us from having to load the texture images each time we
-  // look at them.  On the other hand, if we've already loaded up the
-  // image, then go ahead.
+  // Since this isn't likely to change for a particular texture after its
+  // creation, we save a bit of time by not performing this check unless this
+  // is the first time we've ever seen this texture.  This will save us from
+  // having to load the texture images each time we look at them.  On the
+  // other hand, if we've already loaded up the image, then go ahead.
   if (!_read_source_image && _ever_read_image) {
     if (_forced_grayscale) {
       _properties.force_grayscale();
@@ -1170,19 +1060,17 @@ consider_grayscale() {
   _forced_grayscale = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::consider_alpha
-//       Access: Private
-//  Description: Examines the actual contents of the image to
-//               determine what alpha properties it has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Examines the actual contents of the image to determine what alpha
+ * properties it has.
+ */
 void TextureImage::
 consider_alpha() {
-  // As above, we don't bother doing this if we've already done this
-  // in a previous session.
+  // As above, we don't bother doing this if we've already done this in a
+  // previous session.
 
-  // _alpha_bits == -1 indicates we have read an older textures.boo
-  // file that didn't define these bits.
+  // _alpha_bits == -1 indicates we have read an older textures.boo file that
+  // didn't define these bits.
   if (_read_source_image || !_ever_read_image || _alpha_bits == -1) {
     _alpha_bits = 0;
     int num_mid_pixels = 0;
@@ -1220,23 +1108,23 @@ consider_alpha() {
       _properties.force_nonalpha();
 
     } else if (_alpha_bits == AB_zero) {
-      // All alpha pixels are invisible; this is probably a mistake.
-      // Drop the alpha channel and complain.
+      // All alpha pixels are invisible; this is probably a mistake.  Drop the
+      // alpha channel and complain.
       _properties.force_nonalpha();
       if (_read_source_image) {
         nout << *this << " has an all-zero alpha channel; dropping alpha.\n";
       }
 
     } else if (_alpha_mode == EggRenderMode::AM_unspecified) {
-      // Consider fiddling with the alpha mode, if the user hasn't
-      // specified a particular alpha mode in the txa file.
+      // Consider fiddling with the alpha mode, if the user hasn't specified a
+      // particular alpha mode in the txa file.
       if ((_alpha_bits & AB_mid) == 0) {
         // No middle range bits: a binary alpha image.
         _alpha_mode = EggRenderMode::AM_binary;
 
       } else if ((_alpha_bits & AB_one) != 0 && _mid_pixel_ratio < pal->_cutout_ratio) {
-        // At least some opaque bits, and relatively few middle range
-        // bits: a cutout image.
+        // At least some opaque bits, and relatively few middle range bits: a
+        // cutout image.
         _alpha_mode = pal->_cutout_mode;
         _is_cutout = true;
 
@@ -1248,12 +1136,9 @@ consider_alpha() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::remove_old_dests
-//       Access: Private
-//  Description: Removes all of the filenames named in b that are not
-//               also named in a.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the filenames named in b that are not also named in a.
+ */
 void TextureImage::
 remove_old_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
   Dests::const_iterator ai = a.begin();
@@ -1290,13 +1175,10 @@ remove_old_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::copy_new_dests
-//       Access: Private
-//  Description: Copies a resized texture into each filename named in
-//               a that is not also listed in b, or whose
-//               corresponding listing in b is out of date.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a resized texture into each filename named in a that is not also
+ * listed in b, or whose corresponding listing in b is out of date.
+ */
 void TextureImage::
 copy_new_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
   Dests::const_iterator ai = a.begin();
@@ -1330,12 +1212,10 @@ copy_new_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_source_key
-//       Access: Private
-//  Description: Returns the key that a SourceTextureImage should be
-//               stored in, given its one or two filenames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key that a SourceTextureImage should be stored in, given its
+ * one or two filenames.
+ */
 string TextureImage::
 get_source_key(const Filename &filename, const Filename &alpha_filename,
                int alpha_file_channel) {
@@ -1346,37 +1226,30 @@ get_source_key(const Filename &filename, const Filename &alpha_filename,
     format_string(alpha_file_channel);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void TextureImage::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_TextureImage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void TextureImage::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   ImageFile::write_datagram(writer, datagram);
   datagram.add_string(get_name());
 
-  // We don't write out _request; this is re-read from the .txa file
-  // each time.
+  // We don't write out _request; this is re-read from the .txa file each
+  // time.
 
   // We don't write out _pre_txa_properties; this is transitional.
 
-  // We don't write out _preferred_source; this is redetermined each
-  // session.
+  // We don't write out _preferred_source; this is redetermined each session.
 
   datagram.add_bool(_is_surprise);
   datagram.add_bool(_ever_read_image);
@@ -1388,8 +1261,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_uint8((int)_txa_wrap_u);
   datagram.add_uint8((int)_txa_wrap_v);
 
-  // We don't write out _explicitly_assigned_groups; this is re-read
-  // from the .txa file each time.
+  // We don't write out _explicitly_assigned_groups; this is re-read from the
+  // .txa file each time.
 
   _actual_assigned_groups.write_datagram(writer, datagram);
 
@@ -1415,15 +1288,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam
+ * file for each pointer object written.  The return value is the number of
+ * pointers processed from the list.
+ */
 int TextureImage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = ImageFile::complete_pointers(p_list, manager);
@@ -1466,14 +1336,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::make_TextureImage
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable *TextureImage::
 make_TextureImage(const FactoryParams &params) {
   TextureImage *me = new TextureImage;
@@ -1485,13 +1352,10 @@ make_TextureImage(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written
+ * by a previous call to write_datagram().
+ */
 void TextureImage::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ImageFile::fillin(scan, manager);

@@ -1,16 +1,15 @@
-// Filename: functionRemap.h
-// Created by:  drose (19Sep01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file functionRemap.h
+ * @author drose
+ * @date 2001-09-19
+ */
 
 #ifndef FUNCTIONREMAP_H
 #define FUNCTIONREMAP_H
@@ -33,16 +32,14 @@ class CPPScope;
 class CPPFunctionType;
 class InterfaceMaker;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FunctionRemap
-// Description : This class describes how to remap a C++ function (and
-//               its list of parameters and return type) to a wrapped
-//               function, for a particular scripting language.
-//
-//               The InterfaceMaker class will create one of these for
-//               each function, including one for each instance of an
-//               overloaded function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class describes how to remap a C++ function (and its list of
+ * parameters and return type) to a wrapped function, for a particular
+ * scripting language.
+ *
+ * The InterfaceMaker class will create one of these for each function,
+ * including one for each instance of an overloaded function.
+ */
 class FunctionRemap {
 public:
   FunctionRemap(const InterrogateType &itype,

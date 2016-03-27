@@ -1,16 +1,15 @@
-// Filename: wavAudioCursor.cxx
-// Created by: rdb (23Aug13)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wavAudioCursor.cxx
+ * @author rdb
+ * @date 2013-08-23
+ */
 
 #include "wavAudioCursor.h"
 #include "config_movies.h"
@@ -90,13 +89,10 @@ static PN_int16 alaw_table[256] = {
 
 TypeHandle WavAudioCursor::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::Constructor
-//       Access: Protected
-//  Description: Reads the .wav header from the indicated stream.
-//               This leaves the read pointer positioned at the
-//               start of the data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the .wav header from the indicated stream.  This leaves the read
+ * pointer positioned at the start of the data.
+ */
 WavAudioCursor::
 WavAudioCursor(WavAudio *src, istream *stream) :
   MovieAudioCursor(src),
@@ -255,8 +251,8 @@ WavAudioCursor(WavAudio *src, istream *stream) :
   // We can always seek by skipping bytes, rereading if necessary.
   _can_seek = true;
 
-  // How to tell if a stream is seekable?  We'll set it to true, and
-  // then change it to false as soon as we find out that we can't.
+  // How to tell if a stream is seekable?  We'll set it to true, and then
+  // change it to false as soon as we find out that we can't.
   _can_seek_fast = true;
 
   if (_block_align != _audio_channels * _bytes_per_sample) {
@@ -277,11 +273,9 @@ WavAudioCursor(WavAudio *src, istream *stream) :
   _is_valid = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 WavAudioCursor::
 ~WavAudioCursor() {
   if (_stream != NULL) {
@@ -290,13 +284,10 @@ WavAudioCursor::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::seek
-//       Access: Protected
-//  Description: Seeks to a target location.  Afterward, the
-//               packet_time is guaranteed to be less than or
-//               equal to the specified time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Seeks to a target location.  Afterward, the packet_time is guaranteed to be
+ * less than or equal to the specified time.
+ */
 void WavAudioCursor::
 seek(double t) {
   t = max(t, 0.0);
@@ -305,8 +296,7 @@ seek(double t) {
   if (_can_seek_fast) {
     _stream->seekg(pos);
     if (_stream->tellg() != pos) {
-      // Clearly, we can't seek fast.
-      // Fall back to the case below.
+      // Clearly, we can't seek fast.  Fall back to the case below.
       _can_seek_fast = false;
     }
   }
@@ -319,8 +309,7 @@ seek(double t) {
       _reader.skip_bytes(pos - current);
 
     } else if (pos < current) {
-      // We'll have to reopen the file.
-      //TODO
+      // We'll have to reopen the file.  TODO
     }
   }
 
@@ -329,14 +318,11 @@ seek(double t) {
   _samples_read = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::read_samples
-//       Access: Public, Virtual
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.
-//               Multiple-channel audio will be interleaved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Read audio samples from the stream.  N is the number of samples you wish to
+ * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
+ * audio will be interleaved.
+ */
 void WavAudioCursor::
 read_samples(int n, PN_int16 *data) {
   int desired = n * _audio_channels;
@@ -363,8 +349,8 @@ read_samples(int n, PN_int16 *data) {
       break;
 
     case 3: {
-      // The scale factor happens to be 256 for 24-bit samples.
-      // That means we can just read the most significant bytes.
+      // The scale factor happens to be 256 for 24-bit samples.  That means we
+      // can just read the most significant bytes.
       for (int i = 0; i < read_samples; ++i) {
         _reader.skip_bytes(1);
         data[i] = _reader.get_int16();

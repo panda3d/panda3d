@@ -1,16 +1,15 @@
-// Filename: mayaNodeDesc.cxx
-// Created by:  drose (06Jun03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaNodeDesc.cxx
+ * @author drose
+ * @date 2003-06-06
+ */
 
 #include "mayaNodeDesc.h"
 #include "mayaNodeTree.h"
@@ -29,8 +28,7 @@
 
 TypeHandle MayaNodeDesc::_type_handle;
 
-// This is a list of the names of Maya connections that count as a
-// transform.
+// This is a list of the names of Maya connections that count as a transform.
 static const char *transform_connections[] = {
   "translate",
   "translateX",
@@ -43,11 +41,9 @@ static const char *transform_connections[] = {
 };
 static const int num_transform_connections = sizeof(transform_connections) / sizeof(const char *);
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaNodeDesc::
 MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
   Namable(name),
@@ -69,11 +65,9 @@ MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 MayaNodeDesc::
 ~MayaNodeDesc() {
   if (_dag_path != (MDagPath *)NULL) {
@@ -81,12 +75,9 @@ MayaNodeDesc::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::from_dag_path
-//       Access: Public
-//  Description: Indicates an association between the MayaNodeDesc and
-//               some Maya instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates an association between the MayaNodeDesc and some Maya instance.
+ */
 void MayaNodeDesc::
 from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
   MStatus status;
@@ -103,23 +94,22 @@ from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
     }
 
     if (_dag_path->hasFn(MFn::kJoint) || converter->force_joint(name)) {
-      // This node is a joint, or the user specifically asked to treat
-      // it like a joint.
+      // This node is a joint, or the user specifically asked to treat it like
+      // a joint.
       _joint_type = JT_joint;
       if (_parent != (MayaNodeDesc *)NULL) {
         _parent->mark_joint_parent();
       }
 
     } else {
-      // The node is not a joint, but maybe its transform is
-      // controlled by connected inputs.  If so, we should treat it
-      // like a joint.
+      // The node is not a joint, but maybe its transform is controlled by
+      // connected inputs.  If so, we should treat it like a joint.
       bool transform_connected = false;
 
       MStatus status;
       MObject node = dag_path.node(&status);
       if (status) {
-        for (int i = 0; 
+        for (int i = 0;
              i < num_transform_connections && !transform_connected;
              i++) {
           if (is_connected(node, transform_connections[i])) {
@@ -127,7 +117,7 @@ from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
           }
         }
       }
-      
+
       if (transform_connected) {
         _joint_type = JT_joint;
         if (_parent != (MayaNodeDesc *)NULL) {
@@ -150,110 +140,86 @@ from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::has_dag_path
-//       Access: Public
-//  Description: Returns true if a Maya dag path has been associated
-//               with this node, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a Maya dag path has been associated with this node, false
+ * otherwise.
+ */
 bool MayaNodeDesc::
 has_dag_path() const {
   return (_dag_path != (MDagPath *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::get_dag_path
-//       Access: Public
-//  Description: Returns the dag path associated with this node.  It
-//               is an error to call this unless has_dag_path()
-//               returned true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the dag path associated with this node.  It is an error to call
+ * this unless has_dag_path() returned true.
+ */
 const MDagPath &MayaNodeDesc::
 get_dag_path() const {
   nassertr(_dag_path != (MDagPath *)NULL, *_dag_path);
   return *_dag_path;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::get_num_blend_descs
-//       Access: Public
-//  Description: Returns the number of unique MayaBlendDesc objects
-//               (and hence the number of morph sliders) that affect
-//               the geometry in this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of unique MayaBlendDesc objects (and hence the number of
+ * morph sliders) that affect the geometry in this node.
+ */
 int MayaNodeDesc::
 get_num_blend_descs() const {
   return _blend_descs.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::get_blend_desc
-//       Access: Public
-//  Description: Returns the nth MayaBlendDesc object that affects the
-//               geometry in this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth MayaBlendDesc object that affects the geometry in this
+ * node.
+ */
 MayaBlendDesc *MayaNodeDesc::
 get_blend_desc(int n) const {
   nassertr(n >= 0 && n < (int)_blend_descs.size(), NULL);
   return _blend_descs[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::is_joint
-//       Access: Public
-//  Description: Returns true if the node should be treated as a joint
-//               by the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node should be treated as a joint by the converter.
+ */
 bool MayaNodeDesc::
 is_joint() const {
-  //return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
+  // return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
   return _joint_tagged && (_joint_type == JT_joint || _joint_type == JT_pseudo_joint);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::is_joint_parent
-//       Access: Public
-//  Description: Returns true if the node is the parent or ancestor of
-//               a joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node is the parent or ancestor of a joint.
+ */
 bool MayaNodeDesc::
 is_joint_parent() const {
   return _joint_type == JT_joint_parent;
-  //return _joint_tagged && (_joint_type == JT_joint_parent);
+  // return _joint_tagged && (_joint_type == JT_joint_parent);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::is_joint_tagged
-//       Access: Public
-//  Description: Returns true if the node has been joint_tagged to be
-//               converted, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node has been joint_tagged to be converted, false
+ * otherwise.
+ */
 bool MayaNodeDesc::
 is_joint_tagged() const {
   return _joint_tagged;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::tag_joint
-//       Access: Private
-//  Description: Tags this node for conversion, but does not tag child
-//               nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags this node for conversion, but does not tag child nodes.
+ */
 void MayaNodeDesc::
 tag_joint() {
   _joint_tagged = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::tag_joint_recursively
-//       Access: Private
-//  Description: Tags this node and all descendant nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags this node and all descendant nodes for conversion.
+ */
 void MayaNodeDesc::
 tag_joint_recursively() {
   _joint_tagged = true;
-  //mayaegg_cat.info() << "tjr: " << get_name() << endl;
+  // mayaegg_cat.info() << "tjr: " << get_name() << endl;
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     MayaNodeDesc *child = (*ci);
@@ -261,45 +227,33 @@ tag_joint_recursively() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::is_tagged
-//       Access: Public
-//  Description: Returns true if the node has been tagged to be
-//               converted, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node has been tagged to be converted, false otherwise.
+ */
 bool MayaNodeDesc::
 is_tagged() const {
   return _tagged;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::tag
-//       Access: Private
-//  Description: Tags this node for conversion, but does not tag child
-//               nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags this node for conversion, but does not tag child nodes.
+ */
 void MayaNodeDesc::
 tag() {
   _tagged = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::untag
-//       Access: Private
-//  Description: Un-tags this node for conversion, but does not tag child
-//               nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Un-tags this node for conversion, but does not tag child nodes.
+ */
 void MayaNodeDesc::
 untag() {
   _tagged = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::tag_recursively
-//       Access: Private
-//  Description: Tags this node and all descendant nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags this node and all descendant nodes for conversion.
+ */
 void MayaNodeDesc::
 tag_recursively() {
   _tagged = true;
@@ -311,12 +265,9 @@ tag_recursively() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::untag_recursively
-//       Access: Private
-//  Description: Un-tags this node and all descendant nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Un-tags this node and all descendant nodes for conversion.
+ */
 void MayaNodeDesc::
 untag_recursively() {
   _tagged = false;
@@ -328,16 +279,14 @@ untag_recursively() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::has_object_type
-//       Access: Public
-//  Description: Returns true if this node or any of its parent
-//               has_object_type of object_type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this node or any of its parent has_object_type of
+ * object_type.
+ */
 bool MayaNodeDesc::
 has_object_type(string object_type) const {
   bool ret = false;
-  if ((_egg_group != (EggGroup*) NULL) 
+  if ((_egg_group != (EggGroup*) NULL)
       && _egg_group->has_object_type(object_type)) {
     return true;
   }
@@ -347,12 +296,9 @@ has_object_type(string object_type) const {
   return ret;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::clear_egg
-//       Access: Private
-//  Description: Recursively clears the egg pointers from this node
-//               and all children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively clears the egg pointers from this node and all children.
+ */
 void MayaNodeDesc::
 clear_egg() {
   _egg_group = (EggGroup *)NULL;
@@ -366,12 +312,10 @@ clear_egg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::mark_joint_parent
-//       Access: Private
-//  Description: Indicates that this node has at least one child that
-//               is a joint or a pseudo-joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that this node has at least one child that is a joint or a
+ * pseudo-joint.
+ */
 void MayaNodeDesc::
 mark_joint_parent() {
   if (_joint_type == JT_none) {
@@ -382,14 +326,11 @@ mark_joint_parent() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::check_pseudo_joints
-//       Access: Private
-//  Description: Walks the hierarchy, looking for non-joint nodes that
-//               are both children and parents of a joint.  These
-//               nodes are deemed to be pseudo joints, since the
-//               converter must treat them as joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy, looking for non-joint nodes that are both children and
+ * parents of a joint.  These nodes are deemed to be pseudo joints, since the
+ * converter must treat them as joints.
+ */
 void MayaNodeDesc::
 check_pseudo_joints(bool joint_above) {
   static PN_uint32 space_count = 0;
@@ -401,20 +342,19 @@ check_pseudo_joints(bool joint_above) {
     mayaegg_cat.spam() << "cpj:" << space << get_name() << " joint_type: " << _joint_type << endl;
   }
   if (_joint_type == JT_joint_parent && joint_above) {
-    // This is one such node: it is the parent of a joint
-    // (JT_joint_parent is set), and it is the child of a joint
-    // (joint_above is set).
+    // This is one such node: it is the parent of a joint (JT_joint_parent is
+    // set), and it is the child of a joint (joint_above is set).
     _joint_type = JT_pseudo_joint;
   }
 
   if (_joint_type == JT_joint) {
-    // If this node is itself a joint, then joint_above is true for
-    // all child nodes.
+    // If this node is itself a joint, then joint_above is true for all child
+    // nodes.
     joint_above = true;
   }
 
-  // Don't bother traversing further if _joint_type is none, since
-  // that means this node has no joint children.
+  // Don't bother traversing further if _joint_type is none, since that means
+  // this node has no joint children.
   if (_joint_type != JT_none) {
 
     bool any_joints = false;
@@ -425,14 +365,14 @@ check_pseudo_joints(bool joint_above) {
         ++space_count;
       }
       child->check_pseudo_joints(joint_above);
-      //if (child->is_joint()) {
+      // if (child->is_joint()) {
       if (child->_joint_type == JT_joint || child->_joint_type == JT_pseudo_joint) {
         any_joints = true;
       }
     }
 
-    // If any children qualify as joints, then any sibling nodes that
-    // are parents of joints are also elevated to joints.
+    // If any children qualify as joints, then any sibling nodes that are
+    // parents of joints are also elevated to joints.
     if (any_joints) {
       bool all_joints = true;
       for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -474,31 +414,28 @@ check_pseudo_joints(bool joint_above) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::check_blend_shapes
-//       Access: Private
-//  Description: Looks for blend shapes on a NURBS surface or polygon
-//               mesh and records any blend shapes found.  This is
-//               similar to MayaToEggConverter::get_vertex_weights(),
-//               which checks for membership of vertices to joints;
-//               Maya stores the blend shape table in the same place.
-//               See the comments in get_vertex_weights() for a more
-//               in-depth description of the iteration process here.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks for blend shapes on a NURBS surface or polygon mesh and records any
+ * blend shapes found.  This is similar to
+ * MayaToEggConverter::get_vertex_weights(), which checks for membership of
+ * vertices to joints; Maya stores the blend shape table in the same place.
+ * See the comments in get_vertex_weights() for a more in-depth description of
+ * the iteration process here.
+ */
 void MayaNodeDesc::
 check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
   MStatus status;
 
-  MObject attr = node.attribute(attrib_name.c_str()); 
-  
-  MPlug history(node.object(), attr); 
-  MItDependencyGraph it(history, MFn::kDependencyNode, 
-                        MItDependencyGraph::kUpstream, 
-                        MItDependencyGraph::kDepthFirst, 
+  MObject attr = node.attribute(attrib_name.c_str());
+
+  MPlug history(node.object(), attr);
+  MItDependencyGraph it(history, MFn::kDependencyNode,
+                        MItDependencyGraph::kUpstream,
+                        MItDependencyGraph::kDepthFirst,
                         MItDependencyGraph::kNodeLevel);
 
   while (!it.isDone()) {
-    MObject c_node = it.thisNode(); 
+    MObject c_node = it.thisNode();
 
     if (c_node.hasFn(MFn::kBlendShape)) {
       MFnBlendShapeDeformer blends(c_node, &status);
@@ -506,9 +443,9 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
         status.perror("MFnBlendShapeDeformer constructor");
 
       } else {
-        // Check if the slider is a "parallel blender", which is a
-        // construct created by Maya for Maya's internal purposes
-        // only.  We don't want to fiddle with the parallel blenders.
+        // Check if the slider is a "parallel blender", which is a construct
+        // created by Maya for Maya's internal purposes only.  We don't want
+        // to fiddle with the parallel blenders.
         MPlug plug = blends.findPlug("pb");
         bool is_parallel_blender;
         status = plug.getValue(is_parallel_blender);
@@ -517,7 +454,7 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
           is_parallel_blender = false;
         }
 
-        if (is_parallel_blender || 
+        if (is_parallel_blender ||
             _tree->ignore_slider(blends.name().asChar())) {
           _tree->report_ignored_slider(blends.name().asChar());
 
@@ -529,7 +466,7 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
           } else {
             for (unsigned int oi = 0; oi < base_objects.length(); oi++) {
               MObject base_object = base_objects[oi];
-              
+
               MIntArray index_list;
               status = blends.weightIndexList(index_list);
               if (!status) {
@@ -552,20 +489,16 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeDesc::check_lods
-//       Access: Private
-//  Description: Walks through the hierarchy again and checks for LOD
-//               specifications.  Any such specifications found are
-//               recorded on the child nodes of the lodGroups
-//               themselves: the nodes that actually switch in and
-//               out.  (This is the way they are recorded in an egg
-//               file.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the hierarchy again and checks for LOD specifications.  Any
+ * such specifications found are recorded on the child nodes of the lodGroups
+ * themselves: the nodes that actually switch in and out.  (This is the way
+ * they are recorded in an egg file.)
+ */
 void MayaNodeDesc::
 check_lods() {
-  // Walk through the children first.  This makes it easier in the
-  // below (we only have to return in the event of an error).
+  // Walk through the children first.  This makes it easier in the below (we
+  // only have to return in the event of an error).
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     MayaNodeDesc *child = (*ci);
@@ -575,8 +508,7 @@ check_lods() {
   // Now consider whether this node is an lodGroup.
   if (_dag_path != (MDagPath *)NULL &&
       _dag_path->hasFn(MFn::kLodGroup)) {
-    // This node is a parent lodGroup; its children, therefore, are
-    // LOD's.
+    // This node is a parent lodGroup; its children, therefore, are LOD's.
     MStatus status;
     MFnDagNode dag_node(*_dag_path, &status);
     if (!status) {
@@ -590,8 +522,8 @@ check_lods() {
       return;
     }
 
-    // There ought to be the one fewer elements in the array than
-    // there are children of the node.
+    // There ought to be the one fewer elements in the array than there are
+    // children of the node.
     unsigned int num_elements = plug.numElements();
     unsigned int num_children = _children.size();
     if (num_elements + 1 != num_children) {
@@ -600,10 +532,9 @@ check_lods() {
         << " LOD entries, but " << num_children << " children.\n";
     }
 
-    // Should we also consider cameraMatrix, to transform the LOD's
-    // origin?  It's not clear precisely what this transform matrix
-    // means in Maya, so we'll wait until we have a sample file that
-    // demonstrates its use.
+    // Should we also consider cameraMatrix, to transform the LOD's origin?
+    // It's not clear precisely what this transform matrix means in Maya, so
+    // we'll wait until we have a sample file that demonstrates its use.
 
     double switch_out = 0.0;
     unsigned int i = 0;
@@ -627,14 +558,14 @@ check_lods() {
     }
 
     while (i < num_children) {
-      // Also set the last child(ren).  Maya wants this to switch in
-      // at infinity, but Panda doesn't have such a concept; we'll
-      // settle for four times the switch_out distance.
+      // Also set the last child(ren).  Maya wants this to switch in at
+      // infinity, but Panda doesn't have such a concept; we'll settle for
+      // four times the switch_out distance.
       MayaNodeDesc *child = _children[i];
       child->_is_lod = true;
       child->_switch_in = switch_out * 4.0;
       child->_switch_out = switch_out;
-      
+
       ++i;
     }
   }

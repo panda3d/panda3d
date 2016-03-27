@@ -1,16 +1,15 @@
-// Filename: test_diners.cxx
-// Created by:  cary (16Sep98)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file test_diners.cxx
+ * @author cary
+ * @date 1998-09-16
+ */
 
 // A solution to the famous dining philosophers, implemented using the
 // threading abstraction.  This program exercises thread creation and
@@ -26,9 +25,8 @@
 #include "pstrtod.h"
 
 #ifdef WIN32_VC
-// Under Windows, the rand() function seems to return a sequence
-// per-thread, so we use this trick to set each thread to a different
-// seed.
+// Under Windows, the rand() function seems to return a sequence per-thread,
+// so we use this trick to set each thread to a different seed.
 static int last_rand = 0;
 #endif /* __WIN32__ */
 
@@ -61,9 +59,8 @@ public:
 
 ChopstickMutex chopsticks[N_DINERS];
 
-// At most n philosophers are allowed into the room, others would have to
-// wait at the door.  This restriction demonstrates the use of condition
-// variables.
+// At most n philosophers are allowed into the room, others would have to wait
+// at the door.  This restriction demonstrates the use of condition variables.
 
 Mutex room_mutex;
 
@@ -184,7 +181,7 @@ main(int argc, char *argv[]) {
 
   while (room_occupancy != 0) {
     room_condition.wait();
-  }  
+  }
 
   room_mutex.release();
 

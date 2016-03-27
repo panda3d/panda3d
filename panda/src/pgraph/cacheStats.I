@@ -1,23 +1,19 @@
-// Filename: cacheStats.I
-// Created by:  drose (24Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cacheStats.I
+ * @author drose
+ * @date 2007-07-24
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CacheStats::maybe_report
-//       Access: Public
-//  Description: Outputs a report if enough time has elapsed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a report if enough time has elapsed.
+ */
 INLINE void CacheStats::
 maybe_report(const char *name) {
 #ifndef NDEBUG
@@ -32,11 +28,9 @@ maybe_report(const char *name) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CacheStats::inc_hits
-//       Access: Public
-//  Description: Increments by 1 the count of cache hits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments by 1 the count of cache hits.
+ */
 INLINE void CacheStats::
 inc_hits() {
 #ifndef NDEBUG
@@ -44,11 +38,9 @@ inc_hits() {
 #endif // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CacheStats::inc_misses
-//       Access: Public
-//  Description: Increments by 1 the count of cache misses.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments by 1 the count of cache misses.
+ */
 INLINE void CacheStats::
 inc_misses() {
 #ifndef NDEBUG
@@ -56,13 +48,10 @@ inc_misses() {
 #endif // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CacheStats::inc_adds
-//       Access: Public
-//  Description: Increments by 1 the count of elements added to the
-//               cache.  If is_new is true, the element was added to a
-//               previously empty hashtable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments by 1 the count of elements added to the cache.  If is_new is
+ * true, the element was added to a previously empty hashtable.
+ */
 INLINE void CacheStats::
 inc_adds(bool is_new) {
 #ifndef NDEBUG
@@ -73,12 +62,9 @@ inc_adds(bool is_new) {
 #endif // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CacheStats::inc_dels
-//       Access: Public
-//  Description: Increments by 1 the count of elements removed from
-//               the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments by 1 the count of elements removed from the cache.
+ */
 INLINE void CacheStats::
 inc_dels() {
 #ifndef NDEBUG
@@ -86,13 +72,10 @@ inc_dels() {
 #endif // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CacheStats::add_total_size
-//       Access: Public
-//  Description: Adds the indicated count (positive or negative) to
-//               the total number of entries for the cache
-//               (net occupied size of all the hashtables).
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated count (positive or negative) to the total number of
+ * entries for the cache (net occupied size of all the hashtables).
+ */
 INLINE void CacheStats::
 add_total_size(int count) {
 #ifndef NDEBUG
@@ -100,13 +83,10 @@ add_total_size(int count) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CacheStats::add_num_states
-//       Access: Public
-//  Description: Adds the indicated count (positive or negative) to
-//               the total count of individual RenderState or
-//               TransformState objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated count (positive or negative) to the total count of
+ * individual RenderState or TransformState objects.
+ */
 INLINE void CacheStats::
 add_num_states(int count) {
 #ifndef NDEBUG

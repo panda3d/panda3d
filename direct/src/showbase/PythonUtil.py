@@ -1,18 +1,14 @@
-
-"""Undocumented Module"""
+"""Contains miscellaneous utility functions and classes."""
 
 __all__ = ['indent',
-'StackTrace', 'traceFunctionCall', 'traceParentCall', 'printThisCall',
 'doc', 'adjust', 'difference', 'intersection', 'union',
 'sameElements', 'makeList', 'makeTuple', 'list2dict', 'invertDict',
 'invertDictLossless', 'uniqueElements', 'disjoint', 'contains',
 'replace', 'reduceAngle', 'fitSrcAngle2Dest', 'fitDestAngle2Src',
-'closestDestAngle2', 'closestDestAngle', 'binaryRepr', 'profileFunc',
-'profiled', 'startProfile', 'printProfile', 'getSetterName',
+'closestDestAngle2', 'closestDestAngle', 'getSetterName',
 'getSetter', 'Functor', 'Stack', 'Queue',
 'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
 'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
-'stackEntryInfo', 'lineInfo', 'callerInfo', 'lineTag',
 'findPythonModule', 'mostDerivedLast',
 'weightedChoice', 'randFloat', 'normalDistrib',
 'weightedRand', 'randUint31', 'randInt32', 'randUint32',
@@ -20,40 +16,35 @@ __all__ = ['indent',
 'SingletonError', 'printListEnum', 'safeRepr',
 'fastRepr', 'isDefaultValue',
 'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
-'getNumberedTypedSortedString', 'getNumberedTypedSortedStringWithReferrers',
-'getNumberedTypedSortedStringWithReferrersGen',
+'getNumberedTypedSortedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCall', 'SubframeCall', 'getBase',
-'HotkeyBreaker','logMethodCalls','GoldenRatio',
+'FrameDelayedCall', 'SubframeCall', 'getBase', 'GoldenRatio',
 'GoldenRectangle', 'rad90', 'rad180', 'rad270', 'rad360',
-'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
-'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
-'pandaBreak','pandaTrace','formatTimeCompact',
-'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
+'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel',
+'listToIndex2item', 'listToItem2index',
+'formatTimeCompact','deeptype','StdoutCapture','StdoutPassthrough',
 'Averager', 'getRepository', 'formatTimeExact', 'startSuperLog', 'endSuperLog',
 'typeName', 'safeTypeName', 'histogramDict', 'unescapeHtmlString']
+
+if __debug__:
+    __all__ += ['StackTrace', 'traceFunctionCall', 'traceParentCall', 'printThisCall',
+                'stackEntryInfo', 'lineInfo', 'callerInfo', 'lineTag',
+                'profileFunc', 'profiled', 'startProfile', 'printProfile',
+                'getProfileResultString', 'printStack', 'printReverseStack']
 
 import types
 import string
 import math
-import operator
-import inspect
 import os
 import sys
 import random
 import time
-import gc
-#if __debug__:
-import traceback
 import __builtin__
-from StringIO import StringIO
-import marshal
+import importlib
 
 __report_indent = 3
 
 from panda3d.core import ConfigVariableBool
-
-ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
 """
 # with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
@@ -91,15 +82,6 @@ class Functor:
         _kargs = self._kargs.copy()
         _kargs.update(kargs)
         return self._function(*(self._args + args), **_kargs)
-
-    # this method is used in place of __call__ if we are recording creation stacks
-    def _exceptionLoggedCreationStack__call__(self, *args, **kargs):
-        try:
-            return self._do__call__(*args, **kargs)
-        except Exception, e:
-            print '-->Functor creation stack (%s): %s' % (
-                self.__name__, self.getCreationStackTraceCompactStr())
-            raise
 
     __call__ = _do__call__
 
@@ -186,113 +168,113 @@ def indent(stream, numIndents, str):
     stream.write('    ' * numIndents + str)
 
 
-#if __debug__: #RAU accdg to Darren its's ok that StackTrace is not protected by __debug__
-# DCR: if somebody ends up using StackTrace in production, either
-# A) it will be OK because it hardly ever gets called, or
-# B) it will be easy to track it down (grep for StackTrace)
-class StackTrace:
-    def __init__(self, label="", start=0, limit=None):
-        """
-        label is a string (or anything that be be a string)
-        that is printed as part of the trace back.
-        This is just to make it easier to tell what the
-        stack trace is referring to.
-        start is an integer number of stack frames back
-        from the most recent.  (This is automatically
-        bumped up by one to skip the __init__ call
-        to the StackTrace).
-        limit is an integer number of stack frames
-        to record (or None for unlimited).
-        """
-        self.label = label
-        if limit is not None:
-            self.trace = traceback.extract_stack(sys._getframe(1+start),
-                                                 limit=limit)
-        else:
-            self.trace = traceback.extract_stack(sys._getframe(1+start))
+if __debug__:
+    import traceback
+    import marshal
 
-    def compact(self):
-        r = ''
-        comma = ','
-        for filename, lineNum, funcName, text in self.trace:
-            r += '%s.%s:%s%s' % (filename[:filename.rfind('.py')][filename.rfind('\\')+1:], funcName, lineNum, comma)
-        if len(r):
-            r = r[:-len(comma)]
-        return r
-
-    def reverseCompact(self):
-        r = ''
-        comma = ','
-        for filename, lineNum, funcName, text in self.trace:
-            r = '%s.%s:%s%s%s' % (filename[:filename.rfind('.py')][filename.rfind('\\')+1:], funcName, lineNum, comma, r)
-        if len(r):
-            r = r[:-len(comma)]
-        return r
-
-    def __str__(self):
-        r = "Debug stack trace of %s (back %s frames):\n"%(
-            self.label, len(self.trace),)
-        for i in traceback.format_list(self.trace):
-            r+=i
-        r+="***** NOTE: This is not a crash. This is a debug stack trace. *****"
-        return r
-
-def printStack():
-    print StackTrace(start=1).compact()
-    return True
-def printReverseStack():
-    print StackTrace(start=1).reverseCompact()
-    return True
-def printVerboseStack():
-    print StackTrace(start=1)
-    return True
-
-#-----------------------------------------------------------------------------
-
-def traceFunctionCall(frame):
-    """
-    return a string that shows the call frame with calling arguments.
-    e.g.
-    foo(x=234, y=135)
-    """
-    f = frame
-    co = f.f_code
-    dict = f.f_locals
-    n = co.co_argcount
-    if co.co_flags & 4: n = n+1
-    if co.co_flags & 8: n = n+1
-    r=''
-    if 'self' in dict:
-        r = '%s.'%(dict['self'].__class__.__name__,)
-    r+="%s("%(f.f_code.co_name,)
-    comma=0 # formatting, whether we should type a comma.
-    for i in range(n):
-        name = co.co_varnames[i]
-        if name=='self':
-            continue
-        if comma:
-            r+=', '
-        else:
-            # ok, we skipped the first one, the rest get commas:
-            comma=1
-        r+=name
-        r+='='
-        if name in dict:
-            v=safeRepr(dict[name])
-            if len(v)>2000:
-                # r+="<too big for debug>"
-                r += (v[:2000] + "...")
+    class StackTrace:
+        def __init__(self, label="", start=0, limit=None):
+            """
+            label is a string (or anything that be be a string)
+            that is printed as part of the trace back.
+            This is just to make it easier to tell what the
+            stack trace is referring to.
+            start is an integer number of stack frames back
+            from the most recent.  (This is automatically
+            bumped up by one to skip the __init__ call
+            to the StackTrace).
+            limit is an integer number of stack frames
+            to record (or None for unlimited).
+            """
+            self.label = label
+            if limit is not None:
+                self.trace = traceback.extract_stack(sys._getframe(1+start),
+                                                     limit=limit)
             else:
-                r+=v
-        else: r+="*** undefined ***"
-    return r+')'
+                self.trace = traceback.extract_stack(sys._getframe(1+start))
 
-def traceParentCall():
-    return traceFunctionCall(sys._getframe(2))
+        def compact(self):
+            r = ''
+            comma = ','
+            for filename, lineNum, funcName, text in self.trace:
+                r += '%s.%s:%s%s' % (filename[:filename.rfind('.py')][filename.rfind('\\')+1:], funcName, lineNum, comma)
+            if len(r):
+                r = r[:-len(comma)]
+            return r
 
-def printThisCall():
-    print traceFunctionCall(sys._getframe(1))
-    return 1 # to allow "assert printThisCall()"
+        def reverseCompact(self):
+            r = ''
+            comma = ','
+            for filename, lineNum, funcName, text in self.trace:
+                r = '%s.%s:%s%s%s' % (filename[:filename.rfind('.py')][filename.rfind('\\')+1:], funcName, lineNum, comma, r)
+            if len(r):
+                r = r[:-len(comma)]
+            return r
+
+        def __str__(self):
+            r = "Debug stack trace of %s (back %s frames):\n"%(
+                self.label, len(self.trace),)
+            for i in traceback.format_list(self.trace):
+                r+=i
+            r+="***** NOTE: This is not a crash. This is a debug stack trace. *****"
+            return r
+
+    def printStack():
+        print StackTrace(start=1).compact()
+        return True
+    def printReverseStack():
+        print StackTrace(start=1).reverseCompact()
+        return True
+    def printVerboseStack():
+        print StackTrace(start=1)
+        return True
+
+    #-----------------------------------------------------------------------------
+
+    def traceFunctionCall(frame):
+        """
+        return a string that shows the call frame with calling arguments.
+        e.g.
+        foo(x=234, y=135)
+        """
+        f = frame
+        co = f.f_code
+        dict = f.f_locals
+        n = co.co_argcount
+        if co.co_flags & 4: n = n+1
+        if co.co_flags & 8: n = n+1
+        r=''
+        if 'self' in dict:
+            r = '%s.'%(dict['self'].__class__.__name__,)
+        r+="%s("%(f.f_code.co_name,)
+        comma=0 # formatting, whether we should type a comma.
+        for i in range(n):
+            name = co.co_varnames[i]
+            if name=='self':
+                continue
+            if comma:
+                r+=', '
+            else:
+                # ok, we skipped the first one, the rest get commas:
+                comma=1
+            r+=name
+            r+='='
+            if name in dict:
+                v=safeRepr(dict[name])
+                if len(v)>2000:
+                    # r+="<too big for debug>"
+                    r += (v[:2000] + "...")
+                else:
+                    r+=v
+            else: r+="*** undefined ***"
+        return r+')'
+
+    def traceParentCall():
+        return traceFunctionCall(sys._getframe(2))
+
+    def printThisCall():
+        print traceFunctionCall(sys._getframe(1))
+        return 1 # to allow "assert printThisCall()"
 
 # Magic numbers: These are the bit masks in func_code.co_flags that
 # reveal whether or not the function has a *arg or **kw argument.
@@ -327,7 +309,6 @@ def adjust(command = None, dim = 1, parent = None, **kw):
     # Make sure we enable Tk
     # Don't use a regular import, to prevent ModuleFinder from picking
     # it up as a dependency when building a .p3d package.
-    import importlib
     Valuator = importlib.import_module('direct.tkwidgets.Valuator')
     # Set command if specified
     if command:
@@ -579,19 +560,6 @@ def closestDestAngle(src, dest):
         # otherwise just go to the original destination
         return dest
 
-
-def binaryRepr(number, max_length = 32):
-    # This will only work reliably for relatively small numbers.
-    # Increase the value of max_length if you think you're going
-    # to use long integers
-    assert number < 2L << max_length
-    shifts = map (operator.rshift, max_length * [number], \
-                  range (max_length - 1, -1, -1))
-    digits = map (operator.mod, shifts, max_length * [2])
-    if not digits.count (1): return 0
-    digits = digits [digits.index (1):]
-    return ''.join([repr(digit) for digit in digits])
-
 class StdoutCapture:
     # redirects stdout to a string
     def __init__(self):
@@ -618,260 +586,263 @@ class StdoutPassthrough(StdoutCapture):
         self._oldStdout.write(string)
 
 # constant profile defaults
-PyUtilProfileDefaultFilename = 'profiledata'
-PyUtilProfileDefaultLines = 80
-PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
+if __debug__:
+    from StringIO import StringIO
 
-_ProfileResultStr = ''
+    PyUtilProfileDefaultFilename = 'profiledata'
+    PyUtilProfileDefaultLines = 80
+    PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
 
-def getProfileResultString():
-    # if you called profile with 'log' not set to True,
-    # you can call this function to get the results as
-    # a string
-    global _ProfileResultStr
-    return _ProfileResultStr
+    _ProfileResultStr = ''
 
-def profileFunc(callback, name, terse, log=True):
-    global _ProfileResultStr
-    if 'globalProfileFunc' in __builtin__.__dict__:
-        # rats. Python profiler is not re-entrant...
-        base.notify.warning(
-            'PythonUtil.profileStart(%s): aborted, already profiling %s'
-            #'\nStack Trace:\n%s'
-            % (name, __builtin__.globalProfileFunc,
-            #StackTrace()
-            ))
-        return
-    __builtin__.globalProfileFunc = callback
-    __builtin__.globalProfileResult = [None]
-    prefix = '***** START PROFILE: %s *****' % name
-    if log:
-        print prefix
-    startProfile(cmd='globalProfileResult[0]=globalProfileFunc()', callInfo=(not terse), silent=not log)
-    suffix = '***** END PROFILE: %s *****' % name
-    if log:
-        print suffix
-    else:
-        _ProfileResultStr = '%s\n%s\n%s' % (prefix, _ProfileResultStr, suffix)
-    result = globalProfileResult[0]
-    del __builtin__.__dict__['globalProfileFunc']
-    del __builtin__.__dict__['globalProfileResult']
-    return result
+    def getProfileResultString():
+        # if you called profile with 'log' not set to True,
+        # you can call this function to get the results as
+        # a string
+        global _ProfileResultStr
+        return _ProfileResultStr
 
-def profiled(category=None, terse=False):
-    """ decorator for profiling functions
-    turn categories on and off via "want-profile-categoryName 1"
-
-    e.g.
-
-    @profiled('particles')
-    def loadParticles():
-        ...
-
-    want-profile-particles 1
-    """
-    assert type(category) in (types.StringType, types.NoneType), "must provide a category name for @profiled"
-
-    # allow profiling in published versions
-    """
-    try:
-        null = not __dev__
-    except:
-        null = not __debug__
-    if null:
-        # if we're not in __dev__, just return the function itself. This
-        # results in zero runtime overhead, since decorators are evaluated
-        # at module-load.
-        def nullDecorator(f):
-            return f
-        return nullDecorator
-    """
-
-    def profileDecorator(f):
-        def _profiled(*args, **kArgs):
-            name = '(%s) %s from %s' % (category, f.func_name, f.__module__)
-
-            # showbase might not be loaded yet, so don't use
-            # base.config.  Instead, query the ConfigVariableBool.
-            if (category is None) or ConfigVariableBool('want-profile-%s' % category, 0).getValue():
-                return profileFunc(Functor(f, *args, **kArgs), name, terse)
-            else:
-                return f(*args, **kArgs)
-        _profiled.__doc__ = f.__doc__
-        return _profiled
-    return profileDecorator
-
-# intercept profile-related file operations to avoid disk access
-movedOpenFuncs = []
-movedDumpFuncs = []
-movedLoadFuncs = []
-profileFilenames = set()
-profileFilenameList = Stack()
-profileFilename2file = {}
-profileFilename2marshalData = {}
-
-def _profileOpen(filename, *args, **kArgs):
-    # this is a replacement for the file open() builtin function
-    # for use during profiling, to intercept the file open
-    # operation used by the Python profiler and profile stats
-    # systems
-    if filename in profileFilenames:
-        # if this is a file related to profiling, create an
-        # in-RAM file object
-        if filename not in profileFilename2file:
-            file = StringIO()
-            file._profFilename = filename
-            profileFilename2file[filename] = file
+    def profileFunc(callback, name, terse, log=True):
+        global _ProfileResultStr
+        if 'globalProfileFunc' in __builtin__.__dict__:
+            # rats. Python profiler is not re-entrant...
+            base.notify.warning(
+                'PythonUtil.profileStart(%s): aborted, already profiling %s'
+                #'\nStack Trace:\n%s'
+                % (name, __builtin__.globalProfileFunc,
+                #StackTrace()
+                ))
+            return
+        __builtin__.globalProfileFunc = callback
+        __builtin__.globalProfileResult = [None]
+        prefix = '***** START PROFILE: %s *****' % name
+        if log:
+            print prefix
+        startProfile(cmd='globalProfileResult[0]=globalProfileFunc()', callInfo=(not terse), silent=not log)
+        suffix = '***** END PROFILE: %s *****' % name
+        if log:
+            print suffix
         else:
-            file = profileFilename2file[filename]
-    else:
-        file = movedOpenFuncs[-1](filename, *args, **kArgs)
-    return file
+            _ProfileResultStr = '%s\n%s\n%s' % (prefix, _ProfileResultStr, suffix)
+        result = globalProfileResult[0]
+        del __builtin__.__dict__['globalProfileFunc']
+        del __builtin__.__dict__['globalProfileResult']
+        return result
 
-def _profileMarshalDump(data, file):
-    # marshal.dump doesn't work with StringIO objects
-    # simulate it
-    if isinstance(file, StringIO) and hasattr(file, '_profFilename'):
-        if file._profFilename in profileFilenames:
-            profileFilename2marshalData[file._profFilename] = data
-            return None
-    return movedDumpFuncs[-1](data, file)
+    def profiled(category=None, terse=False):
+        """ decorator for profiling functions
+        turn categories on and off via "want-profile-categoryName 1"
 
-def _profileMarshalLoad(file):
-    # marshal.load doesn't work with StringIO objects
-    # simulate it
-    if isinstance(file, StringIO) and hasattr(file, '_profFilename'):
-        if file._profFilename in profileFilenames:
-            return profileFilename2marshalData[file._profFilename]
-    return movedLoadFuncs[-1](file)
+        e.g.
 
-def _installProfileCustomFuncs(filename):
-    assert filename not in profileFilenames
-    profileFilenames.add(filename)
-    profileFilenameList.push(filename)
-    movedOpenFuncs.append(__builtin__.open)
-    __builtin__.open = _profileOpen
-    movedDumpFuncs.append(marshal.dump)
-    marshal.dump = _profileMarshalDump
-    movedLoadFuncs.append(marshal.load)
-    marshal.load = _profileMarshalLoad
+        @profiled('particles')
+        def loadParticles():
+            ...
 
-def _getProfileResultFileInfo(filename):
-    return (profileFilename2file.get(filename, None),
-            profileFilename2marshalData.get(filename, None))
+        want-profile-particles 1
+        """
+        assert type(category) in (types.StringType, types.NoneType), "must provide a category name for @profiled"
 
-def _setProfileResultsFileInfo(filename, info):
-    f, m = info
-    if f:
-        profileFilename2file[filename] = f
-    if m:
-        profileFilename2marshalData[filename] = m
+        # allow profiling in published versions
+        """
+        try:
+            null = not __dev__
+        except:
+            null = not __debug__
+        if null:
+            # if we're not in __dev__, just return the function itself. This
+            # results in zero runtime overhead, since decorators are evaluated
+            # at module-load.
+            def nullDecorator(f):
+                return f
+            return nullDecorator
+        """
 
-def _clearProfileResultFileInfo(filename):
-    profileFilename2file.pop(filename, None)
-    profileFilename2marshalData.pop(filename, None)
+        def profileDecorator(f):
+            def _profiled(*args, **kArgs):
+                name = '(%s) %s from %s' % (category, f.__name__, f.__module__)
 
-def _removeProfileCustomFuncs(filename):
-    assert profileFilenameList.top() == filename
-    marshal.load = movedLoadFuncs.pop()
-    marshal.dump = movedDumpFuncs.pop()
-    __builtin__.open = movedOpenFuncs.pop()
-    profileFilenames.remove(filename)
-    profileFilenameList.pop()
-    profileFilename2file.pop(filename, None)
-    # don't let marshalled data pile up
-    profileFilename2marshalData.pop(filename, None)
+                # showbase might not be loaded yet, so don't use
+                # base.config.  Instead, query the ConfigVariableBool.
+                if (category is None) or ConfigVariableBool('want-profile-%s' % category, 0).getValue():
+                    return profileFunc(Functor(f, *args, **kArgs), name, terse)
+                else:
+                    return f(*args, **kArgs)
+            _profiled.__doc__ = f.__doc__
+            return _profiled
+        return profileDecorator
+
+    # intercept profile-related file operations to avoid disk access
+    movedOpenFuncs = []
+    movedDumpFuncs = []
+    movedLoadFuncs = []
+    profileFilenames = set()
+    profileFilenameList = Stack()
+    profileFilename2file = {}
+    profileFilename2marshalData = {}
+
+    def _profileOpen(filename, *args, **kArgs):
+        # this is a replacement for the file open() builtin function
+        # for use during profiling, to intercept the file open
+        # operation used by the Python profiler and profile stats
+        # systems
+        if filename in profileFilenames:
+            # if this is a file related to profiling, create an
+            # in-RAM file object
+            if filename not in profileFilename2file:
+                file = StringIO()
+                file._profFilename = filename
+                profileFilename2file[filename] = file
+            else:
+                file = profileFilename2file[filename]
+        else:
+            file = movedOpenFuncs[-1](filename, *args, **kArgs)
+        return file
+
+    def _profileMarshalDump(data, file):
+        # marshal.dump doesn't work with StringIO objects
+        # simulate it
+        if isinstance(file, StringIO) and hasattr(file, '_profFilename'):
+            if file._profFilename in profileFilenames:
+                profileFilename2marshalData[file._profFilename] = data
+                return None
+        return movedDumpFuncs[-1](data, file)
+
+    def _profileMarshalLoad(file):
+        # marshal.load doesn't work with StringIO objects
+        # simulate it
+        if isinstance(file, StringIO) and hasattr(file, '_profFilename'):
+            if file._profFilename in profileFilenames:
+                return profileFilename2marshalData[file._profFilename]
+        return movedLoadFuncs[-1](file)
+
+    def _installProfileCustomFuncs(filename):
+        assert filename not in profileFilenames
+        profileFilenames.add(filename)
+        profileFilenameList.push(filename)
+        movedOpenFuncs.append(__builtin__.open)
+        __builtin__.open = _profileOpen
+        movedDumpFuncs.append(marshal.dump)
+        marshal.dump = _profileMarshalDump
+        movedLoadFuncs.append(marshal.load)
+        marshal.load = _profileMarshalLoad
+
+    def _getProfileResultFileInfo(filename):
+        return (profileFilename2file.get(filename, None),
+                profileFilename2marshalData.get(filename, None))
+
+    def _setProfileResultsFileInfo(filename, info):
+        f, m = info
+        if f:
+            profileFilename2file[filename] = f
+        if m:
+            profileFilename2marshalData[filename] = m
+
+    def _clearProfileResultFileInfo(filename):
+        profileFilename2file.pop(filename, None)
+        profileFilename2marshalData.pop(filename, None)
+
+    def _removeProfileCustomFuncs(filename):
+        assert profileFilenameList.top() == filename
+        marshal.load = movedLoadFuncs.pop()
+        marshal.dump = movedDumpFuncs.pop()
+        __builtin__.open = movedOpenFuncs.pop()
+        profileFilenames.remove(filename)
+        profileFilenameList.pop()
+        profileFilename2file.pop(filename, None)
+        # don't let marshalled data pile up
+        profileFilename2marshalData.pop(filename, None)
 
 
-# call this from the prompt, and break back out to the prompt
-# to stop profiling
-#
-# OR to do inline profiling, you must make a globally-visible
-# function to be profiled, i.e. to profile 'self.load()', do
-# something like this:
-#
-#        def func(self=self):
-#            self.load()
-#        import __builtin__
-#        __builtin__.func = func
-#        PythonUtil.startProfile(cmd='func()', filename='profileData')
-#        del __builtin__.func
-#
-def _profileWithoutGarbageLeak(cmd, filename):
-    # The profile module isn't necessarily installed on every Python
-    # installation, so we import it here, instead of in the module
-    # scope.
-    import profile
-    # this is necessary because the profile module creates a memory leak
-    Profile = profile.Profile
-    statement = cmd
-    sort = -1
-    retVal = None
-    #### COPIED FROM profile.run ####
-    prof = Profile()
-    try:
-        prof = prof.run(statement)
-    except SystemExit:
-        pass
-    if filename is not None:
-        prof.dump_stats(filename)
-    else:
-        #return prof.print_stats(sort)  #DCR
-        retVal = prof.print_stats(sort) #DCR
-    #################################
-    # eliminate the garbage leak
-    del prof.dispatcher
-    return retVal
+    # call this from the prompt, and break back out to the prompt
+    # to stop profiling
+    #
+    # OR to do inline profiling, you must make a globally-visible
+    # function to be profiled, i.e. to profile 'self.load()', do
+    # something like this:
+    #
+    #        def func(self=self):
+    #            self.load()
+    #        import __builtin__
+    #        __builtin__.func = func
+    #        PythonUtil.startProfile(cmd='func()', filename='profileData')
+    #        del __builtin__.func
+    #
+    def _profileWithoutGarbageLeak(cmd, filename):
+        # The profile module isn't necessarily installed on every Python
+        # installation, so we import it here, instead of in the module
+        # scope.
+        import profile
+        # this is necessary because the profile module creates a memory leak
+        Profile = profile.Profile
+        statement = cmd
+        sort = -1
+        retVal = None
+        #### COPIED FROM profile.run ####
+        prof = Profile()
+        try:
+            prof = prof.run(statement)
+        except SystemExit:
+            pass
+        if filename is not None:
+            prof.dump_stats(filename)
+        else:
+            #return prof.print_stats(sort)  #DCR
+            retVal = prof.print_stats(sort) #DCR
+        #################################
+        # eliminate the garbage leak
+        del prof.dispatcher
+        return retVal
 
-def startProfile(filename=PyUtilProfileDefaultFilename,
-                 lines=PyUtilProfileDefaultLines,
-                 sorts=PyUtilProfileDefaultSorts,
-                 silent=0,
-                 callInfo=1,
-                 useDisk=False,
-                 cmd='run()'):
-    # uniquify the filename to allow multiple processes to profile simultaneously
-    filename = '%s.%s%s' % (filename, randUint31(), randUint31())
-    if not useDisk:
-        # use a RAM file
-        _installProfileCustomFuncs(filename)
-    _profileWithoutGarbageLeak(cmd, filename)
-    if silent:
-        extractProfile(filename, lines, sorts, callInfo)
-    else:
-        printProfile(filename, lines, sorts, callInfo)
-    if not useDisk:
-        # discard the RAM file
-        _removeProfileCustomFuncs(filename)
-    else:
-        os.remove(filename)
+    def startProfile(filename=PyUtilProfileDefaultFilename,
+                     lines=PyUtilProfileDefaultLines,
+                     sorts=PyUtilProfileDefaultSorts,
+                     silent=0,
+                     callInfo=1,
+                     useDisk=False,
+                     cmd='run()'):
+        # uniquify the filename to allow multiple processes to profile simultaneously
+        filename = '%s.%s%s' % (filename, randUint31(), randUint31())
+        if not useDisk:
+            # use a RAM file
+            _installProfileCustomFuncs(filename)
+        _profileWithoutGarbageLeak(cmd, filename)
+        if silent:
+            extractProfile(filename, lines, sorts, callInfo)
+        else:
+            printProfile(filename, lines, sorts, callInfo)
+        if not useDisk:
+            # discard the RAM file
+            _removeProfileCustomFuncs(filename)
+        else:
+            os.remove(filename)
 
-# call these to see the results again, as a string or in the log
-def printProfile(filename=PyUtilProfileDefaultFilename,
-                 lines=PyUtilProfileDefaultLines,
-                 sorts=PyUtilProfileDefaultSorts,
-                 callInfo=1):
-    import pstats
-    s = pstats.Stats(filename)
-    s.strip_dirs()
-    for sort in sorts:
-        s.sort_stats(sort)
-        s.print_stats(lines)
-        if callInfo:
-            s.print_callees(lines)
-            s.print_callers(lines)
+    # call these to see the results again, as a string or in the log
+    def printProfile(filename=PyUtilProfileDefaultFilename,
+                     lines=PyUtilProfileDefaultLines,
+                     sorts=PyUtilProfileDefaultSorts,
+                     callInfo=1):
+        import pstats
+        s = pstats.Stats(filename)
+        s.strip_dirs()
+        for sort in sorts:
+            s.sort_stats(sort)
+            s.print_stats(lines)
+            if callInfo:
+                s.print_callees(lines)
+                s.print_callers(lines)
 
-# same args as printProfile
-def extractProfile(*args, **kArgs):
-    global _ProfileResultStr
-    # capture print output
-    sc = StdoutCapture()
-    # print the profile output, redirected to the result string
-    printProfile(*args, **kArgs)
-    # make a copy of the print output
-    _ProfileResultStr = sc.getString()
-    # restore stdout to what it was before
-    sc.destroy()
+    # same args as printProfile
+    def extractProfile(*args, **kArgs):
+        global _ProfileResultStr
+        # capture print output
+        sc = StdoutCapture()
+        # print the profile output, redirected to the result string
+        printProfile(*args, **kArgs)
+        # make a copy of the print output
+        _ProfileResultStr = sc.getString()
+        # restore stdout to what it was before
+        sc.destroy()
 
 def getSetterName(valueName, prefix='set'):
     # getSetterName('color') -> 'setColor'
@@ -1032,77 +1003,80 @@ def solveQuadratic(a, b, c):
         root2 = ((-b) + sqrtD) / twoA
         return [root1, root2]
 
-def stackEntryInfo(depth=0, baseFileName=1):
-    """
-    returns the sourcefilename, line number, and function name of
-    an entry in the stack.
-    'depth' is how far back to go in the stack; 0 is the caller of this
-    function, 1 is the function that called the caller of this function, etc.
-    by default, strips off the path of the filename; override with baseFileName
-    returns (fileName, lineNum, funcName) --> (string, int, string)
-    returns (None, None, None) on error
-    """
-    try:
-        stack = None
-        frame = None
+if __debug__:
+    def stackEntryInfo(depth=0, baseFileName=1):
+        """
+        returns the sourcefilename, line number, and function name of
+        an entry in the stack.
+        'depth' is how far back to go in the stack; 0 is the caller of this
+        function, 1 is the function that called the caller of this function, etc.
+        by default, strips off the path of the filename; override with baseFileName
+        returns (fileName, lineNum, funcName) --> (string, int, string)
+        returns (None, None, None) on error
+        """
+        import inspect
+
         try:
-            stack = inspect.stack()
-            # add one to skip the frame associated with this function
-            frame = stack[depth+1]
-            filename = frame[1]
-            if baseFileName:
-                filename = os.path.basename(filename)
-            lineNum = frame[2]
-            funcName = frame[3]
-            result = (filename, lineNum, funcName)
-        finally:
-            del stack
-            del frame
-    except:
-        result = (None, None, None)
+            stack = None
+            frame = None
+            try:
+                stack = inspect.stack()
+                # add one to skip the frame associated with this function
+                frame = stack[depth+1]
+                filename = frame[1]
+                if baseFileName:
+                    filename = os.path.basename(filename)
+                lineNum = frame[2]
+                funcName = frame[3]
+                result = (filename, lineNum, funcName)
+            finally:
+                del stack
+                del frame
+        except:
+            result = (None, None, None)
 
-    return result
+        return result
 
-def lineInfo(baseFileName=1):
-    """
-    returns the sourcefilename, line number, and function name of the
-    code that called this function
-    (answers the question: 'hey lineInfo, where am I in the codebase?')
-    see stackEntryInfo, above, for info on 'baseFileName' and return types
-    """
-    return stackEntryInfo(1, baseFileName)
+    def lineInfo(baseFileName=1):
+        """
+        returns the sourcefilename, line number, and function name of the
+        code that called this function
+        (answers the question: 'hey lineInfo, where am I in the codebase?')
+        see stackEntryInfo, above, for info on 'baseFileName' and return types
+        """
+        return stackEntryInfo(1, baseFileName)
 
-def callerInfo(baseFileName=1, howFarBack=0):
-    """
-    returns the sourcefilename, line number, and function name of the
-    caller of the function that called this function
-    (answers the question: 'hey callerInfo, who called me?')
-    see stackEntryInfo, above, for info on 'baseFileName' and return types
-    """
-    return stackEntryInfo(2+howFarBack, baseFileName)
+    def callerInfo(baseFileName=1, howFarBack=0):
+        """
+        returns the sourcefilename, line number, and function name of the
+        caller of the function that called this function
+        (answers the question: 'hey callerInfo, who called me?')
+        see stackEntryInfo, above, for info on 'baseFileName' and return types
+        """
+        return stackEntryInfo(2+howFarBack, baseFileName)
 
-def lineTag(baseFileName=1, verbose=0, separator=':'):
-    """
-    returns a string containing the sourcefilename and line number
-    of the code that called this function
-    (equivalent to lineInfo, above, with different return type)
-    see stackEntryInfo, above, for info on 'baseFileName'
+    def lineTag(baseFileName=1, verbose=0, separator=':'):
+        """
+        returns a string containing the sourcefilename and line number
+        of the code that called this function
+        (equivalent to lineInfo, above, with different return type)
+        see stackEntryInfo, above, for info on 'baseFileName'
 
-    if 'verbose' is false, returns a compact string of the form
-    'fileName:lineNum:funcName'
-    if 'verbose' is true, returns a longer string that matches the
-    format of Python stack trace dumps
+        if 'verbose' is false, returns a compact string of the form
+        'fileName:lineNum:funcName'
+        if 'verbose' is true, returns a longer string that matches the
+        format of Python stack trace dumps
 
-    returns empty string on error
-    """
-    fileName, lineNum, funcName = callerInfo(baseFileName)
-    if fileName is None:
-        return ''
-    if verbose:
-        return 'File "%s", line %s, in %s' % (fileName, lineNum, funcName)
-    else:
-        return '%s%s%s%s%s' % (fileName, separator, lineNum, separator,
-                               funcName)
+        returns empty string on error
+        """
+        fileName, lineNum, funcName = callerInfo(baseFileName)
+        if fileName is None:
+            return ''
+        if verbose:
+            return 'File "%s", line %s, in %s' % (fileName, lineNum, funcName)
+        else:
+            return '%s%s%s%s%s' % (fileName, separator, lineNum, separator,
+                                   funcName)
 
 def findPythonModule(module):
     # Look along the python load path for the indicated filename.
@@ -1291,12 +1265,12 @@ class Enum:
             invalidChars = invalidChars.replace('_','')
             invalidFirstChars = invalidChars+string.digits
             if item[0] in invalidFirstChars:
-                raise SyntaxError, ("Enum '%s' contains invalid first char" %
+                raise SyntaxError("Enum '%s' contains invalid first char" %
                                     item)
             if not disjoint(item, invalidChars):
                 for char in item:
                     if char in invalidChars:
-                        raise SyntaxError, (
+                        raise SyntaxError(
                             "Enum\n'%s'\ncontains illegal char '%s'" %
                             (item, char))
             return 1
@@ -1756,43 +1730,6 @@ def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
         s += format % (i, itype(items[i]), strs[i])
     return s
 
-def getNumberedTypedSortedStringWithReferrersGen(items, maxLen=10000, numPrefix=''):
-    """get a string that has each item of the list on its own line,
-    the items are stringwise-sorted, the object's referrers are shown,
-    and each item is numbered on the left from zero"""
-    digits = 0
-    n = len(items)
-    while n > 0:
-        digits += 1
-        n //= 10
-    digits = digits
-    format = numPrefix + '%0' + '%s' % digits + 'i:%s @ %s \t%s'
-    snip = '<SNIP>'
-    strs = []
-    for item in items:
-        strs.append(fastRepr(item))
-    strs.sort()
-    for i in xrange(len(strs)):
-        item = items[i]
-        objStr = strs[i]
-        objStr += ', \tREFERRERS=['
-        referrers = gc.get_referrers(item)
-        for ref in referrers:
-            objStr += '%s@%s, ' % (itype(ref), id(ref))
-        objStr += ']'
-        if len(objStr) > maxLen:
-            objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
-        yield format % (i, itype(items[i]), id(items[i]), objStr)
-
-def getNumberedTypedSortedStringWithReferrers(items, maxLen=10000, numPrefix=''):
-    """get a string that has each item of the list on its own line,
-    the items are stringwise-sorted, the object's referrers are shown,
-    and each item is numbered on the left from zero"""
-    s = ''
-    for line in getNumberedTypedSortedStringWithReferrersGen(items, maxLen, numPrefix):
-        s += '%s\n' % line
-    return s
-
 def printNumberedTyped(items, maxLen=5000):
     """print out each item of the list on its own line,
     with each item numbered on the left from zero"""
@@ -2114,7 +2051,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     except NameError,e:
         return decorator
 
-    from direct.distributed.ClockDelta import globalClockDelta
+    globalClockDelta = importlib.import_module("direct.distributed.ClockDelta").globalClockDelta
 
     def decorator(f):
         def wrap(*args,**kwargs):
@@ -2133,7 +2070,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
 
 
-            outStr = '%s%s' % (f.func_name, rArgs)
+            outStr = '%s%s' % (f.__name__, rArgs)
 
             # Insert prefix place holder, if needed
             if prefixes:
@@ -2190,9 +2127,9 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 pass
             return rVal
 
-        wrap.func_name = f.func_name
-        wrap.func_dict = f.func_dict
-        wrap.func_doc = f.func_doc
+        wrap.__name__ = f.__name__
+        wrap.__dict__ = f.__dict__
+        wrap.__doc__ = f.__doc__
         wrap.__module__ = f.__module__
         return wrap
     return decorator
@@ -2210,127 +2147,57 @@ def getRepository():
         return simbase.air
 
 exceptionLoggedNotify = None
+if __debug__:
+    def exceptionLogged(append=True):
+        """decorator that outputs the function name and all arguments
+        if an exception passes back through the stack frame
+        if append is true, string is appended to the __str__ output of
+        the exception. if append is false, string is printed to the log
+        directly. If the output will take up many lines, it's recommended
+        to set append to False so that the exception stack is not hidden
+        by the output of this decorator.
+        """
+        try:
+            null = not __dev__
+        except:
+            null = not __debug__
+        if null:
+            # if we're not in __dev__, just return the function itself. This
+            # results in zero runtime overhead, since decorators are evaluated
+            # at module-load.
+            def nullDecorator(f):
+                return f
+            return nullDecorator
 
-def exceptionLogged(append=True):
-    """decorator that outputs the function name and all arguments
-    if an exception passes back through the stack frame
-    if append is true, string is appended to the __str__ output of
-    the exception. if append is false, string is printed to the log
-    directly. If the output will take up many lines, it's recommended
-    to set append to False so that the exception stack is not hidden
-    by the output of this decorator.
-    """
-    try:
-        null = not __dev__
-    except:
-        null = not __debug__
-    if null:
-        # if we're not in __dev__, just return the function itself. This
-        # results in zero runtime overhead, since decorators are evaluated
-        # at module-load.
-        def nullDecorator(f):
-            return f
-        return nullDecorator
-
-    def _decoratorFunc(f, append=append):
-        global exceptionLoggedNotify
-        if exceptionLoggedNotify is None:
-            from direct.directnotify.DirectNotifyGlobal import directNotify
-            exceptionLoggedNotify = directNotify.newCategory("ExceptionLogged")
-        def _exceptionLogged(*args, **kArgs):
-            try:
-                return f(*args, **kArgs)
-            except Exception, e:
+        def _decoratorFunc(f, append=append):
+            global exceptionLoggedNotify
+            if exceptionLoggedNotify is None:
+                from direct.directnotify.DirectNotifyGlobal import directNotify
+                exceptionLoggedNotify = directNotify.newCategory("ExceptionLogged")
+            def _exceptionLogged(*args, **kArgs):
                 try:
-                    s = '%s(' % f.func_name
-                    for arg in args:
-                        s += '%s, ' % arg
-                    for key, value in kArgs.items():
-                        s += '%s=%s, ' % (key, value)
-                    if len(args) or len(kArgs):
-                        s = s[:-2]
-                    s += ')'
-                    if append:
-                        appendStr(e, '\n%s' % s)
-                    else:
-                        exceptionLoggedNotify.info(s)
-                except:
-                    exceptionLoggedNotify.info(
-                        '%s: ERROR IN PRINTING' % f.func_name)
-                raise
-        _exceptionLogged.__doc__ = f.__doc__
-        return _exceptionLogged
-    return _decoratorFunc
-
-# class 'decorator' that records the stack at the time of creation
-# be careful with this, it creates a StackTrace, and that can take a
-# lot of CPU
-def recordCreationStack(cls):
-    if not hasattr(cls, '__init__'):
-        raise 'recordCreationStack: class \'%s\' must define __init__' % cls.__name__
-    cls.__moved_init__ = cls.__init__
-    def __recordCreationStack_init__(self, *args, **kArgs):
-        self._creationStackTrace = StackTrace(start=1)
-        return self.__moved_init__(*args, **kArgs)
-    def getCreationStackTrace(self):
-        return self._creationStackTrace
-    def getCreationStackTraceCompactStr(self):
-        return self._creationStackTrace.compact()
-    def printCreationStackTrace(self):
-        print self._creationStackTrace
-    cls.__init__ = __recordCreationStack_init__
-    cls.getCreationStackTrace = getCreationStackTrace
-    cls.getCreationStackTraceCompactStr = getCreationStackTraceCompactStr
-    cls.printCreationStackTrace = printCreationStackTrace
-    return cls
-
-# like recordCreationStack but stores the stack as a compact stack list-of-strings
-# scales well for memory usage
-def recordCreationStackStr(cls):
-    if not hasattr(cls, '__init__'):
-        raise 'recordCreationStackStr: class \'%s\' must define __init__' % cls.__name__
-    cls.__moved_init__ = cls.__init__
-    def __recordCreationStackStr_init__(self, *args, **kArgs):
-        # store as list of strings to conserve memory
-        self._creationStackTraceStrLst = StackTrace(start=1).compact().split(',')
-        return self.__moved_init__(*args, **kArgs)
-    def getCreationStackTraceCompactStr(self):
-        return ','.join(self._creationStackTraceStrLst)
-    def printCreationStackTrace(self):
-        print ','.join(self._creationStackTraceStrLst)
-    cls.__init__ = __recordCreationStackStr_init__
-    cls.getCreationStackTraceCompactStr = getCreationStackTraceCompactStr
-    cls.printCreationStackTrace = printCreationStackTrace
-    return cls
-
-
-# class 'decorator' that logs all method calls for a particular class
-def logMethodCalls(cls):
-    if not hasattr(cls, 'notify'):
-        raise 'logMethodCalls: class \'%s\' must have a notify' % cls.__name__
-    for name in dir(cls):
-        method = getattr(cls, name)
-        if hasattr(method, '__call__'):
-            def getLoggedMethodCall(method):
-                def __logMethodCall__(obj, *args, **kArgs):
-                    s = '%s(' % method.__name__
-                    for arg in args:
-                        try:
-                            argStr = repr(arg)
-                        except:
-                            argStr = 'bad repr: %s' % arg.__class__
-                        s += '%s, ' % argStr
-                    for karg, value in kArgs.items():
-                        s += '%s=%s, ' % (karg, repr(value))
-                    if len(args) or len(kArgs):
-                        s = s[:-2]
-                    s += ')'
-                    obj.notify.info(s)
-                    return method(obj, *args, **kArgs)
-                return __logMethodCall__
-            setattr(cls, name, getLoggedMethodCall(method))
-    __logMethodCall__ = None
-    return cls
+                    return f(*args, **kArgs)
+                except Exception, e:
+                    try:
+                        s = '%s(' % f.__name__
+                        for arg in args:
+                            s += '%s, ' % arg
+                        for key, value in kArgs.items():
+                            s += '%s=%s, ' % (key, value)
+                        if len(args) or len(kArgs):
+                            s = s[:-2]
+                        s += ')'
+                        if append:
+                            appendStr(e, '\n%s' % s)
+                        else:
+                            exceptionLoggedNotify.info(s)
+                    except:
+                        exceptionLoggedNotify.info(
+                            '%s: ERROR IN PRINTING' % f.__name__)
+                    raise
+            _exceptionLogged.__doc__ = f.__doc__
+            return _exceptionLogged
+        return _decoratorFunc
 
 # http://en.wikipedia.org/wiki/Golden_ratio
 GoldenRatio = (1. + math.sqrt(5.)) / 2.
@@ -2341,45 +2208,6 @@ class GoldenRectangle:
     @staticmethod
     def getShorterEdge(longer):
         return longer / GoldenRatio
-
-class HotkeyBreaker:
-    def __init__(self,breakKeys = []):
-        from direct.showbase.DirectObject import DirectObject
-        self.do = DirectObject()
-        self.breakKeys = {}
-        if not isinstance(breakKeys, (list,tuple)):
-            breakKeys = (breakKeys,)
-        for key in breakKeys:
-            self.addBreakKey(key)
-
-    def addBreakKey(self,breakKey):
-        if __dev__:
-            self.do.accept(breakKey,self.breakFunc,extraArgs = [breakKey])
-
-    def removeBreakKey(self,breakKey):
-        if __dev__:
-            self.do.ignore(breakKey)
-
-    def breakFunc(self,breakKey):
-        if __dev__:
-            self.breakKeys[breakKey] = True
-
-    def setBreakPt(self, breakKey = None, persistent = False):
-        if __dev__:
-            if not breakKey:
-                import pdb;pdb.set_trace()
-                return True
-            else:
-                if self.breakKeys.get(breakKey,False):
-                    if not persistent:
-                        self.breakKeys.pop(breakKey)
-                    import pdb;pdb.set_trace()
-                    return True
-        return True
-
-    def clearBreakPt(self, breakKey):
-        if __dev__:
-            return bool(self.breakKeys.pop(breakKey,None))
 
 def nullGen():
     # generator that ends immediately
@@ -2480,40 +2308,42 @@ if __debug__ and __name__ == '__main__':
     assert obj2count[3] == 3 * 3
     assert obj2count[4] == 4 * 3
 
-def quickProfile(name="unnamed"):
-    import pstats
-    def profileDecorator(f):
-        if(not config.GetBool("use-profiler",0)):
-            return f
-        def _profiled(*args, **kArgs):
-            # must do this in here because we don't have base/simbase
-            # at the time that PythonUtil is loaded
-            if(not config.GetBool("profile-debug",0)):
-                #dumb timings
-                st=globalClock.getRealTime()
-                f(*args,**kArgs)
-                s=globalClock.getRealTime()-st
-                print "Function %s.%s took %s seconds"%(f.__module__, f.__name__,s)
-            else:
-                import profile as prof, pstats
-                #detailed profile, stored in base.stats under (
-                if(not hasattr(base,"stats")):
-                    base.stats={}
-                if(not base.stats.get(name)):
-                    base.stats[name]=[]
+if __debug__:
+    def quickProfile(name="unnamed"):
+        import pstats
+        def profileDecorator(f):
+            if(not config.GetBool("use-profiler",0)):
+                return f
+            def _profiled(*args, **kArgs):
+                # must do this in here because we don't have base/simbase
+                # at the time that PythonUtil is loaded
+                if(not config.GetBool("profile-debug",0)):
+                    #dumb timings
+                    st=globalClock.getRealTime()
+                    f(*args,**kArgs)
+                    s=globalClock.getRealTime()-st
+                    print "Function %s.%s took %s seconds"%(f.__module__, f.__name__,s)
+                else:
+                    import profile as prof, pstats
 
-                prof.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None,"t.prof")
-                s=pstats.Stats("t.prof")
-                #p=hotshot.Profile("t.prof")
-                #p.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None)
-                #s = hotshot.stats.load("t.prof")
-                s.strip_dirs()
-                s.sort_stats("cumulative")
-                base.stats[name].append(s)
+                    #detailed profile, stored in base.stats under (
+                    if(not hasattr(base,"stats")):
+                        base.stats={}
+                    if(not base.stats.get(name)):
+                        base.stats[name]=[]
 
-        _profiled.__doc__ = f.__doc__
-        return _profiled
-    return profileDecorator
+                    prof.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None,"t.prof")
+                    s=pstats.Stats("t.prof")
+                    #p=hotshot.Profile("t.prof")
+                    #p.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None)
+                    #s = hotshot.stats.load("t.prof")
+                    s.strip_dirs()
+                    s.sort_stats("cumulative")
+                    base.stats[name].append(s)
+
+            _profiled.__doc__ = f.__doc__
+            return _profiled
+        return profileDecorator
 
 def getTotalAnnounceTime():
     td=0
@@ -2532,13 +2362,6 @@ def getAnnounceGenerateTime(stat):
                 val=newVal
     return val
 
-
-def choice(condition, ifTrue, ifFalse):
-    # equivalent of C++ (condition ? ifTrue : ifFalse)
-    if condition:
-        return ifTrue
-    else:
-        return ifFalse
 
 class MiniLog:
     def __init__(self, name):
@@ -2610,14 +2433,6 @@ class HierarchyException(Exception):
 
     def __repr__(self):
         return 'HierarchyException(%s)' % (self.owner, )
-
-# __dev__ is not defined at import time, call this after it's defined
-def recordFunctorCreationStacks():
-    global Functor
-    if not hasattr(Functor, '_functorCreationStacksRecorded'):
-        Functor = recordCreationStackStr(Functor)
-        Functor._functorCreationStacksRecorded = True
-        Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
 
 def formatTimeCompact(seconds):
     # returns string in format '1d3h22m43s'
@@ -2735,57 +2550,6 @@ if __debug__ and __name__ == '__main__':
     testAlphabetCounter()
     del testAlphabetCounter
 
-globalPdb = None
-
-traceCalled = False
-
-def setupPdb():
-    import pdb;
-    class pandaPdb(pdb.Pdb):
-        def stop_here(self, frame):
-            global traceCalled
-            if(traceCalled):
-                result = pdb.Pdb.stop_here(self, frame)
-                if(result == True):
-                    traceCalled = False
-                return result
-            if frame is self.stopframe:
-                return True
-            return False
-    global globalPdb
-    globalPdb = pandaPdb()
-    globalPdb.reset()
-    sys.settrace(globalPdb.trace_dispatch)
-
-def pandaTrace():
-    if __dev__:
-        if not globalPdb:
-            setupPdb()
-        global traceCalled
-        globalPdb.set_trace(sys._getframe().f_back)
-        traceCalled = True
-
-packageMap = {
-    "toontown":"$TOONTOWN",
-    "direct":"$DIRECT",
-    "otp":"$OTP",
-    "pirates":"$PIRATES",
-}
-
-
-#assuming . dereferncing for nice linking to imports
-def pandaBreak(dotpath, linenum, temporary = 0, cond = None):
-    if __dev__:
-        from panda3d.core import Filename
-        if not globalPdb:
-            setupPdb()
-        dirs = dotpath.split(".")
-        root = Filename.expandFrom(packageMap[dirs[0]]).toOsSpecific()
-        filename = root + "\\src"
-        for d in dirs[1:]:
-            filename="%s\\%s"%(filename,d)
-        print filename
-        globalPdb.set_break(filename+".py", linenum, temporary, cond)
 
 class Default:
     # represents 'use the default value'
@@ -2917,18 +2681,20 @@ __builtin__.SerialMaskedGen = SerialMaskedGen
 __builtin__.ScratchPad = ScratchPad
 __builtin__.uniqueName = uniqueName
 __builtin__.serialNum = serialNum
-__builtin__.profiled = profiled
+if __debug__:
+    __builtin__.profiled = profiled
+    __builtin__.exceptionLogged = exceptionLogged
 __builtin__.itype = itype
-__builtin__.exceptionLogged = exceptionLogged
 __builtin__.appendStr = appendStr
 __builtin__.bound = bound
 __builtin__.clamp = clamp
 __builtin__.lerp = lerp
 __builtin__.makeList = makeList
 __builtin__.makeTuple = makeTuple
-__builtin__.printStack = printStack
-__builtin__.printReverseStack = printReverseStack
-__builtin__.printVerboseStack = printVerboseStack
+if __debug__:
+    __builtin__.printStack = printStack
+    __builtin__.printReverseStack = printReverseStack
+    __builtin__.printVerboseStack = printVerboseStack
 __builtin__.DelayedCall = DelayedCall
 __builtin__.DelayedFunctor = DelayedFunctor
 __builtin__.FrameDelayedCall = FrameDelayedCall
@@ -2942,8 +2708,8 @@ __builtin__.fastRepr = fastRepr
 __builtin__.nullGen = nullGen
 __builtin__.flywheel = flywheel
 __builtin__.loopGen = loopGen
-__builtin__.StackTrace = StackTrace
-__builtin__.choice = choice
+if __debug__:
+    __builtin__.StackTrace = StackTrace
 __builtin__.report = report
 __builtin__.pstatcollect = pstatcollect
 __builtin__.MiniLog = MiniLog

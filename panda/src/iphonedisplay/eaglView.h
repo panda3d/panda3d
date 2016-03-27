@@ -1,16 +1,15 @@
-// Filename: eaglView.h
-// Created by:  drose (10Apr09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eaglView.h
+ * @author drose
+ * @date 2009-04-10
+ */
 
 #include "pandabase.h"
 #import <UIKit/UIKit.h>
@@ -34,12 +33,12 @@ Note that setting the view non-opaque will only work if the EAGL surface has an 
   /* The pixel dimensions of the backbuffer */
   GLint backingWidth;
  GLint backingHeight;
- 
+
  EAGLContext *context;
- 
+
  /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
  GLuint viewRenderbuffer, viewFramebuffer;
- 
+
  /* OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist) */
  GLuint depthRenderbuffer;
 }

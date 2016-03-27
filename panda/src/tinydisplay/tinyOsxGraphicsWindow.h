@@ -1,16 +1,15 @@
-// Filename: tinyOsxGraphicsWindow.h
-// Created by:  drose (12May08)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file tinyOsxGraphicsWindow.h
+ * @author drose
+ * @date 2008-05-12
+ */
 
 #ifndef TINYOSXGRAPHICSWINDOW_H
 #define TINYOSXGRAPHICSWINDOW_H
@@ -25,14 +24,12 @@
 #include "buttonHandle.h"
 #include "tinyGraphicsStateGuardian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyOsxGraphicsWindow
-// Description : Opens a window on OS X to display the TinyPanda
-//               software rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a window on OS X to display the TinyPanda software rendering.
+ */
 class TinyOsxGraphicsWindow : public GraphicsWindow {
 public:
-  TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                         const string &name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,
@@ -48,10 +45,10 @@ public:
   virtual void begin_flip();
   virtual void process_events();
   virtual bool supports_pixel_zoom() const;
-  
+
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
-  
+
   virtual void mouse_mode_absolute();
   virtual void mouse_mode_relative();
 
@@ -69,9 +66,8 @@ private:
 
   bool OSOpenWindow(WindowProperties &properties);
 
-    //
-    // a singleton .. for the events to find the right pipe to push the event into
-    //
+    // a singleton .. for the events to find the right pipe to push the event
+    // into
 
 
 public: // do not call direct ..
@@ -111,10 +107,10 @@ private:
 
   CGImageRef _pending_icon;
   CGImageRef _current_icon;
-  
+
   int _ID;
-  static TinyOsxGraphicsWindow  *FullScreenWindow; 
-  
+  static TinyOsxGraphicsWindow  *FullScreenWindow;
+
   CFDictionaryRef _originalMode;
 
   // True if _properties.get_cursor_hidden() is true.
@@ -148,4 +144,3 @@ private:
 #endif  // IS_OSX
 
 #endif
-

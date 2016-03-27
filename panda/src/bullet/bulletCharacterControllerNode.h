@@ -1,16 +1,15 @@
-// Filename: bulletCharacterControllerNode.h
-// Created by:  enn0x (21Nov10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file bulletCharacterControllerNode.h
+ * @author enn0x
+ * @date 2010-11-21
+ */
 
 #ifndef __BULLET_CHARACTER_CONTROLLER_NODE_H__
 #define __BULLET_CHARACTER_CONTROLLER_NODE_H__
@@ -26,10 +25,9 @@
 #include "transformState.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletCharacterControllerNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 class EXPCL_PANDABULLET BulletCharacterControllerNode : public BulletBaseCharacterControllerNode {
 
 PUBLISHED:
@@ -80,14 +78,13 @@ private:
   bool _linear_movement_is_local;
   PN_stdfloat _angular_movement;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
     BulletBaseCharacterControllerNode::init_type();
-    register_type(_type_handle, "BulletCharacterControllerNode", 
+    register_type(_type_handle, "BulletCharacterControllerNode",
                   BulletBaseCharacterControllerNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -105,4 +102,3 @@ private:
 #include "bulletCharacterControllerNode.I"
 
 #endif // __BULLET_CHARACTER_CONTROLLER_NODE_H__
-

@@ -1,16 +1,15 @@
-// Filename: physxSceneDesc.h
-// Created by:  enn0x (05Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxSceneDesc.h
+ * @author enn0x
+ * @date 2009-09-05
+ */
 
 #ifndef PHYSXSCENEDESC_H
 #define PHYSXSCENEDESC_H
@@ -23,10 +22,9 @@
 
 class PhysxBounds3;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSceneDesc
-// Description : Descriptor for PhysxScene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for PhysxScene.
+ */
 class EXPCL_PANDAPHYSX PhysxSceneDesc : public PhysxEnums {
 
 PUBLISHED:

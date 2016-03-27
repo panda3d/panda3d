@@ -1,16 +1,15 @@
-// Filename: sequenceNode.h
-// Created by:  drose (06Mar02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sequenceNode.h
+ * @author drose
+ * @date 2002-03-06
+ */
 
 #ifndef SEQUENCENODE_H
 #define SEQUENCENODE_H
@@ -21,11 +20,10 @@
 #include "animInterface.h"
 #include "clockObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SequenceNode
-// Description : A node that automatically cycles through rendering
-//               each one of its children according to its frame rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that automatically cycles through rendering each one of its children
+ * according to its frame rate.
+ */
 class EXPCL_PANDA_PGRAPHNODES SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
   INLINE SequenceNode(const string &name);

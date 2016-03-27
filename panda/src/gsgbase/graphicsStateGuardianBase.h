@@ -1,16 +1,15 @@
-// Filename: graphicsStateGuardianBase.h
-// Created by:  drose (06Oct99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsStateGuardianBase.h
+ * @author drose
+ * @date 1999-10-06
+ */
 
 #ifndef GRAPHICSSTATEGUARDIANBASE_H
 #define GRAPHICSSTATEGUARDIANBASE_H
@@ -94,22 +93,18 @@ class LightLensNode;
 class DisplayRegion;
 class Lens;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsStateGuardianBase
-// Description : This is a base class for the GraphicsStateGuardian
-//               class, which is itself a base class for the various
-//               GSG's for different platforms.  This class contains
-//               all the function prototypes to support the
-//               double-dispatch of GSG to geoms, transitions, etc.  It
-//               lives in a separate class in its own package so we
-//               can avoid circular build dependency problems.
-//
-//               GraphicsStateGuardians are not actually writable to
-//               bam files, of course, but they may be passed as event
-//               parameters, so they inherit from
-//               TypedWritableReferenceCount instead of
-//               TypedReferenceCount for that convenience.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for the GraphicsStateGuardian class, which is itself a
+ * base class for the various GSG's for different platforms.  This class
+ * contains all the function prototypes to support the double-dispatch of GSG
+ * to geoms, transitions, etc.  It lives in a separate class in its own
+ * package so we can avoid circular build dependency problems.
+ *
+ * GraphicsStateGuardians are not actually writable to bam files, of course,
+ * but they may be passed as event parameters, so they inherit from
+ * TypedWritableReferenceCount instead of TypedReferenceCount for that
+ * convenience.
+ */
 class EXPCL_PANDA_GSGBASE GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 PUBLISHED:
   virtual bool get_incomplete_render() const=0;
@@ -131,9 +126,9 @@ PUBLISHED:
   virtual bool get_supports_hlsl() const=0;
 
 public:
-  // These are some general interface functions; they're defined here
-  // mainly to make it easy to call these from code in some directory
-  // that display depends on.
+  // These are some general interface functions; they're defined here mainly
+  // to make it easy to call these from code in some directory that display
+  // depends on.
   virtual SceneSetup *get_scene() const=0;
 
   virtual void clear_before_callback()=0;
@@ -142,8 +137,8 @@ public:
   virtual void remove_window(GraphicsOutputBase *window)=0;
 
 #ifndef CPPPARSER
-  // We hide this from interrogate, so that it will be properly
-  // exported from the GraphicsStateGuardian class, later.
+  // We hide this from interrogate, so that it will be properly exported from
+  // the GraphicsStateGuardian class, later.
   virtual PreparedGraphicsObjects *get_prepared_objects()=0;
 #endif
 
@@ -175,17 +170,15 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform)=0;
 
-  // This function may only be called during a render traversal; it
-  // will compute the distance to the indicated point, assumed to be
-  // in eye coordinates, from the camera plane.  This is a virtual
-  // function because different GSG's may define the eye coordinate
-  // space differently.
+  // This function may only be called during a render traversal; it will
+  // compute the distance to the indicated point, assumed to be in eye
+  // coordinates, from the camera plane.  This is a virtual function because
+  // different GSG's may define the eye coordinate space differently.
   virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const=0;
 
-  // These are used to implement decals.  If depth_offset_decals()
-  // returns true, none of the remaining functions will be called,
-  // since depth offsets can be used to implement decals fully (and
-  // usually faster).
+  // These are used to implement decals.  If depth_offset_decals() returns
+  // true, none of the remaining functions will be called, since depth offsets
+  // can be used to implement decals fully (and usually faster).
   virtual bool depth_offset_decals()=0;
   virtual CPT(RenderState) begin_decal_base_first()=0;
   virtual CPT(RenderState) begin_decal_nested()=0;
@@ -193,12 +186,11 @@ public:
   virtual void finish_decal()=0;
 
   // Defined here are some internal interface functions for the
-  // GraphicsStateGuardian.  These are here to support
-  // double-dispatching from Geoms and NodeTransitions, and are
-  // intended to be invoked only directly by the appropriate Geom and
-  // NodeTransition types.  They're public only because it would be too
-  // inconvenient to declare each of those types to be friends of this
-  // class.
+  // GraphicsStateGuardian.  These are here to support double-dispatching from
+  // Geoms and NodeTransitions, and are intended to be invoked only directly
+  // by the appropriate Geom and NodeTransition types.  They're public only
+  // because it would be too inconvenient to declare each of those types to be
+  // friends of this class.
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,

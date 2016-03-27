@@ -1,16 +1,15 @@
-// Filename: movieVideoCursor.h
-// Created by: jyelon (02Jul07)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieVideoCursor.h
+ * @author jyelon
+ * @date 2007-07-02
+ */
 
 #ifndef MOVIEVIDEOCURSOR_H
 #define MOVIEVIDEOCURSOR_H
@@ -28,20 +27,17 @@ class FactoryParams;
 class BamWriter;
 class BamReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieVideoCursor
-// Description : A MovieVideo is actually any source that provides
-//               a sequence of video frames.  That could include an
-//               AVI file, a digital camera, or an internet TV station.
-//               A MovieVideoCursor is a handle that lets you read
-//               data sequentially from a MovieVideo.
-//
-//               Thread safety: each individual MovieVideoCursor
-//               must be owned and accessed by a single thread.
-//               It is OK for two different threads to open
-//               the same file at the same time, as long as they
-//               use separate MovieVideoCursor objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MovieVideo is actually any source that provides a sequence of video
+ * frames.  That could include an AVI file, a digital camera, or an internet
+ * TV station.  A MovieVideoCursor is a handle that lets you read data
+ * sequentially from a MovieVideo.
+ *
+ * Thread safety: each individual MovieVideoCursor must be owned and accessed
+ * by a single thread.  It is OK for two different threads to open the same
+ * file at the same time, as long as they use separate MovieVideoCursor
+ * objects.
+ */
 class EXPCL_PANDA_MOVIES MovieVideoCursor : public TypedWritableReferenceCount {
 protected:
   MovieVideoCursor(MovieVideo *src = NULL);
@@ -103,11 +99,11 @@ PUBLISHED:
   virtual void apply_to_texture(const Buffer *buffer, Texture *t, int page);
   virtual void apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page);
   virtual void apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src);
-  
+
 protected:
   Buffer *get_standard_buffer();
   virtual PT(Buffer) make_new_buffer();
-  
+
 protected:
   PT(MovieVideo) _source;
   int _size_x;
@@ -132,7 +128,7 @@ public:
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

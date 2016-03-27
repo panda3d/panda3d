@@ -1,16 +1,15 @@
-// Filename: lineStreamBuf.h
-// Created by:  drose (26Feb00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lineStreamBuf.h
+ * @author drose
+ * @date 2000-02-26
+ */
 
 #ifndef LINESTREAMBUF_H
 #define LINESTREAMBUF_H
@@ -19,13 +18,11 @@
 
 #include <string>
 
-////////////////////////////////////////////////////////////////////
-//       Class : LineStreamBuf
-// Description : Used by LineStream to implement an ostream that
-//               writes to a memory buffer, whose contents can be
-//               continuously extracted as a sequence of lines of
-//               text.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used by LineStream to implement an ostream that writes to a memory buffer,
+ * whose contents can be continuously extracted as a sequence of lines of
+ * text.
+ */
 class EXPCL_DTOOL LineStreamBuf : public streambuf {
 public:
   LineStreamBuf();

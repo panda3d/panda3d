@@ -1,16 +1,15 @@
-// Filename: jointVertexTransform.h
-// Created by:  drose (24Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file jointVertexTransform.h
+ * @author drose
+ * @date 2005-03-24
+ */
 
 #ifndef JOINTVERTEXTRANSFORM_H
 #define JOINTVERTEXTRANSFORM_H
@@ -21,20 +20,16 @@
 #include "pointerTo.h"
 #include "lightMutex.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : JointVertexTransform
-// Description : This is a specialization on VertexTransform that
-//               returns the transform necessary to move vertices as
-//               if they were assigned to the indicated joint.  The
-//               geometry itself should be parented to the scene graph
-//               at the level of the character's root joint; that is,
-//               it should not be parented under a node directly
-//               animated by any joints.
-//
-//               Multiple combinations of these with different weights
-//               are used to implement soft-skinned vertices for an
-//               animated character.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on VertexTransform that returns the transform
+ * necessary to move vertices as if they were assigned to the indicated joint.
+ * The geometry itself should be parented to the scene graph at the level of
+ * the character's root joint; that is, it should not be parented under a node
+ * directly animated by any joints.
+ *
+ * Multiple combinations of these with different weights are used to implement
+ * soft-skinned vertices for an animated character.
+ */
 class EXPCL_PANDA_CHAR JointVertexTransform : public VertexTransform {
 private:
   JointVertexTransform();

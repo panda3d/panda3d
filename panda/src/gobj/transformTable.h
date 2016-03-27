@@ -1,16 +1,15 @@
-// Filename: transformTable.h
-// Created by:  drose (23Mar05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transformTable.h
+ * @author drose
+ * @date 2005-03-23
+ */
 
 #ifndef TRANSFORMTABLE_H
 #define TRANSFORMTABLE_H
@@ -28,17 +27,14 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TransformTable
-// Description : Stores the total set of VertexTransforms that the
-//               vertices in a particular GeomVertexData object might
-//               depend on.
-//
-//               This structure is used for a GeomVertexData set up to
-//               compute its dynamic vertices on the graphics card.
-//               See TransformBlendTable for one set up to compute
-//               its dynamic vertices on the CPU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the total set of VertexTransforms that the vertices in a particular
+ * GeomVertexData object might depend on.
+ *
+ * This structure is used for a GeomVertexData set up to compute its dynamic
+ * vertices on the graphics card.  See TransformBlendTable for one set up to
+ * compute its dynamic vertices on the CPU.
+ */
 class EXPCL_PANDA_GOBJ TransformTable : public TypedWritableReferenceCount {
 PUBLISHED:
   TransformTable();

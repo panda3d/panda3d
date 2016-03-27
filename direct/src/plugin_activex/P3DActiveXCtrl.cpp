@@ -1,18 +1,18 @@
-// Filename: P3DActiveXCtrl.cpp
-// Created by:  atrestman (14Sept09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file P3DActiveXCtrl.cpp
+ * @author atrestman
+ * @date 2009-09-14
+ */
 
-// P3DActiveXCtrl.cpp : Implementation of the CP3DActiveXCtrl ActiveX Control class.
+// P3DActiveXCtrl.cpp : Implementation of the CP3DActiveXCtrl ActiveX Control
+// class.
 
 #include "stdafx.h"
 #include "P3DActiveX.h"
@@ -128,16 +128,15 @@ IMPLEMENT_OLECTLTYPE(CP3DActiveXCtrl, IDS_P3DACTIVEX, _dwP3DActiveXOleMisc)
 
 
 
-// CP3DActiveXCtrl::CP3DActiveXCtrlFactory::UpdateRegistry -
-// Adds or removes system registry entries for CP3DActiveXCtrl
+// CP3DActiveXCtrl::CP3DActiveXCtrlFactory::UpdateRegistry - Adds or removes
+// system registry entries for CP3DActiveXCtrl
 
 BOOL CP3DActiveXCtrl::CP3DActiveXCtrlFactory::UpdateRegistry(BOOL bRegister)
 {
     // TODO: Verify that your control follows apartment-model threading rules.
-    // Refer to MFC TechNote 64 for more information.
-    // If your control does not conform to the apartment-model rules, then
-    // you must modify the code below, changing the 6th parameter from
-    // afxRegApartmentThreading to 0.
+    // Refer to MFC TechNote 64 for more information.  If your control does
+    // not conform to the apartment-model rules, then you must modify the code
+    // below, changing the 6th parameter from afxRegApartmentThreading to 0.
 
     if (bRegister)
         return AfxOleRegisterControlClass(
@@ -193,8 +192,8 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
     case S_init:
       {
         _state = S_loading;
-        // The first time we get the Draw message, we know we're
-        // sufficiently set up to start downloading the instance.
+        // The first time we get the Draw message, we know we're sufficiently
+        // set up to start downloading the instance.
         m_instance.read_tokens();
         get_twirl_bitmaps();
 
@@ -202,9 +201,8 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
         SetTimer(1, 100, timer_callback);
         _init_time = GetTickCount();
 
-        // But do most of the setup in a child thread, so we don't lock
-        // up the browser GUI while the instance gets itself downloaded
-        // and such.
+        // But do most of the setup in a child thread, so we don't lock up the
+        // browser GUI while the instance gets itself downloaded and such.
         _init_not_running.ResetEvent();  // Now the init thread is running.
         if (_beginthread(st_init, 0, this) == -1L) {
           nout << "Couldn't start thread.\n";
@@ -248,17 +246,16 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
 
     DWORD now = GetTickCount();
 
-    // Don't draw the twirling icon until at least half a second has
-    // passed, so we don't distract people by drawing it
-    // unnecessarily.
+    // Don't draw the twirling icon until at least half a second has passed,
+    // so we don't distract people by drawing it unnecessarily.
     if (_state == S_failed || (now - _init_time) >= 500) {
       int step = (now / 100) % twirl_num_steps;
       if (_state == S_failed) {
         step = twirl_num_steps;
       }
 
-      // Create an in-memory DC compatible with the display DC we're
-      // using to paint
+      // Create an in-memory DC compatible with the display DC we're using to
+      // paint
       CDC dcMemory;
       dcMemory.CreateCompatibleDC(pdc);
 
@@ -271,9 +268,9 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
       int nX = rect.left + (rect.Width() - twirl_width) / 2;
       int nY = rect.top + (rect.Height() - twirl_height) / 2;
 
-      // Copy the bits from the in-memory DC into the on-screen DC to
-      // actually do the painting. Use the centerpoint we computed for
-      // the target offset.
+      // Copy the bits from the in-memory DC into the on-screen DC to actually
+      // do the painting.  Use the centerpoint we computed for the target
+      // offset.
       pdc->BitBlt(nX, nY, twirl_width, twirl_height, &dcMemory,
                   0, 0, SRCCOPY);
     }
@@ -281,7 +278,7 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
 
 void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
 {
-	m_instance.Stop();
+  m_instance.Stop();
 
     // Make sure the init thread has finished.
     if (_state == S_loading) {
@@ -290,7 +287,7 @@ void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
       nout << "Done waiting for thread stop\n" << flush;
     }
 
-	COleControl::OnClose( dwSaveOption );
+  COleControl::OnClose( dwSaveOption );
 }
 
 
@@ -308,16 +305,15 @@ void CP3DActiveXCtrl::DoPropExchange(CPropExchange* pPX)
 
 
 
-// CP3DActiveXCtrl::GetControlFlags -
-// Flags to customize MFC's implementation of ActiveX controls.
-//
+// CP3DActiveXCtrl::GetControlFlags - Flags to customize MFC's implementation
+// of ActiveX controls.
 DWORD CP3DActiveXCtrl::GetControlFlags()
 {
     DWORD dwFlags = COleControl::GetControlFlags();
 
 
-    // The control will not be redrawn when making the transition
-    // between the active and inactivate state.
+    // The control will not be redrawn when making the transition between the
+    // active and inactivate state.
     dwFlags |= noFlickerActivate;
     return dwFlags;
 }
@@ -421,9 +417,8 @@ int CP3DActiveXCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
     if ( collectionLength < 1 )
     {
-        // javascript engine was not specified on the page.
-        // hence we need to initialize it by infusing javascript
-        // element tags
+        // javascript engine was not specified on the page.  hence we need to
+        // initialize it by infusing javascript element tags
 
         CComPtr<IHTMLElement> spHtmlElement;
         hr = pHtml2Doc->createElement( CComBSTR( "script" ), &spHtmlElement );
@@ -465,8 +460,7 @@ st_init(void *data) {
   self->_init_not_running.SetEvent();
 }
 
-// The init method.  This is called once at startup, in a child
-// thread.
+// The init method.  This is called once at startup, in a child thread.
 int CP3DActiveXCtrl::init( )
 {
     int error( 0 );
@@ -553,8 +547,7 @@ HRESULT CP3DActiveXCtrl::ExchangeProperties( CPropExchange*  pPX )
     for (unsigned long ind = 0; ind < aNum; ind++) {
         std::pair< CString, CString> p( CString( aPropNames[ind].pstrName ), CString( aVal[ind] ) );
         m_parameters.push_back( p );
-//        do_what_you_want_with (OLE2T (aPropNames[ind].pstrName),
-//            aVal[ind]);
+// do_what_you_want_with (OLE2T (aPropNames[ind].pstrName), aVal[ind]);
     }
     // delete the unused arrays
     delete[] hvs;
@@ -622,4 +615,3 @@ timer_callback(HWND hwnd, UINT msg, UINT_PTR id, DWORD time) {
   // Just invalidate the region and make it draw again.
   ::InvalidateRect(hwnd, NULL, FALSE);
 }
-

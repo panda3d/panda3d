@@ -1,21 +1,20 @@
-// Filename: iPhoneGraphicsWindow.mm
-// Created by:  drose (08Apr09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University. All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license. You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iPhoneGraphicsWindow.mm
+ * @author drose
+ * @date 2009-04-08
+ */
 
-// We include these system header files first, because there is a
-// namescope conflict between them and some other header file that
-// gets included later (in particular, TCP_NODELAY must not be a
-// #define symbol for these headers to be included properly).
+// We include these system header files first, because there is a namescope
+// conflict between them and some other header file that gets included later
+// (in particular, TCP_NODELAY must not be a #define symbol for these headers
+// to be included properly).
 
 #include <UIKit/UIKit.h>
 
@@ -38,13 +37,11 @@
 
 TypeHandle IPhoneGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 IPhoneGraphicsWindow::
-IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                      const string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
@@ -64,11 +61,9 @@ IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _input_devices.push_back(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 IPhoneGraphicsWindow::
 ~IPhoneGraphicsWindow() {
   if (_gl_view != nil) {
@@ -76,19 +71,16 @@ IPhoneGraphicsWindow::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame. It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool IPhoneGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector);
- 
+
   begin_frame_spam(mode);
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     // not powered up .. just abort..
@@ -101,22 +93,20 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame. It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
 void IPhoneGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
- 
+
   if (mode == FM_render) {
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
     copy_to_textures();
-    
+
     _gsg->end_frame(current_thread);
 
     if (_gl_view != nil) {
@@ -125,20 +115,17 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.
+ *
+ * This should instruct the window to prepare for the flip at the next video
+ * sync, but it should not wait.
+ *
+ * We have the two separate functions, begin_flip() and end_flip(), to make it
+ * easier to flip all of the windows at the same time.
+ */
 void IPhoneGraphicsWindow::
 end_flip() {
 }
@@ -147,36 +134,29 @@ void IPhoneGraphicsWindow::
 begin_flip() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::process_events
-//       Access: Protected, Virtual
-//  Description: Required event upcall, used to dispatch window and
-//               application events back into panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required event upcall, used to dispatch window and application events back
+ * into panda.
+ */
 void IPhoneGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame. This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The properties that have been applied are cleared
-//               from the structure by this function; so on return,
-//               whatever remains in the properties structure are
-//               those that were unchanged for some reason (probably
-//               because the underlying interface does not support
-//               changing that property on an open window).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.
+ *
+ * The window properties are applied immediately, rather than waiting until
+ * the next frame.  This implies that this method may *only* be called from
+ * within the window thread.
+ *
+ * The properties that have been applied are cleared from the structure by
+ * this function; so on return, whatever remains in the properties structure
+ * are those that were unchanged for some reason (probably because the
+ * underlying interface does not support changing that property on an open
+ * window).
+ */
 void IPhoneGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   if (iphonedisplay_cat.is_debug()) {
@@ -185,17 +165,14 @@ set_properties_now(WindowProperties &properties) {
     iphonedisplay_cat.debug()
       << "set_properties_now " << properties << "\n";
   }
- 
+
   GraphicsWindow::set_properties_now(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::clear_pipe
-//       Access: Protected, Virtual
-//  Description: Sets the window's _pipe pointer to NULL; this is
-//               generally called only as a precursor to deleting the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the window's _pipe pointer to NULL; this is generally called only as a
+ * precursor to deleting the window.
+ */
 void IPhoneGraphicsWindow::
 clear_pipe() {
   IPhoneGraphicsPipe *ipipe;
@@ -205,13 +182,10 @@ clear_pipe() {
   GraphicsWindow::clear_pipe();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::rotate_window
-//       Access: Public
-//  Description: Called in response to an orientation change event,
-//               this tells the window to resize itself according to
-//               the new orientation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called in response to an orientation change event, this tells the window to
+ * resize itself according to the new orientation.
+ */
 void IPhoneGraphicsWindow::
 rotate_window() {
   CGRect bounds = [_gl_view bounds];
@@ -221,11 +195,9 @@ rotate_window() {
   system_changed_properties(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::touches_began
-//       Access: Public
-//  Description: Beginning a single- or multi-touch gesture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Beginning a single- or multi-touch gesture.
+ */
 void IPhoneGraphicsWindow::
 touches_began(NSSet *touches, UIEvent *event) {
   // Average the position of all of the touches.
@@ -235,11 +207,9 @@ touches_began(NSSet *touches, UIEvent *event) {
   handle_button_delta([touches count]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::touches_moved
-//       Access: Public
-//  Description: Continuing a single- or multi-touch gesture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Continuing a single- or multi-touch gesture.
+ */
 void IPhoneGraphicsWindow::
 touches_moved(NSSet *touches, UIEvent *event) {
   // Average the position of all of the touches.
@@ -249,37 +219,30 @@ touches_moved(NSSet *touches, UIEvent *event) {
   handle_button_delta([touches count]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::touches_ended
-//       Access: Public
-//  Description: Finishing a single- or multi-touch gesture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finishing a single- or multi-touch gesture.
+ */
 void IPhoneGraphicsWindow::
 touches_ended(NSSet *touches, UIEvent *event) {
   set_pointer_out_of_window();
   handle_button_delta(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::touches_cancelled
-//       Access: Public
-//  Description: Cancelling a single- or multi-touch gesture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Cancelling a single- or multi-touch gesture.
+ */
 void IPhoneGraphicsWindow::
 touches_cancelled(NSSet *touches, UIEvent *event) {
   set_pointer_out_of_window();
   handle_button_delta(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::get_average_location
-//       Access: Public
-//  Description: Returns the average location of all of the indicated
-//               touches.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the average location of all of the indicated touches.
+ */
 CGPoint IPhoneGraphicsWindow::
 get_average_location(NSSet *touches) {
-  NSEnumerator *enumerator = [ touches objectEnumerator ]; 
+  NSEnumerator *enumerator = [ touches objectEnumerator ];
   CGPoint sum;
   sum.x = 0.0;
   sum.y = 0.0;
@@ -297,42 +260,36 @@ get_average_location(NSSet *touches) {
   return sum;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now. Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void IPhoneGraphicsWindow::
 close_window() {
-  //  system_close_window();
+  // system_close_window();
 
   WindowProperties properties;
   properties.set_open(false);
   system_changed_properties(properties);
 
-//  release_system_resources(false);
+// release_system_resources(false);
   _gsg.clear();
   _active = false;
   GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now. Called from the window
-//               thread. Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true
+ * if the window is successfully opened, or false if there was a problem.
+ */
 bool IPhoneGraphicsWindow::
 open_window() {
   nassertr(_gsg == (GraphicsStateGuardian *)NULL, false);
 
-  _gl_view = [ [ EAGLView alloc ] initWithFrame: 
-        [ [ UIScreen mainScreen ] applicationFrame ] 
-    ]; 
+  _gl_view = [ [ EAGLView alloc ] initWithFrame:
+        [ [ UIScreen mainScreen ] applicationFrame ]
+    ];
   _gl_view->_window = this;
-  
+
   IPhoneGraphicsPipe *iphonepipe = DCAST(IPhoneGraphicsPipe, _pipe);
   nassertr(iphonepipe != NULL, false);
 
@@ -352,45 +309,36 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::set_pointer_in_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is seen within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is seen within the window.
+ */
 void IPhoneGraphicsWindow::
 set_pointer_in_window(int x, int y) {
   _input_devices[0].set_pointer_in_window(x, y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::set_pointer_out_of_window
-//       Access: Private
-//  Description: Indicates the mouse pointer is no longer within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the mouse pointer is no longer within the window.
+ */
 void IPhoneGraphicsWindow::
 set_pointer_out_of_window() {
   _input_devices[0].set_pointer_out_of_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsWindow::handle_button_delta
-//       Access: Private
-//  Description: Used to emulate button events
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to emulate button events
+ */
 void IPhoneGraphicsWindow::
 handle_button_delta(int num_touches) {
-  // For now, we'll just map the number of touches to the mouse button
-  // number.  1 touch is button 1, 2 touches is button 3 (because this
-  // is the normal secondary button), and 3 touches is button 2.
+  // For now, we'll just map the number of touches to the mouse button number.
+  // 1 touch is button 1, 2 touches is button 3 (because this is the normal
+  // secondary button), and 3 touches is button 2.
 
-  // This is just a cheesy remapping that will assist migrating
-  // applications from standard PC's to iPhone.  It also works well
-  // enough within the existing Panda mouse-input framework.  We
-  // should expose the full multitouch functionality eventually, but
-  // really, the whole mouse-input framework needs a bit of a
-  // redesign.
+  // This is just a cheesy remapping that will assist migrating applications
+  // from standard PC's to iPhone.  It also works well enough within the
+  // existing Panda mouse-input framework.  We should expose the full
+  // multitouch functionality eventually, but really, the whole mouse-input
+  // framework needs a bit of a redesign.
 
   int new_buttons;
   switch (num_touches) {

@@ -1,16 +1,15 @@
-// Filename: samplerState.h
-// Created by:  rdb (09Dec14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file samplerState.h
+ * @author rdb
+ * @date 2014-12-09
+ */
 
 #ifndef SAMPLERSTATE_H
 #define SAMPLERSTATE_H
@@ -29,13 +28,11 @@ class GraphicsStateGuardianBase;
 class PreparedGraphicsObjects;
 class SamplerContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SamplerState
-// Description : Represents a set of settings that indicate how a
-//               texture is sampled.  This can be used to sample the
-//               same texture using different settings in different
-//               places.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a set of settings that indicate how a texture is sampled.  This
+ * can be used to sample the same texture using different settings in
+ * different places.
+ */
 class EXPCL_PANDA_GOBJ SamplerState {
 PUBLISHED:
   enum FilterType {
@@ -58,15 +55,16 @@ PUBLISHED:
     // Point sample the pixel from two mipmap levels, and linearly blend
     FT_nearest_mipmap_linear,
 
-    // A.k.a. trilinear filtering: Bilinear filter the pixel from
-    // two mipmap levels, and linearly blend the results.
+    // A.k.a.  trilinear filtering: Bilinear filter the pixel from two mipmap
+    // levels, and linearly blend the results.
     FT_linear_mipmap_linear,
 
-    // The OpenGL ARB_shadow extension can be thought of as a kind of filtering.
+    // The OpenGL ARB_shadow extension can be thought of as a kind of
+    // filtering.
     FT_shadow,
 
-    // Default is usually linear, but it depends on format.
-    // This was added at the end of the list to avoid bumping TXO version #.
+    // Default is usually linear, but it depends on format.  This was added at
+    // the end of the list to avoid bumping TXO version #.
     FT_default,
 
     // Returned by string_filter_type() for an invalid match.
@@ -157,9 +155,9 @@ private:
   PN_stdfloat _max_lod;
   PN_stdfloat _lod_bias;
 
-  // These are packed in a way that this class conveniently fits in
-  // 32 bytes; feel free to change the packing as necessary when
-  // more enum values are added.
+  // These are packed in a way that this class conveniently fits in 32 bytes;
+  // feel free to change the packing as necessary when more enum values are
+  // added.
   FilterType _minfilter : 4;
   FilterType _magfilter : 4;
   WrapMode _wrap_u : 4;

@@ -1,16 +1,15 @@
-// Filename: wglGraphicsPipe.h
-// Created by:  drose (20Dec02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file wglGraphicsPipe.h
+ * @author drose
+ * @date 2002-12-20
+ */
 
 #ifndef WGLGRAPHICSPIPE_H
 #define WGLGRAPHICSPIPE_H
@@ -20,12 +19,10 @@
 
 class wglGraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on the various
-//               Windows OSes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on the various Windows OSes.
+ */
 class EXPCL_PANDAGL wglGraphicsPipe : public WinGraphicsPipe {
 public:
   wglGraphicsPipe();

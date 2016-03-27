@@ -32,7 +32,7 @@ def makeBundle(startDir):
     path.appendPath(os.defpath)
     panda3d_mac = path.findFile('panda3d_mac')
     if not panda3d_mac:
-        raise StandardError, "Couldn't find panda3d_mac on path."
+        raise Exception("Couldn't find panda3d_mac on path.")
 
     # Construct a search path to look for the images.
     search = DSearchPath()
@@ -53,7 +53,7 @@ def makeBundle(startDir):
     # Now find the icon file on the above search path.
     icons = search.findFile('panda3d.icns')
     if not icons:
-        raise StandardError, "Couldn't find panda3d.icns on model-path."
+        raise Exception("Couldn't find panda3d.icns on model-path.")
 
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir)

@@ -1,28 +1,23 @@
-// Filename: plane_src.cxx
-// Created by:  drose (03Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file plane_src.cxx
+ * @author drose
+ * @date 2001-04-03
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: LPlane::get_reflection_mat
-//       Access: Published
-//  Description: This computes a transform matrix that reflects the
-//               universe to the other side of the plane, as in a
-//               mirror.
-////////////////////////////////////////////////////////////////////
+/**
+ * This computes a transform matrix that reflects the universe to the other
+ * side of the plane, as in a mirror.
+ */
 FLOATNAME(LMatrix4) FLOATNAME(LPlane)::
 get_reflection_mat() const {
-  FLOATTYPE aa = _v(0) * _v(0); 
+  FLOATTYPE aa = _v(0) * _v(0);
   FLOATTYPE ab = _v(0) * _v(1);
   FLOATTYPE ac = _v(0) * _v(2);
   FLOATTYPE ad = _v(0) * _v(3);
@@ -38,13 +33,10 @@ get_reflection_mat() const {
                               -2*ad,  -2*bd,  -2*cd,     1  );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPlane::get_point
-//       Access: Published
-//  Description: Returns an arbitrary point in the plane.  This can be
-//               used along with the normal returned by get_normal()
-//               to reconstruct the plane.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an arbitrary point in the plane.  This can be used along with the
+ * normal returned by get_normal() to reconstruct the plane.
+ */
 FLOATNAME(LPoint3) FLOATNAME(LPlane)::
 get_point() const {
   // Choose the denominator based on the largest axis in the normal.
@@ -61,16 +53,12 @@ get_point() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPlane::intersects_plane
-//       Access: Published
-//  Description: Returns true if the two planes intersect, false if
-//               they do not.  If they do intersect, then from and
-//               delta are filled in with the parametric
-//               representation of the line of intersection: that is,
-//               from is a point on that line, and delta is a vector
-//               showing the direction of the line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the two planes intersect, false if they do not.  If they do
+ * intersect, then from and delta are filled in with the parametric
+ * representation of the line of intersection: that is, from is a point on
+ * that line, and delta is a vector showing the direction of the line.
+ */
 bool FLOATNAME(LPlane)::
 intersects_plane(FLOATNAME(LPoint3) &from,
                  FLOATNAME(LVector3) &delta,
@@ -81,8 +69,8 @@ intersects_plane(FLOATNAME(LPoint3) &from,
   // The delta will be the cross product of the planes' normals.
   delta = cross(n1, n2);
 
-  // If the delta came out to zero, the planes were parallel and do
-  // not intersect.
+  // If the delta came out to zero, the planes were parallel and do not
+  // intersect.
   if (delta.almost_equal(FLOATNAME(LVector3)::zero())) {
     return false;
   }
@@ -90,7 +78,7 @@ intersects_plane(FLOATNAME(LPoint3) &from,
   FLOATTYPE n1n1 = ::dot(n1, n1);
   FLOATTYPE n2n2 = ::dot(n2, n2);
   FLOATTYPE n1n2 = ::dot(n1, n2);
- 
+
   FLOATTYPE determinant_inv = 1.0f / (n1n1 * n2n2 - n1n2 * n1n2);
   FLOATTYPE c1 = (other._v(3) * n1n2 - _v(3) * n2n2) * determinant_inv;
   FLOATTYPE c2 = (_v(3) * n1n2 - other._v(3) * n1n1) * determinant_inv;
@@ -99,32 +87,24 @@ intersects_plane(FLOATNAME(LPoint3) &from,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPlane::intersects_parabola
-//       Access: Published
-//  Description: Determines whether and where the indicated parabola
-//               intersects with the plane.
-//
-//               If there is no intersection with the plane, the
-//               function returns false and leaves t1 and t2
-//               undefined.  If there is an intersection with the
-//               plane, the function returns true and sets t1 and t2
-//               to the parametric value that defines the two points
-//               of intersection.  If the parabola is exactly tangent
-//               to the plane, then t1 == t2.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines whether and where the indicated parabola intersects with the
+ * plane.
+ *
+ * If there is no intersection with the plane, the function returns false and
+ * leaves t1 and t2 undefined.  If there is an intersection with the plane,
+ * the function returns true and sets t1 and t2 to the parametric value that
+ * defines the two points of intersection.  If the parabola is exactly tangent
+ * to the plane, then t1 == t2.
+ */
 bool FLOATNAME(LPlane)::
 intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
                     const FLOATNAME(LParabola) &parabola) const {
-  //
-  // The parabola intersects the plane wherever:
-  //
-  // a * t^2 + b * t + c == 0
-  //
-  // where a = normal dot parabola.get_a(),
-  //       b = normal dot parabola.get_b(),
-  //       c = normal dot parabola.get_c() + d.
-  //
+/*
+ * The parabola intersects the plane wherever: a * t^2 + b * t + c == 0 where
+ * a = normal dot parabola.get_a(), b = normal dot parabola.get_b(), c =
+ * normal dot parabola.get_c() + d.
+ */
 
   FLOATNAME(LVector3) normal = get_normal();
   FLOATTYPE a = normal.dot(parabola.get_a());
@@ -132,15 +112,13 @@ intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
   FLOATTYPE c = normal.dot(parabola.get_c()) + _v(3);
 
   if (IS_NEARLY_ZERO(a)) {
-    // It's not quadratic.  The equation is actually:
-    //    b * t + c == 0.
-    // Which means:
-    //    t = -c / b.
+    // It's not quadratic.  The equation is actually: b * t + c == 0. Which
+    // means: t = -c  b.
 
     if (IS_NEARLY_ZERO(b)) {
-      // It's not even linear.  The parabola must be completely
-      // parallel to the plane, or if c == 0, it's completely within
-      // the plane.  In both cases, we'll call it no intersection.
+      // It's not even linear.  The parabola must be completely parallel to
+      // the plane, or if c == 0, it's completely within the plane.  In both
+      // cases, we'll call it no intersection.
       return false;
     }
 
@@ -163,11 +141,9 @@ intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPlane::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FLOATNAME(LPlane)::
 output(ostream &out) const {
   out << "LPlane(";
@@ -175,11 +151,9 @@ output(ostream &out) const {
   out << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPlane::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FLOATNAME(LPlane)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";

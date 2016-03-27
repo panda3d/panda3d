@@ -1,27 +1,25 @@
-// Filename: angularVectorForce.h
-// Created by:  charles (09Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file angularVectorForce.h
+ * @author charles
+ * @date 2000-08-09
+ */
 
 #ifndef ANGULARVECTORFORCE_H
 #define ANGULARVECTORFORCE_H
 
 #include "angularForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AngularVectorForce
-// Description : a simple directed torque force, the angular
-//               equivalent of simple vector force.
-////////////////////////////////////////////////////////////////////
+/**
+ * a simple directed torque force, the angular equivalent of simple vector
+ * force.
+ */
 class EXPCL_PANDAPHYSICS AngularVectorForce : public AngularForce {
 PUBLISHED:
   AngularVectorForce(const LRotation& quat);
@@ -32,7 +30,7 @@ PUBLISHED:
   INLINE void set_quat(const LRotation& quat);
   INLINE void set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   INLINE LRotation get_local_quat() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

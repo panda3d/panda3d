@@ -1,24 +1,21 @@
-// Filename: discEmitter.cxx
-// Created by:  charles (22Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file discEmitter.cxx
+ * @author charles
+ * @date 2000-06-22
+ */
 
 #include "discEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DiscEmitter::DiscEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 DiscEmitter::
 DiscEmitter() {
   _radius = 1.0f;
@@ -27,11 +24,9 @@ DiscEmitter() {
   _cubic_lerping = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DiscEmitter::DiscEmitter
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 DiscEmitter::
 DiscEmitter(const DiscEmitter &copy) :
   BaseParticleEmitter(copy) {
@@ -47,30 +42,24 @@ DiscEmitter(const DiscEmitter &copy) :
   _cosf_theta = copy._cosf_theta;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DiscEmitter::~DiscEmitter
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 DiscEmitter::
 ~DiscEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 BaseParticleEmitter *DiscEmitter::
 make_copy() {
   return new DiscEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DiscEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void DiscEmitter::
 assign_initial_position(LPoint3& pos) {
   // position
@@ -88,11 +77,9 @@ assign_initial_position(LPoint3& pos) {
   pos.set(new_x, new_y, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DiscEmitter::assign_initial_velocity
-//       Access: Public
-//  Description: Generates a velocity for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a velocity for a new particle
+ */
 void DiscEmitter::
 assign_initial_velocity(LVector3& vel) {
   PN_stdfloat aoe, mag;
@@ -124,12 +111,9 @@ assign_initial_velocity(LVector3& vel) {
   vel.set(vel_x, vel_y, vel_z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void DiscEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -137,12 +121,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void DiscEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

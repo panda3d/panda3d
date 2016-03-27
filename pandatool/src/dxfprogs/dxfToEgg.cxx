@@ -1,27 +1,24 @@
-// Filename: dxfToEgg.cxx
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxfToEgg.cxx
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #include "dxfToEgg.h"
 
 #include "dxfToEggConverter.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DXFToEgg::
 DXFToEgg() :
   SomethingToEgg("DXF", ".dxf")
@@ -45,11 +42,9 @@ DXFToEgg() :
   _coordinate_system = CS_zup_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void DXFToEgg::
 run() {
   nout << "Reading " << _input_filename << "\n";

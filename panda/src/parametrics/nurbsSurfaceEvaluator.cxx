@@ -1,24 +1,21 @@
-// Filename: nurbsSurfaceEvaluator.cxx
-// Created by:  drose (10Oct03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nurbsSurfaceEvaluator.cxx
+ * @author drose
+ * @date 2003-10-10
+ */
 
 #include "nurbsSurfaceEvaluator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 NurbsSurfaceEvaluator::
 NurbsSurfaceEvaluator() {
   _u_order = 4;
@@ -29,24 +26,18 @@ NurbsSurfaceEvaluator() {
   _v_basis_dirty = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 NurbsSurfaceEvaluator::
 ~NurbsSurfaceEvaluator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::reset
-//       Access: Published
-//  Description: Resets all the vertices and knots to their default
-//               values, and sets the surface up with the indicated
-//               number of vertices.  You must then call set_vertex()
-//               repeatedly to fill in all of the vertex values
-//               appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all the vertices and knots to their default values, and sets the
+ * surface up with the indicated number of vertices.  You must then call
+ * set_vertex() repeatedly to fill in all of the vertex values appropriately.
+ */
 void NurbsSurfaceEvaluator::
 reset(int num_u_vertices, int num_v_vertices) {
   int num_vertices = num_u_vertices * num_v_vertices;
@@ -64,12 +55,10 @@ reset(int num_u_vertices, int num_v_vertices) {
   _v_basis_dirty = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::get_vertex_space
-//       Access: Published
-//  Description: Returns the coordinate space of the nth control
-//               vertex of the surface, expressed as a NodePath.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the coordinate space of the nth control vertex of the surface,
+ * expressed as a NodePath.
+ */
 NodePath NurbsSurfaceEvaluator::
 get_vertex_space(int ui, int vi, const NodePath &rel_to) const {
 #ifndef NDEBUG
@@ -80,17 +69,14 @@ get_vertex_space(int ui, int vi, const NodePath &rel_to) const {
   return vert(ui, vi).get_space(rel_to);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::set_extended_vertices
-//       Access: Public
-//  Description: Simultaneously sets several extended values in the
-//               slots d through (d + num_values - 1) from the
-//               num_values elements of the indicated array.  This is
-//               equivalent to calling set_extended_vertex()
-//               num_values times.  See set_extended_vertex().
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously sets several extended values in the slots d through (d +
+ * num_values - 1) from the num_values elements of the indicated array.  This
+ * is equivalent to calling set_extended_vertex() num_values times.  See
+ * set_extended_vertex().
+ */
 void NurbsSurfaceEvaluator::
-set_extended_vertices(int ui, int vi, int d, 
+set_extended_vertices(int ui, int vi, int d,
                       const PN_stdfloat values[], int num_values) {
   nassertv(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices);
@@ -101,14 +87,11 @@ set_extended_vertices(int ui, int vi, int d,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::set_u_knot
-//       Access: Published
-//  Description: Sets the value of the nth knot.  Each knot value
-//               should be greater than or equal to the preceding
-//               value.  If no knot values are set, a default knot
-//               vector is supplied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */
 void NurbsSurfaceEvaluator::
 set_u_knot(int i, PN_stdfloat knot) {
   if (_u_knots_dirty) {
@@ -118,11 +101,9 @@ set_u_knot(int i, PN_stdfloat knot) {
   _u_knots[i] = knot;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::get_u_knot
-//       Access: Published
-//  Description: Returns the value of the nth knot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the nth knot.
+ */
 PN_stdfloat NurbsSurfaceEvaluator::
 get_u_knot(int i) const {
   if (_u_knots_dirty) {
@@ -132,12 +113,10 @@ get_u_knot(int i) const {
   return _u_knots[i];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::normalize_u_knots
-//       Access: Published
-//  Description: Normalizes the knot sequence so that the parametric
-//               range of the surface in the U direction is 0 .. 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normalizes the knot sequence so that the parametric range of the surface in
+ * the U direction is 0 .. 1.
+ */
 void NurbsSurfaceEvaluator::
 normalize_u_knots() {
   if (_u_knots_dirty) {
@@ -156,14 +135,11 @@ normalize_u_knots() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::set_v_knot
-//       Access: Published
-//  Description: Sets the value of the nth knot.  Each knot value
-//               should be greater than or equal to the preceding
-//               value.  If no knot values are set, a default knot
-//               vector is supplied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */
 void NurbsSurfaceEvaluator::
 set_v_knot(int i, PN_stdfloat knot) {
   if (_v_knots_dirty) {
@@ -173,11 +149,9 @@ set_v_knot(int i, PN_stdfloat knot) {
   _v_knots[i] = knot;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::get_v_knot
-//       Access: Published
-//  Description: Returns the value of the nth knot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the nth knot.
+ */
 PN_stdfloat NurbsSurfaceEvaluator::
 get_v_knot(int i) const {
   if (_v_knots_dirty) {
@@ -187,12 +161,10 @@ get_v_knot(int i) const {
   return _v_knots[i];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::normalize_v_knots
-//       Access: Published
-//  Description: Normalizes the knot sequence so that the parametric
-//               range of the surface in the U direction is 0 .. 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normalizes the knot sequence so that the parametric range of the surface in
+ * the U direction is 0 .. 1.
+ */
 void NurbsSurfaceEvaluator::
 normalize_v_knots() {
   if (_v_knots_dirty) {
@@ -211,14 +183,11 @@ normalize_v_knots() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::evaluate
-//       Access: Published
-//  Description: Returns a NurbsSurfaceResult object that represents the
-//               result of applying the knots to all of the current
-//               values of the vertices, transformed into the
-//               indicated coordinate space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a NurbsSurfaceResult object that represents the result of applying
+ * the knots to all of the current values of the vertices, transformed into
+ * the indicated coordinate space.
+ */
 PT(NurbsSurfaceResult) NurbsSurfaceEvaluator::
 evaluate(const NodePath &rel_to) const {
   if (_u_basis_dirty) {
@@ -232,35 +201,30 @@ evaluate(const NodePath &rel_to) const {
   Vert4Array vecs;
   get_vertices(vecs, rel_to);
 
-  // And apply those transformed vertices to the basis matrices to
-  // derive the result.
+  // And apply those transformed vertices to the basis matrices to derive the
+  // result.
   return new NurbsSurfaceResult(_u_basis, _v_basis,
                                 &vecs[0], &_vertices[0],
                                 _num_u_vertices, _num_v_vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void NurbsSurfaceEvaluator::
 output(ostream &out) const {
   out << "NurbsSurface, (" << get_num_u_knots() << ", " << get_num_v_knots()
       << ") knots.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::get_vertices
-//       Access: Public
-//  Description: Fills the indicated vector with the set of vertices
-//               in the surface, transformed to the given space.  This
-//               flavor returns the vertices in 4-dimensional
-//               homogenous space.
-//
-//               Vertices are arranged in linear sequence, with the v
-//               coordinate changing more rapidly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated vector with the set of vertices in the surface,
+ * transformed to the given space.  This flavor returns the vertices in
+ * 4-dimensional homogenous space.
+ *
+ * Vertices are arranged in linear sequence, with the v coordinate changing
+ * more rapidly.
+ */
 void NurbsSurfaceEvaluator::
 get_vertices(NurbsSurfaceEvaluator::Vert4Array &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
@@ -279,17 +243,14 @@ get_vertices(NurbsSurfaceEvaluator::Vert4Array &verts, const NodePath &rel_to) c
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::get_vertices
-//       Access: Public
-//  Description: Fills the indicated vector with the set of vertices
-//               in the surface, transformed to the given space.  This
-//               flavor returns the vertices in 3-dimensional
-//               space.
-//
-//               Vertices are arranged in linear sequence, with the v
-//               coordinate changing more rapidly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated vector with the set of vertices in the surface,
+ * transformed to the given space.  This flavor returns the vertices in
+ * 3-dimensional space.
+ *
+ * Vertices are arranged in linear sequence, with the v coordinate changing
+ * more rapidly.
+ */
 void NurbsSurfaceEvaluator::
 get_vertices(NurbsSurfaceEvaluator::Vert3Array &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
@@ -308,11 +269,9 @@ get_vertices(NurbsSurfaceEvaluator::Vert3Array &verts, const NodePath &rel_to) c
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::recompute_u_knots
-//       Access: Private
-//  Description: Creates a default knot vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a default knot vector.
+ */
 void NurbsSurfaceEvaluator::
 recompute_u_knots() {
   _u_knots.clear();
@@ -340,11 +299,9 @@ recompute_u_knots() {
   _u_knots_dirty = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::recompute_v_knots
-//       Access: Private
-//  Description: Creates a default knot vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a default knot vector.
+ */
 void NurbsSurfaceEvaluator::
 recompute_v_knots() {
   _v_knots.clear();
@@ -372,12 +329,9 @@ recompute_v_knots() {
   _v_knots_dirty = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::recompute_u_basis
-//       Access: Private
-//  Description: Recomputes the basis matrices according to the knot
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the basis matrices according to the knot vector.
+ */
 void NurbsSurfaceEvaluator::
 recompute_u_basis() {
   if (_u_knots_dirty) {
@@ -388,7 +342,7 @@ recompute_u_basis() {
   if (_num_u_vertices > _u_order - 1) {
     int min_knot = _u_order;
     int max_knot = _num_u_vertices;
-    
+
     for (int i = min_knot; i <= max_knot; i++) {
       nassertv(i - 1 >= 0 && i < (int)_u_knots.size());
       if (_u_knots[i - 1] < _u_knots[i]) {
@@ -401,12 +355,9 @@ recompute_u_basis() {
   _u_basis_dirty = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::recompute_v_basis
-//       Access: Private
-//  Description: Recomputes the basis matrices according to the knot
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the basis matrices according to the knot vector.
+ */
 void NurbsSurfaceEvaluator::
 recompute_v_basis() {
   if (_v_knots_dirty) {
@@ -417,7 +368,7 @@ recompute_v_basis() {
   if (_num_v_vertices > _v_order - 1) {
     int min_knot = _v_order;
     int max_knot = _num_v_vertices;
-    
+
     for (int i = min_knot; i <= max_knot; i++) {
       nassertv(i - 1 >= 0 && i < (int)_v_knots.size());
       if (_v_knots[i - 1] < _v_knots[i]) {

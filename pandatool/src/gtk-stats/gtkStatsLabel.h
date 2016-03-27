@@ -1,16 +1,15 @@
-// Filename: gtkStatsLabel.h
-// Created by:  drose (16Jan06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file gtkStatsLabel.h
+ * @author drose
+ * @date 2006-01-16
+ */
 
 #ifndef GTKSTATSLABEL_H
 #define GTKSTATSLABEL_H
@@ -22,13 +21,11 @@
 class GtkStatsMonitor;
 class GtkStatsGraph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsLabel
-// Description : A text label that will draw in color appropriate for
-//               a particular collector.  It also responds when the
-//               user double-clicks on it.  This is handy for putting
-//               colored labels on strip charts.
-////////////////////////////////////////////////////////////////////
+/**
+ * A text label that will draw in color appropriate for a particular
+ * collector.  It also responds when the user double-clicks on it.  This is
+ * handy for putting colored labels on strip charts.
+ */
 class GtkStatsLabel {
 public:
   GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
@@ -45,17 +42,17 @@ public:
 
 private:
   void set_mouse_within(bool mouse_within);
-  static gboolean expose_event_callback(GtkWidget *widget, 
-					GdkEventExpose *event, gpointer data);
-  static gboolean enter_notify_event_callback(GtkWidget *widget, 
-					      GdkEventCrossing *event, 
-					      gpointer data);
-  static gboolean leave_notify_event_callback(GtkWidget *widget, 
-					      GdkEventCrossing *event, 
-					      gpointer data);
-  static gboolean button_press_event_callback(GtkWidget *widget, 
-					      GdkEventButton *event, 
-					      gpointer data);
+  static gboolean expose_event_callback(GtkWidget *widget,
+          GdkEventExpose *event, gpointer data);
+  static gboolean enter_notify_event_callback(GtkWidget *widget,
+                GdkEventCrossing *event,
+                gpointer data);
+  static gboolean leave_notify_event_callback(GtkWidget *widget,
+                GdkEventCrossing *event,
+                gpointer data);
+  static gboolean button_press_event_callback(GtkWidget *widget,
+                GdkEventButton *event,
+                gpointer data);
 
   GtkStatsMonitor *_monitor;
   GtkStatsGraph *_graph;
@@ -83,4 +80,3 @@ private:
 };
 
 #endif
-

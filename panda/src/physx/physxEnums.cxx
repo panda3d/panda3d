@@ -1,16 +1,15 @@
-// Filename: physxEnums.cxx
-// Created by:  enn0x (23Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file physxEnums.cxx
+ * @author enn0x
+ * @date 2009-09-23
+ */
 
 #include "physxEnums.h"
 
@@ -42,7 +41,7 @@ operator >> (istream &in, PhysxEnums::PhysxUpAxis &axis) {
 
   if (cmp_nocase(word, "x") == 0) {
     axis = PhysxEnums::X_up;
-  } 
+  }
   else if (cmp_nocase(word, "y") == 0) {
     axis = PhysxEnums::Y_up;
   }
@@ -57,4 +56,3 @@ operator >> (istream &in, PhysxEnums::PhysxUpAxis &axis) {
 
   return in;
 }
-

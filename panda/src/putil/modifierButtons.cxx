@@ -1,26 +1,23 @@
-// Filename: modifierButtons.cxx
-// Created by:  drose (01Mar00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file modifierButtons.cxx
+ * @author drose
+ * @date 2000-03-01
+ */
 
 #include "modifierButtons.h"
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ModifierButtons::
 ModifierButtons() :
   _state(0)
@@ -28,11 +25,9 @@ ModifierButtons() :
    _button_list = PTA(ButtonHandle)::empty_array(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ModifierButtons::
 ModifierButtons(const ModifierButtons &copy) :
   _button_list(copy._button_list),
@@ -40,33 +35,29 @@ ModifierButtons(const ModifierButtons &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 ModifierButtons::
 ~ModifierButtons() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::operator &=
-//       Access: Published
-//  Description: Sets is_down() true for any button that is already
-//               true for this object and the other object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets is_down() true for any button that is already true for this object and
+ * the other object.
+ */
 void ModifierButtons::
 operator &= (const ModifierButtons &other) {
   if (_button_list == other._button_list) {
-    // Trivially easy case: if the button lists are the same, we can
-    // do this using a bitmask operation.
+    // Trivially easy case: if the button lists are the same, we can do this
+    // using a bitmask operation.
     _state &= other._state;
 
   } else {
-    // More complicated case: if the button lists are different, we
-    // have to iterate through the buttons and compare them
-    // case-by-case.  This becomes an n^2 operation, but fortunately
-    // there won't be more than a handful of buttons.
+    // More complicated case: if the button lists are different, we have to
+    // iterate through the buttons and compare them case-by-case.  This
+    // becomes an n^2 operation, but fortunately there won't be more than a
+    // handful of buttons.
     int num_buttons = get_num_buttons();
     for (int i = 0; i < num_buttons; i++) {
       if (is_down(i) && !other.is_down(get_button(i))) {
@@ -76,26 +67,23 @@ operator &= (const ModifierButtons &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::operator |=
-//       Access: Published
-//  Description: Sets is_down() true for any button that is already
-//               true for this object and the other object.  Adds
-//               whatever buttons are necessary to the list to make
-//               this so
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets is_down() true for any button that is already true for this object and
+ * the other object.  Adds whatever buttons are necessary to the list to make
+ * this so
+ */
 void ModifierButtons::
 operator |= (const ModifierButtons &other) {
   if (_button_list == other._button_list) {
-    // Trivially easy case: if the button lists are the same, we can
-    // do this using a bitmask operation.
+    // Trivially easy case: if the button lists are the same, we can do this
+    // using a bitmask operation.
     _state |= other._state;
 
   } else {
-    // More complicated case: if the button lists are different, we
-    // have to iterate through the buttons and compare them
-    // case-by-case.  This becomes an n^2 operation, but fortunately
-    // there won't be more than a handful of buttons.
+    // More complicated case: if the button lists are different, we have to
+    // iterate through the buttons and compare them case-by-case.  This
+    // becomes an n^2 operation, but fortunately there won't be more than a
+    // handful of buttons.
     int num_buttons = other.get_num_buttons();
     for (int i = 0; i < num_buttons; i++) {
       if (other.is_down(i)) {
@@ -106,25 +94,21 @@ operator |= (const ModifierButtons &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::set_button_list
-//       Access: Published
-//  Description: Sets the list of buttons to watch to be the same as
-//               that of the other ModifierButtons object.  This makes
-//               the lists pointer equivalent (until one or the other
-//               is later modified).
-//
-//               This will preserve the state of any button that was
-//               on the original list and is also on the new lists.
-//               Any other buttons will get reset to the default state
-//               of "up".
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the list of buttons to watch to be the same as that of the other
+ * ModifierButtons object.  This makes the lists pointer equivalent (until one
+ * or the other is later modified).
+ *
+ * This will preserve the state of any button that was on the original list
+ * and is also on the new lists.  Any other buttons will get reset to the
+ * default state of "up".
+ */
 void ModifierButtons::
 set_button_list(const ModifierButtons &other) {
   if (_button_list != other._button_list) {
     if (_state != 0) {
-      // If we have some buttons already down, we have to copy them to
-      // the new state.
+      // If we have some buttons already down, we have to copy them to the new
+      // state.
       BitmaskType new_state = 0;
       int num_buttons = other.get_num_buttons();
       for (int i = 0; i < num_buttons; i++) {
@@ -132,7 +116,7 @@ set_button_list(const ModifierButtons &other) {
           new_state |= ((BitmaskType)1 << i);
         }
       }
-    
+
       _state = new_state;
     }
 
@@ -140,29 +124,26 @@ set_button_list(const ModifierButtons &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::matches
-//       Access: Published
-//  Description: Returns true if the set of buttons indicated as down
-//               by this ModifierButtons object is the same set of
-//               buttons indicated as down by the other
-//               ModifierButtons object.  The buttons indicated as up
-//               are not relevant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the set of buttons indicated as down by this
+ * ModifierButtons object is the same set of buttons indicated as down by the
+ * other ModifierButtons object.  The buttons indicated as up are not
+ * relevant.
+ */
 bool ModifierButtons::
 matches(const ModifierButtons &other) const {
   if (_button_list == other._button_list) {
-    // If the two objects share the same array, we only need to check
-    // the bitmask.  This is a simple optimization.
+    // If the two objects share the same array, we only need to check the
+    // bitmask.  This is a simple optimization.
     return (_state == other._state);
   }
 
-  // The two objects do not share the same array; thus we have to do
-  // this one button at a time.  This is an n-squared operation, but
-  // presumably there will not be hundreds of buttons to compare.
+  // The two objects do not share the same array; thus we have to do this one
+  // button at a time.  This is an n-squared operation, but presumably there
+  // will not be hundreds of buttons to compare.
 
-  // First, check that all the buttons indicated as down in our object
-  // are also indicated as down in the other object.
+  // First, check that all the buttons indicated as down in our object are
+  // also indicated as down in the other object.
   int num_down = 0;
 
   int i;
@@ -175,10 +156,9 @@ matches(const ModifierButtons &other) const {
     }
   }
 
-  // Now make sure the total number of buttons indicated as down in
-  // our object matches the number indicated as down in the other
-  // object.  This ensures there aren't any additional buttons
-  // indicated down in the other object.
+  // Now make sure the total number of buttons indicated as down in our object
+  // matches the number indicated as down in the other object.  This ensures
+  // there aren't any additional buttons indicated down in the other object.
   int num_other_buttons = other.get_num_buttons();
   int num_other_down = 0;
   for (i = 0; i < num_other_buttons; i++) {
@@ -190,15 +170,12 @@ matches(const ModifierButtons &other) const {
   return (num_down == num_other_down);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::add_button
-//       Access: Published
-//  Description: Adds the indicated button to the set of buttons that
-//               will be monitored for upness and downness.  Returns
-//               true if the button was added, false if it was already
-//               being monitored or if too many buttons are currently
-//               being monitored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated button to the set of buttons that will be monitored for
+ * upness and downness.  Returns true if the button was added, false if it was
+ * already being monitored or if too many buttons are currently being
+ * monitored.
+ */
 bool ModifierButtons::
 add_button(ButtonHandle button) {
   nassertr(button != ButtonHandle::none(), false);
@@ -221,12 +198,10 @@ add_button(ButtonHandle button) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::has_button
-//       Access: Published
-//  Description: Returns true if the indicated button is in the set of
-//               buttons being monitored, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated button is in the set of buttons being
+ * monitored, false otherwise.
+ */
 bool ModifierButtons::
 has_button(ButtonHandle button) const {
   PTA(ButtonHandle)::const_iterator bi;
@@ -239,31 +214,27 @@ has_button(ButtonHandle button) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::remove_button
-//       Access: Published
-//  Description: Removes the indicated button from the set of buttons
-//               being monitored.  Returns true if the button was
-//               removed, false if it was not being monitored in the
-//               first place.
-//
-//               Unlike the other methods, you cannot remove a button
-//               by removing its alias; you have to remove exactly the
-//               button itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated button from the set of buttons being monitored.
+ * Returns true if the button was removed, false if it was not being monitored
+ * in the first place.
+ *
+ * Unlike the other methods, you cannot remove a button by removing its alias;
+ * you have to remove exactly the button itself.
+ */
 bool ModifierButtons::
 remove_button(ButtonHandle button) {
   // We use i instead of an iterator, because we need to call
-  // modify_button_list() just before we remove the button, and that
-  // may invalidate all of the iterators.
+  // modify_button_list() just before we remove the button, and that may
+  // invalidate all of the iterators.
 
   for (int i = 0; i < (int)_button_list.size(); i++) {
     if (button == _button_list[i]) {
       modify_button_list();
       _button_list.erase(_button_list.begin() + i);
 
-      // Now remove the corresponding bit from the bitmask and shift
-      // all the bits above it down.
+      // Now remove the corresponding bit from the bitmask and shift all the
+      // bits above it down.
       BitmaskType mask = ((BitmaskType)1 << i);
       BitmaskType below = mask - 1;
       BitmaskType above = (~below) & (~mask);
@@ -276,16 +247,12 @@ remove_button(ButtonHandle button) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::button_down
-//       Access: Published
-//  Description: Records that a particular button has been pressed.
-//               If the given button is one of the buttons that is
-//               currently being monitored, this will update the
-//               internal state appropriately; otherwise, it will do
-//               nothing.  Returns true if the button is one that was
-//               monitored, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that a particular button has been pressed.  If the given button is
+ * one of the buttons that is currently being monitored, this will update the
+ * internal state appropriately; otherwise, it will do nothing.  Returns true
+ * if the button is one that was monitored, or false otherwise.
+ */
 bool ModifierButtons::
 button_down(ButtonHandle button) {
   for (int i = 0; i < (int)_button_list.size(); i++) {
@@ -298,16 +265,12 @@ button_down(ButtonHandle button) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::button_up
-//       Access: Published
-//  Description: Records that a particular button has been released.
-//               If the given button is one of the buttons that is
-//               currently being monitored, this will update the
-//               internal state appropriately; otherwise, it will do
-//               nothing.  Returns true if the button is one that was
-//               monitored, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that a particular button has been released.  If the given button is
+ * one of the buttons that is currently being monitored, this will update the
+ * internal state appropriately; otherwise, it will do nothing.  Returns true
+ * if the button is one that was monitored, or false otherwise.
+ */
 bool ModifierButtons::
 button_up(ButtonHandle button) {
   for (int i = 0; i < (int)_button_list.size(); i++) {
@@ -320,13 +283,10 @@ button_up(ButtonHandle button) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::is_down
-//       Access: Published
-//  Description: Returns true if the indicated button is known to be
-//               down, or false if it is known to be up or if it is
-//               not in the set of buttons being tracked.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated button is known to be down, or false if it is
+ * known to be up or if it is not in the set of buttons being tracked.
+ */
 bool ModifierButtons::
 is_down(ButtonHandle button) const {
   for (int i = 0; i < (int)_button_list.size(); i++) {
@@ -338,13 +298,10 @@ is_down(ButtonHandle button) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::get_prefix
-//       Access: Published
-//  Description: Returns a string which can be used to prefix any
-//               button name or event name with the unique set of
-//               modifier buttons currently being held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string which can be used to prefix any button name or event name
+ * with the unique set of modifier buttons currently being held.
+ */
 string ModifierButtons::
 get_prefix() const {
   string prefix;
@@ -358,12 +315,9 @@ get_prefix() const {
   return prefix;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::output
-//       Access: Published
-//  Description: Writes a one-line summary of the buttons known to be
-//               down.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a one-line summary of the buttons known to be down.
+ */
 void ModifierButtons::
 output(ostream &out) const {
   out << "[";
@@ -375,13 +329,10 @@ output(ostream &out) const {
   out << " ]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::write
-//       Access: Published
-//  Description: Writes a multi-line summary including all of the
-//               buttons being monitored and which ones are known to
-//               be down.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a multi-line summary including all of the buttons being monitored
+ * and which ones are known to be down.
+ */
 void ModifierButtons::
 write(ostream &out) const {
   out << "ModifierButtons:\n";
@@ -394,18 +345,14 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModifierButtons::modify_button_list
-//       Access: Private
-//  Description: Implements a poor-man's copy-on-write for the
-//               ModifierButtons class.  If any reference counts are
-//               held on our _button_list, besides ourselves, then
-//               allocates and copies a brand new copy of the
-//               _button_list.  This should be done in preparation for
-//               any modifications to the _button_list, since multiple
-//               instances of the ModifierButtons object may share the
-//               same _button_list pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a poor-man's copy-on-write for the ModifierButtons class.  If
+ * any reference counts are held on our _button_list, besides ourselves, then
+ * allocates and copies a brand new copy of the _button_list.  This should be
+ * done in preparation for any modifications to the _button_list, since
+ * multiple instances of the ModifierButtons object may share the same
+ * _button_list pointer.
+ */
 void ModifierButtons::
 modify_button_list() {
   if (_button_list.get_ref_count() > 1) {
@@ -413,8 +360,8 @@ modify_button_list() {
 
     _button_list = PTA(ButtonHandle)::empty_array(0);
 
-    // This forces a new allocation and memberwise copy, instead of
-    // just a reference-counting pointer copy.
+    // This forces a new allocation and memberwise copy, instead of just a
+    // reference-counting pointer copy.
     _button_list.v() = old_list.v();
   }
 

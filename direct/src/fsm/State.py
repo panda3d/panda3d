@@ -30,18 +30,18 @@ class State(DirectObject):
                 exitFunc = state.getExitFunc()
                 # print 'testing: ', state, enterFunc, exitFunc, oldFunction
                 if type(enterFunc) == types.MethodType:
-                    if (enterFunc.im_func == oldFunction):
+                    if enterFunc.__func__ == oldFunction:
                         # print 'found: ', enterFunc, oldFunction
                         state.setEnterFunc(types.MethodType(newFunction,
-                                                            enterFunc.im_self,
-                                                            enterFunc.im_class))
+                                                            enterFunc.__self__,
+                                                            enterFunc.__self__.__class__))
                         count += 1
                 if type(exitFunc) == types.MethodType:
-                    if (exitFunc.im_func == oldFunction):
+                    if exitFunc.__func__ == oldFunction:
                         # print 'found: ', exitFunc, oldFunction
                         state.setExitFunc(types.MethodType(newFunction,
-                                                           exitFunc.im_self,
-                                                           exitFunc.im_class))
+                                                           exitFunc.__self__,
+                                                           exitFunc.__self__.__class__))
                         count += 1
             return count
 

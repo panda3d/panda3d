@@ -1,16 +1,15 @@
-// Filename: ffmpegAudio.h
-// Created by: jyelon (01Aug2007)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ffmpegAudio.h
+ * @author jyelon
+ * @date 2007-08-01
+ */
 
 #ifndef FFMPEGAUDIO_H
 #define FFMPEGAUDIO_H
@@ -20,10 +19,9 @@
 
 class FfmpegAudioCursor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FfmpegAudio
-// Description : A stream that generates a sequence of audio samples.
-////////////////////////////////////////////////////////////////////
+/**
+ * A stream that generates a sequence of audio samples.
+ */
 class EXPCL_FFMPEG FfmpegAudio : public MovieAudio {
 PUBLISHED:
   FfmpegAudio(const Filename &name);
@@ -34,7 +32,7 @@ PUBLISHED:
 
  private:
   friend class FfmpegAudioCursor;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

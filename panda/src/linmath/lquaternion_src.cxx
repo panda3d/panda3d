@@ -1,16 +1,13 @@
-// Filename: lquaternion_src.cxx
-// Created by:
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lquaternion_src.cxx
+ */
 
 #include "config_linmath.h"
 #include "lmatrix.h"
@@ -21,21 +18,17 @@ TypeHandle FLOATNAME(LQuaternion)::_type_handle;
 const FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::_ident_quat =
   FLOATNAME(LQuaternion)(1.0f, 0.0f, 0.0f, 0.0f);
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::pure_imaginary_quat
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
 pure_imaginary(const FLOATNAME(LVector3) &v) {
   return FLOATNAME(LQuaternion)(0, v[0], v[1], v[2]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::extract_to_matrix (LMatrix3)
-//       Access: Public
-//  Description: Based on the quat lib from VRPN.
-////////////////////////////////////////////////////////////////////
+/**
+ * Based on the quat lib from VRPN.
+ */
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
   FLOATTYPE N = this->dot(*this);
@@ -52,11 +45,9 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
         (xz + wy), (yz - wx), (1.0f - (xx + yy)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::extract_to_matrix (LMatrix4)
-//       Access: Public
-//  Description: Based on the quat lib from VRPN.
-////////////////////////////////////////////////////////////////////
+/**
+ * Based on the quat lib from VRPN.
+ */
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
   FLOATTYPE N = this->dot(*this);
@@ -74,13 +65,10 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
         0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::set_hpr
-//       Access: Public
-//  Description: Sets the quaternion as the unit quaternion that
-//               is equivalent to these Euler angles.
-//               (from Real-time Rendering, p.49)
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the quaternion as the unit quaternion that is equivalent to these
+ * Euler angles.  (from Real-time Rendering, p.49)
+ */
 void FLOATNAME(LQuaternion)::
 set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
   FLOATNAME(LQuaternion) quat_h, quat_p, quat_r;
@@ -124,12 +112,9 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::get_hpr
-//       Access: Public
-//  Description: Extracts the equivalent Euler angles from the unit
-//               quaternion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the equivalent Euler angles from the unit quaternion.
+ */
 FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 get_hpr(CoordinateSystem cs) const {
   if (cs == CS_default) {
@@ -170,7 +155,8 @@ get_hpr(CoordinateSystem cs) const {
         cp = -c2;
       }
     } else {
-      // this should work all the time, but the above saves some trig operations
+      // this should work all the time, but the above saves some trig
+      // operations
       FLOATTYPE roll = catan2(-c1, c2);
       csincos(roll, &sr, &cr);
       hpr[2] = rad_2_deg(roll);
@@ -183,9 +169,9 @@ get_hpr(CoordinateSystem cs) const {
     hpr[1] = rad_2_deg(catan2(sp, cp));
 
   } else {
-    // The code above implements quat-to-hpr for CS_zup_right only.
-    // For other coordinate systems, someone is welcome to extend the
-    // implementation; I'm going to choose the lazy path till then.
+    // The code above implements quat-to-hpr for CS_zup_right only.  For other
+    // coordinate systems, someone is welcome to extend the implementation;
+    // I'm going to choose the lazy path till then.
     FLOATNAME(LMatrix3) mat;
     extract_to_matrix(mat);
     FLOATNAME(LVecBase3) scale;
@@ -212,15 +198,11 @@ get_hpr(CoordinateSystem cs) const {
   return hpr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::set_from_matrix
-//       Access: Public
-//  Description: Sets the quaternion according to the rotation
-//               represented by the matrix.  Originally we tried an
-//               algorithm presented by Do-While Jones, but that
-//               turned out to be broken.  This is based on the quat
-//               lib from UNC.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the quaternion according to the rotation represented by the matrix.
+ * Originally we tried an algorithm presented by Do-While Jones, but that
+ * turned out to be broken.  This is based on the quat lib from UNC.
+ */
 void FLOATNAME(LQuaternion)::
 set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   FLOATTYPE m00, m01, m02, m10, m11, m12, m20, m21, m22;
@@ -247,18 +229,17 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
     _v(3) = (m01 - m10) * S;
 
   } else {
-    // The harder case.  First, figure out which column to take as
-    // root.  This will be the column with the largest value.
+    // The harder case.  First, figure out which column to take as root.  This
+    // will be the column with the largest value.
 
-    // It is tempting to try to compare the absolute values of the
-    // diagonal values in the code below, instead of their normal,
-    // signed values.  Don't do it.  We are actually maximizing the
-    // value of S, which must always be positive, and is therefore
-    // based on the diagonal whose actual value--not absolute
-    // value--is greater than those of the other two.
+    // It is tempting to try to compare the absolute values of the diagonal
+    // values in the code below, instead of their normal, signed values.
+    // Don't do it.  We are actually maximizing the value of S, which must
+    // always be positive, and is therefore based on the diagonal whose actual
+    // value--not absolute value--is greater than those of the other two.
 
-    // We already know that m00 + m11 + m22 <= 0 (because we are here
-    // in the harder case).
+    // We already know that m00 + m11 + m22 <= 0 (because we are here in the
+    // harder case).
 
     if (m00 > m11 && m00 > m22) {
       // m00 is larger than m11 and m22.
@@ -296,11 +277,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LQuaternion::init_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void FLOATNAME(LQuaternion)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {

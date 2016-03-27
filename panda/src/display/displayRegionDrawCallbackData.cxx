@@ -1,16 +1,15 @@
-// Filename: displayRegionDrawCallbackData.cxx
-// Created by:  drose (13Mar09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file displayRegionDrawCallbackData.cxx
+ * @author drose
+ * @date 2009-03-13
+ */
 
 #include "displayRegionDrawCallbackData.h"
 
@@ -24,11 +23,9 @@
 TypeHandle DisplayRegionDrawCallbackData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 DisplayRegionDrawCallbackData::
 DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup) :
   _cull_result(cull_result),
@@ -36,28 +33,24 @@ DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup) 
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void DisplayRegionDrawCallbackData::
 output(ostream &out) const {
-  out << get_type() << "(" << (void *)_cull_result << ", " 
+  out << get_type() << "(" << (void *)_cull_result << ", "
       << (void *)_scene_setup << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::upcall
-//       Access: Published, Virtual
-//  Description: You should make this call during the callback if you
-//               want to continue the normal rendering function that
-//               would have been done in the absence of a callback.
-//
-//               Specifically, this method will draw all of the
-//               objects in the CullResult list that have been built
-//               up for the DisplayRegion during the cull traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * You should make this call during the callback if you want to continue the
+ * normal rendering function that would have been done in the absence of a
+ * callback.
+ *
+ * Specifically, this method will draw all of the objects in the CullResult
+ * list that have been built up for the DisplayRegion during the cull
+ * traversal.
+ */
 void DisplayRegionDrawCallbackData::
 upcall() {
   Thread *current_thread = Thread::get_current_thread();
@@ -68,12 +61,11 @@ upcall() {
     // Nothing to see here.
 
   } else if (dr->is_stereo()) {
-    // We don't actually draw the stereo DisplayRegions.  These are
-    // just placeholders; we draw the individual left and right eyes
-    // instead.  (We might still clear the stereo DisplayRegions,
-    // though, since it's probably faster to clear right and left
-    // channels in one pass, than to clear them in two separate
-    // passes.)
+    // We don't actually draw the stereo DisplayRegions.  These are just
+    // placeholders; we draw the individual left and right eyes instead.  (We
+    // might still clear the stereo DisplayRegions, though, since it's
+    // probably faster to clear right and left channels in one pass, than to
+    // clear them in two separate passes.)
 
   } else if (!gsg->set_scene(_scene_setup)) {
     // The scene or lens is inappropriate somehow.
@@ -90,4 +82,3 @@ upcall() {
     }
   }
 }
-

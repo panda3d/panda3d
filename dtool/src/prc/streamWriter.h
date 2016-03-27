@@ -1,16 +1,15 @@
-// Filename: streamWriter.h
-// Created by:  drose (04Aug02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file streamWriter.h
+ * @author drose
+ * @date 2002-08-04
+ */
 
 #ifndef STREAMWRITER_H
 #define STREAMWRITER_H
@@ -21,15 +20,12 @@
 #include "littleEndian.h"
 #include "bigEndian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StreamWriter
-// Description : A StreamWriter object is used to write sequential
-//               binary data directly to an ostream.  Its interface is
-//               very similar to Datagram by design; it's primarily
-//               intended as a convenience to eliminate the overhead
-//               of writing bytes to a Datagram and then writing the
-//               Datagram to a stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A StreamWriter object is used to write sequential binary data directly to
+ * an ostream.  Its interface is very similar to Datagram by design; it's
+ * primarily intended as a convenience to eliminate the overhead of writing
+ * bytes to a Datagram and then writing the Datagram to a stream.
+ */
 class EXPCL_DTOOLCONFIG StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);

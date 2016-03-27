@@ -1,17 +1,15 @@
-// Filename: softToEggConverter.cxx
-// Created by:  masad (25Sep03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file softToEggConverter.cxx
+ * @author masad
+ * @date 2003-09-25
+ */
 
 #include "softToEggConverter.h"
 #include "config_softegg.h"
@@ -38,11 +36,9 @@ SoftToEggConverter stec;
 
 const int    TEX_PER_MAT = 1;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SoftToEggConverter::
 SoftToEggConverter(const string &program_name) :
   _program_name(program_name)
@@ -69,8 +65,7 @@ SoftToEggConverter(const string &program_name) :
 
   // skeleton = new EggGroup();
   foundRoot = FALSE;
-  //  animRoot = NULL;
-  //  morphRoot = NULL;
+  // animRoot = NULL; morphRoot = NULL;
   geom_as_joint = 0;
   make_anim = 0;
   make_nurbs = 0;
@@ -81,7 +76,7 @@ SoftToEggConverter(const string &program_name) :
   make_dart = TRUE;
   has_morph = 0;
   make_pose = 0;
-  //  animData.is_z_up = FALSE;
+  // animData.is_z_up = FALSE;
   nurbs_step = 1;
   anim_start = -1000;
   anim_end = -1000;
@@ -94,11 +89,9 @@ SoftToEggConverter(const string &program_name) :
   use_prefix = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SoftToEggConverter::
 SoftToEggConverter(const SoftToEggConverter &copy) :
   _from_selection(copy._from_selection),
@@ -115,24 +108,19 @@ SoftToEggConverter(const SoftToEggConverter &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 SoftToEggConverter::
 ~SoftToEggConverter() {
   /*
   close_api();
   */
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Help
-//       Access: Public
-//  Description: Displays the "what is this program" message, along
-//               with the usage message.  Should be overridden in base
-//               classes to describe the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the "what is this program" message, along with the usage message.
+ * Should be overridden in base classes to describe the current program.
+ */
 void SoftToEggConverter::
 Help()
 {
@@ -143,16 +131,14 @@ Help()
     Usage();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Usage
-//       Access: Public
-//  Description: Displays the usage message.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the usage message.
+ */
 void SoftToEggConverter::
 Usage() {
   softegg_cat.info()
     << "\nUsage:\n"
-    //    << _commandName << " [opts] (must specify -m or -s)\n\n"
+    // << _commandName << " [opts] (must specify -m or -s)\n\n"
     << "soft" << " [opts] (must specify -m or -s)\n\n"
     << "Options:\n";
 
@@ -160,13 +146,10 @@ Usage() {
   softegg_cat.info() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShowOpts
-//       Access: Public
-//  Description: Displays the valid options.  Should be extended in
-//               base classes to show additional options relevant to
-//               the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the valid options.  Should be extended in base classes to show
+ * additional options relevant to the current program.
+ */
 void SoftToEggConverter::
 ShowOpts()
 {
@@ -200,18 +183,15 @@ ShowOpts()
     "  -D         - Don't make the output model a character.\n"
     "  -o <prefix>- Convert only models with given prefix.\n";
 
-  //  EggBase::ShowOpts();
+  // EggBase::ShowOpts();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DoGetopts
-//       Access: Public
-//  Description: Calls getopt() to parse the command-line switches.
-//               Calls HandleGetopts() to interpret each switch.
-//               Returns true if the parsing was successful; false if
-//               there was an error.  Adjusts argc and argv to remove
-//               the switches from the parameter list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls getopt() to parse the command-line switches.  Calls HandleGetopts()
+ * to interpret each switch.  Returns true if the parsing was successful;
+ * false if there was an error.  Adjusts argc and argv to remove the switches
+ * from the parameter list.
+ */
 bool SoftToEggConverter::
 DoGetopts(int &argc, char **&argv) {
   bool okflag = true;
@@ -236,13 +216,10 @@ DoGetopts(int &argc, char **&argv) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleGetopts
-//       Access: Public
-//  Description: increment idx based on what kind of option parsed
-//               Supported options are as follows:
-//               r:d:s:m:t:P:b:e:f:T:S:M:A:N:v:o:FhknpaxiucCD
-////////////////////////////////////////////////////////////////////
+/**
+ * increment idx based on what kind of option parsed Supported options are as
+ * follows: r:d:s:m:t:P:b:e:f:T:S:M:A:N:v:o:FhknpaxiucCD
+ */
 bool SoftToEggConverter::
 HandleGetopts(int &idx, int argc, char **argv)
 {
@@ -367,8 +344,7 @@ HandleGetopts(int &idx, int argc, char **argv)
       break;
 
     case 'k':    // Enable soft skinning
-      //make_soft = TRUE;
-      //fprintf( outStream, "enabling soft skinning\n" );
+      // make_soft = TRUE; fprintf( outStream, "enabling soft skinning\n" );
       softegg_cat.info() << "-k flag no longer necessary\n";
       break;
 
@@ -451,55 +427,41 @@ HandleGetopts(int &idx, int argc, char **argv)
   return (okflag);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *SoftToEggConverter::
 make_copy() {
   return new SoftToEggConverter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string SoftToEggConverter::
 get_name() const {
   return "Soft";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string SoftToEggConverter::
 get_extension() const {
   return "mb";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 SoftNodeDesc *SoftToEggConverter::
 find_node(string name) {
   return _tree.get_node(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetTextureName
-//       Access: Public
-//  Description: Given a texture element, return texture name
-//               with given tex_path
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a texture element, return texture name with given tex_path
+ */
 char *SoftToEggConverter::
 GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
   char *fileName = new char[_MAX_PATH];
@@ -507,7 +469,7 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
   SAA_texture2DGetPicName( scene, texture, _MAX_PATH, tempName );
 
   if (tex_path) {
-    //  softegg_cat.spam() << "tempName :" << tempName << endl;
+    // softegg_cat.spam() << "tempName :" << tempName << endl;
     strcpy(fileName, tex_path);
 
     // do some processing on the name string
@@ -518,7 +480,7 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
     else
       tmpName = tempName;
 
-    //    softegg_cat.spam() << "tmpName : " << tmpName << endl;
+    // softegg_cat.spam() << "tmpName : " << tmpName << endl;
     strcat(fileName, "/");
     strcat(fileName, tmpName);
   }
@@ -527,22 +489,18 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
   }
 
   strcat(fileName, ".pic");
-  //  softegg_cat.spam() << "fileName : " << fileName << endl;
+  // softegg_cat.spam() << "fileName : " << fileName << endl;
 
   return fileName;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-//
-//               This is designed to be as generic as possible,
-//               generally in support of run-time loading.
-//               Also see convert_soft().
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns
+ * true if successful, false otherwise.
+ *
+ * This is designed to be as generic as possible, generally in support of run-
+ * time loading.  Also see convert_soft().
+ */
 bool SoftToEggConverter::
 convert_file(const Filename &filename) {
   if (!open_api()) {
@@ -556,15 +514,12 @@ convert_file(const Filename &filename) {
   return convert_soft(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_soft
-//       Access: Public
-//  Description: Fills up the egg_data structure according to the
-//               global soft model data.  Returns true if successful,
-//               false if there is an error.  If from_selection is
-//               true, the converted geometry is based on that which
-//               is selected; otherwise, it is the entire Soft scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the egg_data structure according to the global soft model data.
+ * Returns true if successful, false if there is an error.  If from_selection
+ * is true, the converted geometry is based on that which is selected;
+ * otherwise, it is the entire Soft scene.
+ */
 bool SoftToEggConverter::
 convert_soft(bool from_selection) {
   bool all_ok = true;
@@ -589,9 +544,8 @@ convert_soft(bool from_selection) {
   _tree._search_prefix = search_prefix;
   all_ok = _tree.build_complete_hierarchy(scene, database);
 
-  // Lets see if we have gotten the hierarchy right
-  //_tree.print_hierarchy();
-  //exit(1);
+  // Lets see if we have gotten the hierarchy right _tree.print_hierarchy();
+  // exit(1);
 
   char *root_name = _tree.GetRootName( eggFileName );
 
@@ -600,8 +554,7 @@ convert_soft(bool from_selection) {
     _character_name = root_name;
 
   if (make_poly || make_nurbs) {
-    // Specify that the texture names should be relative to the output
-    // file.
+    // Specify that the texture names should be relative to the output file.
     Filename output_filename(eggFileName);
     _path_replace->_path_store = PS_relative;
     _path_replace->_path_directory = output_filename.get_dirname();
@@ -620,7 +573,7 @@ convert_soft(bool from_selection) {
       all_ok = false;
     }
 
-    //  reparent_decals(get_egg_data());
+    // reparent_decals(get_egg_data());
     softegg_cat.info() << "Converted Softimage file\n";
 
     // write out the egg model file
@@ -632,7 +585,7 @@ convert_soft(bool from_selection) {
       all_ok = false;
     }
 
-    //  reparent_decals(get_egg_data());
+    // reparent_decals(get_egg_data());
     softegg_cat.info() << "Converted Softimage file\n";
 
     // write out the egg model file
@@ -642,13 +595,10 @@ convert_soft(bool from_selection) {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::open_api
-//       Access: Public
-//  Description: Attempts to open the Soft API if it was not already
-//               open, and returns true if successful, or false if
-//               there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the Soft API if it was not already open, and returns true
+ * if successful, or false if there is an error.
+ */
 bool SoftToEggConverter::
 open_api() {
   if ((scene_name == NULL && model_name == NULL) || database_name == NULL) {
@@ -659,27 +609,27 @@ open_api() {
     softegg_cat.info() << "Error: Couldn't get resource path!\n";
     exit( 1 );
   }
-  //  cout << "got past init" << endl;
+  // cout << "got past init" << endl;
   if ((result = SAA_databaseLoad(database_name, &database)) != SI_SUCCESS) {
     softegg_cat.info() << "Error: Couldn't load database!\n";
     exit( 1 );
   }
-  //  cout << "got past database load" << endl;
+  // cout << "got past database load" << endl;
   if ((result = SAA_sceneGetCurrent(&scene)) != SI_SUCCESS) {
     softegg_cat.info() << "Error: Couldn't get current scene!\n";
     exit( 1 );
   }
-  //  cout << "got past get current" << endl;
+  // cout << "got past get current" << endl;
   if ((result = SAA_sceneLoad( &database, scene_name, &scene )) != SI_SUCCESS) {
     softegg_cat.info() << "Error: Couldn't load scene " << scene_name << "!\n";
     exit( 1 );
   }
-  //  cout << "got past scene load" << endl;
+  // cout << "got past scene load" << endl;
   if ( SAA_updatelistGet( &scene ) == SI_SUCCESS ) {
     PN_stdfloat time;
 
     softegg_cat.info() << "setting Scene to frame " << pose_frame << "...\n";
-    //SAA_sceneSetPlayCtrlCurrentFrame( &scene, pose_frame );
+    // SAA_sceneSetPlayCtrlCurrentFrame( &scene, pose_frame );
     SAA_frame2Seconds( &scene, pose_frame, &time );
     SAA_updatelistEvalScene( &scene, time );
     if ( make_pose )
@@ -712,24 +662,19 @@ open_api() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::close_api
-//       Access: Public
-//  Description: Closes the Soft API, if it was previously opened.
-//               Caution!  Soft appears to call exit() when its API is
-//               closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the Soft API, if it was previously opened.  Caution!  Soft appears
+ * to call exit() when its API is closed.
+ */
 void SoftToEggConverter::
 close_api() {
   // don't know yet
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_char_model
-//       Access: Private
-//  Description: Converts the file as an animatable character
-//               model, with joints and vertex membership.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the file as an animatable character model, with joints and vertex
+ * membership.
+ */
 bool SoftToEggConverter::
 convert_char_model() {
   softegg_cat.spam() << "character name " << _character_name << "\n";
@@ -740,13 +685,10 @@ convert_char_model() {
   return convert_hierarchy(char_node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::find_morph_table
-//       Access: Public
-//  Description: Given a tablename, it either creates a new
-//               eggSAnimData structure (if doesn't exist) or
-//               locates it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a tablename, it either creates a new eggSAnimData structure (if
+ * doesn't exist) or locates it.
+ */
 EggSAnimData *SoftToEggConverter::
 find_morph_table(char *name) {
   EggSAnimData *anim = NULL;
@@ -765,13 +707,10 @@ find_morph_table(char *name) {
   return anim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_char_chan
-//       Access: Private
-//  Description: Converts the animation as a series of tables to apply
-//               to the character model, as retrieved earlier via
-//               AC_model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the animation as a series of tables to apply to the character
+ * model, as retrieved earlier via AC_model.
+ */
 bool SoftToEggConverter::
 convert_char_chan() {
   int start_frame = -1;
@@ -791,8 +730,7 @@ convert_char_chan() {
 
   morph_node = new EggTable("morph");
 
-  // Set the frame rate before we start asking for anim tables to be
-  // created.
+  // Set the frame rate before we start asking for anim tables to be created.
   SAA_sceneGetPlayCtrlStartFrame(&scene, &start_frame);
   SAA_sceneGetPlayCtrlEndFrame(&scene, &end_frame);
   SAA_sceneGetPlayCtrlFrameStep( &scene, &frame_inc );
@@ -803,23 +741,21 @@ convert_char_chan() {
   softegg_cat.info() << "animation frame inc: " << frame_inc << endl;
 
   _tree._fps = output_frame_rate / frame_inc;
-  //  _tree.clear_egg(get_egg_data(), NULL, root_node);
+  // _tree.clear_egg(get_egg_data(), NULL, root_node);
   _tree.clear_egg(get_egg_data(), NULL, skeleton_node);
 
-  // Now we can get the animation data by walking through all of the
-  // frames, one at a time, and getting the joint angles at each
-  // frame.
+  // Now we can get the animation data by walking through all of the frames,
+  // one at a time, and getting the joint angles at each frame.
 
-  // This is just a temporary EggGroup to receive the transform for
-  // each joint each frame.
+  // This is just a temporary EggGroup to receive the transform for each joint
+  // each frame.
   PT(EggGroup) tgroup = new EggGroup;
 
   int num_nodes = _tree.get_num_nodes();
   int i;
 
-  //  MTime frame(start_frame, MTime::uiUnit());
-  //  MTime frame_stop(end_frame, MTime::uiUnit());
-  // start at first frame and go to last
+  // MTime frame(start_frame, MTime::uiUnit()); MTime frame_stop(end_frame,
+  // MTime::uiUnit()); start at first frame and go to last
   if (make_pose) {
     start_frame = pose_frame;
     end_frame = pose_frame;
@@ -830,21 +766,17 @@ convert_char_chan() {
     end_frame = anim_end;
   for ( frame = start_frame; frame <= end_frame; frame += frame_inc) {
     SAA_frame2Seconds( &scene, frame, &time );
-    //    softegg_cat.spam() << "got time " << time << endl;
+    // softegg_cat.spam() << "got time " << time << endl;
     if (!make_pose) {
       SAA_updatelistEvalScene( &scene, time );
     }
     softegg_cat.spam() << "\n> animating frame " << frame << endl;
 
-    //    if (softegg_cat.is_debug()) {
-    //      softegg_cat.debug(false)
+    // if (softegg_cat.is_debug()) { softegg_cat.debug(false)
     softegg_cat.info() << "frame " << time << "\n";
-    //} else {
-      // We have to write to cerr instead of softegg_cat to allow
-      // flushing without writing a newline.
-    //      cerr << "." << flush;
-    //    }
-    //    MGlobal::viewFrame(frame);
+    // } else { We have to write to cerr instead of softegg_cat to allow
+    // flushing without writing a newline.  cerr << "." << flush; }
+    // MGlobal::viewFrame(frame);
 
     for (i = 0; i < num_nodes; i++) {
       SoftNodeDesc *node_desc = _tree.get_node(i);
@@ -864,15 +796,15 @@ convert_char_chan() {
       }
     }
 
-    //    frame += frame_inc;
+    // frame += frame_inc;
   }
 
   if (has_morph)
     bundle_node->add_child(morph_node);
 
-  // Now optimize all of the tables we just filled up, for no real
-  // good reason, except that it makes the resulting egg file a little
-  // easier to read.
+  // Now optimize all of the tables we just filled up, for no real good
+  // reason, except that it makes the resulting egg file a little easier to
+  // read.
   for (i = 0; i < num_nodes; i++) {
     SoftNodeDesc *node_desc = _tree.get_node(i);
     if (node_desc->is_partial(search_prefix))
@@ -889,12 +821,9 @@ convert_char_chan() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_hierarchy
-//       Access: Private
-//  Description: Generates egg structures for each node in the Soft
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates egg structures for each node in the Soft hierarchy.
+ */
 bool SoftToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
@@ -910,14 +839,11 @@ convert_hierarchy(EggGroupNode *egg_root) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::process_model_node
-//       Access: Private
-//  Description: Converts the indicated Soft node (given a MDagPath,
-//               similar in concept to Panda's NodePath) to the
-//               corresponding Egg structure.  Returns true if
-//               successful, false if an error was encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft node (given a MDagPath, similar in concept to
+ * Panda's NodePath) to the corresponding Egg structure.  Returns true if
+ * successful, false if an error was encountered.
+ */
 bool SoftToEggConverter::
 process_model_node(SoftNodeDesc *node_desc) {
   EggGroup *egg_group = NULL;
@@ -956,7 +882,7 @@ process_model_node(SoftNodeDesc *node_desc) {
     break;
   case SAA_MFACE:
     softegg_cat.debug() << "face\n";
-    //break;
+    // break;
   case SAA_MSMSH:
     softegg_cat.debug() << "mesh\n";
     node_desc->get_transform(&scene, egg_group, TRUE);
@@ -993,13 +919,10 @@ process_model_node(SoftNodeDesc *node_desc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_polyset
-//       Access: Private
-//  Description: Converts the indicated Soft polyset to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft polyset to a bunch of EggPolygons and parents
+ * them to the indicated egg group.
+ */
 void SoftToEggConverter::
 make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   int id = 0;
@@ -1014,11 +937,9 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible );
   softegg_cat.spam() << "model visibility: " << visible << endl;
 
-////////////////////////////////////////////////////////////////////
-  // Only create egg polygon data if: the node is visible, and its not
-  // a NULL or a Joint, and we're outputing polys (or if we are outputing
-  // NURBS and the model is a poly mesh or a face)
-////////////////////////////////////////////////////////////////////
+  // Only create egg polygon data if: the node is visible, and its not a NULL
+  // or a Joint, and we're outputing polys (or if we are outputing NURBS and
+  // the model is a poly mesh or a face)
   if ( visible &&
        (type != SAA_MNILL) &&
        (type != SAA_MJNT) &&
@@ -1039,29 +960,29 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
       vpool->set_highest_index(0);
 
-      // add the vertices in the _tree._root node, so that
-      // they will be written out first in egg file. This
-      // solves a problem of soft-skinning trying to access
-      // vertex pool before it is defined.
+      // add the vertices in the _tree._root node, so that they will be
+      // written out first in egg file.  This solves a problem of soft-
+      // skinning trying to access vertex pool before it is defined.
 
       _tree.get_egg_root()->insert(_tree.get_egg_root()->begin(), vpool);
 
-      // We will need to transform all vertices from world coordinate
-      // space into the vertex space appropriate to this node.  Usually,
-      // this is the same thing as world coordinate space, and this matrix
-      // will be identity; but if the node is under an instance
-      // (particularly, for instance, a billboard) then the vertex space
-      // will be different from world space.
+      // We will need to transform all vertices from world coordinate space
+      // into the vertex space appropriate to this node.  Usually, this is the
+      // same thing as world coordinate space, and this matrix will be
+      // identity; but if the node is under an instance (particularly, for
+      // instance, a billboard) then the vertex space will be different from
+      // world space.
       LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
 
-      // Asad: change from soft2egg.c. Here I am trying to get one triangles vertices not all
+      // Asad: change from soft2egg.c.  Here I am trying to get one triangles
+      // vertices not all
       for (idx=0; idx<node_desc->numTri; ++idx) {
         EggPolygon *egg_poly = new EggPolygon;
         egg_group->add_child(egg_poly);
 
         softegg_cat.spam() << "processing polygon " << idx << endl;
 
-        // Is this a double sided polygon? meaning check for back face flag
+        // Is this a double sided polygon?  meaning check for back face flag
         char *modelNoteStr = _tree.GetModelNoteInfo( &scene, node_desc->get_model() );
         if ( modelNoteStr != NULL ) {
           if ( strstr( modelNoteStr, "bface" ) != NULL )
@@ -1091,8 +1012,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         // allocate arrays for u & v coords
         if (node_desc->textures) {
           if (node_desc->numTexLoc && node_desc->numTexTri[idx]) {
-            // allocate arrays for u & v coords
-            // I think there are one texture per triangle hence we need only 3 corrdinates
+            // allocate arrays for u & v coords I think there are one texture
+            // per triangle hence we need only 3 corrdinates
             uCoords = new PN_stdfloat[3];
             vCoords = new PN_stdfloat[3];
 
@@ -1135,7 +1056,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         for ( i=0; i < 3; i++ ) {
           EggVertex vert;
 
-          // There are some conversions needed from local matrix to global coords
+          // There are some conversions needed from local matrix to global
+          // coords
           SAA_DVector local = cvertPos[i];
           SAA_DVector global = {0};
 
@@ -1147,7 +1069,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           softegg_cat.spam() << " global cvert[" << i << "] = " << global.x << " " << global.y
                               << " " << global.z << " " << global.w << "\n";
 
-          //      LPoint3d p3d(cvertPos[i].x, cvertPos[i].y, cvertPos[i].z);
+          // LPoint3d p3d(cvertPos[i].x, cvertPos[i].y, cvertPos[i].z);
           LPoint3d p3d(global.x, global.y, global.z);
           p3d = p3d * vertex_frame_inv;
           vert.set_pos(p3d);
@@ -1175,7 +1097,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
                                  << v << endl;
 
               vert.set_uv(LTexCoordd(u, v));
-              //vert.set_uv(LTexCoordd(uCoords[i], vCoords[i]));
+              // vert.set_uv(LTexCoordd(uCoords[i], vCoords[i]));
             }
           }
           vert.set_external_index(indices[i]);
@@ -1231,13 +1153,10 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_nurb_surface
-//       Access: Private
-//  Description: Converts the indicated Soft nurbs set to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft nurbs set to a bunch of EggPolygons and parents
+ * them to the indicated egg group.
+ */
 void SoftToEggConverter::
 make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   int id = 0;
@@ -1253,9 +1172,7 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
   softegg_cat.spam() << "model visibility: " << visible << endl;
   softegg_cat.spam() << "nurbs!!!surface!!!" << endl;
 
-////////////////////////////////////////////////////////////////////
   // check to see if its a nurbs surface
-////////////////////////////////////////////////////////////////////
   if ( (type == SAA_MNSRF) && ( visible ) && (( make_nurbs )
                                               || ( !make_nurbs && !make_poly &&  make_duv )) )
     {
@@ -1270,19 +1187,18 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
       vpool->set_highest_index(0);
 
-      // add the vertices in the _tree._egg_root node, so that
-      // they will be written out first in egg file. This
-      // solves a problem of soft-skinning trying to access
-      // vertex pool before it is defined.
+      // add the vertices in the _tree._egg_root node, so that they will be
+      // written out first in egg file.  This solves a problem of soft-
+      // skinning trying to access vertex pool before it is defined.
 
-      //_tree.get_egg_root()->add_child(vpool);
+      // _tree.get_egg_root()->add_child(vpool);
       _tree.get_egg_root()->insert(_tree.get_egg_root()->begin(), vpool);
 
-      //egg_group->add_child(vpool);
+      // egg_group->add_child(vpool);
 
       /*
-      // create a copy of vpool in node_desc which will be used later
-      // for soft_skinning
+      // create a copy of vpool in node_desc which will be used later for
+      // soft_skinning
       node_desc->create_vpool(vpool_name);
       */
 
@@ -1343,7 +1259,7 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
 
       SAA_nurbsSurfaceSetStep( &scene, node_desc->get_model(), nurbs_step, nurbs_step );
 
-      // Is this a double sided polygon? meaning check for back face flag
+      // Is this a double sided polygon?  meaning check for back face flag
       char *modelNoteStr = _tree.GetModelNoteInfo( &scene, node_desc->get_model() );
       if ( modelNoteStr != NULL ) {
         if ( strstr( modelNoteStr, "bface" ) != NULL ) {
@@ -1399,7 +1315,7 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
 
       softegg_cat.spam() << endl << eggNurbs->get_num_cvs() << endl << endl;
 
-      //for ( i = 0; i<eggNurbs->get_num_cvs(); i++ ) {
+      // for ( i = 0; i<eggNurbs->get_num_cvs(); i++ ) {
       for ( k = 0; k<numVert; k++ ) {
         SAA_DVector global;
 
@@ -1419,7 +1335,7 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
         // convert to global coords
         _VCT_X_MAT( global, vertices[k], node_desc->matrix );
 
-        //preserve original weight
+        // preserve original weight
         global.w = vertices[k].w;
 
         // normalize coords to weight
@@ -1446,7 +1362,8 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
             SAA_materialGetDiffuse( &scene, &node_desc->materials[0], &r, &g, &b );
             SAA_materialGetTransparency( &scene, &node_desc->materials[0], &a );
             verts[k].set_color(LColor(r, g, b, 1.0f - a));
-            //softegg_cat.spam() << "color r = " << r << " g = " << g << " b = " << b << " a = " << a << "\n";
+            // softegg_cat.spam() << "color r = " << r << " g = " << g << " b
+            // = " << b << " a = " << a << "\n";
           }
           else {     // no material - default to white
             verts[k].set_color(LColor(1.0, 1.0, 1.0, 1.0));
@@ -1475,22 +1392,21 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
       }
       // check to see if the NURB is closed in u and v
       else if ( vClosed && uClosed ) {
-        // add the first (degree) v verts and a few
-        // extra - for good measure
+        // add the first (degree) v verts and a few extra - for good measure
         for ( i = 0; i < vDegree; i++ ) {
           // add first vDegree rows of verts to end of list
           for ( j = 0; j < uRows; j++ )
             eggNurbs->add_vertex( vpool->get_vertex(j+(i*uRows)) );
 
-          // if u is closed to we have added uDegree
-          // verts onto the ends of the rows - add them here too
+          // if u is closed to we have added uDegree verts onto the ends of
+          // the rows - add them here too
           for ( k = 0; k < uDegree; k++ )
             eggNurbs->add_vertex( vpool->get_vertex(k+(i*uRows)+((k/uRows)*uRows)) );
         }
       }
 
-      // We add the NURBS to the group down here, after all of the vpools
-      // for the trim curves have been added.
+      // We add the NURBS to the group down here, after all of the vpools for
+      // the trim curves have been added.
       egg_group->add_child(eggNurbs);
 
       // Now apply the shader.
@@ -1507,13 +1423,11 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_knots
-//       Access: Public
-//  Description: Given a parametric surface, and its knots, create
-//               the appropriate egg structure by filling in Soft's
-//               implicit knots and assigning the rest to eggKnots.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a parametric surface, and its knots, create the appropriate egg
+ * structure by filling in Soft's implicit knots and assigning the rest to
+ * eggKnots.
+ */
 void SoftToEggConverter::
 add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean closed, int degree ) {
 
@@ -1528,8 +1442,8 @@ add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean c
 
     // need to add (degree) number of knots
     for ( k = numKnots - 1; k >= numKnots - degree; k-- ) {
-      // we have to know these in order to calculate
-      // next knot value so hold them in temp array
+      // we have to know these in order to calculate next knot value so hold
+      // them in temp array
       newKnots[i] =  lastKnot - (knots[k] - knots[k-1]);
       lastKnot = newKnots[i];
       i++;
@@ -1567,13 +1481,11 @@ add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean c
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindClosestTriVert
-//       Access: Public
-//  Description: Given an egg vertex pool, map each vertex therein to
-//               a vertex within an array of SAA model vertices of
-//               size numVert. Mapping is done by closest proximity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an egg vertex pool, map each vertex therein to a vertex within an
+ * array of SAA model vertices of size numVert.  Mapping is done by closest
+ * proximity.
+ */
 int *SoftToEggConverter::
 FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
   int i,j;
@@ -1589,8 +1501,8 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
   for (vi = vpool->begin(); vi != vpool->end(); ++vi, ++i) {
     EggVertex *vert = (*vi);
     softegg_cat.spam() << "vert external index = " << vert->get_external_index() << endl;
-    //    softegg_cat.spam() << "found vert " << vert << endl;
-    //    softegg_cat.spam() << "vert [" << i << "] " << vpool->get_vertex(i+1);
+    // softegg_cat.spam() << "found vert " << vert << endl; softegg_cat.spam()
+    // << "vert [" << i << "] " << vpool->get_vertex(i+1);
     LPoint3d p3d = vert->get_pos3();
 
     // find closest model vertex
@@ -1622,12 +1534,10 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
   return vertMap;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_soft_skin
-//       Access: Private
-//  Description: make soft skin assignments to the mesh
-//               finally call cleanup_soft_skin to clean it up
-////////////////////////////////////////////////////////////////////
+/**
+ * make soft skin assignments to the mesh finally call cleanup_soft_skin to
+ * clean it up
+ */
 bool SoftToEggConverter::
 make_soft_skin() {
   int num_nodes = _tree.get_num_nodes();
@@ -1646,9 +1556,9 @@ make_soft_skin() {
       if (node_desc->is_partial(search_prefix))
           continue;
 
-      // Now that we've added all the polygons (and created all the
-      // vertices), go back through the vertex pool and set up the
-      // appropriate joint membership for each of the vertices.
+      // Now that we've added all the polygons (and created all the vertices),
+      // go back through the vertex pool and set up the appropriate joint
+      // membership for each of the vertices.
 
       // check for envelops
       int numEnv;
@@ -1873,19 +1783,19 @@ make_soft_skin() {
 
                     /*
                     envPool->Vertex(envVtxIndices[j])->AddJoint( joint, scaledWeight );
-                    // set flag to show this vertex has
-                    // been assigned
+                    // set flag to show this vertex has been assigned
                     envPool->Vertex(envVtxIndices[j])->multipleJoints = 1;
                     */
                   }
                   else {
-                    //assign all the tri verts associated
-                    // with this control vertex to joint
+                    // assign all the tri verts associated with this control
+                    // vertex to joint
                     softegg_cat.spam() << j << "--trying to find " << envVtxIndices[j] << endl;
                     for ( k = 0; k < (int)vpool->size(); k++ ) {
                       if ( vpoolMap[k] == envVtxIndices[j] ) {
                         EggVertex *vert = vpool->get_vertex(k+1);
-                        // EggVertex *vert = mesh_node->get_vpool()->get_vertex(vpoolMap[k]+1);
+                        // EggVertex *vert =
+                        // mesh_node->get_vpool()->get_vertex(vpoolMap[k]+1);
                         if (!vert) {
                           softegg_cat.debug() << "possible error: index " << k+1 << ": vert is " << vert << endl;
                           break;
@@ -1897,8 +1807,7 @@ make_soft_skin() {
                              << "(vpool)\n";
                         /*
                           envPool->Vertex(k)->AddJoint( joint, scaledWeight );
-                          // set flag to show this vertex has
-                          // been assigned
+                          // set flag to show this vertex has been assigned
                           envPool->Vertex(k)->multipleJoints = 1;
                         */
                       }
@@ -1914,13 +1823,10 @@ make_soft_skin() {
   }
   return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: cleanup_soft_skin
-//       Access: Public
-//  Description: Given a model, make sure all its vertices have been
-//               soft assigned. If not hard assign to the last
-//               joint we saw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a model, make sure all its vertices have been soft assigned.  If not
+ * hard assign to the last joint we saw.
+ */
 bool SoftToEggConverter::
 cleanup_soft_skin()
 {
@@ -1945,27 +1851,26 @@ cleanup_soft_skin()
 
     softegg_cat.debug() << "Cleaning up model------- " << node_desc->get_name() << endl;
 
-    // this step is weird - I think I want it here but it seems
-    // to break some models. Files like props-props_wh_cookietime.3-0 in
-    // /ful/rnd/pub/vrml/chip/chips_adventure/char/zone1/rooms/warehouse_final
-    // need to do the "if (skel)" bit.
+    // this step is weird - I think I want it here but it seems to break some
+    // models.  Files like props-props_wh_cookietime.3-0 in
+    // fulrndpubvrmlchipchips_adventurecharzone1roomswarehouse_final need to
+    // do the "if (skel)" bit.
 
-    //find the vpool for this model
+    // find the vpool for this model
     string vpool_name = node_desc->get_name() + ".verts";
     EggNode *t = _tree.get_egg_root()->find_child(vpool_name);
     if (t)
       DCAST_INTO_R(vpool, t, NULL);
 
     if (!vpool) {
-      //softegg_cat.spam() << "couldn't find vpool " << vpool_name << endl;
+      // softegg_cat.spam() << "couldn't find vpool " << vpool_name << endl;
       continue;
     }
 
     int numVerts = (int)vpool->size();
     softegg_cat.spam() << "found vpool " << vpool_name << " w/ " << numVerts << " verts\n";
 
-    // if this node is a joint, then these vertices belong
-    // to this joint
+    // if this node is a joint, then these vertices belong to this joint
     if (node_desc->is_joint())
       joint = node_desc->get_egg_group();
     else {
@@ -1974,7 +1879,8 @@ cleanup_soft_skin()
       while( parentJ && !parentJ->_parentJoint) {
         if ( parentJ->_parent) {
           SAA_Boolean isSkeleton;
-          //softegg_cat.spam() << " checking parent " << parentJ->_parent->get_name() << endl;
+          // softegg_cat.spam() << " checking parent " <<
+          // parentJ->_parent->get_name() << endl;
           if (parentJ->_parent->has_model())
             SAA_modelIsSkeleton( &scene, parentJ->_parent->get_model(), &isSkeleton );
 
@@ -2004,7 +1910,8 @@ cleanup_soft_skin()
     for ( vi = vpool->begin(); vi != vpool->end(); ++vi) {
       EggVertex *vert = (*vi);
 
-      // if this vertex has not been soft assigned, then hard assign it to the parentJoint
+      // if this vertex has not been soft assigned, then hard assign it to the
+      // parentJoint
       if ( vert->gref_size() == 0 ) {
 
         softegg_cat.spam() << "vert " << vert->get_external_index() << " not assigned!\n";
@@ -2017,12 +1924,9 @@ cleanup_soft_skin()
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::set_shader_attributes
-//       Access: Private
-//  Description: Applies the known shader attributes to the indicated
-//               egg primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the known shader attributes to the indicated egg primitive.
+ */
 void SoftToEggConverter::
 set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, int idx) {
   char *texName = node_desc->texNameArray[idx];
@@ -2032,20 +1936,17 @@ set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, int idx)
   Filename fullpath = _path_replace->match_path(filename, get_model_path());
   tex.set_filename(_path_replace->store_path(fullpath));
   tex.set_fullpath(fullpath);
-  //  tex.set_format(EggTexture::F_rgb);
+  // tex.set_format(EggTexture::F_rgb);
   apply_texture_properties(tex, node_desc->uRepeat[idx], node_desc->vRepeat[idx]);
 
   EggTexture *new_tex = _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
   primitive.set_texture(new_tex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::apply_texture_properties
-//       Access: Private
-//  Description: Applies all the appropriate texture properties to the
-//               EggTexture object, including wrap modes and texture
-//               matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies all the appropriate texture properties to the EggTexture object,
+ * including wrap modes and texture matrix.
+ */
 void SoftToEggConverter::
 apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat) {
   // Let's mipmap all textures by default.
@@ -2065,15 +1966,12 @@ apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat) {
   */
 }
 #if 0
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::compare_texture_properties
-//       Access: Private
-//  Description: Compares the texture properties already on the
-//               texture (presumably set by a previous call to
-//               apply_texture_properties()) and returns false if they
-//               differ from that specified by the indicated color_def
-//               object, or true if they match.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the texture properties already on the texture (presumably set by a
+ * previous call to apply_texture_properties()) and returns false if they
+ * differ from that specified by the indicated color_def object, or true if
+ * they match.
+ */
 bool SoftToEggConverter::
 compare_texture_properties(EggTexture &tex,
                            const SoftShaderColorDef &color_def) {
@@ -2104,22 +2002,18 @@ compare_texture_properties(EggTexture &tex,
   return okflag;
 }
 #endif
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::reparent_decals
-//       Access: Private
-//  Description: Recursively walks the egg hierarchy, reparenting
-//               "decal" type nodes below their corresponding
-//               "decalbase" type nodes, and setting the flags.
-//
-//               Returns true on success, false if some nodes were
-//               incorrect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the egg hierarchy, reparenting "decal" type nodes below
+ * their corresponding "decalbase" type nodes, and setting the flags.
+ *
+ * Returns true on success, false if some nodes were incorrect.
+ */
 bool SoftToEggConverter::
 reparent_decals(EggGroupNode *egg_parent) {
   bool okflag = true;
 
-  // First, walk through all children of this node, looking for the
-  // one decal base, if any.
+  // First, walk through all children of this node, looking for the one decal
+  // base, if any.
   EggGroup *decal_base = (EggGroup *)NULL;
   pvector<EggGroup *> decal_children;
 
@@ -2160,10 +2054,10 @@ reparent_decals(EggGroupNode *egg_parent) {
         << " has decalbase, but no sibling nodes have decal.\n";
 
     } else {
-      // All the decal children get moved to be a child of decal base.
-      // This usually will not affect the vertex positions, but it
-      // could if the decal base has a transform and the decal child
-      // is an instance node.  So don't do that.
+      // All the decal children get moved to be a child of decal base.  This
+      // usually will not affect the vertex positions, but it could if the
+      // decal base has a transform and the decal child is an instance node.
+      // So don't do that.
       pvector<EggGroup *>::iterator di;
       for (di = decal_children.begin(); di != decal_children.end(); ++di) {
         EggGroup *child_group = (*di);
@@ -2189,12 +2083,10 @@ reparent_decals(EggGroupNode *egg_parent) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::string_transform_type
-//       Access: Public, Static
-//  Description: Returns the TransformType value corresponding to the
-//               indicated string, or TT_invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TransformType value corresponding to the indicated string, or
+ * TT_invalid.
+ */
 SoftToEggConverter::TransformType SoftToEggConverter::
 string_transform_type(const string &arg) {
   if (cmp_nocase(arg, "all") == 0) {
@@ -2210,11 +2102,9 @@ string_transform_type(const string &arg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_soft2egg
-//       Access:
-//  Description: Invokes the softToEggConverter class
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes the softToEggConverter class
+ */
 extern "C" int init_soft2egg(int argc, char **argv) {
   stec._commandName = argv[0];
   stec.rsrc_path = "c:\\Softimage\\SOFT3D_3.9.2\\3D\\rsrc";

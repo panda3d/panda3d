@@ -1,27 +1,24 @@
-// Filename: eggToDXF.cxx
-// Created by:  drose (04May04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggToDXF.cxx
+ * @author drose
+ * @date 2004-05-04
+ */
 
 #include "eggToDXF.h"
 #include "eggPolygon.h"
 #include "dcast.h"
 #include "pystub.h"
-  
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXF::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+
+/**
+ *
+ */
 EggToDXF::
 EggToDXF() :
   EggToSomething("DXF", ".dxf", true, false)
@@ -43,11 +40,9 @@ EggToDXF() :
   _got_coordinate_system = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDXF::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 void EggToDXF::
 run() {
   get_layers(_data);
@@ -56,13 +51,12 @@ run() {
     exit(1);
   }
 
-  //  uniquify_names("layer", _layers.begin(), _layers.end());
-  
+  // uniquify_names("layer", _layers.begin(), _layers.end());
+
   ostream &out = get_output();
 
-  // Autodesk says we don't need the header, but some DXF-reading
-  // programs might get confused if it's missing.  We'll write an
-  // empty header.
+  // Autodesk says we don't need the header, but some DXF-reading programs
+  // might get confused if it's missing.  We'll write an empty header.
   out << "0\nSECTION\n"
       << "2\nHEADER\n"
       << "0\nENDSEC\n";
@@ -77,13 +71,10 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_layers
-//       Access: Private
-//  Description: Traverses the hierarchy, looking for groups that
-//               contain polygons.  Any such groups are deemed to be
-//               layers, and are added to the layers set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Traverses the hierarchy, looking for groups that contain polygons.  Any
+ * such groups are deemed to be layers, and are added to the layers set.
+ */
 void EggToDXF::
 get_layers(EggGroupNode *group) {
   bool has_polys = false;
@@ -111,14 +102,11 @@ get_layers(EggGroupNode *group) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_tables 
-//       Access: Private
-//  Description: Writes out the "layers", e.g. groups.  This is just
-//               the layers definition in the tables section at the
-//               beginning of the file; the actual geometry gets
-//               written later, in write_entities().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the "layers", e.g.  groups.  This is just the layers definition
+ * in the tables section at the beginning of the file; the actual geometry
+ * gets written later, in write_entities().
+ */
 void EggToDXF::
 write_tables(ostream &out) {
   out << "0\nSECTION\n"
@@ -136,12 +124,9 @@ write_tables(ostream &out) {
       << "0\nENDSEC\n";   // End TABLES section.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_entities 
-//       Access: Private
-//  Description: Writes out the "entities", e.g. polygons, defined for
-//               all layers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the "entities", e.g.  polygons, defined for all layers.
+ */
 void EggToDXF::
 write_entities(ostream &out) {
   out << "0\nSECTION\n"

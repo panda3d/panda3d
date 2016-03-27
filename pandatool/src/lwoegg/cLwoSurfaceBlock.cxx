@@ -1,16 +1,15 @@
-// Filename: cLwoSurfaceBlock.cxx
-// Created by:  drose (26Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file cLwoSurfaceBlock.cxx
+ * @author drose
+ * @date 2001-04-26
+ */
 
 #include "cLwoSurfaceBlock.h"
 #include "cLwoSurfaceBlockTMap.h"
@@ -24,11 +23,9 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurfaceBlock::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLwoSurfaceBlock::
 CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   _converter(converter),
@@ -120,9 +117,8 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
     _tmap->get_transform(_transform);
   }
 
-  // Also rotate the transform if we specify some axis other than Y.
-  // (All the map_* uv mapping functions are written to assume Y is
-  // the dominant axis.)
+  // Also rotate the transform if we specify some axis other than Y. (All the
+  // map_* uv mapping functions are written to assume Y is the dominant axis.)
   switch (_axis) {
   case LwoSurfaceBlockAxis::A_x:
     _transform = LMatrix4d::rotate_mat(90.0,
@@ -143,11 +139,9 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   _inv_transform.invert_from(_transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurfaceBlock::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 CLwoSurfaceBlock::
 ~CLwoSurfaceBlock() {
   if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {

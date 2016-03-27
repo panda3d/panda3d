@@ -1,16 +1,15 @@
-// Filename: pStatPianoRoll.cxx
-// Created by:  drose (18Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pStatPianoRoll.cxx
+ * @author drose
+ * @date 2000-07-18
+ */
 
 #include "pStatPianoRoll.h"
 
@@ -21,35 +20,28 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::BarBuilder::Constructor
-//       Access: Public
-//  Description: This class is used internally to build up the set of
-//               color bars defined by a frame's worth of data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used internally to build up the set of color bars defined by
+ * a frame's worth of data.
+ */
 PStatPianoRoll::BarBuilder::
 BarBuilder() {
   _is_new = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::BarBuilder::clear
-//       Access: Public
-//  Description: Resets the data in the BarBuilder for a new frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the data in the BarBuilder for a new frame.
+ */
 void PStatPianoRoll::BarBuilder::
 clear() {
   _is_new = false;
   _color_bars.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::BarBuilder::add_data_point
-//       Access: Public
-//  Description: Adds a new data point.  The first data point for a
-//               given collector turns in on (starts the bar), the
-//               second data point turns it off (ends the bar).
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new data point.  The first data point for a given collector turns in
+ * on (starts the bar), the second data point turns it off (ends the bar).
+ */
 void PStatPianoRoll::BarBuilder::
 add_data_point(double time, bool is_start) {
   if (is_start) {
@@ -64,8 +56,7 @@ add_data_point(double time, bool is_start) {
   } else {
     // This is a "stop" data point: end the bar.
     if (_color_bars.empty()) {
-      // A "stop" in the middle of the frame implies a "start" at time
-      // 0.
+      // A "stop" in the middle of the frame implies a "start" at time 0.
       ColorBar bar;
       bar._start = 0.0;
       bar._end = time;
@@ -77,12 +68,10 @@ add_data_point(double time, bool is_start) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::BarBuilder::finish
-//       Access: Public
-//  Description: Makes sure that each start-bar data point was matched
-//               by a corresponding end-bar data point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes sure that each start-bar data point was matched by a corresponding
+ * end-bar data point.
+ */
 void PStatPianoRoll::BarBuilder::
 finish(double time) {
   if (!_color_bars.empty() && _color_bars.back()._end < 0.0) {
@@ -90,11 +79,9 @@ finish(double time) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatPianoRoll::
 PStatPianoRoll(PStatMonitor *monitor, int thread_index, int xsize, int ysize) :
   PStatGraph(monitor, xsize, ysize),
@@ -108,26 +95,22 @@ PStatPianoRoll(PStatMonitor *monitor, int thread_index, int xsize, int ysize) :
   normal_guide_bars();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 PStatPianoRoll::
 ~PStatPianoRoll() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::update
-//       Access: Public
-//  Description: Updates the chart with the latest data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the chart with the latest data.
+ */
 void PStatPianoRoll::
 update() {
   const PStatClientData *client_data = _monitor->get_client_data();
 
-  // Don't bother to update the thread data until we know at least
-  // something about the collectors and threads.
+  // Don't bother to update the thread data until we know at least something
+  // about the collectors and threads.
   if (client_data->get_num_collectors() != 0 &&
       client_data->get_num_threads() != 0) {
     const PStatThreadData *thread_data =
@@ -145,14 +128,11 @@ update() {
   idle();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::changed_size
-//       Access: Protected
-//  Description: To be called by the user class when the widget size
-//               has changed.  This updates the chart's internal data
-//               and causes it to issue redraw commands to reflect the
-//               new size.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called by the user class when the widget size has changed.  This
+ * updates the chart's internal data and causes it to issue redraw commands to
+ * reflect the new size.
+ */
 void PStatPianoRoll::
 changed_size(int xsize, int ysize) {
   if (xsize != _xsize || ysize != _ysize) {
@@ -164,12 +144,10 @@ changed_size(int xsize, int ysize) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::force_redraw
-//       Access: Protected
-//  Description: To be called by the user class when the whole thing
-//               needs to be redrawn for some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called by the user class when the whole thing needs to be redrawn for
+ * some reason.
+ */
 void PStatPianoRoll::
 force_redraw() {
   if (!_labels.empty()) {
@@ -190,88 +168,67 @@ force_redraw() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::normal_guide_bars
-//       Access: Protected, Virtual
-//  Description: Calls update_guide_bars with parameters suitable to
-//               this kind of graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls update_guide_bars with parameters suitable to this kind of graph.
+ */
 void PStatPianoRoll::
 normal_guide_bars() {
   // We want vaguely 100 pixels between guide bars.
   update_guide_bars(get_xsize() / 100, _time_width);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::begin_draw
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class.  This hook
-//               will be called before drawing any bars in the chart.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class.  This hook will be called before
+ * drawing any bars in the chart.
+ */
 void PStatPianoRoll::
 begin_draw() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::begin_row
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class.  This hook
-//               will be called before drawing any one row of bars.
-//               These bars correspond to the collector whose index is
-//               get_row_collector(row), and in the color
-//               get_row_color(row).
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class.  This hook will be called before
+ * drawing any one row of bars.  These bars correspond to the collector whose
+ * index is get_row_collector(row), and in the color get_row_color(row).
+ */
 void PStatPianoRoll::
 begin_row(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::draw_bar
-//       Access: Protected, Virtual
-//  Description: Draws a single bar in the chart for the indicated
-//               row, in the color get_row_color(row), for the
-//               indicated horizontal pixel range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a single bar in the chart for the indicated row, in the color
+ * get_row_color(row), for the indicated horizontal pixel range.
+ */
 void PStatPianoRoll::
 draw_bar(int, int, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::end_row
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class.  This hook
-//               will be called after drawing a series of color bars
-//               for a single row.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class.  This hook will be called after
+ * drawing a series of color bars for a single row.
+ */
 void PStatPianoRoll::
 end_row(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::end_draw
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class.  This hook
-//               will be called after drawing a series of color bars
-//               in the chart.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class.  This hook will be called after
+ * drawing a series of color bars in the chart.
+ */
 void PStatPianoRoll::
 end_draw() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::idle
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class to perform any
-//               other updates might be necessary after the bars have
-//               been redrawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class to perform any other updates might
+ * be necessary after the bars have been redrawn.
+ */
 void PStatPianoRoll::
 idle() {
 }
 
 
-// STL function object for sorting labels in order by the collector's
-// sort index, used in compute_page(), below.
+// STL function object for sorting labels in order by the collector's sort
+// index, used in compute_page(), below.
 class SortCollectorLabels1 {
 public:
   SortCollectorLabels1(const PStatClientData *client_data) :
@@ -285,19 +242,15 @@ public:
   const PStatClientData *_client_data;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::compute_page
-//       Access: Private
-//  Description: Examines the given frame data and rebuilds the
-//               _page_data to match it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Examines the given frame data and rebuilds the _page_data to match it.
+ */
 void PStatPianoRoll::
 compute_page(const PStatFrameData &frame_data) {
   _start_time = frame_data.get_start();
 
-  // Clear out the page data and copy it to previous, so we can fill
-  // it up again and then check to see if we changed the set of bars
-  // this frame.
+  // Clear out the page data and copy it to previous, so we can fill it up
+  // again and then check to see if we changed the set of bars this frame.
   PageData previous;
   _page_data.swap(previous);
 
@@ -324,8 +277,8 @@ compute_page(const PStatFrameData &frame_data) {
   }
 
   if (changed_bars) {
-    // If we added or removed some new bars this time, we'll have to
-    // update our list.
+    // If we added or removed some new bars this time, we'll have to update
+    // our list.
     const PStatClientData *client_data = _monitor->get_client_data();
 
     _labels.clear();

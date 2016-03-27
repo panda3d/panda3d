@@ -1,27 +1,25 @@
-// Filename: linearVectorForce.h
-// Created by:  charles (13Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file linearVectorForce.h
+ * @author charles
+ * @date 2000-06-13
+ */
 
 #ifndef LINEARVECTORFORCE_H
 #define LINEARVECTORFORCE_H
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearVectorForce
-// Description : Simple directed vector force.  Suitable for
-//               gravity, non-turbulent wind, etc...
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple directed vector force.  Suitable for gravity, non-turbulent wind,
+ * etc...
+ */
 class EXPCL_PANDAPHYSICS LinearVectorForce : public LinearForce {
 PUBLISHED:
   LinearVectorForce(const LVector3& vec, PN_stdfloat a = 1.0f, bool mass = false);

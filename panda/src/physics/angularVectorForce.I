@@ -1,39 +1,35 @@
-// Filename: angularVectorForce.I
-// Created by:  charles (09Aug00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file angularVectorForce.I
+ * @author charles
+ * @date 2000-08-09
+ */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_quat
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void AngularVectorForce::
 set_quat(const LRotation &v) {
   _fvec = v;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_hpr
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void AngularVectorForce::
 set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   _fvec.set_hpr(LVecBase3(h, p, r));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_local_quat
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LRotation AngularVectorForce::
 get_local_quat() const {
   return _fvec;

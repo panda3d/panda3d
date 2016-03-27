@@ -1,16 +1,15 @@
-// Filename: config_audio.h
-// Created by:  cary (22Sep00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_audio.h
+ * @author cary
+ * @date 2000-09-22
+ */
 
 #ifndef __CONFIG_AUDIO_H__
 #define __CONFIG_AUDIO_H__
@@ -34,7 +33,7 @@ extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_cache_limit;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_volume;
 extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
 
-//We Need This one.
+// We Need This one.
 extern EXPCL_PANDA_AUDIO ConfigVariableString audio_library_name;
 
 // Config vars for Fmod:
@@ -62,9 +61,9 @@ extern EXPCL_PANDA_AUDIO ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode;
 
 // Config vars for OpenAL:
 
-extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_doppler_factor; 
-extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_distance_factor; 
-extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_drop_off_factor; 
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_doppler_factor;
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_distance_factor;
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_drop_off_factor;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_buffering_seconds;
 extern EXPCL_PANDA_AUDIO ConfigVariableInt    audio_preload_threshold;
 

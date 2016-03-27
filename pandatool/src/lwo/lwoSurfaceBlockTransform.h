@@ -1,16 +1,15 @@
-// Filename: lwoSurfaceBlockTransform.h
-// Created by:  drose (24Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file lwoSurfaceBlockTransform.h
+ * @author drose
+ * @date 2001-04-24
+ */
 
 #ifndef LWOSURFACEBLOCKTRANSFORM_H
 #define LWOSURFACEBLOCKTRANSFORM_H
@@ -21,14 +20,12 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockTransform
-// Description : Specifies a center point, scale, or rotation for the
-//               texture coordinates in this shader's texture mapping.
-//               The type of transform is specified by the ID of the
-//               chunk; either CNTR, SIZE, or ROTA.  This is a
-//               subchunk of LwoSurfaceBlockTMap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a center point, scale, or rotation for the texture coordinates in
+ * this shader's texture mapping.  The type of transform is specified by the
+ * ID of the chunk; either CNTR, SIZE, or ROTA.  This is a subchunk of
+ * LwoSurfaceBlockTMap.
+ */
 class LwoSurfaceBlockTransform : public LwoChunk {
 public:
   LVecBase3 _vec;
@@ -57,5 +54,3 @@ private:
 };
 
 #endif
-
-

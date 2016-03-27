@@ -1,16 +1,15 @@
-// Filename: eggJointPointer.h
-// Created by:  drose (26Feb01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggJointPointer.h
+ * @author drose
+ * @date 2001-02-26
+ */
 
 #ifndef EGGJOINTPOINTER_H
 #define EGGJOINTPOINTER_H
@@ -22,15 +21,13 @@
 
 class EggCharacterDb;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggJointPointer
-// Description : This is a base class for EggJointNodePointer and
-//               EggMatrixTablePointer.  It stores a back pointer to
-//               either a <Joint> entry or an xform <Table> data, and
-//               thus presents an interface that returns 1-n matrices,
-//               one for each frame.  (<Joint> entries, for model
-//               files, appear the same as one-frame animations.)
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for EggJointNodePointer and EggMatrixTablePointer.  It
+ * stores a back pointer to either a <Joint> entry or an xform <Table> data,
+ * and thus presents an interface that returns 1-n matrices, one for each
+ * frame.  (<Joint> entries, for model files, appear the same as one-frame
+ * animations.)
+ */
 class EggJointPointer : public EggBackPointer {
 public:
   virtual int get_num_frames() const=0;
@@ -72,5 +69,3 @@ private:
 #include "eggJointPointer.I"
 
 #endif
-
-

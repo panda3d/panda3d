@@ -1,35 +1,31 @@
-// Filename: transformState_ext.cxx
-// Created by:  CFSworks (30Mar14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file transformState_ext.cxx
+ * @author CFSworks
+ * @date 2014-03-30
+ */
 
 #include "transformState_ext.h"
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<TransformState>::get_composition_cache
-//       Access: Published
-//  Description: Returns a list of 2-tuples that represents the
-//               composition cache.  For each tuple in the list, the
-//               first element is the source transform, and the second
-//               is the result transform.  If both are None, there is
-//               no entry in the cache at that slot.
-//
-//               In general, a->compose(source) == result.
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of 2-tuples that represents the composition cache.  For each
+ * tuple in the list, the first element is the source transform, and the
+ * second is the result transform.  If both are None, there is no entry in the
+ * cache at that slot.
+ *
+ * In general, a->compose(source) == result.
+ *
+ * This has no practical value other than for examining the cache for
+ * performance analysis.
+ */
 PyObject *Extension<TransformState>::
 get_composition_cache() const {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
@@ -54,7 +50,7 @@ get_composition_cache() const {
       Py_INCREF(a);
     } else {
       source->ref();
-      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
+      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState,
                                       true, true, source->get_type_index());
     }
     const TransformState *result = _this->_composition_cache.get_data(si)._result;
@@ -63,7 +59,7 @@ get_composition_cache() const {
       Py_INCREF(b);
     } else {
       result->ref();
-      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
+      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState,
                                       true, true, result->get_type_index());
     }
 
@@ -78,20 +74,17 @@ get_composition_cache() const {
   return list;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<TransformState>::get_invert_composition_cache
-//       Access: Published
-//  Description: Returns a list of 2-tuples that represents the
-//               invert_composition cache.  For each tuple in the list, the
-//               first element is the source transform, and the second
-//               is the result transform.  If both are None, there is
-//               no entry in the cache at that slot.
-//
-//               In general, a->invert_compose(source) == result.
-//
-//               This has no practical value other than for examining
-//               the cache for performance analysis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of 2-tuples that represents the invert_composition cache.
+ * For each tuple in the list, the first element is the source transform, and
+ * the second is the result transform.  If both are None, there is no entry in
+ * the cache at that slot.
+ *
+ * In general, a->invert_compose(source) == result.
+ *
+ * This has no practical value other than for examining the cache for
+ * performance analysis.
+ */
 PyObject *Extension<TransformState>::
 get_invert_composition_cache() const {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
@@ -116,7 +109,7 @@ get_invert_composition_cache() const {
       Py_INCREF(a);
     } else {
       source->ref();
-      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
+      a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState,
                                       true, true, source->get_type_index());
     }
     const TransformState *result = _this->_invert_composition_cache.get_data(si)._result;
@@ -125,7 +118,7 @@ get_invert_composition_cache() const {
       Py_INCREF(b);
     } else {
       result->ref();
-      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
+      b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState,
                                       true, true, result->get_type_index());
     }
 
@@ -140,13 +133,10 @@ get_invert_composition_cache() const {
   return list;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<TransformState>::get_states
-//       Access: Published, Static
-//  Description: Returns a list of all of the TransformState objects
-//               in the state cache.  The order of elements in this
-//               cache is arbitrary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of all of the TransformState objects in the state cache.
+ * The order of elements in this cache is arbitrary.
+ */
 PyObject *Extension<TransformState>::
 get_states() {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
@@ -166,8 +156,8 @@ get_states() {
     }
     const TransformState *state = TransformState::_states->get_key(si);
     state->ref();
-    PyObject *a = 
-      DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState, 
+    PyObject *a =
+      DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState,
                                   true, true, state->get_type_index());
     nassertr(i < num_states, list);
     PyList_SET_ITEM(list, i, a);
@@ -177,13 +167,10 @@ get_states() {
   return list;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<TransformState>::get_unused_states
-//       Access: Published, Static
-//  Description: Returns a list of all of the "unused" TransformState
-//               objects in the state cache.  See
-//               get_num_unused_states().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of all of the "unused" TransformState objects in the state
+ * cache.  See get_num_unused_states().
+ */
 PyObject *Extension<TransformState>::
 get_unused_states() {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
@@ -201,8 +188,8 @@ get_unused_states() {
     const TransformState *state = TransformState::_states->get_key(si);
     if (state->get_cache_ref_count() == state->get_ref_count()) {
       state->ref();
-      PyObject *a = 
-        DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState, 
+      PyObject *a =
+        DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState,
                                     true, true, state->get_type_index());
       PyList_Append(list, a);
       Py_DECREF(a);

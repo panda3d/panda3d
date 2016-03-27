@@ -1,16 +1,15 @@
-// Filename: eggUtilities.cxx
-// Created by:  drose (28Jan99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file eggUtilities.cxx
+ * @author drose
+ * @date 1999-01-28
+ */
 
 #include "eggUtilities.h"
 #include "eggPrimitive.h"
@@ -19,15 +18,12 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_textures_by_filename
-//  Description: Extracts from the egg subgraph beginning at the
-//               indicated node a set of all the texture objects
-//               referenced, grouped together by filename.  Texture
-//               objects that share a common filename (but possibly
-//               differ in other properties) are returned together in
-//               the same element of the map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts from the egg subgraph beginning at the indicated node a set of all
+ * the texture objects referenced, grouped together by filename.  Texture
+ * objects that share a common filename (but possibly differ in other
+ * properties) are returned together in the same element of the map.
+ */
 void
 get_textures_by_filename(const EggNode *node, EggTextureFilenames &result) {
   if (node->is_of_type(EggPrimitive::get_class_type())) {
@@ -48,4 +44,3 @@ get_textures_by_filename(const EggNode *node, EggTextureFilenames &result) {
     }
   }
 }
-
