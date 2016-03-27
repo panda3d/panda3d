@@ -703,12 +703,14 @@ class Installer:
 
         if platform.startswith("win"):
             self.buildNSIS(output, platform)
+            self.buildPortable(output, platform)
             return
         elif "_" in platform:
             osname, arch = platform.split("_", 1)
             if osname == "linux":
                 self.buildDEB(output, platform)
                 self.buildArch(output, platform)
+                self.buildPortable(output, platform)
                 return
             elif osname == "osx":
                 self.buildPKG(output, platform)
@@ -792,6 +794,52 @@ class Installer:
 
         self.__tempRoots[platform] = (tempdir, totsize)
         return self.__tempRoots[platform]
+
+    def buildPortable(self, output, platform):
+        """ Builds a portable archive that can be extracted onto the filesystem"""
+        arch = platform.rsplit("_", 1)[-1]
+        output = Filename(output)
+        if output.isDirectory():
+            if arch:
+                output = Filename(output, "%s_%s_%s" % (self.shortname.lower(), self.version, arch))
+            else:
+                output = Filename(output, "%s_%s" % (self.shortname.lower(), self.version))
+        Installer.notify.info("Creating %s..." % output)
+        output.makeAbsolute()
+        extrafiles = self.standalone.getExtraFiles(platform)
+
+        runtime = Filename(Filename.getTempDirectory(), self.shortname)
+        runtime.unlink()
+        if self.includeRequires:
+            extraTokens = {"host_dir": ".", "start_dir": "."}
+        else:
+            extraTokens = {}
+        self.standalone.build(runtime, platform, extraTokens)
+
+        # Temporary directory to store the hostdir in
+        hostDir = Filename(self.tempDir, platform + "/")
+        if not hostDir.exists():
+            hostDir.makeDir()
+            self.installPackagesInto(hostDir, platform)
+
+        shutil.copytree(hostDir.toOsSpecific(), output.toOsSpecific())
+        shutil.copy2(runtime.toOsSpecific(), Filename(output, self.shortname).toOsSpecific())
+
+        if arch:
+            zip_fn = Filename(output.getDirname(), "%s_%s_%s.zip" % (self.fullname, self.version, arch))
+        else:
+            zip_fn = Filename(output.getDirname(), "%s_%s.zip" % (self.fullname, self.version))
+        Installer.notify.info("Creating %s..." % zip_fn)
+        dir = Filename(output.getDirname())
+        dir.makeAbsolute()
+        zip = zipfile.ZipFile(zip_fn.toOsSpecific(), 'w')
+        for root, dirs, files in self.os_walk(output.toOsSpecific()):
+            for name in files:
+                file = Filename.fromOsSpecific(os.path.join(root, name))
+                file.makeAbsolute()
+                file.makeRelativeTo(dir)
+                zip.write(os.path.join(root, name), str(file))
+        zip.close()
 
     def buildDEB(self, output, platform):
         """ Builds a .deb archive and stores it in the path indicated
