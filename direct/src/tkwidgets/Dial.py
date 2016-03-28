@@ -6,10 +6,9 @@ Dial Class: Velocity style controller for floating point values with
 __all__ = ['Dial', 'AngleDial', 'DialWidget']
 
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-from Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
+from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
-import math, string, operator, Pmw
+import math, operator, Pmw
 
 TWO_PI = 2.0 * math.pi
 ONEPOINTFIVE_PI = 1.5 * math.pi
@@ -258,7 +257,7 @@ class DialWidget(Pmw.MegaWidget):
             value = self['base'] + ((value - self['base']) % self['delta'])
         # Send command if any
         if fCommand and (self['command'] != None):
-            apply(self['command'], [value] + self['commandData'])
+            self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value
 
@@ -411,12 +410,12 @@ class DialWidget(Pmw.MegaWidget):
     def _onButtonPress(self, *args):
         """ User redefinable callback executed on button press """
         if self['preCallback']:
-            apply(self['preCallback'], self['callbackData'])
+            self['preCallback'](*self['callbackData'])
 
     def _onButtonRelease(self, *args):
         """ User redefinable callback executed on button release """
         if self['postCallback']:
-            apply(self['postCallback'], self['callbackData'])
+            self['postCallback'](*self['callbackData'])
 
 
 if __name__ == '__main__':

@@ -207,7 +207,7 @@ class PackageMerger:
             xcontents.SetAttribute('max_age', str(self.maxAge))
         self.contentsSeq.storeXml(xcontents)
 
-        contents = self.contents.items()
+        contents = list(self.contents.items())
         contents.sort()
         for key, pe in contents:
             xpackage = pe.makeXml()

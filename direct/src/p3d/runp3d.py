@@ -26,7 +26,7 @@ See pack3d.p3d for an application that generates these p3d files.
 
 import sys
 import getopt
-from AppRunner import AppRunner, ArgumentError
+from .AppRunner import AppRunner, ArgumentError
 from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import Filename
 
@@ -42,7 +42,7 @@ def parseSysArgs():
 
     for option, value in opts:
         if option == '-h':
-            print __doc__
+            print(__doc__)
             sys.exit(1)
 
     if not args or not args[0]:
@@ -62,8 +62,8 @@ def runPackedApp(pathname):
     try:
         runner.setP3DFilename(pathname, tokens = [], argv = [],
                               instanceId = 0, interactiveConsole = False)
-    except ArgumentError, e:
-        print e.args[0]
+    except ArgumentError as e:
+        print(e.args[0])
         sys.exit(1)
 
 if __name__ == '__main__':
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         argv = parseSysArgs()
         runner.setP3DFilename(argv[0], tokens = [], argv = argv,
                               instanceId = 0, interactiveConsole = False)
-    except ArgumentError, e:
-        print e.args[0]
+    except ArgumentError as e:
+        print(e.args[0])
         sys.exit(1)
     taskMgr.run()

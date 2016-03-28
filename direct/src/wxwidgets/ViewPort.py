@@ -12,7 +12,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
 from direct.directtools.DirectGlobals import *
-from WxPandaWindow import WxPandaWindow
+from .WxPandaWindow import WxPandaWindow
 from panda3d.core import OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
 import wx
 

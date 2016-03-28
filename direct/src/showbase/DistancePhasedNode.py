@@ -1,7 +1,7 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from panda3d.core import *
-from PhasedObject import PhasedObject
+from .PhasedObject import PhasedObject
 
 class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     """
@@ -84,7 +84,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
                  fromCollideNode = None):
         NodePath.__init__(self, name)
         self.phaseParamMap = phaseParamMap
-        self.phaseParamList = sorted(phaseParamMap.items(),
+        self.phaseParamList = sorted(list(phaseParamMap.items()),
                                      key = lambda x: x[1],
                                      reverse = True)
         PhasedObject.__init__(self,
@@ -269,7 +269,7 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
     def __init__(self, name, bufferParamMap = {}, autoCleanup = True,
                  enterPrefix = 'enter', exitPrefix = 'exit', phaseCollideMask = BitMask32.allOn(), fromCollideNode = None):
         self.bufferParamMap = bufferParamMap
-        self.bufferParamList = sorted(bufferParamMap.items(),
+        self.bufferParamList = sorted(list(bufferParamMap.items()),
                                       key = lambda x: x[1],
                                       reverse = True)
 

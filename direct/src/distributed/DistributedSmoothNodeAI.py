@@ -1,5 +1,5 @@
-import DistributedNodeAI
-import DistributedSmoothNodeBase
+from . import DistributedNodeAI
+from . import DistributedSmoothNodeBase
 
 class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
                               DistributedSmoothNodeBase.DistributedSmoothNodeBase):

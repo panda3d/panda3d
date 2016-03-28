@@ -2,6 +2,6 @@
 
 __all__ = ['bulletinBoard']
 
-import BulletinBoard
+from . import BulletinBoard
 
 bulletinBoard = BulletinBoard.BulletinBoard()

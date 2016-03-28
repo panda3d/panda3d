@@ -14,7 +14,7 @@ Then you need implement ObjectPalette class inheriting ObjectPaletteBase,
 and in the populate function you can define ObjectPalette tree structure.
 """
 
-from ObjectPaletteBase import *
+from .ObjectPaletteBase import *
 
 class ObjectProp(ObjectBase):
     def __init__(self, *args, **kw):

@@ -7,16 +7,16 @@ from direct.wxwidgets.WxPandaShell import *
 from direct.directtools.DirectSelection import SelectionRay
 
 #from ViewPort import *
-from ObjectPaletteUI import *
-from ObjectPropertyUI import *
-from SceneGraphUI import *
-from LayerEditorUI import *
-from HotKeyUI import *
-from ProtoPaletteUI import *
-from ActionMgr import *
-from AnimControlUI import *
-from CurveAnimUI import *
-from GraphEditorUI import *
+from .ObjectPaletteUI import *
+from .ObjectPropertyUI import *
+from .SceneGraphUI import *
+from .LayerEditorUI import *
+from .HotKeyUI import *
+from .ProtoPaletteUI import *
+from .ActionMgr import *
+from .AnimControlUI import *
+from .CurveAnimUI import *
+from .GraphEditorUI import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor, view):
@@ -32,7 +32,7 @@ class PandaTextDropTarget(wx.TextDropTarget):
         action = ActionAddNewObj(self.editor, text, parent=parentNPRef[0])
         self.editor.actionMgr.push(action)
         newobj = action()
-        print newobj
+        print(newobj)
         if newobj is None:
             return
 
@@ -584,12 +584,12 @@ class LevelEditorUIBase(WxPandaShell):
     def replaceObject(self, evt, all=False):
         currObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
         if currObj is None:
-            print 'No valid object is selected for replacement'
+            print('No valid object is selected for replacement')
             return
 
         targetType = self.editor.ui.objectPaletteUI.getSelected()
         if targetType is None:
-            print 'No valid target type is selected for replacement'
+            print('No valid target type is selected for replacement')
             return
 
         if all:

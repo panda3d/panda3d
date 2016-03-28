@@ -4,13 +4,10 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DoInterestManager import DoInterestManager
 from direct.distributed.DoCollectionManager import DoCollectionManager
 from direct.showbase import GarbageReport
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
+from .PyDatagramIterator import PyDatagramIterator
 
 import types
-import imp
 import gc
-
 
 
 class ConnectionRepository(
@@ -248,7 +245,7 @@ class ConnectionRepository(
         self.dclassesByNumber = {}
         self.hashVal = 0
 
-        if isinstance(dcFileNames, types.StringTypes):
+        if isinstance(dcFileNames, str):
             # If we were given a single string, make it a list.
             dcFileNames = [dcFileNames]
 
@@ -514,7 +511,7 @@ class ConnectionRepository(
             if failureCallback:
                 failureCallback(0, '', *failureArgs)
         else:
-            print "uh oh, we aren't using one of the tri-state CM variables"
+            print("uh oh, we aren't using one of the tri-state CM variables")
             failureCallback(0, '', *failureArgs)
 
     def disconnect(self):

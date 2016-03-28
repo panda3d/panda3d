@@ -17,32 +17,35 @@ from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilitySho
 from direct.extensions_native import NodePath_extensions
 
 # This needs to be available early for DirectGUI imports
-import __builtin__ as builtins
+import sys
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
 builtins.config = get_config_showbase()
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
-from MessengerGlobal import messenger
-from BulletinBoardGlobal import bulletinBoard
+from .MessengerGlobal import messenger
+from .BulletinBoardGlobal import bulletinBoard
 from direct.task.TaskManagerGlobal import taskMgr
-from JobManagerGlobal import jobMgr
-from EventManagerGlobal import eventMgr
+from .JobManagerGlobal import jobMgr
+from .EventManagerGlobal import eventMgr
 #from PythonUtil import *
 from direct.interval import IntervalManager
 from direct.showbase.BufferViewer import BufferViewer
 from direct.task import Task
-import sys
-import Loader
+from . import Loader
 import time
 import atexit
 import importlib
 from direct.showbase import ExceptionVarDump
-import DirectObject
-import SfxPlayer
+from . import DirectObject
+from . import SfxPlayer
 if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
-    import OnScreenDebug
-import AppRunnerGlobal
+    from . import OnScreenDebug
+from . import AppRunnerGlobal
 
 def legacyRun():
     assert builtins.base.notify.warning("run() is deprecated, use base.run() instead")
@@ -402,7 +405,7 @@ class ShowBase(DirectObject.DirectObject):
         self.accept('window-event', self.windowEvent)
 
         # Transition effects (fade, iris, etc)
-        import Transitions
+        from . import Transitions
         self.transitions = Transitions.Transitions(self.loader)
 
         if self.win:
@@ -478,12 +481,12 @@ class ShowBase(DirectObject.DirectObject):
         add stuff to this.
         """
         if self.config.GetBool('want-env-debug-info', 0):
-           print "\n\nEnvironment Debug Info {"
-           print "* model path:"
-           print getModelPath()
+           print("\n\nEnvironment Debug Info {")
+           print("* model path:")
+           print(getModelPath())
            #print "* dna path:"
            #print getDnaPath()
-           print "}"
+           print("}")
 
     def destroy(self):
         """ Call this function to destroy the ShowBase and stop all

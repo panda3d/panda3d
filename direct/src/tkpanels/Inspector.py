@@ -8,7 +8,6 @@ so that I can just type: inspect(anObject) any time."""
 __all__ = ['inspect', 'inspectorFor', 'Inspector', 'ModuleInspector', 'ClassInspector', 'InstanceInspector', 'FunctionInspector', 'InstanceMethodInspector', 'CodeInspector', 'ComplexInspector', 'DictionaryInspector', 'SequenceInspector', 'SliceInspector', 'InspectorWindow']
 
 from direct.showbase.TkGlobal import *
-from Tkinter import *
 import Pmw
 
 ### public API
@@ -26,7 +25,7 @@ def inspectorFor(anObject):
     if typeName in _InspectorMap:
         inspectorName = _InspectorMap[typeName]
     else:
-        print("Can't find an inspector for " + typeName)
+        print(("Can't find an inspector for " + typeName))
         inspectorName = 'Inspector'
     inspector = globals()[inspectorName](anObject)
     return inspector
@@ -147,7 +146,7 @@ class ModuleInspector(Inspector):
 
 class ClassInspector(Inspector):
     def namedParts(self):
-        return ['__bases__'] + self.object.__dict__.keys()
+        return ['__bases__'] + list(self.object.__dict__.keys())
 
     def title(self):
         return self.object.__name__ + ' Class'
@@ -184,7 +183,7 @@ class DictionaryInspector(Inspector):
 
     def initializePartsList(self):
         Inspector.initializePartsList(self)
-        keys = self.object.keys()
+        keys = list(self.object.keys())
         keys.sort()
         for each in keys:
             self._partsList.append(each)
@@ -422,7 +421,7 @@ class InspectorWindow:
                  ('Place', NodePath.place),
                  ('Set Color', NodePath.rgbPanel)])
         elif isinstance(part, ClassicFSM.ClassicFSM):
-            import FSMInspector
+            from . import FSMInspector
             popupMenu = self.createPopupMenu(
                 part,
                 [('Inspect ClassicFSM', FSMInspector.FSMInspector)])

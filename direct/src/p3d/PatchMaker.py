@@ -180,7 +180,7 @@ class PatchMaker:
             result = Filename.temporary('', 'patch_')
             p = Patchfile()
             if not p.apply(patchFilename, origFile, result):
-                print "Internal patching failed: %s" % (patchFilename)
+                print("Internal patching failed: %s" % (patchFilename))
                 return None
 
             return result
@@ -345,7 +345,7 @@ class PatchMaker:
             packageDescFullpath = Filename(self.patchMaker.installDir, self.packageDesc)
             self.doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             if not self.doc.LoadFile():
-                print "Couldn't read %s" % (packageDescFullpath)
+                print("Couldn't read %s" % (packageDescFullpath))
                 return False
 
             xpackage = self.doc.FirstChildElement('package')
@@ -537,7 +537,7 @@ class PatchMaker:
                     packageSeq.storeXml(xpackage, 'seq')
                     doc.SaveFile()
             else:
-                print "Couldn't read %s" % (importDescFullpath)
+                print("Couldn't read %s" % (importDescFullpath))
 
             if self.contentsDocPackage:
                 # Now that we've rewritten the xml file, we have to
@@ -633,7 +633,7 @@ class PatchMaker:
         doc = TiXmlDocument(contentsFilename.toOsSpecific())
         if not doc.LoadFile():
             # Couldn't read file.
-            print "couldn't read %s" % (contentsFilename)
+            print("couldn't read %s" % (contentsFilename))
             return False
 
         xcontents = doc.FirstChildElement('contents')
@@ -740,7 +740,7 @@ class PatchMaker:
                 remainingNames.remove(package.packageName)
 
         if remainingNames:
-            print "Unknown packages: %s" % (remainingNames,)
+            print("Unknown packages: %s" % (remainingNames,))
 
     def processAllPackages(self):
         """ Walks through the list of packages, and builds missing
@@ -803,7 +803,7 @@ class PatchMaker:
             # No original version to patch from.
             return False
 
-        print "Building patch from %s to %s" % (printOrigName, printNewName)
+        print("Building patch from %s to %s" % (printOrigName, printNewName))
         patchFilename.unlink()
         p = Patchfile()  # The C++ class
         if p.build(origFilename, newFilename, patchFilename):

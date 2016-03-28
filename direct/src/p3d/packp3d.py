@@ -100,7 +100,6 @@ import sys
 import os
 import getopt
 import glob
-import direct
 from direct.p3d import Packager
 from panda3d.core import *
 
@@ -159,11 +158,11 @@ def makePackedApp(args):
         elif option == '-D':
             allowPythonDev = True
         elif option == '-h':
-            print usageText % (
+            print(usageText % (
                 PandaSystem.getPackageVersionString(),
                 PandaSystem.getPackageHostUrl(),
                 os.path.split(sys.argv[0])[1],
-                '%s.%s' % (sys.version_info[0], sys.version_info[1]))
+                '%s.%s' % (sys.version_info[0], sys.version_info[1])))
             sys.exit(0)
 
     if not appFilename:
@@ -228,13 +227,13 @@ def makePackedApp(args):
     except Packager.PackagerError:
         # Just print the error message and exit gracefully.
         inst = sys.exc_info()[1]
-        print inst.args[0]
+        print(inst.args[0])
         sys.exit(1)
 
 try:
     makePackedApp(sys.argv[1:])
-except ArgumentError, e:
-    print e.args[0]
+except ArgumentError as e:
+    print(e.args[0])
     sys.exit(1)
 
 # An explicit call to exit() is required to exit the program, when

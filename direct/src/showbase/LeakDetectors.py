@@ -3,14 +3,20 @@
 from pandac.PandaModules import *
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Job import Job
-import __builtin__, gc
+import gc, sys
+
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
+
 
 class LeakDetector:
     def __init__(self):
         # put this object just under __builtins__ where the
         # ContainerLeakDetector will find it quickly
-        if not hasattr(__builtin__, "leakDetectors"):
-            __builtin__.leakDetectors = {}
+        if not hasattr(builtins, "leakDetectors"):
+            builtins.leakDetectors = {}
         self._leakDetectorsKey = self.getLeakDetectorKey()
         if __dev__:
             assert self._leakDetectorsKey not in leakDetectors
@@ -52,7 +58,7 @@ class ObjectTypesLeakDetector(LeakDetector):
         self._thisLdGen = 0
 
     def destroy(self):
-        for ld in self._type2ld.itervalues():
+        for ld in self._type2ld.values():
             ld.destroy()
         LeakDetector.destroy(self)
 
@@ -133,7 +139,7 @@ class CppMemoryUsage(LeakDetector):
 class TaskLeakDetectorBase:
     def _getTaskNamePattern(self, taskName):
         # get a generic string pattern from a task name by removing numeric characters
-        for i in xrange(10):
+        for i in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
             taskName = taskName.replace('%s' % i, '')
         return taskName
 
@@ -165,7 +171,7 @@ class TaskLeakDetector(LeakDetector, TaskLeakDetectorBase):
         self._taskName2collector = {}
 
     def destroy(self):
-        for taskName, collector in self._taskName2collector.iteritems():
+        for taskName, collector in self._taskName2collector.items():
             collector.destroy()
         del self._taskName2collector
         LeakDetector.destroy(self)
@@ -189,7 +195,7 @@ class TaskLeakDetector(LeakDetector, TaskLeakDetectorBase):
 class MessageLeakDetectorBase:
     def _getMessageNamePattern(self, msgName):
         # get a generic string pattern from a message name by removing numeric characters
-        for i in xrange(10):
+        for i in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
             msgName = msgName.replace('%s' % i, '')
         return msgName
 
@@ -266,7 +272,7 @@ class MessageTypesLeakDetector(LeakDetector, MessageLeakDetectorBase):
         if self._createJob:
             self._createJob.destroy()
         self._createJob = None
-        for msgName, detector in self._msgName2detector.iteritems():
+        for msgName, detector in self._msgName2detector.items():
             detector.destroy()
         del self._msgName2detector
         LeakDetector.destroy(self)
@@ -342,7 +348,7 @@ class MessageListenerTypesLeakDetector(LeakDetector):
         if self._createJob:
             self._createJob.destroy()
         self._createJob = None
-        for typeName, detector in self._typeName2detector.iteritems():
+        for typeName, detector in self._typeName2detector.items():
             detector.destroy()
         del self._typeName2detector
         LeakDetector.destroy(self)

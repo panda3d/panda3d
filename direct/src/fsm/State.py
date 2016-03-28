@@ -199,7 +199,7 @@ class State(DirectObject):
         self.__enterChildren(argList)
 
         if (self.__enterFunc != None):
-            apply(self.__enterFunc, argList)
+            self.__enterFunc(*argList)
 
     def exit(self, argList=[]):
         """
@@ -210,7 +210,7 @@ class State(DirectObject):
 
         # call exit function if it exists
         if (self.__exitFunc != None):
-            apply(self.__exitFunc, argList)
+            self.__exitFunc(*argList)
 
     def __str__(self):
         return "State: name = %s, enter = %s, exit = %s, trans = %s, children = %s" %\

@@ -4,9 +4,13 @@ __all__ = ['FSMInspector', 'StateInspector']
 
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-from tkSimpleDialog import askstring
-from Tkinter import *
-import Pmw, math, operator
+import Pmw, math, operator, sys
+
+if sys.version_info >= (3, 0):
+    from tkinter.simpledialog import askstring
+else:
+    from tkSimpleDialog import askstring
+
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi
 
@@ -115,14 +119,14 @@ class FSMInspector(AppShell):
         self._canvas.itemconfigure('labels', font = ('MS Sans Serif', size))
 
     def setMarkerSize(self, size):
-        for key in self.stateInspectorDict.keys():
+        for key in self.stateInspectorDict:
             self.stateInspectorDict[key].setRadius(size)
         self.drawConnections()
 
     def drawConnections(self, event = None):
         # Get rid of existing arrows
         self._canvas.delete('arrow')
-        for key in self.stateInspectorDict.keys():
+        for key in self.stateInspectorDict:
             si = self.stateInspectorDict[key]
             state = si.state
             if state.getTransitions():
@@ -236,7 +240,7 @@ class FSMInspector(AppShell):
         self.setGridSize(self._gridSize)
 
     def setGridSize(self, size):
-        for key in self.stateInspectorDict.keys():
+        for key in self.stateInspectorDict:
             self.stateInspectorDict[key].setGridSize(size)
 
     def popupGridDialog(self):
@@ -253,29 +257,27 @@ class FSMInspector(AppShell):
 
     def printLayout(self):
         dict = self.stateInspectorDict
-        keys = dict.keys()
-        keys.sort
-        print "ClassicFSM.ClassicFSM('%s', [" % self.name
+        keys = list(dict.keys())
+        keys.sort()
+        print("ClassicFSM.ClassicFSM('%s', [" % self.name)
         for key in keys[:-1]:
             si = dict[key]
             center = si.center()
-            print "    State.State('%s'," % si.state.getName()
-            print "                %s," % si.state.getEnterFunc().__name__
-            print "                %s," % si.state.getExitFunc().__name__
-            print "                %s," % si.state.getTransitions()
-            print "                inspectorPos = ",
-            print "[%.1f, %.1f])," % (center[0], center[1])
+            print("    State.State('%s'," % si.state.getName())
+            print("                %s," % si.state.getEnterFunc().__name__)
+            print("                %s," % si.state.getExitFunc().__name__)
+            print("                %s," % si.state.getTransitions())
+            print("                inspectorPos = [%.1f, %.1f])," % (center[0], center[1]))
         for key in keys[-1:]:
             si = dict[key]
             center = si.center()
-            print "    State.State('%s'," % si.state.getName()
-            print "                %s," % si.state.getEnterFunc().__name__
-            print "                %s," % si.state.getExitFunc().__name__
-            print "                %s," % si.state.getTransitions()
-            print "                inspectorPos = ",
-            print "[%.1f, %.1f])]," % (center[0], center[1])
-        print "        '%s'," % self.fsm.getInitialState().getName()
-        print "        '%s')" % self.fsm.getFinalState().getName()
+            print("    State.State('%s'," % si.state.getName())
+            print("                %s," % si.state.getEnterFunc().__name__)
+            print("                %s," % si.state.getExitFunc().__name__)
+            print("                %s," % si.state.getTransitions())
+            print("                inspectorPos = [%.1f, %.1f])]," % (center[0], center[1]))
+        print("        '%s'," % self.fsm.getInitialState().getName())
+        print("        '%s')" % self.fsm.getFinalState().getName())
 
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():
@@ -434,7 +436,7 @@ class StateInspector(Pmw.MegaArchetype):
         self.fsm.request(self.getName())
 
     def inspectSubMachine(self):
-        print 'inspect ' + self.tag + ' subMachine'
+        print('inspect ' + self.tag + ' subMachine')
         for childFSM in self.state.getChildren():
             FSMInspector(childFSM)
 

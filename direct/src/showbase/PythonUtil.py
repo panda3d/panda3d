@@ -11,7 +11,7 @@ __all__ = ['indent',
 'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
 'findPythonModule', 'mostDerivedLast',
 'weightedChoice', 'randFloat', 'normalDistrib',
-'weightedRand', 'randUint31', 'randInt32', 'randUint32',
+'weightedRand', 'randUint31', 'randInt32',
 'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
 'SingletonError', 'printListEnum', 'safeRepr',
 'fastRepr', 'isDefaultValue',
@@ -33,18 +33,23 @@ if __debug__:
                 'getProfileResultString', 'printStack', 'printReverseStack']
 
 import types
-import string
 import math
 import os
 import sys
 import random
 import time
-import __builtin__
 import importlib
 
 __report_indent = 3
 
 from panda3d.core import ConfigVariableBool
+
+if sys.version_info >= (3, 0):
+    import builtins
+    xrange = range
+else:
+    import __builtin__ as builtins
+
 
 """
 # with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
@@ -93,7 +98,7 @@ class Functor:
             except:
                 argStr = 'bad repr: %s' % arg.__class__
             s += ', %s' % argStr
-        for karg, value in self._kargs.items():
+        for karg, value in list(self._kargs.items()):
             s += ', %s=%s' % (karg, repr(value))
         s += ')'
         return s
@@ -220,13 +225,13 @@ if __debug__:
             return r
 
     def printStack():
-        print StackTrace(start=1).compact()
+        print(StackTrace(start=1).compact())
         return True
     def printReverseStack():
-        print StackTrace(start=1).reverseCompact()
+        print(StackTrace(start=1).reverseCompact())
         return True
     def printVerboseStack():
-        print StackTrace(start=1)
+        print(StackTrace(start=1))
         return True
 
     #-----------------------------------------------------------------------------
@@ -273,7 +278,7 @@ if __debug__:
         return traceFunctionCall(sys._getframe(2))
 
     def printThisCall():
-        print traceFunctionCall(sys._getframe(1))
+        print(traceFunctionCall(sys._getframe(1)))
         return 1 # to allow "assert printThisCall()"
 
 # Magic numbers: These are the bit masks in func_code.co_flags that
@@ -284,7 +289,7 @@ _KEY_DICT = 8
 def doc(obj):
     if (isinstance(obj, types.MethodType)) or \
        (isinstance(obj, types.FunctionType)):
-        print obj.__doc__
+        print(obj.__doc__)
 
 def adjust(command = None, dim = 1, parent = None, **kw):
     """
@@ -312,15 +317,15 @@ def adjust(command = None, dim = 1, parent = None, **kw):
     Valuator = importlib.import_module('direct.tkwidgets.Valuator')
     # Set command if specified
     if command:
-        kw['command'] = lambda x: apply(command, x)
+        kw['command'] = lambda x: command(*x)
         if parent is None:
             kw['title'] = command.__name__
     kw['dim'] = dim
     # Create toplevel if needed
     if not parent:
-        vg = apply(Valuator.ValuatorGroupPanel, (parent,), kw)
+        vg = Valuator.ValuatorGroupPanel(parent, **kw)
     else:
-        vg = apply(Valuator.ValuatorGroup, (parent,), kw)
+        vg = Valuator.ValuatorGroup(parent, **kw)
         vg.pack(expand = 1, fill = 'x')
     return vg
 
@@ -378,18 +383,18 @@ def sameElements(a, b):
 
 def makeList(x):
     """returns x, converted to a list"""
-    if type(x) is types.ListType:
+    if type(x) is list:
         return x
-    elif type(x) is types.TupleType:
+    elif type(x) is tuple:
         return list(x)
     else:
         return [x,]
 
 def makeTuple(x):
     """returns x, converted to a tuple"""
-    if type(x) is types.ListType:
+    if type(x) is list:
         return tuple(x)
-    elif type(x) is types.TupleType:
+    elif type(x) is tuple:
         return x
     else:
         return (x,)
@@ -429,7 +434,7 @@ def invertDict(D, lossy=False):
     n = {}
     for key, value in D.items():
         if not lossy and value in n:
-            raise 'duplicate key in invertDict: %s' % value
+            raise Exception('duplicate key in invertDict: %s' % value)
         n[value] = key
     return n
 
@@ -587,7 +592,7 @@ class StdoutPassthrough(StdoutCapture):
 
 # constant profile defaults
 if __debug__:
-    from StringIO import StringIO
+    from io import StringIO
 
     PyUtilProfileDefaultFilename = 'profiledata'
     PyUtilProfileDefaultLines = 80
@@ -604,29 +609,29 @@ if __debug__:
 
     def profileFunc(callback, name, terse, log=True):
         global _ProfileResultStr
-        if 'globalProfileFunc' in __builtin__.__dict__:
+        if 'globalProfileFunc' in builtins.__dict__:
             # rats. Python profiler is not re-entrant...
             base.notify.warning(
                 'PythonUtil.profileStart(%s): aborted, already profiling %s'
                 #'\nStack Trace:\n%s'
-                % (name, __builtin__.globalProfileFunc,
+                % (name, builtins.globalProfileFunc,
                 #StackTrace()
                 ))
             return
-        __builtin__.globalProfileFunc = callback
-        __builtin__.globalProfileResult = [None]
+        builtins.globalProfileFunc = callback
+        builtins.globalProfileResult = [None]
         prefix = '***** START PROFILE: %s *****' % name
         if log:
-            print prefix
+            print(prefix)
         startProfile(cmd='globalProfileResult[0]=globalProfileFunc()', callInfo=(not terse), silent=not log)
         suffix = '***** END PROFILE: %s *****' % name
         if log:
-            print suffix
+            print(suffix)
         else:
             _ProfileResultStr = '%s\n%s\n%s' % (prefix, _ProfileResultStr, suffix)
         result = globalProfileResult[0]
-        del __builtin__.__dict__['globalProfileFunc']
-        del __builtin__.__dict__['globalProfileResult']
+        del builtins.__dict__['globalProfileFunc']
+        del builtins.__dict__['globalProfileResult']
         return result
 
     def profiled(category=None, terse=False):
@@ -641,7 +646,7 @@ if __debug__:
 
         want-profile-particles 1
         """
-        assert type(category) in (types.StringType, types.NoneType), "must provide a category name for @profiled"
+        assert type(category) in (str, type(None)), "must provide a category name for @profiled"
 
         # allow profiling in published versions
         """
@@ -720,8 +725,8 @@ if __debug__:
         assert filename not in profileFilenames
         profileFilenames.add(filename)
         profileFilenameList.push(filename)
-        movedOpenFuncs.append(__builtin__.open)
-        __builtin__.open = _profileOpen
+        movedOpenFuncs.append(builtins.open)
+        builtins.open = _profileOpen
         movedDumpFuncs.append(marshal.dump)
         marshal.dump = _profileMarshalDump
         movedLoadFuncs.append(marshal.load)
@@ -746,7 +751,7 @@ if __debug__:
         assert profileFilenameList.top() == filename
         marshal.load = movedLoadFuncs.pop()
         marshal.dump = movedDumpFuncs.pop()
-        __builtin__.open = movedOpenFuncs.pop()
+        builtins.open = movedOpenFuncs.pop()
         profileFilenames.remove(filename)
         profileFilenameList.pop()
         profileFilename2file.pop(filename, None)
@@ -763,10 +768,10 @@ if __debug__:
     #
     #        def func(self=self):
     #            self.load()
-    #        import __builtin__
-    #        __builtin__.func = func
+    #        import builtins
+    #        builtins.func = func
     #        PythonUtil.startProfile(cmd='func()', filename='profileData')
-    #        del __builtin__.func
+    #        del builtins.func
     #
     def _profileWithoutGarbageLeak(cmd, filename):
         # The profile module isn't necessarily installed on every Python
@@ -1162,8 +1167,8 @@ def weightedRand(valDict, rng=random.random):
     -Weights need not add up to any particular value.
     -The actual selection will be returned.
     """
-    selections = valDict.keys()
-    weights = valDict.values()
+    selections = list(valDict.keys())
+    weights = list(valDict.values())
 
     totalWeight = 0
     for weight in weights:
@@ -1195,11 +1200,6 @@ def randInt32(rng=random.random):
         i *= -1
     return i
 
-def randUint32(rng=random.random):
-    """returns a random integer in [0..2^32).
-    rng must return float in [0..1]"""
-    return long(rng() * 0xFFFFFFFFL)
-
 class SerialNumGen:
     """generates serial numbers"""
     def __init__(self, start=None):
@@ -1228,15 +1228,16 @@ def uniqueName(name):
 
 class EnumIter:
     def __init__(self, enum):
-        self._values = enum._stringTable.keys()
+        self._values = list(enum._stringTable.keys())
         self._index = 0
     def __iter__(self):
         return self
-    def next(self):
+    def __next__(self):
         if self._index >= len(self._values):
             raise StopIteration
         self._index += 1
         return self._values[self._index-1]
+    next = __next__
 
 class Enum:
     """Pass in list of strings or string of comma-separated strings.
@@ -1258,6 +1259,8 @@ class Enum:
     """
 
     if __debug__:
+        import string
+
         # chars that cannot appear within an item string.
         InvalidChars = string.whitespace
         def _checkValidIdentifier(item):
@@ -1389,7 +1392,7 @@ def printListEnumGen(l):
         n //= 10
     format = '%0' + '%s' % digits + 'i:%s'
     for i in range(len(l)):
-        print format % (i, l[i])
+        print(format % (i, l[i]))
         yield None
 
 def printListEnum(l):
@@ -1461,10 +1464,10 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
             _visitedIds = set()
         if id(obj) in _visitedIds:
             return '<ALREADY-VISITED %s>' % itype(obj)
-        if type(obj) in (types.TupleType, types.ListType):
+        if type(obj) in (tuple, list):
             s = ''
-            s += {types.TupleType: '(',
-                  types.ListType:  '[',}[type(obj)]
+            s += {tuple: '(',
+                  list:  '[',}[type(obj)]
             if maxLen is not None and len(obj) > maxLen:
                 o = obj[:maxLen]
                 ellips = '...'
@@ -1477,16 +1480,16 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
                 s += ', '
             _visitedIds.remove(id(obj))
             s += ellips
-            s += {types.TupleType: ')',
-                  types.ListType:  ']',}[type(obj)]
+            s += {tuple: ')',
+                  list:  ']',}[type(obj)]
             return s
-        elif type(obj) is types.DictType:
+        elif type(obj) is dict:
             s = '{'
             if maxLen is not None and len(obj) > maxLen:
-                o = obj.keys()[:maxLen]
+                o = list(obj.keys())[:maxLen]
                 ellips = '...'
             else:
-                o = obj.keys()
+                o = list(obj.keys())
                 ellips = ''
             _visitedIds.add(id(obj))
             for key in o:
@@ -1497,7 +1500,7 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
             s += ellips
             s += '}'
             return s
-        elif type(obj) is types.StringType:
+        elif type(obj) is str:
             if maxLen is not None:
                 maxLen *= strFactor
             if maxLen is not None and len(obj) > maxLen:
@@ -1515,14 +1518,14 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
 
 def convertTree(objTree, idList):
     newTree = {}
-    for key in objTree.keys():
+    for key in list(objTree.keys()):
         obj = (idList[key],)
         newTree[obj] = {}
         r_convertTree(objTree[key], newTree[obj], idList)
     return newTree
 
 def r_convertTree(oldTree, newTree, idList):
-    for key in oldTree.keys():
+    for key in list(oldTree.keys()):
 
         obj = idList.get(key)
         if(not obj):
@@ -1535,14 +1538,14 @@ def r_convertTree(oldTree, newTree, idList):
 
 def pretty_print(tree):
     for name in tree.keys():
-        print name
+        print(name)
         r_pretty_print(tree[name], 0)
 
 
 def r_pretty_print(tree, num):
     num+=1
     for name in tree.keys():
-        print "  "*num,name
+        print("  "*num,name)
         r_pretty_print(tree[name],num)
 
 
@@ -1568,13 +1571,13 @@ def appendStr(obj, st):
 class ScratchPad:
     """empty class to stick values onto"""
     def __init__(self, **kArgs):
-        for key, value in kArgs.iteritems():
+        for key, value in kArgs.items():
             setattr(self, key, value)
         self._keys = set(kArgs.keys())
     def add(self, **kArgs):
-        for key, value in kArgs.iteritems():
+        for key, value in kArgs.items():
             setattr(self, key, value)
-        self._keys.update(kArgs.keys())
+        self._keys.update(list(kArgs.keys()))
     def destroy(self):
         for key in self._keys:
             delattr(self, key)
@@ -1639,10 +1642,10 @@ def deeptype(obj, maxLen=100, _visitedIds=None):
     if id(obj) in _visitedIds:
         return '<ALREADY-VISITED %s>' % itype(obj)
     t = type(obj)
-    if t in (types.TupleType, types.ListType):
+    if t in (tuple, list):
         s = ''
-        s += {types.TupleType: '(',
-              types.ListType:  '[',}[type(obj)]
+        s += {tuple: '(',
+              list:  '[',}[type(obj)]
         if maxLen is not None and len(obj) > maxLen:
             o = obj[:maxLen]
             ellips = '...'
@@ -1655,16 +1658,16 @@ def deeptype(obj, maxLen=100, _visitedIds=None):
             s += ', '
         _visitedIds.remove(id(obj))
         s += ellips
-        s += {types.TupleType: ')',
-              types.ListType:  ']',}[type(obj)]
+        s += {tuple: ')',
+              list:  ']',}[type(obj)]
         return s
-    elif type(obj) is types.DictType:
+    elif type(obj) is dict:
         s = '{'
         if maxLen is not None and len(obj) > maxLen:
-            o = obj.keys()[:maxLen]
+            o = list(obj.keys())[:maxLen]
             ellips = '...'
         else:
-            o = obj.keys()
+            o = list(obj.keys())
             ellips = ''
         _visitedIds.add(id(obj))
         for key in o:
@@ -1745,7 +1748,7 @@ def printNumberedTyped(items, maxLen=5000):
         if len(objStr) > maxLen:
             snip = '<SNIP>'
             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
-        print format % (i, itype(items[i]), objStr)
+        print(format % (i, itype(items[i]), objStr))
 
 def printNumberedTypesGen(items, maxLen=5000):
     digits = 0
@@ -1756,7 +1759,7 @@ def printNumberedTypesGen(items, maxLen=5000):
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s'
     for i in xrange(len(items)):
-        print format % (i, itype(items[i]))
+        print(format % (i, itype(items[i])))
         yield None
 
 def printNumberedTypes(items, maxLen=5000):
@@ -2048,7 +2051,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 pass
             pass
 
-    except NameError,e:
+    except NameError as e:
         return decorator
 
     globalClockDelta = importlib.import_module("direct.distributed.ClockDelta").globalClockDelta
@@ -2101,18 +2104,18 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                     if notifyFunc:
                         notifyFunc(outStr % (prefix,))
                     else:
-                        print indent(outStr % (prefix,))
+                        print(indent(outStr % (prefix,)))
             else:
                 if notifyFunc:
                     notifyFunc(outStr)
                 else:
-                    print indent(outStr)
+                    print(indent(outStr))
 
             if 'interests' in types:
                 base.cr.printInterestSets()
 
             if 'stackTrace' in types:
-                print StackTrace()
+                print(StackTrace())
 
             global __report_indent
             rVal = None
@@ -2122,7 +2125,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             finally:
                 __report_indent -= 1
                 if rVal is not None:
-                    print indent(' -> '+repr(rVal))
+                    print(indent(' -> '+repr(rVal)))
                     pass
                 pass
             return rVal
@@ -2177,12 +2180,12 @@ if __debug__:
             def _exceptionLogged(*args, **kArgs):
                 try:
                     return f(*args, **kArgs)
-                except Exception, e:
+                except Exception as e:
                     try:
                         s = '%s(' % f.__name__
                         for arg in args:
                             s += '%s, ' % arg
-                        for key, value in kArgs.items():
+                        for key, value in list(kArgs.items()):
                             s += '%s=%s, ' % (key, value)
                         if len(args) or len(kArgs):
                             s = s[:-2]
@@ -2235,7 +2238,7 @@ def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
     def flywheel(index2objectAndCount):
         # generator to produce a sequence whose elements appear a specific number of times
         while len(index2objectAndCount):
-            keyList = index2objectAndCount.keys()
+            keyList = list(index2objectAndCount.keys())
             for key in keyList:
                 if index2objectAndCount[key][1] > 0:
                     yield index2objectAndCount[key][0]
@@ -2322,7 +2325,7 @@ if __debug__:
                     st=globalClock.getRealTime()
                     f(*args,**kArgs)
                     s=globalClock.getRealTime()-st
-                    print "Function %s.%s took %s seconds"%(f.__module__, f.__name__,s)
+                    print("Function %s.%s took %s seconds"%(f.__module__, f.__name__,s))
                 else:
                     import profile as prof, pstats
 
@@ -2355,7 +2358,7 @@ def getTotalAnnounceTime():
 def getAnnounceGenerateTime(stat):
     val=0
     stats=stat.stats
-    for i in stats.keys():
+    for i in list(stats.keys()):
         if(i[2]=="announceGenerate"):
             newVal=stats[i][3]
             if(newVal>val):
@@ -2418,9 +2421,9 @@ class MiniLogSentry:
         del self.log
 
 def logBlock(id, msg):
-    print '<< LOGBLOCK(%03d)' % id
-    print str(msg)
-    print '/LOGBLOCK(%03d) >>' % id
+    print('<< LOGBLOCK(%03d)' % id)
+    print(str(msg))
+    print('/LOGBLOCK(%03d) >>' % id)
 
 class HierarchyException(Exception):
     JOSWILSO = 0
@@ -2592,9 +2595,6 @@ def endSuperLog():
         superLogFile.close()
         superLogFile = None
 
-def isInteger(n):
-    return type(n) in (types.IntType, types.LongType)
-
 def configIsToday(configName):
     # TODO: replace usage of strptime with something else
     # returns true if config string is a valid representation of today's date
@@ -2660,68 +2660,53 @@ if __debug__ and __name__ == '__main__':
     assert unescapeHtmlString('as%32df') == 'as2df'
     assert unescapeHtmlString('asdf%32') == 'asdf2'
 
-def unicodeUtf8(s):
-    # * -> Unicode UTF-8
-    if type(s) is types.UnicodeType:
-        return s
-    else:
-        return unicode(str(s), 'utf-8')
-
-def encodedUtf8(s):
-    # * -> 8-bit-encoded UTF-8
-    return unicodeUtf8(s).encode('utf-8')
-
-import __builtin__
-__builtin__.Functor = Functor
-__builtin__.Stack = Stack
-__builtin__.Queue = Queue
-__builtin__.Enum = Enum
-__builtin__.SerialNumGen = SerialNumGen
-__builtin__.SerialMaskedGen = SerialMaskedGen
-__builtin__.ScratchPad = ScratchPad
-__builtin__.uniqueName = uniqueName
-__builtin__.serialNum = serialNum
+builtins.Functor = Functor
+builtins.Stack = Stack
+builtins.Queue = Queue
+builtins.Enum = Enum
+builtins.SerialNumGen = SerialNumGen
+builtins.SerialMaskedGen = SerialMaskedGen
+builtins.ScratchPad = ScratchPad
+builtins.uniqueName = uniqueName
+builtins.serialNum = serialNum
 if __debug__:
-    __builtin__.profiled = profiled
-    __builtin__.exceptionLogged = exceptionLogged
-__builtin__.itype = itype
-__builtin__.appendStr = appendStr
-__builtin__.bound = bound
-__builtin__.clamp = clamp
-__builtin__.lerp = lerp
-__builtin__.makeList = makeList
-__builtin__.makeTuple = makeTuple
+    builtins.profiled = profiled
+    builtins.exceptionLogged = exceptionLogged
+builtins.itype = itype
+builtins.appendStr = appendStr
+builtins.bound = bound
+builtins.clamp = clamp
+builtins.lerp = lerp
+builtins.makeList = makeList
+builtins.makeTuple = makeTuple
 if __debug__:
-    __builtin__.printStack = printStack
-    __builtin__.printReverseStack = printReverseStack
-    __builtin__.printVerboseStack = printVerboseStack
-__builtin__.DelayedCall = DelayedCall
-__builtin__.DelayedFunctor = DelayedFunctor
-__builtin__.FrameDelayedCall = FrameDelayedCall
-__builtin__.SubframeCall = SubframeCall
-__builtin__.invertDict = invertDict
-__builtin__.invertDictLossless = invertDictLossless
-__builtin__.getBase = getBase
-__builtin__.getRepository = getRepository
-__builtin__.safeRepr = safeRepr
-__builtin__.fastRepr = fastRepr
-__builtin__.nullGen = nullGen
-__builtin__.flywheel = flywheel
-__builtin__.loopGen = loopGen
+    builtins.printStack = printStack
+    builtins.printReverseStack = printReverseStack
+    builtins.printVerboseStack = printVerboseStack
+builtins.DelayedCall = DelayedCall
+builtins.DelayedFunctor = DelayedFunctor
+builtins.FrameDelayedCall = FrameDelayedCall
+builtins.SubframeCall = SubframeCall
+builtins.invertDict = invertDict
+builtins.invertDictLossless = invertDictLossless
+builtins.getBase = getBase
+builtins.getRepository = getRepository
+builtins.safeRepr = safeRepr
+builtins.fastRepr = fastRepr
+builtins.nullGen = nullGen
+builtins.flywheel = flywheel
+builtins.loopGen = loopGen
 if __debug__:
-    __builtin__.StackTrace = StackTrace
-__builtin__.report = report
-__builtin__.pstatcollect = pstatcollect
-__builtin__.MiniLog = MiniLog
-__builtin__.MiniLogSentry = MiniLogSentry
-__builtin__.logBlock = logBlock
-__builtin__.HierarchyException = HierarchyException
-__builtin__.deeptype = deeptype
-__builtin__.Default = Default
-__builtin__.isInteger = isInteger
-__builtin__.configIsToday = configIsToday
-__builtin__.typeName = typeName
-__builtin__.safeTypeName = safeTypeName
-__builtin__.histogramDict = histogramDict
-__builtin__.unicodeUtf8 = unicodeUtf8
-__builtin__.encodedUtf8 = encodedUtf8
+    builtins.StackTrace = StackTrace
+builtins.report = report
+builtins.pstatcollect = pstatcollect
+builtins.MiniLog = MiniLog
+builtins.MiniLogSentry = MiniLogSentry
+builtins.logBlock = logBlock
+builtins.HierarchyException = HierarchyException
+builtins.deeptype = deeptype
+builtins.Default = Default
+builtins.configIsToday = configIsToday
+builtins.typeName = typeName
+builtins.safeTypeName = safeTypeName
+builtins.histogramDict = histogramDict

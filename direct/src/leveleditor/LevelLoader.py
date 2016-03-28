@@ -16,8 +16,8 @@ from direct.leveleditor.LevelLoaderBase import LevelLoaderBase
 from direct.leveleditor.ObjectMgr import ObjectMgr
 from direct.leveleditor.ProtoPalette import ProtoPalette
 from direct.leveleditor import ObjectGlobals as OG
-from ObjectHandler import ObjectHandler
-from ObjectPalette import ObjectPalette
+from .ObjectHandler import ObjectHandler
+from .ObjectPalette import ObjectPalette
 
 class LevelLoader(LevelLoaderBase):
     def __init__(self):

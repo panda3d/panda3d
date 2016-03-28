@@ -2,14 +2,13 @@
 Defines ObjectMgrBase
 """
 
-import os, time, wx, types, copy
+import os, time, copy
 
 from direct.task import Task
 from direct.actor.Actor import Actor
 from pandac.PandaModules import *
-from ActionMgr import *
-import ObjectGlobals as OG
-from ObjectPaletteBase import ObjectGen
+from .ActionMgr import *
+from . import ObjectGlobals as OG
 
 # python wrapper around a panda.NodePath object
 class PythonNodePath(NodePath):
@@ -41,14 +40,14 @@ class ObjectMgrBase:
     def reset(self):
         base.direct.deselectAllCB()
 
-        for id in self.objects.keys():
+        for id in list(self.objects.keys()):
             try:
                 self.objects[id][OG.OBJ_NP].removeNode()
             except:
                 pass
             del self.objects[id]
 
-        for np in self.npIndex.keys():
+        for np in list(self.npIndex.keys()):
             del self.npIndex[np]
 
         self.objects = {}
@@ -179,13 +178,13 @@ class ObjectMgrBase:
                     funcName = objDef.createFunction[OG.FUNC_NAME]
                     funcArgs = copy.deepcopy(objDef.createFunction[OG.FUNC_ARGS])
 
-                    for pair in funcArgs.items():
+                    for pair in list(funcArgs.items()):
                         if pair[1] == OG.ARG_NAME:
                             funcArgs[pair[0]] = nameStr
                         elif pair[1] == OG.ARG_PARENT:
                             funcArgs[pair[0]] = parent
 
-                    if type(funcName) == types.StringType:
+                    if type(funcName) == str:
                         if funcName.startswith('.'):
                             # when it's using default objectHandler
                             if self.editor:
@@ -512,7 +511,7 @@ class ObjectMgrBase:
             else:
                 newobjModel = loader.loadModel(model, okMissing=True)
                 if newobjModel is None:
-                    print "Can't load model %s"%model
+                    print("Can't load model %s"%model)
                     return
                 self.flatten(newobjModel, model, objDef, uid)
                 newobj = PythonNodePath(newobjModel)
@@ -683,7 +682,7 @@ class ObjectMgrBase:
                         kwargs[key] = funcArgs[key]
                         undoKwargs[key] = funcArgs[key]
 
-                if type(funcName) == types.StringType:
+                if type(funcName) == str:
                     if funcName.startswith('.'):
                         if self.editor:
                             func = Functor(getattr(self.editor, "objectHandler%s"%funcName), **kwargs)

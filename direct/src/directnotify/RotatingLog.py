@@ -91,7 +91,7 @@ class RotatingLog:
                 self.timeLimit=time.time()+self.timeInterval
         else:
             # We'll keep writing to the old file, if available.
-            print "RotatingLog error: Unable to open new log file \"%s\"."%(path,)
+            print("RotatingLog error: Unable to open new log file \"%s\"." % (path,))
 
     def write(self, data):
         """
@@ -115,8 +115,9 @@ class RotatingLog:
     def isatty(self):
         return self.file.isatty()
 
-    def next(self):
-        return self.file.next()
+    def __next__(self):
+        return next(self.file)
+    next = __next__
 
     def read(self, size):
         return self.file.read(size)

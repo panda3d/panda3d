@@ -1,5 +1,5 @@
 #from otp.ai.AIBaseGlobal import *
-from DistributedObjectUD import DistributedObjectUD
+from .DistributedObjectUD import DistributedObjectUD
 
 class DistributedNodeUD(DistributedObjectUD):
     def __init__(self, air, name=None):
@@ -13,7 +13,7 @@ class DistributedNodeUD(DistributedObjectUD):
                 name = self.__class__.__name__
 
     def b_setParent(self, parentToken):
-        if type(parentToken) == types.StringType:
+        if type(parentToken) == str:
             self.setParentStr(parentToken)
         else:
             self.setParent(parentToken)

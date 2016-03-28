@@ -690,7 +690,7 @@ def subdivideCollisions(self, numSolidsInLeaves):
                 # this CollisionNode doesn't need to be split
                 continue
             solids = []
-            for i in xrange(numSolids):
+            for i in range(numSolids):
                 solids.append(node.getSolid(i))
             # recursively subdivide the solids into a spatial binary tree
             solidTree = self.r_subdivideCollisions(solids, numSolidsInLeaves)
@@ -743,7 +743,7 @@ def r_subdivideCollisions(self, solids, numSolidsInLeaves):
                 midY += maxExtent
         if extentZ < (maxExtent * .75) or extentZ > (maxExtent * 1.25):
                 midZ += maxExtent
-        for i in xrange(len(solids)):
+        for i in range(len(solids)):
                 origin = origins[i]
                 x = origin.getX(); y = origin.getY(); z = origin.getZ()
                 if x < midX:

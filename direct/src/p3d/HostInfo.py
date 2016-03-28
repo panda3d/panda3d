@@ -244,10 +244,10 @@ class HostInfo:
                             # if we get here there may be some bigger problem.  Just
                             # give the generic "big problem" message.
                             launcher.setPandaErrorCode(6)
-                    except NameError,e:
+                    except NameError as e:
                         # no launcher
                         pass
-                    except AttributeError, e:
+                    except AttributeError as e:
                         self.notify.warning("%s" % (str(e),))
                         pass
                     return False
@@ -653,8 +653,8 @@ class HostInfo:
 
         packages = packages[:]
 
-        for key, platforms in self.packages.items():
-            for platform, package in platforms.items():
+        for key, platforms in list(self.packages.items()):
+            for platform, package in list(platforms.items()):
                 if package in packages:
                     self.__deletePackageFiles(package)
                     del platforms[platform]

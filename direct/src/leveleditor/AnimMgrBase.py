@@ -2,12 +2,12 @@
 Defines AnimMgrBase
 """
 
-import os, wx, math
+import os, math
 
 from direct.interval.IntervalGlobal import *
-from panda3d.core import VBase3,VBase4
-import ObjectGlobals as OG
-import AnimGlobals as AG
+from panda3d.core import VBase3
+from . import ObjectGlobals as OG
+from . import AnimGlobals as AG
 
 class AnimMgrBase:
     """ AnimMgr will create, manage, update animations in the scene """
@@ -47,7 +47,7 @@ class AnimMgrBase:
     def generateKeyFrames(self):
         #generate keyFrame list
         self.keyFrames = []
-        for property in self.keyFramesInfo.keys():
+        for property in list(self.keyFramesInfo.keys()):
             for frameInfo in self.keyFramesInfo[property]:
                 frame = frameInfo[AG.FRAME]
                 exist = False
@@ -80,7 +80,7 @@ class AnimMgrBase:
             return
 
     def removeAnimInfo(self, uid):
-        for property in self.keyFramesInfo.keys():
+        for property in list(self.keyFramesInfo.keys()):
             if property[AG.UID] == uid:
                 del self.keyFramesInfo[property]
         self.generateKeyFrames()
@@ -141,7 +141,7 @@ class AnimMgrBase:
         #generate key frame animation for normal property
         self.editor.objectMgr.findNodes(render)
         for node in self.editor.objectMgr.Nodes:
-            for property in self.keyFramesInfo.keys():
+            for property in list(self.keyFramesInfo.keys()):
                 if property[AG.UID] == node[OG.OBJ_UID] and property[AG.PROP_NAME] != 'X' and property[AG.PROP_NAME] != 'Y' and property[AG.PROP_NAME] != 'Z':
                     mysequence = Sequence(name = node[OG.OBJ_UID])
                     keyFramesInfo = self.keyFramesInfo[property]
@@ -166,7 +166,7 @@ class AnimMgrBase:
         #generate key frame animation for the property which is controled by animation curve
         self.editor.objectMgr.findNodes(render)
         for node in self.editor.objectMgr.Nodes:
-            for property in self.keyFramesInfo.keys():
+            for property in list(self.keyFramesInfo.keys()):
                 if property[AG.UID] == node[OG.OBJ_UID]:
                     if property[AG.PROP_NAME] == 'X' or property[AG.PROP_NAME] == 'Y' or property[AG.PROP_NAME] == 'Z':
                         mysequence = Sequence(name = node[OG.OBJ_UID])

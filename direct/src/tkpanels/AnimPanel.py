@@ -9,10 +9,14 @@ __all__ = ['AnimPanel', 'ActorControl']
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-from tkSimpleDialog import askfloat
-from Tkinter import *
-import Pmw, string, types
+import Pmw, sys
 from direct.task import Task
+
+if sys.version_info >= (3, 0):
+    from tkinter.simpledialog import askfloat
+else:
+    from tkSimpleDialog import askfloat
+
 
 FRAMES = 0
 SECONDS = 1
@@ -28,8 +32,7 @@ class AnimPanel(AppShell):
 
     def __init__(self, aList =  [], parent = None, session = None, **kw):
         INITOPT = Pmw.INITOPT
-        if ((type(aList) == types.ListType) or
-            (type(aList) == types.TupleType)):
+        if isinstance(aList, (list, tuple)):
             kw['actorList'] = aList
         else:
             kw['actorList'] = [aList]
@@ -201,7 +204,7 @@ class AnimPanel(AppShell):
         self.actorControlList = []
         for actor in self['actorList']:
             anims = actor.getAnimNames()
-            print "actor animnames: %s"%anims
+            print("actor animnames: %s"%anims)
             topAnims = []
             if 'neutral' in anims:
                 i = anims.index('neutral')
@@ -518,7 +521,7 @@ class ActorControl(Pmw.MegaWidget):
         if (self.fps == None):
             # there was probably a problem loading the
             # active animation, set default anim properties
-            print "unable to get animation fps, zeroing out animation info"
+            print("unable to get animation fps, zeroing out animation info")
             self.fps = 24
             self.duration = 0
             self.maxFrame = 0
@@ -624,7 +627,7 @@ class ActorControl(Pmw.MegaWidget):
 
     def goTo(self, t):
         # Convert scale value to float
-        t = string.atof(t)
+        t = float(t)
         # Now convert t to seconds for offset calculations
         if self.unitsVar.get() == FRAMES:
             t = t / self.fps

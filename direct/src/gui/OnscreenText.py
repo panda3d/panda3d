@@ -3,9 +3,9 @@
 __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm', 'BlackOnWhite']
 
 from panda3d.core import *
-import DirectGuiGlobals as DGG
+from . import DirectGuiGlobals as DGG
 from direct.showbase.DirectObject import DirectObject
-import types
+import sys
 
 ## These are the styles of text we might commonly see.  They set the
 ## overall appearance of the text according to one of a number of
@@ -152,7 +152,7 @@ class OnscreenText(DirectObject, NodePath):
         else:
             raise ValueError
 
-        if not isinstance(scale, types.TupleType):
+        if not isinstance(scale, tuple):
             # If the scale is already a tuple, it's a 2-d (x, y) scale.
             # Otherwise, it's a uniform scale--make it a tuple.
             scale = (scale, scale)
@@ -263,15 +263,24 @@ class OnscreenText(DirectObject, NodePath):
         self.textNode.clearText()
 
     def setText(self, text):
-        self.unicodeText = isinstance(text, types.UnicodeType)
+        if sys.version_info >= (3, 0):
+            assert not isinstance(text, bytes)
+            self.unicodeText = True
+        else:
+            self.unicodeText = isinstance(text, unicode)
+
         if self.unicodeText:
             self.textNode.setWtext(text)
         else:
             self.textNode.setText(text)
 
     def appendText(self, text):
-        if isinstance(text, types.UnicodeType):
-            self.unicodeText = 1
+        if sys.version_info >= (3, 0):
+            assert not isinstance(text, bytes)
+            self.unicodeText = True
+        else:
+            self.unicodeText = isinstance(text, unicode)
+
         if self.unicodeText:
             self.textNode.appendWtext(text)
         else:
@@ -322,7 +331,7 @@ class OnscreenText(DirectObject, NodePath):
         """
 
         if sy == None:
-            if isinstance(sx, types.TupleType):
+            if isinstance(sx, tuple):
                 self.__scale = sx
             else:
                 self.__scale = (sx, sx)
@@ -413,7 +422,7 @@ class OnscreenText(DirectObject, NodePath):
     def configure(self, option=None, **kw):
         # These is for compatibility with DirectGui functions
         if not self.mayChange:
-            print 'OnscreenText.configure: mayChange == 0'
+            print('OnscreenText.configure: mayChange == 0')
             return
         for option, value in kw.items():
             # Use option string to access setter function
@@ -424,11 +433,11 @@ class OnscreenText(DirectObject, NodePath):
                 else:
                     setter(value)
             except AttributeError:
-                print 'OnscreenText.configure: invalid option:', option
+                print('OnscreenText.configure: invalid option: %s' % option)
 
     # Allow index style references
     def __setitem__(self, key, value):
-        apply(self.configure, (), {key: value})
+        self.configure(*(), **{key: value})
 
     def cget(self, option):
         # Get current configuration setting.

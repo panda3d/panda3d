@@ -139,7 +139,7 @@ class Unpickler(pickle.Unpickler):
 try:
     from cStringIO import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 def dump(obj, file, protocol=None):
     Pickler(file, protocol).dump(obj)

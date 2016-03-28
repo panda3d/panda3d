@@ -97,12 +97,16 @@ class panda3d(package):
     excludeModule('wx',
                   'direct.showbase.WxGlobal')
 
-    excludeModule('Tkinter', 'Pmw',
+    excludeModule('Tkinter', 'tkinter', 'Pmw', 'tkinter.simpledialog',
                   'direct.showbase.TkGlobal',
                   'direct.tkpanels', 'direct.tkwidgets',
                   'tkCommonDialog', 'tkMessageBox', 'tkSimpleDialog')
 
-    excludeModule('MySQLdb', '_mysql')
+    excludeModule('MySQLdb', 'MySQLdb.connections', 'MySQLdb.constants',
+                  'MySQLdb.converters', '_mysql')
+
+    # Some code in distributed conditionally imports these.
+    excludeModule('otp.ai', 'otp.ai.AIZoneData')
 
     # Most of the core Panda3D DLL's will be included implicitly due to
     # being referenced by the above Python code.  Here we name a few more
@@ -141,14 +145,14 @@ class morepy(package):
     config(display_name = "Python standard library")
     require('panda3d')
 
-    module('string', 're', 'struct', 'difflib', 'StringIO', 'StringIO',
+    module('string', 're', 'struct', 'difflib',
            'textwrap', 'codecs', 'unicodedata', 'stringprep', 'datetime',
            'calendar', 'collections', 'heapq', 'bisect', 'array',
            'sched', 'queue', 'weakref', 'types', 'copy', 'pprint',
            'numbers', 'math', 'cmath', 'decimal', 'fractions',
            'random', 'itertools', 'functools', 'operator', 'os.path',
            'fileinput', 'filecmp', 'tempfile', 'glob', 'fnmatch', 'linecache',
-           'shutil', 'macpath', 'pickle', 'shelve', 'marshal', 'bsddb', 'zlib',
+           'shutil', 'macpath', 'pickle', 'shelve', 'marshal', 'zlib',
            'gzip', 'bz2', 'zipfile', 'tarfile', 'csv', 'netrc',
            'xdrlib', 'plistlib', 'hashlib', 'hmac', 'os',
            'time', 'optparse', 'getopt', 'logging', 'logging.*')
@@ -167,8 +171,8 @@ class morepy(package):
            'wave', 'chunk', 'colorsys', 'imghdr', 'sndhdr',
            'ossaudiodev', 'gettext', 'locale', 'cmd', 'shlex',
            'pydoc', 'doctest', 'unittest', 'test',
-           'bdb', 'pdb', 'hotshot', 'timeit', 'trace', 'sys', '__builtin__')
-    module('future_builtins', 'warnings', 'contextlib', 'abc',
+           'bdb', 'pdb', 'timeit', 'trace', 'sys')
+    module('warnings', 'contextlib', 'abc',
            'atexit', 'traceback', '__future__', 'gc', 'inspect',
            'site', 'fpectl', 'code', 'codeop', 'zipimport', 'pkgutil',
            'modulefinder', 'runpy', 'parser', 'symtable', 'symbol',
@@ -191,13 +195,14 @@ class morepy(package):
         # Removed because they were obsolete
         module('Bastion', 'rexec', 'commands', 'dircache', 'dl', 'fpformat',
                'htmllib', 'imageop', 'mhlib', 'popen2', 'sgmllib', 'stat',
-               'statvfs', 'thread', 'UserDict', 'UserList', 'UserString')
+               'statvfs', 'thread', 'UserDict', 'UserList', 'UserString',
+               'future_builtins', 'hotshot', 'bsddb')
         # Renamed to fix PEP8 violations
         module('_winreg', 'ConfigParser', 'copy_reg', 'SocketServer')
         # C and Python implementations of the same interface were merged
-        module('cPickle', 'cStringIO')
+        module('cPickle', 'cStringIO', 'StringIO')
         # Renamed because of poorly chosen names
-        module('repr', 'test.test_support')
+        module('repr', 'test.test_support', '__builtins__')
         # Modules that got grouped under packages
         module('anydbm', 'whichdb', 'dbm', 'dumbdbm', 'gdbm', 'dbhash')
         module('HTMLParser', 'htmlentitydefs')
@@ -209,7 +214,7 @@ class morepy(package):
         # Renamed to fix PEP8 violations
         module('winreg', 'configparser', 'copyreg', 'socketserver')
         # Renamed because of poorly chosen names
-        module('reprlib', 'test.support')
+        module('reprlib', 'test.support', 'builtins')
         # Modules that got grouped under packages
         module('dbm')
         module('html')

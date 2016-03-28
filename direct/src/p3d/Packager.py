@@ -11,8 +11,6 @@ from panda3d.core import *
 import sys
 import os
 import glob
-import string
-import types
 import struct
 import subprocess
 import copy
@@ -574,7 +572,7 @@ class Packager:
 
             # But first, make sure that all required modules are present.
             missing = []
-            moduleDict = dict(self.freezer.getModuleDefs()).keys()
+            moduleDict = dict(self.freezer.getModuleDefs())
             for module in self.requiredModules:
                 if module not in moduleDict:
                     missing.append(module)
@@ -1228,7 +1226,7 @@ class Packager:
 
             filenames = []
             for line in lines:
-                if line[0] not in string.whitespace:
+                if not line[0].isspace():
                     continue
                 line = line.strip()
                 s = line.find(' (compatibility')
@@ -1659,9 +1657,9 @@ class Packager:
                 xconfig = TiXmlElement('config')
 
                 for variable, value in self.configs.items():
-                    if isinstance(value, types.UnicodeType):
+                    if sys.version_info < (3, 0) and isinstance(value, unicode):
                         xconfig.SetAttribute(variable, value.encode('utf-8'))
-                    elif isinstance(value, types.BooleanType):
+                    elif isinstance(value, bool):
                         # True or False must be encoded as 1 or 0.
                         xconfig.SetAttribute(variable, str(int(value)))
                     else:
@@ -2190,7 +2188,7 @@ class Packager:
 
             if package not in self.requires:
                 self.requires.append(package)
-                for lowerName in package.targetFilenames.keys():
+                for lowerName in package.targetFilenames:
                     ext = Filename(lowerName).getExtension()
                     if ext not in self.packager.nonuniqueExtensions:
                         self.skipFilenames[lowerName] = True
@@ -2726,7 +2724,7 @@ class Packager:
                 packageNames.append(package.packageName)
 
         if packageNames:
-            from PatchMaker import PatchMaker
+            from .PatchMaker import PatchMaker
             pm = PatchMaker(self.installDir)
             pm.buildPatches(packageNames = packageNames)
 
@@ -2759,7 +2757,7 @@ class Packager:
         # By convention, the existence of a method of this class named
         # do_foo(self) is sufficient to define a pdef method call
         # foo().
-        for methodName in self.__class__.__dict__.keys():
+        for methodName in list(self.__class__.__dict__.keys()):
             if methodName.startswith('do_'):
                 name = methodName[3:]
                 c = func_closure(name)
@@ -3147,14 +3145,14 @@ class Packager:
         while p < len(version):
             # Scan to the first digit.
             w = ''
-            while p < len(version) and version[p] not in string.digits:
+            while p < len(version) and not version[p].isdigit():
                 w += version[p]
                 p += 1
             words.append(w)
 
             # Scan to the end of the string of digits.
             w = ''
-            while p < len(version) and version[p] in string.digits:
+            while p < len(version) and version[p].isdigit():
                 w += version[p]
                 p += 1
             if w:
@@ -3233,7 +3231,7 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        for keyword, value in kw.items():
+        for keyword, value in list(kw.items()):
             self.currentPackage.configs[keyword] = value
 
     def do_require(self, *args, **kw):
@@ -3917,17 +3915,10 @@ class metaclass_def(type):
 
         return type.__new__(self, name, bases, dict)
 
-class class_p3d:
-    __metaclass__ = metaclass_def
-    pass
-
-class class_package:
-    __metaclass__ = metaclass_def
-    pass
-
-class class_solo:
-    __metaclass__ = metaclass_def
-    pass
+# Define these dynamically to stay compatible with Python 2 and 3.
+class_p3d = metaclass_def(str('class_p3d'), (), {})
+class_package = metaclass_def(str('class_package'), (), {})
+class_solo = metaclass_def(str('class_solo'), (), {})
 
 class func_closure:
 

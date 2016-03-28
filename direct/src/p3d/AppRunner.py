@@ -13,7 +13,11 @@ __all__ = ["AppRunner", "dummyAppRunner", "ArgumentError"]
 
 import sys
 import os
-import __builtin__ as builtins
+
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
 
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
