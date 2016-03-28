@@ -1259,13 +1259,11 @@ class Enum:
     """
 
     if __debug__:
-        import string
-
         # chars that cannot appear within an item string.
-        InvalidChars = string.whitespace
         def _checkValidIdentifier(item):
-            invalidChars = string.whitespace+string.punctuation
-            invalidChars = invalidChars.replace('_','')
+            import string
+            invalidChars = string.whitespace + string.punctuation
+            invalidChars = invalidChars.replace('_', '')
             invalidFirstChars = invalidChars+string.digits
             if item[0] in invalidFirstChars:
                 raise SyntaxError("Enum '%s' contains invalid first char" %
