@@ -16,11 +16,11 @@ class DeltaProfiler:
     def printDeltaTime(self, label):
         if self.active:
             deltaTime=time()-self.priorTime
-            print "%s DeltaTime %-25s to %-25s: %3.5f"%(
+            print("%s DeltaTime %-25s to %-25s: %3.5f"%(
                 self.name,
                 self.priorLabel,
                 label,
-                deltaTime)
+                deltaTime))
             self.priorLabel=label
             # The printing time is not included in the timing.
             # This is intentional.

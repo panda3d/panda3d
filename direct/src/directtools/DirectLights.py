@@ -78,7 +78,7 @@ class DirectLights(NodePath):
             light.setColor(VBase4(1))
             light.setLens(PerspectiveLens())
         else:
-            print 'Invalid light type'
+            print('Invalid light type')
             return None
         # Add the new light
         directLight = DirectLight(light, self)

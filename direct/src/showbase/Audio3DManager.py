@@ -123,7 +123,7 @@ class Audio3DManager:
         Default: VBase3(0, 0, 0)
         """
         if not isinstance(velocity, VBase3):
-            raise TypeError, "Invalid argument 1, expected <VBase3>"
+            raise TypeError("Invalid argument 1, expected <VBase3>")
         self.vel_dict[sound]=velocity
 
     def setSoundVelocityAuto(self, sound):
@@ -144,7 +144,7 @@ class Audio3DManager:
             if (vel!=None):
                 return vel
             else:
-                for known_object in self.sound_dict.keys():
+                for known_object in list(self.sound_dict.keys()):
                     if self.sound_dict[known_object].count(sound):
                         return known_object.getPosDelta(self.root)/globalClock.getDt()
         return VBase3(0, 0, 0)
@@ -156,7 +156,7 @@ class Audio3DManager:
         Default: VBase3(0, 0, 0)
         """
         if not isinstance(velocity, VBase3):
-            raise TypeError, "Invalid argument 0, expected <VBase3>"
+            raise TypeError("Invalid argument 0, expected <VBase3>")
         self.listener_vel=velocity
 
     def setListenerVelocityAuto(self):
@@ -185,7 +185,7 @@ class Audio3DManager:
         """
         # sound is an AudioSound
         # object is any Panda object with coordinates
-        for known_object in self.sound_dict.keys():
+        for known_object in list(self.sound_dict.keys()):
             if self.sound_dict[known_object].count(sound):
                 # This sound is already attached to something
                 #return 0
@@ -207,7 +207,7 @@ class Audio3DManager:
         """
         sound will no longer have it's 3D position updated
         """
-        for known_object in self.sound_dict.keys():
+        for known_object in list(self.sound_dict.keys()):
             if self.sound_dict[known_object].count(sound):
                 self.sound_dict[known_object].remove(sound)
                 if len(self.sound_dict[known_object]) == 0:
@@ -258,7 +258,7 @@ class Audio3DManager:
             if self.audio_manager.getActive()==0:
                 return Task.cont
 
-        for known_object in self.sound_dict.keys():
+        for known_object in list(self.sound_dict.keys()):
             tracked_sound = 0
             while tracked_sound < len(self.sound_dict[known_object]):
                 sound = self.sound_dict[known_object][tracked_sound]
@@ -285,7 +285,7 @@ class Audio3DManager:
         """
         taskMgr.remove("Audio3DManager-updateTask")
         self.detachListener()
-        for object in self.sound_dict.keys():
+        for object in list(self.sound_dict.keys()):
             for sound in self.sound_dict[object]:
                 self.detachSound(sound)
 

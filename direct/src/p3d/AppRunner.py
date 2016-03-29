@@ -13,7 +13,11 @@ __all__ = ["AppRunner", "dummyAppRunner", "ArgumentError"]
 
 import sys
 import os
-import __builtin__ as builtins
+
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
 
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
@@ -798,7 +802,7 @@ class AppRunner(DirectObject):
             if not host.hasContentsFile:
                 # This is weird.  How did we launch without having
                 # this file at all?
-                raise OSError, message
+                raise OSError(message)
 
             # Just make it a warning and continue.
             self.notify.warning(message)
@@ -819,20 +823,20 @@ class AppRunner(DirectObject):
                     return self.addPackageInfo(name, platform, version, hostUrl, hostDir = hostDir, recurse = True)
 
             message = "Couldn't find %s %s on %s" % (name, version, hostUrl)
-            raise OSError, message
+            raise OSError(message)
 
         package.checkStatus()
         if not package.downloadDescFile(self.http):
             message = "Couldn't get desc file for %s" % (name)
-            raise OSError, message
+            raise OSError(message)
 
         if not package.downloadPackage(self.http):
             message = "Couldn't download %s" % (name)
-            raise OSError, message
+            raise OSError(message)
 
         if not package.installPackage(self):
             message = "Couldn't install %s" % (name)
-            raise OSError, message
+            raise OSError(message)
 
         if package.guiApp:
             self.guiApp = True
@@ -877,17 +881,17 @@ class AppRunner(DirectObject):
         vfs = VirtualFileSystem.getGlobalPtr()
 
         if not vfs.exists(fname):
-            raise ArgumentError, "No such file: %s" % (p3dFilename)
+            raise ArgumentError("No such file: %s" % (p3dFilename))
 
         fname.makeAbsolute()
         fname.setBinary()
         mf = Multifile()
         if p3dOffset == 0:
             if not mf.openRead(fname):
-                raise ArgumentError, "Not a Panda3D application: %s" % (p3dFilename)
+                raise ArgumentError("Not a Panda3D application: %s" % (p3dFilename))
         else:
             if not mf.openRead(fname, p3dOffset):
-                raise ArgumentError, "Not a Panda3D application: %s at offset: %s" % (p3dFilename, p3dOffset)
+                raise ArgumentError("Not a Panda3D application: %s at offset: %s" % (p3dFilename, p3dOffset))
 
         # Now load the p3dInfo file.
         self.p3dInfo = None
@@ -925,7 +929,7 @@ class AppRunner(DirectObject):
         # The interactiveConsole flag can only be set true if the
         # application has allow_python_dev set.
         if not self.allowPythonDev and interactiveConsole:
-            raise StandardError, "Impossible, interactive_console set without allow_python_dev."
+            raise Exception("Impossible, interactive_console set without allow_python_dev.")
         self.interactiveConsole = interactiveConsole
 
         if self.allowPythonDev:

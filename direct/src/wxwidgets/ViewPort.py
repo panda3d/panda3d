@@ -12,7 +12,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
 from direct.directtools.DirectGlobals import *
-from WxPandaWindow import WxPandaWindow
+from .WxPandaWindow import WxPandaWindow
 from panda3d.core import OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
 import wx
 
@@ -171,7 +171,7 @@ class Viewport(WxPandaWindow, DirectObject):
     if vpType == VPFRONT: return Viewport.makeFront(parent)
     if vpType == VPTOP:   return Viewport.makeTop(parent)
     if vpType == VPPERSPECTIVE:  return Viewport.makePerspective(parent)
-    raise TypeError, "Unknown viewport type: %s" % vpType
+    raise TypeError("Unknown viewport type: %s" % vpType)
 
   @staticmethod
   def makeOrthographic(parent, name, campos):

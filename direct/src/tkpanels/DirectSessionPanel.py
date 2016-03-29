@@ -5,15 +5,14 @@ __all__ = ['DirectSessionPanel']
 # Import Tkinter, Pmw, and the dial code
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
-from Tkinter import *
 from panda3d.core import *
-import Pmw, string
+import Pmw
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import SceneGraphExplorer
-from TaskManagerPanel import TaskManagerWidget
+from .TaskManagerPanel import TaskManagerWidget
 from direct.tkwidgets import MemoryExplorer
 
 """
@@ -744,8 +743,8 @@ class DirectSessionPanel(AppShell):
                                 color[2]/255.0)
 
     def selectDisplayRegionNamed(self, name):
-        if (string.find(name, 'Display Region ') >= 0):
-            drIndex = string.atoi(name[-1:])
+        if name.find('Display Region ') >= 0:
+            drIndex = int(name[-1:])
             self.activeDisplayRegion = base.direct.drList[drIndex]
         else:
             self.activeDisplayRegion = None

@@ -52,15 +52,14 @@ __all__ = ['usage', 'Squeezer', 'Loader', 'boot', 'open', 'explode', 'getloader'
 VERSION = "1.6/98-05-04"
 MAGIC   = "[PANDASQUEEZE]"
 
-import base64, imp, marshal, os, string, sys
+import base64, imp, marshal, os, sys
 
 # --------------------------------------------------------------------
 # usage
 
 def usage():
-        print
-        print "SQUEEZE", VERSION, "(c) 1997-1998 by Secret Labs AB"
-        print """\
+        print("\nSQUEEZE", VERSION, "(c) 1997-1998 by Secret Labs AB")
+        print("""\
 Convert a Python application to a compressed module package.
 
 Usage: squeeze [-1ux] -o app [-b start] modules... [-d files...]
@@ -87,7 +86,7 @@ StringIO file object).
 The -x option can be used with -d to create a self-extracting archive,
 instead of a package.  When the resulting script is executed, the
 data files are extracted.  Omit the -b option in this case.
-"""
+""")
         sys.exit(1)
 
 
@@ -199,9 +198,9 @@ def boot(name, fp, size, offset = 0):
 loaderopen = """
 
 def open(name):
-    import StringIO
+    from io import StringIO
     try:
-        return StringIO.StringIO(data["+"+name])
+        return StringIO(data["+"+name])
     except KeyError:
         raise IOError, (0, "no such file")
 """
@@ -268,12 +267,12 @@ def squeeze(app, start, filelist, outputDir):
         try:
                 fp = open(bootstrap)
                 s = fp.readline()
-                string.index(s, MAGIC)
+                s.index(MAGIC)
         except IOError:
                 pass
         except ValueError:
-                print bootstrap, "was not created by squeeze.  You have to manually"
-                print "remove the file to proceed."
+                print("%s was not created by squeeze.  You have to manually" % (bootstrap))
+                print("remove the file to proceed.")
                 sys.exit(1)
 
         #
@@ -298,7 +297,7 @@ def squeeze(app, start, filelist, outputDir):
         loaderlen = len(loader)
 
         magic = repr(imp.get_magic())
-        version = string.split(sys.version)[0]
+        version = sys.version.split()[0]
 
         #
         # generate script and package files
@@ -372,5 +371,4 @@ exec "from %(start)s import *"
 
         dummy, rawbytes = sq.getstatus()
 
-        print "squeezed", rawbytes, "to", bytes, "bytes",
-        print "(%d%%)" % (bytes * 100 / rawbytes)
+        print("squeezed %s to %s (%d%%)" % (rawbytes, bytes, bytes * 100 / rawbytes))

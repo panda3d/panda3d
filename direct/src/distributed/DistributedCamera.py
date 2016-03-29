@@ -148,8 +148,8 @@ class Fixture(NodePath, FSM):
         # if added to the dc definition of the Fixture struct and
         # saved out to the Camera file.
         lodNodes = render.findAllMatches('**/+LODNode')
-        for i in xrange(0,lodNodes.getNumPaths()):
-            lodNodes[i].node().forceSwitch(lodNodes[i].node().getHighestSwitch())
+        for lodNode in lodNodes:
+            lodNode.node().forceSwitch(lodNode.node().getHighestSwitch())
 
 
     def exitUsing(self):
@@ -183,13 +183,13 @@ class DistributedCamera(DistributedObject):
 
     def __str__(self):
         out = ''
-        for fixture in self.fixtures.itervalues():
+        for fixture in self.fixtures.values():
             out = '%s\n%s' % (out, fixture)
         return out[1:]
 
     def pack(self):
         out = ''
-        for fixture in self.fixtures.itervalues():
+        for fixture in self.fixtures.values():
             out = '%s\n%s' % (out, fixture.pack())
         return out[1:]
 
@@ -198,7 +198,7 @@ class DistributedCamera(DistributedObject):
 
         self.parent = None
 
-        for fixture in self.fixtures.itervalues():
+        for fixture in self.fixtures.values():
             fixture.cleanup()
             fixture.detachNode()
         self.fixtures = {}
@@ -215,7 +215,7 @@ class DistributedCamera(DistributedObject):
             else:
                 self.parent = self.cr.getDo(doId)
 
-            for fix in self.fixtures.itervalues():
+            for fix in self.fixtures.values():
                 fix.reparentTo(self.parent)
 
     def getCamParent(self):

@@ -6,7 +6,7 @@ __all__ = []
 if __name__ == "__main__":
     from direct.showbase.ShowBase import ShowBase
     from panda3d.core import *
-    from IntervalGlobal import *
+    from .IntervalGlobal import *
     from direct.actor.Actor import *
 
     from direct.directutil import Mopath
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     waterEventTrack.setIntervalStartTime('water-is-done', eventTime)
 
     def handleWaterDone():
-        print 'water is done'
+        print('water is done')
 
     # Interval can handle its own event
     messenger.accept('water-is-done', waterDone, handleWaterDone)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     i2 = FunctionInterval(lambda: base.transitions.fadeIn())
 
     def caughtIt():
-        print 'Caught here-is-an-event'
+        print('Caught here-is-an-event')
 
     class DummyAcceptor(DirectObject):
         pass
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     # Using a function
     def printDone():
-        print 'done'
+        print('done')
 
     i6 = FunctionInterval(printDone)
 
@@ -139,25 +139,25 @@ if __name__ == "__main__":
     def printStart():
         global startTime
         startTime = globalClock.getFrameTime()
-        print 'Start'
+        print('Start')
 
     def printPreviousStart():
         global startTime
         currTime = globalClock.getFrameTime()
-        print 'PREVIOUS_END %0.2f' % (currTime - startTime)
+        print('PREVIOUS_END %0.2f' % (currTime - startTime))
 
     def printPreviousEnd():
         global startTime
         currTime = globalClock.getFrameTime()
-        print 'PREVIOUS_END %0.2f' % (currTime - startTime)
+        print('PREVIOUS_END %0.2f' % (currTime - startTime))
 
     def printTrackStart():
         global startTime
         currTime = globalClock.getFrameTime()
-        print 'TRACK_START %0.2f' % (currTime - startTime)
+        print('TRACK_START %0.2f' % (currTime - startTime))
 
     def printArguments(a, b, c):
-        print 'My args were %d, %d, %d' % (a, b, c)
+        print('My args were %d, %d, %d' % (a, b, c))
 
     i1 = FunctionInterval(printStart)
     # Just to take time

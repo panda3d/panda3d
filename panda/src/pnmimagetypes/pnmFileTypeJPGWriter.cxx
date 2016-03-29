@@ -319,7 +319,7 @@ write_data(xel *array, xelval *) {
     row_pointer[0] = row;
     (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
   }
-  delete row;
+  delete[] row;
 
   /* Step 6: Finish compression */
 

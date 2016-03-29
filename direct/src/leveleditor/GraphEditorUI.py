@@ -1,12 +1,11 @@
 """
 Defines Graph Editor
 """
-import os,wx
+import wx
 import math
-import cPickle as pickle
-from PaletteTreeCtrl import *
-import ObjectGlobals as OG
-import AnimGlobals as AG
+from .PaletteTreeCtrl import *
+from . import ObjectGlobals as OG
+from . import AnimGlobals as AG
 from wx.lib.embeddedimage import PyEmbeddedImage
 
 property =  [
@@ -131,7 +130,7 @@ class GraphEditorWindow(wx.Window):
 
         if self._mainDialog.editor.animMgr.keyFramesInfo != {}:
             self.keyFramesInfo = self._mainDialog.editor.animMgr.keyFramesInfo
-            for key in self.keyFramesInfo.keys():
+            for key in self.keyFramesInfo:
                 if key == (self.object[OG.OBJ_UID], 'X'):
                     for i in range(len(self.keyFramesInfo[key])):
                         item = self.keyFramesInfo[key][i]

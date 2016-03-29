@@ -56,6 +56,7 @@
 #include "depthWriteAttrib.h"
 #include "fogAttrib.h"
 #include "lightAttrib.h"
+#include "logicOpAttrib.h"
 #include "materialAttrib.h"
 #include "rescaleNormalAttrib.h"
 #include "scissorAttrib.h"
@@ -475,6 +476,7 @@ reset() {
   _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(LogicOpAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
@@ -6632,6 +6634,34 @@ do_issue_material() {
 #endif  // SUPPORT_FIXED_FUNCTION
 
 /**
+ * Issues the logic operation attribute to the GL.
+ */
+#if !defined(OPENGLES) || defined(OPENGLES_1)
+void CLP(GraphicsStateGuardian)::
+do_issue_logic_op() {
+  const LogicOpAttrib *target_logic_op;
+  _target_rs->get_attrib_def(target_logic_op);
+
+  if (target_logic_op->get_operation() != LogicOpAttrib::O_none) {
+    glEnable(GL_COLOR_LOGIC_OP);
+    glLogicOp(GL_CLEAR - 1 + (int)target_logic_op->get_operation());
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glEnable(GL_COLOR_LOGIC_OP)\n";
+      GLCAT.spam() << "glLogicOp(" << target_logic_op->get_operation() << ")\n";
+    }
+  } else {
+    glDisable(GL_COLOR_LOGIC_OP);
+    glLogicOp(GL_COPY);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glDisable(GL_COLOR_LOGIC_OP)\n";
+    }
+  }
+}
+#endif
+
+/**
  *
  */
 void CLP(GraphicsStateGuardian)::
@@ -9657,6 +9687,16 @@ set_state_and_transform(const RenderState *target,
     // PStatGPUTimer timer(this, _draw_set_state_shade_model_pcollector);
     do_issue_shade_model();
     _state_mask.set_bit(shade_model_slot);
+  }
+#endif
+
+#if !defined(OPENGLES) || defined(OPENGLES_1)
+  int logic_op_slot = LogicOpAttrib::get_class_slot();
+  if (_target_rs->get_attrib(logic_op_slot) != _state_rs->get_attrib(logic_op_slot) ||
+      !_state_mask.get_bit(logic_op_slot)) {
+    // PStatGPUTimer timer(this, _draw_set_state_logic_op_pcollector);
+    do_issue_logic_op();
+    _state_mask.set_bit(logic_op_slot);
   }
 #endif
 

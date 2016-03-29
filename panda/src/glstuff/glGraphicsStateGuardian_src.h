@@ -405,6 +405,9 @@ protected:
   void do_issue_material();
 #endif
   void do_issue_texture();
+#if !defined(OPENGLES) || defined(OPENGLES_1)
+  void do_issue_logic_op();
+#endif
   void do_issue_blending();
 #ifdef SUPPORT_FIXED_FUNCTION
   void do_issue_tex_gen();

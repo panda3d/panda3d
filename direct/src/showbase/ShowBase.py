@@ -17,35 +17,38 @@ from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilitySho
 from direct.extensions_native import NodePath_extensions
 
 # This needs to be available early for DirectGUI imports
-import __builtin__ as builtins
+import sys
+if sys.version_info >= (3, 0):
+    import builtins
+else:
+    import __builtin__ as builtins
 builtins.config = get_config_showbase()
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
-from MessengerGlobal import messenger
-from BulletinBoardGlobal import bulletinBoard
+from .MessengerGlobal import messenger
+from .BulletinBoardGlobal import bulletinBoard
 from direct.task.TaskManagerGlobal import taskMgr
-from JobManagerGlobal import jobMgr
-from EventManagerGlobal import eventMgr
+from .JobManagerGlobal import jobMgr
+from .EventManagerGlobal import eventMgr
 #from PythonUtil import *
 from direct.interval import IntervalManager
 from direct.showbase.BufferViewer import BufferViewer
 from direct.task import Task
-import sys
-import Loader
+from . import Loader
 import time
 import atexit
 import importlib
 from direct.showbase import ExceptionVarDump
-import DirectObject
-import SfxPlayer
+from . import DirectObject
+from . import SfxPlayer
 if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
-    import OnScreenDebug
-import AppRunnerGlobal
+    from . import OnScreenDebug
+from . import AppRunnerGlobal
 
 def legacyRun():
-    builtins.base.notify.warning("run() is deprecated, use base.run() instead")
+    assert builtins.base.notify.warning("run() is deprecated, use base.run() instead")
     builtins.base.run()
 
 @atexit.register
@@ -342,7 +345,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Make sure we're not making more than one ShowBase.
         if hasattr(builtins, 'base'):
-            raise StandardError, "Attempt to spawn multiple ShowBase instances!"
+            raise Exception("Attempt to spawn multiple ShowBase instances!")
 
         # DO NOT ADD TO THIS LIST.  We're trying to phase out the use of
         # built-in variables by ShowBase.  Use a Global module if necessary.
@@ -406,7 +409,7 @@ class ShowBase(DirectObject.DirectObject):
         self.accept('window-event', self.windowEvent)
 
         # Transition effects (fade, iris, etc)
-        import Transitions
+        from . import Transitions
         self.transitions = Transitions.Transitions(self.loader)
 
         if self.win:
@@ -482,12 +485,12 @@ class ShowBase(DirectObject.DirectObject):
         add stuff to this.
         """
         if self.config.GetBool('want-env-debug-info', 0):
-           print "\n\nEnvironment Debug Info {"
-           print "* model path:"
-           print getModelPath()
+           print("\n\nEnvironment Debug Info {")
+           print("* model path:")
+           print(getModelPath())
            #print "* dna path:"
            #print getDnaPath()
-           print "}"
+           print("}")
 
     def destroy(self):
         """ Call this function to destroy the ShowBase and stop all
@@ -699,7 +702,7 @@ class ShowBase(DirectObject.DirectObject):
             if requireWindow:
                 # Unless require-window is set to false, it is an
                 # error not to open a window.
-                raise StandardError, 'Could not open window.'
+                raise Exception('Could not open window.')
         else:
             self.notify.info("Successfully opened window of type %s (%s)" % (
                 win.getType(), win.getPipe().getInterfaceName()))
@@ -1797,14 +1800,14 @@ class ShowBase(DirectObject.DirectObject):
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadSfx(self, name):
-        self.notify.warning("base.loadSfx is deprecated, use base.loader.loadSfx instead.")
+        assert self.notify.warning("base.loadSfx is deprecated, use base.loader.loadSfx instead.")
         return self.loader.loadSfx(name)
 
     # This function should only be in the loader but is here for
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadMusic(self, name):
-        self.notify.warning("base.loadMusic is deprecated, use base.loader.loadMusic instead.")
+        assert self.notify.warning("base.loadMusic is deprecated, use base.loader.loadMusic instead.")
         return self.loader.loadMusic(name)
 
     def playSfx(
@@ -2526,7 +2529,7 @@ class ShowBase(DirectObject.DirectObject):
         rig = NodePath(namePrefix)
         buffer = source.makeCubeMap(namePrefix, size, rig, cameraMask, 1)
         if buffer == None:
-            raise StandardError, "Could not make cube map."
+            raise Exception("Could not make cube map.")
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()
@@ -2596,7 +2599,7 @@ class ShowBase(DirectObject.DirectObject):
         buffer = toSphere.makeCubeMap(namePrefix, size, rig, cameraMask, 0)
         if buffer == None:
             self.graphicsEngine.removeWindow(toSphere)
-            raise StandardError, "Could not make cube map."
+            raise Exception("Could not make cube map.")
 
         # Set the near and far planes from the default lens.
         lens = rig.find('**/+Camera').node().getLens()
@@ -2911,7 +2914,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Use importlib to prevent this import from being picked up
         # by modulefinder when packaging an application.
-        tkinter = importlib.import_module('Tkinter').tkinter
+        tkinter = importlib.import_module('_tkinter')
         Pmw = importlib.import_module('Pmw')
 
         # Create a new Tk root.
@@ -2945,7 +2948,7 @@ class ShowBase(DirectObject.DirectObject):
                 # dooneevent will return 0 if there are no more events
                 # waiting or 1 if there are still more.
                 # DONT_WAIT tells tkinter not to block waiting for events
-                while tkinter.dooneevent(tkinter.ALL_EVENTS | tkinter.DONT_WAIT):
+                while self.tkRoot.dooneevent(tkinter.ALL_EVENTS | tkinter.DONT_WAIT):
                     pass
 
                 return task.again

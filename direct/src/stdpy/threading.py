@@ -21,7 +21,6 @@ easier to use and understand.
 It is permissible to mix-and-match both threading and threading2
 within the same application. """
 
-import direct
 from panda3d import core
 from direct.stdpy import thread as _thread
 import sys as _sys
@@ -380,7 +379,7 @@ def enumerate():
     tlist = []
     _thread._threadsLock.acquire()
     try:
-        for thread, locals, wrapper in _thread._threads.values():
+        for thread, locals, wrapper in list(_thread._threads.values()):
             if wrapper and thread.isStarted():
                 tlist.append(wrapper)
         return tlist
@@ -484,7 +483,7 @@ if __debug__:
             def run(self):
                 while self.count > 0:
                     item = self.queue.get()
-                    print item
+                    print(item)
                     self.count = self.count - 1
 
         NP = 3

@@ -1,10 +1,9 @@
 """DistributedNode module: contains the DistributedNode class"""
 
 from panda3d.core import NodePath
-from direct.task import Task
-import GridParent
-import DistributedObject
-import types
+from . import GridParent
+from . import DistributedObject
+
 
 class DistributedNode(DistributedObject.DistributedObject, NodePath):
     """Distributed Node class:"""
@@ -77,7 +76,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
     ### setParent ###
 
     def b_setParent(self, parentToken):
-        if type(parentToken) == types.StringType:
+        if type(parentToken) == str:
             self.setParentStr(parentToken)
         else:
             self.setParent(parentToken)
@@ -85,7 +84,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
         self.d_setParent(parentToken)
 
     def d_setParent(self, parentToken):
-        if type(parentToken) == types.StringType:
+        if type(parentToken) == str:
             self.sendUpdate("setParentStr", [parentToken])
         else:
             self.sendUpdate("setParent", [parentToken])

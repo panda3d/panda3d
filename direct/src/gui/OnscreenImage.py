@@ -4,7 +4,7 @@ __all__ = ['OnscreenImage']
 
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
-import types
+
 
 class OnscreenImage(DirectObject, NodePath):
     def __init__(self, image = None,
@@ -49,25 +49,25 @@ class OnscreenImage(DirectObject, NodePath):
 
         # Adjust pose
         # Set pos
-        if (isinstance(pos, types.TupleType) or
-            isinstance(pos, types.ListType)):
-            apply(self.setPos, pos)
+        if (isinstance(pos, tuple) or
+            isinstance(pos, list)):
+            self.setPos(*pos)
         elif isinstance(pos, VBase3):
             self.setPos(pos)
         # Hpr
-        if (isinstance(hpr, types.TupleType) or
-            isinstance(hpr, types.ListType)):
-            apply(self.setHpr, hpr)
+        if (isinstance(hpr, tuple) or
+            isinstance(hpr, list)):
+            self.setHpr(*hpr)
         elif isinstance(hpr, VBase3):
             self.setHpr(hpr)
         # Scale
-        if (isinstance(scale, types.TupleType) or
-            isinstance(scale, types.ListType)):
-            apply(self.setScale, scale)
+        if (isinstance(scale, tuple) or
+            isinstance(scale, list)):
+            self.setScale(*scale)
         elif isinstance(scale, VBase3):
             self.setScale(scale)
-        elif (isinstance(scale, types.FloatType) or
-              isinstance(scale, types.IntType)):
+        elif (isinstance(scale, float) or
+              isinstance(scale, int)):
             self.setScale(scale)
 
         # Set color
@@ -95,7 +95,7 @@ class OnscreenImage(DirectObject, NodePath):
         # Assign geometry
         if isinstance(image, NodePath):
             self.assign(image.copyTo(parent, sort))
-        elif isinstance(image, types.StringTypes) or \
+        elif isinstance(image, str) or \
              isinstance(image, Texture):
             if isinstance(image, Texture):
                 # It's a Texture
@@ -115,9 +115,9 @@ class OnscreenImage(DirectObject, NodePath):
                 if node:
                     self.assign(node.copyTo(parent, sort))
                 else:
-                    print 'OnscreenImage: node %s not found' % image[1]
+                    print('OnscreenImage: node %s not found' % image[1])
             else:
-                print 'OnscreenImage: model %s not found' % image[0]
+                print('OnscreenImage: model %s not found' % image[0])
 
         if transform and not self.isEmpty():
             self.setTransform(transform)
@@ -133,17 +133,17 @@ class OnscreenImage(DirectObject, NodePath):
                 if (((setter == self.setPos) or
                      (setter == self.setHpr) or
                      (setter == self.setScale)) and
-                    (isinstance(value, types.TupleType) or
-                     isinstance(value, types.ListType))):
-                    apply(setter, value)
+                    (isinstance(value, tuple) or
+                     isinstance(value, list))):
+                    setter(*value)
                 else:
                     setter(value)
             except AttributeError:
-                print 'OnscreenImage.configure: invalid option:', option
+                print('OnscreenImage.configure: invalid option: %s' % option)
 
     # Allow index style references
     def __setitem__(self, key, value):
-        apply(self.configure, (), {key: value})
+        self.configure(*(), **{key: value})
 
     def cget(self, option):
         # Get current configuration setting.

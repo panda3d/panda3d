@@ -3,8 +3,8 @@
 __all__ = ['DirectWaitBar']
 
 from panda3d.core import *
-import DirectGuiGlobals as DGG
-from DirectFrame import *
+from . import DirectGuiGlobals as DGG
+from .DirectFrame import *
 import types
 
 """
@@ -93,7 +93,7 @@ class DirectWaitBar(DirectFrame):
         """Updates the bar texture, which you can set using bar['barTexture']."""
         # this must be a single texture (or a string).
         texture = self['barTexture']
-        if isinstance(texture, types.StringTypes):
+        if isinstance(texture, str):
             texture = loader.loadTexture(texture)
         if texture:
             self.barStyle.setTexture(texture)

@@ -1,7 +1,7 @@
 """ Class used to create and control radamec device """
 from math import *
 from direct.showbase.DirectObject import DirectObject
-from DirectDeviceManager import *
+from .DirectDeviceManager import *
 
 from direct.directnotify import DirectNotifyGlobal
 
@@ -77,7 +77,7 @@ class DirectRadamec(DirectObject):
             maxRange = self.maxRange[chan]
             minRange = self.minRange[chan]
         except IndexError:
-            raise RuntimeError, "can't normalize this channel (chanel %d)" % chan
+            raise RuntimeError("can't normalize this channel (channel %d)" % chan)
         range = maxRange - minRange
         clampedVal = CLAMP(self.aList[chan], minRange, maxRange)
         return ((maxVal - minVal) * (clampedVal - minRange) / range) + minVal

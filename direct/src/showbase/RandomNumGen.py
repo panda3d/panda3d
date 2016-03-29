@@ -23,7 +23,7 @@ class RandomNumGen:
         if isinstance(seed, RandomNumGen):
             # seed this rng with the other rng
             rng = seed
-            seed = rng.randint(0, 1L << 16)
+            seed = rng.randint(0, 1 << 16)
 
         self.notify.debug("seed: " + str(seed))
         seed = int(seed)
@@ -70,11 +70,7 @@ class RandomNumGen:
         assert N >= 0
         assert N <= 0x7fffffff
 
-        # the cast to 'long' prevents python from importing warnings.py,
-        # presumably to warn that the multiplication result is too
-        # large for an int and is implicitly being returned as a long.
-        # import of warnings.py was taking a few seconds
-        return int((self.__rng.getUint31() * long(N)) >> 31)
+        return int((self.__rng.getUint31() * N) >> 31)
 
     def choice(self, seq):
         """returns a random element from seq"""
@@ -82,7 +78,7 @@ class RandomNumGen:
 
     def shuffle(self, x):
         """randomly shuffles x in-place"""
-        for i in xrange(len(x)-1, 0, -1):
+        for i in range(len(x) - 1, 0, -1):
             # pick an element in x[:i+1] with which to exchange x[i]
             j = int(self.__rand(i+1))
             x[i], x[j] = x[j], x[i]
@@ -96,30 +92,30 @@ class RandomNumGen:
         # common case while still doing adequate error checking
         istart = int(start)
         if istart != start:
-            raise ValueError, "non-integer arg 1 for randrange()"
+            raise ValueError("non-integer arg 1 for randrange()")
         if stop is None:
             if istart > 0:
                 return self.__rand(istart)
-            raise ValueError, "empty range for randrange()"
+            raise ValueError("empty range for randrange()")
         istop = int(stop)
         if istop != stop:
-            raise ValueError, "non-integer stop for randrange()"
+            raise ValueError("non-integer stop for randrange()")
         if step == 1:
             if istart < istop:
                 return istart + self.__rand(istop - istart)
-            raise ValueError, "empty range for randrange()"
+            raise ValueError("empty range for randrange()")
         istep = int(step)
         if istep != step:
-            raise ValueError, "non-integer step for randrange()"
+            raise ValueError("non-integer step for randrange()")
         if istep > 0:
             n = (istop - istart + istep - 1) / istep
         elif istep < 0:
             n = (istop - istart + istep + 1) / istep
         else:
-            raise ValueError, "zero step for randrange()"
+            raise ValueError("zero step for randrange()")
 
         if n <= 0:
-            raise ValueError, "empty range for randrange()"
+            raise ValueError("empty range for randrange()")
         return istart + istep*int(self.__rand(n))
 
     def randint(self, a, b):
@@ -134,4 +130,4 @@ class RandomNumGen:
     # synchronicity is critical
     def random(self):
         """returns random float in [0.0, 1.0)"""
-        return float(self.__rng.getUint31()) / float(1L << 31)
+        return float(self.__rng.getUint31()) / float(1 << 31)

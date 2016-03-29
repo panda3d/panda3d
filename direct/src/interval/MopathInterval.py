@@ -2,7 +2,7 @@
 
 __all__ = ['MopathInterval']
 
-import LerpInterval
+from . import LerpInterval
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *

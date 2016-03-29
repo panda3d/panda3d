@@ -1,11 +1,9 @@
 """
 Palette for Prototyping
 """
-import os
 import imp
-import types
 
-from ObjectPaletteBase import *
+from .ObjectPaletteBase import *
 
 class ProtoPaletteBase(ObjectPaletteBase):
     def __init__(self):
@@ -14,9 +12,9 @@ class ProtoPaletteBase(ObjectPaletteBase):
         assert self.dirname
 
     def addItems(self):
-        if type(protoData) == types.DictType:
-            for key in protoData.keys():
-                if type(protoData[key]) == types.DictType:
+        if type(protoData) == dict:
+            for key in list(protoData.keys()):
+                if type(protoData[key]) == dict:
                     self.add(key, parent)
                     self.addItems(protoData[key], key)
                 else:
@@ -30,7 +28,7 @@ class ProtoPaletteBase(ObjectPaletteBase):
             self.data = module.protoData
             self.dataStruct = module.protoDataStruct
         except:
-            print "protoPaletteData doesn't exist"
+            print("protoPaletteData doesn't exist")
             return
 
         #self.addItems()
@@ -39,14 +37,14 @@ class ProtoPaletteBase(ObjectPaletteBase):
         if not f:
             return
 
-        for key in self.dataStruct.keys():
+        for key in list(self.dataStruct.keys()):
             f.write("\t'%s':'%s',\n"%(key, self.dataStruct[key]))
 
     def saveProtoData(self, f):
         if not f:
            return
 
-        for key in self.data.keys():
+        for key in list(self.data.keys()):
             if isinstance(self.data[key], ObjectBase):
                f.write("\t'%s':ObjectBase(name='%s', model='%s', anims=%s, actor=%s),\n"%(key, self.data[key].name, self.data[key].model, self.data[key].anims, self.data[key].actor))
             else:

@@ -97,13 +97,13 @@ if __debug__ and __name__ == '__main__':
 
             # Now acquire the resource this class is
             # managing.
-            print '-- Acquire Mouse'
+            print('-- Acquire Mouse')
 
         @classmethod
         def release(cls):
             # First, release the resource this class is
             # managing.
-            print '-- Release Mouse'
+            print('-- Release Mouse')
 
             # The call to the super-class's release() is
             # not necessary at the moment, but may be in
@@ -128,11 +128,11 @@ if __debug__ and __name__ == '__main__':
         @classmethod
         def acquire(cls):
             super(CursorResource, cls).acquire()
-            print '-- Acquire Cursor'
+            print('-- Acquire Cursor')
 
         @classmethod
         def release(cls):
-            print '-- Release Cursor'
+            print('-- Release Cursor')
 
             super(CursorResource, cls).release()
 
@@ -159,70 +159,70 @@ if __debug__ and __name__ == '__main__':
         @classmethod
         def acquire(cls):
             super(InvalidResource, cls).acquire()
-            print '-- Acquire Invalid'
+            print('-- Acquire Invalid')
 
         @classmethod
         def release(cls):
-            print '-- Release Invalid'
+            print('-- Release Invalid')
             super(InvalidResource, cls).release()
 
-    print '\nAllocate Mouse'
+    print('\nAllocate Mouse')
     m = MouseResource()
-    print 'Free up Mouse'
+    print('Free up Mouse')
     del m
 
-    print '\nAllocate Cursor'
+    print('\nAllocate Cursor')
     c = CursorResource()
-    print 'Free up Cursor'
+    print('Free up Cursor')
     del c
 
-    print '\nAllocate Mouse then Cursor'
+    print('\nAllocate Mouse then Cursor')
     m = MouseResource()
     c = CursorResource()
-    print 'Free up Cursor'
+    print('Free up Cursor')
     del c
-    print 'Free up Mouse'
+    print('Free up Mouse')
     del m
 
-    print '\nAllocate Mouse then Cursor'
+    print('\nAllocate Mouse then Cursor')
     m = MouseResource()
     c = CursorResource()
-    print 'Free up Mouse'
+    print('Free up Mouse')
     del m
-    print 'Free up Cursor'
+    print('Free up Cursor')
     del c
 
-    print '\nAllocate Cursor then Mouse'
+    print('\nAllocate Cursor then Mouse')
     c = CursorResource()
     m = MouseResource()
-    print 'Free up Mouse'
+    print('Free up Mouse')
     del m
-    print 'Free up Cursor'
+    print('Free up Cursor')
     del c
 
-    print '\nAllocate Cursor then Mouse'
+    print('\nAllocate Cursor then Mouse')
     c = CursorResource()
     m = MouseResource()
-    print 'Free up Cursor'
+    print('Free up Cursor')
     del c
 
     # example of an invalid subclass
     try:
-        print '\nAllocate Invalid'
+        print('\nAllocate Invalid')
         i = InvalidResource()
-        print 'Free up Invalid'
-    except AssertionError,e:
-        print e
-    print
+        print('Free up Invalid')
+    except AssertionError as e:
+        print(e)
+    print('')
 
-    print 'Free up Mouse'
+    print('Free up Mouse')
     del m
 
     def demoFunc():
-        print '\nAllocate Cursor within function'
+        print('\nAllocate Cursor within function')
         c = CursorResource()
 
-        print 'Cursor will be freed on function exit'
+        print('Cursor will be freed on function exit')
 
     demoFunc()
 

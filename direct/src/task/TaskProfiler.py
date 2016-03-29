@@ -100,7 +100,7 @@ class TaskProfiler:
         if taskMgr.getProfileTasks():
             self._setEnabled(False)
         self._enableFC.destroy()
-        for tracker in self._namePrefix2tracker.itervalues():
+        for tracker in self._namePrefix2tracker.values():
             tracker.destroy()
         del self._namePrefix2tracker
         del self._task
@@ -119,7 +119,7 @@ class TaskProfiler:
     def logProfiles(self, name=None):
         if name:
             name = name.lower()
-        for namePrefix, tracker in self._namePrefix2tracker.iteritems():
+        for namePrefix, tracker in self._namePrefix2tracker.items():
             if (name and (name not in namePrefix.lower())):
                 continue
             tracker.log()
@@ -128,7 +128,7 @@ class TaskProfiler:
         if name:
             name = name.lower()
         # flush stored task profiles
-        for namePrefix, tracker in self._namePrefix2tracker.iteritems():
+        for namePrefix, tracker in self._namePrefix2tracker.items():
             if (name and (name not in namePrefix.lower())):
                 continue
             tracker.flush()

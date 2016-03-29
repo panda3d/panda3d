@@ -2,7 +2,7 @@
 
 __all__ = ['directNotify', 'giveNotify']
 
-import DirectNotify
+from . import DirectNotify
 
 directNotify = DirectNotify.DirectNotify()
 giveNotify = directNotify.giveNotify

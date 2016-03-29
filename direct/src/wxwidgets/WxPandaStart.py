@@ -1,3 +1,3 @@
-from WxPandaShell import *
+from .WxPandaShell import *
 base.app = WxPandaShell()
 

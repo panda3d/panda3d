@@ -151,8 +151,8 @@ from panda3d.core import Filename, PandaSystem
 
 def usage(code, msg = ''):
     if not msg:
-        print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
-    print >> sys.stderr, msg
+        sys.stderr.write(usageText % {'prog' : os.path.split(sys.argv[0])[1]})
+    sys.stderr.write(msg + '\n')
     sys.exit(code)
 
 shortname = ""
@@ -173,7 +173,7 @@ omitDefaultCheckboxes = False
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csOl:L:a:A:e:i:h')
-except getopt.error, msg:
+except getopt.error as msg:
     usage(1, msg or 'Invalid option')
 
 for opt, arg in opts:
@@ -213,7 +213,7 @@ for opt, arg in opts:
         usage(0)
     else:
         msg = 'illegal option: ' + flag
-        print msg
+        print(msg)
         sys.exit(1, msg)
 
 if not args or len(args) != 2:
@@ -223,32 +223,32 @@ if not args or len(args) != 2:
 
 appFilename = Filename.fromOsSpecific(args[0])
 if appFilename.getExtension().lower() != 'p3d':
-    print 'Application filename must end in ".p3d".'
+    print('Application filename must end in ".p3d".')
     sys.exit(1)
 deploy_mode = args[1].lower()
 
 if not appFilename.exists():
-    print 'Application filename does not exist!'
+    print('Application filename does not exist!')
     sys.exit(1)
 
 if shortname == '':
     shortname = appFilename.getBasenameWoExtension()
 
 if shortname.lower() != shortname or ' ' in shortname:
-    print '\nProvided short name should be lowercase, and may not contain spaces!\n'
+    print('\nProvided short name should be lowercase, and may not contain spaces!\n')
 
 if version == '' and deploy_mode == 'installer':
-    print '\nA version number is required in "installer" mode.\n'
+    print('\nA version number is required in "installer" mode.\n')
     sys.exit(1)
 
 if not outputDir:
-    print '\nYou must name the output directory with the -o parameter.\n'
+    print('\nYou must name the output directory with the -o parameter.\n')
     sys.exit(1)
 if not outputDir.exists():
-    print '\nThe specified output directory does not exist!\n'
+    print('\nThe specified output directory does not exist!\n')
     sys.exit(1)
 elif not outputDir.isDirectory():
-    print '\nThe specified output directory is a file!\n'
+    print('\nThe specified output directory is a file!\n')
     sys.exit(1)
 
 if deploy_mode == 'standalone':
@@ -287,8 +287,8 @@ elif deploy_mode == 'installer':
     if authoremail:
         i.authoremail = authoremail
     if not authorname or not authoremail or not authorid:
-        print "Using author \"%s\" <%s> with ID %s" % \
-            (i.authorname, i.authoremail, i.authorid)
+        print("Using author \"%s\" <%s> with ID %s" % \
+            (i.authorname, i.authoremail, i.authorid))
 
     # Add the supplied icon images
     if len(iconFiles) > 0:
@@ -296,7 +296,7 @@ elif deploy_mode == 'installer':
         i.icon = Icon()
         for iconFile in iconFiles:
             if not i.icon.addImage(iconFile):
-                print '\nFailed to add icon image "%s"!\n' % iconFile
+                print('\nFailed to add icon image "%s"!\n' % iconFile)
                 failed = True
         if failed:
             sys.exit(1)
@@ -323,32 +323,32 @@ elif deploy_mode == 'html':
     if "data" not in tokens:
         tokens["data"] = appFilename.getBasename()
 
-    print "Creating %s.html..." % shortname
+    print("Creating %s.html..." % shortname)
     html = open(Filename(outputDir, shortname + ".html").toOsSpecific(), "w")
-    print >>html, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
-    print >>html, "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
-    print >>html, "  <head>"
-    print >>html, "    <title>%s</title>" % fullname
-    print >>html, "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />"
+    html.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n")
+    html.write("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n")
+    html.write("  <head>\n")
+    html.write("    <title>%s</title>\n" % fullname)
+    html.write("    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n")
     if authorname:
-        print >>html, "    <meta name=\"Author\" content=\"%s\" />" % authorname.replace('"', '\\"')
-    print >>html, "  </head>"
-    print >>html, "  <body>"
-    print >>html, "    <object",
+        html.write("    <meta name=\"Author\" content=\"%s\" />\n" % authorname.replace('"', '\\"'))
+    html.write("  </head>\n")
+    html.write("  <body>\n")
+    html.write("    <object")
     for key, value in tokens.items():
-        print >>html, "%s=\"%s\"" % (key, value.replace('"', '\\"')),
+        html.write(" %s=\"%s\"" % (key, value.replace('"', '\\"')))
     if "width" not in tokens:
-        print >>html, "width=\"%s\"" % w,
+        html.write(" width=\"%s\"" % w)
     if "height" not in tokens:
-        print >>html, "height=\"%s\"" % h,
-    print >>html, "type=\"application/x-panda3d\">"
-    print >>html, "      <object width=\"%s\" height=\"%s\" classid=\"CLSID:924B4927-D3BA-41EA-9F7E-8A89194AB3AC\">" % (w, h)
+        html.write(" height=\"%s\"" % h)
+    html.write(" type=\"application/x-panda3d\">")
+    html.write("      <object width=\"%s\" height=\"%s\" classid=\"CLSID:924B4927-D3BA-41EA-9F7E-8A89194AB3AC\">\n" % (w, h))
     for key, value in tokens.items():
-        print >>html, "        <param name=\"%s\" value=\"%s\" />" % (key, value.replace('"', '\\"'))
-    print >>html, "      </object>"
-    print >>html, "    </object>"
-    print >>html, "  </body>"
-    print >>html, "</html>"
+        html.write("        <param name=\"%s\" value=\"%s\" />\n" % (key, value.replace('"', '\\"')))
+    html.write("      </object>\n")
+    html.write("    </object>\n")
+    html.write("  </body>\n")
+    html.write("</html>\n")
     html.close()
 else:
     usage(1, 'Invalid deployment mode!')

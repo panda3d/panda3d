@@ -32,16 +32,28 @@ class tk(package):
     #config(gui_app = True)
     require('panda3d')
 
-    module('Tkinter', '_tkinter', required = True)
-    module('Tkconstants', 'Tkdnd', 'Tix', 'ScrolledText', 'turtle',
-           'tkColorChooser', 'tkCommonDialog', 'tkFileDialog',
-           'tkFont', 'tkMessageBox', 'tkSimpleDialog')
+    if sys.version_info >= (3, 0):
+        module('tkinter', '_tkinter', required = True)
+        module('tkinter.colorchooser', 'tkinter.commondialog',
+               'tkinter.constants', 'tkinter.dialog', 'tkinter.dnd',
+               'tkinter.filedialog', 'tkinter.font', 'tkinter.messagebox',
+               'tkinter.scrolledtext', 'tkinter.simpledialog', 'tkinter.tix',
+               'tkinter.ttk')
+    else:
+        module('Tkinter', '_tkinter', required = True)
+        module('Tkconstants', 'Tkdnd', 'Tix', 'ScrolledText', 'turtle',
+               'tkColorChooser', 'tkCommonDialog', 'tkFileDialog',
+               'tkFont', 'tkMessageBox', 'tkSimpleDialog')
+
     module('direct.showbase.TkGlobal',
            'direct.tkpanels',
            'direct.tkwidgets')
 
     try:
-        from Tkinter import Tcl
+        if sys.version_info >= (3, 0):
+            from tkinter import Tcl
+        else:
+            from Tkinter import Tcl
         tcl = Tcl()
         dir = Filename.fromOsSpecific(tcl.eval("info library"))
         ver = tcl.eval("info tclversion")

@@ -5,7 +5,7 @@ __all__ = ['AnimControlInterval']
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-import Interval
+from . import Interval
 import math
 
 class AnimControlInterval(Interval.Interval):

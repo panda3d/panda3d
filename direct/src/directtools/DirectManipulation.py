@@ -1,10 +1,9 @@
 from direct.showbase.DirectObject import DirectObject
-from DirectGlobals import *
-from DirectUtil import *
-from DirectGeometry import *
-from DirectSelection import SelectionRay
+from .DirectGlobals import *
+from .DirectUtil import *
+from .DirectGeometry import *
+from .DirectSelection import SelectionRay
 from direct.task import Task
-import types
 from copy import deepcopy
 
 class DirectManipulationControl(DirectObject):
@@ -1207,7 +1206,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.reparentTo(hidden)
 
     def enableHandles(self, handles):
-        if type(handles) == types.ListType:
+        if type(handles) == list:
             for handle in handles:
                 self.enableHandle(handle)
         elif handles == 'x':
@@ -1256,7 +1255,7 @@ class ObjectHandles(NodePath, DirectObject):
             self.zScaleGroup.reparentTo(self.zHandles)
 
     def disableHandles(self, handles):
-        if type(handles) == types.ListType:
+        if type(handles) == list:
             for handle in handles:
                 self.disableHandle(handle)
         elif handles == 'x':

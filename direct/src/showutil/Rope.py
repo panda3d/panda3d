@@ -1,5 +1,5 @@
 from panda3d.core import *
-import types
+
 
 class Rope(NodePath):
     """
@@ -96,7 +96,7 @@ class Rope(NodePath):
 
         for i in range(numVerts):
             v = self.verts[i]
-            if isinstance(v, types.TupleType):
+            if isinstance(v, tuple):
                 nodePath, point = v
                 color = defaultColor
                 thickness = defaultThickness
@@ -106,7 +106,7 @@ class Rope(NodePath):
                 color = v.get('color', defaultColor)
                 thickness = v.get('thickness', defaultThickness)
 
-            if isinstance(point, types.TupleType):
+            if isinstance(point, tuple):
                 if (len(point) >= 4):
                     self.curve.setVertex(i, VBase4(point[0], point[1], point[2], point[3]))
                 else:

@@ -4833,6 +4833,62 @@ get_transparency() const {
 }
 
 /**
+ * Specifically sets or disables a logical operation on this particular node.
+ * If no other nodes override, this will cause geometry to be rendered without
+ * color blending but instead using the given logical operator.
+ */
+void NodePath::
+set_logic_op(LogicOpAttrib::Operation op, int priority) {
+  nassertv_always(!is_empty());
+
+  node()->set_attrib(LogicOpAttrib::make(op), priority);
+}
+
+/**
+ * Completely removes any logical operation that may have been set on this
+ * node via set_logic_op(). The geometry at this level and below will
+ * subsequently be rendered using standard color blending.
+ */
+void NodePath::
+clear_logic_op() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(LogicOpAttrib::get_class_slot());
+}
+
+/**
+ * Returns true if a logical operation has been explicitly set on this
+ * particular node via set_logic_op().  If this returns true, then
+ * get_logic_op() may be called to determine whether a logical operation has
+ * been explicitly disabled for this node or set to particular operation.
+ */
+bool NodePath::
+has_logic_op() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(LogicOpAttrib::get_class_slot());
+}
+
+/**
+ * Returns the logical operation that has been specifically set on this node
+ * via set_logic_op(), or O_none if standard color blending has been
+ * specifically set, or if nothing has been specifically set.  See also
+ * has_logic_op().  This does not necessarily imply that the geometry will
+ * or will not be rendered with the given logical operation, as there may be
+ * other nodes that override.
+ */
+LogicOpAttrib::Operation NodePath::
+get_logic_op() const {
+  nassertr_always(!is_empty(), LogicOpAttrib::O_none);
+  const RenderAttrib *attrib =
+    node()->get_attrib(LogicOpAttrib::get_class_slot());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const LogicOpAttrib *ta = DCAST(LogicOpAttrib, attrib);
+    return ta->get_operation();
+  }
+
+  return LogicOpAttrib::O_none;
+}
+
+/**
  * Specifies the antialiasing type that should be applied at this node and
  * below.  See AntialiasAttrib.
  */

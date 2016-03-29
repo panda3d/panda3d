@@ -4,7 +4,6 @@ __all__ = ['OnScreenDebug']
 
 from panda3d.core import *
 
-import types
 from direct.gui import OnscreenText
 from direct.directtools import DirectUtil
 
@@ -36,7 +35,7 @@ class OnScreenDebug:
 
         font = loader.loadFont(fontPath)
         if not font.isValid():
-            print "failed to load OnScreenDebug font", fontPath
+            print("failed to load OnScreenDebug font %s" % fontPath)
             font = TextNode.getDefaultFont()
         self.onScreenText = OnscreenText.OnscreenText(
                 pos = (-1.0, 0.9), fg=fgColor, bg=bgColor,
@@ -51,7 +50,7 @@ class OnScreenDebug:
         if not self.onScreenText:
             self.load()
         self.onScreenText.clearText()
-        entries = self.data.items()
+        entries = list(self.data.items())
         entries.sort()
         for k, v in entries:
             if v[0] == self.frame:
@@ -64,7 +63,7 @@ class OnScreenDebug:
                 #isNew = "was"
                 isNew = "~"
             value = v[1]
-            if type(value) == types.FloatType:
+            if type(value) == float:
                 value = "% 10.4f"%(value,)
             # else: other types will be converted to str by the "%s"
             self.onScreenText.appendText("%20s %s %-44s\n"%(k, isNew, value))
@@ -88,7 +87,7 @@ class OnScreenDebug:
 
     def removeAllWithPrefix(self, prefix):
         toRemove = []
-        for key in self.data.keys():
+        for key in list(self.data.keys()):
             if len(key) >= len(prefix):
                 if key[:len(prefix)] == prefix:
                     toRemove.append(key)

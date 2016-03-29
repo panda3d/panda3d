@@ -7,6 +7,7 @@
 #include "loaderFileType.cxx"
 #include "loaderFileTypeBam.cxx"
 #include "loaderFileTypeRegistry.cxx"
+#include "logicOpAttrib.cxx"
 #include "materialAttrib.cxx"
 #include "materialCollection.cxx"
 #include "modelFlattenRequest.cxx"

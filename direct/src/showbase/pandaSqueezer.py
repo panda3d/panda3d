@@ -5,18 +5,18 @@ __all__ = []
 import os
 import sys
 import getopt
-import pandaSqueezeTool
+from . import pandaSqueezeTool
 
 # Assumption: We will be squeezing the files from the current directory or the -d directory.
 
 if __name__ == "__main__":
     try:
         opts, pargs = getopt.getopt(sys.argv[1:], 'Od:')
-    except Exception, e:
+    except Exception as e:
         # User passed in a bad option, print the error and the help, then exit
-        print e
-        print 'Usage: pass in -O for optimized'
-        print '       pass in -d directory'
+        print(e)
+        print('Usage: pass in -O for optimized')
+        print('       pass in -d directory')
         sys.exit()
 
     fOptimized = 0
@@ -25,7 +25,7 @@ if __name__ == "__main__":
         flag, value = opt
         if (flag == '-O'):
             fOptimized = 1
-            print 'Squeezing pyo files'
+            print('Squeezing pyo files')
         elif (flag == '-d'):
             os.chdir(value)
 

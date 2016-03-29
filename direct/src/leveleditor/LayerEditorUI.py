@@ -2,11 +2,9 @@
 Defines Layer UI
 """
 import wx
-import sys
-import cPickle as pickle
 from pandac.PandaModules import *
 
-import ObjectGlobals as OG
+from . import ObjectGlobals as OG
 
 class LayerEditorUI(wx.Panel):
     def __init__(self, parent, editor):
@@ -160,7 +158,7 @@ class LayerEditorUI(wx.Panel):
            self.llist.SetItemState(index, wx.LIST_STATE_FOCUSED, wx.LIST_STATE_FOCUSED)
 
     def removeObjData(self, objUID):
-        layersDataDictKeys = self.layersDataDict.keys()
+        layersDataDictKeys = list(self.layersDataDict.keys())
         for i in range(len(layersDataDictKeys)):
             layersData = self.layersDataDict[layersDataDictKeys[i]]
             for j in range(len(layersData)):
@@ -247,7 +245,7 @@ class LayerEditorUI(wx.Panel):
         self.saveData.append("    ui.layerEditorUI.reset()")
         for index in range(self.llist.GetItemCount()):
             self.saveData.append("    ui.layerEditorUI.addLayerEntry('%s', %s )"%(self.llist.GetItemText(index), self.llist.GetItemData(index)))
-        layersDataDictKeys = self.layersDataDict.keys()
+        layersDataDictKeys = list(self.layersDataDict.keys())
         for i in range(len(layersDataDictKeys)):
             layerData = self.layersDataDict[layersDataDictKeys[i]]
             for j in range(len(layerData)):

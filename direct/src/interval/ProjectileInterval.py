@@ -5,7 +5,7 @@ __all__ = ['ProjectileInterval']
 from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import *
-from Interval import Interval
+from .Interval import Interval
 from direct.showbase import PythonUtil
 
 class ProjectileInterval(Interval):
@@ -221,7 +221,7 @@ class ProjectileInterval(Interval):
     def testTrajectory(self):
         try:
             self.__calcTrajectory(*self.trajectoryArgs)
-        except StandardError:
+        except Exception:
             assert self.notify.error('invalid projectile parameters')
             return False
         return True

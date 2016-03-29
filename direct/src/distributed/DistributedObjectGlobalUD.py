@@ -1,6 +1,6 @@
 
 
-from DistributedObjectUD import DistributedObjectUD
+from .DistributedObjectUD import DistributedObjectUD
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 import sys

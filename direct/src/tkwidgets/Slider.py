@@ -6,9 +6,7 @@ Slider Class: Velocity style controller for floating point values with
 __all__ = ['Slider', 'SliderWidget', 'rgbPanel']
 
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-from Valuator import Valuator, rgbPanel, VALUATOR_MINI, VALUATOR_FULL
-import string
+from .Valuator import Valuator, rgbPanel, VALUATOR_MINI, VALUATOR_FULL
 import Pmw
 
 class Slider(Valuator):
@@ -282,7 +280,7 @@ class SliderWidget(Pmw.MegaWidget):
         """
         # Send command if any
         if fCommand and (self['command'] != None):
-            apply(self['command'], [value] + self['commandData'])
+            self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value
 
@@ -322,11 +320,11 @@ class SliderWidget(Pmw.MegaWidget):
         # Find screen space position of bottom/center of arrow button
         x = (self._arrowBtn.winfo_rootx() + self._arrowBtn.winfo_width()/2.0 -
              self.interior()['bd'])
-#             string.atoi(self.interior()['bd']))
+#             int(self.interior()['bd']))
         y = self._arrowBtn.winfo_rooty() + self._arrowBtn.winfo_height()
         # Popup border width
         bd = self._popup['bd']
-#        bd = string.atoi(self._popup['bd'])
+#        bd = int(self._popup['bd'])
         # Get width of label
         minW = self._minLabel.winfo_width()
         # Width of canvas to adjust for
@@ -378,7 +376,7 @@ class SliderWidget(Pmw.MegaWidget):
             self._fPressInside = 1
             self._fUpdate = 1
             if self['preCallback']:
-                apply(self['preCallback'], self['callbackData'])
+                self['preCallback'](*self['callbackData'])
             self._updateValue(event)
         else:
             self._fPressInside = 0
@@ -391,24 +389,24 @@ class SliderWidget(Pmw.MegaWidget):
             if canvasY > 0:
                 self._fUpdate = 1
                 if self['preCallback']:
-                    apply(self['preCallback'], self['callbackData'])
+                    self['preCallback'](*self['callbackData'])
                 self._unpostOnNextRelease()
         elif self._fUpdate:
             self._updateValue(event)
 
     def _scaleBtnPress(self, event):
         if self['preCallback']:
-            apply(self['preCallback'], self['callbackData'])
+            self['preCallback'](*self['callbackData'])
 
     def _scaleBtnRelease(self, event):
         # Do post callback if any
         if self['postCallback']:
-            apply(self['postCallback'], self['callbackData'])
+            self['postCallback'](*self['callbackData'])
 
     def _widgetBtnRelease(self, event):
         # Do post callback if any
         if self._fUpdate and self['postCallback']:
-            apply(self['postCallback'], self['callbackData'])
+            self['postCallback'](*self['callbackData'])
         if (self._fUnpost or
             (not (self._firstPress or self._fPressInside))):
             self._unpostSlider()
@@ -460,7 +458,7 @@ class SliderWidget(Pmw.MegaWidget):
         self._widget['command'] = self._scaleCommand
 
     def _scaleCommand(self, val):
-        self.set(string.atof(val))
+        self.set(float(val))
 
     # Methods to modify floater characteristics
     def setMin(self):

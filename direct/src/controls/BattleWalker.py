@@ -2,7 +2,7 @@
 from direct.showbase.InputStateGlobal import inputState
 from direct.task.Task import Task
 from pandac.PandaModules import *
-import GravityWalker
+from . import GravityWalker
 
 BattleStrafe = 0
 
@@ -166,7 +166,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             # Should fSlide be renamed slideButton?
             self.slideSpeed=.15*(turnLeft and -self.avatarControlForwardSpeed or
                                  turnRight and self.avatarControlForwardSpeed)
-            print 'slideSpeed: ', self.slideSpeed
+            print('slideSpeed: %s' % self.slideSpeed)
             self.rotationSpeed=0
             self.speed=0
 
@@ -233,7 +233,7 @@ class BattleWalker(GravityWalker.GravityWalker):
             if self.moving:
                 distance = dt * self.speed
                 slideDistance = dt * self.slideSpeed
-                print 'slideDistance: ', slideDistance
+                print('slideDistance: %s' % slideDistance)
                 rotation = dt * self.rotationSpeed
 
                 # Take a step in the direction of our previous heading.
