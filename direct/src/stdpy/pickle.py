@@ -21,9 +21,13 @@ context between all objects written by that Pickler.
 Unfortunately, cPickle cannot be supported, because it does not
 support extensions of this nature. """
 
-from types import *
-from copy_reg import dispatch_table
+import sys
 from panda3d.core import BamWriter, BamReader
+
+if sys.version_info >= (3, 0):
+    from copyreg import dispatch_table
+else:
+    from copy_reg import dispatch_table
 
 # A funny replacement for "import pickle" so we don't get confused
 # with the local pickle.py.
@@ -60,7 +64,7 @@ class Pickler(pickle.Pickler):
 
         # Check for a class with a custom metaclass; treat as regular class
         try:
-            issc = issubclass(t, TypeType)
+            issc = issubclass(t, type)
         except TypeError: # t is not a class (old Boost; see SF #502085)
             issc = 0
         if issc:
@@ -91,12 +95,12 @@ class Pickler(pickle.Pickler):
                                             (t.__name__, obj))
 
         # Check for string returned by reduce(), meaning "save as global"
-        if type(rv) is StringType:
+        if type(rv) is str:
             self.save_global(obj, rv)
             return
 
         # Assert that reduce() returned a tuple
-        if type(rv) is not TupleType:
+        if type(rv) is not tuple:
             raise PicklingError("%s must return string or tuple" % reduce)
 
         # Assert that it returned an appropriately sized tuple
@@ -131,21 +135,20 @@ class Unpickler(pickle.Unpickler):
             value = func(*args)
 
         stack[-1] = value
-    pickle.Unpickler.dispatch[pickle.REDUCE] = load_reduce
+
+    #FIXME: how to replace in Python 3?
+    if sys.version_info < (3, 0):
+        pickle.Unpickler.dispatch[pickle.REDUCE] = load_reduce
 
 
 # Shorthands
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import BytesIO
 
 def dump(obj, file, protocol=None):
     Pickler(file, protocol).dump(obj)
 
 def dumps(obj, protocol=None):
-    file = StringIO()
+    file = BytesIO()
     Pickler(file, protocol).dump(obj)
     return file.getvalue()
 
@@ -153,5 +156,5 @@ def load(file):
     return Unpickler(file).load()
 
 def loads(str):
-    file = StringIO(str)
+    file = BytesIO(str)
     return Unpickler(file).load()
