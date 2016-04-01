@@ -111,6 +111,8 @@ protected:
   test_intersection_from_parabola(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_box(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_polygon(const CollisionEntry &entry) const;
 
   static void report_undefined_intersection_test(TypeHandle from_type,
                                                  TypeHandle into_type);
@@ -178,6 +180,7 @@ private:
   friend class CollisionParabola;
   friend class CollisionHandlerFluidPusher;
   friend class CollisionBox;
+  friend class CollisionPolygon;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionSolid &cs) {

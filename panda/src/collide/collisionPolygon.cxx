@@ -65,6 +65,14 @@ make_copy() {
 }
 
 /**
+ *
+ */
+PT(CollisionEntry) CollisionPolygon::
+test_intersection(const CollisionEntry &entry) const {
+  return entry.get_into()->test_intersection_from_polygon(entry);
+}
+
+/**
  * Verifies that the indicated set of points will define a valid
  * CollisionPolygon: that is, at least three non-collinear points, with no
  * points repeated.
@@ -961,7 +969,9 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   const Points &from_points = from_polygon->_points;
   // Find the actual normals of the planes the polygons are sitting in
   LVector3 this_normal = (get_point(1)-get_point(0)).cross(get_point(2) - get_point(0));
+  this_normal.normalize();
   LVector3 from_normal = (from_polygon->get_point(1)-from_polygon->get_point(0)).cross(from_polygon->get_point(2) - from_polygon->get_point(0));
+  from_normal.normalize();
   
   LMatrix4 this_3d_mat;
   rederive_to_3d_mat(this_3d_mat);
@@ -973,7 +983,7 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   int number_of_intersections = 0;  // how many edges of the from polygon cross our plane. Should be 0 or 2
   
   // Iterate over the from polygon's corners. If one of them is 'above' our plane, and the next is 'below' it, we record the intermediate edge
-  // Formula to check which side of our plane a point is: dot(plane's_normal, point_to_check - some_constant_point_on_
+  // Formula to check which side of our plane a point is: dot(plane's_normal, point_to_check - some_constant_point_on_the_plane) > 0
   float i_dot;
   LPoint3 i_point;
   LPoint3 ref_p = to_3d(_points[0]._p, this_3d_mat);

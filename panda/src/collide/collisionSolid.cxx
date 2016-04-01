@@ -259,6 +259,17 @@ test_intersection_from_box(const CollisionEntry &) const {
   return NULL;
 }
 
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a polygon.
+ */
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_polygon(const CollisionEntry &) const {
+  report_undefined_intersection_test(CollisionPolygon::get_class_type(),
+                                     get_type());
+  return NULL;
+}
+
 
 #ifndef NDEBUG
 class CollisionSolidUndefinedPair {

@@ -64,6 +64,10 @@ PUBLISHED:
   MAKE_PROPERTY(concave, is_concave);
 
 public:
+
+  virtual PT(CollisionEntry)
+  test_intersection(const CollisionEntry &entry) const;
+  
   virtual void xform(const LMatrix4 &mat);
 
   virtual PT(PandaNode) get_viz(const CullTraverser *trav,
