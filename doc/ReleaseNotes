@@ -20,6 +20,7 @@ remained in the 1.9.1 release, including:
 * NodePath render_mode setters no longer reset wireframe color
 * Fix constant reloading of texture when gl-ignore-mipmaps is set
 * BamReader now releases the GIL (so it can be used threaded)
+* Fix AttributeError in direct.stdpy.threading module
 
 ------------------------  RELEASE 1.9.1  ------------------------
 
