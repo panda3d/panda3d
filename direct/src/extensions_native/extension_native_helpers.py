@@ -111,9 +111,14 @@ def Dtool_PreloadDLL(module):
 # new-style build, and if it fails we must be in an old-style build.
 try:
     from panda3d.core import *
-except ImportError:
-    Dtool_PreloadDLL("libpandaexpress")
-    from libpandaexpress import *
+except ImportError as ex:
+    # Maybe we're using an old-style libpandaexpress module?
+    try:
+        Dtool_PreloadDLL("libpandaexpress")
+        from libpandaexpress import *
+    except ImportError:
+        # Nope.  Re-raise the original ImportError.
+        raise ex
 
 def Dtool_ObjectToDict(cls, name, obj):
     cls.DtoolClassDict[name] = obj;
