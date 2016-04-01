@@ -948,6 +948,122 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   return new_entry;
 }
 
+
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a polygon.
+ */
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_polygon(const CollisionEntry &entry) const {
+  const CollisionPolygon *from_polygon;
+  DCAST_INTO_R(from_polygon, entry.get_from(), 0);
+  
+  const Points &from_points = from_polygon->_points;
+  // Find the actual normals of the planes the polygons are sitting in
+  LVector3 this_normal = (get_point(1)-get_point(0)).cross(get_point(2) - get_point(0));
+  LVector3 from_normal = (from_polygon->get_point(1)-from_polygon->get_point(0)).cross(from_polygon->get_point(2) - from_polygon->get_point(0));
+  
+  LMatrix4 this_3d_mat;
+  rederive_to_3d_mat(this_3d_mat);
+  LMatrix4 from_3d_mat;
+  from_polygon->rederive_to_3d_mat(from_3d_mat);
+  
+  // Check if the from polygon intersects our plane, and where
+  LPoint3 intersection_segment_0[2];
+  int number_of_intersections = 0;  // how many edges of the from polygon cross our plane. Should be 0 or 2
+  
+  // Iterate over the from polygon's corners. If one of them is 'above' our plane, and the next is 'below' it, we record the intermediate edge
+  // Formula to check which side of our plane a point is: dot(plane's_normal, point_to_check - some_constant_point_on_
+  float i_dot;
+  LPoint3 i_point;
+  LPoint3 ref_p = to_3d(_points[0]._p, this_3d_mat);
+  LPoint3 first_point = to_3d(from_points[0]._p, from_3d_mat);
+  LPoint3 last_point = first_point;
+  LPoint3 deepest_point = first_point;
+  float first_dot = this_normal.dot(first_point - ref_p);
+  float last_dot = first_dot;
+  float deepest_dot = first_dot;
+  for (int i = 1; i < from_polygon->get_num_points(); i++) {
+    i_point = to_3d(from_points[i]._p, from_3d_mat);
+    i_dot = this_normal.dot(i_point - ref_p);
+    // Record the deepest vertex we find for interior point reasons
+    if (i_dot < deepest_dot) {
+      deepest_point = i_point;
+      deepest_dot = i_dot;
+    }
+    if (i_dot > 0 ^ last_dot > 0) {
+      // We have an intersection!
+      // Record the specific point the intersection occured.
+      intersection_segment_0[number_of_intersections++] = (i_dot * last_point - last_dot * i_point) / (i_dot - last_dot);
+      if (number_of_intersections >= 2) {
+        // We can't have more than 2 intersections with a plane (all CollisionPolygons are convex) so just stop looking here
+        break;
+      }
+      // Reset values for the next iteration
+      last_point = i_point;
+      last_dot = i_dot;
+    }
+  }
+  
+  if (number_of_intersections == 0) {
+    return NULL;
+  }
+  
+  // Check if the last and first points checked don't have a collision between them
+  if (number_of_intersections == 1 && (last_dot > 0 ^ first_dot > 0)) {
+    intersection_segment_0[1] = (first_dot * last_point - last_dot * first_point) / (first_dot - last_dot);
+  }
+  
+  // Repeat to check if we intersect the from_polygon's plane, and where
+  LPoint3 intersection_segment_1[2];
+  number_of_intersections = 0;
+
+  ref_p = to_3d(from_points[0]._p, from_3d_mat);
+  last_point = first_point = to_3d(_points[0]._p, this_3d_mat);
+  last_dot = first_dot = from_normal.dot(first_point - ref_p);
+  for (int i = 1; i < this->get_num_points(); i++) {
+    i_point = to_3d(_points[i]._p, this_3d_mat);
+    i_dot = from_normal.dot(i_point - ref_p);
+    if (i_dot > 0 ^ last_dot > 0) {
+      intersection_segment_1[number_of_intersections++] = (i_dot * last_point - last_dot * i_point) / (i_dot - last_dot);
+      if (number_of_intersections >= 2) {
+        break;
+      }
+      last_point = i_point;
+      last_dot = i_dot;
+    }
+  }
+  
+  if (number_of_intersections == 0) {
+    return NULL;
+  }
+  
+  if (number_of_intersections == 1 && (last_dot > 0 ^ first_dot > 0)) {
+    intersection_segment_1[1] = (first_dot * last_point - last_dot * first_point) / (first_dot - last_dot);
+  }
+  
+  // Check if the intersection segments themselves intersect.
+  // They two segments should be on the same line. So project them onto a 1D axis with origin at their average
+  LPoint3 average = 0.25f*(intersection_segment_0[0] + intersection_segment_0[1] + intersection_segment_1[0] + intersection_segment_1[0]);
+  LVector3 line_dir = cross(this_normal, from_normal);
+  float seg_00 = line_dir.dot(intersection_segment_0[0] - average);
+  float seg_01 = line_dir.dot(intersection_segment_0[1] - average);
+  float seg_10 = line_dir.dot(intersection_segment_1[0] - average);
+  float seg_11 = line_dir.dot(intersection_segment_1[1] - average);
+  // And check for overlaps on the projection
+  if (~(max(seg_00, seg_01) > min(seg_10, seg_11) && min(seg_00, seg_01) < max(seg_10, seg_11))) {
+    return NULL;
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = (has_effective_normal()) ? get_effective_normal() : this_normal;
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(get_plane().project(average));
+  new_entry->set_interior_point(deepest_point);
+
+  return new_entry;
+}
+
 /**
  * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this
  * solid.
