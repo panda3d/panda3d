@@ -12,6 +12,12 @@ from .OnscreenImage import *
 from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
+import sys
+
+if sys.version_info >= (3, 0):
+    stringType = str
+else:
+    stringType = basestring
 
 guiObjectCollector = PStatCollector("Client::GuiObjects")
 
@@ -943,7 +949,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # Convert None, and string arguments
         if relief == None:
             relief = PGFrameStyle.TNone
-        elif isinstance(relief, str):
+        elif isinstance(relief, stringType):
             # Convert string to frame style int
             relief = DGG.FrameStyleDict[relief]
         # Set style
@@ -984,14 +990,14 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         textures = self['frameTexture']
         if textures == None or \
            isinstance(textures, Texture) or \
-           isinstance(textures, str):
+           isinstance(textures, stringType):
             textures = (textures,) * self['numStates']
         for i in range(self['numStates']):
             if i >= len(textures):
                 texture = textures[-1]
             else:
                 texture = textures[i]
-            if isinstance(texture, str):
+            if isinstance(texture, stringType):
                 texture = loader.loadTexture(texture)
             if texture:
                 self.frameStyle[i].setTexture(texture)
