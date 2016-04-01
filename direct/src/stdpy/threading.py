@@ -53,12 +53,6 @@ class ThreadBase:
     def getName(self):
         return self.name
 
-    def is_alive(self):
-        return self.__thread.isStarted()
-
-    def isAlive(self):
-        return self.__thread.isStarted()
-
     def isDaemon(self):
         return self.daemon
 
@@ -115,6 +109,12 @@ class Thread(ThreadBase):
         if _thread and _thread._remove_thread_id:
             _thread._remove_thread_id(self.ident)
 
+    def is_alive(self):
+        return self.__thread.isStarted()
+
+    def isAlive(self):
+        return self.__thread.isStarted()
+
     def start(self):
         if self.__thread.isStarted():
             raise RuntimeError
@@ -151,6 +151,12 @@ class ExternalThread(ThreadBase):
         self.__dict__['daemon'] = True
         self.__dict__['name'] = self.__thread.getName()
         self.__dict__['ident'] = threadId
+
+    def is_alive(self):
+        return self.__thread.isStarted()
+
+    def isAlive(self):
+        return self.__thread.isStarted()
 
     def start(self):
         raise RuntimeError
