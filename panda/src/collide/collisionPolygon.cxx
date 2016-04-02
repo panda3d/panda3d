@@ -1021,7 +1021,6 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   }
   
   if (number_of_intersections == 0) {
-    cerr << "found no collisions between from polygon and into plane\n";
     return NULL;
   }
   
@@ -1053,7 +1052,6 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   }
   
   if (number_of_intersections == 0) {
-    cerr << "found no collisions between into polygon and from plane\n";
     
     return NULL;
   }
@@ -1073,18 +1071,8 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   float seg_11 = line_dir.dot(intersection_segment_1[1] - average);
   // And check for overlaps on the projection
   if (!(max(seg_00, seg_01) > min(seg_10, seg_11) && min(seg_00, seg_01) < max(seg_10, seg_11))) {
-    cerr<<"the polygons cross planes but not each other. intersection points were ";
-    cerr<<seg_00;
-    cerr<<", ";
-    cerr<<seg_01;
-    cerr<<", ";
-    cerr<<seg_10;
-    cerr<<", ";
-    cerr<<seg_11;
-    cerr<<"\n";
     return NULL;
   }
-  cerr <<"Polygons are colliding, returning entry\n";
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LVector3 normal = (has_effective_normal()) ? get_effective_normal() : this_normal;
