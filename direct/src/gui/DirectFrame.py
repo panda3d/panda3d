@@ -10,9 +10,9 @@ from .OnscreenGeom import OnscreenGeom
 import sys
 
 if sys.version_info >= (3, 0):
-    stringTypes = (str,)
+    stringType = str
 else:
-    stringTypes = (str, unicode)
+    stringType = basestring
 
 
 class DirectFrame(DirectGuiWidget):
@@ -60,7 +60,7 @@ class DirectFrame(DirectGuiWidget):
         # Determine if user passed in single string or a sequence
         if self['text'] == None:
             textList = (None,) * self['numStates']
-        elif isinstance(self['text'], stringTypes):
+        elif isinstance(self['text'], stringType):
             # If just passing in a single string, make a tuple out of it
             textList = (self['text'],) * self['numStates']
         else:
@@ -103,7 +103,7 @@ class DirectFrame(DirectGuiWidget):
             # Passed in None
             geomList = (None,) * self['numStates']
         elif isinstance(geom, NodePath) or \
-             isinstance(geom, stringTypes):
+             isinstance(geom, stringType):
             # Passed in a single node path, make a tuple out of it
             geomList = (geom,) * self['numStates']
         else:
@@ -145,14 +145,14 @@ class DirectFrame(DirectGuiWidget):
             imageList = (None,) * self['numStates']
         elif isinstance(arg, NodePath) or \
              isinstance(arg, Texture) or \
-             isinstance(arg, stringTypes):
+             isinstance(arg, stringType):
             # Passed in a single node path, make a tuple out of it
             imageList = (arg,) * self['numStates']
         else:
             # Otherwise, hope that the user has passed in a tuple/list
             if ((len(arg) == 2) and
-                isinstance(arg[0], stringTypes) and
-                isinstance(arg[1], stringTypes)):
+                isinstance(arg[0], stringType) and
+                isinstance(arg[1], stringType)):
                 # Its a model/node pair of strings
                 imageList = (arg,) * self['numStates']
             else:

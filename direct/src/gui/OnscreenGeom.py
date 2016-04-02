@@ -4,7 +4,12 @@ __all__ = ['OnscreenGeom']
 
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
+import sys
 
+if sys.version_info >= (3, 0):
+    stringType = str
+else:
+    stringType = basestring
 
 class OnscreenGeom(DirectObject, NodePath):
     def __init__(self, geom = None,
@@ -93,7 +98,7 @@ class OnscreenGeom(DirectObject, NodePath):
         # Assign geometry
         if isinstance(geom, NodePath):
             self.assign(geom.copyTo(parent, sort))
-        elif isinstance(geom, str):
+        elif isinstance(geom, stringType):
             self.assign(loader.loadModel(geom))
             self.reparentTo(parent, sort)
 
