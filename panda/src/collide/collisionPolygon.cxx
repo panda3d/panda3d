@@ -966,6 +966,11 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   const CollisionPolygon *from_polygon;
   DCAST_INTO_R(from_polygon, entry.get_from(), 0);
   
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
+  
   const Points &from_points = from_polygon->_points;
   // Find the actual normals of the planes the polygons are sitting in
   LVector3 this_normal = (get_point(1)-get_point(0)).cross(get_point(2) - get_point(0));
@@ -987,14 +992,14 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   float i_dot;
   LPoint3 i_point;
   LPoint3 ref_p = to_3d(_points[0]._p, this_3d_mat);
-  LPoint3 first_point = to_3d(from_points[0]._p, from_3d_mat);
+  LPoint3 first_point = to_3d(from_points[0]._p, from_3d_mat) * wrt_mat;
   LPoint3 last_point = first_point;
   LPoint3 deepest_point = first_point;
   float first_dot = this_normal.dot(first_point - ref_p);
   float last_dot = first_dot;
   float deepest_dot = first_dot;
   for (int i = 1; i < from_polygon->get_num_points(); i++) {
-    i_point = to_3d(from_points[i]._p, from_3d_mat);
+    i_point = to_3d(from_points[i]._p, from_3d_mat) * wrt_mat;
     i_dot = this_normal.dot(i_point - ref_p);
     // Record the deepest vertex we find for interior point reasons
     if (i_dot < deepest_dot) {
@@ -1004,7 +1009,7 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
     if (i_dot > 0 ^ last_dot > 0) {
       // We have an intersection!
       // Record the specific point the intersection occured.
-      intersection_segment_0[number_of_intersections++] = (i_dot * last_point - last_dot * i_point) / (i_dot - last_dot);
+      intersection_segment_0[number_of_intersections++] = ((i_dot * last_point) - (last_dot * i_point)) / (i_dot - last_dot);
       if (number_of_intersections >= 2) {
         // We can't have more than 2 intersections with a plane (all CollisionPolygons are convex) so just stop looking here
         break;
@@ -1016,6 +1021,7 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   }
   
   if (number_of_intersections == 0) {
+    cerr << "found no collisions between from polygon and into plane\n";
     return NULL;
   }
   
@@ -1028,14 +1034,16 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   LPoint3 intersection_segment_1[2];
   number_of_intersections = 0;
 
-  ref_p = to_3d(from_points[0]._p, from_3d_mat);
-  last_point = first_point = to_3d(_points[0]._p, this_3d_mat);
-  last_dot = first_dot = from_normal.dot(first_point - ref_p);
-  for (int i = 1; i < this->get_num_points(); i++) {
+  ref_p = to_3d(from_points[0]._p, from_3d_mat) * wrt_mat;
+  first_point = to_3d(_points[0]._p, this_3d_mat);
+  last_point = first_point;
+  first_dot = from_normal.dot(first_point - ref_p);
+  last_dot = first_dot;
+  for (int i = 1; i < get_num_points(); i++) {
     i_point = to_3d(_points[i]._p, this_3d_mat);
     i_dot = from_normal.dot(i_point - ref_p);
     if (i_dot > 0 ^ last_dot > 0) {
-      intersection_segment_1[number_of_intersections++] = (i_dot * last_point - last_dot * i_point) / (i_dot - last_dot);
+      intersection_segment_1[number_of_intersections++] = ((i_dot * last_point) - (last_dot * i_point)) / (i_dot - last_dot);
       if (number_of_intersections >= 2) {
         break;
       }
@@ -1045,6 +1053,8 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   }
   
   if (number_of_intersections == 0) {
+    cerr << "found no collisions between into polygon and from plane\n";
+    
     return NULL;
   }
   
@@ -1056,21 +1066,32 @@ test_intersection_from_polygon(const CollisionEntry &entry) const {
   // They two segments should be on the same line. So project them onto a 1D axis with origin at their average
   LPoint3 average = 0.25f*(intersection_segment_0[0] + intersection_segment_0[1] + intersection_segment_1[0] + intersection_segment_1[0]);
   LVector3 line_dir = cross(this_normal, from_normal);
+  line_dir.normalize();
   float seg_00 = line_dir.dot(intersection_segment_0[0] - average);
   float seg_01 = line_dir.dot(intersection_segment_0[1] - average);
   float seg_10 = line_dir.dot(intersection_segment_1[0] - average);
   float seg_11 = line_dir.dot(intersection_segment_1[1] - average);
   // And check for overlaps on the projection
-  if (~(max(seg_00, seg_01) > min(seg_10, seg_11) && min(seg_00, seg_01) < max(seg_10, seg_11))) {
+  if (!(max(seg_00, seg_01) > min(seg_10, seg_11) && min(seg_00, seg_01) < max(seg_10, seg_11))) {
+    cerr<<"the polygons cross planes but not each other. intersection points were ";
+    cerr<<seg_00;
+    cerr<<", ";
+    cerr<<seg_01;
+    cerr<<", ";
+    cerr<<seg_10;
+    cerr<<", ";
+    cerr<<seg_11;
+    cerr<<"\n";
     return NULL;
   }
+  cerr <<"Polygons are colliding, returning entry\n";
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LVector3 normal = (has_effective_normal()) ? get_effective_normal() : this_normal;
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(get_plane().project(average));
   new_entry->set_interior_point(deepest_point);
-
+  
   return new_entry;
 }
 
