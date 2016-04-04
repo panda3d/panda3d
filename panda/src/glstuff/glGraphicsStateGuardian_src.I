@@ -189,6 +189,8 @@ INLINE bool CLP(GraphicsStateGuardian)::
 is_at_least_gles_version(int major_version, int minor_version) const {
 #ifndef OPENGLES
   return false;
+#elif defined(OPENGLES_1)
+  return major_version == 1 && _gl_version_minor >= minor_version;
 #else
   if (_gl_version_major < major_version) {
     return false;
