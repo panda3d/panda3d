@@ -123,10 +123,10 @@ def makeXpiFile():
     version files. """
 
     if not options.host_url:
-        print "Cannot generate xpi file without --host-url."
+        print("Cannot generate xpi file without --host-url.")
         sys.exit(1)
 
-    print "Generating xpi file"
+    print("Generating xpi file")
     root = options.plugin_root
     if os.path.isdir(os.path.join(root, 'plugin')):
         root = os.path.join(root, 'plugin')

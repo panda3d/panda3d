@@ -53,7 +53,7 @@ def iglob(pathname):
 def glob1(dirname, pattern):
     if not dirname:
         dirname = os.curdir
-    if isinstance(pattern, unicode) and not isinstance(dirname, unicode):
+    if sys.version_info < (3, 0) and isinstance(pattern, unicode) and not isinstance(dirname, unicode):
         dirname = unicode(dirname, sys.getfilesystemencoding() or
                                    sys.getdefaultencoding())
     try:

@@ -1,5 +1,5 @@
 from panda3d.core import *
-from ClusterMsgs import *
+from .ClusterMsgs import *
 from direct.distributed.MsgTypes import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
@@ -246,7 +246,7 @@ class ClusterServer(DirectObject.DirectObject):
         if (type == CLUSTER_NONE):
             pass
         elif (type == CLUSTER_EXIT):
-            print 'GOT EXIT'
+            print('GOT EXIT')
             import sys
             sys.exit()
         elif (type == CLUSTER_CAM_OFFSET):

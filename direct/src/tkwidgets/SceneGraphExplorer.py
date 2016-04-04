@@ -4,8 +4,7 @@ __all__ = ['SceneGraphExplorer', 'SceneGraphExplorerItem', 'explore']
 
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-from Tree import *
+from .Tree import *
 import Pmw
 
 # changing these strings requires changing DirectSession.py SGE_ strs too!

@@ -1,11 +1,6 @@
 import os
 import imp
 
-from ObjectMgr import ObjectMgr
-from ObjectHandler import ObjectHandler
-from ObjectPalette import ObjectPalette
-from ProtoPalette import ProtoPalette
-import ObjectGlobals as OG
 
 class FileMgr:
     """ To handle data file """
@@ -40,7 +35,7 @@ class FileMgr:
             self.editor.updateStatusReadout('Sucessfully saved to %s'%fileName)
             self.editor.fNeedToSave = False
         except IOError:
-            print 'failed to save %s'%fileName
+            print('failed to save %s'%fileName)
             if f:
                 f.close()
 
@@ -54,4 +49,4 @@ class FileMgr:
             self.editor.updateStatusReadout('Sucessfully opened file %s'%fileName)
             self.editor.fNeedToSave = False
         except:
-            print 'failed to load %s'%fileName
+            print('failed to load %s'%fileName)

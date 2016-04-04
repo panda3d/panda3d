@@ -10,8 +10,8 @@ try:
 except NameError:
     base = ShowBase(False, windowType = 'none')
 
-from WxAppShell import *
-from ViewPort import *
+from .WxAppShell import *
+from .ViewPort import *
 
 ID_FOUR_VIEW = 401
 ID_TOP_VIEW = 402

@@ -11,14 +11,14 @@ def remove_task ( ):
     if (MotionTrail.task_added):
         total_motion_trails = len (MotionTrail.motion_trail_list)
 
-        if (total_motion_trails > 0):
-            print "warning:", total_motion_trails, "motion trails still exist when motion trail task is removed"
+        if total_motion_trails > 0:
+            print("warning: %d motion trails still exist when motion trail task is removed" % (total_motion_trails))
 
         MotionTrail.motion_trail_list = [ ]
 
         taskMgr.remove (MotionTrail.motion_trail_task_name)
 
-        print "MotionTrail task removed"
+        print("MotionTrail task removed")
 
         MotionTrail.task_added = False
     return
@@ -149,10 +149,10 @@ class MotionTrail(NodePath, DirectObject):
 
     def print_matrix (self, matrix):
         separator = ' '
-        print matrix.getCell (0, 0), separator, matrix.getCell (0, 1), separator, matrix.getCell (0, 2), separator, matrix.getCell (0, 3)
-        print matrix.getCell (1, 0), separator, matrix.getCell (1, 1), separator, matrix.getCell (1, 2), separator, matrix.getCell (1, 3)
-        print matrix.getCell (2, 0), separator, matrix.getCell (2, 1), separator, matrix.getCell (2, 2), separator, matrix.getCell (2, 3)
-        print matrix.getCell (3, 0), separator, matrix.getCell (3, 1), separator, matrix.getCell (3, 2), separator, matrix.getCell (3, 3)
+        print(matrix.getCell (0, 0), separator, matrix.getCell (0, 1), separator, matrix.getCell (0, 2), separator, matrix.getCell (0, 3))
+        print(matrix.getCell (1, 0), separator, matrix.getCell (1, 1), separator, matrix.getCell (1, 2), separator, matrix.getCell (1, 3))
+        print(matrix.getCell (2, 0), separator, matrix.getCell (2, 1), separator, matrix.getCell (2, 2), separator, matrix.getCell (2, 3))
+        print(matrix.getCell (3, 0), separator, matrix.getCell (3, 1), separator, matrix.getCell (3, 2), separator, matrix.getCell (3, 3))
 
     def motion_trail_task (self, task):
 
@@ -379,8 +379,8 @@ class MotionTrail(NodePath, DirectObject):
                 elapsed_time = current_time - self.fade_start_time
 
                 if (elapsed_time < 0.0):
+                    print("elapsed_time < 0: %f" % (elapsed_time))
                     elapsed_time = 0.0
-                    print "elapsed_time < 0", elapsed_time
 
                 if (elapsed_time < self.fade_time):
                     color_scale = (1.0 - (elapsed_time / self.fade_time)) * color_scale

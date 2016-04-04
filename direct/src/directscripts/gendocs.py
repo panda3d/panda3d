@@ -48,7 +48,7 @@
 #
 ########################################################################
 
-import os, sys, parser, symbol, token, types, re
+import os, sys, parser, symbol, token, re
 
 ########################################################################
 #
@@ -103,7 +103,7 @@ def writeFileLines(wfile, lines):
         sys.exit("Cannot write "+wfile)
 
 def findFiles(dirlist, ext, ign, list):
-    if isinstance(dirlist, types.StringTypes):
+    if isinstance(dirlist, str):
         dirlist = [dirlist]
     for dir in dirlist:
         for file in os.listdir(dir):
@@ -195,8 +195,8 @@ class InterrogateTokenizer:
             neg = 1
             self.pos += 1
         if (self.data[self.pos].isdigit()==0):
-            print "File position "+str(self.pos)
-            print "Text: "+self.data[self.pos:self.pos+50]
+            print("File position " + str(self.pos))
+            print("Text: " + self.data[self.pos:self.pos+50])
             sys.exit("Syntax error in interrogate file format 0")
         value = 0
         while (self.data[self.pos].isdigit()):
@@ -340,20 +340,20 @@ class InterrogateDatabase:
 
 def printTree(tree, indent):
     spacing = "                                                        "[:indent]
-    if isinstance(tree, types.TupleType) and isinstance(tree[0], types.IntType):
+    if isinstance(tree, tuple) and isinstance(tree[0], int):
         if tree[0] in symbol.sym_name:
             for i in range(len(tree)):
                 if (i==0):
-                    print spacing + "(symbol." + symbol.sym_name[tree[0]] + ","
+                    print(spacing + "(symbol." + symbol.sym_name[tree[0]] + ",")
                 else:
                     printTree(tree[i], indent+1)
-            print spacing + "),"
+            print(spacing + "),")
         elif tree[0] in token.tok_name:
-            print spacing + "(token." + token.tok_name[tree[0]] + ", '" + tree[1] + "'),"
+            print(spacing + "(token." + token.tok_name[tree[0]] + ", '" + tree[1] + "'),")
         else:
-            print spacing + str(tree)
+            print(spacing + str(tree))
     else:
-        print spacing + str(tree)
+        print(spacing + str(tree))
 
 
 COMPOUND_STMT_PATTERN = (
@@ -447,7 +447,7 @@ class ParseTreeInfo:
         self.function_info = {}
         self.assign_info = {}
         self.derivs = {}
-        if isinstance(tree, types.StringType):
+        if isinstance(tree, str):
             try:
                 tree = parser.suite(tree+"\n").totuple()
                 if (tree):
@@ -455,8 +455,8 @@ class ParseTreeInfo:
                     if found:
                         self.docstring = vars["docstring"]
             except:
-                print "CAUTION --- Parse failed: "+name
-        if isinstance(tree, types.TupleType):
+                print("CAUTION --- Parse failed: " + name)
+        if isinstance(tree, tuple):
             self.extract_info(tree)
 
     def match(self, pattern, data, vars=None):
@@ -480,10 +480,10 @@ class ParseTreeInfo:
         """
         if vars is None:
             vars = {}
-        if type(pattern) is types.ListType:       # 'variables' are ['varname']
+        if type(pattern) is list:       # 'variables' are ['varname']
             vars[pattern[0]] = data
             return 1, vars
-        if type(pattern) is not types.TupleType:
+        if type(pattern) is not tuple:
             return (pattern == data), vars
         if len(data) != len(pattern):
             return 0, vars
@@ -534,7 +534,7 @@ class ParseTreeInfo:
                     classinfo.derivs[vars["classname"]] = 1
 
     def extract_tokens(self, str, tree):
-        if (isinstance(tree, types.TupleType)):
+        if (isinstance(tree, tuple)):
             if tree[0] in token.tok_name:
                 str = str + tree[1]
                 if (tree[1]==","): str=str+" "
@@ -564,7 +564,7 @@ class CodeDatabase:
         self.varExports = {}
         self.globalfn = []
         self.formattedprotos = {}
-        print "Reading C++ source files"
+        print("Reading C++ source files")
         for cxx in cxxlist:
             tokzr = InterrogateTokenizer(cxx)
             idb = InterrogateDatabase(tokzr)
@@ -583,7 +583,7 @@ class CodeDatabase:
                     self.funcExports.setdefault("pandac.PandaModules", []).append(func.pyname)
                 else:
                     self.funcs[type.scopedname+"."+func.pyname] = func
-        print "Reading Python sources files"
+        print("Reading Python sources files")
         for py in pylist:
             pyinf = ParseTreeInfo(readFile(py), py, py)
             mod = pathToModule(py)
@@ -602,7 +602,7 @@ class CodeDatabase:
                 self.varExports.setdefault(mod, []).append(var)
 
     def getClassList(self):
-        return self.goodtypes.keys()
+        return list(self.goodtypes.keys())
 
     def getGlobalFunctionList(self):
         return self.globalfn
@@ -625,7 +625,7 @@ class CodeDatabase:
                 parents.append(basetype.scopedname)
             return parents
         elif (isinstance(type, ParseTreeInfo)):
-            return type.derivs.keys()
+            return list(type.derivs.keys())
         else:
             return []
 
@@ -767,7 +767,7 @@ CLASS_RENAME_DICT = {
 ########################################################################
 
 def makeCodeDatabase(indirlist, directdirlist):
-    if isinstance(directdirlist, types.StringTypes):
+    if isinstance(directdirlist, str):
         directdirlist = [directdirlist]
     ignore = {}
     ignore["__init__.py"] = 1
@@ -820,7 +820,7 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     classes = code.getClassList()[:]
     classes.sort(None, str.lower)
     xclasses = classes[:]
-    print "Generating HTML pages"
+    print("Generating HTML pages")
     for type in classes:
         body = "<h1>" + type + "</h1>\n"
         comment = code.getClassComment(type)
@@ -900,14 +900,14 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
 
     index = "<h1>List of Methods - Panda " + pversion + "</h1>\n"
 
-    prefixes = table.keys()
+    prefixes = list(table.keys())
     prefixes.sort(None, str.lower)
     for prefix in prefixes:
         index = index + linkTo("#"+prefix, prefix) + " "
     index = index + "<br><br>"
     for prefix in prefixes:
         index = index + '<a name="' + prefix + '">' + "\n"
-        names = table[prefix].keys()
+        names = list(table[prefix].keys())
         names.sort(None, str.lower)
         for name in names:
             line = '<b>' + name + ":</b><ul>\n"
@@ -968,9 +968,9 @@ def expandImports(indirlist, directdirlist, fixdirlist):
                 varExports = code.getVarExports(module)
                 if (len(typeExports)+len(funcExports)+len(varExports)==0):
                     result.append(line)
-                    print fixfile+" : "+module+" : no exports"
+                    print(fixfile + " : " + module + " : no exports")
                 else:
-                    print fixfile+" : "+module+" : repairing"
+                    print(fixfile + " : " + module + " : repairing")
                     for x in funcExports:
                         fn = code.getFunctionName(x)
                         if fn in used:

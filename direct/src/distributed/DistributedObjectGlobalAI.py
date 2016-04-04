@@ -1,5 +1,5 @@
 
-from DistributedObjectAI import DistributedObjectAI
+from .DistributedObjectAI import DistributedObjectAI
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
 

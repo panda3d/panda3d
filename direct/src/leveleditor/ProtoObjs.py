@@ -3,7 +3,7 @@ Palette for Prototyping
 """
 import os
 import imp
-import types
+
 
 class ProtoObjs:
     def __init__(self, name):
@@ -19,7 +19,7 @@ class ProtoObjs:
             module = imp.load_module(moduleName, file, pathname, description)
             self.data = module.protoData
         except:
-            print "%s doesn't exist"%(self.name)
+            print("%s doesn't exist"%(self.name))
             return
 
     def saveProtoData(self, f):

@@ -3,10 +3,9 @@ Defines ProtoObjs List UI
 """
 import wx
 import os
-import cPickle as pickl
 
 from pandac.PandaModules import *
-from ProtoObjs import *
+from .ProtoObjs import *
 
 class ProtoDropTarget(wx.PyDropTarget):
    """Implements drop target functionality to receive files, bitmaps and text"""
@@ -73,7 +72,7 @@ class ProtoObjsUI(wx.Panel):
         self.SetDropTarget(ProtoDropTarget(self))
 
     def populate(self):
-        for key in self.protoObjs.data.keys():
+        for key in list(self.protoObjs.data.keys()):
             self.add(self.protoObjs.data[key])
 
     # All subclasses should implement this method

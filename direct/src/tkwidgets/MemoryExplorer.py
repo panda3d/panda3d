@@ -1,7 +1,6 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-from Tree import *
+from .Tree import *
 import Pmw
 
 #--------------------------------------------------------------------------

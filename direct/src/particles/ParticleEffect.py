@@ -98,7 +98,7 @@ class ParticleEffect(NodePath):
             self.addForce(forceGroup[i])
 
     def addForce(self, force):
-        for p in self.particlesDict.values():
+        for p in list(self.particlesDict.values()):
             p.addForce(force)
 
     def removeForceGroup(self, forceGroup):
@@ -111,11 +111,11 @@ class ParticleEffect(NodePath):
         self.forceGroupDict.pop(forceGroup.getName(), None)
 
     def removeForce(self, force):
-        for p in self.particlesDict.values():
+        for p in list(self.particlesDict.values()):
             p.removeForce(force)
 
     def removeAllForces(self):
-        for fg in self.forceGroupDict.values():
+        for fg in list(self.forceGroupDict.values()):
             self.removeForceGroup(fg)
 
     def addParticles(self, particles):
@@ -123,7 +123,7 @@ class ParticleEffect(NodePath):
         self.particlesDict[particles.getName()] = particles
 
         # Associate all forces in all force groups with the particles
-        for fg in self.forceGroupDict.values():
+        for fg in list(self.forceGroupDict.values()):
             for i in range(len(fg)):
                 particles.addForce(fg[i])
 
@@ -135,16 +135,16 @@ class ParticleEffect(NodePath):
         self.particlesDict.pop(particles.getName(), None)
 
         # Remove all forces from the particles
-        for fg in self.forceGroupDict.values():
+        for fg in list(self.forceGroupDict.values()):
             for f in fg:
                 particles.removeForce(f)
 
     def removeAllParticles(self):
-        for p in self.particlesDict.values():
+        for p in list(self.particlesDict.values()):
             self.removeParticles(p)
 
     def getParticlesList(self):
-        return self.particlesDict.values()
+        return list(self.particlesDict.values())
 
     def getParticlesNamed(self, name):
         return self.particlesDict.get(name, None)
@@ -153,7 +153,7 @@ class ParticleEffect(NodePath):
         return self.particlesDict
 
     def getForceGroupList(self):
-        return self.forceGroupDict.values()
+        return list(self.forceGroupDict.values())
 
     def getForceGroupNamed(self, name):
         return self.forceGroupDict.get(name, None)
@@ -182,7 +182,7 @@ class ParticleEffect(NodePath):
 
         # Save all the particles to file
         num = 0
-        for p in self.particlesDict.values():
+        for p in list(self.particlesDict.values()):
             target = 'p%d' % num
             num = num + 1
             f.write(target + ' = Particles.Particles(\'%s\')\n' % p.getName())
@@ -191,7 +191,7 @@ class ParticleEffect(NodePath):
 
         # Save all the forces to file
         num = 0
-        for fg in self.forceGroupDict.values():
+        for fg in list(self.forceGroupDict.values()):
             target = 'f%d' % num
             num = num + 1
             f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % \

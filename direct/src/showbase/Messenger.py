@@ -3,7 +3,7 @@
 __all__ = ['Messenger']
 
 
-from PythonUtil import *
+from .PythonUtil import *
 from direct.directnotify import DirectNotifyGlobal
 import types
 
@@ -87,7 +87,7 @@ class Messenger:
         self.lock.acquire()
         try:
             objs = []
-            for refCount, obj in self._id2object.itervalues():
+            for refCount, obj in self._id2object.values():
                 objs.append(obj)
             return objs
         finally:
@@ -97,7 +97,7 @@ class Messenger:
         return len(self.__callbacks.get(event, {}))
 
     def _getEvents(self):
-        return self.__callbacks.keys()
+        return list(self.__callbacks.keys())
 
     def _releaseObject(self, object):
         # assumes lock is held.
@@ -214,7 +214,7 @@ class Messenger:
             # Get the list of events this object is listening to
             eventDict = self.__objectEvents.get(id)
             if eventDict:
-                for event in eventDict.keys():
+                for event in list(eventDict.keys()):
                     # Find the dictionary of all the objects accepting this event
                     acceptorDict = self.__callbacks.get(event)
                     # If this object is there, delete it from the dictionary
@@ -240,7 +240,7 @@ class Messenger:
             # Get the list of events this object is listening to
             eventDict = self.__objectEvents.get(id)
             if eventDict:
-                return eventDict.keys()
+                return list(eventDict.keys())
             return []
         finally:
             self.lock.release()
@@ -307,7 +307,7 @@ class Messenger:
             if not acceptorDict:
                 if __debug__:
                     if foundWatch:
-                        print "Messenger: \"%s\" was sent, but no function in Python listened."%(event,)
+                        print("Messenger: \"%s\" was sent, but no function in Python listened."%(event,))
                 return
 
             if taskChain:
@@ -357,7 +357,7 @@ class Messenger:
         return task.done
 
     def __dispatch(self, acceptorDict, event, sentArgs, foundWatch):
-        for id in acceptorDict.keys():
+        for id in list(acceptorDict.keys()):
             # We have to make this apparently redundant check, because
             # it is possible that one object removes its own hooks
             # in response to a handler called by a previous object.
@@ -389,10 +389,10 @@ class Messenger:
 
                 if __debug__:
                     if foundWatch:
-                        print "Messenger: \"%s\" --> %s%s"%(
+                        print("Messenger: \"%s\" --> %s%s"%(
                             event,
                             self.__methodRepr(method),
-                            tuple(extraArgs + sentArgs))
+                            tuple(extraArgs + sentArgs)))
 
                 #print "Messenger: \"%s\" --> %s%s"%(
                 #            event,
@@ -428,7 +428,7 @@ class Messenger:
         return (len(self.__callbacks) == 0)
 
     def getEvents(self):
-        return self.__callbacks.keys()
+        return list(self.__callbacks.keys())
 
     def replaceMethod(self, oldMethod, newFunction):
         """
@@ -436,9 +436,9 @@ class Messenger:
         you redefine functions with Control-c-Control-v
         """
         retFlag = 0
-        for entry in self.__callbacks.items():
+        for entry in list(self.__callbacks.items()):
             event, objectDict = entry
-            for objectEntry in objectDict.items():
+            for objectEntry in list(objectDict.items()):
                 object, params = objectEntry
                 method = params[0]
                 if (type(method) == types.MethodType):
@@ -462,8 +462,8 @@ class Messenger:
         isVerbose = 1 - Messenger.notify.getDebug()
         Messenger.notify.setDebug(isVerbose)
         if isVerbose:
-            print "Verbose mode true.  quiet list = %s"%(
-                self.quieting.keys(),)
+            print("Verbose mode true.  quiet list = %s"%(
+                list(self.quieting.keys()),))
 
     if __debug__:
         def watch(self, needle):
@@ -527,11 +527,11 @@ class Messenger:
         return a matching event (needle) if found (in haystack).
         This is primarily a debugging tool.
         """
-        keys = self.__callbacks.keys()
+        keys = list(self.__callbacks.keys())
         keys.sort()
         for event in keys:
             if repr(event).find(needle) >= 0:
-                print self.__eventRepr(event),
+                print(self.__eventRepr(event))
                 return {event: self.__callbacks[event]}
 
     def findAll(self, needle, limit=None):
@@ -541,11 +541,11 @@ class Messenger:
         This is primarily a debugging tool.
         """
         matches = {}
-        keys = self.__callbacks.keys()
+        keys = list(self.__callbacks.keys())
         keys.sort()
         for event in keys:
             if repr(event).find(needle) >= 0:
-                print self.__eventRepr(event),
+                print(self.__eventRepr(event))
                 matches[event] = self.__callbacks[event]
                 # if the limit is not None, decrement and
                 # check for break:
@@ -575,7 +575,7 @@ class Messenger:
         """
         str = event.ljust(32) + '\t'
         acceptorDict = self.__callbacks[event]
-        for key, (method, extraArgs, persistent) in acceptorDict.items():
+        for key, (method, extraArgs, persistent) in list(acceptorDict.items()):
             str = str + self.__methodRepr(method) + ' '
         str = str + '\n'
         return str
@@ -585,16 +585,16 @@ class Messenger:
         Compact version of event, acceptor pairs
         """
         str = "The messenger is currently handling:\n" + "="*64 + "\n"
-        keys = self.__callbacks.keys()
+        keys = list(self.__callbacks.keys())
         keys.sort()
         for event in keys:
             str += self.__eventRepr(event)
         # Print out the object: event dictionary too
         str += "="*64 + "\n"
-        for key, eventDict in self.__objectEvents.items():
+        for key, eventDict in list(self.__objectEvents.items()):
             object = self._getObject(key)
             str += "%s:\n" % repr(object)
-            for event in eventDict.keys():
+            for event in list(eventDict.keys()):
                 str += "     %s\n" % repr(event)
 
         str += "="*64 + "\n" + "End of messenger info.\n"
@@ -607,12 +607,12 @@ class Messenger:
         import types
         str = 'Messenger\n'
         str = str + '='*50 + '\n'
-        keys = self.__callbacks.keys()
+        keys = list(self.__callbacks.keys())
         keys.sort()
         for event in keys:
             acceptorDict = self.__callbacks[event]
             str = str + 'Event: ' + event + '\n'
-            for key in acceptorDict.keys():
+            for key in list(acceptorDict.keys()):
                 function, extraArgs, persistent = acceptorDict[key]
                 object = self._getObject(key)
                 if (type(object) == types.InstanceType):

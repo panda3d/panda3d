@@ -15,11 +15,11 @@ import glob
 import shutil
 
 import direct
-from pandac.PandaModules import Filename, DSearchPath
+from panda3d.core import Filename, DSearchPath
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__
-    print >> sys.stderr, msg
+    sys.stderr.write(__doc__)
+    sys.stderr.write(msg + '\n')
     sys.exit(code)
 
 def makeBundle(startDir):
@@ -62,7 +62,7 @@ def makeBundle(startDir):
 
     # All done!
     bundleFilename.touch()
-    print bundleFilename.toOsSpecific()
+    print(bundleFilename.toOsSpecific())
 
 def buildDmg(startDir):
     fstartDir = Filename.fromOsSpecific(startDir)
@@ -79,7 +79,7 @@ def buildDmg(startDir):
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     for opt, arg in opts:

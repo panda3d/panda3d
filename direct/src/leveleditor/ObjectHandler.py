@@ -7,7 +7,7 @@ to be game specific.
 
 from direct.actor import Actor
 
-import ObjectGlobals as OG
+from . import ObjectGlobals as OG
 
 class ObjectHandler:
     """ ObjectHandler will create and update objects """

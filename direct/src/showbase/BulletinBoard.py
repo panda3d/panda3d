@@ -53,7 +53,7 @@ class BulletinBoard:
     def __repr__(self):
         str  = 'Bulletin Board Contents\n'
         str += '======================='
-        keys = self._dict.keys()
+        keys = list(self._dict.keys())
         keys.sort()
         for postName in keys:
             str += '\n%s: %s' % (postName, self._dict[postName])

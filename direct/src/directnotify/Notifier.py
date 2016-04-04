@@ -2,7 +2,7 @@
 Notifier module: contains methods for handling information output
 for the programmer/user
 """
-from LoggerGlobal import defaultLogger
+from .LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
 from panda3d.core import ConfigVariableBool, NotifyCategory, StreamWriter, Notify
 import time
@@ -237,7 +237,7 @@ class Notifier:
         if self.streamWriter:
             self.streamWriter.write(string + '\n')
         else:
-            print >> sys.stderr, string
+            sys.stderr.write(string + '\n')
 
     def debugStateCall(self, obj=None, fsmMemberName='fsm',
             secondaryFsm='secondaryFSM'):

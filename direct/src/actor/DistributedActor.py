@@ -4,7 +4,7 @@ __all__ = ['DistributedActor']
 
 from direct.distributed import DistributedNode
 
-import Actor
+from . import Actor
 
 class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
     def __init__(self, cr):

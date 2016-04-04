@@ -1,5 +1,5 @@
 """instantiate global Logger object"""
 
-import Logger
+from . import Logger
 
 defaultLogger = Logger.Logger()

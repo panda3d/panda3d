@@ -82,7 +82,7 @@ reset_data() {
   _has_storage = false;
   _immutable = false;
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   // Mark the texture as coherent.
   if (gl_enable_memory_barriers) {
     _glgsg->_textures_needing_fetch_barrier.erase(this);
@@ -131,7 +131,7 @@ get_handle() {
 #endif
 }
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
 /**
  *
  */
@@ -176,4 +176,4 @@ mark_incoherent(bool wrote) {
   _glgsg->_textures_needing_framebuffer_barrier.insert(this);
 }
 
-#endif // OPENGLES
+#endif  // !OPENGLES_1

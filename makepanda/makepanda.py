@@ -2681,26 +2681,7 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("DIRECT")==0):
-    fixers = [
-        'apply',
-        'callable',
-        'dict',
-        'except',
-        'execfile',
-        'import',
-        'imports',
-        'long',
-        'metaclass',
-        'next',
-        'numliterals',
-        'print',
-        'types',
-        'unicode',
-        'xrange',
-        'xreadlines',
-    ]
-
-    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=fixers, threads=THREADCOUNT)
+    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', threads=THREADCOUNT)
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
 
     # This file used to be copied, but would nowadays cause conflicts.

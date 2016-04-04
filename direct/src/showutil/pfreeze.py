@@ -53,8 +53,9 @@ import os
 from direct.showutil import FreezeTool
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__
-    print >> sys.stderr, msg
+    if __doc__:
+        sys.stderr.write(__doc__ + '\n')
+    sys.stderr.write(msg + '\n')
     sys.exit(code)
 
 # We're not protecting the next part under a __name__ == __main__
@@ -67,7 +68,7 @@ addStartupModules = False
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:sh')
-except getopt.error, msg:
+except getopt.error as msg:
     usage(1, msg)
 
 for opt, arg in opts:
@@ -87,7 +88,7 @@ for opt, arg in opts:
     elif opt == '-h':
         usage(0)
     else:
-        print 'illegal option: ' + flag
+        print('illegal option: ' + flag)
         sys.exit(1)
 
 if not basename:

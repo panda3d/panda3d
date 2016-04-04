@@ -1,7 +1,7 @@
 """
 Defines Scene Graph tree UI
 """
-from SceneGraphUIBase import *
+from .SceneGraphUIBase import *
 
 class SceneGraphUI(SceneGraphUIBase):
     def __init__(self, parent, editor):

@@ -240,7 +240,7 @@ class _local(object):
         # Delete this key from all threads.
         _threadsLock.acquire()
         try:
-            for thread, locals, wrapper in _threads.values():
+            for thread, locals, wrapper in list(_threads.values()):
                 try:
                     del locals[i]
                 except KeyError:

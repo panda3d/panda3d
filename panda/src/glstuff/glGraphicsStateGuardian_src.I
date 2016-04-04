@@ -190,6 +190,9 @@ is_at_least_gles_version(int major_version, int minor_version) const {
 #ifndef OPENGLES
   return false;
 
+#elif defined(OPENGLES_1)
+  return major_version == 1 && _gl_version_minor >= minor_version;
+
 #elif defined(__EMSCRIPTEN__)
   // We're running WebGL.  WebGL 1 is based on OpenGL ES 2, and
   // WebGL 2 is based on OpenGL ES 3.  So add one to the major version.

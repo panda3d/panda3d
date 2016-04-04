@@ -23,7 +23,7 @@ class RandomNumGen:
         if isinstance(seed, RandomNumGen):
             # seed this rng with the other rng
             rng = seed
-            seed = rng.randint(0, 1L << 16)
+            seed = rng.randint(0, 1 << 16)
 
         self.notify.debug("seed: " + str(seed))
         seed = int(seed)
@@ -70,11 +70,7 @@ class RandomNumGen:
         assert N >= 0
         assert N <= 0x7fffffff
 
-        # the cast to 'long' prevents python from importing warnings.py,
-        # presumably to warn that the multiplication result is too
-        # large for an int and is implicitly being returned as a long.
-        # import of warnings.py was taking a few seconds
-        return int((self.__rng.getUint31() * long(N)) >> 31)
+        return int((self.__rng.getUint31() * N) >> 31)
 
     def choice(self, seq):
         """returns a random element from seq"""
@@ -82,7 +78,7 @@ class RandomNumGen:
 
     def shuffle(self, x):
         """randomly shuffles x in-place"""
-        for i in xrange(len(x)-1, 0, -1):
+        for i in range(len(x) - 1, 0, -1):
             # pick an element in x[:i+1] with which to exchange x[i]
             j = int(self.__rand(i+1))
             x[i], x[j] = x[j], x[i]
@@ -134,4 +130,4 @@ class RandomNumGen:
     # synchronicity is critical
     def random(self):
         """returns random float in [0.0, 1.0)"""
-        return float(self.__rng.getUint31()) / float(1L << 31)
+        return float(self.__rng.getUint31()) / float(1 << 31)

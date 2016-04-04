@@ -37,7 +37,7 @@ class PhasedObject:
         self.aliasPhaseMap = {}
         self.__phasing = False
 
-        for alias,phase in aliasMap.items():
+        for alias,phase in list(aliasMap.items()):
             self.setAlias(phase, alias)
 
     def __repr__(self):
@@ -168,26 +168,26 @@ if __debug__:
             self.setPhase('Away')
 
         def loadPhaseAway(self):
-            print 'loading Away'
+            print('loading Away')
 
         def unloadPhaseAway(self):
-            print 'unloading Away'
+            print('unloading Away')
 
         def loadPhaseFar(self):
-            print 'loading Far'
+            print('loading Far')
 
         def unloadPhaseFar(self):
-            print 'unloading Far'
+            print('unloading Far')
 
         def loadPhaseNear(self):
-            print 'loading Near'
+            print('loading Near')
 
         def unloadPhaseNear(self):
-            print 'unloading Near'
+            print('unloading Near')
 
         def loadPhaseAt(self):
-            print 'loading At'
+            print('loading At')
 
         def unloadPhaseAt(self):
-            print 'unloading At'
+            print('unloading At')
 

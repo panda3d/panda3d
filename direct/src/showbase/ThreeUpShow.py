@@ -3,7 +3,7 @@
 __all__ = ['ThreeUpShow']
 
 
-import ShowBase
+from . import ShowBase
 
 class ThreeUpShow(ShowBase.ShowBase):
     def __init__(self):
