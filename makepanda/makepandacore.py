@@ -2188,6 +2188,7 @@ def SdkLocateVulkan():
         # Use the latest version.
         versions = os.listdir(path)
         versions.sort()
+        print("Using Vulkan SDK %s" % (versions[-1]))
         SDK["VULKAN"] = path + '/' + versions[-1]
 
 ########################################################################

@@ -22,6 +22,7 @@
 #include "cullFaceAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "logicOpAttrib.h"
 #include "renderModeAttrib.h"
 
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
@@ -279,6 +280,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_indirect_draw = true;
 
   _max_color_targets = limits.maxColorAttachments;
+  _supports_dual_source_blending = (features.dualSrcBlend != VK_FALSE);
 
   _supported_geom_rendering =
     Geom::GR_indexed_point |
@@ -2027,29 +2029,50 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   state->get_attrib_def(color_blend);
   const ColorWriteAttrib *color_write;
   state->get_attrib_def(color_write);
+  const LogicOpAttrib *logic_op;
+  state->get_attrib_def(logic_op);
 
   VkPipelineColorBlendAttachmentState att_state[1];
-  att_state[0].blendEnable = (color_blend->get_mode() != ColorBlendAttrib::M_none);
-  att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-  att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-  att_state[0].colorBlendOp = (VkBlendOp)(color_blend->get_mode() - 1);
-  att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-  att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-  att_state[0].alphaBlendOp = (VkBlendOp)(color_blend->get_mode() - 1);
+  if (color_blend->get_mode() != ColorBlendAttrib::M_none) {
+    att_state[0].blendEnable = VK_TRUE;
+    att_state[0].srcColorBlendFactor = (VkBlendFactor)color_blend->get_operand_a();
+    att_state[0].dstColorBlendFactor = (VkBlendFactor)color_blend->get_operand_b();
+    att_state[0].colorBlendOp = (VkBlendOp)(color_blend->get_mode() - 1);
+    att_state[0].srcAlphaBlendFactor = (VkBlendFactor)color_blend->get_alpha_operand_a();
+    att_state[0].dstAlphaBlendFactor = (VkBlendFactor)color_blend->get_alpha_operand_b();
+    att_state[0].alphaBlendOp = (VkBlendOp)(color_blend->get_alpha_mode() - 1);
+  } else {
+    att_state[0].blendEnable = VK_FALSE;
+    att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+    att_state[0].colorBlendOp = VK_BLEND_OP_ADD;
+    att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
+  }
   att_state[0].colorWriteMask = color_write->get_channels();
 
   VkPipelineColorBlendStateCreateInfo blend_info;
   blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   blend_info.pNext = NULL;
   blend_info.flags = 0;
-  blend_info.logicOpEnable = VK_FALSE;
-  blend_info.logicOp = VK_LOGIC_OP_NO_OP;
+
+  if (logic_op->get_operation() != LogicOpAttrib::O_none) {
+    blend_info.logicOpEnable = VK_TRUE;
+    blend_info.logicOp = (VkLogicOp)(logic_op->get_operation() - 1);
+  } else {
+    blend_info.logicOpEnable = VK_FALSE;
+    blend_info.logicOp = VK_LOGIC_OP_COPY;
+  }
+
   blend_info.attachmentCount = 1;
   blend_info.pAttachments = att_state;
-  blend_info.blendConstants[0] = 1.0f;
-  blend_info.blendConstants[1] = 1.0f;
-  blend_info.blendConstants[2] = 1.0f;
-  blend_info.blendConstants[3] = 1.0f;
+
+  LColor constant_color = color_blend->get_color();
+  blend_info.blendConstants[0] = constant_color[0];
+  blend_info.blendConstants[1] = constant_color[1];
+  blend_info.blendConstants[2] = constant_color[2];
+  blend_info.blendConstants[3] = constant_color[3];
 
   // Tell Vulkan that we'll be specifying the viewport and scissor separately.
   const VkDynamicState dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
