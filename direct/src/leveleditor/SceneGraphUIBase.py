@@ -2,20 +2,19 @@
 Defines Scene Graph tree UI Base
 """
 import wx
-import cPickle as pickle
 from pandac.PandaModules import *
-from ActionMgr import *
+from .ActionMgr import *
 
-import ObjectGlobals as OG
+from . import ObjectGlobals as OG
 
 class SceneGraphUIDropTarget(wx.TextDropTarget):
     def __init__(self, editor):
-        print "in SceneGraphUIDropTarget::init..."
+        print("in SceneGraphUIDropTarget::init...")
         wx.TextDropTarget.__init__(self)
         self.editor = editor
 
     def OnDropText(self, x, y, text):
-        print "in SceneGraphUIDropTarget::OnDropText..."
+        print("in SceneGraphUIDropTarget::OnDropText...")
         self.editor.ui.sceneGraphUI.changeHierarchy(text, x, y)
 
 class SceneGraphUIBase(wx.Panel):
@@ -299,7 +298,7 @@ class SceneGraphUIBase(wx.Panel):
 
         if item != self.tree.GetRootItem(): # prevent dragging root item
             text = self.tree.GetItemText(item)
-            print "Starting SceneGraphUI drag'n'drop with %s..." % repr(text)
+            print("Starting SceneGraphUI drag'n'drop with %s..." % repr(text))
 
             tdo = wx.TextDataObject(text)
             tds = wx.DropSource(self.tree)

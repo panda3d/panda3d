@@ -1,5 +1,5 @@
 from pandac.PandaModules import *
-import ObjectGlobals as OG
+from . import ObjectGlobals as OG
 
 class ActionMgr:
     def __init__(self):
@@ -22,7 +22,7 @@ class ActionMgr:
 
     def undo(self):
         if len(self.undoList) < 1:
-            print 'No more undo'
+            print('No more undo')
         else:
             action = self.undoList.pop()
             self.redoList.append(action)
@@ -30,7 +30,7 @@ class ActionMgr:
 
     def redo(self):
         if len(self.redoList) < 1:
-            print 'No more redo'
+            print('No more redo')
         else:
             action = self.redoList.pop()
             self.undoList.append(action)
@@ -70,7 +70,7 @@ class ActionBase(Functor):
         pass
 
     def undo(self):
-        print "undo method is not defined for this action"
+        print("undo method is not defined for this action")
 
 class ActionAddNewObj(ActionBase):
     """ Action class for adding new object """
@@ -88,16 +88,16 @@ class ActionAddNewObj(ActionBase):
 
     def redo(self):
         if self.uid is None:
-            print "Can't redo this add"
+            print("Can't redo this add")
         else:
             self.result = self._do__call__(uid=self.uid)
             return self.result
 
     def undo(self):
         if self.result is None:
-            print "Can't undo this add"
+            print("Can't undo this add")
         else:
-            print "Undo: addNewObject"
+            print("Undo: addNewObject")
             if self.uid:
                 obj = self.editor.objectMgr.findObjectById(self.uid)
             else:
@@ -109,7 +109,7 @@ class ActionAddNewObj(ActionBase):
                 base.direct.removeNodePath(obj[OG.OBJ_NP])
                 self.result = None
             else:
-                print "Can't undo this add"
+                print("Can't undo this add")
 
 class ActionDeleteObj(ActionBase):
     """ Action class for deleting object """
@@ -150,11 +150,11 @@ class ActionDeleteObj(ActionBase):
             saveObjStatus(np, False)
 
     def undo(self):
-        if len(self.hierarchy.keys()) == 0 or\
-           len(self.objInfos.keys()) == 0:
-            print "Can't undo this deletion"
+        if len(self.hierarchy) == 0 or\
+           len(self.objInfos) == 0:
+            print("Can't undo this deletion")
         else:
-            print "Undo: deleteObject"
+            print("Undo: deleteObject")
             def restoreObject(uid, parentNP):
                 obj = self.objInfos[uid]
                 objDef = obj[OG.OBJ_DEF]
@@ -169,8 +169,8 @@ class ActionDeleteObj(ActionBase):
                 self.editor.objectMgr.updateObjectProperties(objNP, objProp)
                 objNP.setMat(self.objTransforms[uid])
 
-            while (len(self.hierarchy.keys()) > 0):
-                for uid in self.hierarchy.keys():
+            while len(self.hierarchy) > 0:
+                for uid in self.hierarchy:
                     if self.hierarchy[uid] is None:
                         parentNP = None
                         restoreObject(uid, parentNP)
@@ -230,11 +230,11 @@ class ActionDeleteObjById(ActionBase):
         saveObjStatus(self.uid, True)
 
     def undo(self):
-        if len(self.hierarchy.keys()) == 0 or\
-           len(self.objInfos.keys()) == 0:
-            print "Can't undo this deletion"
+        if len(self.hierarchy) == 0 or\
+           len(self.objInfos) == 0:
+            print("Can't undo this deletion")
         else:
-            print "Undo: deleteObjectById"
+            print("Undo: deleteObjectById")
             def restoreObject(uid, parentNP):
                 obj = self.objInfos[uid]
                 objDef = obj[OG.OBJ_DEF]
@@ -249,8 +249,8 @@ class ActionDeleteObjById(ActionBase):
                 self.editor.objectMgr.updateObjectProperties(objNP, objProp)
                 objNP.setMat(self.objTransforms[uid])
 
-            while (len(self.hierarchy.keys()) > 0):
-                for uid in self.hierarchy.keys():
+            while len(self.hierarchy) > 0:
+                for uid in self.hierarchy:
                     if self.hierarchy[uid] is None:
                         parentNP = None
                         restoreObject(uid, parentNP)
@@ -298,7 +298,7 @@ class ActionSelectObj(ActionBase):
                 self.selectedUIDs.append(uid)
 
     def undo(self):
-        print "Undo : selectObject"
+        print("Undo : selectObject")
         base.direct.deselectAllCB()
         for uid in self.selectedUIDs:
             obj = self.editor.objectMgr.findObjectById(uid)
@@ -332,9 +332,9 @@ class ActionTransformObj(ActionBase):
 
     def undo(self):
         if self.origMat is None:
-            print "Can't undo this transform"
+            print("Can't undo this transform")
         else:
-            print "Undo: transformObject"
+            print("Undo: transformObject")
             obj = self.editor.objectMgr.findObjectById(self.uid)
             if obj:
                 obj[OG.OBJ_NP].setMat(self.origMat)
@@ -360,7 +360,7 @@ class ActionDeselectAll(ActionBase):
                 self.selectedUIDs.append(uid)
 
     def undo(self):
-        print "Undo : deselectAll"
+        print("Undo : deselectAll")
         base.direct.deselectAllCB()
         for uid in self.selectedUIDs:
             obj = self.editor.objectMgr.findObjectById(uid)
@@ -391,7 +391,7 @@ class ActionUpdateObjectProp(ActionBase):
         return self.result
 
     def undo(self):
-        print "Undo : updateObjectProp"
+        print("Undo : updateObjectProp")
         if self.oldVal:
             self.obj[OG.OBJ_PROP][self.propName] = self.oldVal
             if self.undoFunc:

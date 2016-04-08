@@ -6,8 +6,7 @@ Floater Class: Velocity style controller for floating point values with
 __all__ = ['Floater', 'FloaterWidget', 'FloaterGroup']
 
 from direct.showbase.TkGlobal import *
-from Tkinter import *
-from Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
+from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
 import math, Pmw
 
@@ -123,7 +122,7 @@ class FloaterWidget(Pmw.MegaWidget):
         """
         # Send command if any
         if fCommand and (self['command'] != None):
-            apply(self['command'], [value] + self['commandData'])
+            self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value
 
@@ -145,7 +144,7 @@ class FloaterWidget(Pmw.MegaWidget):
         # Exectute user redefinable callback function (if any)
         self['relief'] = SUNKEN
         if self['preCallback']:
-            apply(self['preCallback'], self['callbackData'])
+            self['preCallback'](*self['callbackData'])
         self.velocitySF = 0.0
         self.updateTask = taskMgr.add(self.updateFloaterTask,
                                         'updateFloater')
@@ -183,7 +182,7 @@ class FloaterWidget(Pmw.MegaWidget):
         self.velocitySF = 0.0
         # Execute user redefinable callback function (if any)
         if self['postCallback']:
-            apply(self['postCallback'], self['callbackData'])
+            self['postCallback'](*self['callbackData'])
         self['relief'] = RAISED
 
     def setNumDigits(self):
@@ -336,7 +335,7 @@ if __name__ == '__main__':
 
     # Dummy command
     def printVal(val):
-        print val
+        print(val)
 
     # Create and pack a Floater megawidget.
     mega1 = Floater(root, command = printVal)

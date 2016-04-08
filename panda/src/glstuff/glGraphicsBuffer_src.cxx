@@ -252,7 +252,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
     // In case of multisample rendering, we don't need to issue the barrier
     // until we call glBlitFramebuffer.
-#ifndef OPENGLES
+#ifndef OPENGLES_1
     if (gl_enable_memory_barriers && _fbo_multisample == 0) {
       CLP(GraphicsStateGuardian) *glgsg;
       DCAST_INTO_R(glgsg, _gsg, false);
@@ -509,6 +509,7 @@ rebuild_bitplanes() {
 
   // Now create the FBO's.
   _have_any_color = false;
+  bool have_any_depth = false;
 
   if (num_fbos > _fbo.size()) {
     // Generate more FBO handles.
@@ -525,7 +526,6 @@ rebuild_bitplanes() {
     }
     glgsg->bind_fbo(_fbo[layer]);
 
-#ifndef OPENGLES
     if (glgsg->_use_object_labels) {
       // Assign a label for OpenGL to use when displaying debug messages.
       if (num_fbos > 1) {
@@ -537,13 +537,14 @@ rebuild_bitplanes() {
         glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
       }
     }
-#endif
 
     // For all slots, update the slot.
     if (_use_depth_stencil) {
       bind_slot(layer, rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+      have_any_depth = true;
     } else if (attach[RTP_depth] || _fb_properties.get_depth_bits() > 0) {
       bind_slot(layer, rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+      have_any_depth = true;
     }
 
     int next = GL_COLOR_ATTACHMENT0_EXT;
@@ -581,11 +582,23 @@ rebuild_bitplanes() {
     }
 #endif  // OPENGLES
 
-    // Clear if the fbo was just created, regardless of the clear settings per
-    // frame.
-    if (_initial_clear) {
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    if (_have_any_color || have_any_depth) {
+      // Clear if the fbo was just created, regardless of the clear settings per
+      // frame.
+      if (_initial_clear) {
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      }
+#ifndef OPENGLES_1
+    } else if (glgsg->_supports_empty_framebuffer) {
+      // Set the "default" width and height, which is required to have an FBO
+      // without any attachments.
+      glgsg->_glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_WIDTH, _rb_size_x);
+      glgsg->_glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_HEIGHT, _rb_size_y);
+#endif
+    } else {
+      // If all else fails, just bind a "dummy" attachment.
+      bind_slot(layer, rb_resize, attach, RTP_color, next++);
     }
   }
 
@@ -736,12 +749,10 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       _fb_properties.setup_color_texture(tex);
     }
 
-#ifndef OPENGLES
     GLenum target = glgsg->get_texture_target(tex->get_texture_type());
     if (target == GL_TEXTURE_CUBE_MAP) {
       target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer;
     }
-#endif
 
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
       GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
@@ -800,7 +811,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     GLuint gl_format = GL_RGBA4;
     switch (slot) {
     case RTP_depth_stencil:
-      gl_format = GL_DEPTH_STENCIL_OES;
+      gl_format = GL_DEPTH24_STENCIL8_OES;
       break;
     case RTP_depth:
       if (_fb_properties.get_depth_bits() > 24 && glgsg->_supports_depth32) {
@@ -1176,9 +1187,7 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
     glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, attachpoint,
                                    target, gtc->_index, 0, layer);
     break;
-#endif
-#ifndef OPENGLES
-  case GL_TEXTURE_2D_ARRAY_EXT:
+  case GL_TEXTURE_2D_ARRAY:
     glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, attachpoint,
                                       gtc->_index, 0, layer);
     break;
@@ -1363,8 +1372,10 @@ open_buffer() {
     _fb_properties.set_depth_bits(32);
   } else if (_fb_properties.get_depth_bits() > 16) {
     _fb_properties.set_depth_bits(24);
-  } else {
+  } else if (_fb_properties.get_depth_bits() > 0) {
     _fb_properties.set_depth_bits(16);
+  } else {
+    _fb_properties.set_depth_bits(0);
   }
 
   // We're not going to get more than this, ever.  At least not until OpenGL
@@ -1712,7 +1723,7 @@ resolve_multisamples() {
 
   PStatGPUTimer timer(glgsg, _resolve_multisample_pcollector);
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   if (gl_enable_memory_barriers) {
     // Issue memory barriers as necessary to make sure that the texture memory
     // is synchronized before we blit to it.

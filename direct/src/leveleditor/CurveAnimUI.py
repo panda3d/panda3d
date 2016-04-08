@@ -1,12 +1,12 @@
 """
    This is the GUI for the Curve Animation
 """
-import os, wx, time
+import wx
 
 from direct.interval.IntervalGlobal import *
 from direct.actor.Actor import *
-from direct.showutil.Rope import Rope
-import ObjectGlobals as OG
+from . import ObjectGlobals as OG
+
 
 class CurveAnimUI(wx.Dialog):
     """
@@ -129,8 +129,8 @@ class CurveAnimUI(wx.Dialog):
                 return
 
             hasKey = False
-            for key in self.editor.animMgr.curveAnimation.keys():
-                if key == (self.nodePath[OG.OBJ_UID],self.curve[OG.OBJ_UID]):
+            for key in self.editor.animMgr.curveAnimation:
+                if key == (self.nodePath[OG.OBJ_UID], self.curve[OG.OBJ_UID]):
                     dlg = wx.MessageDialog(None, 'Already have the animation for this object attach to this curve.', 'NOTICE', wx.OK )
                     dlg.ShowModal()
                     dlg.Destroy()

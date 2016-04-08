@@ -3,9 +3,8 @@ Defines ProtoPalette tree UI
 """
 import wx
 import os
-import cPickle as pickl
 from pandac.PandaModules import *
-from PaletteTreeCtrl import *
+from .PaletteTreeCtrl import *
 
 class UniversalDropTarget(wx.PyDropTarget):
    """Implements drop target functionality to receive files, bitmaps and text"""
@@ -89,7 +88,7 @@ class ProtoPaletteUI(wx.Panel):
         self.SetDropTarget(UniversalDropTarget(self.editor))
 
     def populate(self):
-        dataStructKeys = self.palette.dataStruct.keys()[:]
+        dataStructKeys = list(self.palette.dataStruct.keys())
         self.tree.addTreeNodes(self.tree.GetRootItem(), self.palette.rootName, self.palette.dataStruct, dataStructKeys)
 
     def OnBeginLabelEdit(self, event):
@@ -199,7 +198,7 @@ class ProtoPaletteUI(wx.Panel):
         if self.opSort == self.opSortAlpha:
            return cmp(data1, data2)
         else:
-           items = self.palette.data.keys()[:]
+           items = list(self.palette.data.keys())
            index1 = items.index(data1)
            index2 = items.index(data2)
         return cmp(index1, index2)

@@ -16,8 +16,8 @@ class PushesStateChanges:
 
     def destroy(self):
         if len(self._subscribers) != 0:
-            raise '%s object still has subscribers in destroy(): %s' % (
-                self.__class__.__name__, self._subscribers)
+            raise Exception('%s object still has subscribers in destroy(): %s' % (
+                self.__class__.__name__, self._subscribers))
         del self._subscribers
         del self._value
 
@@ -154,7 +154,7 @@ class ReceivesMultipleStateChanges:
         self._source2key = {}
 
     def destroy(self):
-        keys = self._key2source.keys()
+        keys = list(self._key2source.keys())
         for key in keys:
             self._unsubscribe(key)
         del self._key2source
@@ -202,15 +202,14 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
         # the value of arguments that push state
         self._bakedArgs = []
         self._bakedKargs = {}
-        for i in xrange(len(self._args)):
+        for i, arg in enumerate(self._args):
             key = i
-            arg = self._args[i]
             if isinstance(arg, PushesStateChanges):
                 self._bakedArgs.append(arg.getState())
                 self._subscribeTo(arg, key)
             else:
                 self._bakedArgs.append(self._args[i])
-        for key, arg in self._kArgs.iteritems():
+        for key, arg in self._kArgs.items():
             if isinstance(arg, PushesStateChanges):
                 self._bakedKargs[key] = arg.getState()
                 self._subscribeTo(arg, key)

@@ -47,7 +47,7 @@ public:
 
   // Raise this number whenever we add a new attrib.  This used to be
   // determined at runtime, but it's better to have it as a constexpr.
-  static const int _max_slots = 29;
+  static const int _max_slots = 32;
 
   int register_slot(TypeHandle type_handle, int sort,
                     RenderAttrib *default_attrib);

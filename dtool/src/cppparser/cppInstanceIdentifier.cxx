@@ -17,6 +17,7 @@
 #include "cppArrayType.h"
 #include "cppConstType.h"
 #include "cppFunctionType.h"
+#include "cppSimpleType.h"
 #include "cppParameterList.h"
 #include "cppIdentifier.h"
 

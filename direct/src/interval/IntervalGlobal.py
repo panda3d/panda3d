@@ -4,23 +4,23 @@
 # since the purpose of this module is to add up the contributions
 # of a number of other modules.
 
-from Interval import *
-from ActorInterval import *
-from FunctionInterval import *
-from LerpInterval import *
-from IndirectInterval import *
-from MopathInterval import *
+from .Interval import *
+from .ActorInterval import *
+from .FunctionInterval import *
+from .LerpInterval import *
+from .IndirectInterval import *
+from .MopathInterval import *
 try:
     import panda3d.physics
     ##Some people may have the particle system compiled out
     if hasattr( panda3d.physics, 'ParticleSystem' ):
-        from ParticleInterval import *
+        from .ParticleInterval import *
         if __debug__:
-            from TestInterval import *
+            from .TestInterval import *
 except ImportError:
     pass
-from SoundInterval import *
-from ProjectileInterval import *
-from MetaInterval import *
-from IntervalManager import *
+from .SoundInterval import *
+from .ProjectileInterval import *
+from .MetaInterval import *
+from .IntervalManager import *
 from panda3d.direct import WaitInterval

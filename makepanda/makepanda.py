@@ -2626,7 +2626,7 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("DIRECT")==0):
-    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=['all'])
+    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', threads=THREADCOUNT)
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
 
     # This file used to be copied, but would nowadays cause conflicts.
@@ -2676,7 +2676,8 @@ if not PkgSkip("PYTHON"):
 
     # Also add this file, for backward compatibility.
     ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """
-print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
+if __debug__:
+    print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
 from .interrogatedb import *
 """)
 
@@ -2707,7 +2708,8 @@ if not PkgSkip("VRPN"):
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
 
-print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
+if __debug__:
+    print("Warning: pandac.PandaModules is deprecated, import from panda3d.core instead")
 """
 
 for module in panda_modules:
@@ -4545,8 +4547,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0 and not RUNTI
   TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles.dll', input='pandagles_pandagles.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_config_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
@@ -4564,8 +4565,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0 and not RUNT
   TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
   TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
-  # Uncomment this as soon as x11-specific stuff is removed from p3egldisplay
-  #TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
+  TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')

@@ -11,6 +11,7 @@
  * @date 2005-06-02
  */
 
+#include "colorInterpolationManager.h"
 #include "mathNumbers.h"
 
 TypeHandle ColorInterpolationFunction::_type_handle;

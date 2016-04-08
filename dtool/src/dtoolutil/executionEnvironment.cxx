@@ -247,7 +247,7 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "MAIN_DIR") {
     // Return the binary name's parent directory.  If we're running inside the
     // Python interpreter, this will be overridden by a setting from
-    // panda3dcore.py.
+    // panda3d/core.py.
     if (!_binary_name.empty()) {
       Filename main_dir (_binary_name);
       main_dir.make_absolute();

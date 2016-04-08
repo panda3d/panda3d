@@ -1,5 +1,5 @@
 
-print 'ThreeUpStart: Starting up environment.'
+print('ThreeUpStart: Starting up environment.')
 
 from pandac.PandaModules import *
 

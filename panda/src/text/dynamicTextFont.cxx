@@ -42,6 +42,7 @@
 // #include "renderModeAttrib.h" #include "antialiasAttrib.h"
 #include "colorAttrib.h"
 #include "textureAttrib.h"
+#include "transparencyAttrib.h"
 
 TypeHandle DynamicTextFont::_type_handle;
 

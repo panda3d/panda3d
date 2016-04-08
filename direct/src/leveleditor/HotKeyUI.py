@@ -89,8 +89,8 @@ class EditHotKeyDialog(wx.Dialog):
             newKeyStr = specialKey
 
         if newKeyStr != self.currKey:
-            if newKeyStr in base.direct.hotKeyMap.keys():
-                print 'a hotkey is to be overridden with', newKeyStr
+            if newKeyStr in list(base.direct.hotKeyMap.keys()):
+                print('a hotkey is to be overridden with %s' % newKeyStr)
                 oldKeyDesc = base.direct.hotKeyMap[newKeyStr]
                 msg = 'The hotkey is already assigned to %s\n'%oldKeyDesc[0] +\
                       'Do you want to override this?'
@@ -116,7 +116,7 @@ class HotKeyPanel(ScrolledPanel):
 
     def updateUI(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        keys = base.direct.hotKeyMap.keys()
+        keys = list(base.direct.hotKeyMap.keys())
         keys.sort()
         for key in keys:
             keyDesc = base.direct.hotKeyMap[key]

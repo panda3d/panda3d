@@ -2,6 +2,6 @@
 
 __all__ = ['taskMgr']
 
-import Task
+from . import Task
 
 taskMgr = Task.TaskManager()

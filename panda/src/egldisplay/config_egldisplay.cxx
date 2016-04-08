@@ -26,41 +26,6 @@ ConfigureFn(config_egldisplay) {
   init_libegldisplay();
 }
 
-ConfigVariableString display_cfg
-("display", "",
- PRC_DESC("Specify the X display string for the default display.  If this "
-          "is not specified, $DISPLAY is used."));
-
-ConfigVariableBool x_error_abort
-("x-error-abort", false,
- PRC_DESC("Set this true to trigger and abort (and a stack trace) on receipt "
-          "of an error from the X window system.  This can make it easier "
-          "to discover where these errors are generated."));
-
-ConfigVariableInt x_wheel_up_button
-("x-wheel-up-button", 4,
- PRC_DESC("This is the mouse button index of the wheel_up event: which "
-          "mouse button number does the system report when the mouse wheel "
-          "is rolled one notch up?"));
-
-ConfigVariableInt x_wheel_down_button
-("x-wheel-down-button", 5,
- PRC_DESC("This is the mouse button index of the wheel_down event: which "
-          "mouse button number does the system report when the mouse wheel "
-          "is rolled one notch down?"));
-
-ConfigVariableInt x_wheel_left_button
-("x-wheel-left-button", 6,
- PRC_DESC("This is the mouse button index of the wheel_left event: which "
-          "mouse button number does the system report when one scrolls "
-          "to the left?"));
-
-ConfigVariableInt x_wheel_right_button
-("x-wheel-right-button", 7,
- PRC_DESC("This is the mouse button index of the wheel_right event: which "
-          "mouse button number does the system report when one scrolls "
-          "to the right?"));
-
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

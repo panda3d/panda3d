@@ -3,7 +3,6 @@ __all__ = ["install"]
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr
 import sys
-import types
 import traceback
 
 notify = directNotify.newCategory("ExceptionVarDump")
@@ -22,7 +21,7 @@ def _varDump__init__(self, *args, **kArgs):
     while True:
         try:
             frame = sys._getframe(f)
-        except ValueError, e:
+        except ValueError as e:
             break
         else:
             f += 1
@@ -111,7 +110,7 @@ def _excepthookDumpVars(eType, eValue, tb):
             if name in codeNames:
                 name2obj[name] = obj
         # show them in alphabetical order
-        names = name2obj.keys()
+        names = list(name2obj.keys())
         names.sort()
         # push them in reverse order so they'll be popped in the correct order
         names.reverse()
@@ -125,7 +124,7 @@ def _excepthookDumpVars(eType, eValue, tb):
             name, obj, traversedIds = stateStack.pop()
             #notify.info('%s, %s, %s' % (name, fastRepr(obj), traversedIds))
             r = fastRepr(obj, maxLen=10)
-            if type(r) is types.StringType:
+            if type(r) is str:
                 r = r.replace('\n', '\\n')
             s += '\n    %s = %s' % (name, r)
             # if we've already traversed through this object, don't traverse through it again
@@ -145,7 +144,7 @@ def _excepthookDumpVars(eType, eValue, tb):
                         attrName2obj[attrName] = attr
                 if len(attrName2obj):
                     # show them in alphabetical order
-                    attrNames = attrName2obj.keys()
+                    attrNames = list(attrName2obj.keys())
                     attrNames.sort()
                     # push them in reverse order so they'll be popped in the correct order
                     attrNames.reverse()

@@ -8,8 +8,12 @@ from direct.showbase.PythonUtil import AlphabetCounter
 from direct.showbase.Job import Job
 import gc
 import types
+import sys
 
 GarbageCycleCountAnnounceEvent = 'announceGarbageCycleDesc2num'
+
+if sys.version_info >= (3, 0):
+    xrange = range
 
 class FakeObject:
     pass
@@ -173,7 +177,7 @@ class GarbageReport(Job):
             if hasattr(self.garbage[i], '_garbageInfo') and callable(self.garbage[i]._garbageInfo):
                 try:
                     info = self.garbage[i]._garbageInfo()
-                except Exception, e:
+                except Exception as e:
                     info = str(e)
                 self._id2garbageInfo[id(self.garbage[i])] = info
                 yield None
@@ -211,7 +215,7 @@ class GarbageReport(Job):
                     startIndex = 0
                     # + 1 to include a reference back to the first object
                     endIndex = numObjs + 1
-                    if type(objs[-1]) is types.InstanceType and type(objs[0]) is types.DictType:
+                    if type(objs[-1]) is types.InstanceType and type(objs[0]) is dict:
                         startIndex -= 1
                         endIndex -= 1
 
@@ -227,7 +231,7 @@ class GarbageReport(Job):
                             # skip past the instance dict and get the member obj
                             numToSkip += 1
                             member = objs[index+2]
-                            for key, value in obj.__dict__.iteritems():
+                            for key, value in obj.__dict__.items():
                                 if value is member:
                                     break
                                 yield None
@@ -235,11 +239,11 @@ class GarbageReport(Job):
                                 key = '<unknown member name>'
                             cycleBySyntax += '%s' % key
                             objAlreadyRepresented = True
-                        elif type(obj) is types.DictType:
+                        elif type(obj) is dict:
                             cycleBySyntax += '{'
                             # get object referred to by dict
                             val = objs[index+1]
-                            for key, value in obj.iteritems():
+                            for key, value in obj.items():
                                 if value is val:
                                     break
                                 yield None
@@ -247,10 +251,10 @@ class GarbageReport(Job):
                                 key = '<unknown key>'
                             cycleBySyntax += '%s}' % fastRepr(key)
                             objAlreadyRepresented = True
-                        elif type(obj) in (types.TupleType, types.ListType):
+                        elif type(obj) in (tuple, list):
                             brackets = {
-                                types.TupleType: '()',
-                                types.ListType: '[]',
+                                tuple: '()',
+                                list: '[]',
                                 }[type(obj)]
                             # get object being referenced by container
                             nextObj = objs[index+1]
@@ -508,16 +512,16 @@ class GarbageReport(Job):
             candidateCycle, curId, numDelInstances, resumeIndex = stateStack.pop()
             if self.notify.getDebug():
                 if self._args.delOnly:
-                    print 'restart: %s root=%s cur=%s numDelInstances=%s resume=%s' % (
-                        candidateCycle, rootId, curId, numDelInstances, resumeIndex)
+                    print('restart: %s root=%s cur=%s numDelInstances=%s resume=%s' % (
+                        candidateCycle, rootId, curId, numDelInstances, resumeIndex))
                 else:
-                    print 'restart: %s root=%s cur=%s resume=%s' % (
-                        candidateCycle, rootId, curId, resumeIndex)
+                    print('restart: %s root=%s cur=%s resume=%s' % (
+                        candidateCycle, rootId, curId, resumeIndex))
             for index in xrange(resumeIndex, len(self.referentsByNumber[curId])):
                 yield None
                 refId = self.referentsByNumber[curId][index]
                 if self.notify.getDebug():
-                    print '       : %s -> %s' % (curId, refId)
+                    print('       : %s -> %s' % (curId, refId))
                 if refId == rootId:
                     # we found a cycle! mark it down and move on to the next refId
                     normCandidateCycle = self._getNormalizedCycle(candidateCycle)
@@ -527,7 +531,7 @@ class GarbageReport(Job):
                         # cleaned up by Python
                         if (not self._args.delOnly) or numDelInstances >= 1:
                             if self.notify.getDebug():
-                                print '  FOUND: ', normCandidateCycle + [normCandidateCycle[0],]
+                                print('  FOUND: ', normCandidateCycle + [normCandidateCycle[0],])
                             cycles.append(normCandidateCycle + [normCandidateCycle[0],])
                             uniqueCycleSets.add(normCandidateCycleTuple)
                 elif refId in candidateCycle:
@@ -562,9 +566,9 @@ def checkForGarbageLeaks():
     numGarbage = len(gc.garbage)
     if (numGarbage > 0 and config.GetBool('auto-garbage-logging', 0)):
         if (numGarbage != _CFGLGlobals.LastNumGarbage):
-            print
+            print("")
             gr = GarbageReport('found garbage', threaded=False, collect=False)
-            print
+            print("")
             _CFGLGlobals.LastNumGarbage = numGarbage
             _CFGLGlobals.LastNumCycles = gr.getNumCycles()
             messenger.send(GarbageCycleCountAnnounceEvent, [gr.getDesc2numDict()])

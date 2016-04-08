@@ -11,7 +11,7 @@
  * @date 2014-12-11
  */
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
 
 #include "pandabase.h"
 #include "samplerContext.h"
@@ -56,4 +56,4 @@ private:
   static TypeHandle _type_handle;
 };
 
-#endif  // OPENGLES
+#endif  // OPENGLES_1

@@ -1,7 +1,7 @@
 #from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
-from ConnectionRepository import *
+from .ConnectionRepository import *
 from panda3d.core import ConfigVariableDouble, ConfigVariableInt, ConfigVariableBool
 
 ASYNC_REQUEST_DEFAULT_TIMEOUT_IN_SECONDS = 8.0
@@ -251,9 +251,9 @@ class AsyncRequest(DirectObject):
             if __debug__:
                 if _breakOnTimeout:
                     if hasattr(self, "avatarId"):
-                        print "\n\nself.avatarId =", self.avatarId
-                    print "\nself.neededObjects =", self.neededObjects
-                    print "\ntimed out after %s seconds.\n\n"%(task.delayTime,)
+                        print("\n\nself.avatarId =", self.avatarId)
+                    print("\nself.neededObjects =", self.neededObjects)
+                    print("\ntimed out after %s seconds.\n\n"%(task.delayTime,))
                     import pdb; pdb.set_trace()
             self.delete()
             return Task.done

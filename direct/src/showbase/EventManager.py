@@ -3,7 +3,7 @@
 __all__ = ['EventManager']
 
 
-from MessengerGlobal import *
+from .MessengerGlobal import *
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import PStatCollector, EventQueue, EventHandler

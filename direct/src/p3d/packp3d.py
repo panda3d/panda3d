@@ -100,14 +100,13 @@ import sys
 import os
 import getopt
 import glob
-import direct
 from direct.p3d import Packager
 from panda3d.core import *
 
 # Temp hack for debugging.
 #from direct.p3d.AppRunner import dummyAppRunner; dummyAppRunner()
 
-class ArgumentError(StandardError):
+class ArgumentError(Exception):
     pass
 
 def makePackedApp(args):
@@ -159,21 +158,21 @@ def makePackedApp(args):
         elif option == '-D':
             allowPythonDev = True
         elif option == '-h':
-            print usageText % (
+            print(usageText % (
                 PandaSystem.getPackageVersionString(),
                 PandaSystem.getPackageHostUrl(),
                 os.path.split(sys.argv[0])[1],
-                '%s.%s' % (sys.version_info[0], sys.version_info[1]))
+                '%s.%s' % (sys.version_info[0], sys.version_info[1])))
             sys.exit(0)
 
     if not appFilename:
-        raise ArgumentError, "No target app specified.  Use:\n  %s -o app.p3d\nUse -h to get more usage information." % (os.path.split(sys.argv[0])[1])
+        raise ArgumentError("No target app specified.  Use:\n  %s -o app.p3d\nUse -h to get more usage information." % (os.path.split(sys.argv[0])[1]))
 
     if args:
-        raise ArgumentError, "Extra arguments on command line."
+        raise ArgumentError("Extra arguments on command line.")
 
     if appFilename.getExtension() != 'p3d':
-        raise ArgumentError, 'Application filename must end in ".p3d".'
+        raise ArgumentError('Application filename must end in ".p3d".')
 
     appDir = Filename(appFilename.getDirname())
     if not appDir:
@@ -188,9 +187,9 @@ def makePackedApp(args):
         if not main.exists():
             main = glob.glob(os.path.join(root.toOsSpecific(), '*.py'))
             if len(main) == 0:
-                raise ArgumentError, 'No Python files in root directory.'
+                raise ArgumentError('No Python files in root directory.')
             elif len(main) > 1:
-                raise ArgumentError, 'Multiple Python files in root directory; specify the main application with -m "main".'
+                raise ArgumentError('Multiple Python files in root directory; specify the main application with -m "main".')
 
             main = Filename.fromOsSpecific(os.path.split(main[0])[1])
             main.makeAbsolute(root)
@@ -228,13 +227,13 @@ def makePackedApp(args):
     except Packager.PackagerError:
         # Just print the error message and exit gracefully.
         inst = sys.exc_info()[1]
-        print inst.args[0]
+        print(inst.args[0])
         sys.exit(1)
 
 try:
     makePackedApp(sys.argv[1:])
-except ArgumentError, e:
-    print e.args[0]
+except ArgumentError as e:
+    print(e.args[0])
     sys.exit(1)
 
 # An explicit call to exit() is required to exit the program, when

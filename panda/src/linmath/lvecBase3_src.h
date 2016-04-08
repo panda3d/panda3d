@@ -36,6 +36,11 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
   ALLOC_DELETED_CHAIN(FLOATNAME(LVecBase3));
 
+#ifdef CPPPARSER
+  FLOATNAME(LVecBase3) &operator = (const FLOATNAME(LVecBase3) &copy) = default;
+  FLOATNAME(LVecBase3) &operator = (FLOATTYPE fill_value) = default;
+#endif
+
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &zero();
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &unit_x();
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &unit_y();

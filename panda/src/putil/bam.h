@@ -32,7 +32,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 6 on 2006-02-11 to factor out PandaNode::CData.
 
 static const unsigned short _bam_first_minor_ver = 14;
-static const unsigned short _bam_minor_ver = 41;
+static const unsigned short _bam_minor_ver = 42;
 // Bumped to minor version 14 on 2007-12-19 to change default ColorAttrib.
 // Bumped to minor version 15 on 2008-04-09 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 2008-05-13 to add Texture::_quality_level.
@@ -61,5 +61,6 @@ static const unsigned short _bam_minor_ver = 41;
 // Bumped to minor version 39 on 2016-01-09 to change lights and materials.
 // Bumped to minor version 40 on 2016-01-11 to make NodePaths writable.
 // Bumped to minor version 41 on 2016-03-02 to change LensNode, Lens, and Camera.
+// Bumped to minor version 42 on 2016-04-08 to expand ColorBlendAttrib.
 
 #endif

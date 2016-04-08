@@ -300,7 +300,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   name_buflen = max(64, name_buflen);
   name_buffer = (char *)alloca(name_buflen);
 
-#ifndef OPENGLES
   // Get the used uniform blocks.
   if (_glgsg->_supports_uniform_buffers) {
     GLint block_count = 0, block_maxlength = 0;
@@ -324,7 +323,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       reflect_uniform_block(i, block_name_cstr, name_buffer, name_buflen);
     }
   }
-#endif  // !OPENGLES
 
   // Bind the program, so that we can call glUniform1i for the textures.
   _glgsg->_glUseProgram(_glsl_program);
@@ -402,11 +400,9 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
                    param_type == GL_INT_VEC2 ||
                    param_type == GL_INT_VEC3 ||
                    param_type == GL_INT_VEC4 ||
-#ifndef OPENGLES
                    param_type == GL_UNSIGNED_INT_VEC2 ||
                    param_type == GL_UNSIGNED_INT_VEC3 ||
                    param_type == GL_UNSIGNED_INT_VEC4 ||
-#endif
                    param_type == GL_UNSIGNED_INT);
 
   // Check if it has a p3d_ prefix - if so, assign special meaning.
@@ -505,7 +501,6 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
   _shader->_var_spec.push_back(bind);
 }
 
-#ifndef OPENGLES
 /**
  * Analyzes the uniform block and stores its format.
  */
@@ -583,6 +578,7 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
       numeric_type = GeomEnums::NT_float32;
       break;
 
+#ifndef OPENGLES
     case GL_DOUBLE:
     case GL_DOUBLE_VEC2:
     case GL_DOUBLE_VEC3:
@@ -592,9 +588,10 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
     case GL_DOUBLE_MAT4:
       numeric_type = GeomEnums::NT_float64;
       break;
+#endif
 
     default:
-      GLCAT.warning() << "Ignoring uniform '" << name_buffer
+      GLCAT.info() << "Ignoring uniform '" << name_buffer
         << "' with unsupported type 0x" << hex << param_type << dec << "\n";
       continue;
     }
@@ -604,7 +601,9 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
     case GL_BOOL_VEC2:
     case GL_UNSIGNED_INT_VEC2:
     case GL_FLOAT_VEC2:
+#ifndef OPENGLES
     case GL_DOUBLE_VEC2:
+#endif
       num_components = 2;
       break;
 
@@ -612,7 +611,9 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
     case GL_BOOL_VEC3:
     case GL_UNSIGNED_INT_VEC3:
     case GL_FLOAT_VEC3:
+#ifndef OPENGLES
     case GL_DOUBLE_VEC3:
+#endif
       num_components = 3;
       break;
 
@@ -620,12 +621,16 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
     case GL_BOOL_VEC4:
     case GL_UNSIGNED_INT_VEC4:
     case GL_FLOAT_VEC4:
+#ifndef OPENGLES
     case GL_DOUBLE_VEC4:
+#endif
       num_components = 4;
       break;
 
     case GL_FLOAT_MAT3:
+#ifndef OPENGLES
     case GL_DOUBLE_MAT3:
+#endif
       num_components = 3;
       contents = GeomEnums::C_matrix;
       nassertd(param_size <= 1 || astrides[ui] == mstrides[ui] * 3) continue;
@@ -633,7 +638,9 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
       break;
 
     case GL_FLOAT_MAT4:
+#ifndef OPENGLES
     case GL_DOUBLE_MAT4:
+#endif
       num_components = 4;
       contents = GeomEnums::C_matrix;
       nassertd(param_size <= 1 || astrides[ui] == mstrides[ui] * 4) continue;
@@ -655,7 +662,6 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
 
   // _uniform_blocks.push_back(block);
 }
-#endif  // !OPENGLES
 
 /**
  * Analyzes a single uniform variable and considers how it should be handled
@@ -1099,9 +1105,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         string member_name(name_buffer);
         if (member_name == "shadowMap") {
           switch (param_type) {
-#ifndef OPENGLES
           case GL_SAMPLER_CUBE_SHADOW:
-#endif  // !OPENGLES
           case GL_SAMPLER_2D:
           case GL_SAMPLER_2D_SHADOW:
           case GL_SAMPLER_CUBE:
@@ -1279,26 +1283,26 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
   if (param_size == 1) {
     // A single uniform (not an array, or an array of size 1).
     switch (param_type) {
-#ifndef OPENGLES
-      case GL_INT_SAMPLER_1D:
       case GL_INT_SAMPLER_2D:
       case GL_INT_SAMPLER_3D:
       case GL_INT_SAMPLER_2D_ARRAY:
       case GL_INT_SAMPLER_CUBE:
-      case GL_INT_SAMPLER_BUFFER:
-      case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
-      case GL_UNSIGNED_INT_SAMPLER_1D:
       case GL_UNSIGNED_INT_SAMPLER_2D:
       case GL_UNSIGNED_INT_SAMPLER_3D:
       case GL_UNSIGNED_INT_SAMPLER_CUBE:
       case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
-      case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-      case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
-      case GL_SAMPLER_1D_SHADOW:
-      case GL_SAMPLER_1D:
       case GL_SAMPLER_CUBE_SHADOW:
       case GL_SAMPLER_2D_ARRAY:
       case GL_SAMPLER_2D_ARRAY_SHADOW:
+#ifndef OPENGLES
+      case GL_INT_SAMPLER_1D:
+      case GL_INT_SAMPLER_BUFFER:
+      case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
+      case GL_UNSIGNED_INT_SAMPLER_1D:
+      case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+      case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
+      case GL_SAMPLER_1D:
+      case GL_SAMPLER_1D_SHADOW:
       case GL_SAMPLER_BUFFER:
       case GL_SAMPLER_CUBE_MAP_ARRAY:
       case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
@@ -1320,14 +1324,12 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         return;
       }
       case GL_FLOAT_MAT2:
-#ifndef OPENGLES
       case GL_FLOAT_MAT2x3:
       case GL_FLOAT_MAT2x4:
       case GL_FLOAT_MAT3x2:
       case GL_FLOAT_MAT3x4:
       case GL_FLOAT_MAT4x2:
       case GL_FLOAT_MAT4x3:
-#endif
         GLCAT.warning() << "GLSL shader requested an unsupported matrix type\n";
         return;
       case GL_FLOAT_MAT3: {
@@ -1461,28 +1463,29 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         _shader->_ptr_spec.push_back(bind);
         return;
       }
-#ifndef OPENGLES
-      case GL_IMAGE_1D:
       case GL_IMAGE_2D:
       case GL_IMAGE_3D:
       case GL_IMAGE_CUBE:
       case GL_IMAGE_2D_ARRAY:
-      case GL_IMAGE_CUBE_MAP_ARRAY:
-      case GL_IMAGE_BUFFER:
-      case GL_INT_IMAGE_1D:
       case GL_INT_IMAGE_2D:
       case GL_INT_IMAGE_3D:
       case GL_INT_IMAGE_CUBE:
       case GL_INT_IMAGE_2D_ARRAY:
-      case GL_INT_IMAGE_CUBE_MAP_ARRAY:
-      case GL_INT_IMAGE_BUFFER:
-      case GL_UNSIGNED_INT_IMAGE_1D:
       case GL_UNSIGNED_INT_IMAGE_2D:
       case GL_UNSIGNED_INT_IMAGE_3D:
       case GL_UNSIGNED_INT_IMAGE_CUBE:
       case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
+#ifndef OPENGLES
+      case GL_IMAGE_1D:
+      case GL_IMAGE_CUBE_MAP_ARRAY:
+      case GL_IMAGE_BUFFER:
+      case GL_INT_IMAGE_1D:
+      case GL_INT_IMAGE_CUBE_MAP_ARRAY:
+      case GL_INT_IMAGE_BUFFER:
+      case GL_UNSIGNED_INT_IMAGE_1D:
       case GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY:
       case GL_UNSIGNED_INT_IMAGE_BUFFER:
+#endif
         // This won't really change at runtime, so we might as well bind once
         // and then forget about it.
         _glgsg->_glUniform1i(p, _glsl_img_inputs.size());
@@ -1494,7 +1497,6 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           _glsl_img_inputs.push_back(input);
         }
         return;
-#endif
       default:
         GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
     }
@@ -1502,14 +1504,12 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     // A uniform array.
     switch (param_type) {
     case GL_FLOAT_MAT2:
-#ifndef OPENGLES
     case GL_FLOAT_MAT2x3:
     case GL_FLOAT_MAT2x4:
     case GL_FLOAT_MAT3x2:
     case GL_FLOAT_MAT3x4:
     case GL_FLOAT_MAT4x2:
     case GL_FLOAT_MAT4x3:
-#endif
       GLCAT.warning() << "GLSL shader requested an unrecognized matrix array type\n";
       return;
     case GL_BOOL:
@@ -1597,10 +1597,10 @@ get_sampler_texture_type(int &out, GLenum param_type) {
   case GL_SAMPLER_1D:
     out = Texture::TT_1d_texture;
     return true;
+#endif
 
   case GL_INT_SAMPLER_2D:
   case GL_UNSIGNED_INT_SAMPLER_2D:
-#endif
   case GL_SAMPLER_2D:
     out = Texture::TT_2d_texture;
     return true;
@@ -1614,10 +1614,8 @@ get_sampler_texture_type(int &out, GLenum param_type) {
     }
     return true;
 
-#ifndef OPENGLES
   case GL_INT_SAMPLER_3D:
   case GL_UNSIGNED_INT_SAMPLER_3D:
-#endif
   case GL_SAMPLER_3D:
     out = Texture::TT_3d_texture;
     if (_glgsg->_supports_3d_texture) {
@@ -1628,7 +1626,6 @@ get_sampler_texture_type(int &out, GLenum param_type) {
       return false;
     }
 
-#ifndef OPENGLES
   case GL_SAMPLER_CUBE_SHADOW:
     if (!_glgsg->_supports_shadow_filter) {
       GLCAT.error()
@@ -1638,7 +1635,6 @@ get_sampler_texture_type(int &out, GLenum param_type) {
     // Fall through
   case GL_INT_SAMPLER_CUBE:
   case GL_UNSIGNED_INT_SAMPLER_CUBE:
-#endif
   case GL_SAMPLER_CUBE:
     out = Texture::TT_cube_map;
     if (!_glgsg->_supports_cube_map) {
@@ -1648,7 +1644,6 @@ get_sampler_texture_type(int &out, GLenum param_type) {
     }
     return true;
 
-#ifndef OPENGLES
   case GL_SAMPLER_2D_ARRAY_SHADOW:
     if (!_glgsg->_supports_shadow_filter) {
       GLCAT.error()
@@ -1668,6 +1663,7 @@ get_sampler_texture_type(int &out, GLenum param_type) {
       return false;
     }
 
+#ifndef OPENGLES
   case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
     if (!_glgsg->_supports_shadow_filter) {
       GLCAT.error()
@@ -1699,7 +1695,7 @@ get_sampler_texture_type(int &out, GLenum param_type) {
         << "GLSL shader uses buffer texture, which is unsupported by the driver.\n";
       return false;
     }
-#endif
+#endif  // !OPENGLES
 
   default:
     GLCAT.error()
@@ -2129,7 +2125,6 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
   const GeomVertexArrayDataHandle *array_reader;
 
-#ifndef OPENGLES
   if (_glgsg->_use_vertex_attrib_binding) {
     // Use experimental new separated formatbinding state.
     const GeomVertexDataPipelineReader *data_reader = _glgsg->_data_reader;
@@ -2185,9 +2180,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     }
     _glgsg->_enabled_vertex_attrib_arrays = enabled_attribs;
 
-  } else
-#endif
-  {
+  } else {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     size_t nvarying = _shader->_var_spec.size();
@@ -2230,13 +2223,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         for (int i = 0; i < num_elements; ++i) {
           _glgsg->enable_vertex_attrib_array(p);
 
-#ifndef OPENGLES
           if (bind._integer) {
             _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
                                             stride, client_pointer);
-          } else
-#endif
-          if (numeric_type == GeomEnums::NT_packed_dabc) {
+          } else if (numeric_type == GeomEnums::NT_packed_dabc) {
             // GL_BGRA is a special accepted value available since OpenGL 3.2.
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
@@ -2340,9 +2330,7 @@ disable_shader_texture_bindings() {
       break;
 
     case Texture::TT_2d_texture_array:
-#ifndef OPENGLES
-      glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
-#endif
+      glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
       break;
 
     case Texture::TT_cube_map:
@@ -2357,15 +2345,16 @@ disable_shader_texture_bindings() {
     }
   }
 
-#ifndef OPENGLES
   // Now unbind all the image units.  Not sure if we *have* to do this.
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
 
   if (num_image_units > 0) {
+#ifndef OPENGLES
     if (_glgsg->_supports_multi_bind) {
       _glgsg->_glBindImageTextures(0, num_image_units, NULL);
-
-    } else {
+    } else
+#endif
+    {
       for (int i = 0; i < num_image_units; ++i) {
         _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
       }
@@ -2382,7 +2371,6 @@ disable_shader_texture_bindings() {
       }
     }
   }
-#endif
 
   _glgsg->report_my_gl_errors();
 }
@@ -2402,7 +2390,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
     return;
   }
 
-#ifndef OPENGLES
   GLbitfield barriers = 0;
 
   // First bind all the 'image units'; a bit of an esoteric OpenGL feature
@@ -2500,7 +2487,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
       }
     }
   }
-#endif
 
   size_t num_textures = _shader->_tex_spec.size();
   GLuint *textures;
@@ -2781,12 +2767,12 @@ glsl_compile_shader(Shader::ShaderType type) {
         handle = _glgsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
       }
       break;
+#endif
     case Shader::ST_compute:
       if (_glgsg->get_supports_compute_shaders()) {
         handle = _glgsg->_glCreateShader(GL_COMPUTE_SHADER);
       }
       break;
-#endif
     default:
       break;
   }
@@ -2844,7 +2830,6 @@ glsl_compile_and_link() {
     _glgsg->_glObjectLabel(GL_PROGRAM, _glsl_program, name.size(), name.data());
   }
 
-#ifndef OPENGLES
   // Do we have a compiled program?  Try to load that.
   unsigned int format;
   string binary;
@@ -2868,7 +2853,6 @@ glsl_compile_and_link() {
                     << _shader->get_filename() << "\n";
     }
   }
-#endif
 
   bool valid = true;
 
@@ -2933,7 +2917,6 @@ glsl_compile_and_link() {
 
   // If we requested to retrieve the shader, we should indicate that before
   // linking.
-#ifndef OPENGLES
   bool retrieve_binary = false;
   if (_glgsg->_supports_get_program_binary) {
     retrieve_binary = _shader->get_cache_compiled_shader();
@@ -2946,7 +2929,6 @@ glsl_compile_and_link() {
 
     _glgsg->_glProgramParameteri(_glsl_program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
   }
-#endif
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
@@ -2967,7 +2949,6 @@ glsl_compile_and_link() {
   // Report any warnings.
   glsl_report_program_errors(_glsl_program, false);
 
-#ifndef OPENGLES
   if (retrieve_binary) {
     GLint length = 0;
     _glgsg->_glGetProgramiv(_glsl_program, GL_PROGRAM_BINARY_LENGTH, &length);
@@ -2998,7 +2979,6 @@ glsl_compile_and_link() {
     }
 #endif  // NDEBUG
   }
-#endif  // OPENGLES
 
   _glgsg->report_my_gl_errors();
   return true;

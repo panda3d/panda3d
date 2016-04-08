@@ -9,15 +9,19 @@ __all__ = ['AppShell']
 
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
-from tkFileDialog import *
-from Tkinter import *
-import Pmw
-import Dial
-import Floater
-import Slider
-import EntryScale
-import VectorWidgets
-import ProgressBar
+import Pmw, sys
+from . import Dial
+from . import Floater
+from . import Slider
+from . import EntryScale
+from . import VectorWidgets
+from . import ProgressBar
+
+if sys.version_info >= (3, 0):
+    from tkinter.filedialog import *
+else:
+    from tkFileDialog import *
+
 
 """
 TO FIX:
@@ -318,7 +322,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         # Update kw to reflect user inputs
         kw['text'] = text
         # Create widget
-        widget = apply(widgetClass, (parent,), kw)
+        widget = widgetClass(parent, **kw)
         # Do this after so command isn't called on widget creation
         widget['command'] = command
         # Pack widget
@@ -475,7 +479,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         kw['menu_tearoff'] = menu_tearoff
         kw['menubutton_textvariable'] = variable
         # Create widget
-        widget = apply(Pmw.OptionMenu, (parent,), kw)
+        widget = Pmw.OptionMenu(parent, **kw)
         # Do this after so command isn't called on widget creation
         widget['command'] = command
         # Pack widget
@@ -502,7 +506,7 @@ class AppShell(Pmw.MegaWidget, DirectObject):
         kw['scrolledlist_items'] = items
         kw['entryfield_entry_state'] = state
         # Create widget
-        widget = apply(Pmw.ComboBox, (parent,), kw)
+        widget = Pmw.ComboBox(parent, **kw)
         # Bind selection command
         widget['selectioncommand'] = command
         # Select first item if it exists

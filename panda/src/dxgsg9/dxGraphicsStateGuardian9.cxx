@@ -3766,43 +3766,24 @@ do_issue_blending() {
     }
   }
 
-  const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
-  CPT(ColorBlendAttrib) color_blend = target_color_blend;
-  ColorBlendAttrib::Mode color_blend_mode = target_color_blend->get_mode();
+  const ColorBlendAttrib *color_blend;
+  _target_rs->get_attrib_def(color_blend);
+  ColorBlendAttrib::Mode color_blend_mode = color_blend->get_mode();
 
-  const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  const TransparencyAttrib *target_transparency;
+  _target_rs->get_attrib_def(target_transparency);
   TransparencyAttrib::Mode transparency_mode = target_transparency->get_mode();
 
   // Is there a color blend set?
   if (color_blend_mode != ColorBlendAttrib::M_none) {
     set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-
-    switch (color_blend_mode) {
-    case ColorBlendAttrib::M_add:
-      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-      break;
-
-    case ColorBlendAttrib::M_subtract:
-      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
-      break;
-
-    case ColorBlendAttrib::M_inv_subtract:
-      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
-      break;
-
-    case ColorBlendAttrib::M_min:
-      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_MIN);
-      break;
-
-    case ColorBlendAttrib::M_max:
-      set_render_state(D3DRS_BLENDOP, D3DBLENDOP_MAX);
-      break;
-    }
-
-    set_render_state(D3DRS_SRCBLEND,
-        get_blend_func(color_blend->get_operand_a()));
-    set_render_state(D3DRS_DESTBLEND,
-        get_blend_func(color_blend->get_operand_b()));
+    set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+    set_render_state(D3DRS_BLENDOP, get_blend_mode(color_blend_mode));
+    set_render_state(D3DRS_BLENDOPALPHA, get_blend_mode(color_blend->get_alpha_mode()));
+    set_render_state(D3DRS_SRCBLEND, get_blend_func(color_blend->get_operand_a()));
+    set_render_state(D3DRS_DESTBLEND, get_blend_func(color_blend->get_operand_b()));
+    set_render_state(D3DRS_SRCBLENDALPHA, get_blend_func(color_blend->get_alpha_operand_a()));
+    set_render_state(D3DRS_DESTBLENDALPHA, get_blend_func(color_blend->get_alpha_operand_b()));
     return;
   }
 
@@ -3817,6 +3798,7 @@ do_issue_blending() {
   case TransparencyAttrib::M_multisample_mask:
   case TransparencyAttrib::M_dual:
     set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+    set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
     set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
     set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
     set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -3824,6 +3806,7 @@ do_issue_blending() {
 
   case TransparencyAttrib::M_premultiplied_alpha:
     set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+    set_render_state(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
     set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
     set_render_state(D3DRS_SRCBLEND, D3DBLEND_ONE);
     set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -4053,6 +4036,33 @@ get_light_color(Light *light) const {
 }
 
 /**
+ * Maps from ColorBlendAttrib::Mode to D3DBLENDOP vaule.
+ */
+D3DBLENDOP DXGraphicsStateGuardian9::
+get_blend_mode(ColorBlendAttrib::Mode mode) {
+  switch (mode) {
+  case ColorBlendAttrib::M_add:
+    return D3DBLENDOP_ADD;
+
+  case ColorBlendAttrib::M_subtract:
+    return D3DBLENDOP_SUBTRACT;
+
+  case ColorBlendAttrib::M_inv_subtract:
+    return D3DBLENDOP_REVSUBTRACT;
+
+  case ColorBlendAttrib::M_min:
+    return D3DBLENDOP_MIN;
+
+  case ColorBlendAttrib::M_max:
+    return D3DBLENDOP_MAX;
+  }
+
+  dxgsg9_cat.error()
+    << "Unknown color blend mode " << (int)mode << endl;
+  return D3DBLENDOP_ADD;
+}
+
+/**
  * Maps from ColorBlendAttrib::Operand to D3DBLEND value.
  */
 D3DBLEND DXGraphicsStateGuardian9::
@@ -4106,6 +4116,21 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
 
   case ColorBlendAttrib::O_incoming_color_saturate:
     return D3DBLEND_SRCALPHASAT;
+
+  case ColorBlendAttrib::O_incoming1_color:
+    return D3DBLEND_SRCCOLOR2;
+
+  case ColorBlendAttrib::O_one_minus_incoming1_color:
+    return D3DBLEND_INVSRCCOLOR2;
+
+  case ColorBlendAttrib::O_incoming1_alpha:
+    // Not supported by DX.
+    return D3DBLEND_SRCCOLOR2;
+
+  case ColorBlendAttrib::O_one_minus_incoming1_alpha:
+    // Not supported by DX.
+    return D3DBLEND_INVSRCCOLOR2;
+
   }
 
   dxgsg9_cat.error()

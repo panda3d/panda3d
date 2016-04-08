@@ -1,7 +1,5 @@
 __all__ = ["SeqValue"]
 
-import types
-
 class SeqValue:
 
     """ This represents a sequence value read from a contents.xml
@@ -21,22 +19,22 @@ class SeqValue:
     def set(self, value):
         """ Sets the seq from the indicated value of unspecified
         type. """
-        if isinstance(value, types.TupleType):
+        if isinstance(value, tuple):
             self.setFromTuple(value)
-        elif isinstance(value, types.StringTypes):
+        elif isinstance(value, str):
             self.setFromString(value)
         else:
-            raise TypeError, 'Invalid sequence type: %s' % (value,)
+            raise TypeError('Invalid sequence type: %s' % (value,))
 
     def setFromTuple(self, value):
         """ Sets the seq from the indicated tuple of integers. """
-        assert isinstance(value, types.TupleType)
+        assert isinstance(value, tuple)
         self.value = value
 
     def setFromString(self, value):
         """ Sets the seq from the indicated string of dot-separated
         integers.  Raises ValueError on error. """
-        assert isinstance(value, types.StringTypes)
+        assert isinstance(value, str)
 
         self.value = ()
         if value:

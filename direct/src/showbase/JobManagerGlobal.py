@@ -1,5 +1,5 @@
 __all__ = ['jobMgr']
 
-import JobManager
+from . import JobManager
 
 jobMgr = JobManager.JobManager()

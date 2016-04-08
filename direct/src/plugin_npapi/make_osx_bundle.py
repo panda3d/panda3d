@@ -15,11 +15,11 @@ import glob
 import shutil
 
 import direct
-from pandac.PandaModules import Filename, DSearchPath
+from panda3d.core import Filename, DSearchPath
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__
-    print >> sys.stderr, msg
+    sys.stderr.write(__doc__)
+    sys.stderr.write(msg + '\n')
     sys.exit(code)
 
 def makeBundle(startDir):
@@ -33,7 +33,7 @@ def makeBundle(startDir):
         path.appendPath(os.environ['DYLD_LIBRARY_PATH'])
     nppanda3d = path.findFile('nppanda3d')
     if not nppanda3d:
-        raise StandardError, "Couldn't find nppanda3d on path."
+        raise Exception("Couldn't find nppanda3d on path.")
 
     # Generate the bundle directory structure
     rootFilename = Filename(fstartDir, 'bundle')
@@ -54,7 +54,7 @@ def makeBundle(startDir):
         resourceFilename.toOsSpecific(), Filename(fstartDir, "nppanda3d.r").toOsSpecific()))
 
     if not resourceFilename.exists():
-        raise IOError, 'Unable to run Rez'
+        raise IOError('Unable to run Rez')
 
     # Copy in Info.plist and the compiled executable.
     shutil.copyfile(Filename(fstartDir, "nppanda3d.plist").toOsSpecific(), plistFilename.toOsSpecific())
@@ -62,7 +62,7 @@ def makeBundle(startDir):
 
     # All done!
     bundleFilename.touch()
-    print bundleFilename.toOsSpecific()
+    print(bundleFilename.toOsSpecific())
 
 def buildDmg(startDir):
     fstartDir = Filename.fromOsSpecific(startDir)
@@ -79,7 +79,7 @@ def buildDmg(startDir):
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     for opt, arg in opts:
