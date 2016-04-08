@@ -246,6 +246,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 
   // Assume a maximum of 1 render target in absence of MRT.
   _max_color_targets = 1;
+  _supports_dual_source_blending = false;
 
   _supported_geom_rendering = 0;
 

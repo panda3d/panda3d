@@ -39,19 +39,38 @@ make_off() {
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode) {
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, O_one, O_one,
+                                                  mode, O_one, O_one,
                                                   LColor::zero());
   return return_new(attrib);
 }
 
 /**
  * Constructs a new ColorBlendAttrib object that enables special-effect
- * blending.  This supercedes transparency.
+ * blending.  This supercedes transparency.  The given mode and operands are
+ * used for both the RGB and alpha channels.
  */
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode,
      ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
      const LColor &color) {
-  ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b, color);
+  ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b, mode, a, b, color);
+  return return_new(attrib);
+}
+
+/**
+ * Constructs a new ColorBlendAttrib object that enables special-effect
+ * blending.  This supercedes transparency.  This form is used to specify
+ * separate blending parameters for the RGB and alpha channels.
+ */
+CPT(RenderAttrib) ColorBlendAttrib::
+make(ColorBlendAttrib::Mode mode,
+     ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
+     ColorBlendAttrib::Mode alpha_mode,
+     ColorBlendAttrib::Operand alpha_a, ColorBlendAttrib::Operand alpha_b,
+     const LColor &color) {
+  ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b,
+                                                  alpha_mode, alpha_a, alpha_b,
+                                                  color);
   return return_new(attrib);
 }
 
@@ -187,10 +206,34 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _mode = (Mode)scan.get_uint8();
   _a = (Operand)scan.get_uint8();
   _b = (Operand)scan.get_uint8();
+
+  if (manager->get_file_minor_ver() >= 42) {
+    _alpha_mode = (Mode)scan.get_uint8();
+    _alpha_a = (Operand)scan.get_uint8();
+    _alpha_b = (Operand)scan.get_uint8();
+  } else {
+    // Before bam 6.42, these were shifted by four.
+    if (_a >= O_incoming1_color) {
+      _a = (Operand)(_a + 4);
+    }
+    if (_b >= O_incoming1_color) {
+      _b = (Operand)(_b + 4);
+    }
+
+    // And there was only one set of blend constants for both RGB and alpha.
+    _alpha_mode = _mode;
+    _alpha_a = _a;
+    _alpha_b = _b;
+  }
+
   _color.read_datagram(scan);
 
-  _involves_constant_color = involves_constant_color(_a) || involves_constant_color(_b);
-  _involves_color_scale = involves_color_scale(_a) || involves_color_scale(_b);
+  _involves_constant_color =
+    involves_constant_color(_a) || involves_constant_color(_alpha_a) ||
+    involves_constant_color(_b) || involves_constant_color(_alpha_b);
+  _involves_color_scale =
+    involves_color_scale(_a) || involves_color_scale(_alpha_a) ||
+    involves_color_scale(_b) || involves_color_scale(_alpha_b);
 }
 
 /**
@@ -234,7 +277,7 @@ operator << (ostream &out, ColorBlendAttrib::Operand operand) {
     return out << "one";
 
   case ColorBlendAttrib::O_incoming_color:
-    return out << "incomfing_color";
+    return out << "incoming_color";
 
   case ColorBlendAttrib::O_one_minus_incoming_color:
     return out << "one_minus_incoming_color";
@@ -283,6 +326,18 @@ operator << (ostream &out, ColorBlendAttrib::Operand operand) {
 
   case ColorBlendAttrib::O_one_minus_alpha_scale:
     return out << "one_minus_alpha_scale";
+
+  case ColorBlendAttrib::O_incoming1_color:
+    return out << "incoming1_color";
+
+  case ColorBlendAttrib::O_one_minus_incoming1_color:
+    return out << "one_minus_incoming1_color";
+
+  case ColorBlendAttrib::O_incoming1_alpha:
+    return out << "incoming1_alpha";
+
+  case ColorBlendAttrib::O_one_minus_incoming1_alpha:
+    return out << "one_minus_incoming1_alpha";
   }
 
   return out << "**invalid ColorBlendAttrib::Operand(" << (int)operand << ")**";

@@ -172,6 +172,7 @@ PUBLISHED:
 
   INLINE int get_max_color_targets() const;
   INLINE int get_maximum_simultaneous_render_targets() const;
+  INLINE bool get_supports_dual_source_blending() const;
 
   MAKE_PROPERTY(max_vertices_per_array, get_max_vertices_per_array);
   MAKE_PROPERTY(max_vertices_per_primitive, get_max_vertices_per_primitive);
@@ -217,6 +218,7 @@ PUBLISHED:
   MAKE_PROPERTY(supports_timer_query, get_supports_timer_query);
   MAKE_PROPERTY(timer_queries_active, get_timer_queries_active);
   MAKE_PROPERTY(max_color_targets, get_max_color_targets);
+  MAKE_PROPERTY(supports_dual_source_blending, get_supports_dual_source_blending);
 
   INLINE ShaderModel get_shader_model() const;
   INLINE void set_shader_model(ShaderModel shader_model);
@@ -609,6 +611,7 @@ protected:
   bool _supports_indirect_draw;
 
   int _max_color_targets;
+  bool _supports_dual_source_blending;
 
   int  _supported_geom_rendering;
   bool _color_scale_via_lighting;

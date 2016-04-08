@@ -141,6 +141,8 @@ typedef void (APIENTRYP PFNGLTEXSTORAGE3DPROC) (GLenum target, GLsizei levels, G
 typedef void (APIENTRYP PFNGLBINDVERTEXARRAYPROC) (GLuint array);
 typedef void (APIENTRYP PFNGLDELETEVERTEXARRAYSPROC) (GLsizei n, const GLuint *arrays);
 typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
+typedef void (APIENTRYP PFNGLBLENDEQUATIONSEPARATEPROC) (GLenum modeRGB, GLenum modeAlpha);
+typedef void (APIENTRYP PFNGLBLENDFUNCSEPARATEPROC) (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
 
 #ifndef OPENGLES_1
 // GLSL shader functions
@@ -817,8 +819,12 @@ public:
   PFNGLBUFFERSTORAGEPROC _glBufferStorage;
 #endif
 
+  bool _supports_blend_equation_separate;
 #ifndef OPENGLES_2
+  // OpenGL ES 2+ has these in the core.
   PFNGLBLENDEQUATIONPROC _glBlendEquation;
+  PFNGLBLENDEQUATIONSEPARATEPROC _glBlendEquationSeparate;
+  PFNGLBLENDFUNCSEPARATEPROC _glBlendFuncSeparate;
 #endif
 #ifndef OPENGLES
   PFNGLBLENDCOLORPROC _glBlendColor;

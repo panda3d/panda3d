@@ -19,6 +19,9 @@ ColorBlendAttrib() :
   _mode(M_none),
   _a(O_one),
   _b(O_one),
+  _alpha_mode(M_none),
+  _alpha_a(O_one),
+  _alpha_b(O_one),
   _color(LColor::zero()),
   _involves_constant_color(false),
   _involves_color_scale(false)
@@ -31,18 +34,29 @@ ColorBlendAttrib() :
 INLINE ColorBlendAttrib::
 ColorBlendAttrib(ColorBlendAttrib::Mode mode,
                  ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
+                 ColorBlendAttrib::Mode alpha_mode,
+                 ColorBlendAttrib::Operand alpha_a, ColorBlendAttrib::Operand alpha_b,
                  const LColor &color) :
   _mode(mode),
   _a(a),
   _b(b),
+  _alpha_mode(alpha_mode),
+  _alpha_a(alpha_a),
+  _alpha_b(alpha_b),
   _color(color),
-  _involves_constant_color(involves_constant_color(a) || involves_constant_color(b)),
-  _involves_color_scale(involves_color_scale(a) || involves_color_scale(b))
+  _involves_constant_color(involves_constant_color(a) ||
+                           involves_constant_color(b) ||
+                           involves_constant_color(alpha_a) ||
+                           involves_constant_color(alpha_b)),
+  _involves_color_scale(involves_color_scale(a) ||
+                        involves_color_scale(b) ||
+                        involves_color_scale(alpha_a) ||
+                        involves_color_scale(alpha_b))
 {
 }
 
 /**
- * Returns the colorBlend mode.
+ * Returns the blending mode for the RGB channels.
  */
 INLINE ColorBlendAttrib::Mode ColorBlendAttrib::
 get_mode() const {
@@ -50,7 +64,7 @@ get_mode() const {
 }
 
 /**
- * Returns the multiplier for the first component.
+ * Returns the RGB multiplier for the first component.
  */
 INLINE ColorBlendAttrib::Operand ColorBlendAttrib::
 get_operand_a() const {
@@ -58,11 +72,35 @@ get_operand_a() const {
 }
 
 /**
- * Returns the multiplier for the second component.
+ * Returns the RGB multiplier for the second component.
  */
 INLINE ColorBlendAttrib::Operand ColorBlendAttrib::
 get_operand_b() const {
   return _b;
+}
+
+/**
+ * Returns the blending mode for the alpha channel.
+ */
+INLINE ColorBlendAttrib::Mode ColorBlendAttrib::
+get_alpha_mode() const {
+  return _alpha_mode;
+}
+
+/**
+ * Returns the alpha multiplier for the first component.
+ */
+INLINE ColorBlendAttrib::Operand ColorBlendAttrib::
+get_alpha_operand_a() const {
+  return _alpha_a;
+}
+
+/**
+ * Returns the alpha multiplier for the second component.
+ */
+INLINE ColorBlendAttrib::Operand ColorBlendAttrib::
+get_alpha_operand_b() const {
+  return _alpha_b;
 }
 
 /**
@@ -114,14 +152,5 @@ involves_constant_color(ColorBlendAttrib::Operand operand) {
  */
 INLINE bool ColorBlendAttrib::
 involves_color_scale(ColorBlendAttrib::Operand operand) {
-  switch (operand) {
-  case O_color_scale:
-  case O_one_minus_color_scale:
-  case O_alpha_scale:
-  case O_one_minus_alpha_scale:
-    return true;
-
-  default:
-    return false;
-  }
+  return (operand >= O_color_scale);
 }

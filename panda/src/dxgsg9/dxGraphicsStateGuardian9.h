@@ -217,6 +217,7 @@ protected:
   const D3DCOLORVALUE &get_light_color(Light *light) const;
   INLINE static D3DTRANSFORMSTATETYPE get_tex_mat_sym(int stage_index);
 
+  static D3DBLENDOP get_blend_mode(ColorBlendAttrib::Mode mode);
   static D3DBLEND get_blend_func(ColorBlendAttrib::Operand operand);
   void report_texmgr_stats();
 

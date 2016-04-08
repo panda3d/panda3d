@@ -685,6 +685,15 @@ get_max_color_targets() const {
 }
 
 /**
+ * Returns true if dual source (incoming1_color and incoming1_alpha) blend
+ * operands are supported by this GSG.
+ */
+INLINE bool GraphicsStateGuardian::
+get_supports_dual_source_blending() const {
+  return _supports_dual_source_blending;
+}
+
+/**
  * Deprecated.  Use get_max_color_targets() instead, which returns the exact
  * same value.
  */
