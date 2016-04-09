@@ -114,6 +114,10 @@ PUBLISHED:
 
   static void register_with_read_factory();
 
+PUBLISHED:
+  MAKE_PROPERTY(shader, get_shader);
+  MAKE_PROPERTY(instance_count, get_instance_count);
+
 public:
   virtual void output(ostream &out) const;
 

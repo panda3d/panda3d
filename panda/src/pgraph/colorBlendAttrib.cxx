@@ -175,6 +175,13 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8(_mode);
   dg.add_uint8(_a);
   dg.add_uint8(_b);
+
+  if (manager->get_file_minor_ver() >= 42) {
+    dg.add_uint8(_alpha_mode);
+    dg.add_uint8(_alpha_a);
+    dg.add_uint8(_alpha_b);
+  }
+
   _color.write_datagram(dg);
 }
 

@@ -43,6 +43,9 @@ PUBLISHED:
   INLINE const LVecBase4 &get_scale() const;
   CPT(RenderAttrib) set_scale(const LVecBase4 &scale) const;
 
+PUBLISHED:
+  MAKE_PROPERTY2(scale, has_scale, get_scale);
+
 public:
   virtual bool lower_attrib_can_override() const;
   virtual void output(ostream &out) const;

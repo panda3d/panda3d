@@ -44,6 +44,11 @@ PUBLISHED:
   INLINE bool get_reverse() const;
   Mode get_effective_mode() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(mode, get_actual_mode);
+  MAKE_PROPERTY(reverse, get_reverse);
+  MAKE_PROPERTY(effective_mode, get_effective_mode);
+
 public:
   virtual void output(ostream &out) const;
 

@@ -42,6 +42,10 @@ PUBLISHED:
   INLINE Type get_color_type() const;
   INLINE const LColor &get_color() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(color_type, get_color_type);
+  MAKE_PROPERTY(color, get_color);
+
 public:
   virtual void output(ostream &out) const;
 
