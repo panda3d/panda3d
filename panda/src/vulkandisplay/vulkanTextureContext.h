@@ -28,6 +28,14 @@ public:
   ALLOC_DELETED_CHAIN(VulkanTextureContext);
 
 public:
+  VkFormat _format;
+  VkExtent3D _extent;
+  int _mipmap_begin, _mipmap_end;
+  uint32_t _array_layers;
+  VkImageAspectFlags _aspect_mask;
+  bool _generate_mipmaps;
+  bool _pack_bgr8;
+
   VkImage _image;
   VkDeviceMemory _memory;
   VkImageView _image_view;

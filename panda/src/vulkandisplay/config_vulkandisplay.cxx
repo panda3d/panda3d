@@ -31,6 +31,12 @@ ConfigureFn(config_vulkandisplay) {
   init_libvulkandisplay();
 }
 
+ConfigVariableInt vulkan_color_palette_size
+("vulkan-color-palette-size", 256,
+ PRC_DESC("This value indicates how many unique ColorAttrib values the "
+          "Vulkan renderer should be prepared to encounter.  These values "
+          "are stored in a palette that is 16 bytes per entry."));
+
 #define VK_ERROR_INVALID_SHADER_NV -1000012000
 
 /**

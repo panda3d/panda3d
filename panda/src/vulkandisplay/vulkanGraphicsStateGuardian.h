@@ -17,6 +17,7 @@
 #include "config_vulkandisplay.h"
 
 class VulkanShaderContext;
+class VulkanTextureContext;
 class VulkanVertexBufferContext;
 
 /**
@@ -35,6 +36,7 @@ public:
   virtual string get_driver_version();
 
   virtual TextureContext *prepare_texture(Texture *tex, int view);
+  bool upload_texture(VulkanTextureContext *vtc);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
@@ -132,6 +134,30 @@ private:
                            const GeomVertexFormat *format,
                            VkPrimitiveTopology topology);
 
+  /**
+   * Stores whatever is used to key a cached descriptor set into the
+   * descriptor set map.
+   */
+  struct DescriptorSetKey {
+    INLINE DescriptorSetKey() DEFAULT_CTOR;
+    INLINE DescriptorSetKey(const DescriptorSetKey &copy);
+    INLINE void operator = (const DescriptorSetKey &copy);
+
+#ifdef USE_MOVE_SEMANTICS
+    INLINE DescriptorSetKey(DescriptorSetKey &&from) NOEXCEPT;
+    INLINE void operator = (DescriptorSetKey &&from) NOEXCEPT;
+#endif
+
+    INLINE bool operator ==(const DescriptorSetKey &other) const;
+    INLINE bool operator < (const DescriptorSetKey &other) const;
+
+    CPT(TextureAttrib) _tex_attrib;
+    CPT(ShaderAttrib) _shader_attrib;
+  };
+
+  VkDescriptorSet get_descriptor_set(const RenderState *state);
+  VkDescriptorSet make_descriptor_set(const RenderState *state);
+
   VkFormat get_image_format(const Texture *texture) const;
 
 private:
@@ -140,7 +166,6 @@ private:
   VkQueue _dma_queue;
   uint32_t _graphics_queue_family_index;
   VkFence _fence;
-  VkBuffer _null_vertex_buffer;
   VkCommandPool _cmd_pool;
   VkCommandBuffer _cmd;
   VkCommandBuffer _transfer_cmd;
@@ -150,12 +175,21 @@ private:
   VkPipelineLayout _pipeline_layout;
   VkDescriptorSetLayout _descriptor_set_layout;
   VkDescriptorPool _descriptor_pool;
-  VkDescriptorSet _descriptor_set;
   VulkanShaderContext *_default_sc;
   CPT(GeomVertexFormat) _format;
+  PT(Texture) _white_texture;
+
+  // Palette for flat colors.
+  VkBuffer _color_vertex_buffer;
+  int _next_palette_index;
+  typedef pmap<LColorf, uint32_t> ColorPaletteIndices;
+  ColorPaletteIndices _color_palette;
 
   typedef pmap<PipelineKey, VkPipeline> PipelineMap;
   PipelineMap _pipeline_map;
+
+  typedef pmap<DescriptorSetKey, VkDescriptorSet> DescriptorSetMap;
+  DescriptorSetMap _descriptor_set_map;
 
   friend class VulkanGraphicsWindow;
 

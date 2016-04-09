@@ -667,7 +667,7 @@ load_default_model(const NodePath &parent) {
   GeomNode *geomnode = new GeomNode("tri");
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("tri", GeomVertexFormat::get_v3n3cpt2(),
+    ("tri", GeomVertexFormat::get_v3n3t2(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());

@@ -257,7 +257,7 @@ end_flip() {
   nassertv(_present_complete != VK_NULL_HANDLE);
   nassertv(_layout_defined);
 
-  VkCommandBuffer cmdbufs[2] = {vkgsg->_cmd, _present_cmds[_image_index]};
+  VkCommandBuffer cmdbufs[3] = {vkgsg->_transfer_cmd, vkgsg->_cmd, _present_cmds[_image_index]};
 
   // Submit the GSG's command buffers to the queue.
   VkPipelineStageFlags stage_flags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
@@ -267,7 +267,7 @@ end_flip() {
   submit_info.waitSemaphoreCount = 1;
   submit_info.pWaitSemaphores = &_present_complete;
   submit_info.pWaitDstStageMask = &stage_flags;
-  submit_info.commandBufferCount = 2;
+  submit_info.commandBufferCount = 3;
   submit_info.pCommandBuffers = cmdbufs;
   submit_info.signalSemaphoreCount = 0;
   submit_info.pSignalSemaphores = NULL;

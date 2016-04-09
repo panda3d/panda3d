@@ -17,13 +17,16 @@
 #include "pStatTimer.h"
 #include "standardMunger.h"
 
+#include "colorAttrib.h"
 #include "colorBlendAttrib.h"
+#include "colorScaleAttrib.h"
 #include "colorWriteAttrib.h"
 #include "cullFaceAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "logicOpAttrib.h"
 #include "renderModeAttrib.h"
+#include "transparencyAttrib.h"
 
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 
@@ -150,7 +153,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   // Create a pipeline layout.  We'll do that here for now.
   VkPushConstantRange ranges[2];
-  ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
   ranges[0].offset = 0;
   ranges[0].size = 64;
   ranges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -174,13 +177,13 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   VkDescriptorPoolSize pool_size;
   pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  pool_size.descriptorCount = 1;
+  pool_size.descriptorCount = 64;
 
   VkDescriptorPoolCreateInfo pool_info;
   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
   pool_info.pNext = NULL;
   pool_info.flags = 0;
-  pool_info.maxSets = 1;
+  pool_info.maxSets = 64;
   pool_info.poolSizeCount = 1;
   pool_info.pPoolSizes = &pool_size;
 
@@ -190,25 +193,13 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     return;
   }
 
-  // Create a descriptor set.  This will be moved elsewhere later.
-  VkDescriptorSetAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
-  alloc_info.descriptorPool = _descriptor_pool;
-  alloc_info.descriptorSetCount = 1;
-  alloc_info.pSetLayouts = &_descriptor_set_layout;
-  err = vkAllocateDescriptorSets(_device, &alloc_info, &_descriptor_set);
-  if (err) {
-    vulkan_error(err, "Failed to allocate descriptor set");
-    return;
-  }
-
   // Create a dummy vertex buffer.  This will be used to store default values
   // for attributes when they are not bound to a vertex buffer, as well as any
   // flat color assigned via ColorAttrib.
   VkBuffer buffer;
   VkDeviceMemory memory;
-  if (!create_buffer(32, _null_vertex_buffer, memory,
+  uint32_t palette_size = (uint32_t)min(2, vulkan_color_palette_size) * 16;
+  if (!create_buffer(palette_size, _color_vertex_buffer, memory,
                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
@@ -216,6 +207,11 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
       << "Failed to create null vertex buffer.\n";
     return;
   }
+
+  // The first two are reserved for opaque black and white, respectively.
+  _color_palette[LColorf(0, 0, 0, 1)] = 0;
+  _color_palette[LColorf(1, 1, 1, 1)] = 1;
+  _next_palette_index = 2;
 
   // Fill in the features supported by this physical device.
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
@@ -607,9 +603,10 @@ prepare_texture(Texture *texture, int view) {
     break;
 
   case Texture::F_alpha:
-    view_info.components.r = VK_COMPONENT_SWIZZLE_ZERO;
-    view_info.components.g = VK_COMPONENT_SWIZZLE_ZERO;
-    view_info.components.b = VK_COMPONENT_SWIZZLE_ZERO;
+    //FIXME: better solution for fixing black text issue
+    view_info.components.r = VK_COMPONENT_SWIZZLE_ONE;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_ONE;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_ONE;
     view_info.components.a = VK_COMPONENT_SWIZZLE_R;
     break;
 
@@ -662,11 +659,40 @@ prepare_texture(Texture *texture, int view) {
   }
 
   VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
+  tc->_format = image_info.format;
+  tc->_extent = image_info.extent;
+  tc->_mipmap_begin = mipmap_begin;
+  tc->_mipmap_end = mipmap_end;
+  tc->_array_layers = image_info.arrayLayers;
+  tc->_aspect_mask = view_info.subresourceRange.aspectMask;
+  tc->_generate_mipmaps = generate_mipmaps;
+  tc->_pack_bgr8 = pack_bgr8;
+
   tc->_image = image;
   tc->_memory = device_mem;
   tc->_image_view = image_view;
   tc->update_data_size_bytes(alloc_info.allocationSize);
-  tc->mark_loaded();
+
+  if (upload_texture(tc)) {
+    return tc;
+  } else {
+    delete tc;
+    return (TextureContext *)NULL;
+  }
+}
+
+/**
+ * Uploads the texture data for the given texture.
+ */
+bool VulkanGraphicsStateGuardian::
+upload_texture(VulkanTextureContext *tc) {
+  Texture *texture = tc->get_texture();
+  VkImage image = tc->_image;
+  uint32_t mip_levels = tc->_mipmap_end - tc->_mipmap_begin;
+  VkResult err;
+
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), false);
 
   // Issue a command to transition the image into a layout optimal for
   // transferring into.
@@ -680,7 +706,12 @@ prepare_texture(Texture *texture, int view) {
   barrier.srcQueueFamilyIndex = _graphics_queue_family_index;
   barrier.dstQueueFamilyIndex = _graphics_queue_family_index;
   barrier.image = image;
-  barrier.subresourceRange = view_info.subresourceRange;
+  barrier.subresourceRange.aspectMask = tc->_aspect_mask;
+  barrier.subresourceRange.baseMipLevel = 0;
+  barrier.subresourceRange.levelCount = mip_levels;
+  barrier.subresourceRange.baseArrayLayer = 0;
+  barrier.subresourceRange.layerCount = tc->_array_layers;
+
   vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0,
                        0, NULL, 0, NULL, 1, &barrier);
@@ -690,24 +721,24 @@ prepare_texture(Texture *texture, int view) {
     if (texture->has_clear_color()) {
       // No, but we have to clear it to a solid color.
       LColor col = texture->get_clear_color();
-      if (view_info.subresourceRange.aspectMask == VK_IMAGE_ASPECT_COLOR_BIT) {
+      if (tc->_aspect_mask == VK_IMAGE_ASPECT_COLOR_BIT) {
         VkClearColorValue value; //TODO: handle integer clears?
         value.float32[0] = col[0];
         value.float32[1] = col[1];
         value.float32[2] = col[2];
         value.float32[3] = col[3];
         vkCmdClearColorImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
-                             &value, 1, &view_info.subresourceRange);
+                             &value, 1, &barrier.subresourceRange);
       } else {
         VkClearDepthStencilValue value;
         value.depth = col[0];
         value.stencil = 0;
         vkCmdClearDepthStencilImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL,
-                                    &value, 1, &view_info.subresourceRange);
+                                    &value, 1, &barrier.subresourceRange);
       }
     }
 
-    return tc;
+    return true;
   }
 
   // Create the staging buffer, where we will write the image to on the CPU.
@@ -719,7 +750,7 @@ prepare_texture(Texture *texture, int view) {
   }
 
   // Add up the total size of the staging buffer to create.
-  for (int n = mipmap_begin; n < mipmap_end; ++n) {
+  for (int n = tc->_mipmap_begin; n < tc->_mipmap_end; ++n) {
     if (texture->has_ram_mipmap_image(n)) {
       // Add for optimal alignment.
       VkDeviceSize remain = buffer_size % optimal_align;
@@ -727,7 +758,7 @@ prepare_texture(Texture *texture, int view) {
         buffer_size += optimal_align - remain;
       }
 
-      if (pack_bgr8) {
+      if (tc->_pack_bgr8) {
         buffer_size += texture->get_ram_mipmap_image_size(n) / 3 * 4;
       } else {
         buffer_size += texture->get_ram_mipmap_image_size(n);
@@ -744,8 +775,7 @@ prepare_texture(Texture *texture, int view) {
     vulkandisplay_cat.error()
       << "Failed to create staging buffer for texture "
       << texture->get_name() << endl;
-    delete tc;
-    return (TextureContext *)NULL;
+    return false;
   }
 
   // Now fill in the data into the staging buffer.
@@ -753,17 +783,16 @@ prepare_texture(Texture *texture, int view) {
   err = vkMapMemory(_device, staging_mem, 0, buffer_size, 0, &data);
   if (err || !data) {
     vulkan_error(err, "Failed to map texture staging memory");
-    delete tc;
-    return (TextureContext *)NULL;
+    return false;
   }
 
   // Schedule a copy from our staging buffer to the image.
   VkBufferImageCopy region;
   memset(&region, 0, sizeof(VkBufferImageCopy));
-  region.imageSubresource.aspectMask = view_info.subresourceRange.aspectMask;
+  region.imageSubresource.aspectMask = tc->_aspect_mask;
   region.imageSubresource.mipLevel = 0;
-  region.imageSubresource.layerCount = image_info.arrayLayers;
-  region.imageExtent = image_info.extent;
+  region.imageSubresource.layerCount = tc->_array_layers;
+  region.imageExtent = tc->_extent;
 
   VkImageBlit blit;
   memset(&blit, 0, sizeof(VkImageBlit));
@@ -773,7 +802,7 @@ prepare_texture(Texture *texture, int view) {
   blit.srcOffsets[1].z = region.imageExtent.depth;
   blit.dstSubresource = blit.srcSubresource;
 
-  for (int n = mipmap_begin; n < mipmap_end; ++n) {
+  for (int n = tc->_mipmap_begin; n < tc->_mipmap_end; ++n) {
     // Get a pointer to the RAM image data.
     const uint8_t *src = (const uint8_t *)texture->get_ram_mipmap_pointer((int)n);
     size_t src_size;
@@ -789,7 +818,7 @@ prepare_texture(Texture *texture, int view) {
 
     if (src == (const uint8_t *)NULL) {
       // There's no image for this level.  Are we supposed to generate it?
-      if (n > 0 && generate_mipmaps) {
+      if (n > 0 && tc->_generate_mipmaps) {
         blit.dstSubresource.mipLevel = region.imageSubresource.mipLevel;
         blit.dstOffsets[1].x = region.imageExtent.width;
         blit.dstOffsets[1].y = region.imageExtent.height;
@@ -819,7 +848,7 @@ prepare_texture(Texture *texture, int view) {
 
       uint8_t *dest = (uint8_t *)data + region.bufferOffset;
 
-      if (pack_bgr8) {
+      if (tc->_pack_bgr8) {
         // Pack RGB data into RGBA, since most cards don't support RGB8.
         const uint8_t *src_end = src + src_size;
         uint32_t *dest32 = (uint32_t *)dest;
@@ -851,6 +880,8 @@ prepare_texture(Texture *texture, int view) {
 
   vkUnmapMemory(_device, staging_mem);
 
+  tc->mark_loaded();
+
   // Tell the GraphicsEngine that we uploaded the texture.  This may cause
   // it to unload the data from RAM at the end of this frame.
   GraphicsEngine *engine = get_engine();
@@ -858,7 +889,7 @@ prepare_texture(Texture *texture, int view) {
     engine->texture_uploaded(texture);
   }
 
-  return tc;
+  return true;
 }
 
 /**
@@ -872,7 +903,44 @@ prepare_texture(Texture *texture, int view) {
  * (and if get_incomplete_render() is true).
  */
 bool VulkanGraphicsStateGuardian::
-update_texture(TextureContext *, bool force) {
+update_texture(TextureContext *tc, bool force) {
+  VulkanTextureContext *vtc;
+  DCAST_INTO_R(vtc, tc, false);
+
+  if (vtc->was_image_modified()) {
+    Texture *tex = tc->get_texture();
+
+    VkExtent3D extent;
+    extent.width = tex->get_x_size();
+    extent.height = tex->get_y_size();
+    uint32_t arrayLayers;
+
+    if (tex->get_texture_type() == Texture::TT_3d_texture) {
+      extent.depth = tex->get_z_size();
+      arrayLayers = 1;
+    } else {
+      extent.depth = 1;
+      arrayLayers = tex->get_z_size();
+    }
+
+    VkFormat format = get_image_format(tex);
+
+    if (format != vtc->_format ||
+        extent.width != vtc->_extent.width ||
+        extent.height != vtc->_extent.height ||
+        extent.depth != vtc->_extent.depth ||
+        arrayLayers != vtc->_array_layers) {
+      // We need to recreate the image entirely. TODO!
+      cerr << "have to recreate image\n";
+      return false;
+    }
+
+    if (!upload_texture(vtc)) {
+      return false;
+    }
+  }
+
+  vtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
   return true;
 }
 
@@ -1243,50 +1311,25 @@ set_state_and_transform(const RenderState *state,
   LMatrix4f matrix = LCAST(float, combined->get_mat());
   vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, matrix.get_data());
 
-  const ColorAttrib *color_attrib;
-  state->get_attrib_def(color_attrib);
-  LColorf color = LCAST(float, color_attrib->get_color());
+  const ColorScaleAttrib *color_scale_attrib;
+  state->get_attrib_def(color_scale_attrib);
+  LColorf color = LCAST(float, color_scale_attrib->get_scale());
   vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 64, 16, color.get_data());
 
-  // Now grab the texture.
   const TextureAttrib *tex_attrib;
   state->get_attrib_def(tex_attrib);
 
+  Texture *texture;
   if (tex_attrib->has_on_stage(TextureStage::get_default())) {
-    Texture *texture = tex_attrib->get_on_texture(TextureStage::get_default());
-    SamplerState sampler = tex_attrib->get_on_sampler(TextureStage::get_default());
-    nassertv(texture != NULL);
-
+    texture = tex_attrib->get_on_texture(TextureStage::get_default());
     VulkanTextureContext *tc;
     DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
-
-    VulkanSamplerContext *sc;
-    DCAST_INTO_V(sc, sampler.prepare_now(get_prepared_objects(), this));
-
-    VkDescriptorImageInfo image_info;
-    image_info.sampler = sc->_sampler;
-    image_info.imageView = tc->_image_view;
-    image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-    VkWriteDescriptorSet write;
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = NULL;
-    write.dstSet = _descriptor_set;
-    write.dstBinding = 0;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    write.pImageInfo = &image_info;
-    write.pBufferInfo = NULL;
-    write.pTexelBufferView = NULL;
-
-    //TODO: this is not part of command buffer, so we should move this
-    // elsewhere.
-    vkUpdateDescriptorSets(_device, 1, &write, 0, NULL);
+    update_texture(tc, true);
   }
 
+  VkDescriptorSet ds = get_descriptor_set(state);
   vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          _pipeline_layout, 0, 1, &_descriptor_set, 0, NULL);
+                          _pipeline_layout, 0, 1, &ds, 0, NULL);
 }
 
 /**
@@ -1449,7 +1492,7 @@ begin_frame(Thread *current_thread) {
   VkCommandBufferBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   begin_info.pNext = NULL;
-  begin_info.flags = 0;
+  begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
   begin_info.pInheritanceInfo = NULL;
 
   err = vkBeginCommandBuffer(_transfer_cmd, &begin_info);
@@ -1458,9 +1501,17 @@ begin_frame(Thread *current_thread) {
     return false;
   }
 
+  // Make sure we have a white texture.
+  if (_white_texture.is_null()) {
+    _white_texture = new Texture();
+    _white_texture->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba8);
+    _white_texture->set_clear_color(LColor(1, 1, 1, 1));
+    _white_texture->prepare_now(0, get_prepared_objects(), this);
+  }
+
   // Update the "null" vertex buffer.
   LVecBase4f data[2] = {LVecBase4(0, 0, 0, 1), LVecBase4(1, 1, 1, 1)};
-  vkCmdUpdateBuffer(_transfer_cmd, _null_vertex_buffer, 0, 32, (const uint32_t *)data[0].get_data());
+  vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, 0, 32, (const uint32_t *)data[0].get_data());
 
   // Call the GSG's begin_frame, which will cause any queued-up release() and
   // prepare() methods to be called.  Note that some of them may add to the
@@ -1470,9 +1521,9 @@ begin_frame(Thread *current_thread) {
   }
 
   // Let's submit our preparation calls, so the GPU has something to munch on.
-  vkEndCommandBuffer(_transfer_cmd);
+  //vkEndCommandBuffer(_transfer_cmd);
 
-  VkSubmitInfo submit_info;
+  /*VkSubmitInfo submit_info;
   submit_info.pNext = NULL;
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submit_info.waitSemaphoreCount = 0;
@@ -1486,7 +1537,7 @@ begin_frame(Thread *current_thread) {
   if (err) {
     vulkan_error(err, "Failed to submit preparation command buffer");
     return false;
-  }
+  }*/
 
   // Now begin the main (ie. graphics) command buffer.
   err = vkBeginCommandBuffer(_cmd, &begin_info);
@@ -1533,6 +1584,9 @@ void VulkanGraphicsStateGuardian::
 end_frame(Thread *current_thread) {
   GraphicsStateGuardian::end_frame(current_thread);
 
+  nassertv(_transfer_cmd != VK_NULL_HANDLE);
+  vkEndCommandBuffer(_transfer_cmd);
+
   nassertv(_cmd != VK_NULL_HANDLE);
   vkEndCommandBuffer(_cmd);
 
@@ -1571,7 +1625,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     buffers[i] = vbc->_buffer;
     offsets[i] = 0;
   }
-  buffers[i] = _null_vertex_buffer;
+  buffers[i] = _color_vertex_buffer;
   offsets[i] = 0;
 
   vkCmdBindVertexBuffers(_cmd, 0, num_arrays + 1, buffers, offsets);
@@ -1852,10 +1906,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
     attrib_desc[i].location = spec._id._seqno;
 
     if (!format->get_array_info(spec._name, array_index, column)) {
-      vulkandisplay_cat.warning()
-        << "Shader references non-existent vertex column " << *spec._name << "\n";
-
-      // The sader references a non-existent vertex column.  To make this a
+      // The shader references a non-existent vertex column.  To make this a
       // well-defined operation (as in OpenGL), we bind a "dummy" vertex buffer
       // containing a fixed value with a stride of 0.
       if (dummy_binding == -1) {
@@ -1864,7 +1915,29 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
       attrib_desc[i].binding = dummy_binding;
       if (spec._name == InternalName::get_color()) {
-        attrib_desc[i].offset = 16;
+        // Look up the offset into the color palette.
+        const ColorAttrib *color_attr;
+        state->get_attrib_def(color_attr);
+        LColorf color = LCAST(float, color_attr->get_color());
+
+        ColorPaletteIndices::const_iterator it = _color_palette.find(color);
+        if (it != _color_palette.end()) {
+          attrib_desc[i].offset = it->second * 16;
+        } else {
+          // Not yet in the palette.  Write an entry.
+          if (_next_palette_index >= vulkan_color_palette_size) {
+            attrib_desc[i].offset = 1;
+            vulkandisplay_cat.error()
+              << "Ran out of color palette entries.  Increase "
+                 "vulkan-color-palette-size value in Config.prc.\n";
+          } else {
+            uint32_t offset = _next_palette_index * 16;
+            attrib_desc[i].offset = offset;
+            _color_palette[color] = _next_palette_index++;
+            vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, offset, 16,
+                              (const uint32_t *)color.get_data());
+          }
+        }
       } else {
         attrib_desc[i].offset = 0;
       }
@@ -2043,12 +2116,63 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
     att_state[0].alphaBlendOp = (VkBlendOp)(color_blend->get_alpha_mode() - 1);
   } else {
     att_state[0].blendEnable = VK_FALSE;
-    att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-    att_state[0].colorBlendOp = VK_BLEND_OP_ADD;
-    att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
+
+    // No color blend mode enabled; was there a transparency attribute?
+    const TransparencyAttrib *transp;
+    state->get_attrib_def(transp);
+
+    switch (transp->get_mode()) {
+    case TransparencyAttrib::M_none:
+    case TransparencyAttrib::M_binary:
+      att_state[0].blendEnable = VK_FALSE;
+      att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+      att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+      att_state[0].colorBlendOp = VK_BLEND_OP_ADD;
+      att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+      att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+      att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
+      break;
+
+    case TransparencyAttrib::M_alpha:
+    case TransparencyAttrib::M_dual:
+      att_state[0].blendEnable = VK_TRUE;
+      att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+      att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+      att_state[0].colorBlendOp = VK_BLEND_OP_ADD;
+      att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+      att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+      att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
+      break;
+
+    case TransparencyAttrib::M_premultiplied_alpha:
+      att_state[0].blendEnable = VK_TRUE;
+      att_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+      att_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+      att_state[0].colorBlendOp = VK_BLEND_OP_ADD;
+      att_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+      att_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+      att_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
+      break;
+
+    case TransparencyAttrib::M_multisample:
+      // We need to enable *both* of these in M_multisample case.
+      ms_info.alphaToCoverageEnable = VK_TRUE;
+      ms_info.alphaToOneEnable = VK_TRUE;
+      att_state[0].blendEnable = VK_FALSE;
+      break;
+
+    case TransparencyAttrib::M_multisample_mask:
+      ms_info.alphaToCoverageEnable = VK_TRUE;
+      ms_info.alphaToOneEnable = VK_FALSE;
+      att_state[0].blendEnable = VK_FALSE;
+      break;
+
+    default:
+      att_state[0].blendEnable = VK_FALSE;
+      vulkandisplay_cat.error()
+        << "invalid transparency mode " << (int)transp->get_mode() << endl;
+      break;
+    }
   }
   att_state[0].colorWriteMask = color_write->get_channels();
 
@@ -2114,6 +2238,98 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   }
 
   return pipeline;
+}
+
+/**
+ * Returns a VkDescriptorSet for the resources of the given render state.
+ */
+VkDescriptorSet VulkanGraphicsStateGuardian::
+get_descriptor_set(const RenderState *state) {
+  DescriptorSetKey key;
+  key._tex_attrib =
+    (const TextureAttrib *)state->get_attrib_def(TextureAttrib::get_class_slot());
+  key._shader_attrib =
+    (const ShaderAttrib *)state->get_attrib_def(ShaderAttrib::get_class_slot());
+
+  DescriptorSetMap::const_iterator it;
+  it = _descriptor_set_map.find(key);
+  if (it == _descriptor_set_map.end()) {
+    VkDescriptorSet ds = make_descriptor_set(state);
+    _descriptor_set_map[MOVE(key)] = ds;
+    return ds;
+  } else {
+    return it->second;
+  }
+}
+
+/**
+ * Creates a VkDescriptorSet for the resources of the given render state.
+ */
+VkDescriptorSet VulkanGraphicsStateGuardian::
+make_descriptor_set(const RenderState *state) {
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Making descriptor set for state " << *state << "\n";
+  }
+
+  VkResult err;
+  VkDescriptorSet ds;
+
+  //TODO: layout creation.
+  VkDescriptorSetAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  alloc_info.pNext = NULL;
+  alloc_info.descriptorPool = _descriptor_pool;
+  alloc_info.descriptorSetCount = 1;
+  alloc_info.pSetLayouts = &_descriptor_set_layout;
+  err = vkAllocateDescriptorSets(_device, &alloc_info, &ds);
+  if (err) {
+    vulkan_error(err, "Failed to allocate descriptor set");
+    return VK_NULL_HANDLE;
+  }
+
+  // Now fill in the descriptor set with bindings.
+  const TextureAttrib *tex_attrib;
+  state->get_attrib_def(tex_attrib);
+
+  Texture *texture;
+  SamplerState sampler;
+
+  if (tex_attrib->has_on_stage(TextureStage::get_default())) {
+    texture = tex_attrib->get_on_texture(TextureStage::get_default());
+    sampler = tex_attrib->get_on_sampler(TextureStage::get_default());
+    nassertr(texture != NULL, VK_NULL_HANDLE);
+  } else {
+    // Just use a white texture.
+    texture = _white_texture;
+  }
+
+  VulkanTextureContext *tc;
+  DCAST_INTO_R(tc, texture->prepare_now(0, get_prepared_objects(), this), VK_NULL_HANDLE);
+
+  VulkanSamplerContext *sc;
+  DCAST_INTO_R(sc, sampler.prepare_now(get_prepared_objects(), this), VK_NULL_HANDLE);
+
+  VkDescriptorImageInfo image_info;
+  image_info.sampler = sc->_sampler;
+  image_info.imageView = tc->_image_view;
+  image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+  VkWriteDescriptorSet write;
+  write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  write.pNext = NULL;
+  write.dstSet = ds;
+  write.dstBinding = 0;
+  write.dstArrayElement = 0;
+  write.descriptorCount = 1;
+  write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  write.pImageInfo = &image_info;
+  write.pBufferInfo = NULL;
+  write.pTexelBufferView = NULL;
+
+  vkUpdateDescriptorSets(_device, 1, &write, 0, NULL);
+
+  return ds;
 }
 
 /**
