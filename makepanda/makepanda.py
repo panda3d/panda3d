@@ -3407,8 +3407,7 @@ if (not RUNTIME):
   TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3putil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
   TargetAdd('libp3putil_igate.obj', input='libp3putil.in', opts=["DEPENDENCYONLY"])
-  TargetAdd('p3putil_typedWritable_ext.obj', opts=OPTS, input='typedWritable_ext.cxx')
-  TargetAdd('p3putil_pythonCallbackObject.obj', opts=OPTS, input='pythonCallbackObject.cxx')
+  TargetAdd('p3putil_ext_composite.obj', opts=OPTS, input='p3putil_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/audio/
@@ -4009,8 +4008,7 @@ if (not RUNTIME):
   if PkgSkip("FREETYPE")==0:
     TargetAdd('core.pyd', input="libp3pnmtext_igate.obj")
 
-  TargetAdd('core.pyd', input='p3putil_typedWritable_ext.obj')
-  TargetAdd('core.pyd', input='p3putil_pythonCallbackObject.obj')
+  TargetAdd('core.pyd', input='p3putil_ext_composite.obj')
   TargetAdd('core.pyd', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('core.pyd', input='p3event_pythonTask.obj')
   TargetAdd('core.pyd', input='p3gobj_ext_composite.obj')

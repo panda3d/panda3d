@@ -148,11 +148,14 @@ PUBLISHED:
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
 
+  EXTENSION(PyObject *get_file_version() const);
+
 PUBLISHED:
   MAKE_PROPERTY(source, get_source, set_source);
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(loader_options, get_loader_options, set_loader_options);
 
+  MAKE_PROPERTY(file_version, get_file_version);
   MAKE_PROPERTY(file_endian, get_file_endian);
   MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
 
@@ -194,7 +197,13 @@ public:
   INLINE streampos get_file_pos();
 
 public:
+  INLINE static void register_factory(TypeHandle type, WritableFactory::CreateFunc *func,
+                                      void *user_data = NULL);
   INLINE static WritableFactory *get_factory();
+
+PUBLISHED:
+  EXTENSION(static void register_factory(TypeHandle handle, PyObject *func));
+
 private:
   INLINE static void create_factory();
 

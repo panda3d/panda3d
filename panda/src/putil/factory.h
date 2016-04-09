@@ -49,7 +49,8 @@ public:
   make_instance_more_general(const string &type_name,
                              const FactoryParams &params = FactoryParams());
 
-  INLINE void register_factory(TypeHandle handle, CreateFunc *func);
+  INLINE void register_factory(TypeHandle handle, CreateFunc *func,
+                               void *user_data = NULL);
 };
 
 #include "factory.I"
