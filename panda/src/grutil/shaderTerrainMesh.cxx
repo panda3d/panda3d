@@ -405,11 +405,11 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
 
       // Vary triangle scheme on each uneven quad
       if (stm_use_hexagonal_layout && (x + y) % 2 == 0 ) {
-        triangles->add_vertices(tl, tr, bl);
-        triangles->add_vertices(bl, tr, br);
-      } else {
         triangles->add_vertices(tl, tr, br);
         triangles->add_vertices(tl, br, bl);
+      } else {
+        triangles->add_vertices(tl, tr, bl);
+        triangles->add_vertices(bl, tr, br);
       }
     }
   }
