@@ -902,7 +902,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             }
           } else {
             if (_fb_properties.get_color_bits() > 16 * 3) {
-              gl_format = GL_RGBA32F_ARB;
+              gl_format = GL_RGB32F_ARB;
             } else if (_fb_properties.get_color_bits() > 8 * 3) {
               gl_format = GL_RGB16_EXT;
             } else {
@@ -920,11 +920,11 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             }
           } else {
             if (_fb_properties.get_color_bits() > 16 * 3) {
-              gl_format = GL_RGB32F_ARB;
+              gl_format = GL_RGBA32F_ARB;
             } else if (_fb_properties.get_color_bits() > 8 * 3) {
-              gl_format = GL_RGB16_EXT;
+              gl_format = GL_RGBA16_EXT;
             } else {
-              gl_format = GL_RGB;
+              gl_format = GL_RGBA;
             }
           }
         }
